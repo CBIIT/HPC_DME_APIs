@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!--  
+ * features.xml
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+<features name="HPC-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.0.0">
+    
+    <!-- Mongo DB Async Driver -->
+    <feature name="hpc-mongo-async-driver" version="${mongodb.version}">
+    	<bundle>mvn:org.mongodb/mongodb-driver-async/${mongodb.version}</bundle>
+    	<bundle>mvn:org.mongodb/mongodb-driver-core/${mongodb.version}</bundle>
+    	<bundle>mvn:org.mongodb/bson/${mongodb.version}</bundle>
+    </feature>
+    
+    <!-- HPC API Server -->  
+    <feature name="hpc-server" version="${project.version}">
+    	<feature version="${mongodb.version}">hpc-mongo-async-driver</feature>
+    
+        <bundle>mvn:${project.groupId}/hpc-dto/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-dao-api/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-dao-mongo-impl/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-service-api/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-service-impl/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-deploy-rs-api/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-deploy-rs-impl/${project.version}</bundle>
+    </feature>
+    
+</features>
