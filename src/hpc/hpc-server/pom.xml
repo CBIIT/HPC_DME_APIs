@@ -1,0 +1,87 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<name>HPC Server</name>
+	<parent>
+		<groupId>gov.nih.nci.hpc</groupId>
+		<artifactId>hpc</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>hpc-server</artifactId>
+	<packaging>pom</packaging>
+	
+	<properties>
+		<cxf.version>3.0.2</cxf.version>
+		<felix.version>2.5.3</felix.version>
+		<mongodb.version>3.0.1</mongodb.version>
+		<slf4j.version>1.7.12</slf4j.version>
+	</properties>
+	
+	<modules>
+		<module>hpc-dto</module>
+		<module>hpc-dao-api</module>
+		<module>hpc-dao-mongo-impl</module>
+		<module>hpc-service-api</module>
+		<module>hpc-service-impl</module>
+		<module>hpc-deploy-rs-api</module>
+		<module>hpc-deploy-rs-impl</module>
+		<module>hpc-features</module>
+	</modules>
+	
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.cxf</groupId>
+    				<artifactId>cxf-xjc-plugin</artifactId>
+    				<version>${cxf.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.felix</groupId>
+					<artifactId>maven-bundle-plugin</artifactId>
+					<version>${felix.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.ops4j.pax.exam</groupId>
+					<artifactId>maven-paxexam-plugin</artifactId>
+					<version>1.2.4</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>build-helper-maven-plugin</artifactId>
+					<version>1.9.1</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-rt-frontend-jaxrs</artifactId>
+				<version>${cxf.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-rt-frontend-jaxws</artifactId>
+				<version>${cxf.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-rt-transports-http</artifactId>
+				<version>${cxf.version}</version>
+			</dependency>
+			<dependency>
+        		<groupId>org.mongodb</groupId>
+        		<artifactId>mongodb-driver-async</artifactId>
+        		<version>${mongodb.version}</version>
+    		</dependency>
+    		<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+</project>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * jaxb-binding.xjb
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+<jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1">
+	<jxb:globalBindings>
+		<jxb:serializable/>
+	</jxb:globalBindings>
+</jxb:bindings>
