@@ -21,8 +21,10 @@
 		<module>hpc-dto</module>
 		<module>hpc-dao-api</module>
 		<module>hpc-dao-mongo-impl</module>
-		<module>hpc-service-api</module>
-		<module>hpc-service-impl</module>
+		<module>hpc-app-service-api</module>
+		<module>hpc-app-service-impl</module>
+		<module>hpc-bus-service-api</module>
+		<module>hpc-bus-service-impl</module>
 		<module>hpc-deploy-rs-api</module>
 		<module>hpc-deploy-rs-impl</module>
 		<module>hpc-features</module>

@@ -22,7 +22,7 @@
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package/>
 						<Private-Package>
-							gov.nih.nci.hpc.deploy.rs.metadata
+							gov.nih.nci.hpc.deploy.rs.impl
 						</Private-Package>
 						<Import-Package>
 							META-INF.cxf,
@@ -42,7 +42,7 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>hpc-service-api</artifactId>
+			<artifactId>hpc-bus-service-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
