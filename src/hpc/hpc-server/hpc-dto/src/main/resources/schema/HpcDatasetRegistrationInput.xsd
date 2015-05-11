@@ -13,11 +13,11 @@
  -->
  
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    targetNamespace="http://hpc.nci.nih.gov/dto/metadata"
+    targetNamespace="http://hpc.nci.nih.gov/dto"
     elementFormDefault="qualified"
     xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0">
     
-    <xsd:element name="HpcMetadataDTO">
+    <xsd:element name="HpcDatasetRegistrationInputDTO">
         <xsd:complexType>
         	<xsd:attribute name="id" type="xsd:ID"/>
         	<xsd:attribute name="creationDate" type="xsd:date" use="required"/>

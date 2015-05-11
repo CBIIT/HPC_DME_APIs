@@ -1,5 +1,5 @@
 /**
- * HpcMetadataBsonDocument.java
+ * HpcManagedDatasetBsonDocument.java
  *
  *  Copyright SVG, Inc.
  *  Copyright Leidos Biomedical Research, Inc
@@ -8,9 +8,9 @@
  *  See http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 
-package gov.nih.nci.hpc.dao.mongo.metadata;
+package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.dto.metadata.HpcMetadataDTO;
+import gov.nih.nci.hpc.dto.HpcDatasetRegistrationInputDTO;
 import org.bson.types.ObjectId;
 
 import org.slf4j.Logger;
@@ -18,14 +18,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * HPC Metadata BSON Document. 
+ * HPC Managed Dataset BSON Document. 
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcMetadataBsonDocument
+public class HpcManagedDatasetBsonDocument
 { 
     //---------------------------------------------------------------------//
     // Instance members
@@ -39,7 +39,7 @@ public class HpcMetadataBsonDocument
 	private ObjectId objectId = new ObjectId();
 	
 	// The Metadata DTO instance.
-	HpcMetadataDTO metadataDTO = new HpcMetadataDTO();
+	HpcDatasetRegistrationInputDTO dto = new HpcDatasetRegistrationInputDTO();
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -49,7 +49,7 @@ public class HpcMetadataBsonDocument
      * Default Constructor.
      * 
      */
-    public HpcMetadataBsonDocument() 
+    public HpcManagedDatasetBsonDocument() 
     {
     }   
     
@@ -82,9 +82,9 @@ public class HpcMetadataBsonDocument
      *
      * @return The metadata DTO.
      */
-    public HpcMetadataDTO getMetadataDTO()
+    public HpcDatasetRegistrationInputDTO getDTO()
     {
-        return metadataDTO;
+        return dto;
     }
     
     /**
@@ -92,9 +92,9 @@ public class HpcMetadataBsonDocument
      *
      * @param metadataDTO The metadata DTO.
      */
-    public void setMetadataDTO(HpcMetadataDTO metadataDTO)
+    public void setDTO(HpcDatasetRegistrationInputDTO dto)
     {
-        this.metadataDTO = metadataDTO;
+        this.dto = dto;
     }      
 }
 

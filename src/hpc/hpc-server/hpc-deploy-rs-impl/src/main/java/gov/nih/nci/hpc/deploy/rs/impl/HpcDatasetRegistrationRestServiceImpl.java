@@ -1,5 +1,5 @@
 /**
- * HpcMetadataRestServiceImpl.java
+ * HpcDatasetRegistrationRestServiceImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -8,11 +8,11 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 
-package gov.nih.nci.hpc.deploy.rs.metadata;
+package gov.nih.nci.hpc.deploy.rs.impl;
 
-import gov.nih.nci.hpc.deploy.rs.HpcMetadataRestService;
-import gov.nih.nci.hpc.dto.metadata.HpcMetadataDTO;
-import gov.nih.nci.hpc.service.HpcMetadataService;
+import gov.nih.nci.hpc.deploy.rs.HpcDatasetRegistrationRestService;
+import gov.nih.nci.hpc.dto.HpcDatasetRegistrationInputDTO;
+import gov.nih.nci.hpc.bus.HpcDatasetRegistrationService;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * HPC Metadata REST Service Implementation.
+ * HPC Dataset Registration REST Service Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
@@ -36,14 +36,15 @@ import org.slf4j.LoggerFactory;
  */
 
 @Path("/")
-public class HpcMetadataRestServiceImpl implements HpcMetadataRestService
+public class HpcDatasetRegistrationRestServiceImpl 
+             implements HpcDatasetRegistrationRestService
 {   
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
     // The Metadata Application Service instance.
-    private HpcMetadataService metadataService = null;
+    private HpcDatasetRegistrationService registrationService = null;
     
     // The URI Info context instance.
     private @Context UriInfo uriInfo;
@@ -61,7 +62,7 @@ public class HpcMetadataRestServiceImpl implements HpcMetadataRestService
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcMetadataRestServiceImpl() throws HpcException
+    private HpcDatasetRegistrationRestServiceImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -74,15 +75,16 @@ public class HpcMetadataRestServiceImpl implements HpcMetadataRestService
      * 
      * @throws HpcException If the app service is not provided by Spring.
      */
-    private HpcMetadataRestServiceImpl(HpcMetadataService metadataService)
-                                      throws HpcException
+    private HpcDatasetRegistrationRestServiceImpl(
+    		          HpcDatasetRegistrationService registrationService)
+                      throws HpcException
     {
-    	if(metadataService == null) {
-    	   throw new HpcException("Null HpcMetadataService instance",
+    	if(registrationService == null) {
+    	   throw new HpcException("Null HpcDatasetRegistrationService instance",
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
     	
-    	this.metadataService = metadataService;
+    	this.registrationService = registrationService;
     }  
     
     //---------------------------------------------------------------------//
@@ -90,27 +92,36 @@ public class HpcMetadataRestServiceImpl implements HpcMetadataRestService
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcMetadataRestService Interface Implementation
+    // HpcDatasetRegistrationRestService Interface Implementation
     //---------------------------------------------------------------------//  
 	
     @Override
-    public HpcMetadataDTO getMetadata(String id)
+    public Response registerDataset(
+    		        HpcDatasetRegistrationInputDTO registrationInputDTO)
     {	
-		logger.info("Invoking GET /metadata/{id}");
-		return metadataService.getMetadata(id);
-	}
-	
-    @Override
-    public Response postMetadata(HpcMetadataDTO metadata/*, @Context UriInfo uriInfo*/)
-    {
-		logger.info("Invoking POST /metadata");
-		
-		metadataService.addMetadata(metadata);
+		logger.info("Invoking POST /registration");
+		try {
+			 registrationService.registerDataset(registrationInputDTO);
+		} catch(HpcException e) {
+			
+		}
 		UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
         URI metadataUri = uriBuilder.path("9988").build();
                
 		return Response.created(metadataUri).build();
-    }
+	}
+	
+   // @Override
+    //public Response postMetadata(HpcMetadataDTO metadata/*, @Context UriInfo uriInfo*/)
+    //{
+		//logger.info("Invoking POST /metadata");
+		
+		//metadataService.addMetadata(metadata);
+		//UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
+        //URI metadataUri = uriBuilder.path("9988").build();
+               
+		//return Response.created(metadataUri).build();
+    //}
 }
 
  

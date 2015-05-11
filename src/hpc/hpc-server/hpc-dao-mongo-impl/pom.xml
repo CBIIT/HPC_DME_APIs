@@ -22,7 +22,8 @@
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package/>
 						<Private-Package>
-							gov.nih.nci.hpc.dao.mongo.metadata
+							gov.nih.nci.hpc.dao.mongo.impl,
+							gov.nih.nci.hpc.dao.mongo.codec
 						</Private-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>
