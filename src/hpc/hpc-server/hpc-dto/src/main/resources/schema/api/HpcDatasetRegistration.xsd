@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcDatasetRegistrationInput.xsd
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+ 
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+			xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+    		targetNamespace="http://hpc.nci.nih.gov/dto"
+    		elementFormDefault="qualified">
+    		
+   	<xsd:import namespace="http://hpc.nci.nih.gov" schemaLocation="HpcDataset.xsd"/>
+    
+    <xsd:element name="HpcDatasetRegistrationInputDTO">
+        <xsd:complexType>
+        	<xsd:attribute name="id" type="xsd:ID"/>
+        	<xsd:attribute name="creationDate" type="xsd:date" use="required"/>
+        	<xsd:attribute name="userId" type="xsd:string" use="required"/>
+			<xsd:attribute name="size" type="xsd:double"/>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>
