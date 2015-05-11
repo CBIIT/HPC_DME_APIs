@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcMetadata.xsd
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+ 
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+			xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+			xmlns:hpc="http://hpc.nci.nih.gov"
+    		targetNamespace="http://hpc.nci.nih.gov"
+    		elementFormDefault="qualified">
+	
+  	<xsd:complexType name="HpcDataset">
+  	    <xsd:sequence>
+      		<xsd:element name="location" type="hpc:HpcDatasetLocation"></xsd:element>
+    	</xsd:sequence>
+    	<xsd:attribute name="index" type="xsd:integer"/>
+  		<xsd:attribute name="name" type="xsd:string" use="required"/>
+  		<xsd:attribute name="size" type="xsd:double"/>
+  	</xsd:complexType>
+        	
+	<xsd:complexType name="HpcDatasetLocation">
+		<xsd:attribute name="dataCenter" type="hpc:HpcDataCenter" use="required"/>
+		<xsd:attribute name="path" type="xsd:string" use="required"/>
+	</xsd:complexType>
+	
+	<xsd:simpleType name="HpcDataCenter">
+  		<xsd:restriction base="xsd:string">
+    		<xsd:enumeration value="SHADY_GROVE"/>
+    		<xsd:enumeration value="FREDERICK"/>
+  		</xsd:restriction>
+	</xsd:simpleType>
+
+</xsd:schema>
