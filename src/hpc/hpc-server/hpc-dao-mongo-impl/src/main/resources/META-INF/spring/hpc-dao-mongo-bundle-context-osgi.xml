@@ -28,6 +28,6 @@
 
 	<ctx:property-placeholder properties-ref="preProps"/>
 
-	<osgi:service ref="hpcMetadataDAO" interface="gov.nih.nci.hpc.dao.HpcMetadataDAO" />
+	<osgi:service ref="hpcManagedDatasetDAO" interface="gov.nih.nci.hpc.dao.HpcManagedDatasetDAO" />
 	
 </beans>
