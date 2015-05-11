@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id
+ * @version $Id$
  */
 
 public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
