@@ -1,5 +1,5 @@
 /**
- * HpcMetadataDTOCodec.java
+ * HpcManagedDatasetCodec.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -8,7 +8,7 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 
-package gov.nih.nci.hpc.dao.mongo.metadata;
+package gov.nih.nci.hpc.dao.mongo.codec;
 
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
@@ -37,8 +37,8 @@ import org.slf4j.LoggerFactory;
  * @version $Id$
  */
 
-public class HpcMetadataDTOCodec 
-             implements CollectibleCodec<HpcMetadataBsonDocument>
+public class HpcManagedDatasetCodec 
+             implements CollectibleCodec<HpcManagedDatasetBsonDocument>
 { 
     //---------------------------------------------------------------------//
     // Constants
@@ -67,7 +67,7 @@ public class HpcMetadataDTOCodec
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcMetadataDTOCodec() throws HpcException
+    private HpcManagedDatasetCodec() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                 HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -80,8 +80,8 @@ public class HpcMetadataDTOCodec
      * 
      * @throws HpcException If documentCodec is null.
      */
-    public HpcMetadataDTOCodec(Codec<Document> documentCodec) 
-                              throws HpcException
+    public HpcManagedDatasetCodec(Codec<Document> documentCodec) 
+                                 throws HpcException
     {
     	if(documentCodec == null) {
     	   throw new HpcException("Null Document Codec", 
@@ -96,20 +96,20 @@ public class HpcMetadataDTOCodec
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // CollectibleCodec<HpcMetadataBsonDocument> Interface Implementation
+    // CollectibleCodec<HpcManagedDatasetBsonDocument> Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
 	public void encode(BsonWriter writer, 
-			           HpcMetadataBsonDocument metadataDocument,
+					   HpcManagedDatasetBsonDocument metadataDocument,
 					   EncoderContext encoderContext) 
 	{
 		Document document = new Document();
  
 		// Extract the data from the DTO.
 		ObjectId objectId = metadataDocument.getObjectId();
-		Double size = metadataDocument.getMetadataDTO().getSize();
-		String userId = metadataDocument.getMetadataDTO().getUserId();
+		Double size = metadataDocument.getDTO().getSize();
+		String userId = metadataDocument.getDTO().getUserId();
  
 		// Set the data on the BSON document.
 		if(objectId != null) {
@@ -129,44 +129,44 @@ public class HpcMetadataDTOCodec
 	}
  
 	@Override
-	public Class<HpcMetadataBsonDocument> getEncoderClass() 
+	public Class<HpcManagedDatasetBsonDocument> getEncoderClass() 
 	{
-		return HpcMetadataBsonDocument.class;
+		return HpcManagedDatasetBsonDocument.class;
 	}
  
 	@Override
-	public HpcMetadataBsonDocument decode(BsonReader reader, 
-			                              DecoderContext decoderContext) 
+	public HpcManagedDatasetBsonDocument decode(BsonReader reader, 
+			                                    DecoderContext decoderContext) 
 	{
 		Document document = documentCodec.decode(reader, decoderContext);
 		
-		HpcMetadataBsonDocument metadataDocument = new HpcMetadataBsonDocument();
+		HpcManagedDatasetBsonDocument metadataDocument = new HpcManagedDatasetBsonDocument();
  
 		metadataDocument.setObjectId(document.getObjectId("_id"));
  
-		metadataDocument.getMetadataDTO().setUserId(document.getString("user_id"));
+		metadataDocument.getDTO().setUserId(document.getString("user_id"));
  
-		metadataDocument.getMetadataDTO().setSize(document.getDouble("size"));
+		metadataDocument.getDTO().setSize(document.getDouble("size"));
 		
 		return metadataDocument;
 	}
  
 	@Override
-	public HpcMetadataBsonDocument generateIdIfAbsentFromDocument(
-			                       HpcMetadataBsonDocument metadataDocument) 
+	public HpcManagedDatasetBsonDocument generateIdIfAbsentFromDocument(
+			                    HpcManagedDatasetBsonDocument metadataDocument) 
 	{
 		return documentHasId(metadataDocument) ? metadataDocument : 
-			                                     new HpcMetadataBsonDocument();
+			                                     new HpcManagedDatasetBsonDocument();
 	}
  
 	@Override
-	public boolean documentHasId(HpcMetadataBsonDocument metadataDocument) 
+	public boolean documentHasId(HpcManagedDatasetBsonDocument metadataDocument) 
 	{
 		return metadataDocument.getObjectId() != null;
 	}
  
 	@Override
-	public BsonValue getDocumentId(HpcMetadataBsonDocument metadataDocument) 
+	public BsonValue getDocumentId(HpcManagedDatasetBsonDocument metadataDocument) 
 	{
 	    return new BsonString(metadataDocument.getObjectId().toHexString());
 	}

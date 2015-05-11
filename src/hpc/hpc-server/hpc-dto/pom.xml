@@ -31,8 +31,8 @@
             			<configuration>
                 			<xsdOptions>
                     			<xsdOption>
-                        			<xsd>src/main/resources/schema/HpcMetadata.xsd</xsd>
-                        			<packagename>gov.nih.nci.hpc.dto.metadata</packagename>
+                        			<xsd>src/main/resources/schema/HpcDatasetRegistrationInput.xsd</xsd>
+                        			<packagename>gov.nih.nci.hpc.dto</packagename>
                         			<bindingFile>src/main/resources/schema/jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
                 			</xsdOptions>
@@ -49,7 +49,7 @@
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package>
 							gov.nih.nci.hpc.exception,
-							gov.nih.nci.hpc.dto.metadata
+							gov.nih.nci.hpc.dto
 						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>

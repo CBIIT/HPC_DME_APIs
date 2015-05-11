@@ -1,5 +1,5 @@
 /**
- * HpcMetadataDAOImpl.java
+ * HpcManagedDatasetDAOImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -8,10 +8,12 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 
-package gov.nih.nci.hpc.dao.mongo.metadata;
+package gov.nih.nci.hpc.dao.mongo.impl;
 
-import gov.nih.nci.hpc.dao.HpcMetadataDAO;
-import gov.nih.nci.hpc.dto.metadata.HpcMetadataDTO;
+import gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetBsonDocument;
+import gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetCodec;
+import gov.nih.nci.hpc.dao.HpcManagedDatasetDAO;
+import gov.nih.nci.hpc.dto.HpcDatasetRegistrationInputDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -35,14 +37,14 @@ import java.util.Vector;
 
 /**
  * <p>
- * HPC Metadata DAO Implementation.
+ * HPC Managed Dataset DAO Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcMetadataDAOImpl implements HpcMetadataDAO
+public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
 { 
     //---------------------------------------------------------------------//
     // Constants
@@ -74,7 +76,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcMetadataDAOImpl() throws HpcException
+    private HpcManagedDatasetDAOImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -87,7 +89,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      * 
      * @throws HpcException If a MongoClient instance was not provided.
      */
-    private HpcMetadataDAOImpl(String mongoHost) throws HpcException
+    private HpcManagedDatasetDAOImpl(String mongoHost) throws HpcException
     {
     	if(mongoHost == null) {
     	   throw new HpcException("Null Mongo Host instance",
@@ -109,8 +111,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     	mongoClient.close();
     	
     	// Instantiate the HPC Codecs.
-    	HpcMetadataDTOCodec metadataDTOCodec = 
-                   new HpcMetadataDTOCodec(defaultCodecRegistry.get(Document.class));
+    	HpcManagedDatasetCodec metadataDTOCodec = 
+                   new HpcManagedDatasetCodec(defaultCodecRegistry.get(Document.class));
     	
     	// Instantiate a Codec Registry that includes the default + 
     	// the Hpc codecs.
@@ -135,11 +137,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     //---------------------------------------------------------------------//  
     
 	@Override
-    public void createMetadata(HpcMetadataDTO metadataDTO)
+    public void add(HpcDatasetRegistrationInputDTO registrationInputDTO)
     {
-		HpcMetadataBsonDocument metadataDocument = 
-				                        new HpcMetadataBsonDocument();
-		metadataDocument.setMetadataDTO(metadataDTO);
+		HpcManagedDatasetBsonDocument metadataDocument = 
+				                        new HpcManagedDatasetBsonDocument();
+		metadataDocument.setDTO(registrationInputDTO);
 		getMetadataCollection().insertOne(metadataDocument, 
 				                          new SingleResultCallback<Void>() {
 		    @Override
@@ -148,14 +150,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		    }
 		});
     }
-	
-	@Override
-	public HpcMetadataDTO getMetadata(String id)
-	{
-
-		
-		return null;
-	}
 	
     //---------------------------------------------------------------------//
     // Helper Methods
@@ -166,11 +160,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      *
      * @return A The metadata Mongo collection.
      */
-    private MongoCollection<HpcMetadataBsonDocument> getMetadataCollection()  
+    private MongoCollection<HpcManagedDatasetBsonDocument> getMetadataCollection()  
     {
     	MongoDatabase database = mongoClient.getDatabase(DB_NAME); 
     	return database.getCollection(METADATA_COLLECTION_NAME, 
-    			                      HpcMetadataBsonDocument.class);
+    			                      HpcManagedDatasetBsonDocument.class);
     }  
 	
 
