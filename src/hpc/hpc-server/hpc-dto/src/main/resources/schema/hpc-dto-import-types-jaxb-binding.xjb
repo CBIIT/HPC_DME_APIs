@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * jaxb-binding.xjb
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+<jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1"
+			  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<jxb:globalBindings>
+		<jxb:serializable/>
+	</jxb:globalBindings>
+	
+	<jxb:bindings schemaLocation="types/HpcDatasetTypes.xsd">
+            <jxb:bindings node="//xsd:simpleType[@name='HpcDatasetType']">
+                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.dto.types.HpcDatasetType"/>
+            </jxb:bindings>
+            <jxb:bindings node="//xsd:simpleType[@name='HpcDataCenter']">
+                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.dto.types.HpcDataCenter"/>
+            </jxb:bindings>
+            <jxb:bindings node="//xsd:simpleType[@name='HpcDataCenter']">
+                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.dto.types.HpcDataCenter"/>
+            </jxb:bindings>
+            <jxb:bindings node="//xsd:complexType[@name='HpcDatasetLocation']">
+                <jxb:class ref="gov.nih.nci.hpc.dto.types.HpcDatasetLocation"/>
+            </jxb:bindings>
+            <jxb:bindings node="//xsd:complexType[@name='HpcDataset']">
+                <jxb:class ref="gov.nih.nci.hpc.dto.types.HpcDataset"/>
+            </jxb:bindings>
+    </jxb:bindings>
+</jxb:bindings>
