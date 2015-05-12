@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.service;
 
-import gov.nih.nci.hpc.dto.HpcDatasetRegistrationInputDTO;
+import gov.nih.nci.hpc.dto.api.HpcDatasetsRegistrationInputDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -31,7 +31,7 @@ public interface HpcManagedDatasetService
      * 
      * @throws HpcException
      */
-    public void add(HpcDatasetRegistrationInputDTO registrationInputDTO)
+    public void add(HpcDatasetsRegistrationInputDTO registrationInputDTO)
     		       throws HpcException;
 }
 

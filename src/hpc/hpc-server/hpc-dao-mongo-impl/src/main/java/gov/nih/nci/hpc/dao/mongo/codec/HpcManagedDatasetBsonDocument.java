@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.dto.HpcDatasetRegistrationInputDTO;
+import gov.nih.nci.hpc.dto.api.HpcDatasetsRegistrationInputDTO;
 import org.bson.types.ObjectId;
 
 import org.slf4j.Logger;
@@ -39,7 +39,7 @@ public class HpcManagedDatasetBsonDocument
 	private ObjectId objectId = new ObjectId();
 	
 	// The Metadata DTO instance.
-	HpcDatasetRegistrationInputDTO dto = new HpcDatasetRegistrationInputDTO();
+	HpcDatasetsRegistrationInputDTO dto = new HpcDatasetsRegistrationInputDTO();
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -82,7 +82,7 @@ public class HpcManagedDatasetBsonDocument
      *
      * @return The metadata DTO.
      */
-    public HpcDatasetRegistrationInputDTO getDTO()
+    public HpcDatasetsRegistrationInputDTO getDTO()
     {
         return dto;
     }
@@ -92,7 +92,7 @@ public class HpcManagedDatasetBsonDocument
      *
      * @param metadataDTO The metadata DTO.
      */
-    public void setDTO(HpcDatasetRegistrationInputDTO dto)
+    public void setDTO(HpcDatasetsRegistrationInputDTO dto)
     {
         this.dto = dto;
     }      

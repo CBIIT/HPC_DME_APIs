@@ -106,6 +106,8 @@ public class HpcManagedDatasetCodec
 	{
 		Document document = new Document();
  
+		// TODO 
+		/*
 		// Extract the data from the DTO.
 		ObjectId objectId = metadataDocument.getObjectId();
 		Double size = metadataDocument.getDTO().getSize();
@@ -123,7 +125,7 @@ public class HpcManagedDatasetCodec
 		if(userId != null) {
 		   document.put("user_id", userId);
 		}
- 
+		 */
 		documentCodec.encode(writer, document, encoderContext);
  
 	}
@@ -143,11 +145,11 @@ public class HpcManagedDatasetCodec
 		HpcManagedDatasetBsonDocument metadataDocument = new HpcManagedDatasetBsonDocument();
  
 		metadataDocument.setObjectId(document.getObjectId("_id"));
- 
+ /* TODO
 		metadataDocument.getDTO().setUserId(document.getString("user_id"));
  
 		metadataDocument.getDTO().setSize(document.getDouble("size"));
-		
+		*/
 		return metadataDocument;
 	}
  
