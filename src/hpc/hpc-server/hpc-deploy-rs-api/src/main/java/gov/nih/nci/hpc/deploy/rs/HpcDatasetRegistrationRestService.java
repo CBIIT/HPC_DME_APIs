@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.deploy.rs;
 
-import gov.nih.nci.hpc.dto.HpcDatasetRegistrationInputDTO;
+import gov.nih.nci.hpc.dto.api.HpcDatasetsRegistrationInputDTO;
 
 //import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -51,7 +51,7 @@ public interface HpcDatasetRegistrationRestService
     @Path("/registration")
     @Consumes("application/json,application/xml")
     public Response registerDataset(
-                            HpcDatasetRegistrationInputDTO registrationInputDTO);
+                            HpcDatasetsRegistrationInputDTO registrationInputDTO);
 }
 
  
