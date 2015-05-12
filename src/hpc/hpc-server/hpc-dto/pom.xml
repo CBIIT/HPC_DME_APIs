@@ -33,12 +33,17 @@
                     			<xsdOption>
                         			<xsd>src/main/resources/schema/types/HpcDatasetTypes.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.dto.types</packagename>
-                        			<bindingFile>src/main/resources/schema/jaxb-binding.xjb</bindingFile>
+                        			<bindingFile>src/main/resources/schema/hpc-dto-types-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
                     			<xsdOption>
                         			<xsd>src/main/resources/schema/api/HpcDatasetsRegistration.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.dto.api</packagename>
-                        			<bindingFile>src/main/resources/schema/jaxb-binding.xjb</bindingFile>
+                        			<bindingFile>src/main/resources/schema/hpc-dto-import-types-jaxb-binding.xjb</bindingFile>
+                    			</xsdOption>
+                    			<xsdOption>
+                        			<xsd>src/main/resources/schema/domain/HpcManagedDatasets.xsd</xsd>
+                        			<packagename>gov.nih.nci.hpc.dto.domain</packagename>
+                        			<bindingFile>src/main/resources/schema/hpc-dto-import-types-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
                 			</xsdOptions>
             			</configuration>
