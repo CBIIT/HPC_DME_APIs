@@ -11,8 +11,15 @@
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  -->
-<jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1">
+<jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1"
+			  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 	<jxb:globalBindings>
 		<jxb:serializable/>
 	</jxb:globalBindings>
+	
+	<jxb:bindings schemaLocation="imported.xsd">
+            <jxb:bindings node="//xsd:complexType[@name='imported']">
+                <jxb:class ref="com.example.imported.Imported"/>
+            </jxb:bindings>
+    </jxb:bindings>
 </jxb:bindings>
