@@ -20,7 +20,7 @@
     		
    	<xsd:import namespace="http://hpc.nci.nih.gov/dto/types" schemaLocation="../types/HpcDatasetTypes.xsd"/>
     
-    <xsd:element name="HpcDatasetRegistrationInputDTO">
+    <xsd:element name="HpcDatasetsRegistrationInputDTO">
         <xsd:complexType>
         	<xsd:sequence>
         		<xsd:element name="datasets" type="hpc:HpcDataset" minOccurs="1" maxOccurs="unbounded"/>

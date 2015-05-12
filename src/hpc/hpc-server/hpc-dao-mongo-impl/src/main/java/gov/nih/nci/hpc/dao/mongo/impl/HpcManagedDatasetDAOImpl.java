@@ -13,7 +13,7 @@ package gov.nih.nci.hpc.dao.mongo.impl;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetBsonDocument;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetCodec;
 import gov.nih.nci.hpc.dao.HpcManagedDatasetDAO;
-import gov.nih.nci.hpc.dto.HpcDatasetRegistrationInputDTO;
+import gov.nih.nci.hpc.dto.api.HpcDatasetsRegistrationInputDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -137,7 +137,7 @@ public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
     //---------------------------------------------------------------------//  
     
 	@Override
-    public void add(HpcDatasetRegistrationInputDTO registrationInputDTO)
+    public void add(HpcDatasetsRegistrationInputDTO registrationInputDTO)
     {
 		HpcManagedDatasetBsonDocument metadataDocument = 
 				                        new HpcManagedDatasetBsonDocument();
