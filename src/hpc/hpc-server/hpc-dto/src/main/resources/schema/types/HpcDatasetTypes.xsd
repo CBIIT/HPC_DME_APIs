@@ -14,16 +14,17 @@
  
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 			xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
-			xmlns:hpc="http://hpc.nci.nih.gov"
-    		targetNamespace="http://hpc.nci.nih.gov"
+			xmlns:hpc="http://hpc.nci.nih.gov/dto/types"
+    		targetNamespace="http://hpc.nci.nih.gov/dto/types"
     		elementFormDefault="qualified">
 	
   	<xsd:complexType name="HpcDataset">
   	    <xsd:sequence>
       		<xsd:element name="location" type="hpc:HpcDatasetLocation"></xsd:element>
     	</xsd:sequence>
-    	<xsd:attribute name="index" type="xsd:integer"/>
+    	<xsd:attribute name="id" type="xsd:ID"/>
   		<xsd:attribute name="name" type="xsd:string" use="required"/>
+  		<xsd:attribute name="type" type="hpc:HpcDatasetType" use="required"/>
   		<xsd:attribute name="size" type="xsd:double"/>
   	</xsd:complexType>
         	
@@ -36,6 +37,15 @@
   		<xsd:restriction base="xsd:string">
     		<xsd:enumeration value="SHADY_GROVE"/>
     		<xsd:enumeration value="FREDERICK"/>
+  		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="HpcDatasetType">
+  		<xsd:restriction base="xsd:string">
+    		<xsd:enumeration value="RAW_SEQUENCING"/>
+    		<xsd:enumeration value="FASTQ"/>
+    		<xsd:enumeration value="BAM"/>
+    		<xsd:enumeration value="MD5SUM"/>
   		</xsd:restriction>
 	</xsd:simpleType>
 
