@@ -12,7 +12,7 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDatasetRegistrationService;
 import gov.nih.nci.hpc.service.HpcManagedDatasetService;
-import gov.nih.nci.hpc.dto.HpcDatasetRegistrationInputDTO;
+import gov.nih.nci.hpc.dto.api.HpcDatasetsRegistrationInputDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -86,7 +86,7 @@ public class HpcDatasetRegistrationServiceImpl
     
     @Override
     public void registerDataset(
-                        HpcDatasetRegistrationInputDTO registrationInputDTO)
+                        HpcDatasetsRegistrationInputDTO registrationInputDTO)
                         throws HpcException
     {
     	// TODO: managedDatasetService.

@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.deploy.rs.impl;
 
 import gov.nih.nci.hpc.deploy.rs.HpcDatasetRegistrationRestService;
-import gov.nih.nci.hpc.dto.HpcDatasetRegistrationInputDTO;
+import gov.nih.nci.hpc.dto.api.HpcDatasetsRegistrationInputDTO;
 import gov.nih.nci.hpc.bus.HpcDatasetRegistrationService;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
@@ -97,7 +97,7 @@ public class HpcDatasetRegistrationRestServiceImpl
 	
     @Override
     public Response registerDataset(
-    		        HpcDatasetRegistrationInputDTO registrationInputDTO)
+    		        HpcDatasetsRegistrationInputDTO registrationInputDTO)
     {	
 		logger.info("Invoking POST /registration");
 		try {

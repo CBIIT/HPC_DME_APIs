@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.service.HpcManagedDatasetService;
-import gov.nih.nci.hpc.dto.HpcDatasetRegistrationInputDTO;
+import gov.nih.nci.hpc.dto.api.HpcDatasetsRegistrationInputDTO;
 import gov.nih.nci.hpc.dao.HpcManagedDatasetDAO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
@@ -82,7 +82,7 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     //---------------------------------------------------------------------//  
     
     @Override
-    public void add(HpcDatasetRegistrationInputDTO registrationInputDTO)
+    public void add(HpcDatasetsRegistrationInputDTO registrationInputDTO)
 		           throws HpcException
     {
     	
