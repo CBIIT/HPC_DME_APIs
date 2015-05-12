@@ -9,7 +9,7 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
+ * @version $Id:$
  -->
 <jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1"
 			  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -17,7 +17,7 @@
 		<jxb:serializable/>
 	</jxb:globalBindings>
 	
-	<jxb:bindings schemaLocation="types/HpcDatasetTypes.xsd">
+	<jxb:bindings schemaLocation="HpcDatasetTypes.xsd">
             <jxb:bindings node="//xsd:simpleType[@name='HpcDatasetType']">
                 <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.dto.types.HpcDatasetType"/>
             </jxb:bindings>

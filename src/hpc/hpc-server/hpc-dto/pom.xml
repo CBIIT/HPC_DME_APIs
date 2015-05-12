@@ -26,24 +26,19 @@
             			<id>generate-sources</id>
             			<phase>generate-sources</phase>
             			<goals>
-                			<goal>xsdtojava</goal>
+                			<goal>xsdtojava</goal>	
             			</goals>
             			<configuration>
                 			<xsdOptions>
                     			<xsdOption>
                         			<xsd>src/main/resources/schema/types/HpcDatasetTypes.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.dto.types</packagename>
-                        			<bindingFile>src/main/resources/schema/hpc-dto-types-jaxb-binding.xjb</bindingFile>
+                        			<bindingFile>src/main/resources/schema/types/hpc-dto-types-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
                     			<xsdOption>
                         			<xsd>src/main/resources/schema/api/HpcDatasetsRegistration.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.dto.api</packagename>
-                        			<bindingFile>src/main/resources/schema/hpc-dto-import-types-jaxb-binding.xjb</bindingFile>
-                    			</xsdOption>
-                    			<xsdOption>
-                        			<xsd>src/main/resources/schema/domain/HpcManagedDatasets.xsd</xsd>
-                        			<packagename>gov.nih.nci.hpc.dto.domain</packagename>
-                        			<bindingFile>src/main/resources/schema/hpc-dto-import-types-jaxb-binding.xjb</bindingFile>
+                        			<bindingFile>src/main/resources/schema/types/hpc-dto-import-types-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
                 			</xsdOptions>
             			</configuration>
@@ -59,7 +54,8 @@
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package>
 							gov.nih.nci.hpc.exception,
-							gov.nih.nci.hpc.dto
+							gov.nih.nci.hpc.dto.types,
+							gov.nih.nci.hpc.dto.api
 						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>
@@ -67,10 +63,5 @@
 			</plugin>
 		</plugins>
 	</build>
-	<dependencies>
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
-		</dependency>
-	</dependencies>
+	<dependencies/>
 </project>
