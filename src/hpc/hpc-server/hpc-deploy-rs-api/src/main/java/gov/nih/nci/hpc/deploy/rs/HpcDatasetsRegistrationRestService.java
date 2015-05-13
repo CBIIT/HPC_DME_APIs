@@ -1,5 +1,5 @@
 /**
- * HpcDatasetRegistrationRestService.java
+ * HpcDatasetsRegistrationRestService.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -22,14 +22,14 @@ import javax.ws.rs.core.Response;
 
 /**
  * <p>
- * HPC Dataset Registration REST Service Interface.
+ * HPC Datasets Registration REST Service Interface.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public interface HpcDatasetRegistrationRestService
+public interface HpcDatasetsRegistrationRestService
 {    
     /**
      * GET Metadata.
@@ -45,12 +45,12 @@ public interface HpcDatasetRegistrationRestService
     /**
      * POST registration request.
      *
-     * @param metadata The metadata to add.
+     * @param registrationInputDTO The datasets registration input DTO.
      */
     @POST
     @Path("/registration")
     @Consumes("application/json,application/xml")
-    public Response registerDataset(
+    public Response registerDatasets(
                             HpcDatasetsRegistrationInputDTO registrationInputDTO);
 }
 
