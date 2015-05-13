@@ -1,5 +1,5 @@
 /**
- * HpcDatasetRegistrationRestServiceImpl.java
+ * HpcDatasetsRegistrationRestServiceImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,9 +10,9 @@
 
 package gov.nih.nci.hpc.deploy.rs.impl;
 
-import gov.nih.nci.hpc.deploy.rs.HpcDatasetRegistrationRestService;
+import gov.nih.nci.hpc.deploy.rs.HpcDatasetsRegistrationRestService;
 import gov.nih.nci.hpc.dto.api.HpcDatasetsRegistrationInputDTO;
-import gov.nih.nci.hpc.bus.HpcDatasetRegistrationService;
+import gov.nih.nci.hpc.bus.HpcDatasetsRegistrationService;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * HPC Dataset Registration REST Service Implementation.
+ * HPC Datasets Registration REST Service Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
@@ -36,15 +36,15 @@ import org.slf4j.LoggerFactory;
  */
 
 @Path("/")
-public class HpcDatasetRegistrationRestServiceImpl 
-             implements HpcDatasetRegistrationRestService
+public class HpcDatasetsRegistrationRestServiceImpl 
+             implements HpcDatasetsRegistrationRestService
 {   
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
-    // The Metadata Application Service instance.
-    private HpcDatasetRegistrationService registrationService = null;
+    // The Datasets Registration Service instance.
+    private HpcDatasetsRegistrationService registrationService = null;
     
     // The URI Info context instance.
     private @Context UriInfo uriInfo;
@@ -62,7 +62,7 @@ public class HpcDatasetRegistrationRestServiceImpl
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcDatasetRegistrationRestServiceImpl() throws HpcException
+    private HpcDatasetsRegistrationRestServiceImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -71,13 +71,13 @@ public class HpcDatasetRegistrationRestServiceImpl
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param metadataService The metadata application service instance.
+     * @param registrationService The datasets registration service.
      * 
      * @throws HpcException If the app service is not provided by Spring.
      */
-    private HpcDatasetRegistrationRestServiceImpl(
-    		          HpcDatasetRegistrationService registrationService)
-                      throws HpcException
+    private HpcDatasetsRegistrationRestServiceImpl(
+    		           HpcDatasetsRegistrationService registrationService)
+                       throws HpcException
     {
     	if(registrationService == null) {
     	   throw new HpcException("Null HpcDatasetRegistrationService instance",
@@ -96,15 +96,17 @@ public class HpcDatasetRegistrationRestServiceImpl
     //---------------------------------------------------------------------//  
 	
     @Override
-    public Response registerDataset(
+    public Response registerDatasets(
     		        HpcDatasetsRegistrationInputDTO registrationInputDTO)
     {	
 		logger.info("Invoking POST /registration");
 		try {
-			 registrationService.registerDataset(registrationInputDTO);
+			 registrationService.registerDatasets(registrationInputDTO);
 		} catch(HpcException e) {
 			
 		}
+		
+		// TODO : Implement
 		UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
         URI metadataUri = uriBuilder.path("9988").build();
                

@@ -9,7 +9,7 @@
  * NIH. You shall not disclose such Confidential Information and shall 
  * use it only in accordance with the terms of the agreement you have with NIH.
  *
- * HPC Metadata REST Service Spring Beans.
+ * HPC Datasets Registration REST Service Spring Beans.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
@@ -58,14 +58,14 @@
 	</util:map>
 	
 	<!-- JAX-RS Service Beans -->
-    <bean id="hpcMetadataRestService" class="gov.nih.nci.hpc.deploy.rs.metadata.HpcMetadataRestServiceImpl">
-    	<constructor-arg ref="hpcMetadataService"/>
+    <bean id="hpcDatasetsRegistrationRestService" class="gov.nih.nci.hpc.deploy.rs.impl.HpcDatasetsRegistrationRestServiceImpl">
+    	<constructor-arg ref="hpcMDatasetsRegistrationService"/>
     </bean>
     
 	<!-- CXF JAX-RS Server Config -->
     <jaxrs:server id="hpc-server" address="${hpc.deploy.rs.url}" bus="cxf">
         <jaxrs:serviceBeans>
-           <ref bean="hpcMetadataRestService"/>
+           <ref bean="hpcDatasetsRegistrationRestService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
     		<ref bean="jaxbProvider"/>
