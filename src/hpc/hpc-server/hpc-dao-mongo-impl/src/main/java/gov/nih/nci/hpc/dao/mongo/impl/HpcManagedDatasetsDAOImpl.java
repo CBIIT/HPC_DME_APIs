@@ -1,5 +1,5 @@
 /**
- * HpcManagedDatasetDAOImpl.java
+ * HpcManagedDatasetsDAOImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,12 +10,13 @@
 
 package gov.nih.nci.hpc.dao.mongo.impl;
 
-import gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetBsonDocument;
-import gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetCodec;
-import gov.nih.nci.hpc.dao.HpcManagedDatasetDAO;
-import gov.nih.nci.hpc.dto.api.HpcDatasetsRegistrationInputDTO;
+import gov.nih.nci.hpc.dao.HpcManagedDatasetsDAO;
+import gov.nih.nci.hpc.domain.HpcManagedDatasets;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
+
+import gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetsBsonDocument;
+import gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetsCodec;
 
 import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoClients;
@@ -37,14 +38,14 @@ import java.util.Vector;
 
 /**
  * <p>
- * HPC Managed Dataset DAO Implementation.
+ * HPC Managed Datasets DAO Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
+public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
 { 
     //---------------------------------------------------------------------//
     // Constants
@@ -76,7 +77,7 @@ public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcManagedDatasetDAOImpl() throws HpcException
+    private HpcManagedDatasetsDAOImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -89,7 +90,7 @@ public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
      * 
      * @throws HpcException If a MongoClient instance was not provided.
      */
-    private HpcManagedDatasetDAOImpl(String mongoHost) throws HpcException
+    private HpcManagedDatasetsDAOImpl(String mongoHost) throws HpcException
     {
     	if(mongoHost == null) {
     	   throw new HpcException("Null Mongo Host instance",
@@ -111,8 +112,8 @@ public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
     	mongoClient.close();
     	
     	// Instantiate the HPC Codecs.
-    	HpcManagedDatasetCodec metadataDTOCodec = 
-                   new HpcManagedDatasetCodec(defaultCodecRegistry.get(Document.class));
+    	HpcManagedDatasetsCodec metadataDTOCodec = 
+                   new HpcManagedDatasetsCodec(defaultCodecRegistry.get(Document.class));
     	
     	// Instantiate a Codec Registry that includes the default + 
     	// the Hpc codecs.
@@ -133,15 +134,15 @@ public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcMetadataDAO Interface Implementation
+    // HpcManagedDatasetsDAO Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
-    public void add(HpcDatasetsRegistrationInputDTO registrationInputDTO)
+	public void add(HpcManagedDatasets managedDatasets) throws HpcException
     {
-		HpcManagedDatasetBsonDocument metadataDocument = 
-				                        new HpcManagedDatasetBsonDocument();
-		metadataDocument.setDTO(registrationInputDTO);
+		HpcManagedDatasetsBsonDocument metadataDocument = 
+				                        new HpcManagedDatasetsBsonDocument();
+		metadataDocument.setManagedDatasets(managedDatasets);
 		getMetadataCollection().insertOne(metadataDocument, 
 				                          new SingleResultCallback<Void>() {
 		    @Override
@@ -160,11 +161,11 @@ public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
      *
      * @return A The metadata Mongo collection.
      */
-    private MongoCollection<HpcManagedDatasetBsonDocument> getMetadataCollection()  
+    private MongoCollection<HpcManagedDatasetsBsonDocument> getMetadataCollection()  
     {
     	MongoDatabase database = mongoClient.getDatabase(DB_NAME); 
     	return database.getCollection(METADATA_COLLECTION_NAME, 
-    			                      HpcManagedDatasetBsonDocument.class);
+    			                      HpcManagedDatasetsBsonDocument.class);
     }  
 	
 
