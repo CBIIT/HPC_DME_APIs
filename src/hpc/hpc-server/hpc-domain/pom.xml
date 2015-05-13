@@ -89,7 +89,7 @@
                 			<xsdOptions>
                     			<xsdOption>
                         			<xsd>xjc-build/schema/domain/HpcManagedDatasets.xsd</xsd>
-                        			<packagename>gov.nih.nci.hpc.dto.domain</packagename>
+                        			<packagename>gov.nih.nci.hpc.domain</packagename>
                         			<bindingFile>xjc-build/schema/types/hpc-dto-import-types-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
                 			</xsdOptions>
