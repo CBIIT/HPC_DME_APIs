@@ -1,5 +1,5 @@
 /**
- * HpcManagedDatasetBsonDocument.java
+ * HpcManagedDatasetsBsonDocument.java
  *
  *  Copyright SVG, Inc.
  *  Copyright Leidos Biomedical Research, Inc
@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.dto.api.HpcDatasetsRegistrationInputDTO;
+import gov.nih.nci.hpc.domain.HpcManagedDatasets;
 import org.bson.types.ObjectId;
 
 import org.slf4j.Logger;
@@ -18,14 +18,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * HPC Managed Dataset BSON Document. 
+ * HPC Managed Datasets BSON Document. 
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcManagedDatasetBsonDocument
+public class HpcManagedDatasetsBsonDocument
 { 
     //---------------------------------------------------------------------//
     // Instance members
@@ -38,8 +38,8 @@ public class HpcManagedDatasetBsonDocument
 	// The BSON object id.
 	private ObjectId objectId = new ObjectId();
 	
-	// The Metadata DTO instance.
-	HpcDatasetsRegistrationInputDTO dto = new HpcDatasetsRegistrationInputDTO();
+	// The Managed Datasets domain object.
+	HpcManagedDatasets managedDatasets = new HpcManagedDatasets();
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -49,7 +49,7 @@ public class HpcManagedDatasetBsonDocument
      * Default Constructor.
      * 
      */
-    public HpcManagedDatasetBsonDocument() 
+    public HpcManagedDatasetsBsonDocument() 
     {
     }   
     
@@ -78,23 +78,23 @@ public class HpcManagedDatasetBsonDocument
     }     
     
     /**
-     * Get the metadata DTO.
+     * Get the managed datasets.
      *
-     * @return The metadata DTO.
+     * @return The managed datasets domain object.
      */
-    public HpcDatasetsRegistrationInputDTO getDTO()
+    public HpcManagedDatasets getManagedDatasets()
     {
-        return dto;
+        return managedDatasets;
     }
     
     /**
-     * Set the metadata DTO.
+     * Set the managed datasets.
      *
-     * @param metadataDTO The metadata DTO.
+     * @param managedDatasets The managed datasets domain object.
      */
-    public void setDTO(HpcDatasetsRegistrationInputDTO dto)
+    public void setManagedDatasets(HpcManagedDatasets managedDatasets)
     {
-        this.dto = dto;
+        this.managedDatasets = managedDatasets;
     }      
 }
 
