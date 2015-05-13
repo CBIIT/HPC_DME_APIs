@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--  
- * hpc-service-bundle-context-osgi.xml
+ * hpc-bus-service-bundle-context-osgi.xml
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -29,9 +29,9 @@
 	<ctx:property-placeholder properties-ref="preProps" />
 
 	<!--  OSGi beans export -->
-	<osgi:service ref="hpcMetadataService" interface="gov.nih.nci.hpc.service.HpcMetadataService" />
+	<osgi:service ref="hpcDatasetsRegistrationService" interface="gov.nih.nci.hpc.bus.HpcDatasetsRegistrationService" />
 	
 	<!-- OSGi beans import -->
-	<osgi:reference id="hpcMetadataDAO" interface="gov.nih.nci.hpc.dao.HpcMetadataDAO" />
+	<osgi:reference id="hpcManagedDatasetsService" interface="gov.nih.nci.hpc.service.HpcManagedDatasetsService" />
 	
 </beans>
