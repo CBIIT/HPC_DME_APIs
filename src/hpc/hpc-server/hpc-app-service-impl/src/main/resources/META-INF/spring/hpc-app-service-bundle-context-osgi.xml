@@ -29,9 +29,9 @@
 	<ctx:property-placeholder properties-ref="preProps" />
 
 	<!--  OSGi beans export -->
-	<osgi:service ref="hpcMetadataService" interface="gov.nih.nci.hpc.service.HpcMetadataService" />
+	<osgi:service ref="hpcManagedDatasetsService" interface="gov.nih.nci.hpc.service.HpcManagedDatasetsService" />
 	
 	<!-- OSGi beans import -->
-	<osgi:reference id="hpcMetadataDAO" interface="gov.nih.nci.hpc.dao.HpcMetadataDAO" />
+	<osgi:reference id="hpcManagedDatasetsDAO" interface="gov.nih.nci.hpc.dao.HpcManagedDatasetsDAO" />
 	
 </beans>
