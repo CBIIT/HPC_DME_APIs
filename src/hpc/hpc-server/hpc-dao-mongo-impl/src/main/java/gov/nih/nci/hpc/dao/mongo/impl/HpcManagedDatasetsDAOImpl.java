@@ -15,7 +15,7 @@ import gov.nih.nci.hpc.domain.HpcManagedDatasets;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
-import gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetsBsonDocument;
+import gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetsBson;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetsCodec;
 
 import com.mongodb.async.client.MongoClient;
@@ -55,7 +55,8 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
     private final static String DB_NAME = "hpc"; 
     
     // Mongo DB name.
-    private final static String METADATA_COLLECTION_NAME = "metadata"; 
+    private final static String MANAGED_DATASETS_COLLECTION_NAME = 
+    		                    "managedDatasets"; 
     
     //---------------------------------------------------------------------//
     // Instance members
@@ -140,11 +141,12 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
 	@Override
 	public void add(HpcManagedDatasets managedDatasets) throws HpcException
     {
-		HpcManagedDatasetsBsonDocument metadataDocument = 
-				                        new HpcManagedDatasetsBsonDocument();
-		metadataDocument.setManagedDatasets(managedDatasets);
-		getMetadataCollection().insertOne(metadataDocument, 
-				                          new SingleResultCallback<Void>() {
+		HpcManagedDatasetsBson managedDatasetsBson = 
+				                              new HpcManagedDatasetsBson();
+		managedDatasetsBson.setManagedDatasets(managedDatasets);
+		getManagedDatasetsCollection().insertOne(
+				                       managedDatasetsBson, 
+				                       new SingleResultCallback<Void>() {
 		    @Override
 		    public void onResult(final Void result, final Throwable t) {
 		        //TODO - check for exceptions here.
@@ -157,18 +159,17 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
     //---------------------------------------------------------------------//  
 	
     /**
-     * Get the metadata Mongo Colelction.
+     * Get the managed datasets Mongo collection.
      *
      * @return A The metadata Mongo collection.
      */
-    private MongoCollection<HpcManagedDatasetsBsonDocument> getMetadataCollection()  
+    private MongoCollection<HpcManagedDatasetsBson> 
+            getManagedDatasetsCollection()  
     {
     	MongoDatabase database = mongoClient.getDatabase(DB_NAME); 
-    	return database.getCollection(METADATA_COLLECTION_NAME, 
-    			                      HpcManagedDatasetsBsonDocument.class);
+    	return database.getCollection(MANAGED_DATASETS_COLLECTION_NAME, 
+    			                      HpcManagedDatasetsBson.class);
     }  
-	
-
 }
 
  

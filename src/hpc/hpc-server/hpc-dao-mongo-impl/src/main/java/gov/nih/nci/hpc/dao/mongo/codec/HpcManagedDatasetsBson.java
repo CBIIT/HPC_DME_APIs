@@ -1,5 +1,5 @@
 /**
- * HpcManagedDatasetsBsonDocument.java
+ * HpcManagedDatasetsBson.java
  *
  *  Copyright SVG, Inc.
  *  Copyright Leidos Biomedical Research, Inc
@@ -18,14 +18,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * HPC Managed Datasets BSON Document. 
+ * HPC Managed Datasets BSON POJO. This POJO is mapped to BSON document. 
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcManagedDatasetsBsonDocument
+public class HpcManagedDatasetsBson
 { 
     //---------------------------------------------------------------------//
     // Instance members
@@ -49,7 +49,7 @@ public class HpcManagedDatasetsBsonDocument
      * Default Constructor.
      * 
      */
-    public HpcManagedDatasetsBsonDocument() 
+    public HpcManagedDatasetsBson() 
     {
     }   
     
