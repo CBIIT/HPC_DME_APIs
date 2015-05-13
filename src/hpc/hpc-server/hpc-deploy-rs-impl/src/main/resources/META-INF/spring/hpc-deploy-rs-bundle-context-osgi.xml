@@ -9,7 +9,7 @@
  * NIH. You shall not disclose such Confidential Information and shall 
  * use it only in accordance with the terms of the agreement you have with NIH.
  *
- * HPC Metadata REST Service OSGi Properties.
+ * HPC Datasets Registration REST Service OSGi Properties.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
@@ -36,6 +36,6 @@
 	<ctx:property-placeholder properties-ref="preProps" />
 
 	<!-- OSGi beans import -->
-	<osgi:reference id="hpcMetadataService" interface="gov.nih.nci.hpc.service.HpcMetadataService" />
+	<osgi:reference id="hpcDatasetsRegistrationService" interface="gov.nih.nci.hpc.bus.HpcDatasetsRegistrationService" />
 	
 </beans>
