@@ -59,7 +59,7 @@
 	
 	<!-- JAX-RS Service Beans -->
     <bean id="hpcDatasetsRegistrationRestService" class="gov.nih.nci.hpc.deploy.rs.impl.HpcDatasetsRegistrationRestServiceImpl">
-    	<constructor-arg ref="hpcMDatasetsRegistrationService"/>
+    	<constructor-arg ref="hpcDatasetsRegistrationService"/>
     </bean>
     
 	<!-- CXF JAX-RS Server Config -->
