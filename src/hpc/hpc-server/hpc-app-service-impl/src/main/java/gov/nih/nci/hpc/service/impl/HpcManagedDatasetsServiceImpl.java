@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.service.HpcManagedDatasetsService;
 import gov.nih.nci.hpc.dto.types.HpcDataset;
+import gov.nih.nci.hpc.domain.HpcManagedDatasets;
 import gov.nih.nci.hpc.dao.HpcManagedDatasetsDAO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
@@ -87,7 +88,14 @@ public class HpcManagedDatasetsServiceImpl
     @Override
     public void add(List<HpcDataset> datasets) throws HpcException
     {
-    	// TODO - Implement me
+    	// Create the domain object.
+    	HpcManagedDatasets managedDatasets = new HpcManagedDatasets();
+    	for(HpcDataset dataset : datasets) {
+    		managedDatasets.getDatasets().add(dataset);
+    	}
+    	
+    	// Persist to Mongo.
+    	managedDatasetsDAO.add(managedDatasets);
     }
 }
 

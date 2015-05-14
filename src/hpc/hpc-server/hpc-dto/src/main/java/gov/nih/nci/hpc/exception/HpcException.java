@@ -56,7 +56,7 @@ public class HpcException extends Exception implements java.io.Serializable
      * Constructs a new HpcException with a given message, and
      * a Throwable cause
      *
-     * @param message The message for the exception
+     * @param message The message for the exception.
      * @param cause The root cause Throwable.
      */
     public HpcException(String message, Throwable cause) 
@@ -67,6 +67,22 @@ public class HpcException extends Exception implements java.io.Serializable
         if(cause instanceof HpcException) {
            setErrorType(((HpcException) cause).getErrorType());
         }
+    }
+    
+    /**
+     * Constructs a new HpcException with a given message, error type and
+     * a Throwable cause
+     *
+     * @param message The message for the exception.
+     * @param errorType The type of the error, often the subsystem that is 
+     *        the source of the error.
+     * @param cause The root cause Throwable.
+     */
+    public HpcException(String message, HpcErrorType errorType, 
+    		            Throwable cause) 
+    {
+        super(message, cause);
+        setErrorType(errorType);
     }
     
     //---------------------------------------------------------------------//
