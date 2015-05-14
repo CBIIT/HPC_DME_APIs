@@ -25,10 +25,13 @@
     	<feature version="${mongodb.version}">hpc-mongo-async-driver</feature>
     
         <bundle>mvn:${project.groupId}/hpc-dto/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-domain/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-dao-api/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-dao-mongo-impl/${project.version}</bundle>
-        <bundle>mvn:${project.groupId}/hpc-service-api/${project.version}</bundle>
-        <bundle>mvn:${project.groupId}/hpc-service-impl/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-app-service-api/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-app-service-impl/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-bus-service-api/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-bus-service-impl/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-deploy-rs-api/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-deploy-rs-impl/${project.version}</bundle>
     </feature>
