@@ -99,7 +99,7 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
     	}
     
     	// Creating the list of Mongo hosts.
-    	Vector<ServerAddress> mongoHosts= new Vector<ServerAddress>();
+    	Vector<ServerAddress> mongoHosts = new Vector<ServerAddress>();
     	mongoHosts.add(new ServerAddress(mongoHost));
     	
     	// Get the default CodecRegistry. Need to connect a client temprarily.
@@ -113,20 +113,20 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
     	mongoClient.close();
     	
     	// Instantiate the HPC Codecs.
-    	HpcManagedDatasetsCodec metadataDTOCodec = 
-                   new HpcManagedDatasetsCodec(defaultCodecRegistry.get(Document.class));
+    	HpcManagedDatasetsCodec managedDatasetsCodec = 
+           new HpcManagedDatasetsCodec(defaultCodecRegistry.get(Document.class));
     	
     	// Instantiate a Codec Registry that includes the default + 
     	// the Hpc codecs.
     	CodecRegistry hpcCodecRegistry = 
     		 CodecRegistries.fromRegistries(
-                                 defaultCodecRegistry, 
-                                 CodecRegistries.fromCodecs(metadataDTOCodec));
+                             defaultCodecRegistry, 
+                             CodecRegistries.fromCodecs(managedDatasetsCodec));
     	
     	// Instantiate a MongoClient with the HPC codecs in its registry.
     	settings = 
        	     MongoClientSettings.builder().clusterSettings(clusterSettings).
-       	                                   codecRegistry(hpcCodecRegistry).build();
+       	                         codecRegistry(hpcCodecRegistry).build();
     	mongoClient = MongoClients.create(settings);
     }  
     
@@ -144,14 +144,26 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
 		HpcManagedDatasetsBson managedDatasetsBson = 
 				                              new HpcManagedDatasetsBson();
 		managedDatasetsBson.setManagedDatasets(managedDatasets);
+		
+		// TODO - sub-task 110
+		final Vector<Throwable> throwables = new Vector<Throwable>();
 		getManagedDatasetsCollection().insertOne(
 				                       managedDatasetsBson, 
 				                       new SingleResultCallback<Void>() {
 		    @Override
 		    public void onResult(final Void result, final Throwable t) {
-		        //TODO - check for exceptions here.
+		    	if(t != null) {
+		    	   throwables.add(t);
+		    	}
 		    }
 		});
+       
+		// Check for exceptions.
+		if(throwables.size() > 0) {
+		   throw new HpcException("Failed to add managed datasets", 
+				                  HpcErrorType.MONGO_ERROR, 
+				                  throwables.get(0));
+		}
     }
 	
     //---------------------------------------------------------------------//

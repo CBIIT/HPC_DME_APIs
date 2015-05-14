@@ -103,7 +103,7 @@ public class HpcDatasetsRegistrationRestServiceImpl
 		try {
 			 registrationService.registerDatasets(registrationInputDTO);
 		} catch(HpcException e) {
-			
+			    return Response.status(Response.Status.BAD_REQUEST).build();
 		}
 		
 		// TODO : Implement
