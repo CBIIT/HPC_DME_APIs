@@ -89,7 +89,21 @@ public class HpcDatasetsRegistrationServiceImpl
                         HpcDatasetsRegistrationInputDTO registrationInputDTO)
                         throws HpcException
     {
-    	// TODO: implement.
+    	logger.info("Invoking registerDatasets()");
+    	
+    	// Input validation.
+    	if(registrationInputDTO == null || 
+    	   registrationInputDTO.getDatasets() == null || 
+    	   registrationInputDTO.getDatasets().size() == 0) {
+    	   throw new HpcException("Invalid HpcDatasetsRegistrationInputDTO",
+    			                  HpcErrorType.INVALID_INPUT);	
+    	}
+    	
+    	// Add the datasets to the managed collection.
+    	managedDatasetsService.add(registrationInputDTO.getDatasets());
+    	
+    	// Transfer the datasets to their destination.
+    	// TODO - implement.
     }
 }
 
