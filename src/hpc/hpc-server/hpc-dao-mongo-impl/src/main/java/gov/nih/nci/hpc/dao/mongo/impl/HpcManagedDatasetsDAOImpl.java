@@ -16,7 +16,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
 import gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetsBson;
-import gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetsBsonCodec;
+import gov.nih.nci.hpc.dao.mongo.codec.HpcCodecProvider;
 
 import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoClients;
@@ -112,16 +112,15 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
     			      mongoClient.getSettings().getCodecRegistry();
     	mongoClient.close();
     	
-    	// Instantiate the HPC Codecs.
-    	HpcManagedDatasetsBsonCodec managedDatasetsBsonCodec = 
-        new HpcManagedDatasetsBsonCodec(defaultCodecRegistry.get(Document.class));
+    	// Instantiate the HPC Codec Provider.
+    	HpcCodecProvider hpcCodecProvider = new HpcCodecProvider();
     	
     	// Instantiate a Codec Registry that includes the default + 
     	// the Hpc codecs.
     	CodecRegistry hpcCodecRegistry = 
     		 CodecRegistries.fromRegistries(
-                             defaultCodecRegistry, 
-                             CodecRegistries.fromCodecs(managedDatasetsBsonCodec));
+    				         CodecRegistries.fromProviders(hpcCodecProvider),
+                             defaultCodecRegistry);
     	
     	// Instantiate a MongoClient with the HPC codecs in its registry.
     	settings = 
