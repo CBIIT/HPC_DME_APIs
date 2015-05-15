@@ -2,13 +2,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
-	<name>HPC Data Transfer Objects (DTO)</name>
+	<name>HPC Data Transfer Objects  (DTO) Types</name>
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>hpc-dto</artifactId>
+	<artifactId>hpc-dto-types</artifactId>
 	<packaging>bundle</packaging>
 
 	<build>
@@ -35,11 +35,6 @@
                         			<packagename>gov.nih.nci.hpc.dto.types</packagename>
                         			<bindingFile>src/main/resources/schema/types/hpc-dto-types-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
-                    			<xsdOption>
-                        			<xsd>src/main/resources/schema/api/HpcDatasetsRegistration.xsd</xsd>
-                        			<packagename>gov.nih.nci.hpc.dto.api</packagename>
-                        			<bindingFile>src/main/resources/schema/types/hpc-dto-import-types-jaxb-binding.xjb</bindingFile>
-                    			</xsdOption>
                 			</xsdOptions>
             			</configuration>
         			</execution>
@@ -54,8 +49,7 @@
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package>
 							gov.nih.nci.hpc.exception,
-							gov.nih.nci.hpc.dto.types,
-							gov.nih.nci.hpc.dto.api
+							gov.nih.nci.hpc.dto.types
 						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>
