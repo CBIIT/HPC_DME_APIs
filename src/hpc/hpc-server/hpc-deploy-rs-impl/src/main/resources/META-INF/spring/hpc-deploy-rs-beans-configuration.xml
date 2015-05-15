@@ -55,7 +55,7 @@
 	</bean>
 	<util:map id="jsonNamespaceMap" map-class="java.util.Hashtable">
 		<entry key="http://hpc.nci.nih.gov/dto/types" value="gov.nih.nci.hpc.dto.types"/>
-		<entry key="http://hpc.nci.nih.gov/dto/api" value="gov.nih.nci.hpc.dto.api"/>
+		<entry key="http://hpc.nci.nih.gov/dto/service" value="gov.nih.nci.hpc.dto.service"/>
 	</util:map>
 	
 	<!-- JAX-RS Service Beans -->
