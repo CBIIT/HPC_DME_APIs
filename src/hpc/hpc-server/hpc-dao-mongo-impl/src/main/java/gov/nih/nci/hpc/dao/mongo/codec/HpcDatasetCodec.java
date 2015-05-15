@@ -1,5 +1,5 @@
 /**
- * HpcManagedDatasetsBsonCodec.java
+ * HpcDatasetCodec.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -11,21 +11,18 @@
 package gov.nih.nci.hpc.dao.mongo.codec;
 
 import gov.nih.nci.hpc.dto.types.HpcDataset;
+import gov.nih.nci.hpc.dto.types.HpcDatasetLocation;
+import gov.nih.nci.hpc.dto.types.HpcDatasetType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
 import org.bson.BsonReader;
-import org.bson.BsonString;
-import org.bson.BsonValue;
 import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.Codec;
-import org.bson.codecs.CollectibleCodec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
-import org.bson.types.ObjectId;
-
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,16 +39,18 @@ import java.util.ArrayList;
  * @version $Id$
  */
 
-public class HpcManagedDatasetsBsonCodec 
-             implements CollectibleCodec<HpcManagedDatasetsBson>
+public class HpcDatasetCodec implements Codec<HpcDataset>
 { 
     //---------------------------------------------------------------------//
     // Constants
     //---------------------------------------------------------------------//    
     
     // BSON Document keys.
-    private final static String MONGO_ID_KEY = "_id";
-    private final static String DATASETS_KEY = "datasets"; 
+    private final static String ID_KEY = "id";
+    private final static String LOCATION_KEY = "location"; 
+    private final static String NAME_KEY = "name"; 
+    private final static String TYPE_KEY = "type"; 
+    private final static String SIZE_KEY = "size"; 
     
     //---------------------------------------------------------------------//
     // Instance members
@@ -73,7 +72,7 @@ public class HpcManagedDatasetsBsonCodec
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcManagedDatasetsBsonCodec() throws HpcException
+    private HpcDatasetCodec() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                 HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -84,7 +83,7 @@ public class HpcManagedDatasetsBsonCodec
      * 
      * @param codecRegistry registry..
      */
-    public HpcManagedDatasetsBsonCodec(CodecRegistry codecRegistry) 
+    public HpcDatasetCodec(CodecRegistry codecRegistry)                              
     {
     	this.codecRegistry = codecRegistry;
     }  
@@ -94,78 +93,63 @@ public class HpcManagedDatasetsBsonCodec
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // CollectibleCodec<HpcManagedDatasetsBson> Interface Implementation
+    // Codec<HpcDataset> Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void encode(BsonWriter writer, 
-					   HpcManagedDatasetsBson managedDatasets,
+	public void encode(BsonWriter writer, HpcDataset dataset,
 					   EncoderContext encoderContext) 
 	{
 		Document document = new Document();
- 
-		// Extract the data from the BSON POJO.
-		ObjectId objectId = managedDatasets.getObjectId();
-		List<HpcDataset> datasets = 
-				         managedDatasets.getManagedDatasets().getDatasets();
- 
+
+		// Extract the data from the POJO.
+		HpcDatasetLocation location = dataset.getLocation();
+		String id = dataset.getId();
+		String name = dataset.getName();
+		HpcDatasetType type = dataset.getType();
+		Double size = dataset.getSize();
+
 		// Set the data on the BSON document.
-		if(objectId != null) {
-		   document.put(MONGO_ID_KEY, objectId);
+		if(location != null) {
+		document.put(LOCATION_KEY, location);
 		}
-		if(datasets != null && datasets.size() > 0) {
-		   document.put(DATASETS_KEY, datasets);
+		if(id != null) {
+		document.put(ID_KEY, id);
+		}
+		if(name != null) {
+		document.put(NAME_KEY, name);
+		}
+		if(type != null) {
+		document.put(TYPE_KEY, type);
+		}
+		if(size != null) {
+		document.put(SIZE_KEY, size);
 		}
 
 		codecRegistry.get(Document.class).encode(writer, document, encoderContext);
 	}
  
 	@Override
-	public HpcManagedDatasetsBson decode(BsonReader reader, 
-			                             DecoderContext decoderContext) 
+	public HpcDataset decode(BsonReader reader, DecoderContext decoderContext) 
 	{
 		// Get the BSON Document.
-		Document document = 
-				 codecRegistry.get(Document.class).decode(reader, decoderContext);
+		Document document = codecRegistry.get(Document.class).decode(reader, decoderContext);
 		
-		// Map the BSON Document to a BSON POJO.
-		HpcManagedDatasetsBson managedDatasets = new HpcManagedDatasetsBson();
-		managedDatasets.setObjectId(document.getObjectId(MONGO_ID_KEY));
-		List<HpcDataset> datasets = 
-				         (List<HpcDataset>) document.get(DATASETS_KEY);
-		if(datasets != null) {
-		   for(HpcDataset dataset : datasets) {
-			   managedDatasets.getManagedDatasets().getDatasets().add(dataset);
-		   }
-		}
+		// Map the document to HpcDataset instance.
+		HpcDataset dataset = new HpcDataset();
+		dataset.setLocation(document.get(LOCATION_KEY, HpcDatasetLocation.class));
+		dataset.setId(document.get(ID_KEY, String.class));
+		dataset.setName(document.get(NAME_KEY, String.class));
+		dataset.setType(document.get(TYPE_KEY, HpcDatasetType.class));
+		dataset.setSize(document.get(SIZE_KEY, Double.class));
 		
-		return managedDatasets;
+		return dataset;
 	}
 	
 	@Override
-	public Class<HpcManagedDatasetsBson> getEncoderClass() 
+	public Class<HpcDataset> getEncoderClass() 
 	{
-		return HpcManagedDatasetsBson.class;
-	}
- 
-	@Override
-	public HpcManagedDatasetsBson generateIdIfAbsentFromDocument(
-			                      HpcManagedDatasetsBson managedDatasets) 
-	{
-		return documentHasId(managedDatasets) ? 
-				             managedDatasets : new HpcManagedDatasetsBson();
-	}
- 
-	@Override
-	public boolean documentHasId(HpcManagedDatasetsBson managedDatasets) 
-	{
-		return managedDatasets.getObjectId() != null;
-	}
- 
-	@Override
-	public BsonValue getDocumentId(HpcManagedDatasetsBson managedDatasets) 
-	{
-	    return new BsonString(managedDatasets.getObjectId().toHexString());
+		return HpcDataset.class;
 	}
 }
 
