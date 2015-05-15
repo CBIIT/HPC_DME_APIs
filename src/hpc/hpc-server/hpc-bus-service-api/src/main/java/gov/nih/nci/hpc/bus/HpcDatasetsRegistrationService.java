@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.bus;
 
-import gov.nih.nci.hpc.dto.api.HpcDatasetsRegistrationInputDTO;
+import gov.nih.nci.hpc.dto.service.HpcDatasetsRegistrationInputDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
