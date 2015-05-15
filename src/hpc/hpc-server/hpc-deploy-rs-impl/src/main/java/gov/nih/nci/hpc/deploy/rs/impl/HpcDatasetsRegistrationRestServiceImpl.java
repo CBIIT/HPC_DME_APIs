@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.deploy.rs.impl;
 
 import gov.nih.nci.hpc.deploy.rs.HpcDatasetsRegistrationRestService;
-import gov.nih.nci.hpc.dto.api.HpcDatasetsRegistrationInputDTO;
+import gov.nih.nci.hpc.dto.service.HpcDatasetsRegistrationInputDTO;
 import gov.nih.nci.hpc.bus.HpcDatasetsRegistrationService;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;

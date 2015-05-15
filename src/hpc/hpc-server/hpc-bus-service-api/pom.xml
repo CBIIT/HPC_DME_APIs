@@ -32,7 +32,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>hpc-dto</artifactId>
+			<artifactId>hpc-dto-service</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
