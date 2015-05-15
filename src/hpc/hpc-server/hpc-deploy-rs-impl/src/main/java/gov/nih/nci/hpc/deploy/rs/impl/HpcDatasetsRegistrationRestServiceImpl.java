@@ -26,6 +26,11 @@ import java.net.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.nih.nci.hpc.dto.types.HpcDataset;
+import gov.nih.nci.hpc.dto.types.HpcDatasetLocation;
+import gov.nih.nci.hpc.dto.types.HpcDataCenter;
+import gov.nih.nci.hpc.dto.types.HpcDatasetType;
+
 /**
  * <p>
  * HPC Datasets Registration REST Service Implementation.
@@ -99,10 +104,11 @@ public class HpcDatasetsRegistrationRestServiceImpl
     public Response registerDatasets(
     		        HpcDatasetsRegistrationInputDTO registrationInputDTO)
     {	
-		logger.info("Invoking POST /registration");
+		logger.info("Invoking RS: POST /registration");
 		try {
 			 registrationService.registerDatasets(registrationInputDTO);
 		} catch(HpcException e) {
+			    logger.error("RS: POST /registration failed:", e);
 			    return Response.status(Response.Status.BAD_REQUEST).build();
 		}
 		
@@ -112,6 +118,22 @@ public class HpcDatasetsRegistrationRestServiceImpl
                
 		return Response.created(metadataUri).build();
 	}
+    
+    @Override
+    public HpcDatasetsRegistrationInputDTO getRegistration(String id)
+    {
+    	HpcDatasetsRegistrationInputDTO dto = new HpcDatasetsRegistrationInputDTO();
+    	
+    	HpcDataset ds = new HpcDataset();
+    	HpcDatasetLocation loc = new HpcDatasetLocation();
+    	loc.setDataCenter(HpcDataCenter.SHADY_GROVE);
+    	loc.setPath("/usr/local/datasets");
+    	ds.setLocation(loc);
+    	ds.setName("SEQUENCING file name");
+    	ds.setType(HpcDatasetType.RAW_SEQUENCING);
+    	dto.getDatasets().add(ds);
+    	return dto;
+    }
 	
    // @Override
     //public Response postMetadata(HpcMetadataDTO metadata/*, @Context UriInfo uriInfo*/)
