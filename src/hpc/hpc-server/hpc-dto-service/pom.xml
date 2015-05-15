@@ -59,7 +59,7 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>${project.groupId}</groupId>
-									<artifactId>hpc-dto</artifactId>
+									<artifactId>hpc-dto-types</artifactId>
 									<version>${project.version}</version>
 									<overWrite>true</overWrite>
 									<outputDirectory>xjc-build</outputDirectory>

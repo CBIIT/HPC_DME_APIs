@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.deploy.rs;
 
-import gov.nih.nci.hpc.dto.api.HpcDatasetsRegistrationInputDTO;
+import gov.nih.nci.hpc.dto.service.HpcDatasetsRegistrationInputDTO;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
