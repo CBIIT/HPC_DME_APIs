@@ -56,7 +56,7 @@ public class HpcCodecProvider implements CodecProvider
      */
     public HpcCodecProvider()
     {
-    	codecs.put(HpcManagedDatasets.class, new HpcManagedDatasetsBsonCodec());
+    	codecs.put(HpcManagedDatasets.class, new HpcManagedDatasetsCodec());
     	codecs.put(HpcDataset.class, new HpcDatasetCodec());
     	codecs.put(HpcDatasetLocation.class, new HpcDatasetLocationCodec());
     }   
