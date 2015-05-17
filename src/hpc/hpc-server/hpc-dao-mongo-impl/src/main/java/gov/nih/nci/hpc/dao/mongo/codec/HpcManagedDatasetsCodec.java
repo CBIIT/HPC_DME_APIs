@@ -1,5 +1,5 @@
 /**
- * HpcManagedDatasetsBsonCodec.java
+ * HpcManagedDatasetsCodec.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -28,14 +28,14 @@ import java.util.List;
 
 /**
  * <p>
- * HPC Managed Datasets BSON Codec. 
+ * HPC Managed Datasets Codec. 
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcManagedDatasetsBsonCodec extends HpcCodec<HpcManagedDatasets>
+public class HpcManagedDatasetsCodec extends HpcCodec<HpcManagedDatasets>
 { 
     //---------------------------------------------------------------------//
     // Constants
@@ -60,7 +60,7 @@ public class HpcManagedDatasetsBsonCodec extends HpcCodec<HpcManagedDatasets>
      * Default Constructor.
      * 
      */
-    public HpcManagedDatasetsBsonCodec()
+    public HpcManagedDatasetsCodec()
     {
     }   
     

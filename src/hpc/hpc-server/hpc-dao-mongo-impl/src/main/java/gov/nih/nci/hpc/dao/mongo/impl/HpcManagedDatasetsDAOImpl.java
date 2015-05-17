@@ -11,12 +11,10 @@
 package gov.nih.nci.hpc.dao.mongo.impl;
 
 import gov.nih.nci.hpc.dao.HpcManagedDatasetsDAO;
+import gov.nih.nci.hpc.dao.mongo.codec.HpcCodecProvider;
 import gov.nih.nci.hpc.domain.HpcManagedDatasets;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
-
-import gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetsBson;
-import gov.nih.nci.hpc.dao.mongo.codec.HpcCodecProvider;
 
 import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoClients;
