@@ -138,25 +138,14 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
 	@Override
 	public void add(HpcManagedDatasets managedDatasets) throws HpcException
     {
-		// TODO - sub-task 110
-		final Vector<Throwable> throwables = new Vector<Throwable>();
+		HpcSingleResultCallback<Void> callback = 
+				                      new HpcSingleResultCallback<Void>();
 		getManagedDatasetsCollection().insertOne(
 				                       managedDatasets, 
-				                       new SingleResultCallback<Void>() {
-		    @Override
-		    public void onResult(final Void result, final Throwable t) {
-		    	if(t != null) {
-		    	   throwables.add(t);
-		    	}
-		    }
-		});
+				                       callback);
        
-		// Check for exceptions.
-		if(throwables.size() > 0) {
-		   throw new HpcException("Failed to add managed datasets", 
-				                  HpcErrorType.MONGO_ERROR, 
-				                  throwables.get(0));
-		}
+		// Throw the callback exception (if any).
+		callback.throwException();
     }
 	
     //---------------------------------------------------------------------//
