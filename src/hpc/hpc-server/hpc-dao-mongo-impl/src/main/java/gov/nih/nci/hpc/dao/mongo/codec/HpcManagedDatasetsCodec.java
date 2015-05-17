@@ -116,26 +116,6 @@ public class HpcManagedDatasetsCodec extends HpcCodec<HpcManagedDatasets>
 	{
 		return HpcManagedDatasets.class;
 	}
- /*
-	@Override
-	public HpcManagedDatasetsBson generateIdIfAbsentFromDocument(
-			                      HpcManagedDatasetsBson managedDatasets) 
-	{
-		return documentHasId(managedDatasets) ? 
-				             managedDatasets : new HpcManagedDatasetsBson();
-	}
- 
-	@Override
-	public boolean documentHasId(HpcManagedDatasetsBson managedDatasets) 
-	{
-		return managedDatasets.getObjectId() != null;
-	}
- 
-	@Override
-	public BsonValue getDocumentId(HpcManagedDatasetsBson managedDatasets) 
-	{
-	    return new BsonString(managedDatasets.getObjectId().toHexString());
-	}*/
 }
 
  
