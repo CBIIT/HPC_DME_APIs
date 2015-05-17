@@ -86,13 +86,16 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
      * Constructor for Spring Dependency Injection.
      * 
      * @param mongoHost The Mongo hostname.
+     * @param hpcCodecProvider The HPC codec provider instance.
      * 
      * @throws HpcException If a MongoClient instance was not provided.
      */
-    private HpcManagedDatasetsDAOImpl(String mongoHost) throws HpcException
+    private HpcManagedDatasetsDAOImpl(String mongoHost,
+    		                          HpcCodecProvider hpcCodecProvider) 
+    		                         throws HpcException
     {
-    	if(mongoHost == null) {
-    	   throw new HpcException("Null Mongo Host instance",
+    	if(mongoHost == null || hpcCodecProvider == null) {
+    	   throw new HpcException("Null Mongo Host or HpcCodecProvider instance",
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
     
@@ -110,11 +113,8 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
     			      mongoClient.getSettings().getCodecRegistry();
     	mongoClient.close();
     	
-    	// Instantiate the HPC Codec Provider.
-    	HpcCodecProvider hpcCodecProvider = new HpcCodecProvider();
-    	
     	// Instantiate a Codec Registry that includes the default + 
-    	// the Hpc codecs.
+    	// the Hpc codec provider.
     	CodecRegistry hpcCodecRegistry = 
     		 CodecRegistries.fromRegistries(
     				         CodecRegistries.fromProviders(hpcCodecProvider),

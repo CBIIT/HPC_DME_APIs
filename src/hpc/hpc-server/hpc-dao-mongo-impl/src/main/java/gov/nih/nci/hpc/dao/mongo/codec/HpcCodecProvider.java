@@ -10,14 +10,12 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.dto.types.HpcDataset;
-import gov.nih.nci.hpc.dto.types.HpcDatasetLocation;
-import gov.nih.nci.hpc.domain.HpcManagedDatasets;
+import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.exception.HpcErrorType;
 
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.Codec;
-import org.bson.Document;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,13 +51,31 @@ public class HpcCodecProvider implements CodecProvider
     /**
      * Default Constructor.
      * 
+     * @throws HpcException Constructor is disabled.
      */
-    public HpcCodecProvider()
+    private HpcCodecProvider() throws HpcException
     {
-    	codecs.put(HpcManagedDatasets.class, new HpcManagedDatasetsCodec());
-    	codecs.put(HpcDataset.class, new HpcDatasetCodec());
-    	codecs.put(HpcDatasetLocation.class, new HpcDatasetLocationCodec());
+    	throw new HpcException("Constructor Disabled",
+                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }   
+    
+    /**
+     * Constructor for Spring Dependency Injection.
+     * 
+     * @param codecs The HPC codecs.
+     * 
+     * @throws HpcException If a HpcCodecProvider instance was not provided.
+     */
+    private HpcCodecProvider(Map<Class, HpcCodec> codecs) 
+    		                throws HpcException
+    {
+    	if(codecs == null || codecs.size() == 0) {
+     	   throw new HpcException("Null or empty HpcCodecProvider instance",
+     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
+     	}
+    	
+    	this.codecs.putAll(codecs);
+    } 
     
     //---------------------------------------------------------------------//
     // Methods
