@@ -13,13 +13,10 @@ package gov.nih.nci.hpc.dao.mongo.codec;
 import gov.nih.nci.hpc.dto.types.HpcDataset;
 import gov.nih.nci.hpc.dto.types.HpcDatasetLocation;
 import gov.nih.nci.hpc.dto.types.HpcDatasetType;
-import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.exception.HpcErrorType;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
-import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -27,19 +24,16 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.ArrayList;
-
 /**
  * <p>
- * HPC Managed Datasets BSON Codec. 
+ * HPC Dataset Codec. 
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcDatasetCodec implements Codec<HpcDataset>
+public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 { 
     //---------------------------------------------------------------------//
     // Constants
@@ -60,9 +54,6 @@ public class HpcDatasetCodec implements Codec<HpcDataset>
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
 	
-	// The codec registry.
-	private CodecRegistry codecRegistry;
-	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -70,23 +61,10 @@ public class HpcDatasetCodec implements Codec<HpcDataset>
     /**
      * Default Constructor.
      * 
-     * @throws HpcException Constructor is disabled.
      */
-    private HpcDatasetCodec() throws HpcException
+    public HpcDatasetCodec() 
     {
-    	throw new HpcException("Constructor Disabled",
-                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }   
-    
-    /**
-     * Constructor w/ codec registry.
-     * 
-     * @param codecRegistry registry..
-     */
-    public HpcDatasetCodec(CodecRegistry codecRegistry)                              
-    {
-    	this.codecRegistry = codecRegistry;
-    }  
     
     //---------------------------------------------------------------------//
     // Methods
@@ -111,36 +89,37 @@ public class HpcDatasetCodec implements Codec<HpcDataset>
 
 		// Set the data on the BSON document.
 		if(location != null) {
-		document.put(LOCATION_KEY, location);
+		   document.put(LOCATION_KEY, location);
 		}
 		if(id != null) {
-		document.put(ID_KEY, id);
+		   document.put(ID_KEY, id);
 		}
 		if(name != null) {
-		document.put(NAME_KEY, name);
+		   document.put(NAME_KEY, name);
 		}
 		if(type != null) {
-		document.put(TYPE_KEY, type);
+		   document.put(TYPE_KEY, type.value());
 		}
 		if(size != null) {
-		document.put(SIZE_KEY, size);
+		   document.put(SIZE_KEY, size);
 		}
 
-		codecRegistry.get(Document.class).encode(writer, document, encoderContext);
+		getRegistry().get(Document.class).encode(writer, document, encoderContext);
 	}
  
 	@Override
 	public HpcDataset decode(BsonReader reader, DecoderContext decoderContext) 
 	{
 		// Get the BSON Document.
-		Document document = codecRegistry.get(Document.class).decode(reader, decoderContext);
+		Document document = getRegistry().get(Document.class).decode(reader, decoderContext);
 		
 		// Map the document to HpcDataset instance.
 		HpcDataset dataset = new HpcDataset();
 		dataset.setLocation(document.get(LOCATION_KEY, HpcDatasetLocation.class));
 		dataset.setId(document.get(ID_KEY, String.class));
 		dataset.setName(document.get(NAME_KEY, String.class));
-		dataset.setType(document.get(TYPE_KEY, HpcDatasetType.class));
+		dataset.setType(HpcDatasetType.valueOf(
+				        document.get(TYPE_KEY, String.class)));
 		dataset.setSize(document.get(SIZE_KEY, Double.class));
 		
 		return dataset;

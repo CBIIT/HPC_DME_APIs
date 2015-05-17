@@ -140,14 +140,10 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
 	@Override
 	public void add(HpcManagedDatasets managedDatasets) throws HpcException
     {
-		HpcManagedDatasetsBson managedDatasetsBson = 
-				                              new HpcManagedDatasetsBson();
-		managedDatasetsBson.setManagedDatasets(managedDatasets);
-		
 		// TODO - sub-task 110
 		final Vector<Throwable> throwables = new Vector<Throwable>();
 		getManagedDatasetsCollection().insertOne(
-				                       managedDatasetsBson, 
+				                       managedDatasets, 
 				                       new SingleResultCallback<Void>() {
 		    @Override
 		    public void onResult(final Void result, final Throwable t) {
@@ -174,12 +170,11 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
      *
      * @return A The metadata Mongo collection.
      */
-    private MongoCollection<HpcManagedDatasetsBson> 
-            getManagedDatasetsCollection()  
+    private MongoCollection<HpcManagedDatasets> getManagedDatasetsCollection()  
     {
     	MongoDatabase database = mongoClient.getDatabase(DB_NAME); 
     	return database.getCollection(MANAGED_DATASETS_COLLECTION_NAME, 
-    			                      HpcManagedDatasetsBson.class);
+    			                      HpcManagedDatasets.class);
     }  
 }
 
