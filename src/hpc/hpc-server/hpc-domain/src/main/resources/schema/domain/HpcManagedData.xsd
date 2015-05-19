@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcManagedDatasets.xsd
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+ 
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+			xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+			xmlns:hpc-types="http://hpc.nci.nih.gov/dto/types"
+			xmlns:hpc-domain="http://hpc.nci.nih.gov/domain"
+    		targetNamespace="http://hpc.nci.nih.gov/domain"
+    		elementFormDefault="qualified">
+    		
+   	<xsd:import namespace="http://hpc.nci.nih.gov/dto/types" 
+   	            schemaLocation="../types/HpcDataTypes.xsd"/>
+    
+    <!--  Managed Dataset Object -->
+    <xsd:complexType name="HpcManagedData" abstract="true">
+  		<xsd:attribute name="id" type="xsd:ID" use="required"/>
+	</xsd:complexType>
+	
+    <xsd:element name="HpcManagedDatasets">
+        <xsd:complexType>
+        	<xsd:complexContent>
+    			<xsd:extension base="hpc-domain:HpcManagedData">    		
+        			<xsd:sequence>
+        				<xsd:element name="datasets" type="hpc-types:HpcDataset" 
+        				             minOccurs="1" maxOccurs="unbounded"/>
+        			</xsd:sequence>
+        		</xsd:extension>
+        	</xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    
+</xsd:schema>

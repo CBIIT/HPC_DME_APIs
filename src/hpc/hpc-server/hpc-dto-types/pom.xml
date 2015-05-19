@@ -31,7 +31,7 @@
             			<configuration>
                 			<xsdOptions>
                     			<xsdOption>
-                        			<xsd>src/main/resources/schema/types/HpcDatasetTypes.xsd</xsd>
+                        			<xsd>src/main/resources/schema/types/HpcDataTypes.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.dto.types</packagename>
                         			<bindingFile>src/main/resources/schema/types/hpc-dto-types-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>

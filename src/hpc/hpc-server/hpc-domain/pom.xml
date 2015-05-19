@@ -63,7 +63,7 @@
 									<version>${project.version}</version>
 									<overWrite>true</overWrite>
 									<outputDirectory>xjc-build</outputDirectory>
-									<includes>**/HpcDatasetTypes.xsd,**/hpc-dto-import-types-jaxb-binding.xjb</includes>
+									<includes>**/HpcDataTypes.xsd,**/hpc-dto-import-types-jaxb-binding.xjb</includes>
 								</artifactItem>
 							</artifactItems>
 						</configuration>
@@ -88,7 +88,7 @@
             			<configuration>
                 			<xsdOptions>
                     			<xsdOption>
-                        			<xsd>xjc-build/schema/domain/HpcManagedDatasets.xsd</xsd>
+                        			<xsd>xjc-build/schema/domain/HpcManagedData.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.domain</packagename>
                         			<bindingFile>xjc-build/schema/types/hpc-dto-import-types-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>

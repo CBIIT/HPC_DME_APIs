@@ -17,6 +17,7 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 	     
 	<!--  HPC Codecs -->
+	<bean id="hpcManagedDataCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDataCodec"/>
 	<bean id="hpcManagedDatasetsCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetsCodec"/>
 	<bean id="hpcDatasetCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcDatasetCodec"/>
 	<bean id="hpcDatasetLocationCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcDatasetLocationCodec"/>
@@ -25,6 +26,7 @@
 	<bean id="hpcCodecProvider" class="gov.nih.nci.hpc.dao.mongo.codec.HpcCodecProvider">
 		<constructor-arg>
 			<map>
+				<entry key="gov.nih.nci.hpc.domain.HpcManagedData" value-ref="hpcManagedDataCodec"/>
 				<entry key="gov.nih.nci.hpc.domain.HpcManagedDatasets" value-ref="hpcManagedDatasetsCodec"/>
 				<entry key="gov.nih.nci.hpc.dto.types.HpcDataset" value-ref="hpcDatasetCodec"/>
 				<entry key="gov.nih.nci.hpc.dto.types.HpcDatasetLocation" value-ref="hpcDatasetLocationCodec"/>

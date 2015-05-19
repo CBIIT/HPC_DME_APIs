@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.dao.mongo.impl;
 import gov.nih.nci.hpc.dao.HpcManagedDatasetsDAO;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodecProvider;
 import gov.nih.nci.hpc.domain.HpcManagedDatasets;
+import gov.nih.nci.hpc.domain.HpcManagedData;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -157,11 +158,11 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
      *
      * @return A The metadata Mongo collection.
      */
-    private MongoCollection<HpcManagedDatasets> getManagedDatasetsCollection()  
+    private MongoCollection<HpcManagedData> getManagedDatasetsCollection()  
     {
     	MongoDatabase database = mongoClient.getDatabase(DB_NAME); 
     	return database.getCollection(MANAGED_DATASETS_COLLECTION_NAME, 
-    			                      HpcManagedDatasets.class);
+    			                      HpcManagedData.class);
     }  
 }
 
