@@ -11,7 +11,8 @@
 package gov.nih.nci.hpc.dao.mongo.codec;
 
 import gov.nih.nci.hpc.dto.types.HpcDatasetLocation;
-import gov.nih.nci.hpc.dto.types.HpcDataCenter;
+import gov.nih.nci.hpc.dto.types.HpcFacility;
+import gov.nih.nci.hpc.dto.types.HpcDataTransfer;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
@@ -39,8 +40,9 @@ public class HpcDatasetLocationCodec extends HpcCodec<HpcDatasetLocation>
     //---------------------------------------------------------------------//    
     
     // BSON Document keys.
-    private final static String DATA_CENTER_KEY = "data_center";
-    private final static String PATH_KEY = "path"; 
+    private final static String FACILITY_KEY = "facility";
+    private final static String ENDPOINT_KEY = "endpoint"; 
+    private final static String DATA_TRANSFER_KEY = "data_transfer"; 
     
     //---------------------------------------------------------------------//
     // Instance members
@@ -77,15 +79,19 @@ public class HpcDatasetLocationCodec extends HpcCodec<HpcDatasetLocation>
 		Document document = new Document();
 
 		// Extract the data from the POJO.
-		HpcDataCenter dataCenter = location.getDataCenter();
-		String path = location.getPath();
+		HpcFacility facility = location.getFacility();
+		String endpoint = location.getEndpoint();
+		HpcDataTransfer dataTransfer = location.getDataTransfer();
 
 		// Set the data on the BSON document.
-		if(dataCenter != null) {
-		   document.put(DATA_CENTER_KEY, dataCenter.value());
+		if(facility != null) {
+		   document.put(FACILITY_KEY, facility.value());
 		}
-		if(path != null) {
-		   document.put(PATH_KEY, path);
+		if(endpoint != null) {
+		   document.put(ENDPOINT_KEY, endpoint);
+		}
+		if(dataTransfer != null) {
+		   document.put(DATA_TRANSFER_KEY, dataTransfer.value());
 		}
 		
 		getRegistry().get(Document.class).encode(writer, document, encoderContext);
@@ -96,13 +102,16 @@ public class HpcDatasetLocationCodec extends HpcCodec<HpcDatasetLocation>
 			                         DecoderContext decoderContext) 
 	{
 		// Get the BSON Document.
-		Document document = getRegistry().get(Document.class).decode(reader, decoderContext);
+		Document document = 
+	             getRegistry().get(Document.class).decode(reader, decoderContext);
 		
 		// Map the document to HpcDataset instance.
 		HpcDatasetLocation location = new HpcDatasetLocation();
-		location.setDataCenter(HpcDataCenter.valueOf(
-				               document.get(DATA_CENTER_KEY, String.class)));
-		location.setPath(document.get(PATH_KEY, String.class));
+		location.setFacility(HpcFacility.valueOf(
+				             document.get(FACILITY_KEY, String.class)));
+		location.setEndpoint(document.get(ENDPOINT_KEY, String.class));
+		location.setDataTransfer(HpcDataTransfer.valueOf(
+                                 document.get(DATA_TRANSFER_KEY, String.class)));
 		
 		return location;
 	}
