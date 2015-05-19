@@ -28,7 +28,8 @@ import org.slf4j.LoggerFactory;
 
 import gov.nih.nci.hpc.dto.types.HpcDataset;
 import gov.nih.nci.hpc.dto.types.HpcDatasetLocation;
-import gov.nih.nci.hpc.dto.types.HpcDataCenter;
+import gov.nih.nci.hpc.dto.types.HpcFacility;
+import gov.nih.nci.hpc.dto.types.HpcDataTransfer;
 import gov.nih.nci.hpc.dto.types.HpcDatasetType;
 
 /**
@@ -126,8 +127,9 @@ public class HpcDatasetsRegistrationRestServiceImpl
     	
     	HpcDataset ds = new HpcDataset();
     	HpcDatasetLocation loc = new HpcDatasetLocation();
-    	loc.setDataCenter(HpcDataCenter.SHADY_GROVE);
-    	loc.setPath("/usr/local/datasets");
+    	loc.setFacility(HpcFacility.SHADY_GROVE);
+    	loc.setEndpoint("nihfnlcr#gridftp1");
+    	loc.setDataTransfer(HpcDataTransfer.GLOBUS);
     	ds.setLocation(loc);
     	ds.setName("SEQUENCING file name");
     	ds.setType(HpcDatasetType.RAW_SEQUENCING);

@@ -1,5 +1,5 @@
 /**
- * HpcManagedDatasetsCodec.java
+ * HpcManagedDataCodec.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.dto.types.HpcDataset;
+import gov.nih.nci.hpc.domain.HpcManagedData;
 import gov.nih.nci.hpc.domain.HpcManagedDatasets;
 
 import org.bson.BsonReader;
@@ -24,18 +24,16 @@ import org.bson.codecs.EncoderContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 /**
  * <p>
- * HPC Managed Datasets Codec. 
+ * HPC Managed Datas Codec. 
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcManagedDatasetsCodec extends HpcCodec<HpcManagedDatasets>
+public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
 { 
     //---------------------------------------------------------------------//
     // Constants
@@ -60,7 +58,7 @@ public class HpcManagedDatasetsCodec extends HpcCodec<HpcManagedDatasets>
      * Default Constructor.
      * 
      */
-    public HpcManagedDatasetsCodec()
+    public HpcManagedDataCodec()
     {
     }   
     
@@ -74,20 +72,15 @@ public class HpcManagedDatasetsCodec extends HpcCodec<HpcManagedDatasets>
     
 	@Override
 	public void encode(BsonWriter writer, 
-					   HpcManagedDatasets managedDatasets,
+					   HpcManagedData managedData,
 					   EncoderContext encoderContext) 
 	{
-		Document document = new Document();
- 
-		// Extract the data from the domain object.
-		List<HpcDataset> datasets = managedDatasets.getDatasets();
- 
-		// Set the data on the BSON document.
-		if(datasets != null && datasets.size() > 0) {
-		   document.put(DATASETS_KEY, datasets);
+		if(managedData instanceof HpcManagedDatasets) {
+			HpcManagedDatasets managedDatasets = (HpcManagedDatasets) managedData;
+		   getRegistry().get(HpcManagedDatasets.class).encode(writer, 
+				                                              managedDatasets, 
+				                                              encoderContext);
 		}
-
-		getRegistry().get(Document.class).encode(writer, document, encoderContext);
 	}
  
 	@Override
@@ -100,21 +93,15 @@ public class HpcManagedDatasetsCodec extends HpcCodec<HpcManagedDatasets>
 		
 		// Map the BSON Document to a domain object.
 		HpcManagedDatasets managedDatasets = new HpcManagedDatasets();
-		List<HpcDataset> datasets = 
-				         (List<HpcDataset>) document.get(DATASETS_KEY);
-		if(datasets != null) {
-		   for(HpcDataset dataset : datasets) {
-			   managedDatasets.getDatasets().add(dataset);
-		   }
-		}
+		//TODO...
 		
 		return managedDatasets;
 	}
 	
 	@Override
-	public Class<HpcManagedDatasets> getEncoderClass() 
+	public Class<HpcManagedData> getEncoderClass() 
 	{
-		return HpcManagedDatasets.class;
+		return HpcManagedData.class;
 	}
 }
 

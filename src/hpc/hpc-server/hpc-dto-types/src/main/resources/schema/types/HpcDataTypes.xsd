@@ -22,19 +22,21 @@
   	    <xsd:sequence>
       		<xsd:element name="location" type="hpc:HpcDatasetLocation"></xsd:element>
     	</xsd:sequence>
-    	<xsd:attribute name="id" type="xsd:ID"/>
+    	<xsd:attribute name="index" type="xsd:int"/>
   		<xsd:attribute name="name" type="xsd:string" use="required"/>
   		<xsd:attribute name="type" type="hpc:HpcDatasetType" use="required"/>
   		<xsd:attribute name="size" type="xsd:double"/>
   	</xsd:complexType>
         	
 	<xsd:complexType name="HpcDatasetLocation">
-		<xsd:attribute name="dataCenter" type="hpc:HpcDataCenter" use="required"/>
-		<xsd:attribute name="path" type="xsd:string" use="required"/>
+		<xsd:attribute name="facility" type="hpc:HpcFacility" use="required"/>
+		<xsd:attribute name="endpoint" type="xsd:string" use="required"/>
+		<xsd:attribute name="dataTransfer" type="hpc:HpcDataTransfer" use="required"/>
 	</xsd:complexType>
 	
-	<xsd:simpleType name="HpcDataCenter">
+	<xsd:simpleType name="HpcFacility">
   		<xsd:restriction base="xsd:string">
+  			<xsd:enumeration value="UNKONWN"/>
     		<xsd:enumeration value="SHADY_GROVE"/>
     		<xsd:enumeration value="FREDERICK"/>
   		</xsd:restriction>
@@ -42,10 +44,18 @@
 	
 	<xsd:simpleType name="HpcDatasetType">
   		<xsd:restriction base="xsd:string">
+  			<xsd:enumeration value="UNKONWN"/>
     		<xsd:enumeration value="RAW_SEQUENCING"/>
     		<xsd:enumeration value="FASTQ"/>
     		<xsd:enumeration value="BAM"/>
     		<xsd:enumeration value="MD5SUM"/>
+  		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="HpcDataTransfer">
+  		<xsd:restriction base="xsd:string">
+  			<xsd:enumeration value="UNKONWN"/>
+  			<xsd:enumeration value="GLOBUS"/>
   		</xsd:restriction>
 	</xsd:simpleType>
 

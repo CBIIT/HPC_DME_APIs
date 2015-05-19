@@ -18,7 +18,7 @@
     		targetNamespace="http://hpc.nci.nih.gov/dto/service"
     		elementFormDefault="qualified">
     		
-   	<xsd:import namespace="http://hpc.nci.nih.gov/dto/types" schemaLocation="../types/HpcDatasetTypes.xsd"/>
+   	<xsd:import namespace="http://hpc.nci.nih.gov/dto/types" schemaLocation="../types/HpcDataTypes.xsd"/>
     
     <xsd:element name="HpcDatasetsRegistrationInputDTO">
         <xsd:complexType>
