@@ -18,6 +18,9 @@
 	</jxb:globalBindings>
 	
 	<jxb:bindings schemaLocation="HpcDataTypes.xsd">
+		    <jxb:bindings node="//xsd:simpleType[@name='HpcManagedDataType']">
+                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.dto.types.HpcManagedDataType"/>
+            </jxb:bindings>
 	        <jxb:bindings node="//xsd:simpleType[@name='HpcDataTransfer']">
                 <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.dto.types.HpcDataTransfer"/>
             </jxb:bindings>

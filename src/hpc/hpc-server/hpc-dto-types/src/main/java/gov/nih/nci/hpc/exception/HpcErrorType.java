@@ -29,5 +29,8 @@ public enum HpcErrorType
 	INVALID_INPUT,
     
     // Mongo DB is the source of the error.
-    MONGO_ERROR
+    MONGO_ERROR,
+    
+    // Error related to JAXB.
+    JAXB_ERROR
 }
