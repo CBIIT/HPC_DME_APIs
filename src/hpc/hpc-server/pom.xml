@@ -27,8 +27,8 @@
 		<module>hpc-app-service-impl</module>
 		<module>hpc-bus-service-api</module>
 		<module>hpc-bus-service-impl</module>
-		<module>hpc-deploy-rs-api</module>
-		<module>hpc-deploy-rs-impl</module>
+		<module>hpc-ws-rs-api</module>
+		<module>hpc-ws-rs-impl</module>
 		<module>hpc-features</module>
 	</modules>
 	
