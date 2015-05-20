@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -97,7 +98,7 @@ public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
 		   document.put(TYPE_KEY, type.value());
 		}
 		if(created != null) {
-		   document.put(CREATED_KEY, created);
+		   document.put(CREATED_KEY, created.getTime());
 		}
 		if(datasets != null && datasets.size() > 0) {
 		   document.put(DATASETS_KEY, datasets);
@@ -121,7 +122,9 @@ public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
 		managedData.setId(document.get(ID_KEY, String.class));
 		managedData.setType( 
 		       HpcManagedDataType.fromValue(document.get(TYPE_KEY, String.class)));
-		managedData.setCreated(document.get(CREATED_KEY, Calendar.class));
+		Calendar created = Calendar.getInstance();
+		created.setTime(document.get(CREATED_KEY, Date.class));
+		managedData.setCreated(created);
 		List<HpcDataset> datasets = 
 				         (List<HpcDataset>) document.get(DATASETS_KEY);
 		if(datasets != null) {

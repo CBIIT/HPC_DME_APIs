@@ -21,7 +21,7 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package>
-							gov.nih.nci.hpc.deploy.rs
+							gov.nih.nci.hpc.ws.rs
 						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>

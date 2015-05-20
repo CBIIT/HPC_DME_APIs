@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.ws.rs.impl;
 import gov.nih.nci.hpc.ws.rs.HpcDataRegistrationRestService;
 import gov.nih.nci.hpc.dto.service.HpcDataRegistrationInputDTO;
 import gov.nih.nci.hpc.dto.service.HpcDataRegistrationOutputDTO;
+import gov.nih.nci.hpc.dto.types.HpcManagedDataType;
 import gov.nih.nci.hpc.bus.HpcDataRegistrationService;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
@@ -116,6 +117,7 @@ public class HpcDataRegistrationRestServiceImpl
     	ds.setName("SEQUENCING file name");
     	ds.setType(HpcDatasetType.RAW_SEQUENCING);
     	dto.getDatasets().add(ds);
+    	dto.setType(HpcManagedDataType.EXPERIMENT);
     	return dto;
     }
     
