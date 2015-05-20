@@ -18,7 +18,6 @@
 	     
 	<!--  HPC Codecs -->
 	<bean id="hpcManagedDataCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDataCodec"/>
-	<bean id="hpcManagedDatasetsCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetsCodec"/>
 	<bean id="hpcDatasetCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcDatasetCodec"/>
 	<bean id="hpcDatasetLocationCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcDatasetLocationCodec"/>
 	
@@ -27,14 +26,13 @@
 		<constructor-arg>
 			<map>
 				<entry key="gov.nih.nci.hpc.domain.HpcManagedData" value-ref="hpcManagedDataCodec"/>
-				<entry key="gov.nih.nci.hpc.domain.HpcManagedDatasets" value-ref="hpcManagedDatasetsCodec"/>
 				<entry key="gov.nih.nci.hpc.dto.types.HpcDataset" value-ref="hpcDatasetCodec"/>
 				<entry key="gov.nih.nci.hpc.dto.types.HpcDatasetLocation" value-ref="hpcDatasetLocationCodec"/>
 			</map>
 		</constructor-arg>
 	</bean>
  	<!-- HPC DAO Implementation Beans -->
-	<bean id="hpcManagedDatasetsDAO" class="gov.nih.nci.hpc.dao.mongo.impl.HpcManagedDatasetsDAOImpl">
+	<bean id="hpcManagedDataDAO" class="gov.nih.nci.hpc.dao.mongo.impl.HpcManagedDataDAOImpl">
 		<constructor-arg value="${hpc.dao.mongo.server.host}" index="0"/>
 		<constructor-arg ref="hpcCodecProvider" index="1"/>
 	</bean>
