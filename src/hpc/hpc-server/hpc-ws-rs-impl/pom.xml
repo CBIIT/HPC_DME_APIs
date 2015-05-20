@@ -22,7 +22,7 @@
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package/>
 						<Private-Package>
-							gov.nih.nci.hpc.deploy.rs.impl
+							gov.nih.nci.hpc.ws.rs.impl
 						</Private-Package>
 						<Import-Package>
 							META-INF.cxf,
