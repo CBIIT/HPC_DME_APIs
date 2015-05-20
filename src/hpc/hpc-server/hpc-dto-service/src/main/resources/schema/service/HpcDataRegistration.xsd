@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--  
- * HpcDatasetRegistrationInput.xsd
+ * HpcDataRegistration.xsd
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -20,11 +20,26 @@
     		
    	<xsd:import namespace="http://hpc.nci.nih.gov/dto/types" schemaLocation="../types/HpcDataTypes.xsd"/>
     
-    <xsd:element name="HpcDatasetsRegistrationInputDTO">
+    <!--  Registration Service Input DTO -->
+    <xsd:element name="HpcDataRegistrationInputDTO">
         <xsd:complexType>
         	<xsd:sequence>
         		<xsd:element name="datasets" type="hpc:HpcDataset" minOccurs="1" maxOccurs="unbounded"/>
         	</xsd:sequence>
+        	<xsd:attribute name="type" type="hpc:HpcManagedDataType" use="required"/>
         </xsd:complexType>
     </xsd:element>
+    
+    <!--  Registration Service Output DTO -->
+    <xsd:element name="HpcDataRegistrationOutputDTO">
+    	<xsd:complexType>
+  			<xsd:sequence>
+        		<xsd:element name="datasets" type="hpc:HpcDataset" 
+			    	         minOccurs="1" maxOccurs="unbounded"/>
+        	</xsd:sequence>
+  			<xsd:attribute name="type" type="hpc:HpcManagedDataType" use="required"/>
+  			<xsd:attribute name="created" type="xsd:dateTime" use="required"/>
+		</xsd:complexType>
+	</xsd:element>
+	
 </xsd:schema>
