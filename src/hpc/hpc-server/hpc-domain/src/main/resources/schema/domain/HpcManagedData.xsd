@@ -22,22 +22,15 @@
    	<xsd:import namespace="http://hpc.nci.nih.gov/dto/types" 
    	            schemaLocation="../types/HpcDataTypes.xsd"/>
     
-    <!--  Managed Dataset Object -->
-    <xsd:complexType name="HpcManagedData" abstract="true">
-  		<xsd:attribute name="id" type="xsd:ID" use="required"/>
+    <!--  Managed Data Object -->
+    <xsd:complexType name="HpcManagedData">
+  		<xsd:sequence>
+        	<xsd:element name="datasets" type="hpc-types:HpcDataset" 
+			             minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:ID" use="required"/>
+  		<xsd:attribute name="type" type="hpc-types:HpcManagedDataType" use="required"/>
+  		<xsd:attribute name="created" type="xsd:dateTime" use="required"/>
 	</xsd:complexType>
 	
-    <xsd:element name="HpcManagedDatasets">
-        <xsd:complexType>
-        	<xsd:complexContent>
-    			<xsd:extension base="hpc-domain:HpcManagedData">    		
-        			<xsd:sequence>
-        				<xsd:element name="datasets" type="hpc-types:HpcDataset" 
-        				             minOccurs="1" maxOccurs="unbounded"/>
-        			</xsd:sequence>
-        		</xsd:extension>
-        	</xsd:complexContent>
-        </xsd:complexType>
-    </xsd:element>
-    
 </xsd:schema>
