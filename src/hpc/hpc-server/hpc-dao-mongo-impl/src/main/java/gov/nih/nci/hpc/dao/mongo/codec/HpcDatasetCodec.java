@@ -40,7 +40,7 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
     //---------------------------------------------------------------------//    
     
     // BSON Document keys.
-    private final static String INDEX_KEY = "index";
+    private final static String ID_KEY = "id";
     private final static String LOCATION_KEY = "location"; 
     private final static String NAME_KEY = "name"; 
     private final static String TYPE_KEY = "type"; 
@@ -82,7 +82,7 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 
 		// Extract the data from the POJO.
 		HpcDatasetLocation location = dataset.getLocation();
-		Integer index = dataset.getIndex();
+		String id = dataset.getId();
 		String name = dataset.getName();
 		HpcDatasetType type = dataset.getType();
 		Double size = dataset.getSize();
@@ -91,8 +91,8 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 		if(location != null) {
 		   document.put(LOCATION_KEY, location);
 		}
-		if(index != null) {
-		   document.put(INDEX_KEY, index);
+		if(id != null) {
+		   document.put(ID_KEY, id);
 		}
 		if(name != null) {
 		   document.put(NAME_KEY, name);
@@ -116,7 +116,7 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 		// Map the document to HpcDataset instance.
 		HpcDataset dataset = new HpcDataset();
 		dataset.setLocation(document.get(LOCATION_KEY, HpcDatasetLocation.class));
-		dataset.setIndex(document.get(INDEX_KEY, Integer.class));
+		dataset.setId(document.get(ID_KEY, String.class));
 		dataset.setName(document.get(NAME_KEY, String.class));
 		dataset.setType(HpcDatasetType.valueOf(
 				        document.get(TYPE_KEY, String.class)));
