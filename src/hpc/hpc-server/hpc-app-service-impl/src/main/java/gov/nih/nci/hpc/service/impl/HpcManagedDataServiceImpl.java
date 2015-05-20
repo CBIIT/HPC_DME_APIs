@@ -87,9 +87,15 @@ public class HpcManagedDataServiceImpl implements HpcManagedDataService
     //---------------------------------------------------------------------//  
     
     @Override
-    public void add(HpcManagedDataType type,
-    		        List<HpcDataset> datasets) throws HpcException
+    public String add(HpcManagedDataType type,
+    		          List<HpcDataset> datasets) throws HpcException
     {
+    	// Input validation.
+    	if(type == null || datasets == null || datasets.size() == 0) {
+    	   throw new HpcException("Invalid add managed-data input", 
+    			                  HpcErrorType.INVALID_INPUT);
+    	}
+    	
     	// Create the domain object.
     	HpcManagedData managedData = new HpcManagedData();
     	
@@ -100,12 +106,38 @@ public class HpcManagedDataServiceImpl implements HpcManagedDataService
     	managedData.setType(type);
     	managedData.setCreated(Calendar.getInstance());
     	for(HpcDataset dataset : datasets) {
+    		dataset.setId(UUID.randomUUID().toString());
+    		dataset.setSize(0);
+    		validate(dataset);
     		managedData.getDatasets().add(dataset);
     	}
     	
     	// Persist to Mongo.
     	managedDataDAO.add(managedData);
+    	
+    	return managedData.getId();
     }
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//  
+	
+    /**
+     * Validate a dataset object.
+     *
+     * @param dataset the object to be validated
+     * @throws HpcException If the dataset object is invalid.
+     */
+    private void validate(HpcDataset dataset) throws HpcException
+    {
+    	if(dataset.getName() == null || dataset.getType() == null ||
+    	   dataset.getLocation() == null || 
+    	   dataset.getLocation().getFacility() == null ||
+    	   dataset.getLocation().getEndpoint() == null ||
+    	   dataset.getLocation().getDataTransfer() == null) {
+     	   throw new HpcException("Invalid dataset input", 
+	                              HpcErrorType.INVALID_INPUT);    	   
+    	}
+    }  
 }
 
  

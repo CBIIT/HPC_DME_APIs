@@ -85,26 +85,27 @@ public class HpcDataRegistrationServiceImpl
     //---------------------------------------------------------------------//  
     
     @Override
-    public void registerData(
-                        HpcDataRegistrationInputDTO registrationInputDTO)
-                        throws HpcException
+    public String registerData(
+                          HpcDataRegistrationInputDTO registrationInputDTO)
+                          throws HpcException
     {
     	logger.info("Invoking registerData()");
     	
     	// Input validation.
-    	if(registrationInputDTO == null || 
-    	   registrationInputDTO.getDatasets() == null || 
-    	   registrationInputDTO.getDatasets().size() == 0) {
-    	   throw new HpcException("Invalid HpcDatasetsRegistrationInputDTO",
+    	if(registrationInputDTO == null) {
+    	   throw new HpcException("Null HpcDatasetsRegistrationInputDTO",
     			                  HpcErrorType.INVALID_INPUT);	
     	}
     	
     	// Add the datasets to the managed collection.
-    	managedDataService.add(registrationInputDTO.getType(),
-    			               registrationInputDTO.getDatasets());
+    	String managedDataId = 
+    		   managedDataService.add(registrationInputDTO.getType(),
+    			                      registrationInputDTO.getDatasets());
     	
     	// Transfer the datasets to their destination.
     	// TODO - implement.
+    	
+    	return managedDataId;
     }
 }
 
