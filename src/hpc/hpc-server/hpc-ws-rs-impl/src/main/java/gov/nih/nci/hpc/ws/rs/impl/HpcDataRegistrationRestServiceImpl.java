@@ -44,7 +44,7 @@ import gov.nih.nci.hpc.dto.types.HpcDatasetType;
  */
 
 @Path("/")
-public class HpcDataRegistrationRestServiceImpl 
+public class HpcDataRegistrationRestServiceImpl extends HpcRestServiceImpl
              implements HpcDataRegistrationRestService
 {   
     //---------------------------------------------------------------------//
@@ -127,18 +127,18 @@ public class HpcDataRegistrationRestServiceImpl
     		        HpcDataRegistrationInputDTO registrationInputDTO)
     {	
 		logger.info("Invoking RS: POST /registration");
+		
+		String registeredDataId = null;
 		try {
-			 registrationBusService.registerData(registrationInputDTO);
+			 registeredDataId = 
+		     registrationBusService.registerData(registrationInputDTO);
+			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /registration failed:", e);
-			    return Response.status(Response.Status.BAD_REQUEST).build();
+			    return toResponse(e);
 		}
 		
-		// TODO : Implement
-		UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
-        URI metadataUri = uriBuilder.path("9988").build();
-               
-		return Response.created(metadataUri).build();
+		return toCreatedResponse(registeredDataId);
 	}
 }
 
