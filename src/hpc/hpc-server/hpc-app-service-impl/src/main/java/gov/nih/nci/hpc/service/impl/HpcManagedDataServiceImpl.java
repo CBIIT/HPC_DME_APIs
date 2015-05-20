@@ -10,36 +10,44 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.service.HpcManagedDatasetsService;
+import gov.nih.nci.hpc.service.HpcManagedDataService;
 import gov.nih.nci.hpc.dto.types.HpcDataset;
-import gov.nih.nci.hpc.domain.HpcManagedDatasets;
-import gov.nih.nci.hpc.dao.HpcManagedDatasetsDAO;
+import gov.nih.nci.hpc.dto.types.HpcManagedDataType;
+import gov.nih.nci.hpc.domain.HpcManagedData;
+import gov.nih.nci.hpc.dao.HpcManagedDataDAO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.DatatypeConfigurationException;
+
 import java.util.List;
+import java.util.UUID;
+import java.util.GregorianCalendar;
 
 /**
  * <p>
- * HPC Managed Datasets Application Service Implementation.
+ * HPC Managed Data Application Service Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcManagedDatasetsServiceImpl 
-             implements HpcManagedDatasetsService
+public class HpcManagedDataServiceImpl implements HpcManagedDataService
 {         
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
-    // The Managed Datasets DAO instance.
-    private HpcManagedDatasetsDAO managedDatasetsDAO = null;
+    // The Managed Data DAO instance.
+    private HpcManagedDataDAO managedDataDAO = null;
+    
+    // XML type factory
+    private DatatypeFactory xmlTypeFactory = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -54,7 +62,7 @@ public class HpcManagedDatasetsServiceImpl
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcManagedDatasetsServiceImpl() throws HpcException
+    private HpcManagedDataServiceImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -63,18 +71,26 @@ public class HpcManagedDatasetsServiceImpl
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param managedDatasetDAO The managed dataset DAO instance.
+     * @param managedDatDAO The managed dat DAO instance.
      */
-    private HpcManagedDatasetsServiceImpl(
-    		                  HpcManagedDatasetsDAO managedDatasetsDAO)
-                              throws HpcException
+    private HpcManagedDataServiceImpl(HpcManagedDataDAO managedDataDAO)
+                                     throws HpcException
     {
-    	if(managedDatasetsDAO == null) {
-     	   throw new HpcException("Null HpcManagedDatasetsDAO instance",
+    	if(managedDataDAO == null) {
+     	   throw new HpcException("Null HpcManagedDataDAO instance",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
     	
-    	this.managedDatasetsDAO = managedDatasetsDAO;
+    	try {
+    		 xmlTypeFactory = DatatypeFactory.newInstance();
+    		
+    	} catch(DatatypeConfigurationException e) {
+    		    throw new HpcException(
+    		    		     "Failed to instantiate DatatypeFactory",
+    		    		     HpcErrorType.JAXB_ERROR, e);
+    	}
+    	
+    	this.managedDataDAO = managedDataDAO;
     }  
     
     //---------------------------------------------------------------------//
@@ -82,20 +98,31 @@ public class HpcManagedDatasetsServiceImpl
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcManagedDatasetsService Interface Implementation
+    // HpcManagedDataService Interface Implementation
     //---------------------------------------------------------------------//  
     
     @Override
-    public void add(List<HpcDataset> datasets) throws HpcException
+    public void add(HpcManagedDataType type,
+    		        List<HpcDataset> datasets) throws HpcException
     {
     	// Create the domain object.
-    	HpcManagedDatasets managedDatasets = new HpcManagedDatasets();
+    	HpcManagedData managedData = new HpcManagedData();
+    	
+    	// Generate and set an ID.
+    	managedData.setId(UUID.randomUUID().toString());
+    	
+    	// Set the creation time to now.
+    	GregorianCalendar now = new GregorianCalendar();
+    	
+    	// Populate type and datasets
+    	managedData.setType(type);
+    	managedData.setCreated(xmlTypeFactory.newXMLGregorianCalendar(now));
     	for(HpcDataset dataset : datasets) {
-    		managedDatasets.getDatasets().add(dataset);
+    		managedData.getDatasets().add(dataset);
     	}
     	
     	// Persist to Mongo.
-    	managedDatasetsDAO.add(managedDatasets);
+    	managedDataDAO.add(managedData);
     }
 }
 
