@@ -88,7 +88,7 @@
             			<configuration>
                 			<xsdOptions>
                 				<xsdOption>
-                        			<xsd>xjc-build/schema/service/HpcDatasetsRegistration.xsd</xsd>
+                        			<xsd>xjc-build/schema/service/HpcDataRegistration.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.dto.service</packagename>
                         			<bindingFile>xjc-build/schema/types/hpc-dto-import-types-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
