@@ -1,5 +1,5 @@
 /**
- * HpcDatasetsRegistrationServiceImpl.java
+ * HpcDataRegistrationServiceImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,9 +10,9 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
-import gov.nih.nci.hpc.bus.HpcDatasetsRegistrationService;
-import gov.nih.nci.hpc.service.HpcManagedDatasetsService;
-import gov.nih.nci.hpc.dto.service.HpcDatasetsRegistrationInputDTO;
+import gov.nih.nci.hpc.bus.HpcDataRegistrationService;
+import gov.nih.nci.hpc.service.HpcManagedDataService;
+import gov.nih.nci.hpc.dto.service.HpcDataRegistrationInputDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -21,22 +21,22 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * HPC Datasets Business Service Implementation.
+ * HPC Data Registration Business Service Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcDatasetsRegistrationServiceImpl 
-             implements HpcDatasetsRegistrationService
+public class HpcDataRegistrationServiceImpl 
+             implements HpcDataRegistrationService
 {         
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
-    // The Managed Datasets application service instance.
-    private HpcManagedDatasetsService managedDatasetsService = null;
+    // The Managed Data application service instance.
+    private HpcManagedDataService managedDataService = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -51,7 +51,7 @@ public class HpcDatasetsRegistrationServiceImpl
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcDatasetsRegistrationServiceImpl() throws HpcException
+    private HpcDataRegistrationServiceImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -60,20 +60,20 @@ public class HpcDatasetsRegistrationServiceImpl
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param managedDatasetService The managed dataset application service.
+     * @param managedDatService The managed data application service.
      * 
      * @throws HpcException If managedDatasetService is null.
      */
-    private HpcDatasetsRegistrationServiceImpl(
-    		           HpcManagedDatasetsService managedDatasetsService)
-                       throws HpcException
+    private HpcDataRegistrationServiceImpl(
+    		       HpcManagedDataService managedDataService)
+                   throws HpcException
     {
-    	if(managedDatasetsService == null) {
-     	   throw new HpcException("Null HpcManagedDatasetService instance",
+    	if(managedDataService == null) {
+     	   throw new HpcException("Null HpcManagedDataService instance",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
     	
-    	this.managedDatasetsService = managedDatasetsService;
+    	this.managedDataService = managedDataService;
     }  
     
     //---------------------------------------------------------------------//
@@ -81,15 +81,15 @@ public class HpcDatasetsRegistrationServiceImpl
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcDatasetRegistrationService Interface Implementation
+    // HpcDataRegistrationService Interface Implementation
     //---------------------------------------------------------------------//  
     
     @Override
-    public void registerDatasets(
-                        HpcDatasetsRegistrationInputDTO registrationInputDTO)
+    public void registerData(
+                        HpcDataRegistrationInputDTO registrationInputDTO)
                         throws HpcException
     {
-    	logger.info("Invoking registerDatasets()");
+    	logger.info("Invoking registerData()");
     	
     	// Input validation.
     	if(registrationInputDTO == null || 
@@ -100,7 +100,8 @@ public class HpcDatasetsRegistrationServiceImpl
     	}
     	
     	// Add the datasets to the managed collection.
-    	managedDatasetsService.add(registrationInputDTO.getDatasets());
+    	managedDataService.add(registrationInputDTO.getType(),
+    			               registrationInputDTO.getDatasets());
     	
     	// Transfer the datasets to their destination.
     	// TODO - implement.

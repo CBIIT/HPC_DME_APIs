@@ -17,8 +17,8 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- HPC Business Services Beans -->
-	<bean id="hpcDatasetsRegistrationService" class="gov.nih.nci.hpc.bus.impl.HpcDatasetsRegistrationServiceImpl">
-		<constructor-arg ref="hpcManagedDatasetsService"/>
+	<bean id="hpcDataRegistrationService" class="gov.nih.nci.hpc.bus.impl.HpcDataRegistrationServiceImpl">
+		<constructor-arg ref="hpcManagedDataService"/>
 	</bean>
 	
 </beans>
