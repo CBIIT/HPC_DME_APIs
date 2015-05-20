@@ -28,12 +28,13 @@ public interface HpcDataRegistrationService
      * Register Datasets.
      *
      * @param registrationInputDTO The datas registration input DTO.
+     * @return The registered data ID.
      * 
      * @throws HpcException
      */
-    public void registerData(
-    		            HpcDataRegistrationInputDTO registrationInputDTO)
-    		            throws HpcException;
+    public String registerData(
+    		              HpcDataRegistrationInputDTO registrationInputDTO)
+    		              throws HpcException;
 }
 
  
