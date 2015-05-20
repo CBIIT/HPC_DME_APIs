@@ -32,11 +32,12 @@ public interface HpcManagedDataService
      *
      * @param type The managed data type.
      * @param datasets The datasets to start manage.
+     * @return The added managed data ID.
      * 
      * @throws HpcException
      */
-    public void add(HpcManagedDataType type,
-    		        List<HpcDataset> datasets) throws HpcException;
+    public String add(HpcManagedDataType type,
+    		          List<HpcDataset> datasets) throws HpcException;
 }
 
  
