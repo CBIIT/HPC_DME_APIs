@@ -1,5 +1,5 @@
 /**
- * HpcManagedDatasetsService.java
+ * HpcManagedDataService.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -11,29 +11,32 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.dto.types.HpcDataset;
+import gov.nih.nci.hpc.dto.types.HpcManagedDataType;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
 
 /**
  * <p>
- * HPC Managed Datasets App Service Interface.
+ * HPC Managed Data Application Service Interface.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public interface HpcManagedDatasetsService 
+public interface HpcManagedDataService 
 {         
     /**
-     * Add managed datasets.
+     * Add managed data.
      *
+     * @param type The managed data type.
      * @param datasets The datasets to start manage.
      * 
      * @throws HpcException
      */
-    public void add(List<HpcDataset> datasets) throws HpcException;
+    public void add(HpcManagedDataType type,
+    		        List<HpcDataset> datasets) throws HpcException;
 }
 
  
