@@ -1,5 +1,5 @@
 /**
- * HpcManagedDatasetsDAO.java
+ * HpcManagedDataDAO.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,28 +10,28 @@
 
 package gov.nih.nci.hpc.dao;
 
-import gov.nih.nci.hpc.domain.HpcManagedDatasets;
+import gov.nih.nci.hpc.domain.HpcManagedData;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
- * HPC Managed Datasets DAO Interface.
+ * HPC Managed Data DAO Interface.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public interface HpcManagedDatasetsDAO 
+public interface HpcManagedDataDAO 
 {         
     /**
-     * Add managed datasets to the repository.
+     * Add managed data to the repository.
      *
-     * @param managedDatasets The datasets to add to the DB.
+     * @param managedData The managed data to add to the DB.
      * 
      * @throws HpcException
      */
-    public void add(HpcManagedDatasets managedDatasets) throws HpcException;
+    public void add(HpcManagedData managedData) throws HpcException;
 }
 
  
