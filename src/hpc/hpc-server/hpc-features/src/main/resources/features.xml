@@ -33,8 +33,8 @@
         <bundle>mvn:${project.groupId}/hpc-app-service-impl/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-bus-service-api/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-bus-service-impl/${project.version}</bundle>
-        <bundle>mvn:${project.groupId}/hpc-deploy-rs-api/${project.version}</bundle>
-        <bundle>mvn:${project.groupId}/hpc-deploy-rs-impl/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-ws-rs-api/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}</bundle>
     </feature>
     
 </features>

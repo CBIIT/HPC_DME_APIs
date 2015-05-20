@@ -21,12 +21,9 @@ import gov.nih.nci.hpc.exception.HpcErrorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.DatatypeConfigurationException;
-
 import java.util.List;
 import java.util.UUID;
-import java.util.GregorianCalendar;
+import java.util.Calendar;
 
 /**
  * <p>
@@ -45,9 +42,6 @@ public class HpcManagedDataServiceImpl implements HpcManagedDataService
 
     // The Managed Data DAO instance.
     private HpcManagedDataDAO managedDataDAO = null;
-    
-    // XML type factory
-    private DatatypeFactory xmlTypeFactory = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -81,15 +75,6 @@ public class HpcManagedDataServiceImpl implements HpcManagedDataService
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
     	
-    	try {
-    		 xmlTypeFactory = DatatypeFactory.newInstance();
-    		
-    	} catch(DatatypeConfigurationException e) {
-    		    throw new HpcException(
-    		    		     "Failed to instantiate DatatypeFactory",
-    		    		     HpcErrorType.JAXB_ERROR, e);
-    	}
-    	
     	this.managedDataDAO = managedDataDAO;
     }  
     
@@ -111,12 +96,9 @@ public class HpcManagedDataServiceImpl implements HpcManagedDataService
     	// Generate and set an ID.
     	managedData.setId(UUID.randomUUID().toString());
     	
-    	// Set the creation time to now.
-    	GregorianCalendar now = new GregorianCalendar();
-    	
     	// Populate type and datasets
     	managedData.setType(type);
-    	managedData.setCreated(xmlTypeFactory.newXMLGregorianCalendar(now));
+    	managedData.setCreated(Calendar.getInstance());
     	for(HpcDataset dataset : datasets) {
     		managedData.getDatasets().add(dataset);
     	}
