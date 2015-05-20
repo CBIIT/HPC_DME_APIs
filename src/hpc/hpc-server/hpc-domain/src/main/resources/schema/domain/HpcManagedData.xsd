@@ -17,7 +17,7 @@
 			xmlns:hpc-types="http://hpc.nci.nih.gov/dto/types"
 			xmlns:hpc-domain="http://hpc.nci.nih.gov/domain"
     		targetNamespace="http://hpc.nci.nih.gov/domain"
-    		elementFormDefault="qualified">
+    		elementFormDefault="unqualified">
     		
    	<xsd:import namespace="http://hpc.nci.nih.gov/dto/types" 
    	            schemaLocation="../types/HpcDataTypes.xsd"/>
