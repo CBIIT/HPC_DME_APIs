@@ -22,7 +22,7 @@
   	    <xsd:sequence>
       		<xsd:element name="location" type="hpc:HpcDatasetLocation"></xsd:element>
     	</xsd:sequence>
-    	<xsd:attribute name="index" type="xsd:int"/>
+    	<xsd:attribute name="id" type="xsd:ID"/>
   		<xsd:attribute name="name" type="xsd:string" use="required"/>
   		<xsd:attribute name="type" type="hpc:HpcDatasetType" use="required"/>
   		<xsd:attribute name="size" type="xsd:double"/>
@@ -56,6 +56,13 @@
   		<xsd:restriction base="xsd:string">
   			<xsd:enumeration value="UNKONWN"/>
   			<xsd:enumeration value="GLOBUS"/>
+  		</xsd:restriction>
+	</xsd:simpleType>
+	
+		<xsd:simpleType name="HpcManagedDataType">
+  		<xsd:restriction base="xsd:string">
+  			<xsd:enumeration value="UNKONWN"/>
+  			<xsd:enumeration value="EXPERIMENT"/>
   		</xsd:restriction>
 	</xsd:simpleType>
 
