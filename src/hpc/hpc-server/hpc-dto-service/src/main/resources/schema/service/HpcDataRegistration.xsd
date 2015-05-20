@@ -16,17 +16,19 @@
 			xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 			xmlns:hpc="http://hpc.nci.nih.gov/dto/types"
     		targetNamespace="http://hpc.nci.nih.gov/dto/service"
-    		elementFormDefault="qualified">
+    		elementFormDefault="unqualified">
     		
    	<xsd:import namespace="http://hpc.nci.nih.gov/dto/types" schemaLocation="../types/HpcDataTypes.xsd"/>
     
     <!--  Registration Service Input DTO -->
     <xsd:element name="HpcDataRegistrationInputDTO">
         <xsd:complexType>
-        	<xsd:sequence>
-        		<xsd:element name="datasets" type="hpc:HpcDataset" minOccurs="1" maxOccurs="unbounded"/>
+  			<xsd:sequence>
+  				<xsd:element name="type" type="hpc:HpcManagedDataType"/>
+        		<xsd:element name="datasets" type="hpc:HpcDataset" 
+			    	         minOccurs="1" maxOccurs="unbounded"/>
         	</xsd:sequence>
-        	<xsd:attribute name="type" type="hpc:HpcManagedDataType" use="required"/>
+        	
         </xsd:complexType>
     </xsd:element>
     
@@ -34,12 +36,11 @@
     <xsd:element name="HpcDataRegistrationOutputDTO">
     	<xsd:complexType>
   			<xsd:sequence>
+  			  	<xsd:element name="type" type="hpc:HpcManagedDataType"/>
+  				<xsd:element name="created" type="xsd:dateTime"/>
         		<xsd:element name="datasets" type="hpc:HpcDataset" 
 			    	         minOccurs="1" maxOccurs="unbounded"/>
-        	</xsd:sequence>
-  			<xsd:attribute name="type" type="hpc:HpcManagedDataType" use="required"/>
-  			<xsd:attribute name="created" type="xsd:dateTime" use="required"/>
+  			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-	
 </xsd:schema>

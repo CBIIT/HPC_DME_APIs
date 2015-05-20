@@ -117,6 +117,7 @@ public class HpcDataRegistrationRestServiceImpl
     	ds.setName("SEQUENCING file name");
     	ds.setType(HpcDatasetType.RAW_SEQUENCING);
     	dto.getDatasets().add(ds);
+    	dto.getDatasets().add(ds);
     	dto.setType(HpcManagedDataType.EXPERIMENT);
     	return dto;
     }
