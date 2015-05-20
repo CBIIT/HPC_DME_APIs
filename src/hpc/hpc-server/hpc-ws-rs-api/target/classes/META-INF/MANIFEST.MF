@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1432129293879
+Bnd-LastModified: 1432144956030
 Build-Jdk: 1.7.0_79
 Built-By: eran
 Bundle-ManifestVersion: 2

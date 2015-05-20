@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1432129294289
+Bnd-LastModified: 1432144956353
 Build-Jdk: 1.7.0_79
 Built-By: eran
 Bundle-ManifestVersion: 2
@@ -12,7 +12,7 @@ Import-Package: gov.nih.nci.hpc.bus;version="[1.0,2)",gov.nih.nci.hpc.dt
  ,gov.nih.nci.hpc.exception;version="[1.0,2)",gov.nih.nci.hpc.ws.rs,java
  x.ws.rs;version="[2.0,3)",javax.ws.rs.core;version="[2.0,3)",org.apache
  .cxf.jaxrs.provider;version="[3.0,4)",org.apache.cxf.jaxrs.provider.jso
- n,org.slf4j;version="[1.7,2)",META-INF.cxf;version="[3.0,4)",org.apache
- .cxf.bus.spring;version="[3.0,4)"
+ n,org.slf4j;version="[1.7,2)",org.apache.cxf.bus.spring;version="[3.0,4
+ )",META-INF.cxf;version="[3.0,4)"
 Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.5))"
 Tool: Bnd-2.3.0.201405100607
