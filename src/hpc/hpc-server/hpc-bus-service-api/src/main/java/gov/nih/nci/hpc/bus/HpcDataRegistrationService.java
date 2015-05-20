@@ -1,5 +1,5 @@
 /**
- * HpcDatasetsRegistrationService.java
+ * HpcDataRegistrationService.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.bus;
 
-import gov.nih.nci.hpc.dto.service.HpcDatasetsRegistrationInputDTO;
+import gov.nih.nci.hpc.dto.service.HpcDataRegistrationInputDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -22,17 +22,17 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @version $Id$
  */
 
-public interface HpcDatasetsRegistrationService 
+public interface HpcDataRegistrationService 
 {         
     /**
      * Register Datasets.
      *
-     * @param registrationInputDTO The datasets registration input DTO.
+     * @param registrationInputDTO The datas registration input DTO.
      * 
      * @throws HpcException
      */
-    public void registerDatasets(
-    		            HpcDatasetsRegistrationInputDTO registrationInputDTO)
+    public void registerData(
+    		            HpcDataRegistrationInputDTO registrationInputDTO)
     		            throws HpcException;
 }
 
