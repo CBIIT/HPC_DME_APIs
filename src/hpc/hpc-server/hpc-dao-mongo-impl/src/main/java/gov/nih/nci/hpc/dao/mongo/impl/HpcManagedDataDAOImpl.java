@@ -36,14 +36,14 @@ import java.util.Vector;
 
 /**
  * <p>
- * HPC Managed Datasets DAO Implementation.
+ * HPC Managed Data DAO Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
+public class HpcManagedDataDAOImpl implements HpcManagedDataDAO
 { 
     //---------------------------------------------------------------------//
     // Constants
@@ -53,8 +53,8 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
     private final static String DB_NAME = "hpc"; 
     
     // Mongo DB name.
-    private final static String MANAGED_DATASETS_COLLECTION_NAME = 
-    		                    "managedDatasets"; 
+    private final static String MANAGED_DATA_COLLECTION_NAME = 
+    		                    "managedData"; 
     
     //---------------------------------------------------------------------//
     // Instance members
@@ -76,7 +76,7 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcManagedDatasetsDAOImpl() throws HpcException
+    private HpcManagedDataDAOImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -90,9 +90,9 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
      * 
      * @throws HpcException If a MongoClient instance was not provided.
      */
-    private HpcManagedDatasetsDAOImpl(String mongoHost,
-    		                          HpcCodecProvider hpcCodecProvider) 
-    		                         throws HpcException
+    private HpcManagedDataDAOImpl(String mongoHost,
+    		                      HpcCodecProvider hpcCodecProvider) 
+    		                     throws HpcException
     {
     	if(mongoHost == null || hpcCodecProvider == null) {
     	   throw new HpcException("Null Mongo Host or HpcCodecProvider instance",
@@ -132,17 +132,15 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcManagedDatasetsDAO Interface Implementation
+    // HpcManagedDataDAO Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void add(HpcManagedDatasets managedDatasets) throws HpcException
+	public void add(HpcManagedData managedData) throws HpcException
     {
 		HpcSingleResultCallback<Void> callback = 
 				                      new HpcSingleResultCallback<Void>();
-		getManagedDatasetsCollection().insertOne(
-				                       managedDatasets, 
-				                       callback);
+		getManagedDataCollection().insertOne(managedData, callback);
        
 		// Throw the callback exception (if any).
 		callback.throwException();
@@ -153,14 +151,14 @@ public class HpcManagedDatasetsDAOImpl implements HpcManagedDatasetsDAO
     //---------------------------------------------------------------------//  
 	
     /**
-     * Get the managed datasets Mongo collection.
+     * Get the managed data Mongo collection.
      *
-     * @return A The metadata Mongo collection.
+     * @return A The managed data Mongo collection.
      */
-    private MongoCollection<HpcManagedData> getManagedDatasetsCollection()  
+    private MongoCollection<HpcManagedData> getManagedDataCollection()  
     {
     	MongoDatabase database = mongoClient.getDatabase(DB_NAME); 
-    	return database.getCollection(MANAGED_DATASETS_COLLECTION_NAME, 
+    	return database.getCollection(MANAGED_DATA_COLLECTION_NAME, 
     			                      HpcManagedData.class);
     }  
 }
