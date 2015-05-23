@@ -59,11 +59,11 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>${project.groupId}</groupId>
-									<artifactId>hpc-dto-types</artifactId>
+									<artifactId>hpc-domain</artifactId>
 									<version>${project.version}</version>
 									<overWrite>true</overWrite>
 									<outputDirectory>xjc-build</outputDirectory>
-									<includes>**/HpcDataTypes.xsd,**/hpc-dto-import-types-jaxb-binding.xjb</includes>
+									<includes>**/**.xsd,**/**.xjb</includes>
 								</artifactItem>
 							</artifactItems>
 						</configuration>
@@ -88,9 +88,9 @@
             			<configuration>
                 			<xsdOptions>
                 				<xsdOption>
-                        			<xsd>xjc-build/schema/service/HpcDataRegistration.xsd</xsd>
-                        			<packagename>gov.nih.nci.hpc.dto.service</packagename>
-                        			<bindingFile>xjc-build/schema/types/hpc-dto-import-types-jaxb-binding.xjb</bindingFile>
+                        			<xsd>xjc-build/schema/HpcDataRegistration.xsd</xsd>
+                        			<packagename>gov.nih.nci.hpc.dto</packagename>
+                        			<bindingFile>xjc-build/schema/hpc-domain-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
                 			</xsdOptions>
             			</configuration>
@@ -105,7 +105,7 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package>
-							gov.nih.nci.hpc.dto.service
+							gov.nih.nci.hpc.dto
 						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>
