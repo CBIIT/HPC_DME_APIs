@@ -36,15 +36,6 @@ import org.slf4j.LoggerFactory;
 public class HpcDatasetLocationCodec extends HpcCodec<HpcDatasetLocation>
 { 
     //---------------------------------------------------------------------//
-    // Constants
-    //---------------------------------------------------------------------//    
-    
-    // BSON Document keys.
-    private final static String FACILITY_KEY = "facility";
-    private final static String ENDPOINT_KEY = "endpoint"; 
-    private final static String DATA_TRANSFER_KEY = "data_transfer"; 
-    
-    //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 	
@@ -85,16 +76,17 @@ public class HpcDatasetLocationCodec extends HpcCodec<HpcDatasetLocation>
 
 		// Set the data on the BSON document.
 		if(facility != null) {
-		   document.put(FACILITY_KEY, facility.value());
+		   document.put(DATASET_LOCATION_FACILITY_KEY, facility.value());
 		}
 		if(endpoint != null) {
-		   document.put(ENDPOINT_KEY, endpoint);
+		   document.put(DATASET_LOCATION_ENDPOINT_KEY, endpoint);
 		}
 		if(dataTransfer != null) {
-		   document.put(DATA_TRANSFER_KEY, dataTransfer.value());
+		   document.put(DATASET_LOCATION_DATA_TRANSFER_KEY, dataTransfer.value());
 		}
 		
-		getRegistry().get(Document.class).encode(writer, document, encoderContext);
+		getRegistry().get(Document.class).encode(writer, document, 
+				                                 encoderContext);
 	}
  
 	@Override
@@ -103,15 +95,19 @@ public class HpcDatasetLocationCodec extends HpcCodec<HpcDatasetLocation>
 	{
 		// Get the BSON Document.
 		Document document = 
-	             getRegistry().get(Document.class).decode(reader, decoderContext);
+	             getRegistry().get(Document.class).decode(reader, 
+	            		                                  decoderContext);
 		
 		// Map the document to HpcDataset instance.
 		HpcDatasetLocation location = new HpcDatasetLocation();
 		location.setFacility(HpcFacility.valueOf(
-				             document.get(FACILITY_KEY, String.class)));
-		location.setEndpoint(document.get(ENDPOINT_KEY, String.class));
+				             document.get(DATASET_LOCATION_FACILITY_KEY, 
+				            		      String.class)));
+		location.setEndpoint(document.get(DATASET_LOCATION_ENDPOINT_KEY, 
+				                          String.class));
 		location.setDataTransfer(HpcDataTransfer.valueOf(
-                                 document.get(DATA_TRANSFER_KEY, String.class)));
+                                 document.get(DATASET_LOCATION_DATA_TRANSFER_KEY, 
+                                		      String.class)));
 		
 		return location;
 	}
