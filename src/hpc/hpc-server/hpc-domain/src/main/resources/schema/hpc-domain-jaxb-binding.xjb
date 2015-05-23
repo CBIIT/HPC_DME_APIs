@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--  
- * jaxb-binding.xjb
+ * hpc-domain-jaxb-binding.xjb
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -29,25 +29,4 @@
             parseMethod="javax.xml.bind.DatatypeConverter.parseTime"
             printMethod="javax.xml.bind.DatatypeConverter.printTime"/>
 	</jxb:globalBindings>
-	
-	<jxb:bindings schemaLocation="HpcDataTypes.xsd">
-		    <jxb:bindings node="//xsd:simpleType[@name='HpcManagedDataType']">
-                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.dto.types.HpcManagedDataType"/>
-            </jxb:bindings>
-	        <jxb:bindings node="//xsd:simpleType[@name='HpcDataTransfer']">
-                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.dto.types.HpcDataTransfer"/>
-            </jxb:bindings>
-            <jxb:bindings node="//xsd:simpleType[@name='HpcDatasetType']">
-                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.dto.types.HpcDatasetType"/>
-            </jxb:bindings>
-            <jxb:bindings node="//xsd:simpleType[@name='HpcFacility']">
-                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.dto.types.HpcFacility"/>
-            </jxb:bindings>
-            <jxb:bindings node="//xsd:complexType[@name='HpcDatasetLocation']">
-                <jxb:class ref="gov.nih.nci.hpc.dto.types.HpcDatasetLocation"/>
-            </jxb:bindings>
-            <jxb:bindings node="//xsd:complexType[@name='HpcDataset']">
-                <jxb:class ref="gov.nih.nci.hpc.dto.types.HpcDataset"/>
-            </jxb:bindings>
-    </jxb:bindings>
 </jxb:bindings>
