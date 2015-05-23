@@ -10,8 +10,8 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
-import gov.nih.nci.hpc.dto.HpcDataRegistrationInputDTO;
-import gov.nih.nci.hpc.dto.HpcDataRegistrationOutputDTO;
+import gov.nih.nci.hpc.dto.HpcDataRegistrationInput;
+import gov.nih.nci.hpc.dto.HpcDataRegistrationOutput;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -42,19 +42,19 @@ public interface HpcDataRegistrationRestService
     @GET
     @Path("/registration/{id}")
     @Produces("application/json,application/xml")
-    public HpcDataRegistrationOutputDTO 
+    public HpcDataRegistrationOutput
            getRegisterdData(@PathParam("id") String id); 
     
     /**
      * POST registration request.
      *
-     * @param registrationInputDTO The data registration input DTO.
+     * @param registrationInput The data registration input DTO.
      */
     @POST
     @Path("/registration")
     @Consumes("application/json,application/xml")
     public Response registerData(
-    		                HpcDataRegistrationInputDTO registrationInputDTO);
+    		                HpcDataRegistrationInput registrationInput);
 }
 
  
