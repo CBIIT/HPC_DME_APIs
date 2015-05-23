@@ -63,7 +63,7 @@
 									<version>${project.version}</version>
 									<overWrite>true</overWrite>
 									<outputDirectory>xjc-build</outputDirectory>
-									<includes>**/HpcDataTypes.xsd,**/hpc-domain-jaxb-binding.xjb</includes>
+									<includes>**/HpcDataTypes.xsd,**/hpc-domain-import-types-jaxb-binding.xjb</includes>
 								</artifactItem>
 							</artifactItems>
 						</configuration>
@@ -90,7 +90,7 @@
                 				<xsdOption>
                         			<xsd>xjc-build/schema/HpcDataRegistration.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.dto</packagename>
-                        			<bindingFile>xjc-build/schema/hpc-domain-jaxb-binding.xjb</bindingFile>
+                        			<bindingFile>xjc-build/schema/hpc-domain-import-types-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
                 			</xsdOptions>
             			</configuration>
