@@ -10,9 +10,9 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.dto.types.HpcDataset;
-import gov.nih.nci.hpc.dto.types.HpcDatasetLocation;
-import gov.nih.nci.hpc.dto.types.HpcDatasetType;
+import gov.nih.nci.hpc.domain.HpcDataset;
+import gov.nih.nci.hpc.domain.HpcDatasetLocation;
+import gov.nih.nci.hpc.domain.HpcDatasetType;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;

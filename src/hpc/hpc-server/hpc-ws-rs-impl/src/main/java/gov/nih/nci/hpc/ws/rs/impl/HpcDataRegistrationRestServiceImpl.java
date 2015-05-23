@@ -11,9 +11,8 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.ws.rs.HpcDataRegistrationRestService;
-import gov.nih.nci.hpc.dto.service.HpcDataRegistrationInputDTO;
-import gov.nih.nci.hpc.dto.service.HpcDataRegistrationOutputDTO;
-import gov.nih.nci.hpc.dto.types.HpcManagedDataType;
+import gov.nih.nci.hpc.dto.HpcDataRegistrationInputDTO;
+import gov.nih.nci.hpc.dto.HpcDataRegistrationOutputDTO;
 import gov.nih.nci.hpc.bus.HpcDataRegistrationService;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
@@ -27,11 +26,12 @@ import java.net.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.nih.nci.hpc.dto.types.HpcDataset;
-import gov.nih.nci.hpc.dto.types.HpcDatasetLocation;
-import gov.nih.nci.hpc.dto.types.HpcFacility;
-import gov.nih.nci.hpc.dto.types.HpcDataTransfer;
-import gov.nih.nci.hpc.dto.types.HpcDatasetType;
+import gov.nih.nci.hpc.domain.HpcDataset;
+import gov.nih.nci.hpc.domain.HpcDatasetLocation;
+import gov.nih.nci.hpc.domain.HpcFacility;
+import gov.nih.nci.hpc.domain.HpcDataTransfer;
+import gov.nih.nci.hpc.domain.HpcDatasetType;
+import gov.nih.nci.hpc.domain.HpcManagedDataType;
 
 /**
  * <p>
