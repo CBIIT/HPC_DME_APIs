@@ -14,8 +14,8 @@
  
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 			xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
-			xmlns:hpc="http://hpc.nci.nih.gov/dto/types"
-    		targetNamespace="http://hpc.nci.nih.gov/dto/types"
+			xmlns:hpc="http://hpc.nci.nih.gov/domain"
+    		targetNamespace="http://hpc.nci.nih.gov/domain"
     		elementFormDefault="unqualified">
 	
   	<xsd:complexType name="HpcDataset">
