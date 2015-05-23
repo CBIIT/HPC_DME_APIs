@@ -36,17 +36,6 @@ import org.slf4j.LoggerFactory;
 public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 { 
     //---------------------------------------------------------------------//
-    // Constants
-    //---------------------------------------------------------------------//    
-    
-    // BSON Document keys.
-    private final static String ID_KEY = "id";
-    private final static String LOCATION_KEY = "location"; 
-    private final static String NAME_KEY = "name"; 
-    private final static String TYPE_KEY = "type"; 
-    private final static String SIZE_KEY = "size"; 
-    
-    //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 	
@@ -89,38 +78,41 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 
 		// Set the data on the BSON document.
 		if(location != null) {
-		   document.put(LOCATION_KEY, location);
+		   document.put(DATASET_LOCATION_KEY, location);
 		}
 		if(id != null) {
-		   document.put(ID_KEY, id);
+		   document.put(DATASET_ID_KEY, id);
 		}
 		if(name != null) {
-		   document.put(NAME_KEY, name);
+		   document.put(DATASET_NAME_KEY, name);
 		}
 		if(type != null) {
-		   document.put(TYPE_KEY, type.value());
+		   document.put(DATASET_TYPE_KEY, type.value());
 		}
 		if(size != null) {
-		   document.put(SIZE_KEY, size);
+		   document.put(DATASET_SIZE_KEY, size);
 		}
 
-		getRegistry().get(Document.class).encode(writer, document, encoderContext);
+		getRegistry().get(Document.class).encode(writer, document, 
+				                                 encoderContext);
 	}
  
 	@Override
 	public HpcDataset decode(BsonReader reader, DecoderContext decoderContext) 
 	{
 		// Get the BSON Document.
-		Document document = getRegistry().get(Document.class).decode(reader, decoderContext);
+		Document document = getRegistry().get(Document.class).decode(reader, 
+				                                                     decoderContext);
 		
 		// Map the document to HpcDataset instance.
 		HpcDataset dataset = new HpcDataset();
-		dataset.setLocation(document.get(LOCATION_KEY, HpcDatasetLocation.class));
-		dataset.setId(document.get(ID_KEY, String.class));
-		dataset.setName(document.get(NAME_KEY, String.class));
+		dataset.setLocation(document.get(DATASET_LOCATION_KEY, 
+				                         HpcDatasetLocation.class));
+		dataset.setId(document.get(DATASET_ID_KEY, String.class));
+		dataset.setName(document.get(DATASET_NAME_KEY, String.class));
 		dataset.setType(HpcDatasetType.valueOf(
-				        document.get(TYPE_KEY, String.class)));
-		dataset.setSize(document.get(SIZE_KEY, Double.class));
+				        document.get(DATASET_TYPE_KEY, String.class)));
+		dataset.setSize(document.get(DATASET_SIZE_KEY, Double.class));
 		
 		return dataset;
 	}

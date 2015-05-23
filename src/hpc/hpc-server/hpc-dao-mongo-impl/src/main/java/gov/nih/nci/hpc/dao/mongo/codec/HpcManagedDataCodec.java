@@ -41,16 +41,6 @@ import java.util.List;
 public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
 { 
     //---------------------------------------------------------------------//
-    // Constants
-    //---------------------------------------------------------------------//    
-    
-    // BSON Document keys.
-	private final static String ID_KEY = "id"; 
-	private final static String TYPE_KEY = "type"; 
-	private final static String CREATED_KEY = "created"; 
-    private final static String DATASETS_KEY = "datasets"; 
-    
-    //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 	
@@ -92,16 +82,16 @@ public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
  
 		// Set the data on the BSON document.
 		if(id != null) {
-		   document.put(ID_KEY, id);
+		   document.put(MANAGED_DATA_ID_KEY, id);
 		}
 		if(type != null) {
-		   document.put(TYPE_KEY, type.value());
+		   document.put(MANAGED_DATA_TYPE_KEY, type.value());
 		}
 		if(created != null) {
-		   document.put(CREATED_KEY, created.getTime());
+		   document.put(MANAGED_DATA_CREATED_KEY, created.getTime());
 		}
 		if(datasets != null && datasets.size() > 0) {
-		   document.put(DATASETS_KEY, datasets);
+		   document.put(MANAGED_DATA_DATASETS_KEY, datasets);
 		}
 
 		getRegistry().get(Document.class).encode(writer, document, 
@@ -119,14 +109,15 @@ public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
 		
 		// Map the BSON Document to a domain object.
 		HpcManagedData managedData = new HpcManagedData();
-		managedData.setId(document.get(ID_KEY, String.class));
+		managedData.setId(document.get(MANAGED_DATA_ID_KEY, String.class));
 		managedData.setType( 
-		       HpcManagedDataType.fromValue(document.get(TYPE_KEY, String.class)));
+		       HpcManagedDataType.fromValue(document.get(MANAGED_DATA_TYPE_KEY, 
+		    		                                     String.class)));
 		Calendar created = Calendar.getInstance();
-		created.setTime(document.get(CREATED_KEY, Date.class));
+		created.setTime(document.get(MANAGED_DATA_CREATED_KEY, Date.class));
 		managedData.setCreated(created);
 		List<HpcDataset> datasets = 
-				         (List<HpcDataset>) document.get(DATASETS_KEY);
+		     (List<HpcDataset>) document.get(MANAGED_DATA_DATASETS_KEY);
 		if(datasets != null) {
 		   for(HpcDataset dataset : datasets) {
 			   managedData.getDatasets().add(dataset);

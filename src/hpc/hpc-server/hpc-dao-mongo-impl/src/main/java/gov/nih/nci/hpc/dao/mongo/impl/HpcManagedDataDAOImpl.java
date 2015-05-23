@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.dao.mongo.impl;
 
 import gov.nih.nci.hpc.dao.HpcManagedDataDAO;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodecProvider;
+import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 import gov.nih.nci.hpc.domain.HpcManagedData;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
@@ -24,6 +25,7 @@ import com.mongodb.async.client.MongoCollection;
 import com.mongodb.connection.ClusterSettings;
 import com.mongodb.ServerAddress;
 import com.mongodb.async.SingleResultCallback;
+import static com.mongodb.client.model.Filters.*;
 
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistries;
@@ -140,11 +142,21 @@ public class HpcManagedDataDAOImpl implements HpcManagedDataDAO
     {
 		HpcSingleResultCallback<Void> callback = 
 				                      new HpcSingleResultCallback<Void>();
-		getManagedDataCollection().insertOne(managedData, callback);
+		getCollection().insertOne(managedData, callback);
        
 		// Throw the callback exception (if any).
 		callback.throwException();
     }
+	
+	@Override
+	public HpcManagedData get(String id) throws HpcException
+	{
+		HpcSingleResultCallback<HpcManagedData> callback = 
+                       new HpcSingleResultCallback<HpcManagedData>();
+		getCollection().find(eq(HpcCodec.MANAGED_DATA_ID_KEY, 
+				                id)).first(callback);
+		return callback.getResult();
+	}
 	
     //---------------------------------------------------------------------//
     // Helper Methods
@@ -155,7 +167,7 @@ public class HpcManagedDataDAOImpl implements HpcManagedDataDAO
      *
      * @return A The managed data Mongo collection.
      */
-    private MongoCollection<HpcManagedData> getManagedDataCollection()  
+    private MongoCollection<HpcManagedData> getCollection()  
     {
     	MongoDatabase database = mongoClient.getDatabase(DB_NAME); 
     	return database.getCollection(MANAGED_DATA_COLLECTION_NAME, 
