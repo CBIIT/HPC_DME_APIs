@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.bus;
 
-import gov.nih.nci.hpc.dto.HpcDataRegistrationInputDTO;
+import gov.nih.nci.hpc.dto.HpcDataRegistrationInput;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -27,13 +27,13 @@ public interface HpcDataRegistrationService
     /**
      * Register Datasets.
      *
-     * @param registrationInputDTO The datas registration input DTO.
+     * @param registrationInput The datas registration input DTO.
      * @return The registered data ID.
      * 
      * @throws HpcException
      */
     public String registerData(
-    		              HpcDataRegistrationInputDTO registrationInputDTO)
+    		              HpcDataRegistrationInput registrationInput)
     		              throws HpcException;
 }
 
