@@ -18,7 +18,6 @@ import gov.nih.nci.hpc.bus.HpcDataRegistrationService;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
-import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.UriBuilder;
@@ -43,7 +42,6 @@ import gov.nih.nci.hpc.dto.types.HpcDatasetType;
  * @version $Id$
  */
 
-@Path("/")
 public class HpcDataRegistrationRestServiceImpl extends HpcRestServiceImpl
              implements HpcDataRegistrationRestService
 {   

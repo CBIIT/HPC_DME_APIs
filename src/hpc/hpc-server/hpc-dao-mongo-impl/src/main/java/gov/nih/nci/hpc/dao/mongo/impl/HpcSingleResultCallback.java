@@ -76,9 +76,11 @@ public class HpcSingleResultCallback<T> implements SingleResultCallback<T>
      * Get the async call result.
      *
      * @return The result.
+     * @Throws HpcException Throws the exception thrown during the async mongo call (if any).
      */
-    public T getResult()                            
+    public T getResult() throws HpcException                            
     {
+    	throwException();
     	return result;
     } 
     

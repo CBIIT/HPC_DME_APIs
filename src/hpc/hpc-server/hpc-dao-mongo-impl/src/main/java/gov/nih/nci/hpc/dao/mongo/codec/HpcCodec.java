@@ -28,6 +28,29 @@ import org.slf4j.LoggerFactory;
 public abstract class HpcCodec<T> implements Codec<T>
 { 
     //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//    
+    
+    // HpcManagedData Document keys.
+	public final static String MANAGED_DATA_ID_KEY = "id"; 
+	public final static String MANAGED_DATA_TYPE_KEY = "type"; 
+	public final static String MANAGED_DATA_CREATED_KEY = "created"; 
+	public final static String MANAGED_DATA_DATASETS_KEY = "datasets"; 
+    
+    // HpcDataset Document keys.
+    public final static String DATASET_ID_KEY = "id";
+    public final static String DATASET_LOCATION_KEY = "location"; 
+    public final static String DATASET_NAME_KEY = "name"; 
+    public final static String DATASET_TYPE_KEY = "type"; 
+    public final static String DATASET_SIZE_KEY = "size"; 
+    
+    // HpcDatasetLocation Document keys.
+    public final static String DATASET_LOCATION_FACILITY_KEY = "facility";
+    public final static String DATASET_LOCATION_ENDPOINT_KEY = "endpoint"; 
+    public final static String DATASET_LOCATION_DATA_TRANSFER_KEY = 
+    		                   "data_transfer"; 
+    
+    //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 	

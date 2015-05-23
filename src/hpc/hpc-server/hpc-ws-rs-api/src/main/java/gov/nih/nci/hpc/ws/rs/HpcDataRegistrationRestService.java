@@ -30,6 +30,7 @@ import javax.ws.rs.core.Response;
  * @version $Id: HpcDatasetsRegistrationRestService.java 58 2015-05-15 14:56:07Z rosenbergea $
  */
 
+@Path("/")
 public interface HpcDataRegistrationRestService
 {    
     /**

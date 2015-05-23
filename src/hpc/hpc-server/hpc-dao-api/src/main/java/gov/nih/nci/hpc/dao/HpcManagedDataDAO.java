@@ -32,6 +32,16 @@ public interface HpcManagedDataDAO
      * @throws HpcException
      */
     public void add(HpcManagedData managedData) throws HpcException;
+    
+    /**
+     * Get managed data from the repository by ID.
+     *
+     * @param id the managed data ID>
+     * @return The managed data if found, or null otherwise.
+     * 
+     * @throws HpcException
+     */
+    public HpcManagedData get(String id) throws HpcException;
 }
 
  
