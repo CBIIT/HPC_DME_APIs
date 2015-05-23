@@ -11,8 +11,8 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.service.HpcManagedDataService;
-import gov.nih.nci.hpc.dto.types.HpcDataset;
-import gov.nih.nci.hpc.dto.types.HpcManagedDataType;
+import gov.nih.nci.hpc.domain.HpcDataset;
+import gov.nih.nci.hpc.domain.HpcManagedDataType;
 import gov.nih.nci.hpc.domain.HpcManagedData;
 import gov.nih.nci.hpc.dao.HpcManagedDataDAO;
 import gov.nih.nci.hpc.exception.HpcException;

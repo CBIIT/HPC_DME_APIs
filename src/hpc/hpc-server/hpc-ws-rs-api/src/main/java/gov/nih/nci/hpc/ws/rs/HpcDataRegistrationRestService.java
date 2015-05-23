@@ -10,8 +10,8 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
-import gov.nih.nci.hpc.dto.service.HpcDataRegistrationInputDTO;
-import gov.nih.nci.hpc.dto.service.HpcDataRegistrationOutputDTO;
+import gov.nih.nci.hpc.dto.HpcDataRegistrationInputDTO;
+import gov.nih.nci.hpc.dto.HpcDataRegistrationOutputDTO;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
