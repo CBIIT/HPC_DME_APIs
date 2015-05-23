@@ -18,9 +18,9 @@
 	</properties>
 	
 	<modules>
-		<module>hpc-dto-types</module>
-		<module>hpc-dto-service</module>
+		<module>hpc-common</module>
 		<module>hpc-domain</module>
+		<module>hpc-dto</module>
 		<module>hpc-dao-api</module>
 		<module>hpc-dao-mongo-impl</module>
 		<module>hpc-app-service-api</module>
