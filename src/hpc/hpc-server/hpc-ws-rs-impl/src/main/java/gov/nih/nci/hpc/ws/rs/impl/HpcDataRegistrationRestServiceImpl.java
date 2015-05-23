@@ -11,8 +11,8 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.ws.rs.HpcDataRegistrationRestService;
-import gov.nih.nci.hpc.dto.HpcDataRegistrationInputDTO;
-import gov.nih.nci.hpc.dto.HpcDataRegistrationOutputDTO;
+import gov.nih.nci.hpc.dto.HpcDataRegistrationInput;
+import gov.nih.nci.hpc.dto.HpcDataRegistrationOutput;
 import gov.nih.nci.hpc.bus.HpcDataRegistrationService;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
@@ -102,9 +102,9 @@ public class HpcDataRegistrationRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//  
 	
     @Override
-    public HpcDataRegistrationOutputDTO getRegisterdData(String id)
+    public HpcDataRegistrationOutput getRegisterdData(String id)
     {
-    	HpcDataRegistrationOutputDTO dto = new HpcDataRegistrationOutputDTO();
+    	HpcDataRegistrationOutput dto = new HpcDataRegistrationOutput();
     	
     	HpcDataset ds = new HpcDataset();
     	HpcDatasetLocation loc = new HpcDatasetLocation();
@@ -122,14 +122,14 @@ public class HpcDataRegistrationRestServiceImpl extends HpcRestServiceImpl
     
     @Override
     public Response registerData(
-    		        HpcDataRegistrationInputDTO registrationInputDTO)
+    		        HpcDataRegistrationInput registrationInput)
     {	
 		logger.info("Invoking RS: POST /registration");
 		
 		String registeredDataId = null;
 		try {
 			 registeredDataId = 
-		     registrationBusService.registerData(registrationInputDTO);
+		     registrationBusService.registerData(registrationInput);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /registration failed:", e);

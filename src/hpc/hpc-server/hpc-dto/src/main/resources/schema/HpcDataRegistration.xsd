@@ -21,7 +21,7 @@
    	<xsd:import namespace="http://hpc.nci.nih.gov/domain" schemaLocation="HpcDataTypes.xsd"/>
     
     <!--  Registration Service Input DTO -->
-    <xsd:element name="HpcDataRegistrationInputDTO">
+    <xsd:element name="HpcDataRegistrationInput">
         <xsd:complexType>
   			<xsd:sequence>
   				<xsd:element name="type" type="hpc-domain:HpcManagedDataType"/>
@@ -33,7 +33,7 @@
     </xsd:element>
     
     <!--  Registration Service Output DTO -->
-    <xsd:element name="HpcDataRegistrationOutputDTO">
+    <xsd:element name="HpcDataRegistrationOutput">
     	<xsd:complexType>
   			<xsd:sequence>
   			  	<xsd:element name="type" type="hpc-domain:HpcManagedDataType"/>

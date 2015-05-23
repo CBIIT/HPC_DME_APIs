@@ -12,7 +12,7 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataRegistrationService;
 import gov.nih.nci.hpc.service.HpcManagedDataService;
-import gov.nih.nci.hpc.dto.HpcDataRegistrationInputDTO;
+import gov.nih.nci.hpc.dto.HpcDataRegistrationInput;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -86,21 +86,21 @@ public class HpcDataRegistrationServiceImpl
     
     @Override
     public String registerData(
-                          HpcDataRegistrationInputDTO registrationInputDTO)
+                          HpcDataRegistrationInput registrationInput)
                           throws HpcException
     {
     	logger.info("Invoking registerData()");
     	
     	// Input validation.
-    	if(registrationInputDTO == null) {
+    	if(registrationInput == null) {
     	   throw new HpcException("Null HpcDatasetsRegistrationInputDTO",
     			                  HpcErrorType.INVALID_INPUT);	
     	}
     	
     	// Add the datasets to the managed collection.
     	String managedDataId = 
-    		   managedDataService.add(registrationInputDTO.getType(),
-    			                      registrationInputDTO.getDatasets());
+    		   managedDataService.add(registrationInput.getType(),
+    			                      registrationInput.getDatasets());
     	
     	// Transfer the datasets to their destination.
     	// TODO - implement.
