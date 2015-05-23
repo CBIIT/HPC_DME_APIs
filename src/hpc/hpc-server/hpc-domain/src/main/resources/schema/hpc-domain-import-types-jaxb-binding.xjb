@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * hpc-domain-import-types-jaxb-binding.xjb
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id: hpc-domain-jaxb-binding.xjb 111 2015-05-23 00:39:01Z rosenbergea $
+ -->
+<jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1"
+			  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<jxb:globalBindings>
+		<jxb:serializable/>
+		
+		<!-- use Calendar instead of XMLGregorianCalendar -->
+        <jxb:javaType name="java.util.Calendar" xmlType="xsd:dateTime"
+            parseMethod="javax.xml.bind.DatatypeConverter.parseDateTime"
+            printMethod="javax.xml.bind.DatatypeConverter.printDateTime"/>
+
+        <jxb:javaType name="java.util.Calendar" xmlType="xsd:date"
+            parseMethod="javax.xml.bind.DatatypeConverter.parseDate"
+            printMethod="javax.xml.bind.DatatypeConverter.printDate"/>
+
+        <jxb:javaType name="java.util.Calendar" xmlType="xsd:time"
+            parseMethod="javax.xml.bind.DatatypeConverter.parseTime"
+            printMethod="javax.xml.bind.DatatypeConverter.printTime"/>
+	</jxb:globalBindings>
+	
+	<jxb:bindings schemaLocation="HpcDataTypes.xsd">
+		    <jxb:bindings node="//xsd:simpleType[@name='HpcManagedDataType']">
+                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.HpcManagedDataType"/>
+            </jxb:bindings>
+	        <jxb:bindings node="//xsd:simpleType[@name='HpcDataTransfer']">
+                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.HpcDataTransfer"/>
+            </jxb:bindings>
+            <jxb:bindings node="//xsd:simpleType[@name='HpcDatasetType']">
+                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.HpcDatasetType"/>
+            </jxb:bindings>
+            <jxb:bindings node="//xsd:simpleType[@name='HpcFacility']">
+                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.HpcFacility"/>
+            </jxb:bindings>
+            <jxb:bindings node="//xsd:complexType[@name='HpcDatasetLocation']">
+                <jxb:class ref="gov.nih.nci.hpc.domain.HpcDatasetLocation"/>
+            </jxb:bindings>
+            <jxb:bindings node="//xsd:complexType[@name='HpcDataset']">
+                <jxb:class ref="gov.nih.nci.hpc.domain.HpcDataset"/>
+            </jxb:bindings>
+    </jxb:bindings>
+</jxb:bindings>

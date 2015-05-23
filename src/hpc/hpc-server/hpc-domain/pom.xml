@@ -38,7 +38,7 @@
                     			<xsdOption>
                         			<xsd>src/main/resources/schema/HpcManagedData.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.domain</packagename>
-                        			<bindingFile>src/main/resources/schema/hpc-domain-jaxb-binding.xjb</bindingFile>
+                        			<bindingFile>src/main/resources/schema/hpc-domain-import-types-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
                 			</xsdOptions>
             			</configuration>
@@ -61,12 +61,6 @@
 			</plugin>
 		</plugins>
 	</build>
-	<dependencies>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>hpc-dto-types</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-	</dependencies>
-		
+	<dependencies/>
+	
 </project>
