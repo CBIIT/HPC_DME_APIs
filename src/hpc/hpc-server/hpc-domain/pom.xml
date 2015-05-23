@@ -14,63 +14,6 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-clean-plugin</artifactId>
-				<configuration>
-					<filesets>
-						<fileset>
-							<directory>xjc-build</directory>
-						</fileset>
-					</filesets>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-schema</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>xjc-build/schema</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/resources/schema</directory>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>unpack-dto-types</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>${project.groupId}</groupId>
-									<artifactId>hpc-dto-types</artifactId>
-									<version>${project.version}</version>
-									<overWrite>true</overWrite>
-									<outputDirectory>xjc-build</outputDirectory>
-									<includes>**/HpcDataTypes.xsd,**/hpc-dto-import-types-jaxb-binding.xjb</includes>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
     			<groupId>org.apache.cxf</groupId>
     			<artifactId>cxf-xjc-plugin</artifactId>
     			<configuration>
@@ -87,10 +30,15 @@
             			</goals>
             			<configuration>
                 			<xsdOptions>
-                    			<xsdOption>
-                        			<xsd>xjc-build/schema/domain/HpcManagedData.xsd</xsd>
+                				<xsdOption>
+                        			<xsd>src/main/resources/schema/HpcDataTypes.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.domain</packagename>
-                        			<bindingFile>xjc-build/schema/types/hpc-dto-import-types-jaxb-binding.xjb</bindingFile>
+                        			<bindingFile>src/main/resources/schema/hpc-domain-jaxb-binding.xjb</bindingFile>
+                    			</xsdOption>
+                    			<xsdOption>
+                        			<xsd>src/main/resources/schema/HpcManagedData.xsd</xsd>
+                        			<packagename>gov.nih.nci.hpc.domain</packagename>
+                        			<bindingFile>src/main/resources/schema/hpc-domain-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
                 			</xsdOptions>
             			</configuration>
