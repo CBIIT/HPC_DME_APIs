@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.HpcDataset;
 import gov.nih.nci.hpc.domain.HpcManagedDataType;
+import gov.nih.nci.hpc.domain.HpcManagedData;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -39,6 +40,15 @@ public interface HpcManagedDataService
     public String add(HpcManagedDataType type,
     		          List<HpcDataset> datasets) throws HpcException;
     
+    /**
+     * Get managed data.
+     *
+     * @param id The managed data ID.
+     * @return The managed data.
+     * 
+     * @throws HpcException
+     */
+    public HpcManagedData get(String id) throws HpcException;
 }
 
  

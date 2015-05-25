@@ -18,6 +18,10 @@ import gov.nih.nci.hpc.exception.HpcErrorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.lang.InterruptedException;
+
 /**
  * <p>
  * HPC Single Result Callback. 
@@ -29,6 +33,13 @@ import org.slf4j.LoggerFactory;
 
 public class HpcSingleResultCallback<T> implements SingleResultCallback<T>
 { 
+    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//    
+    
+    // Async operation timeout (seconds).
+    private final static long TIMEOUT = 60; 
+    
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -42,6 +53,9 @@ public class HpcSingleResultCallback<T> implements SingleResultCallback<T>
 	
 	// The result.
 	private T result = null;
+	
+	// The countdown latch.
+	CountDownLatch countDownLatch = new CountDownLatch(1);
 	
 	
     //---------------------------------------------------------------------//
@@ -67,6 +81,16 @@ public class HpcSingleResultCallback<T> implements SingleResultCallback<T>
      */
     public void throwException() throws HpcException                          
     {
+    	try {
+    		 if(!countDownLatch.await(TIMEOUT, TimeUnit.SECONDS)) {
+    	        throw new HpcException("Mongo async operation timed out", 
+    			                       HpcErrorType.MONGO_ERROR);
+    	     }
+    	} catch(InterruptedException e) {
+    		    throw new HpcException("Mongo async operation timed out", 
+	                                   HpcErrorType.MONGO_ERROR, e); 
+    	}
+    	
     	if(exception != null) {
     	   throw exception;
     	}
@@ -96,6 +120,7 @@ public class HpcSingleResultCallback<T> implements SingleResultCallback<T>
     	}
     	
     	this.result = result;
+    	countDownLatch.countDown();
     }
 }
 
