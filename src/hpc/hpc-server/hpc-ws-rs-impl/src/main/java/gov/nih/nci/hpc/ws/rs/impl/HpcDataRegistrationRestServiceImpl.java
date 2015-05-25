@@ -102,7 +102,7 @@ public class HpcDataRegistrationRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//  
 	
     @Override
-    public HpcDataRegistrationOutput getRegisterdData(String id)
+    public Response getRegisterdData(String id)
     {
 		logger.info("Invoking RS: GET /registration{id}");
 		
@@ -112,10 +112,10 @@ public class HpcDataRegistrationRestServiceImpl extends HpcRestServiceImpl
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /registration failed:", e);
-			    return null;
+			    return toResponse(e);
 		}
 		
-		return registrationOutput;
+		return toOkResponse(registrationOutput);
 	}
     
     @Override

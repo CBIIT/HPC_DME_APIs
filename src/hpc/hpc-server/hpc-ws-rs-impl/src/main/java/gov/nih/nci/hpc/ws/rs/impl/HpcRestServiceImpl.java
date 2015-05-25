@@ -77,7 +77,7 @@ public abstract class HpcRestServiceImpl
     }
     
     /**
-     * Build a 'created' REST response instance
+     * Build a 'created' REST response instance.
      *
      * @param id the entity id of the created resource.
      * @return The REST response object.
@@ -88,6 +88,21 @@ public abstract class HpcRestServiceImpl
         URI uri = uriBuilder.path(id).build();
                
 		return Response.created(uri).build();
+    }
+    
+    /**
+     * Build an 'ok' REST response instance.
+     *
+     * @param entity The entity to attach to the response.
+     * @return The REST response object.
+     */
+    protected Response toOkResponse(Object entity)
+    {
+		if(entity != null) {
+           return Response.ok(entity).build();
+		} else {
+				return Response.noContent().build();
+		}
     }
 }
 
