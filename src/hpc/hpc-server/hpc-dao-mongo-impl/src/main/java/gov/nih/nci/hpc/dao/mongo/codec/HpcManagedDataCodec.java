@@ -19,6 +19,7 @@ import org.bson.BsonString;
 import org.bson.BsonValue;
 import org.bson.BsonWriter;
 import org.bson.Document;
+import org.bson.BsonDocumentReader;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 
@@ -116,11 +117,12 @@ public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
 		Calendar created = Calendar.getInstance();
 		created.setTime(document.get(MANAGED_DATA_CREATED_KEY, Date.class));
 		managedData.setCreated(created);
-		List<HpcDataset> datasets = 
-		     (List<HpcDataset>) document.get(MANAGED_DATA_DATASETS_KEY);
-		if(datasets != null) {
-		   for(HpcDataset dataset : datasets) {
-			   managedData.getDatasets().add(dataset);
+		List<Document> datasetDocuments = 
+				       (List<Document>) document.get(MANAGED_DATA_DATASETS_KEY);
+		if(datasetDocuments != null) {
+		   for(Document datasetDocument : datasetDocuments) {
+			   managedData.getDatasets().add(decode(datasetDocument, 
+					                                decoderContext));
 		   }
 		}
 		
@@ -131,6 +133,26 @@ public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
 	public Class<HpcManagedData> getEncoderClass() 
 	{
 		return HpcManagedData.class;
+	}
+	
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//  
+	
+    /**
+     * Decode HpcDataset
+     *
+     * @param doc The HpcDataset document
+     * @param decoderContext
+     * @return Decoded HpcDataset object.
+     */
+    private HpcDataset decode(Document doc, DecoderContext decoderContext)
+    {
+    	BsonDocumentReader docReader = 
+    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
+    				                                  getRegistry()));
+		return getRegistry().get(HpcDataset.class).decode(docReader, 
+		                                                  decoderContext);
 	}
 }
 
