@@ -13,6 +13,9 @@ package gov.nih.nci.hpc.bus.impl;
 import gov.nih.nci.hpc.bus.HpcDataRegistrationService;
 import gov.nih.nci.hpc.service.HpcManagedDataService;
 import gov.nih.nci.hpc.dto.HpcDataRegistrationInput;
+import gov.nih.nci.hpc.dto.HpcDataRegistrationOutput;
+import gov.nih.nci.hpc.domain.HpcManagedData;
+import gov.nih.nci.hpc.domain.HpcDataset;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -106,6 +109,34 @@ public class HpcDataRegistrationServiceImpl
     	// TODO - implement.
     	
     	return managedDataId;
+    }
+    
+    @Override
+    public HpcDataRegistrationOutput getRegisteredData(String id)
+                                                      throws HpcException
+    {
+    	// Input validation.
+    	if(id == null) {
+    	   throw new HpcException("Null HpcDatasetsRegistrationInputDTO",
+    			                  HpcErrorType.INVALID_INPUT);	
+    	}
+    	
+    	// Get the managed data domain object.
+    	HpcManagedData managedData = managedDataService.get(id);
+    	if(managedData == null) {
+    	   return null;
+    	}
+    	
+    	// Map it to the output DTO
+    	HpcDataRegistrationOutput registrationOutput = 
+    			                  new HpcDataRegistrationOutput();
+    	registrationOutput.setType(managedData.getType());
+    	registrationOutput.setCreated(managedData.getCreated());
+    	for(HpcDataset dataset : managedData.getDatasets()) {
+    		registrationOutput.getDatasets().add(dataset);
+    	}
+    	
+    	return registrationOutput;
     }
 }
 
