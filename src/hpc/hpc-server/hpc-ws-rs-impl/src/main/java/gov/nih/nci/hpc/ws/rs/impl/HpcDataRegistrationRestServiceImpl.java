@@ -104,21 +104,19 @@ public class HpcDataRegistrationRestServiceImpl extends HpcRestServiceImpl
     @Override
     public HpcDataRegistrationOutput getRegisterdData(String id)
     {
-    	HpcDataRegistrationOutput dto = new HpcDataRegistrationOutput();
-    	
-    	HpcDataset ds = new HpcDataset();
-    	HpcDatasetLocation loc = new HpcDatasetLocation();
-    	loc.setFacility(HpcFacility.SHADY_GROVE);
-    	loc.setEndpoint("nihfnlcr#gridftp1");
-    	loc.setDataTransfer(HpcDataTransfer.GLOBUS);
-    	ds.setLocation(loc);
-    	ds.setName("SEQUENCING file name");
-    	ds.setType(HpcDatasetType.RAW_SEQUENCING);
-    	dto.getDatasets().add(ds);
-    	dto.getDatasets().add(ds);
-    	dto.setType(HpcManagedDataType.EXPERIMENT);
-    	return dto;
-    }
+		logger.info("Invoking RS: GET /registration{id}");
+		
+		HpcDataRegistrationOutput registrationOutput = null;
+		try {
+			 registrationOutput = registrationBusService.getRegisteredData(id);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /registration failed:", e);
+			    return null;
+		}
+		
+		return registrationOutput;
+	}
     
     @Override
     public Response registerData(
