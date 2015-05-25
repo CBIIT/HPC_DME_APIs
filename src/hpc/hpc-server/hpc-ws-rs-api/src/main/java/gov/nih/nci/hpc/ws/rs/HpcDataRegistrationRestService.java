@@ -42,8 +42,7 @@ public interface HpcDataRegistrationRestService
     @GET
     @Path("/registration/{id}")
     @Produces("application/json,application/xml")
-    public HpcDataRegistrationOutput
-           getRegisterdData(@PathParam("id") String id); 
+    public Response getRegisterdData(@PathParam("id") String id); 
     
     /**
      * POST registration request.
