@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.domain.HpcDatasetType;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
+import org.bson.BsonDocumentReader;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -106,8 +107,9 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 		
 		// Map the document to HpcDataset instance.
 		HpcDataset dataset = new HpcDataset();
-		dataset.setLocation(document.get(DATASET_LOCATION_KEY, 
-				                         HpcDatasetLocation.class));
+		dataset.setLocation(decode(document.get(DATASET_LOCATION_KEY, 
+				                                Document.class),
+				                   decoderContext));
 		dataset.setId(document.get(DATASET_ID_KEY, String.class));
 		dataset.setName(document.get(DATASET_NAME_KEY, String.class));
 		dataset.setType(HpcDatasetType.valueOf(
@@ -121,6 +123,22 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 	public Class<HpcDataset> getEncoderClass() 
 	{
 		return HpcDataset.class;
+	}
+	
+    /**
+     * Decode HpcDatasetLocation
+     *
+     * @param doc The HpcDatasetLocation document
+     * @param decoderContext
+     * @return Decoded HpcDatasetLocation object.
+     */
+    private HpcDatasetLocation decode(Document doc, DecoderContext decoderContext)
+    {
+    	BsonDocumentReader docReader = 
+    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
+    				                                  getRegistry()));
+		return getRegistry().get(HpcDatasetLocation.class).decode(docReader, 
+		                                                          decoderContext);
 	}
 }
 
