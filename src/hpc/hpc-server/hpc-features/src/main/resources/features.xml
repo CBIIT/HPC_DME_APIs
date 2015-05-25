@@ -28,7 +28,9 @@
         <bundle>mvn:${project.groupId}/hpc-domain/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-dto/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-dao-api/${project.version}</bundle>
-        <bundle>mvn:${project.groupId}/hpc-dao-mongo-impl/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-dao-impl/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-integration-api/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-integration-impl/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-app-service-api/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-app-service-impl/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-bus-service-api/${project.version}</bundle>
