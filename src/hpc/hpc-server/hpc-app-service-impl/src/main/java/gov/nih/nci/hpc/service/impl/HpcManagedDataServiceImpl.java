@@ -117,6 +117,25 @@ public class HpcManagedDataServiceImpl implements HpcManagedDataService
     	
     	return managedData.getId();
     }
+    
+    @Override
+    public HpcManagedData get(String id) throws HpcException
+    {
+    	// Input validation.
+    	try {
+    	     if(id == null || UUID.fromString(id) == null) {
+    	        throw new HpcException("Invalid managed date ID", 
+    			                       HpcErrorType.INVALID_INPUT);
+    	     }
+    	} catch(IllegalArgumentException e) {
+    		    throw new HpcException("Invalid managed date ID", 
+                                       HpcErrorType.INVALID_INPUT, e);
+    	}
+    	
+    	return managedDataDAO.get(id);
+
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  

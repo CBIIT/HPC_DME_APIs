@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.dto.HpcDataRegistrationInput;
+import gov.nih.nci.hpc.dto.HpcDataRegistrationOutput;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -25,9 +26,9 @@ import gov.nih.nci.hpc.exception.HpcException;
 public interface HpcDataRegistrationService 
 {         
     /**
-     * Register Datasets.
+     * Register Data.
      *
-     * @param registrationInput The datas registration input DTO.
+     * @param registrationInput The data registration input DTO.
      * @return The registered data ID.
      * 
      * @throws HpcException
@@ -35,6 +36,17 @@ public interface HpcDataRegistrationService
     public String registerData(
     		              HpcDataRegistrationInput registrationInput)
     		              throws HpcException;
+    
+    /**
+     * Get registered data by ID.
+     *
+     * @param id The registered data id
+     * @return The registered data or null if not found.
+     * 
+     * @throws HpcException
+     */
+    public HpcDataRegistrationOutput getRegisteredData(String id)
+                 		                              throws HpcException;
 }
 
  

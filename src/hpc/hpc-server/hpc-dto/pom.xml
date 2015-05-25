@@ -63,7 +63,7 @@
 									<version>${project.version}</version>
 									<overWrite>true</overWrite>
 									<outputDirectory>xjc-build</outputDirectory>
-									<includes>**/HpcDataTypes.xsd,**/hpc-domain-import-types-jaxb-binding.xjb</includes>
+									<includes>**/*Types.xsd,**/hpc-domain-import-types-jaxb-binding.xjb</includes>
 								</artifactItem>
 							</artifactItems>
 						</configuration>

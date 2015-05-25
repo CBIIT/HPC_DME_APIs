@@ -155,6 +155,7 @@ public class HpcManagedDataDAOImpl implements HpcManagedDataDAO
                        new HpcSingleResultCallback<HpcManagedData>();
 		getCollection().find(eq(HpcCodec.MANAGED_DATA_ID_KEY, 
 				                id)).first(callback);
+		
 		return callback.getResult();
 	}
 	
