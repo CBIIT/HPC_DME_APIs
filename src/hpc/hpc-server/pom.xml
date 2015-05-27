@@ -23,6 +23,7 @@
 		<module>hpc-dto</module>
 		<module>hpc-dao-api</module>
 		<module>hpc-dao-impl</module>
+		<module>hpc-data-transfer</module>
 		<module>hpc-integration-api</module>
 		<module>hpc-integration-impl</module>
 		<module>hpc-app-service-api</module>

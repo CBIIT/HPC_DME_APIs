@@ -2,17 +2,17 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
-	<name>HPC Application Services Implementation</name>
+	<name>HPC Datatransfer Module</name>
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>hpc-app-service-impl</artifactId>
+	<artifactId>hpc-data-transfer</artifactId>
 	<packaging>bundle</packaging>
 
 	<build>
-		<plugins>
+		<plugins>	
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -20,10 +20,9 @@
 				<configuration>
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-						<Export-Package/>
-						<Private-Package>
-							gov.nih.nci.hpc.service.impl
-						</Private-Package>
+						<Export-Package>
+							gov.nih.nci.hpc.transfer
+						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>
 				</configuration>
@@ -33,22 +32,41 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>hpc-app-service-api</artifactId>
+			<artifactId>hpc-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>hpc-dao-api</artifactId>
+			<artifactId>hpc-domain</artifactId>
 			<version>${project.version}</version>
+		</dependency>		
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpkix-jdk15on</artifactId>
+			<version>152</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/bcpkix-jdk15on-152.jar</systemPath>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>hpc-data-transfer</artifactId>
-			<version>${project.version}</version>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on-152</artifactId>
+			<version>152</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/bcprov-jdk15on-152.jar</systemPath>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.globus</groupId>
+			<artifactId>TransferAPIClient</artifactId>
+			<version>1.0</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/TransferAPIClient.jar</systemPath>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-		</dependency>
+		</dependency>	
 	</dependencies>
 </project>
