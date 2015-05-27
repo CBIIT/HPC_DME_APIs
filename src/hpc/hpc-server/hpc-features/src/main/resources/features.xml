@@ -32,6 +32,7 @@
 		<bundle>mvn:${project.groupId}/hpc-data-transfer/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-integration-api/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-integration-impl/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-data-transfer/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-app-service-api/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-app-service-impl/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-bus-service-api/${project.version}</bundle>
