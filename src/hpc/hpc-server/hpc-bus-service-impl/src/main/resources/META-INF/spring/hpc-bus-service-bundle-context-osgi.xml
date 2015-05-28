@@ -34,4 +34,7 @@
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcManagedDataService" interface="gov.nih.nci.hpc.service.HpcManagedDataService" />
 	
+		<!-- OSGi beans import -->
+	<osgi:reference id="hpcDataTransferService" interface="gov.nih.nci.hpc.service.HpcDataTransferService" />
+	
 </beans>

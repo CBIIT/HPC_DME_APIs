@@ -19,6 +19,7 @@
 	<!-- HPC Business Services Beans -->
 	<bean id="hpcDataRegistrationService" class="gov.nih.nci.hpc.bus.impl.HpcDataRegistrationServiceImpl">
 		<constructor-arg ref="hpcManagedDataService"/>
+		<constructor-arg ref="hpcDataTransferService"/>
 	</bean>
 	
 </beans>

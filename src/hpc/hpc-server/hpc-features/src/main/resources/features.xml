@@ -20,10 +20,18 @@
     	<bundle>mvn:org.mongodb/bson/${mongodb.version}</bundle>
     </feature>
     
+    <feature name="hpc-data-transfer-lib" version="${project.version}">
+      	<bundle>file:base/bundles/hpc-lib/bcpkix-jdk15on-152.jar</bundle>
+    	<bundle>file:base/bundles/hpc-lib/bcprov-jdk15on-152.jar</bundle>
+    	<bundle>file:base/bundles/hpc-lib/TransferAPIClient.jar</bundle>
+    </feature>
+	
     <!-- HPC API Server -->  
     <feature name="hpc-server" version="${project.version}">
     	<feature version="${mongodb.version}">hpc-mongo-async-driver</feature>
-    
+		<feature version="${project.version}">hpc-data-transfer-lib</feature>
+		
+  
         <bundle>mvn:${project.groupId}/hpc-common/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-domain/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-dto/${project.version}</bundle>

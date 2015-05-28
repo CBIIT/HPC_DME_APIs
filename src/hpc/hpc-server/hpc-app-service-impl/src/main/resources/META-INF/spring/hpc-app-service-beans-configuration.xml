@@ -20,5 +20,9 @@
 	<bean id="hpcManagedDataService" class="gov.nih.nci.hpc.service.impl.HpcManagedDataServiceImpl">
 		<constructor-arg ref="hpcManagedDataDAO"/>
 	</bean>
+
+	<!-- HPC Application Services Beans -->
+	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl">
+	</bean>
 	
 </beans>
