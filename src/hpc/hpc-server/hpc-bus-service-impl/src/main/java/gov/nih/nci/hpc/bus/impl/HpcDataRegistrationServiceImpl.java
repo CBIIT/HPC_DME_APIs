@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataRegistrationService;
 import gov.nih.nci.hpc.service.HpcManagedDataService;
+import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.dto.HpcDataRegistrationInput;
 import gov.nih.nci.hpc.dto.HpcDataRegistrationOutput;
 import gov.nih.nci.hpc.domain.HpcManagedData;
@@ -40,6 +41,7 @@ public class HpcDataRegistrationServiceImpl
 
     // The Managed Data application service instance.
     private HpcManagedDataService managedDataService = null;
+    private HpcDataTransferService hpcDataTransferService = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -68,7 +70,9 @@ public class HpcDataRegistrationServiceImpl
      * @throws HpcException If managedDatasetService is null.
      */
     private HpcDataRegistrationServiceImpl(
-    		       HpcManagedDataService managedDataService)
+    		       HpcManagedDataService managedDataService,
+    		       HpcDataTransferService hpcDataTransferService
+    		       )
                    throws HpcException
     {
     	if(managedDataService == null) {
@@ -77,6 +81,7 @@ public class HpcDataRegistrationServiceImpl
      	}
     	
     	this.managedDataService = managedDataService;
+    	this.hpcDataTransferService = hpcDataTransferService;
     }  
     
     //---------------------------------------------------------------------//
@@ -107,7 +112,9 @@ public class HpcDataRegistrationServiceImpl
     	
     	// Transfer the datasets to their destination.
     	// TODO - implement.
-    	
+    	for(HpcDataset dataset : registrationInput.getDatasets()) {
+    		hpcDataTransferService.transferDataset(dataset);
+    	}
     	return managedDataId;
     }
     
