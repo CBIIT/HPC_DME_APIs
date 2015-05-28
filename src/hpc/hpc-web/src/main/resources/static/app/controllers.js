@@ -10,7 +10,7 @@
         investigatorName: hpcRegistration.investigatorName,
         originDataendpoint: hpcRegistration.originDataendpoint,
         originDataLocation: hpcRegistration.originDataLocation
-      }).$save(function(dataset) {
+      }).$save(function(registration) {
         $scope.datasets.push(hpcRegistration);
       });
       $scope.hpcRegistration = "";

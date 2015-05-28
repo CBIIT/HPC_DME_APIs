@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
   <head>
     <link rel="stylesheet" href="./bower_components/bootstrap-css-only/css/bootstrap.min.css" />
     <meta charset="utf-8">
@@ -56,39 +56,10 @@
 
       <div class="jumbotron">
         <h2>HPC Dataset Registration</h2>
-        <form class="form-horizontal" role="form" ng-submit="register(hpcRegistration)">
-		<div class="form-group">
- 	    <label class="control-label col-sm-2" for="hpcRegistration.projectName">Project Name:</label>
-		  <div class="col-sm-10">
-			<input type="text" class="form-control" ng-model="hpcRegistration.projectName" id="hpcRegistration.projectName" placeholder="Enter project name">
-		  </div>
-		</div>
-		<div class="form-group">
-		  <label class="control-label col-sm-2" for="hpcRegistration.investigatorName">Investigator Name:</label>
-		  <div class="col-sm-10">
-			<input type="text" class="form-control" ng-model="hpcRegistration.investigatorName"  id="hpcRegistration.investigatorName" placeholder="Enter Investigator Name">
-		  </div>
-		</div>
-		<div class="form-group">
-		  <label class="control-label col-sm-2" for="hpcRegistration.originDataendpoint">Origin Data Endpoint:</label>
-		  <div class="col-sm-10">
-			<input type="text" class="form-control" ng-model="hpcRegistration.originDataendpoint"  id="hpcRegistration.originDataendpoint" placeholder="Enter Origin Data Endpoint Name">
-		  </div>
-		</div>
-		<div class="form-group">
-		  <label class="control-label col-sm-2" for="hpcRegistration.originDataLocation">Origin Data location path:</label>
-		  <div class="col-sm-10">
-			<input type="text" class="form-control" ng-model="hpcRegistration.originDataLocation" id="hpcRegistration.originDataLocation" placeholder="Enter Origin data location path">
-		  </div>
-		</div>
-		<div class="form-group">
-		  <div class="col-sm-offset-2 col-sm-2">
-			<button type="submit" class="btn btn-lg btn-success">Register</button>
-		  </div>
-		</div>
-      </form>
-    </div>
-
+        <div class="controls controls-row">
+ 	    <label class="control-label col-sm-2" for="hpcRegistration.projectName">Your registration has been successfully submitted!</label>
+         <label class="control-label col-sm-2" for="hpcRegistration.projectName">Registration Id: {registrationOutput}</label>
+	    </div>
     </div> <!-- /container -->
 
 
