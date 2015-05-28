@@ -1,6 +1,6 @@
 (function(angular) {
   var HpcDataRegistrationFactory = function($resource) {
-    return $resource('/dataset/:id', {
+    return $resource('/register/:id', {
       id: '@id'
     }, {
       update: {
