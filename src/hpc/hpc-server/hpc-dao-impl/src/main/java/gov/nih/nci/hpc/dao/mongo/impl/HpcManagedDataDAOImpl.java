@@ -90,7 +90,7 @@ public class HpcManagedDataDAOImpl implements HpcManagedDataDAO
      * @param mongoHost The Mongo hostname.
      * @param hpcCodecProvider The HPC codec provider instance.
      * 
-     * @throws HpcException If a MongoClient instance was not provided.
+     * @throws HpcException If a HpcCodecProvider instance was not provided.
      */
     private HpcManagedDataDAOImpl(String mongoHost,
     		                      HpcCodecProvider hpcCodecProvider) 
