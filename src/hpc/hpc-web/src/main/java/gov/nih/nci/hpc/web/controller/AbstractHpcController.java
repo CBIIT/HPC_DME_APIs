@@ -7,12 +7,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.ModelAndView;
 
 public abstract class AbstractHpcController {
 
 protected Logger log = LoggerFactory.getLogger(this.getClass());
 
-@ExceptionHandler(Exception.class)
+@ExceptionHandler({Exception.class, java.net.ConnectException.class})
 public @ResponseBody HpcResponse handleUncaughtException(Exception ex, WebRequest request, HttpServletResponse response) {
 	log.info("Converting Uncaught exception to RestResponse : " + ex.getMessage());
 	
