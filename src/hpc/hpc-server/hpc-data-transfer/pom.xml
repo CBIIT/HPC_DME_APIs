@@ -22,7 +22,11 @@
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package>
 							gov.nih.nci.hpc.transfer,
-							gov.nih.nci.hpc.transfer.impl
+							gov.nih.nci.hpc.transfer.impl,
+							org.globusonline.transfer,
+							org.bouncycastle.jce.provider,
+							org.bouncycastle.*,
+							org.json.*
 						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>
@@ -45,25 +49,16 @@
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpkix-jdk15on</artifactId>
 			<version>152</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/lib/bcpkix-jdk15on-152.jar</systemPath>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on-152</artifactId>
+			<artifactId>bcprov-jdk15on</artifactId>
 			<version>152</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/lib/bcprov-jdk15on-152.jar</systemPath>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>org.globus</groupId>
+			<groupId>org.globusonline</groupId>
 			<artifactId>TransferAPIClient</artifactId>
 			<version>1.0</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/lib/TransferAPIClient.jar</systemPath>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
