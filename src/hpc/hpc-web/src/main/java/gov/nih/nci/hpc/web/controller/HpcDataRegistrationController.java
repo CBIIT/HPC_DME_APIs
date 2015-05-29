@@ -5,8 +5,12 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import gov.nih.nci.hpc.domain.HpcDataTransfer;
 import gov.nih.nci.hpc.domain.HpcDataset;
 import gov.nih.nci.hpc.domain.HpcDatasetLocation;
+import gov.nih.nci.hpc.domain.HpcDatasetType;
+import gov.nih.nci.hpc.domain.HpcFacility;
+import gov.nih.nci.hpc.domain.HpcManagedDataType;
 import gov.nih.nci.hpc.dto.HpcDataRegistrationInput;
 import gov.nih.nci.hpc.dto.HpcDataRegistrationOutput;
 import gov.nih.nci.hpc.web.model.HpcRegistration;
@@ -33,6 +37,13 @@ public class HpcDataRegistrationController extends AbstractHpcController {
     return null;
   }
 	
+  /*
+	if(dataset.getName() == null || dataset.getType() == null ||
+	    	   dataset.getLocation() == null || 
+	    	   dataset.getLocation().getFacility() == null ||
+	    	   dataset.getLocation().getEndpoint() == null ||
+	    	   dataset.getLocation().getDataTransfer() == null) 
+	 */   	    
   @RequestMapping(method = RequestMethod.POST)
   public String register(@RequestBody  HpcRegistration registration, Model model) {
 	  RestTemplate restTemplate = new RestTemplate();
@@ -41,6 +52,16 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 	  input.setInvestigatorName(registration.getInvestigatorName());
 	  input.setProjectName(registration.getProjectName());
 	  HpcDataset dataset = new HpcDataset();
+	  dataset.setName("HPC Dataset");
+	  HpcDatasetLocation target = new HpcDatasetLocation();
+	  target.setEndpoint("nihfnlcr#gridftp1");
+	  target.setFilePath("~/NGS_1.1_UseCases.doc");
+	  target.setDataTransfer(HpcDataTransfer.GLOBUS);
+	  target.setFacility(HpcFacility.SHADY_GROVE);
+	  dataset.setLocation(target);
+	  dataset.setType(HpcDatasetType.RAW_SEQUENCING);
+	  dataset.setSize(100000);
+	  input.setType(HpcManagedDataType.EXPERIMENT);
 	  HpcDatasetLocation source = new HpcDatasetLocation();
 	  source.setEndpoint(registration.getOriginDataendpoint());
 	  source.setFilePath(registration.getOriginDataLocation());
