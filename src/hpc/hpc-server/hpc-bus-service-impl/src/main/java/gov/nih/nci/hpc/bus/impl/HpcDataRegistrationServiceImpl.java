@@ -112,8 +112,11 @@ public class HpcDataRegistrationServiceImpl
     	
     	// Transfer the datasets to their destination.
     	// TODO - implement.
-    	for(HpcDataset dataset : registrationInput.getDatasets()) {
-    		hpcDataTransferService.transferDataset(dataset);
+    	logger.info("CALL Transfer");
+    	for(HpcDataset dataset : registrationInput.getDatasets()) {  
+    		logger.info("CALL Transfer for dataset "+dataset );
+    		boolean transferStatus = hpcDataTransferService.transferDataset(dataset);
+    		logger.info(" Transfer status : " + transferStatus);
     	}
     	return managedDataId;
     }

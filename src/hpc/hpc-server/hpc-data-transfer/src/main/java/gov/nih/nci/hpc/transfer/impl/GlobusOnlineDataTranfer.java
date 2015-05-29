@@ -40,12 +40,14 @@ public class GlobusOnlineDataTranfer implements HpcDataTransfer{
     private void setJSONTransferClient() throws IOException, JSONException, GeneralSecurityException, APIError
     {
     	//Replace this with nexus call to get oauthtoken
-    	loadProperties("transfer.config");
+    	//loadProperties("transfer.config");
     	System.out.println("OUTH TOKEN url: " + getPropValue("globus.oauthToken"));
     	System.out.println("USERNAME: " + getPropValue("globus.username"));
-        String username = getPropValue("globus.username");
+        //String username = getPropValue("globus.username");
+        String username = "mahinarra";
 
-        String oauthToken = getPropValue("globus.oauthToken");        	
+        //String oauthToken = getPropValue("globus.oauthToken");
+        String oauthToken = "un=mahinarra|tokenid=6c238272-f996-11e4-9586-22000aeb2621|expiry=1463074518|client_id=mahinarra|token_type=Bearer|SigningSubject=https://nexus.api.globusonline.org/goauth/keys/a741437a-f5aa-11e4-b66e-22000aeb2621|sig=8a1bd3fc0640a8ee2dc90d080c32604bceb4ef14b67abd7cfa22f395f744856bc711bde2774e738563dfea4beb8bdc85aca52c80a0e1a1cbe89e4cbb3b2ba5db5782f3fcf66706ab9ed7be31e6173a26c58efaa7f194c8651d77f8c8c32a0856de52326c4120e1c7cc3d2e84bb30e2a3e22a6b3d9423c4fc5e9246b4715d49cf";
         Authenticator authenticator = new GoauthAuthenticator(oauthToken);
         client = new JSONTransferAPIClient(username, null, null);
         client.setAuthenticator(authenticator);    	
