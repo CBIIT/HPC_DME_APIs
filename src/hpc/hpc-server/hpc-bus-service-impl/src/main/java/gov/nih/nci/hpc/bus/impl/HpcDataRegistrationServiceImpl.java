@@ -110,12 +110,15 @@ public class HpcDataRegistrationServiceImpl
     		   managedDataService.add(registrationInput.getType(),
     			                      registrationInput.getDatasets());
     	
+    	String username  = registrationInput.getUsername();
+    	String password  = registrationInput.getPassword();
+    	
     	// Transfer the datasets to their destination.
     	// TODO - implement.
     	logger.info("CALL Transfer");
     	for(HpcDataset dataset : registrationInput.getDatasets()) {  
     		logger.info("CALL Transfer for dataset "+dataset );
-    		boolean transferStatus = hpcDataTransferService.transferDataset(dataset);
+    		boolean transferStatus = hpcDataTransferService.transferDataset(dataset, username, password);
     		logger.info(" Transfer status : " + transferStatus);
     	}
     	return managedDataId;

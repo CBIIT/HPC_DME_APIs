@@ -57,7 +57,7 @@ public class HpcDataTransferServiceTest
     	datasetLocation.setFilePath("~/globusonline.txt");
     	datasetLocation.setDataTransfer(gov.nih.nci.hpc.domain.HpcDataTransfer.GLOBUS);
     	dataset.setLocation(datasetLocation);
-    	boolean transferDataset = dts.transferDataset(dataset);
+    	boolean transferDataset = dts.transferDataset(dataset,"","");
     }
 }
 

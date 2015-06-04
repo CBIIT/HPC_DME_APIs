@@ -61,11 +61,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     //---------------------------------------------------------------------//  
     
     @Override
-    public boolean transferDataset(HpcDataset dataset) throws HpcException
+    public boolean transferDataset(HpcDataset dataset,String username, String password) throws HpcException
     {   
     	try{
         	HpcDataTransfer hdt = new GlobusOnlineDataTranfer();
-        	return hdt.transferDataset(dataset);    		
+        	return hdt.transferDataset(dataset,username, password);    		
     	}catch(Exception ex)
     	{
     		throw new HpcException("Error while transfer",HpcErrorType.INVALID_INPUT);
