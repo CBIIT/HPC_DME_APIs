@@ -81,11 +81,12 @@ public class GlobusOnlineDataTranfer implements HpcDataTransfer{
 
         r = client.postResult("/transfer", transfer, null);
         String taskId = r.document.getString("task_id");
-        if (!waitForTask(taskId, 120)) {
-            System.out.println(
-                "Transfer not complete after 2 minutes, exiting");
-            return false;
-        }
+        System.out.println("Transfer task id :"+taskId );
+//        if (!waitForTask(taskId, 120)) {
+//            System.out.println(
+//                "Transfer not complete after 2 minutes, exiting");
+//            return false;
+//        }
 
         System.out.println("=== After Transfer ===");
         return true;
