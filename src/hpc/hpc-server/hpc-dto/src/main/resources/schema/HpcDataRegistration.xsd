@@ -26,6 +26,8 @@
   			<xsd:sequence>
   				<xsd:element name="type" type="hpc-domain:HpcManagedDataType"/>
   				<xsd:element name="projectName" type="xsd:string"/>
+				<xsd:element name="username" type="xsd:string"/>
+				<xsd:element name="password" type="xsd:string"/>
   				<xsd:element name="investigatorName" type="xsd:string"/>
         		<xsd:element name="datasets" type="hpc-domain:HpcDataset" 
 			    	         minOccurs="1" maxOccurs="unbounded"/>

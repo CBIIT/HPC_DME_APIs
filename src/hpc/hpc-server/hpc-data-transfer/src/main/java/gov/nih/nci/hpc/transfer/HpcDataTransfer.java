@@ -33,7 +33,7 @@ public interface HpcDataTransfer
      * 
      * @throws HpcTransferException
      */
-    public boolean transferDataset(HpcDataset dataset) throws Exception;
+    public boolean transferDataset(HpcDataset dataset,String username, String password) throws Exception;
 }
 
  

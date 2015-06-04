@@ -95,20 +95,22 @@ public class HpcManagedDataServiceImpl implements HpcManagedDataService
     	   throw new HpcException("Invalid add managed-data input", 
     			                  HpcErrorType.INVALID_INPUT);
     	}
-    	
+    	logger.info("in manageddata service ()");
     	// Create the domain object.
     	HpcManagedData managedData = new HpcManagedData();
-    	
+    	logger.info("in manageddata service set uuid ()" );
     	// Generate and set an ID.
     	managedData.setId(UUID.randomUUID().toString());
-    	
+    	logger.info("in manageddata service set type ()" + type );
     	// Populate type and datasets
     	managedData.setType(type);
     	managedData.setCreated(Calendar.getInstance());
     	for(HpcDataset dataset : datasets) {
     		dataset.setId(UUID.randomUUID().toString());
     		dataset.setSize(0);
+    		logger.info("in manageddata service validating dataset"  );
     		validate(dataset);
+    		logger.info("in manageddata service Adding dataset"  );
     		managedData.getDatasets().add(dataset);
     	}
     	
