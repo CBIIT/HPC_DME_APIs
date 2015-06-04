@@ -44,8 +44,7 @@ public class GlobusOnlineDataTranfer implements HpcDataTransfer{
     {
     	//Replace this with nexus call to get oauthtoken
     	//loadProperties("transfer.config");
-    	System.out.println("OUTH TOKEN url: " + getPropValue("globus.oauthToken"));
-    	System.out.println("USERNAME: " + getPropValue("globus.username"));
+    	System.out.println("USERNAME : " + username);
         //String username = getPropValue("globus.username");
        // String username = "mahinarra";
         GoauthClient cli = new GoauthClient("nexus.api.globusonline.org", "www.globusonline.org", username, password);
