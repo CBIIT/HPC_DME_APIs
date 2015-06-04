@@ -1,6 +1,7 @@
 package gov.nih.nci.hpc.transfer.impl;
 
 import gov.nih.nci.hpc.transfer.HpcDataTransfer;
+
 import java.security.GeneralSecurityException;
 import java.util.*;
 import java.io.*;
@@ -8,9 +9,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 import gov.nih.nci.hpc.domain.HpcDataset;
-import org.globusonline.transfer.*;
 
+import org.globusonline.nexus.GoauthClient;
+import org.globusonline.transfer.*;
 import org.json.*;
+import org.globusonline.nexus.exception.NexusClientException;
 
 public class GlobusOnlineDataTranfer implements HpcDataTransfer{
     private JSONTransferAPIClient client;
@@ -24,12 +27,12 @@ public class GlobusOnlineDataTranfer implements HpcDataTransfer{
     	
     }
     
-    public boolean transferDataset(HpcDataset dataset)
+    public boolean transferDataset(HpcDataset dataset,String username, String password )
     {
     	//Set transferAPIClient
     	try
     	{    	
-    		setJSONTransferClient();
+    		setJSONTransferClient(username,password);
     		return transfer(dataset);
 	    } catch (Exception e) {
 	        e.printStackTrace();
@@ -37,18 +40,23 @@ public class GlobusOnlineDataTranfer implements HpcDataTransfer{
     	return false;
     }
     
-    private void setJSONTransferClient() throws IOException, JSONException, GeneralSecurityException, APIError
+    private void setJSONTransferClient(String username, String password) throws IOException, JSONException, GeneralSecurityException, APIError,NexusClientException
     {
     	//Replace this with nexus call to get oauthtoken
     	//loadProperties("transfer.config");
     	System.out.println("OUTH TOKEN url: " + getPropValue("globus.oauthToken"));
     	System.out.println("USERNAME: " + getPropValue("globus.username"));
         //String username = getPropValue("globus.username");
-        String username = "mahinarra";
+       // String username = "mahinarra";
+        GoauthClient cli = new GoauthClient("nexus.api.globusonline.org", "www.globusonline.org", username, password);
+		JSONObject accessTokenJSON = cli.getClientOnlyAccessToken();
+		String accessToken = accessTokenJSON.getString("access_token");
+		System.out.println("Client only access token: " + accessToken);
+		cli.validateAccessToken(accessToken);        
 
         //String oauthToken = getPropValue("globus.oauthToken");
-        String oauthToken = "un=mahinarra|tokenid=6c238272-f996-11e4-9586-22000aeb2621|expiry=1463074518|client_id=mahinarra|token_type=Bearer|SigningSubject=https://nexus.api.globusonline.org/goauth/keys/a741437a-f5aa-11e4-b66e-22000aeb2621|sig=8a1bd3fc0640a8ee2dc90d080c32604bceb4ef14b67abd7cfa22f395f744856bc711bde2774e738563dfea4beb8bdc85aca52c80a0e1a1cbe89e4cbb3b2ba5db5782f3fcf66706ab9ed7be31e6173a26c58efaa7f194c8651d77f8c8c32a0856de52326c4120e1c7cc3d2e84bb30e2a3e22a6b3d9423c4fc5e9246b4715d49cf";
-        Authenticator authenticator = new GoauthAuthenticator(oauthToken);
+        //String oauthToken = "un=mahinarra|tokenid=6c238272-f996-11e4-9586-22000aeb2621|expiry=1463074518|client_id=mahinarra|token_type=Bearer|SigningSubject=https://nexus.api.globusonline.org/goauth/keys/a741437a-f5aa-11e4-b66e-22000aeb2621|sig=8a1bd3fc0640a8ee2dc90d080c32604bceb4ef14b67abd7cfa22f395f744856bc711bde2774e738563dfea4beb8bdc85aca52c80a0e1a1cbe89e4cbb3b2ba5db5782f3fcf66706ab9ed7be31e6173a26c58efaa7f194c8651d77f8c8c32a0856de52326c4120e1c7cc3d2e84bb30e2a3e22a6b3d9423c4fc5e9246b4715d49cf";
+        Authenticator authenticator = new GoauthAuthenticator(accessToken);
         client = new JSONTransferAPIClient(username, null, null);
         client.setAuthenticator(authenticator);    	
     }    
