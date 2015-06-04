@@ -23,7 +23,7 @@
 						<Export-Package>
 							gov.nih.nci.hpc.transfer,
 							gov.nih.nci.hpc.transfer.impl,
-							org.globusonline.transfer,
+							org.globusonline.*,
 							org.bouncycastle.jce.provider,
 							org.bouncycastle.*,
 							org.json.*
