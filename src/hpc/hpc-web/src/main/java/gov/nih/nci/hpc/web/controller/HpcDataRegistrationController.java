@@ -2,7 +2,7 @@ package gov.nih.nci.hpc.web.controller;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.io.File;
 import javax.validation.Valid;
 
 import gov.nih.nci.hpc.domain.HpcDataTransfer;
@@ -52,10 +52,11 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 	  input.setInvestigatorName(registration.getInvestigatorName());
 	  input.setProjectName(registration.getProjectName());
 	  HpcDataset dataset = new HpcDataset();
-	  dataset.setName("HPC Dataset");
+	  dataset.setName(registration.getProjectName());
 	  HpcDatasetLocation target = new HpcDatasetLocation();
+	  File originFile= new File(registration.getOriginDataLocation());
 	  target.setEndpoint("nihfnlcr#gridftp1");
-	  target.setFilePath("~/NGS_1.1_UseCases.doc");
+	  target.setFilePath("/mnt/gridftp/narram/" + originFile.getName());
 	  target.setDataTransfer(HpcDataTransfer.GLOBUS);
 	  target.setFacility(HpcFacility.SHADY_GROVE);
 	  dataset.setLocation(target);
