@@ -32,6 +32,7 @@
 		<module>hpc-bus-service-impl</module>
 		<module>hpc-ws-rs-api</module>
 		<module>hpc-ws-rs-impl</module>
+		<module>hpc-client</module>
 		<module>hpc-features</module>
 	</modules>
 	
@@ -93,6 +94,11 @@
 				<groupId>org.apache.cxf</groupId>
 				<artifactId>cxf-rt-transports-http</artifactId>
 				<version>${cxf.version}</version>
+			</dependency>
+			<dependency>
+  				<groupId>org.apache.cxf</groupId>
+  				<artifactId>cxf-rt-rs-client</artifactId>
+  				<version>${cxf.version}</version>
 			</dependency>
 			<dependency>
         		<groupId>org.mongodb</groupId>
