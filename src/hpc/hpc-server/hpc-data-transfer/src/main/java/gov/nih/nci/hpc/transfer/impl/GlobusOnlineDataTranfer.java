@@ -93,13 +93,14 @@ public class GlobusOnlineDataTranfer implements HpcDataTransfer{
     }
 
     
-    private JSONObject setJSONItem(HpcDataset dataset)  throws JSONException {
+    private JSONObject setJSONItem(HpcDataset dataset)  throws IOException, JSONException, GeneralSecurityException {
     	JSONObject item = new JSONObject();
         item.put("DATA_TYPE", "transfer_item");
         item.put("source_endpoint", dataset.getSource().getEndpoint());
         item.put("source_path", dataset.getSource().getFilePath());
         item.put("destination_endpoint", dataset.getLocation().getEndpoint());
         item.put("destination_path", dataset.getLocation().getFilePath());
+        item.put("recursive", checkFileDirectoryAndSetRecursive(dataset.getSource().getEndpoint(),dataset.getSource().getFilePath()));
         return item;
     }
 
@@ -156,5 +157,26 @@ public class GlobusOnlineDataTranfer implements HpcDataTransfer{
 	private String getPropValue(String propKey) throws IOException 
 	{		  
 		return transferProperties.getProperty(propKey);
-	}    
+	}   
+	
+    public boolean checkFileDirectoryAndSetRecursive(String endpointName, String path)
+    throws IOException, JSONException, GeneralSecurityException {
+        Map<String, String> params = new HashMap<String, String>();
+        if (path != null) {
+            params.put("path", path);
+        }
+        String resource = BaseTransferAPIClient.endpointPath(endpointName)
+                          + "/ls";
+        try
+        {
+        	JSONTransferAPIClient.Result r = client.getResult(resource, params);
+        }catch(APIError error)
+        {
+        	if("ExternalError.DirListingFailed.NotDirectory".equals(error.code))
+        		return false;
+        }
+                
+        return true;
+
+    }	
 }
