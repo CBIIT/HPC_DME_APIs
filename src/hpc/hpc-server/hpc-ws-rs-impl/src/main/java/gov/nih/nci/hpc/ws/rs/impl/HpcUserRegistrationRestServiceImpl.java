@@ -1,5 +1,5 @@
 /**
- * HpcDatasetsRegistrationRestServiceImpl.java
+ * HpcUserRegistrationRestServiceImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,10 +10,9 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
-import gov.nih.nci.hpc.ws.rs.HpcDataRegistrationRestService;
-import gov.nih.nci.hpc.dto.HpcDataRegistrationInput;
-import gov.nih.nci.hpc.dto.HpcDataRegistrationOutput;
-import gov.nih.nci.hpc.bus.HpcDataRegistrationService;
+import gov.nih.nci.hpc.ws.rs.HpcUserRegistrationRestService;
+import gov.nih.nci.hpc.dto.userregistration.HpcUserRegistrationInput;
+import gov.nih.nci.hpc.domain.user.HpcUser;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -28,22 +27,22 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * HPC Data Registration REST Service Implementation.
+ * HPC User Registration REST Service Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcDataRegistrationRestServiceImpl extends HpcRestServiceImpl
-             implements HpcDataRegistrationRestService
+public class HpcUserRegistrationRestServiceImpl extends HpcRestServiceImpl
+             implements HpcUserRegistrationRestService
 {   
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
     // The Data Registration Business Service instance.
-    private HpcDataRegistrationService registrationBusService = null;
+    //private HpcDataRegistrationService registrationBusService = null;
     
     // The URI Info context instance.
     private @Context UriInfo uriInfo;
@@ -61,7 +60,7 @@ public class HpcDataRegistrationRestServiceImpl extends HpcRestServiceImpl
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcDataRegistrationRestServiceImpl() throws HpcException
+    private HpcUserRegistrationRestServiceImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -74,8 +73,8 @@ public class HpcDataRegistrationRestServiceImpl extends HpcRestServiceImpl
      * 
      * @throws HpcException If the bus service is not provided by Spring.
      */
-    private HpcDataRegistrationRestServiceImpl(
-    		       HpcDataRegistrationService registrationBusService)
+    private HpcUserRegistrationRestServiceImpl(
+    		       String registrationBusService)
                    throws HpcException
     {
     	if(registrationBusService == null) {
@@ -83,7 +82,7 @@ public class HpcDataRegistrationRestServiceImpl extends HpcRestServiceImpl
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
     	
-    	this.registrationBusService = registrationBusService;
+    	//this.registrationBusService = registrationBusService;
     }  
     
     //---------------------------------------------------------------------//
@@ -95,37 +94,37 @@ public class HpcDataRegistrationRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//  
 	
     @Override
-    public Response getRegisterdData(String id)
+    public Response getUser(String id)
     {
-		logger.info("Invoking RS: GET /registration{id}");
+		logger.info("Invoking RS: GET /user/{id}");
 		
-		HpcDataRegistrationOutput registrationOutput = null;
-		try {
+		HpcUser user = new HpcUser();
+		
+		/*try {
 			 registrationOutput = registrationBusService.getRegisteredData(id);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /registration failed:", e);
 			    return toResponse(e);
-		}
+		}*/
 		
-		return toOkResponse(registrationOutput);
+		return toOkResponse(user);
 	}
     
     @Override
-    public Response registerData(
-    		        HpcDataRegistrationInput registrationInput)
+    public Response registerUser(HpcUserRegistrationInput registrationInput)
     {	
 		logger.info("Invoking RS: POST /registration");
 		
 		String registeredDataId = null;
-		try {
+		/*try {
 			 registeredDataId = 
 		     registrationBusService.registerData(registrationInput);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /registration failed:", e);
 			    return toResponse(e);
-		}
+		}*/
 		
 		return toCreatedResponse(registeredDataId);
 	}
