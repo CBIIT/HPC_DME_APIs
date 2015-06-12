@@ -56,6 +56,17 @@
 	<util:map id="jsonNamespaceMap" map-class="java.util.Hashtable">
 		<entry key="http://hpc.nci.nih.gov/dto" value="gov.nih.nci.hpc.dto"/>
 		<entry key="http://hpc.nci.nih.gov/domain" value="gov.nih.nci.hpc.domain"/>
+		
+		<entry key="http://hpc.nci.nih.gov/dto/dataregistration" 
+		       value="gov.nih.nci.hpc.dto.dataregistration"/>
+		<entry key="http://hpc.nci.nih.gov/dto/userregistration" 
+		       value="gov.nih.nci.hpc.dto.userregistration"/>
+		<entry key="http://hpc.nci.nih.gov/domain/dataset" 
+		       value="gov.nih.nci.hpc.domain.dataset"/>
+		<entry key="http://hpc.nci.nih.gov/domain/metadata" 
+		       value="gov.nih.nci.hpc.domain.metadata"/>
+		<entry key="http://hpc.nci.nih.gov/domain/user" 
+		       value="gov.nih.nci.hpc.domain.user"/>
 	</util:map>
 	
 	<!-- JAX-RS Service Beans -->

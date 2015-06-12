@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcDatasetRegistration.xsd
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+ 
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+			xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+			xmlns:hpc-domain-dataset="http://hpc.nci.nih.gov/domain/dataset"
+			xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
+    		targetNamespace="http://hpc.nci.nih.gov/dto/dataregistration"
+    		elementFormDefault="unqualified">
+    		
+   	<xsd:import namespace="http://hpc.nci.nih.gov/domain/dataset" 
+   	            schemaLocation="HpcDatasetTypes.xsd"/>
+   	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata" 
+   	            schemaLocation="HpcMetadataTypes.xsd"/>
+   	
+    
+    <!--  Registration Service Input DTO -->
+    <xsd:element name="HpcDatasetRegistrationInput">
+        <xsd:complexType>
+  			<xsd:sequence>
+  				<xsd:element name="primaryInvestigatorId" type="xsd:ID"/>
+  				<xsd:element name="labBranch" type="xsd:string"/>
+  				<xsd:element name="email" type="xsd:string"/>
+      			<xsd:element name="phone" type="xsd:string"/>
+      			<xsd:element name="name" type="xsd:string"/>
+      			<xsd:element name="registrationMetadata" 
+  			             	 type="hpc-domain-metadata:HpcDatasetRegistrationMetadata"/>
+  				<xsd:element name="files" 
+			                 type="hpc-domain-dataset:HpcFile" maxOccurs="unbounded"/>
+        	</xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    
+
+</xsd:schema>
