@@ -30,6 +30,33 @@
             			</goals>
             			<configuration>
                 			<xsdOptions>
+                    			<xsdOption>
+                        			<xsd>src/main/resources/schema/HpcUserTypes.xsd</xsd>
+                        			<packagename>gov.nih.nci.hpc.domain.user</packagename>
+                        			<bindingFile>src/main/resources/schema/hpc-domain-jaxb-binding.xjb</bindingFile>
+                    			</xsdOption>
+                    			<xsdOption>
+                        			<xsd>src/main/resources/schema/HpcUser.xsd</xsd>
+                        			<packagename>gov.nih.nci.hpc.domain.model</packagename>
+                        			<bindingFile>src/main/resources/schema/hpc-domain-user-jaxb-binding.xjb</bindingFile>
+                    			</xsdOption>
+                    			<xsdOption>
+                        			<xsd>src/main/resources/schema/HpcDatasetTypes.xsd</xsd>
+                        			<packagename>gov.nih.nci.hpc.domain.dataset</packagename>
+                        			<bindingFile>src/main/resources/schema/hpc-domain-jaxb-binding.xjb</bindingFile>
+                    			</xsdOption>
+                    			<xsdOption>
+                        			<xsd>src/main/resources/schema/HpcMetadataTypes.xsd</xsd>
+                        			<packagename>gov.nih.nci.hpc.domain.metadata</packagename>
+                        			<bindingFile>src/main/resources/schema/hpc-domain-jaxb-binding.xjb</bindingFile>
+                    			</xsdOption>
+                    			<xsdOption>
+                        			<xsd>src/main/resources/schema/HpcManagedDataset.xsd</xsd>
+                        			<packagename>gov.nih.nci.hpc.domain.model</packagename>
+                        			<bindingFile>src/main/resources/schema/hpc-domain-dataset-jaxb-binding.xjb</bindingFile>
+                    			</xsdOption>
+                    			
+                			
                 				<xsdOption>
                         			<xsd>src/main/resources/schema/HpcDataTypes.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.domain</packagename>
@@ -53,6 +80,12 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package>
+							gov.nih.nci.hpc.domain.user,
+							gov.nih.nci.hpc.domain.metadata,
+							gov.nih.nci.hpc.domain.dataset,
+							gov.nih.nci.hpc.domain.model,
+							
+							<!--  TODO: remove  -->
 							gov.nih.nci.hpc.domain
 						</Export-Package>
 						<Import-Package>*</Import-Package>
