@@ -79,6 +79,8 @@ public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
 		String id = managedData.getId();
 		HpcManagedDataType type = managedData.getType();
 		Calendar created = managedData.getCreated();
+		String projectName = managedData.getProjectName();
+		String investigatorName = managedData.getInvestigatorName();
 		List<HpcDataset> datasets = managedData.getDatasets();
  
 		// Set the data on the BSON document.
@@ -90,6 +92,12 @@ public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
 		}
 		if(created != null) {
 		   document.put(MANAGED_DATA_CREATED_KEY, created.getTime());
+		}
+		if(projectName != null) {
+		   document.put(MANAGED_DATA_PROJECT_NAME_KEY, projectName);
+		}
+		if(investigatorName != null) {
+		   document.put(MANAGED_DATA_INVESTIGATOR_NAME_KEY, investigatorName);
 		}
 		if(datasets != null && datasets.size() > 0) {
 		   document.put(MANAGED_DATA_DATASETS_KEY, datasets);
@@ -116,6 +124,11 @@ public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
 		    		                                     String.class)));
 		Calendar created = Calendar.getInstance();
 		created.setTime(document.get(MANAGED_DATA_CREATED_KEY, Date.class));
+		managedData.setProjectName(document.get(MANAGED_DATA_PROJECT_NAME_KEY, 
+				                                String.class));
+		managedData.setInvestigatorName(
+				       document.get(MANAGED_DATA_INVESTIGATOR_NAME_KEY, 
+                                    String.class));
 		managedData.setCreated(created);
 		List<Document> datasetDocuments = 
 				       (List<Document>) document.get(MANAGED_DATA_DATASETS_KEY);
