@@ -63,7 +63,7 @@
 									<version>${project.version}</version>
 									<overWrite>true</overWrite>
 									<outputDirectory>xjc-build</outputDirectory>
-									<includes>**/*Types.xsd,**/hpc-domain-import-types-jaxb-binding.xjb</includes>
+									<includes>**/*Types.xsd,**/**.xjb</includes>
 								</artifactItem>
 							</artifactItems>
 						</configuration>
@@ -88,6 +88,18 @@
             			<configuration>
                 			<xsdOptions>
                 				<xsdOption>
+                        			<xsd>xjc-build/schema/HpcUserRegistration.xsd</xsd>
+                        			<packagename>gov.nih.nci.hpc.dto.userregistration</packagename>
+                        			<bindingFile>xjc-build/schema/hpc-domain-user-jaxb-binding.xjb</bindingFile>
+                    			</xsdOption>
+                				<xsdOption>
+                        			<xsd>xjc-build/schema/HpcDatasetRegistration.xsd</xsd>
+                        			<packagename>gov.nih.nci.hpc.dto.datasetregistration</packagename>
+                        			<bindingFile>xjc-build/schema/hpc-domain-dataset-jaxb-binding.xjb</bindingFile>
+                    			</xsdOption>
+                    			
+                    			
+                				<xsdOption>
                         			<xsd>xjc-build/schema/HpcDataRegistration.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.dto</packagename>
                         			<bindingFile>xjc-build/schema/hpc-domain-import-types-jaxb-binding.xjb</bindingFile>
@@ -105,7 +117,9 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package>
-							gov.nih.nci.hpc.dto
+							gov.nih.nci.hpc.dto,
+							gov.nih.nci.hpc.dto.userregistration,
+							gov.nih.nci.hpc.dto.datasetregistration
 						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>
