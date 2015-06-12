@@ -35,6 +35,9 @@ public abstract class HpcCodec<T> implements Codec<T>
 	public final static String MANAGED_DATA_ID_KEY = "id"; 
 	public final static String MANAGED_DATA_TYPE_KEY = "type"; 
 	public final static String MANAGED_DATA_CREATED_KEY = "created"; 
+	public final static String MANAGED_DATA_PROJECT_NAME_KEY = "project_name"; 
+	public final static String MANAGED_DATA_INVESTIGATOR_NAME_KEY = 
+			                   "investigator_name"; 
 	public final static String MANAGED_DATA_DATASETS_KEY = "datasets"; 
     
     // HpcDataset Document keys.
