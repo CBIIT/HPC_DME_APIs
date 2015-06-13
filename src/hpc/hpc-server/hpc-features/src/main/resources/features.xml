@@ -27,6 +27,8 @@
   
         <bundle>mvn:${project.groupId}/hpc-common/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-domain/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-domain-types/${project.version}</bundle>
+        <bundle>mvn:${project.groupId}/hpc-domain-model/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-dto/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-dao-api/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-dao-impl/${project.version}</bundle>
