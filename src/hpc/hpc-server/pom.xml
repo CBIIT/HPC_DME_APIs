@@ -19,6 +19,8 @@
 	
 	<modules>
 		<module>hpc-common</module>
+		<module>hpc-domain-types</module>
+		<module>hpc-domain-model</module>
 		<module>hpc-domain</module>
 		<module>hpc-dto</module>
 		<module>hpc-dao-api</module>
