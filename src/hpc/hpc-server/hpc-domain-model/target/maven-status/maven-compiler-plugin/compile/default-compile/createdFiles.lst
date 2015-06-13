@@ -1,0 +1,8 @@
+gov/nih/nci/hpc/domain/model/ObjectFactory.class
+gov/nih/nci/hpc/domain/model/Adapter3.class
+gov/nih/nci/hpc/domain/model/Adapter2.class
+gov/nih/nci/hpc/domain/model/HpcManagedFile.class
+gov/nih/nci/hpc/domain/model/Adapter1.class
+gov/nih/nci/hpc/domain/model/package-info.class
+gov/nih/nci/hpc/domain/model/HpcManagedDataset.class
+gov/nih/nci/hpc/domain/model/HpcManagedUser.class
