@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--  
- * HpcManagedData.xsd
+ * HpcManagedDataset.xsd
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -9,7 +9,7 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: HpcManagedData.xsd 111 2015-05-23 00:39:01Z rosenbergea $
+ * @version $Id$
  -->
  
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
