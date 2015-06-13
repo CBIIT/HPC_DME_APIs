@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcUserTypes.xsd
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id: HpcUserTypes.xsd 170 2015-06-13 12:30:30Z rosenbergea $
+ -->
+ 
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+			xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+			xmlns:hpc-domain-user="http://hpc.nci.nih.gov/domain/user"
+    		targetNamespace="http://hpc.nci.nih.gov/domain/user"
+    		elementFormDefault="unqualified">
+	
+	<xsd:simpleType name="HpcDataTransferType">
+  		<xsd:restriction base="xsd:string">
+    		<xsd:enumeration value="GLOBUS"/>
+  		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="HpcDataTransferAccount">
+  	    <xsd:sequence>
+  	        <xsd:element name="username" type="xsd:string"/>
+  			<xsd:element name="password" type="xsd:string"/>
+  			<xsd:element name="dataTransferType" 
+  			             type="hpc-domain-user:HpcDataTransferType"/>
+    	</xsd:sequence>
+    </xsd:complexType>
+    
+	<xsd:complexType name="HpcUser">
+  	    	<xsd:sequence>
+  	        	<xsd:element name="nihUserId" type="xsd:string"/>
+  				<xsd:element name="firstName" type="xsd:string"/>
+  				<xsd:element name="lastName" type="xsd:string"/>
+      			<xsd:element name="dataTransferAcount" 
+      			             type="hpc-domain-user:HpcDataTransferAccount"/>
+    		</xsd:sequence>
+    </xsd:complexType>
+
+</xsd:schema>
