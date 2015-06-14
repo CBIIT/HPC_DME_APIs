@@ -48,7 +48,7 @@
 	<xsd:complexType name="HpcFileLocation">
 		<xsd:sequence>
 			<xsd:element name="endpoint" type="xsd:string"/>
-			<xsd:element name="filePath" type="xsd:string"/>
+			<xsd:element name="path" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	

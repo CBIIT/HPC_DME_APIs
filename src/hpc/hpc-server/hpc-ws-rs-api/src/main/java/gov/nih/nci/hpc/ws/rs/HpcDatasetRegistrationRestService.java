@@ -1,5 +1,5 @@
 /**
- * HpcUserRegistrationRestService.java
+ * HpcDatasetRegistrationRestService.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
-import gov.nih.nci.hpc.dto.userregistration.HpcUserDTO;
+import gov.nih.nci.hpc.dto.datasetregistration.HpcDatasetDTO;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -22,36 +22,36 @@ import javax.ws.rs.core.Response;
 
 /**
  * <p>
- * HPC User Registration REST Service Interface.
+ * HPC Data Registration REST Service Interface.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
+ * @version $Id: HpcDatasetsRegistrationRestService.java 58 2015-05-15 14:56:07Z rosenbergea $
  */
 
 @Path("/")
-public interface HpcUserRegistrationRestService
+public interface HpcDatasetRegistrationRestService
 {    
     /**
-     * GET user by ID.
+     * GET Dataset by ID.
      *
-     * @param id The registered user ID.
-     * @return gov.nih.nci.hpc.dto.userregistration.HpcUserDTO entity.
+     * @param id The dataset ID.
+     * @return gov.nih.nci.hpc.dto.datasetregistration.HpcDatasetDTO entity.
      */
     @GET
-    @Path("/user/{id}")
+    @Path("/dataset/{id}")
     @Produces("application/json,application/xml")
-    public Response getUser(@PathParam("id") String id); 
+    public Response getDataset(@PathParam("id") String id); 
     
     /**
      * POST registration request.
      *
-     * @param userDTO The user DTO to register.
+     * @param registrationInput The data registration input DTO.
      */
     @POST
-    @Path("/user")
+    @Path("/dataset")
     @Consumes("application/json,application/xml")
-    public Response registerUser(HpcUserDTO userDTO);
+    public Response registerDataset(HpcDatasetDTO datasetDTO);
 }
 
  
