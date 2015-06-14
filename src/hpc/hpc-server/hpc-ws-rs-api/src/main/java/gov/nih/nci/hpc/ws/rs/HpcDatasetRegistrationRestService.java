@@ -26,7 +26,7 @@ import javax.ws.rs.core.Response;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: HpcDatasetsRegistrationRestService.java 58 2015-05-15 14:56:07Z rosenbergea $
+ * @version $Id$
  */
 
 @Path("/")
