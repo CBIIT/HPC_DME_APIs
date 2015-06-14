@@ -1,5 +1,5 @@
 /**
- * HpcUserRegistrationRestServiceImpl.java
+ * HpcDatasetRegistrationRestServiceImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,10 +10,17 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
-import gov.nih.nci.hpc.ws.rs.HpcUserRegistrationRestService;
-import gov.nih.nci.hpc.dto.userregistration.HpcUserDTO;
-import gov.nih.nci.hpc.domain.user.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.ws.rs.HpcDatasetRegistrationRestService;
+import gov.nih.nci.hpc.dto.datasetregistration.HpcDatasetDTO;
+import gov.nih.nci.hpc.dto.datasetregistration.HpcFileDTO;
+import gov.nih.nci.hpc.domain.metadata.HpcDatasetRegistrationMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcDatasetMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
+import gov.nih.nci.hpc.domain.dataset.HpcFile;
+import gov.nih.nci.hpc.domain.dataset.HpcFileType;
+import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
+
+
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -28,15 +35,15 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * HPC User Registration REST Service Implementation.
+ * HPC Dataset Registration REST Service Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcUserRegistrationRestServiceImpl extends HpcRestServiceImpl
-             implements HpcUserRegistrationRestService
+public class HpcDatasetRegistrationRestServiceImpl extends HpcRestServiceImpl
+             implements HpcDatasetRegistrationRestService
 {   
     //---------------------------------------------------------------------//
     // Instance members
@@ -61,7 +68,7 @@ public class HpcUserRegistrationRestServiceImpl extends HpcRestServiceImpl
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcUserRegistrationRestServiceImpl() throws HpcException
+    private HpcDatasetRegistrationRestServiceImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -74,9 +81,9 @@ public class HpcUserRegistrationRestServiceImpl extends HpcRestServiceImpl
      * 
      * @throws HpcException If the bus service is not provided by Spring.
      */
-    private HpcUserRegistrationRestServiceImpl(
-    		       String registrationBusService)
-                   throws HpcException
+    private HpcDatasetRegistrationRestServiceImpl(
+    		                      String registrationBusService)
+                                  throws HpcException
     {
     	if(registrationBusService == null) {
     	   throw new HpcException("Null HpcDataRegistrationService instance",
@@ -95,21 +102,40 @@ public class HpcUserRegistrationRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//  
 	
     @Override
-    public Response getUser(String id)
+    public Response getDataset(String id)
     {
 		logger.info("Invoking RS: GET /user/{id}");
 		
-		HpcUserDTO output = new HpcUserDTO();
-		HpcUser user = new HpcUser();
-		user.setNihUserId("u1c056");
-		user.setFirstName("Prasad");
-		user.setLastName("Konka");
-		HpcDataTransferAccount dta = new HpcDataTransferAccount();
-		dta.setUsername("globus-user");
-		dta.setPassword("***REMOVED***");
-		user.setDataTransferAccount(dta);
-		output.setUser(user);
-		
+		HpcDatasetDTO output = new HpcDatasetDTO();
+		output.setName("dataset-name");
+		output.setPrimaryInvestigatorId("primary-investigator-id");
+		output.setCreatorId("creator-id");
+		output.setLabBranch("lab-branch");
+		HpcFileDTO fileDTO = new HpcFileDTO();
+		HpcFile file = new HpcFile();
+		file.setType(HpcFileType.FASTQ);
+		HpcFileLocation location = new HpcFileLocation();
+		location.setEndpoint("endpoint");
+		location.setPath("path");
+		file.setLocation(location);
+		fileDTO.setFile(file);
+		HpcDatasetMetadata dsmd = new HpcDatasetMetadata();
+		HpcDatasetRegistrationMetadata metadata = new HpcDatasetRegistrationMetadata();
+		metadata.setDataContainsPII(false);
+		metadata.setDataContainsPHI(true);
+		metadata.setDataEncrypted(false);
+		metadata.setDataCompressed(true);
+		metadata.setDescription("dataset-description");
+		metadata.setFundingOrganization("funding-organization");
+		HpcMetadataItem mdi = new HpcMetadataItem();
+		mdi.setKey("custom-metadata-key");
+		mdi.setValue("custom-metadata-value");
+		metadata.getMetadataItems().add(mdi);
+		dsmd.setRegistrationMetadata(metadata);
+			
+		fileDTO.setMetadata(dsmd);
+		output.getFiles().add(fileDTO);
+		output.getFiles().add(fileDTO);
 		
 		/*try {
 			 registrationOutput = registrationBusService.getRegisteredData(id);
@@ -123,7 +149,7 @@ public class HpcUserRegistrationRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response registerUser(HpcUserDTO userDTO)
+    public Response registerDataset(HpcDatasetDTO datasetDTO)
     {	
 		logger.info("Invoking RS: POST /registration");
 		

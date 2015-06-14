@@ -38,7 +38,7 @@
   	        	<xsd:element name="nihUserId" type="xsd:string"/>
   				<xsd:element name="firstName" type="xsd:string"/>
   				<xsd:element name="lastName" type="xsd:string"/>
-      			<xsd:element name="dataTransferAcount" 
+      			<xsd:element name="dataTransferAccount" 
       			             type="hpc-domain-user:HpcDataTransferAccount"/>
     		</xsd:sequence>
     </xsd:complexType>
