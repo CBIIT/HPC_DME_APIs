@@ -21,8 +21,8 @@
    	<xsd:import namespace="http://hpc.nci.nih.gov/domain/user" 
    	            schemaLocation="HpcUserTypes.xsd"/>
     
-    <!--  User Registration Service Input DTO -->
-    <xsd:element name="HpcUserRegistrationInput">
+    <!--  User Registration Service DTO -->
+    <xsd:element name="HpcUserDTO">
         <xsd:complexType>
   	    	<xsd:sequence>
   	        	<xsd:element name="user" type="hpc-domain-user:HpcUser"/>

@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.client;
 
 import gov.nih.nci.hpc.ws.rs.HpcDataRegistrationRestService;
+import gov.nih.nci.hpc.ws.rs.HpcUserRegistrationRestService;
 
 /**
  * <p>
@@ -24,11 +25,18 @@ import gov.nih.nci.hpc.ws.rs.HpcDataRegistrationRestService;
 public interface HpcProxy
 {    
     /**
-     * Get the registration service.
+     * Get the data registration service.
      *
-     * @return A registration service proxy instance.
+     * @return A data registration service proxy instance.
      */
     public HpcDataRegistrationRestService getRegistrationServiceProxy();
+    
+    /**
+     * Get the user registration service.
+     *
+     * @return A user registration service proxy instance.
+     */
+    public HpcUserRegistrationRestService getUserRegistrationServiceProxy();
 }
 
  

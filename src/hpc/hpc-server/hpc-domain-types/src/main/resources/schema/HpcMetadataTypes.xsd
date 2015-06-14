@@ -21,7 +21,7 @@
 	<xsd:complexType name="HpcMetadataItem">
     	<xsd:sequence>
       		<xsd:element name="key" type="xsd:string"/>
-      		<xsd:element name="value" type="xsd:anyType"/>
+      		<xsd:element name="value" type="xsd:string"/>
     	</xsd:sequence>
   	</xsd:complexType>
   

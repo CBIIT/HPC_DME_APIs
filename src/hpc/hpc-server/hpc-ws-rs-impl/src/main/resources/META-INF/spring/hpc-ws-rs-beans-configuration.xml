@@ -57,8 +57,8 @@
 		<entry key="http://hpc.nci.nih.gov/dto" value="gov.nih.nci.hpc.dto"/>
 		<entry key="http://hpc.nci.nih.gov/domain" value="gov.nih.nci.hpc.domain"/>
 		
-		<entry key="http://hpc.nci.nih.gov/dto/dataregistration" 
-		       value="gov.nih.nci.hpc.dto.dataregistration"/>
+		<entry key="http://hpc.nci.nih.gov/dto/datasetregistration" 
+		       value="gov.nih.nci.hpc.dto.datasetregistration"/>
 		<entry key="http://hpc.nci.nih.gov/dto/userregistration" 
 		       value="gov.nih.nci.hpc.dto.userregistration"/>
 		<entry key="http://hpc.nci.nih.gov/domain/dataset" 
@@ -70,14 +70,27 @@
 	</util:map>
 	
 	<!-- JAX-RS Service Beans -->
-    <bean id="hpcDataRegistrationRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataRegistrationRestServiceImpl">
+    <bean id="hpcDataRegistrationRestService" 
+          class="gov.nih.nci.hpc.ws.rs.impl.HpcDataRegistrationRestServiceImpl">
     	<constructor-arg ref="hpcDataRegistrationService"/>
     </bean>
-    
+
+    <bean id="hpcUserRegistrationRestService" 
+          class="gov.nih.nci.hpc.ws.rs.impl.HpcUserRegistrationRestServiceImpl">
+    	<constructor-arg value="ABC"/>
+    </bean>
+    <bean id="hpcDatasetRegistrationRestService" 
+          class="gov.nih.nci.hpc.ws.rs.impl.HpcDatasetRegistrationRestServiceImpl">
+    	<constructor-arg value="ABC"/>
+    </bean>
+    	
 	<!-- CXF JAX-RS Server Config -->
     <jaxrs:server id="hpc-server" address="${hpc.ws.rs.url}" bus="cxf">
         <jaxrs:serviceBeans>
-           <ref bean="hpcDataRegistrationRestService"/>
+       		<ref bean="hpcUserRegistrationRestService"/>
+       		<ref bean="hpcDatasetRegistrationRestService"/>
+       		
+        	<ref bean="hpcDataRegistrationRestService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
     		<ref bean="jaxbProvider"/>
