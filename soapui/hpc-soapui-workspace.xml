@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <con:soapui-workspace name="hpc-soapui" soapui-version="5.1.3" xmlns:con="http://eviware.com/soapui/config">
   <con:settings/>
-  <con:project name="Registration">/Users/eran/Development/HPC/hpc-prototype-dev/soapui/hpc-soapui-project.xml</con:project>
+  <con:project name="hpc-server">/Users/eran/Development/HPC/hpc-prototype-dev/soapui/hpc-soapui-project.xml</con:project>
   <con:collectInfoForSupport>false</con:collectInfoForSupport>
 </con:soapui-workspace>
