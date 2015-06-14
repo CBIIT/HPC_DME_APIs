@@ -9,7 +9,7 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: HpcMetadataTypes.xsd 170 2015-06-13 12:30:30Z rosenbergea $
+ * @version $Id: HpcMetadataTypes.xsd 181 2015-06-14 22:12:45Z rosenbergea $
  -->
  
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
