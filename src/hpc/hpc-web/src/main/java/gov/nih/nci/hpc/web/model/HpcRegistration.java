@@ -1,11 +1,18 @@
 package gov.nih.nci.hpc.web.model;
 
 public class HpcRegistration {
-
+	private String id;
 	private String projectName;
 	private String investigatorName;
 	private String originDataendpoint;
 	private String originDataLocation;
+
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
 	public String getProjectName() {
 		return projectName;
 	}
