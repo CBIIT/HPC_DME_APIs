@@ -40,8 +40,33 @@
 	
 	<xsd:complexType name="HpcDataTransferReport">
   	    <xsd:sequence>
-  			<xsd:element name="completionTime" type="xsd:dateTime"/>
+  			<xsd:element name="taskID" type="xsd:string"/>
+      		<xsd:element name="taskType" type="xsd:string"/>
+      		<xsd:element name="status" type="xsd:string"/>
+      		<xsd:element name="requestTime" type="xsd:dateTime"/>
+      		<xsd:element name="deadline" type="xsd:dateTime"/>
+      		<xsd:element name="completionTime" type="xsd:dateTime"/>
+      		<xsd:element name="totalTasks" type="xsd:int"/>
+      		<xsd:element name="tasksSuccessful" type="xsd:int"/>
+      		<xsd:element name="tasksExpired" type="xsd:int"/>
+      		<xsd:element name="tasksCanceled" type="xsd:int"/>
+      		<xsd:element name="tasksFailed" type="xsd:int"/>
+      		<xsd:element name="tasksPending" type="xsd:int"/>
+      		<xsd:element name="tasksRetrying" type="xsd:int"/>
+      		<xsd:element name="command" type="xsd:string"/>
+      		<xsd:element name="sourceEndpoint" type="xsd:string"/>
+      		<xsd:element name="destinationEndpoint" type="xsd:string"/>
+      		<xsd:element name="dataEncryption" type="xsd:boolean"/>
       		<xsd:element name="checksumVerification" type="xsd:boolean"/>
+      		<xsd:element name="delete" type="xsd:boolean"/>
+      		<xsd:element name="files" type="xsd:int"/>
+      		<xsd:element name="filesSkipped" type="xsd:int"/>
+      		<xsd:element name="directories" type="xsd:int"/>
+      		<xsd:element name="expansions" type="xsd:int"/>
+      		<xsd:element name="bytesTransferred" type="xsd:long"/>
+      		<xsd:element name="bytesChecksummed" type="xsd:long"/>
+      		<xsd:element name="effectiveMbitsPerSec" type="xsd:double"/>
+      		<xsd:element name="faults" type="xsd:int"/>
     	</xsd:sequence>
   	</xsd:complexType>
 	
