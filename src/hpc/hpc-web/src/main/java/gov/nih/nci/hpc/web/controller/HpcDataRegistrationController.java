@@ -1,9 +1,13 @@
+/**
+ * HpcDataRegistrationController.java
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://ncisvn.nci.nih.gov/svn/HPC_Data_Management/branches/hpc-prototype-dev/LICENSE.txt for details.
+ */
 package gov.nih.nci.hpc.web.controller;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.io.File;
-import javax.validation.Valid;
 
 import gov.nih.nci.hpc.domain.HpcDataTransfer;
 import gov.nih.nci.hpc.domain.HpcDataset;
@@ -12,51 +16,61 @@ import gov.nih.nci.hpc.domain.HpcDatasetType;
 import gov.nih.nci.hpc.domain.HpcFacility;
 import gov.nih.nci.hpc.domain.HpcManagedDataType;
 import gov.nih.nci.hpc.dto.HpcDataRegistrationInput;
-import gov.nih.nci.hpc.dto.HpcDataRegistrationOutput;
 import gov.nih.nci.hpc.web.model.HpcRegistration;
 
+import java.util.List;
+
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestTemplate;
+/**
+ * <p>
+ * HPC DM Dataset registration controller
+ * </p>
+ *
+ * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
+ * @version $Id: HpcDataRegistrationController.java 
+ */
 
-@RestController
+@Controller
 @EnableAutoConfiguration
-@RequestMapping("/register")
+@RequestMapping("/registerDataset")
 public class HpcDataRegistrationController extends AbstractHpcController {
- 
-	  
+
+
   @RequestMapping(method = RequestMethod.GET)
-  public List<HpcRegistration> findDatasets(){ 
-    return null;
+  public String home(Model model){
+	  HpcRegistration hpcRegistration = new HpcRegistration();
+	  model.addAttribute("hpcRegistration", hpcRegistration);
+      return "datasetRegistration";
   }
-	
+
   /*
 	if(dataset.getName() == null || dataset.getType() == null ||
-	    	   dataset.getLocation() == null || 
+	    	   dataset.getLocation() == null ||
 	    	   dataset.getLocation().getFacility() == null ||
 	    	   dataset.getLocation().getEndpoint() == null ||
-	    	   dataset.getLocation().getDataTransfer() == null) 
-	 */   	    
+	    	   dataset.getLocation().getDataTransfer() == null)
+	 */
   @RequestMapping(method = RequestMethod.POST)
-  public String register(@RequestBody  HpcRegistration registration, Model model) {
+  public String register(HpcRegistration registration, Model model) {
 	  RestTemplate restTemplate = new RestTemplate();
 	  String uri = "http://localhost:7737/hpc-server/registration";
 	  HpcDataRegistrationInput input = new HpcDataRegistrationInput();
 	  input.setInvestigatorName(registration.getInvestigatorName());
 	  input.setProjectName(registration.getProjectName());
 	  HpcDataset dataset = new HpcDataset();
-	  dataset.setName(registration.getProjectName());
+	  dataset.setName("HPC Dataset");
+	  input.setUsername("xyz");
+	  input.setPassword("xyz");
 	  HpcDatasetLocation target = new HpcDatasetLocation();
-	  File originFile= new File(registration.getOriginDataLocation());
 	  target.setEndpoint("nihfnlcr#gridftp1");
-	  target.setFilePath("/mnt/gridftp/narram/" + originFile.getName());
+	  target.setFilePath(registration.getOriginDataLocation());
 	  target.setDataTransfer(HpcDataTransfer.GLOBUS);
 	  target.setFacility(HpcFacility.SHADY_GROVE);
 	  dataset.setLocation(target);
@@ -71,13 +85,20 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 	  sets.add(dataset);
 	  try
 	  {
-		  String result = (String) restTemplate.postForObject( uri, input, String.class);
-		  model.addAttribute("registrationOutput", result);
+		  HttpEntity<String> response = restTemplate.postForEntity(uri,  input, String.class);
+		  String resultString = response.getBody();
+		  HttpHeaders headers = response.getHeaders();
+		  String location = headers.getLocation().toString();
+		  String id = location.substring(location.lastIndexOf("/")+1);
+		  registration.setId(id);
+		  model.addAttribute("registrationStatus", true);
+		  model.addAttribute("registration", registration);
 	  }
 	  catch(Exception e)
 	  {
+		  model.addAttribute("registrationStatus", false);
 		  model.addAttribute("registrationOutput", "Failed to register your request due to: "+e.getMessage());
 	  }
-	  return "result.html";
+	  return "result";
   }
 }
