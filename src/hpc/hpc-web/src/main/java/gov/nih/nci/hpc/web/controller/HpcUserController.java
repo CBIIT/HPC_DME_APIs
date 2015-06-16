@@ -9,15 +9,13 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.client.HpcProxy;
-import gov.nih.nci.hpc.client.impl.HpcProxyImpl;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.user.HpcUser;
 import gov.nih.nci.hpc.dto.userregistration.HpcUserDTO;
-import gov.nih.nci.hpc.web.model.HpcUserRegistration;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
-import gov.nih.nci.hpc.ws.rs.HpcUserRegistrationRestService;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -25,6 +23,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
@@ -55,10 +55,12 @@ public class HpcUserController extends AbstractHpcController {
   }
 
   @RequestMapping(method = RequestMethod.POST)
-  public String register(HpcWebUser hpcUser, Model model) {
+  public String register(@Valid @ModelAttribute("hpcUser") HpcWebUser hpcUser, BindingResult bindingResult, Model model) {
 	  RestTemplate restTemplate = new RestTemplate();
-	  String uri = null;
-	  uri = serviceURL;
+      if (bindingResult.hasErrors()) {
+          return "enroll";
+      }
+	  
 	  try
 	  {
 		 // HpcProxy client =  new HpcProxyImpl(serverURL);
