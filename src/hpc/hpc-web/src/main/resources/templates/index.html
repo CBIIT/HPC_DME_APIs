@@ -39,7 +39,7 @@
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#2d95b7", endColorstr="#23748e");
   background-image: -khtml-gradient(linear, left top, left bottom, from(#2d95b7), to(#23748e));
   background-image: -moz-linear-gradient(top, #2d95b7, #23748e);
-  background-image: -ms-linear-gradient(top, #2d95b7, #23748e);
+  background-image: -ms-linear-gradient(top, #2d95b7, #23748e);/
   background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #2d95b7), color-stop(100%, #23748e));
   background-image: -webkit-linear-gradient(top, #2d95b7, #23748e);
   background-image: -o-linear-gradient(top, #2d95b7, #23748e);
@@ -50,6 +50,14 @@
   -webkit-font-smoothing: antialiased;
 }
 </style>
+
+<script>
+function enroll() {
+	document.getElementById("hpcLogin").method="GET";
+    document.getElementById("hpcLogin").action="/registerUser";
+    
+}
+</script>
   </head>
 
   <body>
@@ -67,18 +75,17 @@
     </div>
     <div class="container">
 
-	<form class="login-form" action="#" id="register" role="form" th:action="@{/login}" th:object="${hpcUser}" method="post">
+	<form class="login-form" action="#" id="hpcLogin" role="form" th:action="@{/login}" th:object="${hpcLogin}" method="post">
 
         <div class="login-wrap">
             <p class="login-img"><i class="icon_lock_alt"></i></p>
-            
             <div class="input-group">
               <span class="input-group-addon"><i class="icon_profile"></i></span>
-		      <span th:if="${#fields.hasErrors('nihUserId')}" th:errors="*{nihUserId}">Login Error</span>
-		      <input type="text" class="form-control" th:field="*{nihUserId}" placeholder="Enter NIH User Id"/>
+			  <label th:if="${#fields.hasErrors('userId')}" th:errors="*{userId}">Login Error</label>
+		      <input type="text" class="form-control" th:field="*{userId}" placeholder="Enter NIH User Id"/>
             </div>
             <button type="submit" class="btn btn-info btn-lg btn-block">Login</button>
-            <a class="btn btn-info btn-lg btn-block" href="/registerUser">Enroll</a>
+            <button type="submit" class="btn btn-info btn-lg btn-block" onClick="enroll()">Enroll</button>
         </div>
       </form>
 
