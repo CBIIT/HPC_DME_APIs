@@ -38,6 +38,15 @@
       <script src="js/respond.min.js"></script>
       <script src="js/lte-ie7.js"></script>
     <![endif]-->
+<script>
+function cancel() {
+	window.location.replace("/");
+	return false;
+	//document.getElementById("enroll").method="GET";
+    //document.getElementById("enroll").action="/";
+    
+}
+</script>    
   </head>
 
   <body>
@@ -59,40 +68,46 @@
           <section class="wrapper">
   <div class="row">
 	<h3><UL>HPC User Enrollment</UL></h3><br/><br/>
-	<form class="form-horizontal" action="#" role="form" th:action="@{/registerUser}" th:object="${hpcUser}" method="post">
+	<form class="form-horizontal" id="enroll" action="#" role="form" th:action="@{/registerUser}" th:object="${hpcUser}" method="post">
 	<div class="form-group">
 	<label class="control-label col-sm-2" for="nihUserId">UserId:</label>
 	  <div class="col-sm-7">
+		<label th:if="${#fields.hasErrors('nihUserId')}" th:errors="*{nihUserId}">NIH UserId Error</label>
 		<input type="text" class="form-control" th:field="*{nihUserId}"  placeholder="Enter NIH UserId"/>
 	  </div>
 	</div>
 	<div class="form-group">
 	<label class="control-label col-sm-2" for="firstName">First Name:</label>
 	  <div class="col-sm-7">
+		<label th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}">First Name Error</label>
 		<input type="text" class="form-control" th:field="*{firstName}"  placeholder="Enter first name"/>
 	  </div>
 	</div>
 	<div class="form-group">
 	<label class="control-label col-sm-2" for="lastName">Last Name:</label>
 	  <div class="col-sm-7">
+		<label th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}">Last Name Error</label>
 		<input type="text" class="form-control" th:field="*{lastName}"  placeholder="Enter last name"/>
 	  </div>
 	</div>
 	<div class="form-group">
 	  <label class="control-label col-sm-2" for="*{globusUserId}">Globus UserId:</label>
 	  <div class="col-sm-7">
+		<label th:if="${#fields.hasErrors('globusUserId')}" th:errors="*{globusUserId}">Globus UserId Error</label>
 		<input type="text" class="form-control" th:field="*{globusUserId}" placeholder="Enter Globus UserId"/>
 	  </div>
 	</div>
 	<div class="form-group">
 	  <label class="control-label col-sm-2" for="globusPasswd">Globus Password:</label>
 	  <div class="col-sm-7">
+		<label th:if="${#fields.hasErrors('globusPasswd')}" th:errors="*{globusPasswd}">Globus Password Error</label>
 		<input type="password" class="form-control" th:field="*{globusPasswd}" placeholder="Enter Globus Password"/>
 	  </div>
 	</div>
 	<div class="form-group">
 	  <div class="col-sm-offset-2 col-sm-7">
 		<button type="submit" class="btn btn-lg btn-success">Enroll</button>
+		<button type="cancel" class="btn btn-lg btn-success" onClick="return cancel()">Cancel</button>
 	  </div>
 	</div>
   </form>

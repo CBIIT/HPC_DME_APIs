@@ -1,16 +1,26 @@
 package gov.nih.nci.hpc.web.model;
 
-import javax.validation.constraints.NotNull;
-
 import org.hibernate.validator.constraints.NotEmpty;
 
 public class HpcWebUser {
 	private String id;
+	
+
+	@NotEmpty(message="NIH User Id is required")
 	private String nihUserId;
+	
+	@NotEmpty(message="First name is required")
 	private String firstName;
+	
+	@NotEmpty(message="Last name is required")
 	private String lastName;
+	
 	private String nihUserPasswd;
+	
+	@NotEmpty(message="Globus User Id is required")
 	private String globusUserId;
+	
+	@NotEmpty(message="Globus password is required")
 	private String globusPasswd;
 
 	public String getFirstName() {
@@ -37,7 +47,6 @@ public class HpcWebUser {
 		this.id = id;
 	}
 	
-	@NotEmpty(message="NIH User Id is required")
 	public String getNihUserId() {
 		return nihUserId;
 	}

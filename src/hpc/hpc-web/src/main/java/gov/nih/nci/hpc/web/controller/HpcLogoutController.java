@@ -9,19 +9,16 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
 
 import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.client.RestTemplate;
 /**
  * <p>
  * HPC Web Login controller
@@ -38,8 +35,8 @@ public class HpcLogoutController extends AbstractHpcController {
 
   @RequestMapping(method = RequestMethod.GET)
   public String home(Model model, HttpSession session){
-	  HpcWebUser hpcUser = new HpcWebUser();
-	  model.addAttribute("hpcUser", hpcUser);
+	  HpcLogin hpcLogin = new HpcLogin();
+	  model.addAttribute("hpcLogin", hpcLogin);
 	  session.invalidate();
 	  session = null;
 	  return "index";
