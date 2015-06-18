@@ -53,7 +53,7 @@ public class HpcLoginController extends AbstractHpcController {
   }
 
   @RequestMapping(method = RequestMethod.POST)
-  public String register(@Valid @ModelAttribute("hpcLogin") HpcLogin hpcLogin, BindingResult bindingResult, Model model, HttpSession session) {
+  public String login(@Valid @ModelAttribute("hpcLogin") HpcLogin hpcLogin, BindingResult bindingResult, Model model, HttpSession session) {
 	  RestTemplate restTemplate = new RestTemplate();
       if (bindingResult.hasErrors()) {
           return "index";
