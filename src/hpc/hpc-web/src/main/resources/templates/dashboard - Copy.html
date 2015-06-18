@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" ng-app="myApp">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="HPC Data Management"/>
+    <meta name="author" content="SVG, Inc"/>
+    <link rel="shortcut icon" href="img/favicon.png"/>
+
+
+    <title>HPC Data Management</title>
+
+    <link rel="stylesheet" type="text/css" href="ng-grid.css" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <!-- Bootstrap CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet"/>
+    <!-- bootstrap theme -->
+    <link href="css/bootstrap-theme.css" rel="stylesheet"/>
+    <!-- font icon -->
+    <link href="css/elegant-icons-style.css" rel="stylesheet" />
+    <link href="css/font-awesome.min.css" rel="stylesheet" />
+    <!-- Custom styles -->
+	<link rel="stylesheet" href="css/fullcalendar.css"/>
+	<link href="css/widgets.css" rel="stylesheet"/>
+    <link href="css/style.css" rel="stylesheet"/>
+    <link href="css/style-responsive.css" rel="stylesheet" />
+	<link href="css/xcharts.min.css" rel=" stylesheet"/>
+	<link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet"/>
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.js"></script>
+      <script src="js/respond.min.js"></script>
+      <script src="js/lte-ie7.js"></script>
+    <![endif]-->
+  
+	<script type="text/javascript">
+	function datasets($scope, $http) {
+	    $http.get('http://localhost:8080/dataset/1').
+	        success(function(data) {
+	            $scope.datasets = data;
+	        });
+	}
+	</script>
+	<style>
+	/*style.css*/
+.gridStyle {
+    border: 1px solid rgb(212,212,212);
+    width: 400px; 
+    height: 300px
+}
+	</style>
+</head>
+  <body ng-controller="MyCtrl">
+  
+  <!-- container section start -->
+  <section id="container" class="">
+  <div th:include="header :: header"></div>
+      <!--main content start-->
+      <section id="main-content">
+          <section class="wrapper">
+              <!--Title start-->
+			  <div class="row">
+				<div class="col-lg-12">
+					<h3 class="page-header"><i class="fa fa-laptop"></i> Dashboard</h3>
+					<ol class="breadcrumb">
+						<li><i class="fa fa-home"></i><a th:href="@{/dashboard}">Home</a></li>
+						<li><i class="fa fa-laptop"></i>Dashboard</li>
+					</ol>
+				</div>
+			 </div>
+			<!--Title End-->
+			<!--Row start-->
+			<div class="row">
+				<div class="col-lg-9 col-md-12">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h2><i class="fa fa-flag-o red"></i><strong>My Datasets</strong></h2>
+							<div class="panel-actions">
+								<a href="index.html#" class="btn-setting"><i class="fa fa-rotate-right"></i></a>
+								<a href="index.html#" class="btn-minimize"><i class="fa fa-chevron-up"></i></a>
+								<a href="index.html#" class="btn-close"><i class="fa fa-times"></i></a>
+							</div>
+						</div>
+						<!--panel-body start-->
+<div class="gridStyle" ng-grid="gridOptions">
+</div>
+						<div class="panel-body">
+							<table class="table bootstrap-datatable countries">
+								<thead>
+									<tr>
+										<th></th>
+										<th>Scientific Field</th>
+										<th>Name</th>
+										<th>ID</th>
+										<th>Datasets</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><img src="img/Germany.png" style="height:18px; margin-top:-2px;"/></td>
+										<td>NGS</td>
+										<td>Dataset1</td>
+										<td><a href="#">HPCDM_XYG_CDFR_ERDF_1</a></td>
+										<td>
+												2 &nbsp;&nbsp;&nbsp; <button type="submit" class="btn btn-primary">Add</button>
+										</td>
+									</tr>
+									<tr>
+										<td><img src="img/Germany.png" style="height:18px; margin-top:-2px;"/></td>
+										<td>NGS</td>
+										<td>Dataset2</td>
+										<td><a href="#">HPCDM_ABC_CFFR_EDDF_2</a></td>
+										<td>
+												0 &nbsp;&nbsp;&nbsp; <button type="submit" class="btn btn-primary">Add</button>
+										</td>
+									</tr>
+									<tr>
+										<td><img src="img/Germany.png" style="height:18px; margin-top:-2px;"/></td>
+										<td>Imaging</td>
+										<td>Dataset3</td>
+										<td><a href="#">HPCDM_UYT_BDFR_ENDF_8</a></td>
+										<td>
+												4 &nbsp;&nbsp;&nbsp; <button type="submit" class="btn btn-primary">Add</button>
+										</td>
+									</tr>
+									<tr>
+										<td><img src="img/Germany.png" style="height:18px; margin-top:-2px;"/></td>
+										<td>Proteomics</td>
+										<td>Dataset4</td>
+										<td><a href="#">HPCDM_XYG_CDFR_ERDF_1</a></td>
+										<td>
+												6 &nbsp;&nbsp;&nbsp; <button type="submit" class="btn btn-primary">Add</button>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+
+					</div>
+
+				</div><!--/col-->
+
+              </div>
+          </section>
+      </section>
+      <!--main content end-->
+  </section>
+  <!-- container section start -->
+
+    <!-- javascripts -->
+    <script type="text/javascript" src="js/jquery-2.1.4.js"></script>
+    <script type="text/javascript" src="js/angular.min.js"></script>
+    <script type="text/javascript" src="js/ng-grid.min.js"></script>
+    <script type="text/javascript" src="js/hpcDataset.js"></script>
+    <!-- bootstrap -->
+    <script src="js/bootstrap.min.js"></script>
+    <!-- charts scripts -->
+    <script src="assets/jquery-knob/js/jquery.knob.js"></script>
+    <!-- custom select -->
+    <script src="js/jquery.customSelect.min.js" ></script>
+	<script src="assets/chart-master/Chart.js"></script>
+
+    <!--custome script for all page-->
+    <script src="js/scripts.js"></script>
+    <!-- custom script for this page-->
+	<script src="js/morris.min.js"></script>
+	<script src="js/jquery.slimscroll.min.js"></script>
+  <script>
+
+      //knob
+      $(function() {
+        $(".knob").knob({
+          'draw' : function () {
+            $(this.i).val(this.cv + '%')
+          }
+        })
+      });
+
+      //carousel
+      $(document).ready(function() {
+          $("#owl-slider").owlCarousel({
+              navigation : true,
+              slideSpeed : 300,
+              paginationSpeed : 400,
+              singleItem : true
+
+          });
+      });
+
+      //custom select box
+
+      $(function(){
+          $('select.styled').customSelect();
+      });
+
+	  /* ---------- Map ---------- */
+	$(function(){
+	  $('#map').vectorMap({
+	    map: 'world_mill_en',
+	    series: {
+	      regions: [{
+	        values: gdpData,
+	        scale: ['#000', '#000'],
+	        normalizeFunction: 'polynomial'
+	      }]
+	    },
+		backgroundColor: '#eef3f7',
+	    onLabelShow: function(e, el, code){
+	      el.html(el.html()+' (GDP - '+gdpData[code]+')');
+	    }
+	  });
+	});
+
+
+
+  </script>
+
+  </body>
+</html>
