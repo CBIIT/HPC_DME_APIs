@@ -9,22 +9,21 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.domain.HpcDataTransfer;
 import gov.nih.nci.hpc.domain.HpcDataset;
-import gov.nih.nci.hpc.domain.HpcDatasetLocation;
-import gov.nih.nci.hpc.domain.HpcDatasetType;
-import gov.nih.nci.hpc.domain.HpcFacility;
-import gov.nih.nci.hpc.domain.HpcManagedDataType;
 import gov.nih.nci.hpc.dto.HpcDataRegistrationInput;
-import gov.nih.nci.hpc.web.model.HpcRegistration;
+import gov.nih.nci.hpc.web.model.HpcDatasetRegistration;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
@@ -41,11 +40,12 @@ import org.springframework.web.client.RestTemplate;
 @EnableAutoConfiguration
 @RequestMapping("/registerDataset")
 public class HpcDataRegistrationController extends AbstractHpcController {
-
+	@Value("${gov.nih.nci.hpc.server.dataRegistration}")
+    private String serviceURL;
 
   @RequestMapping(method = RequestMethod.GET)
   public String home(Model model){
-	  HpcRegistration hpcRegistration = new HpcRegistration();
+	  HpcDatasetRegistration hpcRegistration = new HpcDatasetRegistration();
 	  model.addAttribute("hpcRegistration", hpcRegistration);
       return "datasetRegistration";
   }
@@ -58,11 +58,13 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 	    	   dataset.getLocation().getDataTransfer() == null)
 	 */
   @RequestMapping(method = RequestMethod.POST)
-  public String register(HpcRegistration registration, Model model) {
+  public String register(@Valid @ModelAttribute("hpcRegistration")  HpcDatasetRegistration registration, Model model) {
 	  RestTemplate restTemplate = new RestTemplate();
 	  String uri = "http://localhost:7737/hpc-server/registration";
 	  HpcDataRegistrationInput input = new HpcDataRegistrationInput();
 	  input.setInvestigatorName(registration.getInvestigatorName());
+	  HpcDataset dataset = new HpcDataset();
+	  /*
 	  input.setProjectName(registration.getProjectName());
 	  HpcDataset dataset = new HpcDataset();
 	  dataset.setName("HPC Dataset");
@@ -81,6 +83,7 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 	  source.setEndpoint(registration.getOriginDataendpoint());
 	  source.setFilePath(registration.getOriginDataLocation());
 	  dataset.setSource(source);
+	  */
 	  List<HpcDataset> sets = input.getDatasets();
 	  sets.add(dataset);
 	  try
@@ -99,6 +102,10 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 		  model.addAttribute("registrationStatus", false);
 		  model.addAttribute("registrationOutput", "Failed to register your request due to: "+e.getMessage());
 	  }
+	  registration.setId("12345");
+	  model.addAttribute("registrationStatus", true);
+	  model.addAttribute("registration", registration);
+	  
 	  return "result";
   }
 }
