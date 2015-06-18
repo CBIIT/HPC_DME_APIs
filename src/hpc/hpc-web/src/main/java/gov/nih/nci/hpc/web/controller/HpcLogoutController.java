@@ -10,7 +10,6 @@
 package gov.nih.nci.hpc.web.controller;
 
 import gov.nih.nci.hpc.web.model.HpcLogin;
-import gov.nih.nci.hpc.web.model.HpcWebUser;
 
 import javax.servlet.http.HttpSession;
 
