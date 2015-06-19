@@ -11,8 +11,8 @@
 package gov.nih.nci.hpc.client.impl;
 
 import gov.nih.nci.hpc.client.HpcProxy;
-import gov.nih.nci.hpc.ws.rs.HpcDatasetRegistrationRestService;
-import gov.nih.nci.hpc.ws.rs.HpcUserRegistrationRestService;
+import gov.nih.nci.hpc.ws.rs.HpcDatasetRestService;
+import gov.nih.nci.hpc.ws.rs.HpcUserRestService;
 
 import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
 
@@ -73,17 +73,17 @@ public class HpcProxyImpl implements HpcProxy
     //---------------------------------------------------------------------//  
 	
     @Override
-    public HpcUserRegistrationRestService getUserRegistrationServiceProxy()
+    public HpcUserRestService getUserRestServiceProxy()
     {
     	return JAXRSClientFactory.create(baseAddress, 
-    			                         HpcUserRegistrationRestService.class);
+    			                         HpcUserRestService.class);
 	}
     
     @Override
-    public HpcDatasetRegistrationRestService getDatasetRegistrationServiceProxy()
+    public HpcDatasetRestService getDatasetRestServiceProxy()
     {
     	return JAXRSClientFactory.create(baseAddress, 
-    			                         HpcDatasetRegistrationRestService.class);
+    			                         HpcDatasetRestService.class);
 	}
 }
 
