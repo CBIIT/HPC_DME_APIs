@@ -43,11 +43,17 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcFileLocation']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcFileLocation"/>
         </jxb:bindings>
-        <jxb:bindings node="//xsd:complexType[@name='HpcFile']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcFile"/>
-		</jxb:bindings>
+        <jxb:bindings node="//xsd:complexType[@name='HpcDataTransferLocations']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations"/>
+        </jxb:bindings>
         <jxb:bindings node="//xsd:complexType[@name='HpcDataTransferRequest']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcFileUploadRequest']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcFile']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcFile"/>
 		</jxb:bindings>
     </jxb:bindings>
     
@@ -55,8 +61,8 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcMetadataItem']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataItem"/>
 		</jxb:bindings>
-    	<jxb:bindings node="//xsd:complexType[@name='HpcDatasetRegistrationMetadata']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcDatasetRegistrationMetadata"/>
+    	<jxb:bindings node="//xsd:complexType[@name='HpcDatasetPrimaryMetadata']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcDatasetPrimaryMetadata"/>
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcDatasetMetadata']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcDatasetMetadata"/>
