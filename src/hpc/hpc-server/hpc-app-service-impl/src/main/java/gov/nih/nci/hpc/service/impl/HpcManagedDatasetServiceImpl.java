@@ -44,7 +44,7 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     // Instance members
     //---------------------------------------------------------------------//
 
-    // The Managed Data DAO instance.
+    // The Managed Dataset DAO instance.
     private HpcManagedDatasetDAO managedDatasetDAO = null;
     
     // The logger instance.
@@ -69,7 +69,7 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param managedDatasetDAO The managed dat DAO instance.
+     * @param managedDatasetDAO The managed dataset DAO instance.
      */
     private HpcManagedDatasetServiceImpl(HpcManagedDatasetDAO managedDatasetDAO)
                                         throws HpcException
@@ -214,7 +214,6 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     private boolean isValidDatasetPrimaryMetadata(HpcDatasetPrimaryMetadata metadata) 
     {
     	if(metadata == null ||
-    	   metadata.getDescription() == null ||
     	   metadata.getFundingOrganization() == null) {
     	   logger.info("Invalid Dataset Primary Metadata");
      	   return false;
