@@ -10,10 +10,11 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
+import gov.nih.nci.hpc.transfer.HpcDataTransfer;
+import gov.nih.nci.hpc.transfer.impl.GlobusOnlineDataTranfer;
 import gov.nih.nci.hpc.ws.rs.HpcDatasetRestService;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
-
 import gov.nih.nci.hpc.domain.metadata.HpcDatasetPrimaryMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcDatasetMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
@@ -21,7 +22,6 @@ import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
-
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -29,8 +29,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.Context;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URI;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +59,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 
     // The Data Registration Business Service instance.
     //private HpcDataRegistrationService registrationBusService = null;
-    
+	private String dynamicConfigFile = null;
     // The URI Info context instance.
     private @Context UriInfo uriInfo;
     
@@ -93,6 +100,24 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     	//this.registrationBusService = registrationBusService;
     }  
     
+   /**
+     * Constructor for Spring Dependency Injection.
+     * 
+     * @param registrationBusService The registration business service.
+     * 
+     * @throws HpcException If the bus service is not provided by Spring.
+     */
+    private HpcDatasetRestServiceImpl(String registrationBusService,String dynamicConfigFile)
+                                     throws HpcException
+    {
+    	if(registrationBusService == null) {
+    	   throw new HpcException("Null HpcDataRegistrationService instance",
+    			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    	}
+    	
+    	//this.registrationBusService = registrationBusService;
+		this.dynamicConfigFile = dynamicConfigFile;
+    }	
     //---------------------------------------------------------------------//
     // Methods
     //---------------------------------------------------------------------//
@@ -170,6 +195,37 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 		
 		return toCreatedResponse(registeredDatasetId);
 	}
+	
+    @Override
+    public Response checkDataTransferStatus(String submissionId)
+    {	
+    	HpcDataTransfer hdt = new GlobusOnlineDataTranfer();		
+		return toCreatedResponse(hdt.getTransferStatus(submissionId));
+	}
+	
+    @Override
+    public String getPrimaryConfigurableDataFields(String type,String callBackFn)
+    {
+		logger.info("Invoking RS: GET /registration/getPrimaryConfigurableDataFields for type {type}");
+		logger.info("callBackFn::" + callBackFn);
+		logger.info("type::" + type);
+		JSONParser parser = new JSONParser();
+		JSONObject json = new JSONObject();
+		try {
+        //InputStream inputStream = getClass().getClassLoader().getResourceAsStream("dynamicfields.json");
+	        FileReader reader = new FileReader(dynamicConfigFile);
+	        json = (JSONObject) parser.parse(reader);
+		} catch(FileNotFoundException e) {
+		    logger.error("FileNotFoundException failed:", e);
+		}catch(IOException e) {
+		    logger.error("IOException failed:", e);
+		}
+		catch(ParseException e) {
+		    logger.error("ParseException failed:", e);
+		}
+		
+		return callBackFn +"("+json.toString()+");";
+	} 	
 }
 
  
