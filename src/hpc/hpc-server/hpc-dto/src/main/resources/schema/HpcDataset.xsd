@@ -30,6 +30,8 @@
   				<xsd:element name="creatorId" type="xsd:ID"/>
   				<xsd:element name="registratorId" type="xsd:ID"/>
   				<xsd:element name="labBranch" type="xsd:string"/>
+  				<xsd:element name="description" type="xsd:string"/>
+  				<xsd:element name="comments" type="xsd:string"/>
   				<xsd:element name="uploadRequests" 
 			                 type="hpc-domain-dataset:HpcFileUploadRequest" 
 			                 maxOccurs="unbounded"/>
@@ -47,6 +49,8 @@
   				<xsd:element name="creatorId" type="xsd:ID"/>
   				<xsd:element name="registratorId" type="xsd:ID"/>
   				<xsd:element name="labBranch" type="xsd:string"/>
+  				<xsd:element name="description" type="xsd:string"/>
+  				<xsd:element name="comments" type="xsd:string"/>
       			<xsd:element name="created" type="xsd:dateTime"/>
 				<xsd:element name="files" 
 			    	         type="hpc-domain-dataset:HpcFile" 

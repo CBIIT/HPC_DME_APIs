@@ -42,6 +42,14 @@
   		</xsd:restriction>
 	</xsd:simpleType>
 	
+	<xsd:simpleType name="HpcDatasetUserType">
+  		<xsd:restriction base="xsd:string">
+    		<xsd:enumeration value="PRIMARY_INVESTIGATOR"/>
+    		<xsd:enumeration value="CREATOR"/>
+    		<xsd:enumeration value="REGISTRATOR"/>
+  		</xsd:restriction>
+	</xsd:simpleType>
+	
 	<xsd:complexType name="HpcDataTransferReport">
   	    <xsd:sequence>
   			<xsd:element name="taskID" type="xsd:string"/>
