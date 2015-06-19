@@ -1,5 +1,5 @@
 /**
- * HpcManagedDataCodec.java
+ * HpcManagedDatasetCodec.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,9 +10,7 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.domain.HpcDataset;
-import gov.nih.nci.hpc.domain.HpcManagedDataType;
-import gov.nih.nci.hpc.domain.HpcManagedData;
+import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
 
 import org.bson.BsonReader;
 import org.bson.BsonString;
@@ -32,14 +30,14 @@ import java.util.List;
 
 /**
  * <p>
- * HPC Managed Data Codec. 
+ * HPC Managed Dataset Codec. 
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
+public class HpcManagedDatasetCodec extends HpcCodec<HpcManagedDataset>
 { 
     //---------------------------------------------------------------------//
     // Instance members
@@ -57,7 +55,7 @@ public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
      * Default Constructor.
      * 
      */
-    public HpcManagedDataCodec()
+    public HpcManagedDatasetCodec()
     {
     }   
     
@@ -66,50 +64,61 @@ public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // Codec<HpcManagedData> Interface Implementation
+    // Codec<HpcManagedDataset> Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void encode(BsonWriter writer, HpcManagedData managedData,
+	public void encode(BsonWriter writer, HpcManagedDataset managedDataset,
 					   EncoderContext encoderContext) 
 	{
 		Document document = new Document();
  
 		// Extract the data from the domain object.
-		String id = managedData.getId();
-		HpcManagedDataType type = managedData.getType();
-		Calendar created = managedData.getCreated();
-		String projectName = managedData.getProjectName();
-		String investigatorName = managedData.getInvestigatorName();
-		List<HpcDataset> datasets = managedData.getDatasets();
+		String id = managedDataset.getId();
+		String name = managedDataset.getName();
+		String primaryInvestigatorId = managedDataset.getPrimaryInvestigatorId();
+		String creatorId = managedDataset.getCreatorId();
+		String registratorId = managedDataset.getRegistratorId();
+		String labBranch = managedDataset.getLabBranch();
+		Calendar created = managedDataset.getCreated();
+		
+		//List<HpcDataset> datasets = managedDataset.getDatasets();
  
 		// Set the data on the BSON document.
 		if(id != null) {
-		   document.put(MANAGED_DATA_ID_KEY, id);
+		   document.put(MANAGED_DATASET_ID_KEY, id);
 		}
-		if(type != null) {
-		   document.put(MANAGED_DATA_TYPE_KEY, type.value());
+		if(name != null) {
+		   document.put(MANAGED_DATASET_NAME_KEY, name);
+		}
+		if(primaryInvestigatorId != null) {
+		   document.put(MANAGED_DATASET_PRIMARY_INVESTIGATOR_ID_KEY, 
+			            primaryInvestigatorId);
+		}
+		if(creatorId != null) {
+		   document.put(MANAGED_DATASET_CREATOR_ID_KEY, creatorId);
+		}
+		if(registratorId != null) {
+		   document.put(MANAGED_DATASET_REGISTRATOR_ID_KEY, registratorId);
+		}
+		if(labBranch != null) {
+			   document.put(MANAGED_DATASET_LAB_BRANCH_KEY, labBranch);
 		}
 		if(created != null) {
-		   document.put(MANAGED_DATA_CREATED_KEY, created.getTime());
+		   document.put(MANAGED_DATASET_CREATED_KEY, created.getTime());
 		}
-		if(projectName != null) {
-		   document.put(MANAGED_DATA_PROJECT_NAME_KEY, projectName);
-		}
-		if(investigatorName != null) {
-		   document.put(MANAGED_DATA_INVESTIGATOR_NAME_KEY, investigatorName);
-		}
-		if(datasets != null && datasets.size() > 0) {
-		   document.put(MANAGED_DATA_DATASETS_KEY, datasets);
-		}
+		
+		//if(datasets != null && datasets.size() > 0) {
+		  // document.put(MANAGED_DATA_DATASETS_KEY, datasets);
+		//}
 
 		getRegistry().get(Document.class).encode(writer, document, 
 				                                 encoderContext);
 	}
  
 	@Override
-	public HpcManagedData decode(BsonReader reader, 
-			                     DecoderContext decoderContext) 
+	public HpcManagedDataset decode(BsonReader reader, 
+			                        DecoderContext decoderContext) 
 	{
 		// Get the BSON Document.
 		Document document = 
@@ -117,19 +126,28 @@ public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
 						                                  decoderContext);
 		
 		// Map the BSON Document to a domain object.
-		HpcManagedData managedData = new HpcManagedData();
-		managedData.setId(document.get(MANAGED_DATA_ID_KEY, String.class));
-		managedData.setType( 
-		       HpcManagedDataType.fromValue(document.get(MANAGED_DATA_TYPE_KEY, 
-		    		                                     String.class)));
+		HpcManagedDataset managedDataset = new HpcManagedDataset();
+		managedDataset.setId(document.get(MANAGED_DATASET_ID_KEY, 
+				                          String.class));
+		managedDataset.setName(document.get(MANAGED_DATASET_NAME_KEY, 
+				                            String.class));
+		managedDataset.setPrimaryInvestigatorId(
+			   document.get(MANAGED_DATASET_PRIMARY_INVESTIGATOR_ID_KEY, 
+					        String.class));
+		managedDataset.setCreatorId(
+			   document.get(MANAGED_DATASET_CREATOR_ID_KEY, 
+				            String.class));
+		managedDataset.setRegistratorId(
+				          document.get(MANAGED_DATASET_REGISTRATOR_ID_KEY, 
+				    	               String.class));
+		managedDataset.setLabBranch(document.get(MANAGED_DATASET_LAB_BRANCH_KEY, 
+				                                 String.class));
+		
 		Calendar created = Calendar.getInstance();
-		created.setTime(document.get(MANAGED_DATA_CREATED_KEY, Date.class));
-		managedData.setProjectName(document.get(MANAGED_DATA_PROJECT_NAME_KEY, 
-				                                String.class));
-		managedData.setInvestigatorName(
-				       document.get(MANAGED_DATA_INVESTIGATOR_NAME_KEY, 
-                                    String.class));
-		managedData.setCreated(created);
+		created.setTime(document.get(MANAGED_DATASET_CREATED_KEY, Date.class));
+		managedDataset.setCreated(created);
+		
+		/*
 		List<Document> datasetDocuments = 
 				       (List<Document>) document.get(MANAGED_DATA_DATASETS_KEY);
 		if(datasetDocuments != null) {
@@ -137,15 +155,15 @@ public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
 			   managedData.getDatasets().add(decode(datasetDocument, 
 					                                decoderContext));
 		   }
-		}
+		}*/
 		
-		return managedData;
+		return managedDataset;
 	}
 	
 	@Override
-	public Class<HpcManagedData> getEncoderClass() 
+	public Class<HpcManagedDataset> getEncoderClass() 
 	{
-		return HpcManagedData.class;
+		return HpcManagedDataset.class;
 	}
 	
     //---------------------------------------------------------------------//
@@ -159,14 +177,14 @@ public class HpcManagedDataCodec extends HpcCodec<HpcManagedData>
      * @param decoderContext
      * @return Decoded HpcDataset object.
      */
-    private HpcDataset decode(Document doc, DecoderContext decoderContext)
+   /* private HpcDataset decode(Document doc, DecoderContext decoderContext)
     {
     	BsonDocumentReader docReader = 
     		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
     				                                  getRegistry()));
 		return getRegistry().get(HpcDataset.class).decode(docReader, 
 		                                                  decoderContext);
-	}
+	}*/
 }
 
  
