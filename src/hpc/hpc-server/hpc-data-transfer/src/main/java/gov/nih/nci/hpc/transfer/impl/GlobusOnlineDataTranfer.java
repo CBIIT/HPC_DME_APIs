@@ -8,7 +8,7 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import gov.nih.nci.hpc.domain.HpcDataset;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 
 import org.globusonline.nexus.GoauthClient;
 import org.globusonline.transfer.*;
@@ -27,13 +27,13 @@ public class GlobusOnlineDataTranfer implements HpcDataTransfer{
     	
     }
     
-    public boolean transferDataset(HpcDataset dataset,String username, String password )
+    public boolean transferDataset(HpcDataTransferLocations transferLocations,String username, String password )
     {
     	//Set transferAPIClient
     	try
     	{    	
     		setJSONTransferClient(username,password);
-    		return transfer(dataset);
+    		return transfer(transferLocations);
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	    }
@@ -95,13 +95,13 @@ public class GlobusOnlineDataTranfer implements HpcDataTransfer{
         client.setAuthenticator(authenticator);    	
     }    
     
-    private boolean transfer(HpcDataset dataset)
+    private boolean transfer(HpcDataTransferLocations transferLocations)
     throws IOException, JSONException, GeneralSecurityException, APIError {
         JSONTransferAPIClient.Result r;
         System.out.println("=== Before Transfer ===");
 
-        if (!autoActivate(dataset.getSource().getEndpoint()) || 
-        		!autoActivate(dataset.getLocation().getEndpoint())
+        if (!autoActivate(transferLocations.getSource().getEndpoint()) || 
+        		!autoActivate(transferLocations.getDestination().getEndpoint())
         		) {
             System.err.println("Unable to auto activate go tutorial endpoints, "
                                + " exiting");
@@ -113,7 +113,7 @@ public class GlobusOnlineDataTranfer implements HpcDataTransfer{
         JSONObject transfer = new JSONObject();
         transfer.put("DATA_TYPE", "transfer");
         transfer.put("submission_id", submissionId);
-        JSONObject item = setJSONItem(dataset);
+        JSONObject item = setJSONItem(transferLocations);
         transfer.append("DATA", item);
 
         r = client.postResult("/transfer", transfer, null);
@@ -130,14 +130,14 @@ public class GlobusOnlineDataTranfer implements HpcDataTransfer{
     }
 
     
-    private JSONObject setJSONItem(HpcDataset dataset)  throws IOException, JSONException, GeneralSecurityException {
+    private JSONObject setJSONItem(HpcDataTransferLocations transferLocations)  throws IOException, JSONException, GeneralSecurityException {
     	JSONObject item = new JSONObject();
         item.put("DATA_TYPE", "transfer_item");
-        item.put("source_endpoint", dataset.getSource().getEndpoint());
-        item.put("source_path", dataset.getSource().getFilePath());
-        item.put("destination_endpoint", dataset.getLocation().getEndpoint());
-        item.put("destination_path", dataset.getLocation().getFilePath());
-        item.put("recursive", checkFileDirectoryAndSetRecursive(dataset.getSource().getEndpoint(),dataset.getSource().getFilePath()));
+        item.put("source_endpoint", transferLocations.getSource().getEndpoint());
+        item.put("source_path", transferLocations.getSource().getPath());
+        item.put("destination_endpoint", transferLocations.getDestination().getEndpoint());
+        item.put("destination_path", transferLocations.getDestination().getPath());
+        item.put("recursive", checkFileDirectoryAndSetRecursive(transferLocations.getSource().getEndpoint(),transferLocations.getSource().getPath()));
         return item;
     }
 
