@@ -31,6 +31,25 @@ public abstract class HpcCodec<T> implements Codec<T>
     // Constants
     //---------------------------------------------------------------------//    
     
+    // HpcManagedUser Document keys.
+	public final static String MANAGED_USER_ID_KEY = "id"; 
+	public final static String MANAGED_USER_CREATED_KEY = "created"; 
+	public final static String MANAGED_USER_LAST_UPDATED_KEY = "last_updated"; 
+	public final static String MANAGED_USER_USER_KEY = "user"; 
+	
+	// HpcUser Document keys.
+	public final static String USER_NIH_USER_ID_KEY = "nih_user_id"; 
+	public final static String USER_FIRST_NAME_KEY = "first_name"; 
+	public final static String USER_LAST_NAME_KEY = "last_name"; 
+	public final static String USER_DATA_TRANSFER_ACCOUNT_KEY = 
+			                   "data_transfer_account";
+	
+	// HpcDataTransferAccount Document keys.
+	public final static String DATA_TRANSFER_ACCOUNT_USERNAME_KEY = "username";
+	public final static String DATA_TRANSFER_ACCOUNT_PASSWORD_KEY = "password";
+	public final static String DATA_TRANSFER_ACCOUNT_DATA_TRANSFER_TYPE_KEY = 
+			                   "data_transfer_type";
+	
     // HpcManagedDataset Document keys.
 	public final static String MANAGED_DATASET_ID_KEY = "id"; 
 	public final static String MANAGED_DATASET_NAME_KEY = "name"; 
