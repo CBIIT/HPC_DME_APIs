@@ -156,7 +156,6 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 		metadata.setDataContainsPHI(true);
 		metadata.setDataEncrypted(false);
 		metadata.setDataCompressed(true);
-		metadata.setDescription("dataset-description");
 		metadata.setFundingOrganization("funding-organization");
 		HpcMetadataItem mdi = new HpcMetadataItem();
 		mdi.setKey("custom-metadata-key");
