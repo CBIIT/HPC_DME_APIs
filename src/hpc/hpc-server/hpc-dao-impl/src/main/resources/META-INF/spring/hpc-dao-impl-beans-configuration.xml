@@ -16,7 +16,15 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 	     
-	<!--  HPC Codecs -->
+	<!--  HPC User Codecs -->
+	<bean id="hpcManagedUserCodec" 
+	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcManagedUserCodec"/>
+	<bean id="hpcUserCodec" 
+	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcUserCodec"/>
+	<bean id="hpcDataTransferAccountCodec" 
+	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcDataTransferAccountCodec"/>
+	      
+	<!--  HPC Dataset Codecs -->
 	<bean id="hpcManagedDatasetCodec" 
 	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetCodec"/>
 	<bean id="hpcFileCodec" 
@@ -28,6 +36,13 @@
 	<bean id="hpcCodecProvider" class="gov.nih.nci.hpc.dao.mongo.codec.HpcCodecProvider">
 		<constructor-arg>
 			<map>
+				<entry key="gov.nih.nci.hpc.domain.model.HpcManagedUser" 
+				       value-ref="hpcManagedUserCodec"/>
+				<entry key="gov.nih.nci.hpc.domain.user.HpcUser" 
+				       value-ref="hpcUserCodec"/>
+				<entry key="gov.nih.nci.hpc.domain.user.HpcDataTransferAccount" 
+				       value-ref="hpcDataTransferAccountCodec"/>
+				       
 				<entry key="gov.nih.nci.hpc.domain.model.HpcManagedDataset" 
 				       value-ref="hpcManagedDatasetCodec"/>
 				<entry key="gov.nih.nci.hpc.domain.dataset.HpcFile" 
@@ -56,6 +71,10 @@
  	<!-- HPC DAO Implementation Beans -->
 	<bean id="hpcManagedDatasetDAO" 
 	      class="gov.nih.nci.hpc.dao.mongo.impl.HpcManagedDatasetDAOImpl">
+		<constructor-arg ref="hpcMongoDB"/>
+	</bean>
+	<bean id="hpcManagedUserDAO" 
+	      class="gov.nih.nci.hpc.dao.mongo.impl.HpcManagedUserDAOImpl">
 		<constructor-arg ref="hpcMongoDB"/>
 	</bean>
 

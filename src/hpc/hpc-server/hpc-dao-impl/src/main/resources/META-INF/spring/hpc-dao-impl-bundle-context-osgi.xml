@@ -30,6 +30,7 @@
 	<ctx:property-placeholder properties-ref="preProps"/>
 
 	<!--  OSGi beans export -->
+	<osgi:service ref="hpcManagedUserDAO" interface="gov.nih.nci.hpc.dao.HpcManagedUserDAO" />
 	<osgi:service ref="hpcManagedDatasetDAO" interface="gov.nih.nci.hpc.dao.HpcManagedDatasetDAO" />
 	
 </beans>
