@@ -25,7 +25,7 @@
     	</xsd:sequence>
   	</xsd:complexType>
   
-    <xsd:complexType name="HpcDatasetRegistrationMetadata">
+    <xsd:complexType name="HpcDatasetPrimaryMetadata">
   	    <xsd:sequence>
   			<xsd:element name="dataContainsPII" type="xsd:boolean"/>
   			<xsd:element name="dataContainsPHI" type="xsd:boolean"/>
@@ -41,7 +41,7 @@
     
     <xsd:complexType name="HpcDatasetMetadata">
     	<xsd:sequence>
-  			<xsd:element name="registrationMetadata" type="hpc-domain-metadata:HpcDatasetRegistrationMetadata"/>
+  			<xsd:element name="primaryMetadata" type="hpc-domain-metadata:HpcDatasetPrimaryMetadata"/>
     	</xsd:sequence>
     </xsd:complexType>
     
