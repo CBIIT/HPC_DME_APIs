@@ -8,7 +8,7 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 
-package gov.nih.nci.hpc.dao.mongo.impl;
+package gov.nih.nci.hpc.dao.mongo.driver;
 
 import com.mongodb.async.SingleResultCallback;
 

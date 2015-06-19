@@ -1,5 +1,5 @@
 /**
- * HpcDatasetLocationCodec.java
+ * HpcFileLocationCodec.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,9 +10,7 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.domain.HpcDatasetLocation;
-import gov.nih.nci.hpc.domain.HpcFacility;
-import gov.nih.nci.hpc.domain.HpcDataTransfer;
+import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
@@ -26,14 +24,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * HPC Dataset Location Codec. 
+ * HPC File Location Codec. 
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcDatasetLocationCodec extends HpcCodec<HpcDatasetLocation>
+public class HpcFileLocationCodec extends HpcCodec<HpcFileLocation>
 { 
     //---------------------------------------------------------------------//
     // Instance members
@@ -51,7 +49,7 @@ public class HpcDatasetLocationCodec extends HpcCodec<HpcDatasetLocation>
      * Default Constructor.
      * 
      */
-    public HpcDatasetLocationCodec() 
+    public HpcFileLocationCodec() 
     {
     }   
     
@@ -60,29 +58,24 @@ public class HpcDatasetLocationCodec extends HpcCodec<HpcDatasetLocation>
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // Codec<HpcDatasetLocation> Interface Implementation
+    // Codec<HpcFileLocation> Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void encode(BsonWriter writer, HpcDatasetLocation location,
+	public void encode(BsonWriter writer, HpcFileLocation location,
 					   EncoderContext encoderContext) 
 	{
 		Document document = new Document();
 
 		// Extract the data from the POJO.
-		HpcFacility facility = location.getFacility();
 		String endpoint = location.getEndpoint();
-		HpcDataTransfer dataTransfer = location.getDataTransfer();
+		String path = location.getPath();
 
-		// Set the data on the BSON document.
-		if(facility != null) {
-		   document.put(DATASET_LOCATION_FACILITY_KEY, facility.value());
-		}
 		if(endpoint != null) {
-		   document.put(DATASET_LOCATION_ENDPOINT_KEY, endpoint);
+		   document.put(FILE_LOCATION_ENDPOINT_KEY, endpoint);
 		}
-		if(dataTransfer != null) {
-		   document.put(DATASET_LOCATION_DATA_TRANSFER_KEY, dataTransfer.value());
+		if(path != null) {
+		   document.put(FILE_LOCATION_PATH_KEY, path);
 		}
 		
 		getRegistry().get(Document.class).encode(writer, document, 
@@ -90,8 +83,8 @@ public class HpcDatasetLocationCodec extends HpcCodec<HpcDatasetLocation>
 	}
  
 	@Override
-	public HpcDatasetLocation decode(BsonReader reader, 
-			                         DecoderContext decoderContext) 
+	public HpcFileLocation decode(BsonReader reader, 
+			                      DecoderContext decoderContext) 
 	{
 		// Get the BSON Document.
 		Document document = 
@@ -99,23 +92,19 @@ public class HpcDatasetLocationCodec extends HpcCodec<HpcDatasetLocation>
 	            		                                  decoderContext);
 		
 		// Map the document to HpcDataset instance.
-		HpcDatasetLocation location = new HpcDatasetLocation();
-		location.setFacility(HpcFacility.valueOf(
-				             document.get(DATASET_LOCATION_FACILITY_KEY, 
-				            		      String.class)));
-		location.setEndpoint(document.get(DATASET_LOCATION_ENDPOINT_KEY, 
+		HpcFileLocation location = new HpcFileLocation();
+		location.setEndpoint(document.get(FILE_LOCATION_ENDPOINT_KEY, 
 				                          String.class));
-		location.setDataTransfer(HpcDataTransfer.valueOf(
-                                 document.get(DATASET_LOCATION_DATA_TRANSFER_KEY, 
-                                		      String.class)));
+		location.setEndpoint(document.get(FILE_LOCATION_PATH_KEY, 
+                                          String.class));
 		
 		return location;
 	}
 	
 	@Override
-	public Class<HpcDatasetLocation> getEncoderClass() 
+	public Class<HpcFileLocation> getEncoderClass() 
 	{
-		return HpcDatasetLocation.class;
+		return HpcFileLocation.class;
 	}
 }
 

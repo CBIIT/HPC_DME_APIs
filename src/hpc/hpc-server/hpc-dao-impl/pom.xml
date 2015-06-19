@@ -23,7 +23,8 @@
 						<Export-Package/>
 						<Private-Package>
 							gov.nih.nci.hpc.dao.mongo.impl,
-							gov.nih.nci.hpc.dao.mongo.codec
+							gov.nih.nci.hpc.dao.mongo.codec,
+							gov.nih.nci.hpc.dao.mongo.driver
 						</Private-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>
