@@ -54,13 +54,11 @@
 		<property name="namespaceMap" ref="jsonNamespaceMap"/>
 	</bean>
 	<util:map id="jsonNamespaceMap" map-class="java.util.Hashtable">
-		<entry key="http://hpc.nci.nih.gov/dto" value="gov.nih.nci.hpc.dto"/>
-		<entry key="http://hpc.nci.nih.gov/domain" value="gov.nih.nci.hpc.domain"/>
 		
-		<entry key="http://hpc.nci.nih.gov/dto/datasetregistration" 
-		       value="gov.nih.nci.hpc.dto.datasetregistration"/>
-		<entry key="http://hpc.nci.nih.gov/dto/userregistration" 
-		       value="gov.nih.nci.hpc.dto.userregistration"/>
+		<entry key="http://hpc.nci.nih.gov/dto/dataset" 
+		       value="gov.nih.nci.hpc.dto.dataset"/>
+		<entry key="http://hpc.nci.nih.gov/dto/user" 
+		       value="gov.nih.nci.hpc.dto.user"/>
 		<entry key="http://hpc.nci.nih.gov/domain/dataset" 
 		       value="gov.nih.nci.hpc.domain.dataset"/>
 		<entry key="http://hpc.nci.nih.gov/domain/metadata" 
@@ -70,27 +68,27 @@
 	</util:map>
 	
 	<!-- JAX-RS Service Beans -->
+   
+   <!--  
     <bean id="hpcDataRegistrationRestService" 
           class="gov.nih.nci.hpc.ws.rs.impl.HpcDataRegistrationRestServiceImpl">
     	<constructor-arg ref="hpcDataRegistrationService"/>
-    </bean>
+    </bean>-->
 
-    <bean id="hpcUserRegistrationRestService" 
-          class="gov.nih.nci.hpc.ws.rs.impl.HpcUserRegistrationRestServiceImpl">
+    <bean id="hpcUserRestService" 
+          class="gov.nih.nci.hpc.ws.rs.impl.HpcUserRestServiceImpl">
     	<constructor-arg value="ABC"/>
     </bean>
-    <bean id="hpcDatasetRegistrationRestService" 
-          class="gov.nih.nci.hpc.ws.rs.impl.HpcDatasetRegistrationRestServiceImpl">
+    <bean id="hpcDatasetRestService" 
+          class="gov.nih.nci.hpc.ws.rs.impl.HpcDatasetRestServiceImpl">
     	<constructor-arg value="ABC"/>
     </bean>
     	
 	<!-- CXF JAX-RS Server Config -->
     <jaxrs:server id="hpc-server" address="${hpc.ws.rs.url}" bus="cxf">
         <jaxrs:serviceBeans>
-       		<ref bean="hpcUserRegistrationRestService"/>
-       		<ref bean="hpcDatasetRegistrationRestService"/>
-       		
-        	<ref bean="hpcDataRegistrationRestService"/>
+       		<ref bean="hpcUserRestService"/>
+       		<ref bean="hpcDatasetRestService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
     		<ref bean="jaxbProvider"/>

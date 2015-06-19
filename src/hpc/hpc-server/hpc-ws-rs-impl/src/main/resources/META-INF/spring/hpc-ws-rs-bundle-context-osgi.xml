@@ -36,6 +36,6 @@
 	<ctx:property-placeholder properties-ref="preProps" />
 
 	<!-- OSGi beans import -->
-	<osgi:reference id="hpcDataRegistrationService" interface="gov.nih.nci.hpc.bus.HpcDataRegistrationService" />
+	<osgi:reference id="hpcDatasetBusService" interface="gov.nih.nci.hpc.bus.HpcDatasetBusService" />
 	
 </beans>
