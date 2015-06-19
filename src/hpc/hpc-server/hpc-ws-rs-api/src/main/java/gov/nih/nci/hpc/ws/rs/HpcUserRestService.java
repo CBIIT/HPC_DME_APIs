@@ -36,23 +36,23 @@ public interface HpcUserRestService
     /**
      * GET user by ID.
      *
-     * @param id The registered user ID.
-     * @return gov.nih.nci.hpc.dto.user.HpcUserDTO entity.
-     */
-    @GET
-    @Path("/user/{id}")
-    @Produces("application/json,application/xml")
-    public Response getUser(@PathParam("id") String id); 
-    
-    /**
-     * POST registration request.
-     *
      * @param userDTO The user DTO to register.
      */
     @POST
     @Path("/user")
     @Consumes("application/json,application/xml")
     public Response registerUser(HpcUserRegistrationDTO userRegistrationDTO);
+    
+    /**
+     * Get user by NIH User ID.
+     *
+     * @param nihUserId The registered user ID.
+     * @return gov.nih.nci.hpc.dto.user.HpcUserDTO entity.
+     */
+    @GET
+    @Path("/user/{nihUserId}")
+    @Produces("application/json,application/xml")
+    public Response getUser(@PathParam("nihUserId") String nihUserId); 
 	
     /**
      * POST Validate User request.
