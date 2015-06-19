@@ -50,26 +50,6 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>unpack-domain</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>${project.groupId}</groupId>
-									<artifactId>hpc-domain</artifactId>
-									<version>${project.version}</version>
-									<overWrite>true</overWrite>
-									<outputDirectory>xjc-build</outputDirectory>
-									<includes>**/*.xsd,**/*.xjb</includes>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-					
-					<execution>
 						<id>unpack-domain-types</id>
 						<phase>initialize</phase>
 						<goals>
@@ -109,21 +89,14 @@
             			<configuration>
                 			<xsdOptions>
                 				<xsdOption>
-                        			<xsd>xjc-build/schema/HpcUserRegistration.xsd</xsd>
-                        			<packagename>gov.nih.nci.hpc.dto.userregistration</packagename>
-                        			<bindingFile>xjc-build/schema/hpc-dto-user-registration-jaxb-binding.xjb</bindingFile>
+                        			<xsd>xjc-build/schema/HpcUser.xsd</xsd>
+                        			<packagename>gov.nih.nci.hpc.dto.user</packagename>
+                        			<bindingFile>xjc-build/schema/hpc-dto-user-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
                 				<xsdOption>
-                        			<xsd>xjc-build/schema/HpcDatasetRegistration.xsd</xsd>
-                        			<packagename>gov.nih.nci.hpc.dto.datasetregistration</packagename>
-                        			<bindingFile>xjc-build/schema/hpc-dto-dataset-registration-jaxb-binding.xjb</bindingFile>
-                    			</xsdOption>
-                    			
-                    			
-                				<xsdOption>
-                        			<xsd>xjc-build/schema/HpcDataRegistration.xsd</xsd>
-                        			<packagename>gov.nih.nci.hpc.dto</packagename>
-                        			<bindingFile>xjc-build/schema/hpc-domain-import-types-jaxb-binding.xjb</bindingFile>
+                        			<xsd>xjc-build/schema/HpcDataset.xsd</xsd>
+                        			<packagename>gov.nih.nci.hpc.dto.dataset</packagename>
+                        			<bindingFile>xjc-build/schema/hpc-dto-dataset-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
                 			</xsdOptions>
             			</configuration>
@@ -138,9 +111,8 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package>
-							gov.nih.nci.hpc.dto,
-							gov.nih.nci.hpc.dto.userregistration,
-							gov.nih.nci.hpc.dto.datasetregistration
+							gov.nih.nci.hpc.dto.user,
+							gov.nih.nci.hpc.dto.dataset
 						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>
@@ -149,11 +121,6 @@
 		</plugins>
 	</build>
 	<dependencies>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>hpc-domain</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>hpc-domain-types</artifactId>
