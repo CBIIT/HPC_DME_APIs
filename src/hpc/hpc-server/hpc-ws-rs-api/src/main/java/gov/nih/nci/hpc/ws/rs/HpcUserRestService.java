@@ -53,6 +53,16 @@ public interface HpcUserRestService
     @Path("/user")
     @Consumes("application/json,application/xml")
     public Response registerUser(HpcUserRegistrationDTO userRegistrationDTO);
+	
+    /**
+     * POST Validate User request.
+     *
+     * @param userDTO The user DTO to validate.
+     */
+    @POST
+    @Path("/validateUser")
+    @Consumes("application/json,application/xml")
+    public boolean validateUser(HpcUserRegistrationDTO userRegistrationDTO); 	
 }
 
  
