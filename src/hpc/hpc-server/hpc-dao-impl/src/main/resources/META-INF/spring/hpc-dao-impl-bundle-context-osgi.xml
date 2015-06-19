@@ -23,11 +23,13 @@
 
 	<!--  HPC Application Services OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="hpc.dao.mongo">
+		<prop key="hpc.dao.mongo.dbName">hpc</prop>
 		<prop key="hpc.dao.mongo.server.host">localhost</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps"/>
 
-	<osgi:service ref="hpcManagedDataDAO" interface="gov.nih.nci.hpc.dao.HpcManagedDataDAO" />
+	<!--  OSGi beans export -->
+	<osgi:service ref="hpcManagedDatasetDAO" interface="gov.nih.nci.hpc.dao.HpcManagedDatasetDAO" />
 	
 </beans>
