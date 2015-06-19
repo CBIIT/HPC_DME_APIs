@@ -36,12 +36,12 @@ public interface HpcManagedUserDAO
     /**
      * Get managed user from the repository by ID.
      *
-     * @param id the managed user ID.
+     * @param nihUserId the user NIH ID.
      * @return The managed user if found, or null otherwise.
      * 
      * @throws HpcException
      */
-    public HpcManagedUser get(String id) throws HpcException;
+    public HpcManagedUser get(String nihUserId) throws HpcException;
 }
 
  
