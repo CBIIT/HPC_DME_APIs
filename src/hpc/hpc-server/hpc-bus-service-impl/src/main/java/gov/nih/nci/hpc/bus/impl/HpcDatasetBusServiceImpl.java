@@ -10,37 +10,38 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
-import gov.nih.nci.hpc.bus.HpcDataRegistrationService;
-import gov.nih.nci.hpc.service.HpcManagedDataService;
+import gov.nih.nci.hpc.bus.HpcDatasetBusService;
+import gov.nih.nci.hpc.service.HpcManagedDatasetService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
-import gov.nih.nci.hpc.dto.HpcDataRegistrationInput;
-import gov.nih.nci.hpc.dto.HpcDataRegistrationOutput;
-import gov.nih.nci.hpc.domain.HpcManagedData;
-import gov.nih.nci.hpc.domain.HpcDataset;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
+import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
+import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 /**
  * <p>
- * HPC Data Registration Business Service Implementation.
+ * HPC Dataset Business Service Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcDataRegistrationServiceImpl 
-             implements HpcDataRegistrationService
+public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 {         
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
-    // The Managed Data application service instance.
-    private HpcManagedDataService managedDataService = null;
+    // Application service instances.
+    private HpcManagedDatasetService managedDatasetService = null;
     private HpcDataTransferService hpcDataTransferService = null;
     
     // The logger instance.
@@ -56,7 +57,7 @@ public class HpcDataRegistrationServiceImpl
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcDataRegistrationServiceImpl() throws HpcException
+    private HpcDatasetBusServiceImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -69,18 +70,17 @@ public class HpcDataRegistrationServiceImpl
      * 
      * @throws HpcException If managedDatasetService is null.
      */
-    private HpcDataRegistrationServiceImpl(
-    		       HpcManagedDataService managedDataService,
-    		       HpcDataTransferService hpcDataTransferService
-    		       )
+    private HpcDatasetBusServiceImpl(
+    		          HpcManagedDatasetService managedDatasetService,
+    		          HpcDataTransferService hpcDataTransferService)
                    throws HpcException
     {
-    	if(managedDataService == null) {
-     	   throw new HpcException("Null HpcManagedDataService instance",
+    	if(managedDatasetService == null || hpcDataTransferService ==null) {
+     	   throw new HpcException("Null App Service(s) instance",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
     	
-    	this.managedDataService = managedDataService;
+    	this.managedDatasetService = managedDatasetService;
     	this.hpcDataTransferService = hpcDataTransferService;
     }  
     
@@ -93,23 +93,28 @@ public class HpcDataRegistrationServiceImpl
     //---------------------------------------------------------------------//  
     
     @Override
-    public String registerData(
-                          HpcDataRegistrationInput registrationInput)
-                          throws HpcException
+    public String registerDataset(HpcDatasetRegistrationDTO datasetRegistrationDTO)  
+    		                     throws HpcException
     {
-    	logger.info("Invoking registerData()");
+    	logger.info("Invoking registerDataset(HpcDatasetDTO): " + 
+                    datasetRegistrationDTO);
     	
     	// Input validation.
-    	if(registrationInput == null) {
-    	   throw new HpcException("Null HpcDatasetsRegistrationInputDTO",
+    	if(datasetRegistrationDTO == null) {
+    	   throw new HpcException("Null HpcDatasetRegistrationDTO",
     			                  HpcErrorType.INVALID_INPUT);	
     	}
     	
-    	// Add the datasets to the managed collection.
-    	String managedDataId = 
-    		   managedDataService.add(registrationInput.getType(),
-    			                      registrationInput.getDatasets());
-    	
+    	// Add the dataset to the managed collection.
+    	String managedDatasetId = 
+    		   managedDatasetService.add(
+    				  datasetRegistrationDTO.getName(), 
+    				  datasetRegistrationDTO.getPrimaryInvestigatorId(),
+    				  datasetRegistrationDTO.getCreatorId(), 
+    				  datasetRegistrationDTO.getRegistratorId(),
+    				  datasetRegistrationDTO.getLabBranch(), 
+    				  datasetRegistrationDTO.getUploadRequests());
+    	/*
     	String username  = registrationInput.getUsername();
     	String password  = registrationInput.getPassword();
     	
@@ -120,36 +125,47 @@ public class HpcDataRegistrationServiceImpl
     		logger.info("CALL Transfer for dataset "+dataset );
     		boolean transferStatus = hpcDataTransferService.transferDataset(dataset, username, password);
     		logger.info(" Transfer status : " + transferStatus);
-    	}
-    	return managedDataId;
+    	}*/
+    	return managedDatasetId;
     }
     
     @Override
-    public HpcDataRegistrationOutput getRegisteredData(String id)
-                                                      throws HpcException
+    public HpcDatasetDTO getDataset(String id) throws HpcException
     {
+    	logger.info("Invoking getDataset(String id): " + id);
     	// Input validation.
     	if(id == null) {
-    	   throw new HpcException("Null HpcDatasetsRegistrationInputDTO",
+    	   throw new HpcException("Null ID",
     			                  HpcErrorType.INVALID_INPUT);	
     	}
     	
     	// Get the managed data domain object.
-    	HpcManagedData managedData = managedDataService.get(id);
-    	if(managedData == null) {
+    	HpcManagedDataset managedDataset = managedDatasetService.get(id);
+    	if(managedDataset == null) {
     	   return null;
     	}
     	
-    	// Map it to the output DTO
-    	HpcDataRegistrationOutput registrationOutput = 
-    			                  new HpcDataRegistrationOutput();
-    	registrationOutput.setType(managedData.getType());
-    	registrationOutput.setCreated(managedData.getCreated());
-    	for(HpcDataset dataset : managedData.getDatasets()) {
-    		registrationOutput.getDatasets().add(dataset);
+    	// Map it to the DTO
+    	HpcDatasetDTO datasetDTO = new HpcDatasetDTO();
+    	datasetDTO.setId(managedDataset.getId());
+    	datasetDTO.setName(managedDataset.getName());
+    	datasetDTO.setPrimaryInvestigatorId(managedDataset.getPrimaryInvestigatorId());
+    	datasetDTO.setCreatorId(managedDataset.getCreatorId());
+    	datasetDTO.setRegistratorId(managedDataset.getRegistratorId());
+    	datasetDTO.setLabBranch(managedDataset.getLabBranch());
+    	datasetDTO.setCreated(managedDataset.getCreated());
+    	
+    	for(HpcFile file : managedDataset.getFiles()) {
+    		datasetDTO.getFiles().add(file);
     	}
     	
-    	return registrationOutput;
+    	return datasetDTO;
+    }
+    
+    @Override
+    public List<HpcDatasetDTO> getDatasets(String creatorId) throws HpcException
+    {
+    	return null;
     }
 }
 
