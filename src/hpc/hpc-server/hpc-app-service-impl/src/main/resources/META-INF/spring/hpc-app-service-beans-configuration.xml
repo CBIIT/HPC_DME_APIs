@@ -17,11 +17,14 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- HPC Application Services Beans -->
+	<bean id="hpcManagedUserService" class="gov.nih.nci.hpc.service.impl.HpcManagedUserServiceImpl">
+		<constructor-arg ref="hpcManagedUserDAO"/>
+	</bean>
+	
 	<bean id="hpcManagedDatasetService" class="gov.nih.nci.hpc.service.impl.HpcManagedDatasetServiceImpl">
 		<constructor-arg ref="hpcManagedDatasetDAO"/>
 	</bean>
-
-	<!-- HPC Application Services Beans -->
+	
 	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl">
 	</bean>
 	
