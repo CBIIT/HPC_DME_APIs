@@ -1,5 +1,5 @@
 /**
- * HpcDatasetCodec.java
+ * HpcFileCodec.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,9 +10,7 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.domain.HpcDataset;
-import gov.nih.nci.hpc.domain.HpcDatasetLocation;
-import gov.nih.nci.hpc.domain.HpcDatasetType;
+import gov.nih.nci.hpc.domain.dataset.HpcFile;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
@@ -34,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * @version $Id$
  */
 
-public class HpcDatasetCodec extends HpcCodec<HpcDataset>
+public class HpcFileCodec extends HpcCodec<HpcFile>
 { 
     //---------------------------------------------------------------------//
     // Instance members
@@ -52,7 +50,7 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
      * Default Constructor.
      * 
      */
-    public HpcDatasetCodec() 
+    public HpcFileCodec() 
     {
     }   
     
@@ -61,13 +59,14 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // Codec<HpcDataset> Interface Implementation
+    // Codec<HpcFile> Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void encode(BsonWriter writer, HpcDataset dataset,
+	public void encode(BsonWriter writer, HpcFile file,
 					   EncoderContext encoderContext) 
 	{
+		/*
 		Document document = new Document();
 
 		// Extract the data from the POJO.
@@ -95,18 +94,19 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 		}
 
 		getRegistry().get(Document.class).encode(writer, document, 
-				                                 encoderContext);
+				                                 encoderContext);*/
 	}
  
 	@Override
-	public HpcDataset decode(BsonReader reader, DecoderContext decoderContext) 
+	public HpcFile decode(BsonReader reader, DecoderContext decoderContext) 
 	{
 		// Get the BSON Document.
 		Document document = getRegistry().get(Document.class).decode(reader, 
 				                                                     decoderContext);
 		
 		// Map the document to HpcDataset instance.
-		HpcDataset dataset = new HpcDataset();
+		HpcFile file = new HpcFile();
+		/*
 		dataset.setLocation(decode(document.get(DATASET_LOCATION_KEY, 
 				                                Document.class),
 				                   decoderContext));
@@ -115,15 +115,19 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 		dataset.setType(HpcDatasetType.valueOf(
 				        document.get(DATASET_TYPE_KEY, String.class)));
 		dataset.setSize(document.get(DATASET_SIZE_KEY, Double.class));
-		
-		return dataset;
+		*/
+		return file;
 	}
 	
 	@Override
-	public Class<HpcDataset> getEncoderClass() 
+	public Class<HpcFile> getEncoderClass() 
 	{
-		return HpcDataset.class;
+		return HpcFile.class;
 	}
+	
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//  
 	
     /**
      * Decode HpcDatasetLocation
@@ -132,6 +136,7 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
      * @param decoderContext
      * @return Decoded HpcDatasetLocation object.
      */
+	/*
     private HpcDatasetLocation decode(Document doc, DecoderContext decoderContext)
     {
     	BsonDocumentReader docReader = 
@@ -139,7 +144,7 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
     				                                  getRegistry()));
 		return getRegistry().get(HpcDatasetLocation.class).decode(docReader, 
 		                                                          decoderContext);
-	}
+	}*/
 }
 
  

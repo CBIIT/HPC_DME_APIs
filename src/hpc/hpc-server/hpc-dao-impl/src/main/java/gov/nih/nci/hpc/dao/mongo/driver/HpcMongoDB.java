@@ -1,5 +1,5 @@
 /**
- * HpcManagedDataDAOImpl.java
+ * HpcMongoDB.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -8,12 +8,10 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 
-package gov.nih.nci.hpc.dao.mongo.impl;
+package gov.nih.nci.hpc.dao.mongo.driver;
 
-import gov.nih.nci.hpc.dao.HpcManagedDataDAO;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodecProvider;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
-import gov.nih.nci.hpc.domain.HpcManagedData;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -24,10 +22,7 @@ import com.mongodb.async.client.MongoDatabase;
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.connection.ClusterSettings;
 import com.mongodb.ServerAddress;
-import com.mongodb.async.SingleResultCallback;
-import static com.mongodb.client.model.Filters.*;
 
-import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 
@@ -35,29 +30,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Vector;
+import java.util.Map;
 
 /**
  * <p>
- * HPC Managed Data DAO Implementation.
+ * HPC MongoDB. 
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcManagedDataDAOImpl implements HpcManagedDataDAO
+public class HpcMongoDB 
 { 
-    //---------------------------------------------------------------------//
-    // Constants
-    //---------------------------------------------------------------------//    
-    
-    // Mongo DB name.
-    private final static String DB_NAME = "hpc"; 
-    
-    // Mongo DB name.
-    private final static String MANAGED_DATA_COLLECTION_NAME = 
-    		                    "managedData"; 
-    
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -69,6 +54,12 @@ public class HpcManagedDataDAOImpl implements HpcManagedDataDAO
 	// The mongo client instance.
 	private MongoClient mongoClient = null;
 	
+	// The mongo DB name instance.
+	private String dbName = null;
+	
+	// Map of MongoDB collection classes to names.
+	private Map<Class, String> collections = null;
+	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -78,7 +69,7 @@ public class HpcManagedDataDAOImpl implements HpcManagedDataDAO
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcManagedDataDAOImpl() throws HpcException
+    private HpcMongoDB() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -92,15 +83,19 @@ public class HpcManagedDataDAOImpl implements HpcManagedDataDAO
      * 
      * @throws HpcException If a HpcCodecProvider instance was not provided.
      */
-    private HpcManagedDataDAOImpl(String mongoHost,
-    		                      HpcCodecProvider hpcCodecProvider) 
-    		                     throws HpcException
+    private HpcMongoDB(String dbName, String mongoHost,
+    		           HpcCodecProvider hpcCodecProvider,
+    		           Map<Class, String> collections) throws HpcException
     {
-    	if(mongoHost == null || hpcCodecProvider == null) {
-    	   throw new HpcException("Null Mongo Host or HpcCodecProvider instance",
+    	if(dbName == null || mongoHost == null || hpcCodecProvider == null ||
+    	   collections == null) {
+    	   throw new HpcException("Null Mongo Host/Name/HpcCodecProvider/Colelctions",
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
     
+    	this.dbName = dbName;
+    	this.collections = collections;
+    	
     	// Creating the list of Mongo hosts.
     	Vector<ServerAddress> mongoHosts = new Vector<ServerAddress>();
     	mongoHosts.add(new ServerAddress(mongoHost));
@@ -133,47 +128,24 @@ public class HpcManagedDataDAOImpl implements HpcManagedDataDAO
     // Methods
     //---------------------------------------------------------------------//
     
-    //---------------------------------------------------------------------//
-    // HpcManagedDataDAO Interface Implementation
-    //---------------------------------------------------------------------//  
-    
-	@Override
-	public void add(HpcManagedData managedData) throws HpcException
-    {
-		HpcSingleResultCallback<Void> callback = 
-				                      new HpcSingleResultCallback<Void>();
-		getCollection().insertOne(managedData, callback);
-       
-		// Throw the callback exception (if any).
-		callback.throwException();
-    }
-	
-	@Override
-	public HpcManagedData get(String id) throws HpcException
-	{
-		HpcSingleResultCallback<HpcManagedData> callback = 
-                       new HpcSingleResultCallback<HpcManagedData>();
-		getCollection().find(eq(HpcCodec.MANAGED_DATA_ID_KEY, 
-				                id)).first(callback);
-		
-		return callback.getResult();
-	}
-	
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-	
     /**
      * Get the managed data Mongo collection.
      *
      * @return A The managed data Mongo collection.
+     * @throws HpcException If colelction is not found.
      */
-    private MongoCollection<HpcManagedData> getCollection()  
+    public <T> MongoCollection<T> getCollection(final Class<T> clazz) 
+                                               throws HpcException
     {
-    	MongoDatabase database = mongoClient.getDatabase(DB_NAME); 
-    	return database.getCollection(MANAGED_DATA_COLLECTION_NAME, 
-    			                      HpcManagedData.class);
-    }  
+    	MongoDatabase database = mongoClient.getDatabase(dbName); 
+    	String collection = collections.get(clazz);
+    	if(collection == null) {
+    	   throw new HpcException("Collection not found: " + clazz,
+    			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    	}
+    	return database.getCollection(collection, clazz);
+    }
+                
 }
 
  
