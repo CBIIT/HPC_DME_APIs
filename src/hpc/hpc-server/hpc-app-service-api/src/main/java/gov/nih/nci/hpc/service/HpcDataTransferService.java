@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.service;
 
-import gov.nih.nci.hpc.domain.HpcDataset;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -35,7 +35,7 @@ public interface HpcDataTransferService
      * 
      * @throws HpcTransferException
      */
-    public boolean transferDataset(HpcDataset dataset,String username, String password) throws HpcException;
+    public boolean transferDataset(HpcDataTransferLocations transferLocations,String username, String password) throws HpcException;
 }
 
  
