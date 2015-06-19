@@ -23,6 +23,7 @@
 	
     <!-- HPC API Server -->  
     <feature name="hpc-server" version="${project.version}">
+	   
     	<feature version="${mongodb.version}">hpc-mongo-async-driver</feature>		
   
         <bundle>mvn:${project.groupId}/hpc-common/${project.version}</bundle>
@@ -41,6 +42,7 @@
         <bundle>mvn:${project.groupId}/hpc-bus-service-impl/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-ws-rs-api/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}</bundle>
+       <configfile finalname="/etc/hpc-server/dynamicfields.json" override="true">mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}/json/dynamicfields</configfile>		
     </feature>
     
 </features>
