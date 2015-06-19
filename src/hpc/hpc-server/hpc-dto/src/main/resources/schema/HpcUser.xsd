@@ -21,11 +21,23 @@
    	<xsd:import namespace="http://hpc.nci.nih.gov/domain/user" 
    	            schemaLocation="HpcUserTypes.xsd"/>
     
-    <!--  User Registration Service DTO -->
-    <xsd:element name="HpcUserDTO">
+    <!--  User Registration DTO -->
+    <xsd:element name="HpcUserRegistrationDTO">
         <xsd:complexType>
   	    	<xsd:sequence>
   	        	<xsd:element name="user" type="hpc-domain-user:HpcUser"/>
+    		</xsd:sequence>
+    	</xsd:complexType>
+    </xsd:element>
+    
+    <!--  User DTO -->
+    <xsd:element name="HpcUserDTO">
+        <xsd:complexType>
+  	    	<xsd:sequence>
+  	    		<xsd:element name="id" type="xsd:ID"/>
+  	        	<xsd:element name="user" type="hpc-domain-user:HpcUser"/>
+  	        	<xsd:element name="created" type="xsd:dateTime"/>
+      			<xsd:element name="lastUpdated" type="xsd:dateTime"/>
     		</xsd:sequence>
     	</xsd:complexType>
     </xsd:element>
