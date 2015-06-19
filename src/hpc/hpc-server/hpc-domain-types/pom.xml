@@ -36,15 +36,16 @@
                         			<bindingFile>src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
                     			<xsdOption>
-                        			<xsd>src/main/resources/schema/HpcDatasetTypes.xsd</xsd>
-                        			<packagename>gov.nih.nci.hpc.domain.dataset</packagename>
-                        			<bindingFile>src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
-                    			</xsdOption>
-                    			<xsdOption>
                         			<xsd>src/main/resources/schema/HpcMetadataTypes.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.domain.metadata</packagename>
                         			<bindingFile>src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
+                    			<xsdOption>
+                        			<xsd>src/main/resources/schema/HpcDatasetTypes.xsd</xsd>
+                        			<packagename>gov.nih.nci.hpc.domain.dataset</packagename>
+                        			<bindingFile>src/main/resources/schema/hpc-domain-types-dataset-types-jaxb-binding.xjb</bindingFile>
+                    			</xsdOption>
+                    			
                 			</xsdOptions>
             			</configuration>
         			</execution>
