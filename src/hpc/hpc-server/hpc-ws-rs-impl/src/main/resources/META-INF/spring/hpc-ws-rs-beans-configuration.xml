@@ -68,16 +68,9 @@
 	</util:map>
 	
 	<!-- JAX-RS Service Beans -->
-   
-   <!--  
-    <bean id="hpcDataRegistrationRestService" 
-          class="gov.nih.nci.hpc.ws.rs.impl.HpcDataRegistrationRestServiceImpl">
-    	<constructor-arg ref="hpcDataRegistrationService"/>
-    </bean>-->
-
     <bean id="hpcUserRestService" 
           class="gov.nih.nci.hpc.ws.rs.impl.HpcUserRestServiceImpl">
-    	<constructor-arg value="ABC"/>
+    	<constructor-arg ref="hpcUserBusService"/>
     </bean>
     <bean id="hpcDatasetRestService" 
           class="gov.nih.nci.hpc.ws.rs.impl.HpcDatasetRestServiceImpl">

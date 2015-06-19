@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.ws.rs.impl;
 import gov.nih.nci.hpc.transfer.HpcDataTransfer;
 import gov.nih.nci.hpc.transfer.impl.GlobusOnlineDataTranfer;
 import gov.nih.nci.hpc.ws.rs.HpcUserRestService;
+import gov.nih.nci.hpc.bus.HpcUserBusService;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.domain.user.HpcUser;
@@ -46,8 +47,8 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
     // Instance members
     //---------------------------------------------------------------------//
 
-    // The Data Registration Business Service instance.
-    //private HpcDataRegistrationService registrationBusService = null;
+    // The User Business Service instance.
+    private HpcUserBusService userBusService = null;
     
     // The URI Info context instance.
     private @Context UriInfo uriInfo;
@@ -74,20 +75,19 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param registrationBusService The registration business service.
+     * @param userBusService The user business service.
      * 
      * @throws HpcException If the bus service is not provided by Spring.
      */
-    private HpcUserRestServiceImpl(
-    		       String registrationBusService)
-                   throws HpcException
+    private HpcUserRestServiceImpl(HpcUserBusService userBusService)
+                                  throws HpcException
     {
-    	if(registrationBusService == null) {
-    	   throw new HpcException("Null HpcDataRegistrationService instance",
+    	if(userBusService == null) {
+    	   throw new HpcException("Null HpcUserBusService instance",
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
     	
-    	//this.registrationBusService = registrationBusService;
+    	this.userBusService = userBusService;
     }  
     
     //---------------------------------------------------------------------//
@@ -99,10 +99,30 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//  
 	
     @Override
-    public Response getUser(String id)
-    {
-		logger.info("Invoking RS: GET /user/{id}: " + id);
+    public Response registerUser(HpcUserRegistrationDTO userRegistrationDTO)
+    {	
+		logger.info("Invoking RS: POST /user: " + userRegistrationDTO);
 		
+		String registeredUserId = null;
+		try {
+			 registeredUserId = userBusService.registerUser(userRegistrationDTO);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /user failed:", e);
+			    return toResponse(e);
+		}
+		
+		return toCreatedResponse(registeredUserId);
+	}
+    
+    @Override
+    public Response getUser(String nihUserId)
+    {
+		logger.info("Invoking RS: GET /user/{nihUserId}: " + nihUserId);
+		
+		HpcUserDTO userDTO = null;
+		
+		/*
 		HpcUserRegistrationDTO output = new HpcUserRegistrationDTO();
 		HpcUser user = new HpcUser();
 		user.setNihUserId("u1c056");
@@ -112,36 +132,18 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 		dta.setUsername("globus-user");
 		dta.setPassword("***REMOVED***");
 		user.setDataTransferAccount(dta);
-		output.setUser(user);
+		output.setUser(user);*/
 		
 		
-		/*try {
-			 registrationOutput = registrationBusService.getRegisteredData(id);
+		try {
+			 userDTO = userBusService.getUser(nihUserId);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /registration failed:", e);
+			    logger.error("RS: GET /user/{nihUserId} failed:", e);
 			    return toResponse(e);
-		}*/
+		}
 		
-		return toOkResponse(output);
-	}
-    
-    @Override
-    public Response registerUser(HpcUserRegistrationDTO userRegistrationDTO)
-    {	
-		logger.info("Invoking RS: POST /user: " + userRegistrationDTO);
-		
-		String registeredDataId = "Mock-User-ID";
-		/*try {
-			 registeredDataId = 
-		     registrationBusService.registerData(registrationInput);
-			 
-		} catch(HpcException e) {
-			    logger.error("RS: POST /registration failed:", e);
-			    return toResponse(e);
-		}*/
-		
-		return toCreatedResponse(registeredDataId);
+		return toOkResponse(userDTO);
 	}
 	
 	@Override
