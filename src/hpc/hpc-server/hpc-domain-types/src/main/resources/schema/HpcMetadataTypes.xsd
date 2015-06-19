@@ -31,7 +31,6 @@
   			<xsd:element name="dataContainsPHI" type="xsd:boolean"/>
   			<xsd:element name="dataEncrypted" type="xsd:boolean"/>
   			<xsd:element name="dataCompressed" type="xsd:boolean"/>
-  			<xsd:element name="description" type="xsd:string"/>
   			<xsd:element name="fundingOrganization" type="xsd:string"/>
   			<xsd:element name="metadataItems" 
   			             type="hpc-domain-metadata:HpcMetadataItem" 
