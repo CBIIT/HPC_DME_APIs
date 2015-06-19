@@ -18,10 +18,8 @@ import java.util.List;
 import org.globusonline.transfer.Authenticator;
 import org.globusonline.transfer.JSONTransferAPIClient;
 
-import gov.nih.nci.hpc.domain.HpcDataset;
-import gov.nih.nci.hpc.domain.HpcDatasetLocation;
-import gov.nih.nci.hpc.domain.HpcFacility;
-import gov.nih.nci.hpc.domain.HpcDatasetType;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
+import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 
 public class HpcDataTransferServiceTest 
 {         
@@ -38,26 +36,18 @@ public class HpcDataTransferServiceTest
     public void run() throws Exception
     {
     	HpcDataTransfer dts = new GlobusOnlineDataTranfer();
-    	HpcDataset dataset = new HpcDataset();
-    	dataset.setId("1");
-    	dataset.setName("TEST");
-    	dataset.setType(HpcDatasetType.BAM);
-    	dataset.setSize(100);
+    	HpcDataTransferLocations dtl = new HpcDataTransferLocations();
 
-    	HpcDatasetLocation sourceLocation = new HpcDatasetLocation();
-    	sourceLocation.setFacility(HpcFacility.UNKONWN);
+    	HpcFileLocation sourceLocation = new HpcFileLocation();
     	sourceLocation.setEndpoint("mahinarra#MNGOEP1");
-    	sourceLocation.setFilePath("~/globusonline.txt");
-    	sourceLocation.setDataTransfer(gov.nih.nci.hpc.domain.HpcDataTransfer.GLOBUS);
-    	dataset.setSource(sourceLocation);    	    	
+    	sourceLocation.setPath("~/globusonline.txt");
+    	dtl.setSource(sourceLocation);    	    	
     	
-    	HpcDatasetLocation datasetLocation = new HpcDatasetLocation();
-    	datasetLocation.setFacility(HpcFacility.FREDERICK);
+    	HpcFileLocation datasetLocation = new HpcFileLocation();
     	datasetLocation.setEndpoint("nihfnlcr#gridftp1");
-    	datasetLocation.setFilePath("~/globusonline.txt");
-    	datasetLocation.setDataTransfer(gov.nih.nci.hpc.domain.HpcDataTransfer.GLOBUS);
-    	dataset.setLocation(datasetLocation);
-    	boolean transferDataset = dts.transferDataset(dataset,"","");
+    	datasetLocation.setPath("~/globusonline.txt");
+    	dtl.setDestination(datasetLocation);
+    	boolean transferDataset = dts.transferDataset(dtl,"","");
     }
 }
 
