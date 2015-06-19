@@ -38,7 +38,7 @@
                         
  	<context:annotation-config />
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
- 
+
  	<!-- JAXB Provider -->
 	<bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JAXBElementProvider">
 		<property name="marshallerProperties" ref="propertiesMap"/>
@@ -82,6 +82,7 @@
     <bean id="hpcDatasetRestService" 
           class="gov.nih.nci.hpc.ws.rs.impl.HpcDatasetRestServiceImpl">
     	<constructor-arg value="ABC"/>
+		<constructor-arg value="${dynamicfields}"/>
     </bean>
     	
 	<!-- CXF JAX-RS Server Config -->
