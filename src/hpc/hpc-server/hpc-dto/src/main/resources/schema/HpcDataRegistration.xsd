@@ -20,6 +20,7 @@
     		
    	<xsd:import namespace="http://hpc.nci.nih.gov/domain" schemaLocation="HpcDataTypes.xsd"/>
     
+	
     <!--  Registration Service Input DTO -->
     <xsd:element name="HpcDataRegistrationInput">
         <xsd:complexType>
@@ -29,13 +30,16 @@
 				<xsd:element name="username" type="xsd:string"/>
 				<xsd:element name="password" type="xsd:string"/>
   				<xsd:element name="investigatorName" type="xsd:string"/>
+				<xsd:element name="dynamicFields" type="hpc-domain:DynamicField"
+							 minOccurs="0" maxOccurs="unbounded"/>  				
         		<xsd:element name="datasets" type="hpc-domain:HpcDataset" 
 			    	         minOccurs="1" maxOccurs="unbounded"/>
         	</xsd:sequence>
         	
         </xsd:complexType>
     </xsd:element>
-    
+ 
+	  
     <!--  Registration Service Output DTO -->
     <xsd:element name="HpcDataRegistrationOutput">
     	<xsd:complexType>

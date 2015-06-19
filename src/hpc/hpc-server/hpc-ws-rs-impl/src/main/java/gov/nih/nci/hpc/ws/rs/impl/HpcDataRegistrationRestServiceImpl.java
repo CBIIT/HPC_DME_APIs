@@ -21,11 +21,19 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.Context;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 /**
  * <p>
  * HPC Data Registration REST Service Implementation.
@@ -129,6 +137,29 @@ public class HpcDataRegistrationRestServiceImpl extends HpcRestServiceImpl
 		
 		return toCreatedResponse(registeredDataId);
 	}
+    
+    @Override
+    public String getPrimaryConfigurableDataFields(String type,String callBackFn)
+    {
+		logger.info("Invoking RS: GET /registration/getPrimaryConfigurableDataFields for type {type}");
+		logger.info("callBackFn::" + callBackFn);
+		logger.info("type::" + type);
+		JSONParser parser = new JSONParser();
+		try {
+        //InputStream inputStream = getClass().getClassLoader().getResourceAsStream("dynamicfields.json");
+	        FileReader reader = new FileReader("dynamicfields.json");
+	        JSONObject json = (JSONObject) parser.parse(reader);
+		} catch(FileNotFoundException e) {
+		    logger.error("FileNotFoundException failed:", e);
+		}catch(IOException e) {
+		    logger.error("IOException failed:", e);
+		}
+		catch(ParseException e) {
+		    logger.error("ParseException failed:", e);
+		}
+		
+		return callBackFn +"({\"name\": \"Mahidhar Narra\"});";
+	}    
 }
 
  

@@ -44,6 +44,16 @@ public interface HpcUserRegistrationRestService
     public Response getUser(@PathParam("id") String id); 
     
     /**
+     * POST Validate User request.
+     *
+     * @param userDTO The user DTO to validate.
+     */
+    @POST
+    @Path("/user")
+    @Consumes("application/json,application/xml")
+    public boolean validateUser(HpcUserDTO userDTO); 
+    
+    /**
      * POST registration request.
      *
      * @param userDTO The user DTO to register.
@@ -52,6 +62,8 @@ public interface HpcUserRegistrationRestService
     @Path("/user")
     @Consumes("application/json,application/xml")
     public Response registerUser(HpcUserDTO userDTO);
+    
+    
 }
 
  
