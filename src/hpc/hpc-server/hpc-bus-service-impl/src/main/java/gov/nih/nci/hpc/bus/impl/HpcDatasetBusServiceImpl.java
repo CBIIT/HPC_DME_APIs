@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
+import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -163,7 +164,9 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     }
     
     @Override
-    public List<HpcDatasetDTO> getDatasets(String creatorId) throws HpcException
+    public List<HpcDatasetDTO> getDatasets(String userId, 
+                                           HpcDatasetUserType datasetUserType) 
+                                          throws HpcException
     {
     	return null;
     }
