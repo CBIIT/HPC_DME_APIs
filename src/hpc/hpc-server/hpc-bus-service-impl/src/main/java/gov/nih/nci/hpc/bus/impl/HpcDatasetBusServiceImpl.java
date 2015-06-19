@@ -1,5 +1,5 @@
 /**
- * HpcDataRegistrationServiceImpl.java
+ * HpcDatasetBusServiceImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -67,7 +67,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param managedDatService The managed data application service.
+     * @param managedDataService The managed dataset application service.
      * 
      * @throws HpcException If managedDatasetService is null.
      */
@@ -90,7 +90,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcDataRegistrationService Interface Implementation
+    // HpcDatasetBusService Interface Implementation
     //---------------------------------------------------------------------//  
     
     @Override
@@ -134,9 +134,10 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     public HpcDatasetDTO getDataset(String id) throws HpcException
     {
     	logger.info("Invoking getDataset(String id): " + id);
+    	
     	// Input validation.
     	if(id == null) {
-    	   throw new HpcException("Null ID",
+    	   throw new HpcException("Null Dataset ID",
     			                  HpcErrorType.INVALID_INPUT);	
     	}
     	
@@ -146,7 +147,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	   return null;
     	}
     	
-    	// Map it to the DTO
+    	// Map it to the DTO.
     	HpcDatasetDTO datasetDTO = new HpcDatasetDTO();
     	datasetDTO.setId(managedDataset.getId());
     	datasetDTO.setName(managedDataset.getName());
