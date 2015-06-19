@@ -40,6 +40,42 @@ public class GlobusOnlineDataTranfer implements HpcDataTransfer{
     	return false;
     }
     
+    public boolean validateUserAccount(String username, String password )
+    {
+    	try
+    	{    	
+            GoauthClient cli = new GoauthClient("nexus.api.globusonline.org", "www.globusonline.org", username, password);
+    		JSONObject accessTokenJSON = cli.getClientOnlyAccessToken();
+    		String accessToken = accessTokenJSON.getString("access_token");
+    		System.out.println("Client only access token: " + accessToken);
+    		cli.validateAccessToken(accessToken);
+    		return true;
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+    	return false;
+    }
+ 
+    public String getTransferStatus(String submissionId)
+    {
+    	String status = "ACTIVE";
+    	try
+    	{    	            
+            JSONTransferAPIClient.Result r;
+
+            String resource = "/task/" +  submissionId;
+            Map<String, String> params = new HashMap<String, String>();
+            params.put("fields", "status");
+
+            r = client.getResult(resource, params);
+            status = r.document.getString("status");
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+    	return status;
+    }
+    
     private void setJSONTransferClient(String username, String password) throws IOException, JSONException, GeneralSecurityException, APIError,NexusClientException
     {
     	//Replace this with nexus call to get oauthtoken
@@ -52,7 +88,6 @@ public class GlobusOnlineDataTranfer implements HpcDataTransfer{
 		String accessToken = accessTokenJSON.getString("access_token");
 		System.out.println("Client only access token: " + accessToken);
 		cli.validateAccessToken(accessToken);        
-
         //String oauthToken = getPropValue("globus.oauthToken");
         //String oauthToken = "un=mahinarra|tokenid=6c238272-f996-11e4-9586-22000aeb2621|expiry=1463074518|client_id=mahinarra|token_type=Bearer|SigningSubject=https://nexus.api.globusonline.org/goauth/keys/a741437a-f5aa-11e4-b66e-22000aeb2621|sig=8a1bd3fc0640a8ee2dc90d080c32604bceb4ef14b67abd7cfa22f395f744856bc711bde2774e738563dfea4beb8bdc85aca52c80a0e1a1cbe89e4cbb3b2ba5db5782f3fcf66706ab9ed7be31e6173a26c58efaa7f194c8651d77f8c8c32a0856de52326c4120e1c7cc3d2e84bb30e2a3e22a6b3d9423c4fc5e9246b4715d49cf";
         Authenticator authenticator = new GoauthAuthenticator(accessToken);
@@ -65,7 +100,9 @@ public class GlobusOnlineDataTranfer implements HpcDataTransfer{
         JSONTransferAPIClient.Result r;
         System.out.println("=== Before Transfer ===");
 
-        if (!autoActivate(dataset.getSource().getEndpoint())) {
+        if (!autoActivate(dataset.getSource().getEndpoint()) || 
+        		!autoActivate(dataset.getLocation().getEndpoint())
+        		) {
             System.err.println("Unable to auto activate go tutorial endpoints, "
                                + " exiting");
             return false;
@@ -107,7 +144,7 @@ public class GlobusOnlineDataTranfer implements HpcDataTransfer{
     public boolean autoActivate(String endpointName)
     throws IOException, JSONException, GeneralSecurityException, APIError {
         String resource = BaseTransferAPIClient.endpointPath(endpointName)
-                          + "/autoactivate";
+                          + "/autoactivate?if_expires_in=100";
         JSONTransferAPIClient.Result r = client.postResult(resource, null,
                                                            null);
         String code = r.document.getString("code");
