@@ -17,6 +17,7 @@
 			xmlns:hpc="http://hpc.nci.nih.gov/domain"
     		targetNamespace="http://hpc.nci.nih.gov/domain"
     		elementFormDefault="unqualified">
+
 	
   	<xsd:complexType name="HpcDataset">
   	    <xsd:sequence>
@@ -36,6 +37,13 @@
 			<xsd:element name="endpoint" type="xsd:string"/>
 			<xsd:element name="filePath" type="xsd:string"/>
 			<xsd:element name="dataTransfer" type="hpc:HpcDataTransfer"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="DynamicField">
+		<xsd:sequence>
+			 <xsd:element name="fieldName" type="xsd:string"/>
+			<xsd:element name="fieldValue" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	

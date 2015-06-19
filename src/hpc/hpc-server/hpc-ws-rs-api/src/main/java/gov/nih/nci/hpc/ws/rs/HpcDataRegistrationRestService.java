@@ -19,6 +19,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 /**
@@ -43,6 +44,17 @@ public interface HpcDataRegistrationRestService
     @Path("/registration/{id}")
     @Produces("application/json,application/xml")
     public Response getRegisterdData(@PathParam("id") String id); 
+
+    /**
+     * GET registration request by ID.
+     *
+     * @param id The registered data ID.
+     * @return The registered data.
+     */
+    @GET
+    @Path("/getPrimaryConfigurableDataFields/{type}")
+    @Produces("application/json")
+    public String getPrimaryConfigurableDataFields(@PathParam("type") String id, @QueryParam("callback") String callback);     
     
     /**
      * POST registration request.

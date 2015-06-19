@@ -52,6 +52,17 @@ public interface HpcDatasetRegistrationRestService
     @Path("/dataset")
     @Consumes("application/json,application/xml")
     public Response registerDataset(HpcDatasetDTO datasetDTO);
+    
+    /**
+     * GET Dataset by ID.
+     *
+     * @param id The dataset ID.
+     * @return gov.nih.nci.hpc.dto.datasetregistration.HpcDatasetDTO entity.
+     */
+    @GET
+    @Path("/transferstatus/{id}")
+    @Produces("application/json,application/xml")
+    public Response checkDataTransferStatus(@PathParam("id") String id); 
 }
 
  
