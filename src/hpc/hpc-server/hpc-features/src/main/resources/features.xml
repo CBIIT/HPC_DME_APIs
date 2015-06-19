@@ -26,7 +26,6 @@
     	<feature version="${mongodb.version}">hpc-mongo-async-driver</feature>		
   
         <bundle>mvn:${project.groupId}/hpc-common/${project.version}</bundle>
-        <bundle>mvn:${project.groupId}/hpc-domain/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-domain-types/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-domain-model/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-dto/${project.version}</bundle>
