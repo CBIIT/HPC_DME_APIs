@@ -15,8 +15,6 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 			xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 			xmlns:hpc-domain-dataset="http://hpc.nci.nih.gov/domain/dataset"
-			xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
-			xmlns:hpc-domain-model="http://hpc.nci.nih.gov/domain/model"
     		targetNamespace="http://hpc.nci.nih.gov/domain/model"
     		elementFormDefault="unqualified">
     		
@@ -25,16 +23,6 @@
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata" 
 	            schemaLocation="HpcMetadataTypes.xsd"/>   
     
-	<xsd:complexType name="HpcManagedFile">
-		<xsd:sequence>
-			<xsd:element name="id" type="xsd:ID"/>
-			<xsd:element name="size" type="xsd:double"/>
-			<xsd:element name="file" type="hpc-domain-dataset:HpcFile"/>
-			<xsd:element name="metadata" 
-  			             type="hpc-domain-metadata:HpcDatasetMetadata"/>
-		</xsd:sequence>
-	</xsd:complexType>
-	
 	<xsd:element name="HpcManagedDataset">
     	<xsd:complexType>
 			<xsd:sequence>
@@ -42,14 +30,15 @@
         		<xsd:element name="name" type="xsd:string"/>
   				<xsd:element name="primaryInvestigatorId" type="xsd:ID"/>
   				<xsd:element name="creatorId" type="xsd:ID"/>
+  				<xsd:element name="registratorId" type="xsd:ID"/>
   				<xsd:element name="labBranch" type="xsd:string"/>
       			<xsd:element name="created" type="xsd:dateTime"/>
 				<xsd:element name="files" 
-			    	         type="hpc-domain-model:HpcManagedFile" 
-			    	         maxOccurs="unbounded"/>
+			    	         type="hpc-domain-dataset:HpcFile" 
+			    	         minOccurs="0" maxOccurs="unbounded"/>
 				<xsd:element name="uploadRequests" 
 			             	 type="hpc-domain-dataset:HpcDataTransferRequest" 
-  			             	 maxOccurs="unbounded"/>
+  			             	 minOccurs="0" maxOccurs="unbounded"/>
   				<xsd:element name="downloadRequests" 
   			             	 type="hpc-domain-dataset:HpcDataTransferRequest" 
   			                 minOccurs="0" maxOccurs="unbounded"/>
