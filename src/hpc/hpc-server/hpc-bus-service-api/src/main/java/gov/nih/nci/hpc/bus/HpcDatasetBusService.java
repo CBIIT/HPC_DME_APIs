@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
+import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserType;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -56,7 +57,9 @@ public interface HpcDatasetBusService
      * 
      * @throws HpcException
      */
-    public List<HpcDatasetDTO> getDatasets(String userId, HpcUserType) throws HpcException;
+    public List<HpcDatasetDTO> getDatasets(String userId, 
+    		                               HpcDatasetUserType datasetUserType) 
+    		                              throws HpcException;
 }
 
  
