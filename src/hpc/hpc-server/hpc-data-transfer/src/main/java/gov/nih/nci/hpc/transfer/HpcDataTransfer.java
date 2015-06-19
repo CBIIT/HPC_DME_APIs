@@ -34,6 +34,9 @@ public interface HpcDataTransfer
      * @throws HpcTransferException
      */
     public boolean transferDataset(HpcDataset dataset,String username, String password) throws Exception;
+    public boolean validateUserAccount(String username, String password);
+    public String getTransferStatus(String submissionId);
+    
 }
 
  

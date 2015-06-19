@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.service.HpcManagedDataService;
+import gov.nih.nci.hpc.domain.DynamicField;
 import gov.nih.nci.hpc.domain.HpcDataset;
 import gov.nih.nci.hpc.domain.HpcManagedDataType;
 import gov.nih.nci.hpc.domain.HpcManagedData;
@@ -113,7 +114,14 @@ public class HpcManagedDataServiceImpl implements HpcManagedDataService
     		logger.info("in manageddata service Adding dataset"  );
     		managedData.getDatasets().add(dataset);
     	}
-    	
+    	/*
+    	for(DynamicField dynamicField : dynamicFields) {
+    		dynamicField.setFieldName("NAME1");
+    		dynamicField.setFieldValue("VALUE1");
+    		logger.info("in manageddata service Adding dataset"  );
+    		managedData.getDynamicFields().add(dynamicField);
+    	}
+    	*/
     	// Persist to Mongo.
     	managedDataDAO.add(managedData);
     	

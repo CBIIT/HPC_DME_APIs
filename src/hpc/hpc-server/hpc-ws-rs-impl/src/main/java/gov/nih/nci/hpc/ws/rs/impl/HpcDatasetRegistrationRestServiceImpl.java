@@ -10,6 +10,8 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
+import gov.nih.nci.hpc.transfer.HpcDataTransfer;
+import gov.nih.nci.hpc.transfer.impl.GlobusOnlineDataTranfer;
 import gov.nih.nci.hpc.ws.rs.HpcDatasetRegistrationRestService;
 import gov.nih.nci.hpc.dto.datasetregistration.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.datasetregistration.HpcFileDTO;
@@ -19,8 +21,6 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
-
-
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -28,6 +28,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.Context;
+
 import java.net.URI;
 
 import org.slf4j.Logger;
@@ -165,6 +166,13 @@ public class HpcDatasetRegistrationRestServiceImpl extends HpcRestServiceImpl
 		
 		return toCreatedResponse(registeredDataId);
 	}
+    
+    @Override
+    public Response checkDataTransferStatus(String submissionId)
+    {	
+    	HpcDataTransfer hdt = new GlobusOnlineDataTranfer();		
+		return toCreatedResponse(hdt.getTransferStatus(submissionId));
+	}    
 }
 
  
