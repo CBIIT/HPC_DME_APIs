@@ -13,19 +13,12 @@ package gov.nih.nci.hpc.service.impl;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.transfer.impl.GlobusOnlineDataTranfer;
 import gov.nih.nci.hpc.transfer.HpcDataTransfer;
-import gov.nih.nci.hpc.domain.HpcDataset;
-import gov.nih.nci.hpc.domain.HpcManagedDataType;
-import gov.nih.nci.hpc.domain.HpcManagedData;
-import gov.nih.nci.hpc.dao.HpcManagedDataDAO;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.Calendar;
 
 /**
  * <p>
@@ -55,17 +48,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     {
     }   
      
-        
     //---------------------------------------------------------------------//
     // HpcDataTransferService Interface Implementation
     //---------------------------------------------------------------------//  
     
     @Override
-    public boolean transferDataset(HpcDataset dataset,String username, String password) throws HpcException
+    public boolean transferDataset(HpcDataTransferLocations transferLocations,String username, String password) throws HpcException
     {   
     	try{
         	HpcDataTransfer hdt = new GlobusOnlineDataTranfer();
-        	return hdt.transferDataset(dataset,username, password);    		
+        	return hdt.transferDataset(transferLocations,username, password);    		
     	}catch(Exception ex)
     	{
     		throw new HpcException("Error while transfer",HpcErrorType.INVALID_INPUT);
