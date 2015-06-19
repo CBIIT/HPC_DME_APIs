@@ -21,7 +21,7 @@ import java.util.List;
  * </p>
  *
  * @author <a href="mailto:Mahidhar.Narra@nih.gov">Mahidhar Narra</a>
- * @version $Id: HpcDataTransferService.java 
+ * @version $Id$
  */
 
 public interface HpcDataTransferService 
