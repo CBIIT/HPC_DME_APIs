@@ -1,5 +1,5 @@
 /**
- * HpcUserRegistrationRestServiceImpl.java
+ * HpcUserRestServiceImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,10 +10,9 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
-import gov.nih.nci.hpc.transfer.HpcDataTransfer;
-import gov.nih.nci.hpc.transfer.impl.GlobusOnlineDataTranfer;
-import gov.nih.nci.hpc.ws.rs.HpcUserRegistrationRestService;
-import gov.nih.nci.hpc.dto.userregistration.HpcUserDTO;
+import gov.nih.nci.hpc.ws.rs.HpcUserRestService;
+import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.domain.user.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -23,7 +22,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.Context;
-
 import java.net.URI;
 
 import org.slf4j.Logger;
@@ -31,15 +29,15 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * HPC User Registration REST Service Implementation.
+ * HPC User REST Service Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcUserRegistrationRestServiceImpl extends HpcRestServiceImpl
-             implements HpcUserRegistrationRestService
+public class HpcUserRestServiceImpl extends HpcRestServiceImpl
+             implements HpcUserRestService
 {   
     //---------------------------------------------------------------------//
     // Instance members
@@ -64,7 +62,7 @@ public class HpcUserRegistrationRestServiceImpl extends HpcRestServiceImpl
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcUserRegistrationRestServiceImpl() throws HpcException
+    private HpcUserRestServiceImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -77,7 +75,7 @@ public class HpcUserRegistrationRestServiceImpl extends HpcRestServiceImpl
      * 
      * @throws HpcException If the bus service is not provided by Spring.
      */
-    private HpcUserRegistrationRestServiceImpl(
+    private HpcUserRestServiceImpl(
     		       String registrationBusService)
                    throws HpcException
     {
@@ -100,9 +98,9 @@ public class HpcUserRegistrationRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getUser(String id)
     {
-		logger.info("Invoking RS: GET /user/{id}");
+		logger.info("Invoking RS: GET /user/{id}: " + id);
 		
-		HpcUserDTO output = new HpcUserDTO();
+		HpcUserRegistrationDTO output = new HpcUserRegistrationDTO();
 		HpcUser user = new HpcUser();
 		user.setNihUserId("u1c056");
 		user.setFirstName("Prasad");
@@ -126,9 +124,9 @@ public class HpcUserRegistrationRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response registerUser(HpcUserDTO userDTO)
+    public Response registerUser(HpcUserRegistrationDTO userRegistrationDTO)
     {	
-		logger.info("Invoking RS: POST /registration");
+		logger.info("Invoking RS: POST /user: " + userRegistrationDTO);
 		
 		String registeredDataId = "Mock-User-ID";
 		/*try {
@@ -142,14 +140,6 @@ public class HpcUserRegistrationRestServiceImpl extends HpcRestServiceImpl
 		
 		return toCreatedResponse(registeredDataId);
 	}
-    
-    @Override
-    public boolean validateUser(HpcUserDTO userDTO)
-    {	
-		logger.info("Invoking RS: POST /validateUser");
-    	HpcDataTransfer hdt = new GlobusOnlineDataTranfer(); 
-		return hdt.validateUserAccount(userDTO.getUser().getDataTransferAccount().getUsername(), userDTO.getUser().getDataTransferAccount().getPassword());
-	}    
 }
 
  
