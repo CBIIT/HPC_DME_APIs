@@ -13,11 +13,11 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
-import gov.nih.nci.hpc.domain.metadata.HpcDatasetPrimaryMetadata;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.web.model.HpcDatasetRegistration;
+import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 
 import java.util.List;
 import java.util.StringTokenizer;
@@ -31,6 +31,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -48,11 +50,11 @@ import org.springframework.web.client.RestTemplate;
 @EnableAutoConfiguration
 @RequestMapping("/registerDataset")
 public class HpcDataRegistrationController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.dataRegistration}")
+	@Value("${gov.nih.nci.hpc.server.dataset}")
     private String serviceURL;
 	@Value("${gov.nih.nci.hpc.nihfnlcr.name}")
     private String destinationEndpoint;
-
+	
 	
 
   @RequestMapping(method = RequestMethod.GET)
@@ -70,7 +72,7 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 	    	   dataset.getLocation().getDataTransfer() == null)
 	 */
   @RequestMapping(method = RequestMethod.POST)
-  public String register(@Valid @ModelAttribute("hpcRegistration")  HpcDatasetRegistration registration, Model model, HttpSession session) {
+  public String register(@Valid @ModelAttribute("hpcRegistration")  HpcDatasetRegistration registration, Model model, BindingResult bindingResult, HttpSession session) {
 	  HpcUserDTO user = (HpcUserDTO)session.getAttribute("hpcUser");
 	  //TODO: Add error message
 	  if(user == null)
@@ -79,7 +81,6 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 	  }
 	  
 	  RestTemplate restTemplate = new RestTemplate();
-	  String uri = "http://localhost:7737/hpc-server/registration";
 	  HpcDatasetRegistrationDTO dto = new HpcDatasetRegistrationDTO();
 	  dto.setName(registration.getDatasetName());
 	  //TODO: Lookup Id
@@ -109,7 +110,7 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 		  upload.setType(HpcFileType.UNKONWN);
 
 		  //TODO: Metadata funding organization
-		  HpcDatasetPrimaryMetadata metadata = new HpcDatasetPrimaryMetadata();
+		  HpcFilePrimaryMetadata metadata = new HpcFilePrimaryMetadata();
 		  metadata.setDataEncrypted(registration.getEncrypted().equalsIgnoreCase("Yes"));
 		  metadata.setDataContainsPII(registration.getPii().equalsIgnoreCase("Yes"));
 		  metadata.setFundingOrganization(registration.getFundingOrganization());
@@ -119,7 +120,7 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 
 	  try
 	  {
-		  HttpEntity<String> response = restTemplate.postForEntity(uri,  dto, String.class);
+		  HttpEntity<String> response = restTemplate.postForEntity(serviceURL,  dto, String.class);
 		  String resultString = response.getBody();
 		  HttpHeaders headers = response.getHeaders();
 		  String location = headers.getLocation().toString();
@@ -130,8 +131,11 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 	  }
 	  catch(Exception e)
 	  {
+		  ObjectError error = new ObjectError("hpcLogin", "Failed to register: " + e.getMessage());
+		  bindingResult.addError(error);
 		  model.addAttribute("registrationStatus", false);
 		  model.addAttribute("registrationOutput", "Failed to register your request due to: "+e.getMessage());
+		  return "datasetRegistration";
 	  }
 	  registration.setId("12345");
 	  model.addAttribute("registrationStatus", true);
