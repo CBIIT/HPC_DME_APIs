@@ -99,6 +99,8 @@ function addTextbox() {
   <div class="row">
 	<h3><UL>HPC Dataset Registration</UL></h3><br/><br/>
 	<form class="form-horizontal" action="#" role="form" th:action="@{/registerDataset}" th:object="${hpcRegistration}" method="post" enctype="multipart/form-data">
+<metawidget id="metawidget">
+</metawidget>
 	<div class="form-group">
 	<label class="control-label col-sm-2" for="datasetName">Name:</label>
 	  <div class="col-sm-7">
@@ -141,7 +143,6 @@ function addTextbox() {
 		<select th:field="*{pii}" class="form-control" th:required="required"><option value="" selected="selected">- Select -</option><option value="Yes">PII Present</option><option value="No">PII Not Present</option></select>	  
 	  </div>
 	</div>
-	<div id="metawidget"></div>
 	<div class="form-group">
 	  <label class="control-label col-sm-2" for="encrypted">Encryption:</label>
 	  <div class="col-sm-7">
@@ -187,7 +188,7 @@ function addTextbox() {
                   <span class="glyphicon glyphicon-plus"></span>
               </button>
 	  </div>
-	</div>
+	 </div>
 	<div class="form-group">
 	<label class="control-label col-sm-2" for="datasetName">&nbsp;</label>
 	  <div id="addText" class="col-sm-7">
@@ -201,7 +202,6 @@ function addTextbox() {
 	</div>
   </form>
 </div>
-
           </section>
       </section>
       <!--main content end-->
@@ -210,6 +210,7 @@ function addTextbox() {
 
     <!-- javascripts -->
 	<script src="js/metawidget/core/metawidget-core.min.js" type="text/javascript"></script>	
+	<script src="js/metawidget/bootstrap/metawidget-bootstrap.min.js" type="text/javascript"></script>	
     <script src="js/jquery.js"></script>
 	<script src="js/jquery-ui-1.10.4.min.js"></script>
     <script src="js/jquery-1.8.3.min.js"></script>
@@ -304,15 +305,17 @@ function addTextbox() {
 
 	var dFields;
 	
-	var mw = new metawidget.Metawidget( document.getElementById( 'metawidget' ));
+	var mw = new metawidget.Metawidget( document.getElementById( 'metawidget' ),
+	{
+        addWidgetProcessors: [ new metawidget.bootstrap.widgetprocessor.BootstrapWidgetProcessor() ], 
+        layout: new metawidget.bootstrap.layout.BootstrapDivLayout() 
+		}
+	);
+
 	console.log("111111");
 	var json = jQuery.getJSON("http://localhost:7737/hpc-server/getPrimaryConfigurableDataFields/primary?callback=?", {}).
 	done(function(data) {
-	
-console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-		console.log('222222222'+ data);
 		var obj = data;
-		console.log('222222222'+ obj.name);
 		dFields = {
 		name: obj.name
 		}; 		
