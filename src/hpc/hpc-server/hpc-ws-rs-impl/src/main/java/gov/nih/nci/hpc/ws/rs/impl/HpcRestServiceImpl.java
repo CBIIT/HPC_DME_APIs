@@ -99,7 +99,7 @@ public abstract class HpcRestServiceImpl
     protected Response toOkResponse(Object entity)
     {
 		if(entity != null) {
-           return Response.ok(entity).build();
+           return Response.ok(entity).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 		} else {
 				return Response.noContent().build();
 		}
