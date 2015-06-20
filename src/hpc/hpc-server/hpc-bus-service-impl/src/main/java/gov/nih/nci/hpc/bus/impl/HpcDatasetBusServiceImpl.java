@@ -116,11 +116,11 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	
     	// Validate the user has a valid data transfer account..
     	HpcManagedUser managedUser = managedUserService.get(
-    			                            datasetRegistrationDTO.getCreatorId());
+    			                            datasetRegistrationDTO.getRegistratorId());
     	if(managedUser == null || 
     	   managedUser.getUser().getDataTransferAccount() == null) {
     	   throw new HpcException("Could not find user with nihUserID=" + 
-    				              datasetRegistrationDTO.getCreatorId(),
+    				              datasetRegistrationDTO.getRegistratorId(),
 	                              HpcErrorType.INVALID_INPUT);		
     	}
     	
