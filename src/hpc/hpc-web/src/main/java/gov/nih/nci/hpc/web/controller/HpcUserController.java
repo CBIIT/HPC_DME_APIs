@@ -9,10 +9,13 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.net.URI;
+
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.user.HpcUser;
-import gov.nih.nci.hpc.dto.userregistration.HpcUserDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
 
 import javax.validation.Valid;
@@ -21,9 +24,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -45,8 +50,11 @@ public class HpcUserController extends AbstractHpcController {
     private String serviceURL;
 	@Value("${gov.nih.nci.hpc.server}")
     private String serverURL;
-
-
+	@Value("${gov.nih.nci.hpc.server.login}")
+    private String serviceUserURL;
+	@Value("${gov.nih.nci.hpc.server.globuslogin.validate}")
+    private String serviceGlobusUserURL;
+	
   @RequestMapping(method = RequestMethod.GET)
   public String home(Model model){
 	  HpcWebUser hpcUser = new HpcWebUser();
@@ -57,15 +65,24 @@ public class HpcUserController extends AbstractHpcController {
   @RequestMapping(method = RequestMethod.POST)
   public String register(@Valid @ModelAttribute("hpcUser") HpcWebUser hpcUser, BindingResult bindingResult, Model model) {
 	  RestTemplate restTemplate = new RestTemplate();
-      if (bindingResult.hasErrors()) {
-          return "enroll";
-      }
-	  
+
 	  try
 	  {
+		  URI uri = new URI(serviceUserURL+"/"+hpcUser.getNihUserId());
+		  ResponseEntity<HpcUserDTO> userEntity = restTemplate.getForEntity(uri, HpcUserDTO.class);
+		  if(userEntity != null && userEntity.hasBody() && userEntity.getBody() != null)
+		  {
+			  ObjectError error = new ObjectError("nihUserId", "UserId is already enrolled!");
+			  bindingResult.addError(error);
+		  }
+		  
+	      if (bindingResult.hasErrors()) {
+	          return "enroll";
+	      }
+	  
 		 // HpcProxy client =  new HpcProxyImpl(serverURL);
 		 // HpcUserRegistrationRestService userRegistration = client.getUserRegistrationServiceProxy();
-		  HpcUserDTO userDTO = new HpcUserDTO();
+	      HpcUserRegistrationDTO userDTO = new HpcUserRegistrationDTO();
 		  HpcUser user = new HpcUser();
 		  user.setNihUserId(hpcUser.getNihUserId());
 		  user.setFirstName(hpcUser.getFirstName());
@@ -75,6 +92,21 @@ public class HpcUserController extends AbstractHpcController {
 		  dtAccount.setPassword(hpcUser.getGlobusPasswd());
 		  dtAccount.setDataTransferType(HpcDataTransferType.GLOBUS);
 		  user.setDataTransferAccount(dtAccount);
+		  userDTO.setUser(user);
+
+		  Boolean validGlobusCredentials = restTemplate.postForObject(new URI(serviceGlobusUserURL),  userDTO, Boolean.class);
+		  if(validGlobusCredentials != null)
+		  {
+			  //Boolean valid = validGlobusCredentials.getBody();
+			  if(!validGlobusCredentials)
+			  {
+				  ObjectError error = new ObjectError("nihUserId", "Invalid Globus credentials!");
+				  bindingResult.addError(error);
+				  return "enroll";
+			  }
+		  }
+		  
+		  
 		  HttpEntity<String> response = restTemplate.postForEntity(serviceURL,  userDTO, String.class);
 		  String resultString = response.getBody();
 		  HttpHeaders headers = response.getHeaders();
@@ -86,8 +118,9 @@ public class HpcUserController extends AbstractHpcController {
 	  }
 	  catch(Exception e)
 	  {
-		  model.addAttribute("registrationStatus", false);
-		  model.addAttribute("registrationOutput", "Failed to register your request due to: "+e.getMessage());
+		  ObjectError error = new ObjectError("nihUserId", "Failed to enroll: "+e.getMessage());
+		  bindingResult.addError(error);
+		  return "enroll";
 	  }
 	  return "enrollresult";
   }
