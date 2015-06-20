@@ -35,11 +35,11 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcMetadataItem']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataItem"/>
 		</jxb:bindings>
-    	<jxb:bindings node="//xsd:complexType[@name='HpcDatasetPrimaryMetadata']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcDatasetPrimaryMetadata"/>
+    	<jxb:bindings node="//xsd:complexType[@name='HpcFilePrimaryMetadata']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata"/>
 		</jxb:bindings>
-		<jxb:bindings node="//xsd:complexType[@name='HpcDatasetMetadata']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcDatasetMetadata"/>
+		<jxb:bindings node="//xsd:complexType[@name='HpcFileMetadata']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcFileMetadata"/>
 		</jxb:bindings>
     </jxb:bindings>
 

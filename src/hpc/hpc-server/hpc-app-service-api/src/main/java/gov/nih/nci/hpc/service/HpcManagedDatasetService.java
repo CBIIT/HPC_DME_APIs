@@ -14,7 +14,6 @@ import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
-import gov.nih.nci.hpc.domain.metadata.HpcDatasetMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -38,6 +37,8 @@ public interface HpcManagedDatasetService
      * @param creatorId The dataset creator user ID.
      * @param registratorId The dataset registrator user ID.
      * @param labBranch The lab / branch which this dataset is associated with.
+     * @param description The dataset description.
+     * @param comments The dataset comments.
      * @param uploadRequests List of files to upload.
      * @return The registered managed dataset ID.
      * 
@@ -45,7 +46,8 @@ public interface HpcManagedDatasetService
      */
     public String add(String name, String primaryInvestigatorId,
     			      String creatorId, String registratorId,
-    			      String labBranch, List<HpcFileUploadRequest> uploadRequests) 
+    			      String labBranch, String description, String comments,
+    			      List<HpcFileUploadRequest> uploadRequests) 
     			     throws HpcException;
     
     /**

@@ -16,8 +16,8 @@ import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
-import gov.nih.nci.hpc.domain.metadata.HpcDatasetMetadata;
-import gov.nih.nci.hpc.domain.metadata.HpcDatasetPrimaryMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.dao.HpcManagedDatasetDAO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
@@ -93,12 +93,14 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     @Override
     public String add(String name, String primaryInvestigatorId,
 		              String creatorId, String registratorId,
-		              String labBranch, List<HpcFileUploadRequest> uploadRequests) 
+		              String labBranch, String description, String comments,
+		              List<HpcFileUploadRequest> uploadRequests) 
 		             throws HpcException
     {
     	// Input validation.
     	if(name == null || primaryInvestigatorId == null || 
     	   creatorId == null || registratorId == null || labBranch == null ||
+    	   description == null || comments == null ||
     	   uploadRequests == null || uploadRequests.size() == 0) {
     	   throw new HpcException("Invalid add managed-dataset input", 
     			                  HpcErrorType.INVALID_INPUT);
@@ -115,9 +117,11 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     	managedDataset.setCreatorId(creatorId);
     	managedDataset.setRegistratorId(registratorId);
     	managedDataset.setLabBranch(labBranch);
+    	managedDataset.setDescription(description);
+    	managedDataset.setComments(comments);
     	managedDataset.setCreated(Calendar.getInstance());
     	
-    	// Attach the files to this dataset.
+       	// Attach the files to this dataset.
     	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
     		// Validate the upload file request.
     		if(!isValidFileUploadRequest(uploadRequest)) {
@@ -134,7 +138,7 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     		file.setLocation(uploadRequest.getLocations().getDestination());
     		
     		// Set the metadata.
-    		HpcDatasetMetadata metadata = new HpcDatasetMetadata();
+    		HpcFileMetadata metadata = new HpcFileMetadata();
     		metadata.setPrimaryMetadata(uploadRequest.getMetadata());
     		file.setMetadata(metadata);
     		
@@ -211,7 +215,7 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
      * @param metadata the object to be validated.
      * @return true if valid, false otherwise.
      */
-    private boolean isValidDatasetPrimaryMetadata(HpcDatasetPrimaryMetadata metadata) 
+    private boolean isValidDatasetPrimaryMetadata(HpcFilePrimaryMetadata metadata) 
     {
     	if(metadata == null ||
     	   metadata.getFundingOrganization() == null) {
@@ -220,21 +224,6 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     	}
     	return true;
     }  
-    
-    /*
-    
-    @Override
-    public boolean transferDataset(HpcManagedFile file,String username, String password) throws HpcException
-    {   
-    	try{
-        	HpcDataTransfer hdt = new GlobusOnlineDataTranfer();
-        	return hdt.transferDataset(file,username, password);    		
-    	}catch(Exception ex)
-    	{
-    		throw new HpcException("Error while transfer",HpcErrorType.INVALID_INPUT);
-    	}
-
-    }*/
 }
 
  

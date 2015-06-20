@@ -31,6 +31,12 @@
 	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileCodec"/>
 	<bean id="hpcFileLocationCodec" 
 	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileLocationCodec"/>
+	<bean id="hpcFileMetadataCodec" 
+	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileMetadataCodec"/>
+	<bean id="hpcFilePrimaryMetadataCodec" 
+	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcFilePrimaryMetadataCodec"/>
+	<bean id="hpcMetadataItemCodec" 
+	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcMetadataItemCodec"/>
 	
 	<!--  HPC Codec Provider -->
 	<bean id="hpcCodecProvider" class="gov.nih.nci.hpc.dao.mongo.codec.HpcCodecProvider">
@@ -49,6 +55,12 @@
 				       value-ref="hpcFileCodec"/>
 				<entry key="gov.nih.nci.hpc.domain.dataset.HpcFileLocation" 
 				       value-ref="hpcFileLocationCodec"/>
+				<entry key="gov.nih.nci.hpc.domain.metadata.HpcFileMetadata" 
+				       value-ref="hpcFileMetadataCodec"/>
+				<entry key="gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata" 
+				       value-ref="hpcFilePrimaryMetadataCodec"/>
+				<entry key="gov.nih.nci.hpc.domain.metadata.HpcMetadataItem" 
+				       value-ref="hpcMetadataItemCodec"/>
 			</map>
 		</constructor-arg>
 	</bean>

@@ -1,5 +1,5 @@
 /**
- * HpcManagedDatasetCodec.java
+ * HpcFileMetadataCodec.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,8 +10,8 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.domain.model.HpcManagedUser;
-import gov.nih.nci.hpc.domain.user.HpcUser;
+import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
@@ -23,19 +23,16 @@ import org.bson.codecs.EncoderContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Calendar;
-import java.util.Date;
-
 /**
  * <p>
- * HPC Managed User Codec. 
+ * HPC File Metadata Codec. 
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcManagedUserCodec extends HpcCodec<HpcManagedUser>
+public class HpcFileMetadataCodec extends HpcCodec<HpcFileMetadata>
 { 
     //---------------------------------------------------------------------//
     // Instance members
@@ -53,7 +50,7 @@ public class HpcManagedUserCodec extends HpcCodec<HpcManagedUser>
      * Default Constructor.
      * 
      */
-    public HpcManagedUserCodec()
+    public HpcFileMetadataCodec()
     {
     }   
     
@@ -62,33 +59,22 @@ public class HpcManagedUserCodec extends HpcCodec<HpcManagedUser>
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // Codec<HpcManagedUser> Interface Implementation
+    // Codec<HpcFileMetadata> Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void encode(BsonWriter writer, HpcManagedUser managedUser,
+	public void encode(BsonWriter writer, HpcFileMetadata fileMetadata,
 					   EncoderContext encoderContext) 
 	{
 		Document document = new Document();
  
 		// Extract the data from the domain object.
-		String id = managedUser.getId();
-		Calendar created = managedUser.getCreated();
-		Calendar lastUpdated = managedUser.getLastUpdated();
-		HpcUser user = managedUser.getUser();
-		
+		HpcFilePrimaryMetadata primaryMetadata = 
+				                      fileMetadata.getPrimaryMetadata();
+ 
 		// Set the data on the BSON document.
-		if(id != null) {
-		   document.put(MANAGED_USER_ID_KEY, id);
-		}
-		if(created != null) {
-		   document.put(MANAGED_USER_CREATED_KEY, created.getTime());
-		}
-		if(lastUpdated != null) {
-		   document.put(MANAGED_USER_LAST_UPDATED_KEY, lastUpdated.getTime());
-		}
-		if(user != null) {
-		   document.put(MANAGED_USER_USER_KEY, user);	
+		if(primaryMetadata != null) {
+		   document.put(FILE_METADATA_PRIMARY_METADATA_KEY, primaryMetadata);
 		}
 
 		getRegistry().get(Document.class).encode(writer, document, 
@@ -96,8 +82,8 @@ public class HpcManagedUserCodec extends HpcCodec<HpcManagedUser>
 	}
  
 	@Override
-	public HpcManagedUser decode(BsonReader reader, 
-           	                     DecoderContext decoderContext) 
+	public HpcFileMetadata decode(BsonReader reader, 
+			                      DecoderContext decoderContext) 
 	{
 		// Get the BSON Document.
 		Document document = 
@@ -105,28 +91,19 @@ public class HpcManagedUserCodec extends HpcCodec<HpcManagedUser>
 						                                  decoderContext);
 		
 		// Map the BSON Document to a domain object.
-		HpcManagedUser managedUser = new HpcManagedUser();
-		managedUser.setId(document.get(MANAGED_USER_ID_KEY, String.class));
+		HpcFileMetadata fileMetadata = new HpcFileMetadata();
+		fileMetadata.setPrimaryMetadata(
+			decodeFilePrimaryMetadata(document.get(FILE_METADATA_PRIMARY_METADATA_KEY, 
+                                                   Document.class),
+                                      decoderContext));
 		
-		Calendar created = Calendar.getInstance();
-		created.setTime(document.get(MANAGED_USER_CREATED_KEY, Date.class));
-		managedUser.setCreated(created);
-		
-		Calendar lastUpdated = Calendar.getInstance();
-		lastUpdated.setTime(document.get(MANAGED_USER_LAST_UPDATED_KEY, 
-				                         Date.class));
-		managedUser.setLastUpdated(lastUpdated);
-		managedUser.setUser(decode(document.get(MANAGED_USER_USER_KEY, 
-                                                Document.class),
-                                   decoderContext));
-		
-		return managedUser;
+		return fileMetadata;
 	}
 	
 	@Override
-	public Class<HpcManagedUser> getEncoderClass() 
+	public Class<HpcFileMetadata> getEncoderClass() 
 	{
-		return HpcManagedUser.class;
+		return HpcFileMetadata.class;
 	}
 	
     //---------------------------------------------------------------------//
@@ -134,18 +111,21 @@ public class HpcManagedUserCodec extends HpcCodec<HpcManagedUser>
     //---------------------------------------------------------------------//  
 	
     /**
-     * Decode HpcUser
+     * Decode HpcFilePrimaryMetadata
      *
-     * @param doc The HpcUser document.
-     * @param decoderContext.
-     * @return Decoded HpcUser object.
+     * @param doc The HpcFilePrimaryMetadata document
+     * @param decoderContext
+     * @return Decoded HpcFilePrimaryMetadata object.
      */
-    private HpcUser decode(Document doc, DecoderContext decoderContext)
+    private HpcFilePrimaryMetadata decodeFilePrimaryMetadata(
+    		                                 Document doc, 
+    		                                 DecoderContext decoderContext)
     {
     	BsonDocumentReader docReader = 
     		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
     				                                  getRegistry()));
-		return getRegistry().get(HpcUser.class).decode(docReader, decoderContext);
+		return getRegistry().get(HpcFilePrimaryMetadata.class).decode(docReader, 
+		                                                              decoderContext);
 	}
 }
 
