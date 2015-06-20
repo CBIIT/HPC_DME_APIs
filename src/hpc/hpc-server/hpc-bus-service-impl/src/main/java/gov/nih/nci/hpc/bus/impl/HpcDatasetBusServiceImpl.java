@@ -17,8 +17,11 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
+import gov.nih.nci.hpc.domain.model.HpcManagedUser;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
+import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserType;
+
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -111,6 +114,16 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     			                  HpcErrorType.INVALID_INPUT);	
     	}
     	
+    	// Validate the user has a valid data transfer account..
+    	HpcManagedUser managedUser = managedUserService.get(
+    			                            datasetRegistrationDTO.getCreatorId());
+    	if(managedUser == null || 
+    	   managedUser.getUser().getDataTransferAccount() == null) {
+    	   throw new HpcException("Could not find user with nihUserID=" + 
+    				              datasetRegistrationDTO.getCreatorId(),
+	                              HpcErrorType.INVALID_INPUT);		
+    	}
+    	
     	// Add the dataset to the managed collection.
     	String managedDatasetId = 
     		   managedDatasetService.add(
@@ -122,18 +135,20 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     				  datasetRegistrationDTO.getDescription(),
     				  datasetRegistrationDTO.getComments(),
     				  datasetRegistrationDTO.getUploadRequests());
-    	/*
-    	String username  = registrationInput.getUsername();
-    	String password  = registrationInput.getPassword();
     	
-    	// Transfer the datasets to their destination.
-    	// TODO - implement.
-    	logger.info("CALL Transfer");
-    	for(HpcDataset dataset : registrationInput.getDatasets()) {  
-    		logger.info("CALL Transfer for dataset "+dataset );
-    		boolean transferStatus = hpcDataTransferService.transferDataset(dataset, username, password);
-    		logger.info(" Transfer status : " + transferStatus);
-    	}*/
+    	// Extract the data transfer account credentials.
+    	String username  = managedUser.getUser().getDataTransferAccount().getUsername();
+    	String password  = managedUser.getUser().getDataTransferAccount().getPassword();
+    	
+    	// Submit data transfer requests for the files in this dataset 
+    	for(HpcFileUploadRequest fileUploadRequest : datasetRegistrationDTO.getUploadRequests()) {  
+    		logger.info("Submiting Data Transfer Request: "+ fileUploadRequest.getLocations());
+    		boolean transferStatus = 
+    				hpcDataTransferService.transferDataset(
+    						                       fileUploadRequest.getLocations(), 
+    						                       username, password);
+    		logger.info("Data Transfer status : " + transferStatus);
+    	}
     	return managedDatasetId;
     }
     
