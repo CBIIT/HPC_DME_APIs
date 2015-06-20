@@ -4,7 +4,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
-import gov.nih.nci.hpc.domain.metadata.HpcDatasetPrimaryMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.web.Application;
 
@@ -72,7 +72,7 @@ public class HpcDataRegistrationControllerTest {
 			  upload.setType(HpcFileType.UNKONWN);
 
 			  //TODO: Metadata funding organization
-			  HpcDatasetPrimaryMetadata metadata = new HpcDatasetPrimaryMetadata();
+			  HpcFilePrimaryMetadata metadata = new HpcFilePrimaryMetadata();
 			  metadata.setDataEncrypted(false);
 			  metadata.setDataContainsPII(false);
 			  metadata.setFundingOrganization("funding1");
