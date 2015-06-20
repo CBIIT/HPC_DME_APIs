@@ -9,11 +9,10 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
+
 import java.net.URI;
 import java.net.URISyntaxException;
-
-import gov.nih.nci.hpc.dto.datasetregistration.HpcDatasetDTO;
-import gov.nih.nci.hpc.dto.userregistration.HpcUserDTO;
 
 import javax.servlet.http.HttpSession;
 

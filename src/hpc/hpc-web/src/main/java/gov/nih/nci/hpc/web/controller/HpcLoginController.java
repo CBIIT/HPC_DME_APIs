@@ -9,7 +9,8 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.dto.userregistration.HpcUserDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 
 import java.net.URI;
@@ -65,7 +66,7 @@ public class HpcLoginController extends AbstractHpcController {
 		  ResponseEntity<HpcUserDTO> userEntity = restTemplate.getForEntity(uri, HpcUserDTO.class);
 		  if(userEntity == null || !userEntity.hasBody())
 		  {
-			  ObjectError error = new ObjectError("nihUserId", "UserId is not found!");
+			  ObjectError error = new ObjectError("hpcLogin", "UserId is not found!");
 			  bindingResult.addError(error);
 			  model.addAttribute("hpcLogin", hpcLogin);
 			  return "index";
@@ -78,7 +79,7 @@ public class HpcLoginController extends AbstractHpcController {
 	  {
 		  model.addAttribute("loginStatus", false);
 		  model.addAttribute("loginOutput", "Invalid login"+e.getMessage());
-		  ObjectError error = new ObjectError("nihUserId", "UserId is not found!");
+		  ObjectError error = new ObjectError("hpcLogin", "UserId is not found!");
 		  bindingResult.addError(error);
 		  model.addAttribute("hpcLogin", hpcLogin);
 		  return "index";

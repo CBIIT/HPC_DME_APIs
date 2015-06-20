@@ -7,16 +7,28 @@ public class HpcDatasetRegistration {
 	private String id;
 	@NotEmpty(message="Dataset name is required")
 	private String datasetName;
+	@NotEmpty(message="Dataset description is required")
+	private String description;
+	private String comments;
 	@NotEmpty(message="Investigator name is required")
 	private String investigatorName;
+	@NotEmpty(message="Creator name is required")
+	private String creatorName;
 	@NotEmpty(message="Lab/Branch is required")
 	private String branchName;
 	@NotEmpty(message="PII is required")
 	private String pii;
 	@NotEmpty(message="Encrypted is required")
 	private String encrypted;
+	@NotEmpty(message="Origin Endpoint is required")
 	private String originEndpoint;
+	@NotEmpty(message="Origin Endpoint File with Path is required")
 	private String originEndpointFilePath;
+	@NotEmpty(message="Funding organization is required")
+	private String fundingOrganization;
+	
+	@NotEmpty(message="Data creation facility is required")
+	private String dataCreationFacility;
 	
 	public String getId() {
 		return id;
@@ -66,7 +78,36 @@ public class HpcDatasetRegistration {
 	public void setOriginEndpointFilePath(String originEndpointFilePath) {
 		this.originEndpointFilePath = originEndpointFilePath;
 	}
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	public String getComments() {
+		return comments;
+	}
+	public void setComments(String comments) {
+		this.comments = comments;
+	}
+	public String getCreatorName() {
+		return creatorName;
+	}
+	public void setCreatorName(String creatorName) {
+		this.creatorName = creatorName;
+	}
+	public String getFundingOrganization() {
+		return fundingOrganization;
+	}
+	public void setFundingOrganization(String fundingOrganization) {
+		this.fundingOrganization = fundingOrganization;
+	}
+	public String getDataCreationFacility() {
+		return dataCreationFacility;
+	}
+	public void setDataCreationFacility(String dataCreationFacility) {
+		this.dataCreationFacility = dataCreationFacility;
+	}
 
-	
 	
 }
