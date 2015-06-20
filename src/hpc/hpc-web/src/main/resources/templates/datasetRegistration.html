@@ -102,28 +102,42 @@ function addTextbox() {
 	<div class="form-group">
 	<label class="control-label col-sm-2" for="datasetName">Name:</label>
 	  <div class="col-sm-7">
-		<label th:if="${#fields.hasErrors('datasetName')}" th:errors="*{datasetName}">NIH UserId Error</label>
+		<label th:if="${#fields.hasErrors('datasetName')}" th:errors="*{datasetName}">datasetName Error</label>
 		<input type="text" class="form-control" th:field="*{datasetName}" th:required="required" placeholder="Enter Dataset name"/>
+	  </div>
+	</div>
+	<div class="form-group">
+	<label class="control-label col-sm-2" for="datasetName">Description:</label>
+	  <div class="col-sm-7">
+		<label th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Description Error</label>
+		<textarea rows="4" col="100" class="form-control" th:field="*{description}" th:required="required" placeholder="Enter Dataset description"/>
 	  </div>
 	</div>
 	<div class="form-group">
 	  <label class="control-label col-sm-2" for="investigatorName">Investigator Name:</label>
 	  <div class="col-sm-7">
-		<label th:if="${#fields.hasErrors('investigatorName')}" th:errors="*{investigatorName}">NIH UserId Error</label>
+		<label th:if="${#fields.hasErrors('investigatorName')}" th:errors="*{investigatorName}">investigatorName Error</label>
 		<input type="text" class="form-control" th:field="*{investigatorName}" th:required="required" placeholder="Enter Investigator Name"/>
+	  </div>
+	</div>
+	<div class="form-group">
+	  <label class="control-label col-sm-2" for="investigatorName">Created By:</label>
+	  <div class="col-sm-7">
+		<label th:if="${#fields.hasErrors('creatorName')}" th:errors="*{creatorName}">creatorName Error</label>
+		<input type="text" class="form-control" th:field="*{creatorName}" th:required="required" placeholder="Enter Data Created by"/>
 	  </div>
 	</div>
 	<div class="form-group">
 	  <label class="control-label col-sm-2" for="branchName">Lab/Branch:</label>
 	  <div class="col-sm-7">
-		<label th:if="${#fields.hasErrors('branchName')}" th:errors="*{branchName}">NIH UserId Error</label>
+		<label th:if="${#fields.hasErrors('branchName')}" th:errors="*{branchName}">branchName Error</label>
 		<select th:field="*{branchName}" class="form-control" th:required="required"><option value="" selected="selected">- Select -</option><option value="ccr">Center for Cancer Research</option><option value="dermatology_branch">Dermatology Branch</option><option value="developmental_therapeutics_branch">Developmental Therapeutics Branch</option><option value="endocrine_oncology_branch">Endocrine Oncology Branch</option><option value="experimental_immunology_branch">Experimental Immunology Branch</option><option value="experimental_transplantation_and_immunology_branch">Experimental Transplantation and Immunology Branch</option><option value="genetics_branch">Genetics Branch</option><option value="genitourinary_malignancies_branch">Genitourinary Malignancies Branch</option><option value="hiv_and_aids_malignancy_branch">HIV and AIDS Malignancy Branch</option><option value="hiv_drp_host-virus_interaction_branch">HIV DRP Host-Virus Interaction Branch</option><option value="lymphoid_malignancies_branch">Lymphoid Malignancies Branch</option><option value="neuro-oncology_branch">Neuro-Oncology Branch</option><option value="pediatric_oncology_branch">Pediatric Oncology Branch</option><option value="radiation_biology_branch">Radiation Biology Branch</option><option value="radiation_oncology_branch">Radiation Oncology Branch</option><option value="surgery_branch">Surgery Branch</option><option value="thoracic_and_gastrointestinal_oncology_branch">Thoracic and Gastrointestinal Oncology Branch</option><option value="urologic_oncology_branch">Urologic Oncology Branch</option><option value="vaccine_branch">Vaccine Branch</option><option value="women&#039;s_malignancies_branch">Women&#039;s Malignancies Branch</option><option value="basic_research_laboratory">Basic Research Laboratory</option><option value="cancer_and_developmental_biology_laboratory">Cancer and Developmental Biology Laboratory</option><option value="chemical_biology_laboratory">Chemical Biology Laboratory</option><option value="gene_regulation_and_chromosome_biology_laboratory">Gene Regulation and Chromosome Biology Laboratory</option><option value="hiv_drp_retroviral_replication_laboratory">HIV DRP Retroviral Replication Laboratory</option><option value="laboratory_of_biochemistry_and_molecular_biology">Laboratory of Biochemistry and Molecular Biology</option><option value="laboratory_of_cancer_biology_and_genetics">Laboratory of Cancer Biology and Genetics</option><option value="laboratory_of_cell_and_developmental_signaling">Laboratory of Cell and Developmental Signaling</option><option value="laboratory_of_cell_biology">Laboratory of Cell Biology</option><option value="laboratory_of_cellular_and_molecular_biology">Laboratory of Cellular and Molecular Biology</option><option value="laboratory_of_cellular_oncology">Laboratory of Cellular Oncology</option><option value="laboratory_of_experimental_carcinogenesis">Laboratory of Experimental Carcinogenesis</option><option value="laboratory_of_experimental_immunology">Laboratory of Experimental Immunology</option><option value="laboratory_of_genitourinary_cancer_pathogenesis">Laboratory of Genitourinary Cancer Pathogenesis</option><option value="laboratory_of_genome_integrity">Laboratory of Genome Integrity</option><option value="laboratory_of_human_carcinogenesis">Laboratory of Human Carcinogenesis</option><option value="laboratory_of_immune_cell_biology">Laboratory of Immune Cell Biology</option><option value="laboratory_of_metabolism">Laboratory of Metabolism</option><option value="laboratory_of_molecular_biology">Laboratory of Molecular Biology</option><option value="laboratory_of_molecular_immunoregulation">Laboratory of Molecular Immunoregulation</option><option value="laboratory_of_pathology">Laboratory of Pathology</option><option value="laboratory_of_protein_dynamics_and_signaling">Laboratory of Protein Dynamics and Signaling</option><option value="laboratory_of_receptor_biology_and_gene_expression">Laboratory of Receptor Biology and Gene Expression</option><option value="laboratory_of_tumor_immunology_and_biology">Laboratory of Tumor Immunology and Biology</option><option value="macromolecular_crystallography_laboratory">Macromolecular Crystallography Laboratory</option><option value="molecular_targets_laboratory">Molecular Targets Laboratory</option><option value="structural_biophysics_laboratory">Structural Biophysics Laboratory</option><option value="cancer_and_inflammation_program">Cancer and Inflammation Program</option><option value="hiv_drug_resistance_program">HIV Drug Resistance Program</option><option value="molecular_imaging_program">Molecular Imaging Program</option><option value="mouse_cancer_genetics_program">Mouse Cancer Genetics Program</option></select>	  
 	  </div>
 	</div>
 	<div class="form-group">
 	  <label class="control-label col-sm-2" for="pii">PII:</label>
 	  <div class="col-sm-7">
-		<label th:if="${#fields.hasErrors('pii')}" th:errors="*{pii}">NIH UserId Error</label>
+		<label th:if="${#fields.hasErrors('pii')}" th:errors="*{pii}">PII Error</label>
 		<select th:field="*{pii}" class="form-control" th:required="required"><option value="" selected="selected">- Select -</option><option value="Yes">PII Present</option><option value="No">PII Not Present</option></select>	  
 	  </div>
 	</div>
@@ -131,22 +145,43 @@ function addTextbox() {
 	<div class="form-group">
 	  <label class="control-label col-sm-2" for="encrypted">Encryption:</label>
 	  <div class="col-sm-7">
-		<label th:if="${#fields.hasErrors('encrypted')}" th:errors="*{encrypted}">NIH UserId Error</label>
+		<label th:if="${#fields.hasErrors('encrypted')}" th:errors="*{encrypted}">encrypted Error</label>
 		<select th:field="*{encrypted}" class="form-control" th:required="required"><option value="" selected="selected">- Select -</option><option value="Yes">Data Encrypted</option><option value="No">Data Not Encrypted</option></select>	  
 	  </div>
 	</div>
 	<div class="form-group">
+	  <label class="control-label col-sm-2" for="fundingOrganization">Funding Organization:</label>
+	  <div class="col-sm-7">
+		<label th:if="${#fields.hasErrors('fundingOrganization')}" th:errors="*{fundingOrganization}">fundingOrganization Error</label>
+		<input type="text" class="form-control" th:field="*{fundingOrganization}" th:required="required" placeholder="Enter funding organization"/>
+	  </div>
+	</div>
+	<div class="form-group">
+	  <label class="control-label col-sm-2" for="dataCreationFacility">Data Creation Facility:</label>
+	  <div class="col-sm-7">
+		<label th:if="${#fields.hasErrors('dataCreationFacility')}" th:errors="*{dataCreationFacility}">dataCreationFacility Error</label>
+		<input type="text" class="form-control" th:field="*{dataCreationFacility}" th:required="required" placeholder="Enter Data creation facility"/>
+	  </div>
+	</div>	
+	<div class="form-group">
+	  <label class="control-label col-sm-2" for="comments">Comments:</label>
+	  <div class="col-sm-7">
+		<label th:if="${#fields.hasErrors('comments')}" th:errors="*{comments}">NIH UserId Error</label>
+		<textarea rows="4" col="100" class="form-control" th:field="*{comments}" placeholder="Enter Comments"/>
+	  </div>
+	</div>	
+	<div class="form-group">
 	<label class="control-label col-sm-2" for="datasetName">Orgin Endpoint:</label>
 	  <div class="col-sm-7">
 		<label th:if="${#fields.hasErrors('originEndpoint')}" th:errors="*{originEndpoint}">originEndpoint Error</label>
-		<input type="text" class="form-control" th:field="*{originEndpoint}" placeholder="Enter Origin Endpoint name"/>
+		<input type="text" class="form-control" th:field="*{originEndpoint}" th:required="required" placeholder="Enter Origin Endpoint name"/>
 	  </div>
 	</div>
 	<div class="form-group">
 	<label class="control-label col-sm-2" for="datasetName">Origin Endpoint file path:</label>
 	  <div class="col-sm-7">
 		<label th:if="${#fields.hasErrors('originEndpointFilePath')}" th:errors="*{originEndpointFilePath}">originEndpointFilePath Error</label>
-		<input type="text" class="form-control" th:field="*{originEndpointFilePath}" placeholder="Enter  Origin Endpoint file path"/>
+		<input type="text" class="form-control" th:field="*{originEndpointFilePath}" th:required="required" placeholder="Enter  Origin Endpoint file path"/>
         <label class="control-label">Add more files..</label>
               <button type="button" class="btn btn-default btn-number pull-right" data-type="plus" onClick="addTextbox()">
                   <span class="glyphicon glyphicon-plus"></span>

@@ -79,6 +79,9 @@ function enroll() {
 
         <div class="login-wrap">
             <p class="login-img"><i class="icon_lock_alt"></i></p>
+<ul th:if="${#fields.hasErrors('*')}">
+  <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
+</ul>
             <div class="input-group">
               <span class="input-group-addon"><i class="icon_profile"></i></span>
 			  <label th:if="${#fields.hasErrors('userId')}" th:errors="*{userId}">Login Error</label>
