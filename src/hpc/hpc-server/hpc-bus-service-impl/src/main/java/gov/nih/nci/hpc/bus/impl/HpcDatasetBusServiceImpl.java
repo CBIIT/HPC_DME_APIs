@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
 import gov.nih.nci.hpc.service.HpcManagedDatasetService;
+import gov.nih.nci.hpc.service.HpcManagedUserService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
@@ -43,6 +44,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 
     // Application service instances.
     private HpcManagedDatasetService managedDatasetService = null;
+    private HpcManagedUserService managedUserService = null;
     private HpcDataTransferService hpcDataTransferService = null;
     
     // The logger instance.
@@ -73,15 +75,18 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
      */
     private HpcDatasetBusServiceImpl(
     		          HpcManagedDatasetService managedDatasetService,
+    		          HpcManagedUserService managedUserService,
     		          HpcDataTransferService hpcDataTransferService)
                    throws HpcException
     {
-    	if(managedDatasetService == null || hpcDataTransferService ==null) {
+    	if(managedDatasetService == null || managedDatasetService == null ||
+    	   hpcDataTransferService ==null) {
      	   throw new HpcException("Null App Service(s) instance",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
     	
     	this.managedDatasetService = managedDatasetService;
+    	this.managedUserService = managedUserService;
     	this.hpcDataTransferService = hpcDataTransferService;
     }  
     
@@ -114,6 +119,8 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     				  datasetRegistrationDTO.getCreatorId(), 
     				  datasetRegistrationDTO.getRegistratorId(),
     				  datasetRegistrationDTO.getLabBranch(), 
+    				  datasetRegistrationDTO.getDescription(),
+    				  datasetRegistrationDTO.getComments(),
     				  datasetRegistrationDTO.getUploadRequests());
     	/*
     	String username  = registrationInput.getUsername();

@@ -10,10 +10,10 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
-import gov.nih.nci.hpc.transfer.HpcDataTransfer;
-import gov.nih.nci.hpc.transfer.impl.GlobusOnlineDataTranfer;
 import gov.nih.nci.hpc.ws.rs.HpcUserRestService;
 import gov.nih.nci.hpc.bus.HpcUserBusService;
+import gov.nih.nci.hpc.transfer.HpcDataTransfer;
+import gov.nih.nci.hpc.transfer.impl.GlobusOnlineDataTranfer;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.domain.user.HpcUser;
@@ -103,16 +103,15 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
     {	
 		logger.info("Invoking RS: POST /user: " + userRegistrationDTO);
 		
-		String registeredUserId = null;
 		try {
-			 registeredUserId = userBusService.registerUser(userRegistrationDTO);
+			 userBusService.registerUser(userRegistrationDTO);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /user failed:", e);
 			    return toResponse(e);
 		}
 		
-		return toCreatedResponse(registeredUserId);
+		return toCreatedResponse(userRegistrationDTO.getUser().getNihUserId());
 	}
     
     @Override
@@ -121,20 +120,6 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 		logger.info("Invoking RS: GET /user/{nihUserId}: " + nihUserId);
 		
 		HpcUserDTO userDTO = null;
-		
-		/*
-		HpcUserRegistrationDTO output = new HpcUserRegistrationDTO();
-		HpcUser user = new HpcUser();
-		user.setNihUserId("u1c056");
-		user.setFirstName("Prasad");
-		user.setLastName("Konka");
-		HpcDataTransferAccount dta = new HpcDataTransferAccount();
-		dta.setUsername("globus-user");
-		dta.setPassword("***REMOVED***");
-		user.setDataTransferAccount(dta);
-		output.setUser(user);*/
-		
-		
 		try {
 			 userDTO = userBusService.getUser(nihUserId);
 			 

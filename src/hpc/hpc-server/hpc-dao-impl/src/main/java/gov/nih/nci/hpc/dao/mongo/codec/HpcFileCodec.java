@@ -11,6 +11,9 @@
 package gov.nih.nci.hpc.dao.mongo.codec;
 
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
+import gov.nih.nci.hpc.domain.dataset.HpcFileType;
+import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
+import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
@@ -66,35 +69,39 @@ public class HpcFileCodec extends HpcCodec<HpcFile>
 	public void encode(BsonWriter writer, HpcFile file,
 					   EncoderContext encoderContext) 
 	{
-		/*
 		Document document = new Document();
 
 		// Extract the data from the POJO.
-		HpcDatasetLocation location = dataset.getLocation();
-		String id = dataset.getId();
-		String name = dataset.getName();
-		HpcDatasetType type = dataset.getType();
-		Double size = dataset.getSize();
-
+		
+		String id = file.getId();
+		HpcFileType type = file.getType();
+		Double size = file.getSize();
+		HpcFileLocation source = file.getSource();
+		HpcFileLocation location = file.getLocation();
+		HpcFileMetadata metadata = file.getMetadata();
+		
 		// Set the data on the BSON document.
-		if(location != null) {
-		   document.put(DATASET_LOCATION_KEY, location);
-		}
 		if(id != null) {
-		   document.put(DATASET_ID_KEY, id);
-		}
-		if(name != null) {
-		   document.put(DATASET_NAME_KEY, name);
+		   document.put(FILE_ID_KEY, id);
 		}
 		if(type != null) {
-		   document.put(DATASET_TYPE_KEY, type.value());
+		   document.put(FILE_TYPE_KEY, type.value());
 		}
 		if(size != null) {
-		   document.put(DATASET_SIZE_KEY, size);
+		   document.put(FILE_SIZE_KEY, size);
+		}
+		if(source != null) {
+		   document.put(FILE_SOURCE_KEY, source);
+		}
+		if(source != null) {
+		   document.put(FILE_LOCATION_KEY, location);
+		}
+		if(source != null) {
+		   document.put(FILE_METADATA_KEY, metadata);
 		}
 
 		getRegistry().get(Document.class).encode(writer, document, 
-				                                 encoderContext);*/
+				                                 encoderContext);
 	}
  
 	@Override
@@ -106,16 +113,20 @@ public class HpcFileCodec extends HpcCodec<HpcFile>
 		
 		// Map the document to HpcDataset instance.
 		HpcFile file = new HpcFile();
-		/*
-		dataset.setLocation(decode(document.get(DATASET_LOCATION_KEY, 
-				                                Document.class),
-				                   decoderContext));
-		dataset.setId(document.get(DATASET_ID_KEY, String.class));
-		dataset.setName(document.get(DATASET_NAME_KEY, String.class));
-		dataset.setType(HpcDatasetType.valueOf(
-				        document.get(DATASET_TYPE_KEY, String.class)));
-		dataset.setSize(document.get(DATASET_SIZE_KEY, Double.class));
-		*/
+		file.setId(document.get(FILE_ID_KEY, String.class));
+		file.setType(HpcFileType.valueOf(
+				        document.get(FILE_TYPE_KEY, String.class)));
+		file.setSize(document.get(FILE_SIZE_KEY, Double.class));
+		file.setSource(decodeFileLocation(document.get(FILE_SOURCE_KEY, 
+                                                       Document.class),
+                                          decoderContext));
+		file.setLocation(decodeFileLocation(document.get(FILE_LOCATION_KEY, 
+                                                         Document.class),
+                                            decoderContext));
+		file.setMetadata(decodeFileMetadata(document.get(FILE_METADATA_KEY, 
+                                                         Document.class),
+                                            decoderContext));
+		
 		return file;
 	}
 	
@@ -130,21 +141,36 @@ public class HpcFileCodec extends HpcCodec<HpcFile>
     //---------------------------------------------------------------------//  
 	
     /**
-     * Decode HpcDatasetLocation
+     * Decode HpcFileLocation
      *
-     * @param doc The HpcDatasetLocation document
+     * @param doc The HpcFileLocation document
      * @param decoderContext
      * @return Decoded HpcDatasetLocation object.
      */
-	/*
-    private HpcDatasetLocation decode(Document doc, DecoderContext decoderContext)
+    private HpcFileLocation decodeFileLocation(Document doc, DecoderContext decoderContext)
     {
     	BsonDocumentReader docReader = 
     		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
     				                                  getRegistry()));
-		return getRegistry().get(HpcDatasetLocation.class).decode(docReader, 
-		                                                          decoderContext);
-	}*/
+		return getRegistry().get(HpcFileLocation.class).decode(docReader, 
+		                                                       decoderContext);
+	}
+    
+    /**
+     * Decode HpcFileMetadata
+     *
+     * @param doc The HpcFileMetadata document
+     * @param decoderContext
+     * @return Decoded HpcDatasetLocation object.
+     */
+    private HpcFileMetadata decodeFileMetadata(Document doc, DecoderContext decoderContext)
+    {
+    	BsonDocumentReader docReader = 
+    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
+    				                                  getRegistry()));
+		return getRegistry().get(HpcFileMetadata.class).decode(docReader, 
+		                                                       decoderContext);
+	}
 }
 
  
