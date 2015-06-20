@@ -9,12 +9,20 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.domain.HpcDataset;
-import gov.nih.nci.hpc.dto.HpcDataRegistrationInput;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
+import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
+import gov.nih.nci.hpc.domain.dataset.HpcFileType;
+import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
+import gov.nih.nci.hpc.domain.metadata.HpcDatasetPrimaryMetadata;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.web.model.HpcDatasetRegistration;
 
 import java.util.List;
+import java.util.StringTokenizer;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +50,10 @@ import org.springframework.web.client.RestTemplate;
 public class HpcDataRegistrationController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.dataRegistration}")
     private String serviceURL;
+	@Value("${gov.nih.nci.hpc.nihfnlcr.name}")
+    private String destinationEndpoint;
+
+	
 
   @RequestMapping(method = RequestMethod.GET)
   public String home(Model model){
@@ -58,37 +70,56 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 	    	   dataset.getLocation().getDataTransfer() == null)
 	 */
   @RequestMapping(method = RequestMethod.POST)
-  public String register(@Valid @ModelAttribute("hpcRegistration")  HpcDatasetRegistration registration, Model model) {
+  public String register(@Valid @ModelAttribute("hpcRegistration")  HpcDatasetRegistration registration, Model model, HttpSession session) {
+	  HpcUserDTO user = (HpcUserDTO)session.getAttribute("hpcUser");
+	  //TODO: Add error message
+	  if(user == null)
+	  {
+		return "index";  
+	  }
+	  
 	  RestTemplate restTemplate = new RestTemplate();
 	  String uri = "http://localhost:7737/hpc-server/registration";
-	  HpcDataRegistrationInput input = new HpcDataRegistrationInput();
-	  input.setInvestigatorName(registration.getInvestigatorName());
-	  HpcDataset dataset = new HpcDataset();
-	  /*
-	  input.setProjectName(registration.getProjectName());
-	  HpcDataset dataset = new HpcDataset();
-	  dataset.setName("HPC Dataset");
-	  input.setUsername("xyz");
-	  input.setPassword("xyz");
-	  HpcDatasetLocation target = new HpcDatasetLocation();
-	  target.setEndpoint("nihfnlcr#gridftp1");
-	  target.setFilePath(registration.getOriginDataLocation());
-	  target.setDataTransfer(HpcDataTransfer.GLOBUS);
-	  target.setFacility(HpcFacility.SHADY_GROVE);
-	  dataset.setLocation(target);
-	  dataset.setType(HpcDatasetType.RAW_SEQUENCING);
-	  dataset.setSize(100000);
-	  input.setType(HpcManagedDataType.EXPERIMENT);
-	  HpcDatasetLocation source = new HpcDatasetLocation();
-	  source.setEndpoint(registration.getOriginDataendpoint());
-	  source.setFilePath(registration.getOriginDataLocation());
-	  dataset.setSource(source);
-	  */
-	  List<HpcDataset> sets = input.getDatasets();
-	  sets.add(dataset);
+	  HpcDatasetRegistrationDTO dto = new HpcDatasetRegistrationDTO();
+	  dto.setName(registration.getDatasetName());
+	  //TODO: Lookup Id
+	  dto.setPrimaryInvestigatorId(registration.getInvestigatorName());
+	  dto.setRegistratorId(user.getUser().getNihUserId());
+	  //TODO: ID Lookup
+	  dto.setCreatorId(registration.getCreatorName());
+	  dto.setLabBranch(registration.getBranchName());
+	  dto.setDescription(registration.getDescription());
+	  dto.setComments(registration.getComments());
+	  String files = registration.getOriginEndpointFilePath();
+	  StringTokenizer tokens = new StringTokenizer(files, ",");
+	  while(tokens.hasMoreTokens())
+	  {
+		  HpcFileUploadRequest upload = new HpcFileUploadRequest();
+		  HpcFileType fileType;
+		  HpcDataTransferLocations locations = new HpcDataTransferLocations();
+		  HpcFileLocation source = new HpcFileLocation();
+		  source.setEndpoint(registration.getOriginEndpoint());
+		  String filePath = tokens.nextToken();
+		  source.setPath(filePath);
+		  HpcFileLocation destination = new HpcFileLocation();
+		  destination.setEndpoint(destinationEndpoint);
+		  destination.setPath(filePath);
+		  upload.setLocations(locations);
+		  //TODO: Identify file type
+		  upload.setType(HpcFileType.UNKONWN);
+
+		  //TODO: Metadata funding organization
+		  HpcDatasetPrimaryMetadata metadata = new HpcDatasetPrimaryMetadata();
+		  metadata.setDataEncrypted(registration.getEncrypted().equalsIgnoreCase("Yes"));
+		  metadata.setDataContainsPII(registration.getPii().equalsIgnoreCase("Yes"));
+		  metadata.setFundingOrganization(registration.getFundingOrganization());
+		  upload.setMetadata(metadata);
+		  dto.getUploadRequests().add(upload);
+	  }
+
 	  try
 	  {
-		  HttpEntity<String> response = restTemplate.postForEntity(uri,  input, String.class);
+		  HttpEntity<String> response = restTemplate.postForEntity(uri,  dto, String.class);
 		  String resultString = response.getBody();
 		  HttpHeaders headers = response.getHeaders();
 		  String location = headers.getLocation().toString();
@@ -106,6 +137,6 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 	  model.addAttribute("registrationStatus", true);
 	  model.addAttribute("registration", registration);
 	  
-	  return "result";
+	  return "datasetRegisterResult";
   }
 }
