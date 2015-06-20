@@ -105,6 +105,8 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 		  HpcFileLocation destination = new HpcFileLocation();
 		  destination.setEndpoint(destinationEndpoint);
 		  destination.setPath(filePath);
+		  locations.setDestination(destination);
+		  locations.setSource(source);
 		  upload.setLocations(locations);
 		  //TODO: Identify file type
 		  upload.setType(HpcFileType.UNKONWN);
@@ -137,10 +139,6 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 		  model.addAttribute("registrationOutput", "Failed to register your request due to: "+e.getMessage());
 		  return "datasetRegistration";
 	  }
-	  registration.setId("12345");
-	  model.addAttribute("registrationStatus", true);
-	  model.addAttribute("registration", registration);
-	  
 	  return "datasetRegisterResult";
   }
 }

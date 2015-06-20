@@ -3,7 +3,7 @@ var linkCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
 '  <a href="dataset?id={{row.getProperty(\'name\')}}">{{row.getProperty(col.field)}}</a>' +
 '</div>';
 app.controller('MyCtrl', function($scope, $http) {
-	$http.get('/js/hpcDatasets.json').
+	$http.get('http://localhost:7737/hpc-server/dataset/96999fbf-5ec1-4e16-9dc5-e05cfc54f63e').
 	  success(function(data, status, headers, config) {
 				console.log('Success', data["gov.nih.nci.hpc.dto.datasetregistration.HpcDatasetDTO"]);
 				$scope.hpcData = data["gov.nih.nci.hpc.dto.datasetregistration.HpcDatasetDTO"];
@@ -39,7 +39,7 @@ $scope.gridOptions = {
            displayName: 'Number of files',
            enableCellEdit: false
         },        {
-           field: '10/12/2014',
+           field: 'created',
            displayName: 'Created Date',
            enableCellEdit: false
         }]
