@@ -23,6 +23,7 @@
 	
 	<bean id="hpcDatasetBusService" class="gov.nih.nci.hpc.bus.impl.HpcDatasetBusServiceImpl">
 		<constructor-arg ref="hpcManagedDatasetService"/>
+		<constructor-arg ref="hpcManagedUserService"/>
 		<constructor-arg ref="hpcDataTransferService"/>
 	</bean>
 	

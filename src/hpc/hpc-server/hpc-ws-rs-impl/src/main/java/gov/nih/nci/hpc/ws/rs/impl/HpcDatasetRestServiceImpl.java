@@ -10,18 +10,21 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
+import gov.nih.nci.hpc.ws.rs.HpcDatasetRestService;
+import gov.nih.nci.hpc.bus.HpcDatasetBusService;
 import gov.nih.nci.hpc.transfer.HpcDataTransfer;
 import gov.nih.nci.hpc.transfer.impl.GlobusOnlineDataTranfer;
-import gov.nih.nci.hpc.ws.rs.HpcDatasetRestService;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
-import gov.nih.nci.hpc.domain.metadata.HpcDatasetPrimaryMetadata;
-import gov.nih.nci.hpc.domain.metadata.HpcDatasetMetadata;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
-import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
-import gov.nih.nci.hpc.domain.dataset.HpcFileType;
-import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
+
+//import gov.nih.nci.hpc.domain.metadata.HpcDatasetPrimaryMetadata;
+//import gov.nih.nci.hpc.domain.metadata.HpcDatasetMetadata;
+//import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
+//import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
+//import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
+//import gov.nih.nci.hpc.domain.dataset.HpcFileType;
+//import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
+
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
@@ -57,11 +60,13 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     // Instance members
     //---------------------------------------------------------------------//
 
-    // The Data Registration Business Service instance.
-    //private HpcDataRegistrationService registrationBusService = null;
-	private String dynamicConfigFile = null;
+    // The Dataset Registration Business Service instance.
+    private HpcDatasetBusService datasetBusService = null;
+    
     // The URI Info context instance.
     private @Context UriInfo uriInfo;
+    
+    private String dynamicConfigFile = null;
     
 	// The Logger instance.
 	private final Logger logger = 
@@ -82,24 +87,6 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }  
     
-    /**
-     * Constructor for Spring Dependency Injection.
-     * 
-     * @param registrationBusService The registration business service.
-     * 
-     * @throws HpcException If the bus service is not provided by Spring.
-     */
-    private HpcDatasetRestServiceImpl(String registrationBusService)
-                                     throws HpcException
-    {
-    	if(registrationBusService == null) {
-    	   throw new HpcException("Null HpcDataRegistrationService instance",
-    			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
-    	}
-    	
-    	//this.registrationBusService = registrationBusService;
-    }  
-    
    /**
      * Constructor for Spring Dependency Injection.
      * 
@@ -107,15 +94,16 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
      * 
      * @throws HpcException If the bus service is not provided by Spring.
      */
-    private HpcDatasetRestServiceImpl(String registrationBusService,String dynamicConfigFile)
+    private HpcDatasetRestServiceImpl(HpcDatasetBusService datasetBusService,
+    		                          String dynamicConfigFile)
                                      throws HpcException
     {
-    	if(registrationBusService == null) {
-    	   throw new HpcException("Null HpcDataRegistrationService instance",
+    	if(datasetBusService == null || dynamicConfigFile == null) {
+    	   throw new HpcException("Null HpcDatasetBusService/confing file",
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
     	
-    	//this.registrationBusService = registrationBusService;
+    	this.datasetBusService = datasetBusService;
 		this.dynamicConfigFile = dynamicConfigFile;
     }	
     //---------------------------------------------------------------------//
@@ -129,8 +117,9 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getDataset(String id)
     {
-		logger.info("Invoking RS: GET /user/{id}");
+		logger.info("Invoking RS: GET /dataset/{id}: " + id);
 		
+		/*
 		HpcDatasetRegistrationDTO output = new HpcDatasetRegistrationDTO();
 		output.setName("dataset-name");
 		output.setPrimaryInvestigatorId("primary-investigator-id");
@@ -165,34 +154,34 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 			
 		output.getUploadRequests().add(file);
 		output.getUploadRequests().add(file);
-		
-		/*try {
-			 registrationOutput = registrationBusService.getRegisteredData(id);
+		*/
+		HpcDatasetDTO datasetDTO = null;
+		try {
+			 datasetDTO = datasetBusService.getDataset(id);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /registration failed:", e);
+			    logger.error("RS: GET /dataset/{id}: failed:", e);
 			    return toResponse(e);
-		}*/
+		}
 		
-		return toOkResponse(output);
+		return toOkResponse(datasetDTO);
 	}
     
     @Override
     public Response registerDataset(HpcDatasetRegistrationDTO datasetRegistrationDTO)
     {	
-		logger.info("Invoking RS: POST /registration");
+		logger.info("Invoking RS: POST /dataset: " + datasetRegistrationDTO);
 		
-		String registeredDatasetId = "Mock-User-ID";
-		/*try {
-			 registeredDataId = 
-		     registrationBusService.registerData(registrationInput);
+		String datasetId = null;
+		try {
+			 datasetId = datasetBusService.registerDataset(datasetRegistrationDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /registration failed:", e);
+			    logger.error("RS: POST /dataset failed:", e);
 			    return toResponse(e);
-		}*/
+		}
 		
-		return toCreatedResponse(registeredDatasetId);
+		return toCreatedResponse(datasetId);
 	}
 	
     @Override
