@@ -74,7 +74,7 @@
     </bean>
     <bean id="hpcDatasetRestService" 
           class="gov.nih.nci.hpc.ws.rs.impl.HpcDatasetRestServiceImpl">
-    	<constructor-arg value="ABC"/>
+    	<constructor-arg ref="hpcDatasetBusService"/>
 		<constructor-arg value="${dynamicfields}"/>
     </bean>
     	

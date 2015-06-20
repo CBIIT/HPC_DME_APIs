@@ -1,5 +1,5 @@
 /**
- * HpcDataTransferAccountCodec.java
+ * HpcMetadataItemCodec.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,8 +10,7 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
@@ -25,14 +24,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * HPC File Location Codec. 
+ * HPC Metadata Item Codec. 
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount>
+public class HpcMetadataItemCodec extends HpcCodec<HpcMetadataItem>
 { 
     //---------------------------------------------------------------------//
     // Instance members
@@ -50,7 +49,7 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
      * Default Constructor.
      * 
      */
-    public HpcDataTransferAccountCodec() 
+    public HpcMetadataItemCodec() 
     {
     }   
     
@@ -59,30 +58,24 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // Codec<HpcDataTransferAccount> Interface Implementation
+    // Codec<HpcMetadataItem> Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void encode(BsonWriter writer, 
-			           HpcDataTransferAccount dataTransferAccount,
+	public void encode(BsonWriter writer, HpcMetadataItem item,
 					   EncoderContext encoderContext) 
 	{
 		Document document = new Document();
 
 		// Extract the data from the POJO.
-		String username = dataTransferAccount.getUsername();
-		String password = dataTransferAccount.getPassword();
-		HpcDataTransferType dataTransferType = dataTransferAccount.getDataTransferType();
+		String key = item.getKey();
+		String value = item.getValue();
 
-		if(username != null) {
-		   document.put(DATA_TRANSFER_ACCOUNT_USERNAME_KEY, username);
+		if(key != null) {
+		   document.put(METADATA_ITEM_KEY_KEY, key);
 		}
-		if(password != null) {
-		   document.put(DATA_TRANSFER_ACCOUNT_PASSWORD_KEY, password);
-		}
-		if(dataTransferType != null) {
-		   document.put(DATA_TRANSFER_ACCOUNT_DATA_TRANSFER_TYPE_KEY, 
-				        dataTransferType.value());
+		if(value != null) {
+		   document.put(METADATA_ITEM_VALUE_KEY, value);
 		}
 		
 		getRegistry().get(Document.class).encode(writer, document, 
@@ -90,32 +83,26 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
 	}
  
 	@Override
-	public HpcDataTransferAccount decode(BsonReader reader, 
-			                             DecoderContext decoderContext) 
+	public HpcMetadataItem decode(BsonReader reader, 
+			                      DecoderContext decoderContext) 
 	{
 		// Get the BSON Document.
 		Document document = 
 	             getRegistry().get(Document.class).decode(reader, 
 	            		                                  decoderContext);
 		
-		// Map the document to HpcDataTransferAccount instance.
-		HpcDataTransferAccount dataTransferAccount = new HpcDataTransferAccount();
-		dataTransferAccount.setUsername(document.get(DATA_TRANSFER_ACCOUNT_USERNAME_KEY, 
-				                                     String.class));
-		dataTransferAccount.setPassword(document.get(DATA_TRANSFER_ACCOUNT_PASSWORD_KEY, 
-                                                     String.class));
-		dataTransferAccount.setDataTransferType(
-		    HpcDataTransferType.valueOf(
-		    		       document.get(DATA_TRANSFER_ACCOUNT_DATA_TRANSFER_TYPE_KEY, 
-                           String.class)));
+		// Map the document to HpcDataset instance.
+		HpcMetadataItem item = new HpcMetadataItem();
+		item.setKey(document.get(METADATA_ITEM_KEY_KEY, String.class));
+		item.setValue(document.get(METADATA_ITEM_VALUE_KEY, String.class));
 		
-		return dataTransferAccount;
+		return item;
 	}
 	
 	@Override
-	public Class<HpcDataTransferAccount> getEncoderClass() 
+	public Class<HpcMetadataItem> getEncoderClass() 
 	{
-		return HpcDataTransferAccount.class;
+		return HpcMetadataItem.class;
 	}
 }
 

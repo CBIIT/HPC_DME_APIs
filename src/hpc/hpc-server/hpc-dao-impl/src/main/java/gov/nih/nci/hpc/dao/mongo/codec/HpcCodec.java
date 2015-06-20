@@ -59,11 +59,48 @@ public abstract class HpcCodec<T> implements Codec<T>
 	public final static String MANAGED_DATASET_REGISTRATOR_ID_KEY = 
 			                   "registrator_id"; 
 	public final static String MANAGED_DATASET_LAB_BRANCH_KEY = "lab_branch"; 
+	public final static String MANAGED_DATASET_DESCRIPTION_KEY = "description";
+	public final static String MANAGED_DATASET_COMMENTS_KEY = "comments";
 	public final static String MANAGED_DATASET_CREATED_KEY = "created"; 
+	public final static String MANAGED_DATASET_FILES_KEY = "files";
+	public final static String MANAGED_DATASET_UPLOAD_REQUESTS_KEY = 
+			                   "upload_requests";
+	public final static String MANAGED_DATASET_DOWNLOAD_REQUESTS_KEY = 
+                               "download_requests";
+    
+    // HpcFile Document keys.
+    public final static String FILE_ID_KEY = "id"; 
+    public final static String FILE_TYPE_KEY = "type"; 
+    public final static String FILE_SIZE_KEY = "size"; 
+    public final static String FILE_SOURCE_KEY = "source";
+    public final static String FILE_LOCATION_KEY = "location";
+    public final static String FILE_METADATA_KEY = "metadata";
     
     // HpcFileLocation Document keys.
     public final static String FILE_LOCATION_ENDPOINT_KEY = "endpoint"; 
     public final static String FILE_LOCATION_PATH_KEY = "path"; 
+    
+    // HpcFileMetadata Document keys.
+    public final static String FILE_METADATA_PRIMARY_METADATA_KEY = 
+    		                   "primary_metadata";
+    
+    // HpcFileMetadata Document keys.
+    public final static String FILE_PRIMARY_METADATA_DATA_CONTAINS_PII_KEY = 
+    		                   "data_contains_pii";
+    public final static String FILE_PRIMARY_METADATA_DATA_CONTAINS_PHI_KEY = 
+                               "data_contains_phi";
+    public final static String FILE_PRIMARY_METADATA_DATA_ENCRYPTED_KEY = 
+            				   "data_encrypted";
+    public final static String FILE_PRIMARY_METADATA_DATA_COMPRESSED_KEY = 
+			                   "data_compressed";
+    public final static String FILE_PRIMARY_METADATA_FUNDING_ORGANIZATION_KEY = 
+                               "funding_organization";
+    public final static String FILE_PRIMARY_METADATA_METADATA_ITEMS_KEY = 
+                               "metadata_items";
+    
+    // HpcMetadataItem Document keys.
+    public final static String METADATA_ITEM_KEY_KEY = "key";
+    public final static String METADATA_ITEM_VALUE_KEY = "value";
     
     //---------------------------------------------------------------------//
     // Instance members

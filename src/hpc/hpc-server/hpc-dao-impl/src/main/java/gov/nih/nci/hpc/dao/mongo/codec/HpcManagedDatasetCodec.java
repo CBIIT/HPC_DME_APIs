@@ -11,10 +11,10 @@
 package gov.nih.nci.hpc.dao.mongo.codec;
 
 import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
+import gov.nih.nci.hpc.domain.dataset.HpcFile;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
 
 import org.bson.BsonReader;
-import org.bson.BsonString;
-import org.bson.BsonValue;
 import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.BsonDocumentReader;
@@ -80,9 +80,14 @@ public class HpcManagedDatasetCodec extends HpcCodec<HpcManagedDataset>
 		String creatorId = managedDataset.getCreatorId();
 		String registratorId = managedDataset.getRegistratorId();
 		String labBranch = managedDataset.getLabBranch();
+		String description = managedDataset.getDescription();
+		String comments = managedDataset.getComments();
 		Calendar created = managedDataset.getCreated();
-		
-		//List<HpcDataset> datasets = managedDataset.getDatasets();
+		List<HpcFile> files = managedDataset.getFiles();
+		List<HpcDataTransferRequest> uploadRequests = 
+				                           managedDataset.getUploadRequests();
+		List<HpcDataTransferRequest> downloadRequests = 
+                                             managedDataset.getDownloadRequests();
  
 		// Set the data on the BSON document.
 		if(id != null) {
@@ -102,15 +107,26 @@ public class HpcManagedDatasetCodec extends HpcCodec<HpcManagedDataset>
 		   document.put(MANAGED_DATASET_REGISTRATOR_ID_KEY, registratorId);
 		}
 		if(labBranch != null) {
-			   document.put(MANAGED_DATASET_LAB_BRANCH_KEY, labBranch);
+		   document.put(MANAGED_DATASET_LAB_BRANCH_KEY, labBranch);
+		}
+		if(labBranch != null) {
+		   document.put(MANAGED_DATASET_DESCRIPTION_KEY, description);
+		}
+		if(labBranch != null) {
+		   document.put(MANAGED_DATASET_COMMENTS_KEY, comments);
 		}
 		if(created != null) {
 		   document.put(MANAGED_DATASET_CREATED_KEY, created.getTime());
 		}
-		
-		//if(datasets != null && datasets.size() > 0) {
-		  // document.put(MANAGED_DATA_DATASETS_KEY, datasets);
-		//}
+		if(files != null && files.size() > 0) {
+		   document.put(MANAGED_DATASET_FILES_KEY, files);
+		}
+		if(uploadRequests != null && uploadRequests.size() > 0) {
+		   document.put(MANAGED_DATASET_UPLOAD_REQUESTS_KEY, files);
+		}
+		if(downloadRequests != null && downloadRequests.size() > 0) {
+		   document.put(MANAGED_DATASET_DOWNLOAD_REQUESTS_KEY, files);
+		}
 
 		getRegistry().get(Document.class).encode(writer, document, 
 				                                 encoderContext);
@@ -126,6 +142,8 @@ public class HpcManagedDatasetCodec extends HpcCodec<HpcManagedDataset>
 						                                  decoderContext);
 		
 		// Map the BSON Document to a domain object.
+		
+		// Map the attributes
 		HpcManagedDataset managedDataset = new HpcManagedDataset();
 		managedDataset.setId(document.get(MANAGED_DATASET_ID_KEY, 
 				                          String.class));
@@ -142,20 +160,44 @@ public class HpcManagedDatasetCodec extends HpcCodec<HpcManagedDataset>
 				    	               String.class));
 		managedDataset.setLabBranch(document.get(MANAGED_DATASET_LAB_BRANCH_KEY, 
 				                                 String.class));
+		managedDataset.setDescription(
+				          document.get(MANAGED_DATASET_DESCRIPTION_KEY, 
+                                       String.class));
+		managedDataset.setComments(
+		                  document.get(MANAGED_DATASET_COMMENTS_KEY, 
+                                       String.class));
 		
 		Calendar created = Calendar.getInstance();
 		created.setTime(document.get(MANAGED_DATASET_CREATED_KEY, Date.class));
 		managedDataset.setCreated(created);
 		
-		/*
-		List<Document> datasetDocuments = 
-				       (List<Document>) document.get(MANAGED_DATA_DATASETS_KEY);
-		if(datasetDocuments != null) {
-		   for(Document datasetDocument : datasetDocuments) {
-			   managedData.getDatasets().add(decode(datasetDocument, 
-					                                decoderContext));
+		// Map the collections.
+		List<Document> fileDocuments = 
+				       (List<Document>) document.get(MANAGED_DATASET_FILES_KEY);
+		if(fileDocuments != null) {
+		   for(Document fileDocument : fileDocuments) {
+			   managedDataset.getFiles().add(decodeFile(fileDocument, 	
+					                                    decoderContext));
 		   }
-		}*/
+		}
+		List<Document> uploadRequestDocuments = 
+			(List<Document>) document.get(MANAGED_DATASET_UPLOAD_REQUESTS_KEY);
+		if(uploadRequestDocuments != null) {
+		   for(Document uploadRequestDocument : uploadRequestDocuments) {
+		       managedDataset.getUploadRequests().add(
+		    		  decodeDataTransferRequest(uploadRequestDocument, 
+		    				                    decoderContext));
+		   }
+		}
+		List<Document> downloadRequestDocuments = 
+				(List<Document>) document.get(MANAGED_DATASET_DOWNLOAD_REQUESTS_KEY);
+			if(downloadRequestDocuments != null) {
+			   for(Document downloadRequestDocument : downloadRequestDocuments) {
+			       managedDataset.getDownloadRequests().add(
+			    		  decodeDataTransferRequest(downloadRequestDocument, 
+			    				                    decoderContext));
+			   }
+		}
 		
 		return managedDataset;
 	}
@@ -171,20 +213,37 @@ public class HpcManagedDatasetCodec extends HpcCodec<HpcManagedDataset>
     //---------------------------------------------------------------------//  
 	
     /**
-     * Decode HpcDataset
+     * Decode HpcFile
      *
-     * @param doc The HpcDataset document
+     * @param doc The HpcFile document
      * @param decoderContext
-     * @return Decoded HpcDataset object.
+     * @return Decoded HpcFile object.
      */
-   /* private HpcDataset decode(Document doc, DecoderContext decoderContext)
+    private HpcFile decodeFile(Document doc, DecoderContext decoderContext)
     {
     	BsonDocumentReader docReader = 
     		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
     				                                  getRegistry()));
-		return getRegistry().get(HpcDataset.class).decode(docReader, 
-		                                                  decoderContext);
-	}*/
+		return getRegistry().get(HpcFile.class).decode(docReader, 
+		                                               decoderContext);
+	}
+    
+    /**
+     * Decode HpcDataTransferRequest
+     *
+     * @param doc The HpcDataTransferRequest document
+     * @param decoderContext
+     * @return Decoded HpcFile object.
+     */
+    private HpcDataTransferRequest 
+            decodeDataTransferRequest(Document doc, DecoderContext decoderContext)
+    {
+    	BsonDocumentReader docReader = 
+    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
+    				                                  getRegistry()));
+		return getRegistry().get(HpcDataTransferRequest.class).decode(docReader, 
+		                                                              decoderContext);
+	}
 }
 
  
