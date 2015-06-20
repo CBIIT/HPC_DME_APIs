@@ -100,7 +100,7 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     	// Input validation.
     	if(name == null || primaryInvestigatorId == null || 
     	   creatorId == null || registratorId == null || labBranch == null ||
-    	   description == null || comments == null ||
+    	   description == null ||
     	   uploadRequests == null || uploadRequests.size() == 0) {
     	   throw new HpcException("Invalid add managed-dataset input", 
     			                  HpcErrorType.INVALID_INPUT);
