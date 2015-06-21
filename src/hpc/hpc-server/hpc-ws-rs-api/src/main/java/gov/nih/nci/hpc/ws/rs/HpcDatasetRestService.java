@@ -46,6 +46,17 @@ public interface HpcDatasetRestService
     public Response getDataset(@PathParam("id") String id); 
     
     /**
+     * GET Datasets by Creator ID.
+     *
+     * @param creatorId The dataset ID.
+     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
+     */
+    @GET
+    @Path("/dataset/creator/{id}")
+    @Produces("application/json,application/xml")
+    public Response getDatasets(@PathParam("id") String creatorId); 
+    
+    /**
      * POST registration request.
      *
      * @param registrationInput The data registration input DTO.
