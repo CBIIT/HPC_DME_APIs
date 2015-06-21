@@ -50,19 +50,21 @@ public abstract class HpcCodec<T> implements Codec<T>
 	public final static String DATA_TRANSFER_ACCOUNT_DATA_TRANSFER_TYPE_KEY = 
 			                   "data_transfer_type";
 	
-    // HpcManagedDataset Document keys.
-	public final static String MANAGED_DATASET_ID_KEY = "id"; 
-	public final static String MANAGED_DATASET_NAME_KEY = "name"; 
-	public final static String MANAGED_DATASET_PRIMARY_INVESTIGATOR_ID_KEY = 
+    // HpcdDataset Document keys.
+	public final static String DATASET_ID_KEY = "id"; 
+	public final static String DATASET_NAME_KEY = "name"; 
+	public final static String DATASET_PRIMARY_INVESTIGATOR_ID_KEY = 
 			                   "primary_investigator_id"; 
-	public final static String MANAGED_DATASET_CREATOR_ID_KEY = "creator_id"; 
-	public final static String MANAGED_DATASET_REGISTRATOR_ID_KEY = 
-			                   "registrator_id"; 
-	public final static String MANAGED_DATASET_LAB_BRANCH_KEY = "lab_branch"; 
-	public final static String MANAGED_DATASET_DESCRIPTION_KEY = "description";
-	public final static String MANAGED_DATASET_COMMENTS_KEY = "comments";
-	public final static String MANAGED_DATASET_CREATED_KEY = "created"; 
-	public final static String MANAGED_DATASET_FILES_KEY = "files";
+	public final static String DATASET_CREATOR_ID_KEY = "creator_id"; 
+	public final static String DATASET_REGISTRATOR_ID_KEY = "registrator_id"; 
+	public final static String DATASET_LAB_BRANCH_KEY = "lab_branch"; 
+	public final static String DATASET_DESCRIPTION_KEY = "description";
+	public final static String DATASET_COMMENTS_KEY = "comments";
+	public final static String DATASET_CREATED_KEY = "created"; 
+	public final static String DATASET_FILES_KEY = "files";
+	
+	// HpcdDataset Document keys.
+	public final static String MANAGED_DATASET_DATASET_KEY = "dataset";
 	public final static String MANAGED_DATASET_UPLOAD_REQUESTS_KEY = 
 			                   "upload_requests";
 	public final static String MANAGED_DATASET_DOWNLOAD_REQUESTS_KEY = 

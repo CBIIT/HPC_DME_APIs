@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
 import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
+import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserType;
 
 import com.mongodb.async.client.MongoCollection;
 import static com.mongodb.client.model.Filters.*;
@@ -26,6 +27,7 @@ import static com.mongodb.client.model.Filters.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 
 /**
  * <p>
@@ -105,11 +107,19 @@ public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
 	{
 		HpcSingleResultCallback<HpcManagedDataset> callback = 
                        new HpcSingleResultCallback<HpcManagedDataset>();
-		getCollection().find(eq(HpcCodec.MANAGED_DATASET_ID_KEY, 
-				                id)).first(callback);
+		String fieldName = HpcCodec.MANAGED_DATASET_DATASET_KEY + "." + 
+				           HpcCodec.DATASET_ID_KEY;
+		getCollection().find(eq(fieldName, id)).first(callback);
 		
 		return callback.getResult();
 	}
+	
+	public List<HpcManagedDataset> get(String userId, 
+                                       HpcDatasetUserType datasetUserType) 
+                                      throws HpcException
+    {
+		return null;
+    }
 	
     //---------------------------------------------------------------------//
     // Helper Methods

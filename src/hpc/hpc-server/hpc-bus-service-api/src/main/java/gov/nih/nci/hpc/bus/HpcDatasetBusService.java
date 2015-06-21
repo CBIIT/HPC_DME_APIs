@@ -57,9 +57,9 @@ public interface HpcDatasetBusService
      * 
      * @throws HpcException
      */
-    public List<HpcDatasetDTO> getDatasets(String userId, 
-    		                               HpcDatasetUserType datasetUserType) 
-    		                              throws HpcException;
+    public HpcDatasetDTO getDatasets(String userId, 
+    		                         HpcDatasetUserType datasetUserType) 
+    		                        throws HpcException;
 }
 
  

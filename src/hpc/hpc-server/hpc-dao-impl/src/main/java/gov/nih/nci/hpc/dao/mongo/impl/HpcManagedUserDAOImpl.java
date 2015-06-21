@@ -105,9 +105,9 @@ public class HpcManagedUserDAOImpl implements HpcManagedUserDAO
 	{
 		HpcSingleResultCallback<HpcManagedUser> callback = 
                        new HpcSingleResultCallback<HpcManagedUser>();
-		String attribute = HpcCodec.MANAGED_USER_USER_KEY + "." + 
+		String fieldName = HpcCodec.MANAGED_USER_USER_KEY + "." + 
                            HpcCodec.USER_NIH_USER_ID_KEY;
-		getCollection().find(eq(attribute, nihUserId)).first(callback);
+		getCollection().find(eq(fieldName, nihUserId)).first(callback);
 		
 		return callback.getResult();
 	}
