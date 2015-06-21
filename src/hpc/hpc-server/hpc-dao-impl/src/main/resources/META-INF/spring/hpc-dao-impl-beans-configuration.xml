@@ -27,6 +27,8 @@
 	<!--  HPC Dataset Codecs -->
 	<bean id="hpcManagedDatasetCodec" 
 	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcManagedDatasetCodec"/>
+	<bean id="hpcDatasetCodec" 
+	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcDatasetCodec"/>
 	<bean id="hpcFileCodec" 
 	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileCodec"/>
 	<bean id="hpcFileLocationCodec" 
@@ -51,6 +53,8 @@
 				       
 				<entry key="gov.nih.nci.hpc.domain.model.HpcManagedDataset" 
 				       value-ref="hpcManagedDatasetCodec"/>
+				<entry key="gov.nih.nci.hpc.domain.dataset.HpcDataset" 
+				       value-ref="hpcDatasetCodec"/>
 				<entry key="gov.nih.nci.hpc.domain.dataset.HpcFile" 
 				       value-ref="hpcFileCodec"/>
 				<entry key="gov.nih.nci.hpc.domain.dataset.HpcFileLocation" 

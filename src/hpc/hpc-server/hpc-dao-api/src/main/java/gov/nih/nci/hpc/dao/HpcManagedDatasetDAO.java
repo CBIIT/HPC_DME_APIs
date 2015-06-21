@@ -11,7 +11,10 @@
 package gov.nih.nci.hpc.dao;
 
 import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
+import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserType;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.util.List;
 
 /**
  * <p>
@@ -42,6 +45,19 @@ public interface HpcManagedDatasetDAO
      * @throws HpcException
      */
     public HpcManagedDataset get(String id) throws HpcException;
+    
+    /**
+     * Get managed datasets associated with a specific user.
+     *
+     * @param userId the user id.
+     * @param datasetUserType The type of user/dataset relationship.
+     * @return The managed dataset if found, or null otherwise.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcManagedDataset> get(String userId, 
+                                       HpcDatasetUserType datasetUserType) 
+                                      throws HpcException;
 }
 
  

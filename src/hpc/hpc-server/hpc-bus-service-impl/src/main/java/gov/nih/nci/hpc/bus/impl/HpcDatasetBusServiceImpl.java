@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
 import gov.nih.nci.hpc.domain.model.HpcManagedUser;
+import gov.nih.nci.hpc.domain.dataset.HpcDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserType;
@@ -80,7 +81,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		          HpcManagedDatasetService managedDatasetService,
     		          HpcManagedUserService managedUserService,
     		          HpcDataTransferService hpcDataTransferService)
-                   throws HpcException
+                      throws HpcException
     {
     	if(managedDatasetService == null || managedDatasetService == null ||
     	   hpcDataTransferService ==null) {
@@ -171,27 +172,22 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	
     	// Map it to the DTO.
     	HpcDatasetDTO datasetDTO = new HpcDatasetDTO();
-    	datasetDTO.setId(managedDataset.getId());
-    	datasetDTO.setName(managedDataset.getName());
-    	datasetDTO.setPrimaryInvestigatorId(managedDataset.getPrimaryInvestigatorId());
-    	datasetDTO.setCreatorId(managedDataset.getCreatorId());
-    	datasetDTO.setRegistratorId(managedDataset.getRegistratorId());
-    	datasetDTO.setLabBranch(managedDataset.getLabBranch());
-    	datasetDTO.setCreated(managedDataset.getCreated());
-    	
-    	for(HpcFile file : managedDataset.getFiles()) {
-    		datasetDTO.getFiles().add(file);
-    	}
+    	datasetDTO.getDatasets().add(managedDataset.getDataset());
     	
     	return datasetDTO;
     }
     
     @Override
-    public List<HpcDatasetDTO> getDatasets(String userId, 
-                                           HpcDatasetUserType datasetUserType) 
-                                          throws HpcException
+    public HpcDatasetDTO getDatasets(
+    		                          String userId, 
+                                      HpcDatasetUserType datasetUserType) 
+                                      throws HpcException
     {
-    	return null;
+    	HpcDatasetDTO datasetDTO = getDataset(userId);
+    	datasetDTO.getDatasets().add(datasetDTO.getDatasets().get(0));
+    	datasetDTO.getDatasets().add(datasetDTO.getDatasets().get(0));
+    	
+    	return datasetDTO;
     }
 }
 
