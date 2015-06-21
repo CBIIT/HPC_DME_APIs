@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.service.HpcManagedDatasetService;
 import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
+import gov.nih.nci.hpc.domain.dataset.HpcDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
@@ -107,19 +108,20 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     	}
     	// Create the ManagedDataset domain object.
     	HpcManagedDataset managedDataset = new HpcManagedDataset();
+    	HpcDataset dataset = new HpcDataset();
 
     	// Generate and set its ID.
-    	managedDataset.setId(UUID.randomUUID().toString());
+    	dataset.setId(UUID.randomUUID().toString());
 
     	// Populate attributes.
-    	managedDataset.setName(name);
-    	managedDataset.setPrimaryInvestigatorId(primaryInvestigatorId);
-    	managedDataset.setCreatorId(creatorId);
-    	managedDataset.setRegistratorId(registratorId);
-    	managedDataset.setLabBranch(labBranch);
-    	managedDataset.setDescription(description);
-    	managedDataset.setComments(comments);
-    	managedDataset.setCreated(Calendar.getInstance());
+    	dataset.setName(name);
+    	dataset.setPrimaryInvestigatorId(primaryInvestigatorId);
+    	dataset.setCreatorId(creatorId);
+    	dataset.setRegistratorId(registratorId);
+    	dataset.setLabBranch(labBranch);
+    	dataset.setDescription(description);
+    	dataset.setComments(comments);
+    	dataset.setCreated(Calendar.getInstance());
     	
        	// Attach the files to this dataset.
     	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
@@ -143,13 +145,14 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     		file.setMetadata(metadata);
     		
     		// Add the managed file to the dataset.
-    		managedDataset.getFiles().add(file);
+    		dataset.getFiles().add(file);
     	}
+    	managedDataset.setDataset(dataset);
     	
     	// Persist to Mongo.
     	managedDatasetDAO.add(managedDataset);
     	
-    	return managedDataset.getId();
+    	return managedDataset.getDataset().getId();
     }
     
     @Override
@@ -162,7 +165,7 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     			                       HpcErrorType.INVALID_INPUT);
     	     }
     	} catch(IllegalArgumentException e) {
-    		    throw new HpcException("Invalid managed date ID", 
+    		    throw new HpcException("Invalid UUID: " + id, 
                                        HpcErrorType.INVALID_INPUT, e);
     	}
     	

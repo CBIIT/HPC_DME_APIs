@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.transfer.HpcDataTransfer;
 import gov.nih.nci.hpc.transfer.impl.GlobusOnlineDataTranfer;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
+import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserType;
 
 //import gov.nih.nci.hpc.domain.metadata.HpcDatasetPrimaryMetadata;
 //import gov.nih.nci.hpc.domain.metadata.HpcDatasetMetadata;
@@ -43,6 +44,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * <p>
@@ -166,6 +169,24 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 		
 		return toOkResponse(datasetDTO);
 	}
+    
+    @Override
+    public Response getDatasets(String creatorId)
+    {
+    	logger.info("Invoking RS: GET /dataset/creator/{id}: " + creatorId);
+    	
+		HpcDatasetDTO datasetDTO = null;
+		try {
+			 datasetDTO = datasetBusService.getDatasets(creatorId, 
+						                                HpcDatasetUserType.CREATOR); 
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /dataset/{id}: failed:", e);
+			    return toResponse(e);
+		}
+		
+		return toOkResponse(datasetDTO);
+    }
     
     @Override
     public Response registerDataset(HpcDatasetRegistrationDTO datasetRegistrationDTO)
