@@ -32,5 +32,8 @@ public enum HpcErrorType
     MONGO_ERROR,
     
     // Error related to JAXB.
-    JAXB_ERROR
+    JAXB_ERROR,
+    
+    // Internal HPC Server Error.
+    INTERNAL_ERROR
 }

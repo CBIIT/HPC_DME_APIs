@@ -37,8 +37,8 @@
         <jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferStatus']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus"/>
         </jxb:bindings>
-        <jxb:bindings node="//xsd:simpleType[@name='HpcDatasetUserType']">
-        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.dataset.HpcDatasetUserType"/>
+        <jxb:bindings node="//xsd:simpleType[@name='HpcDatasetUserAssociation']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation"/>
         </jxb:bindings>
         <jxb:bindings node="//xsd:complexType[@name='HpcDataTransferReport']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport"/>
