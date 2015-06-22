@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
+import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.dao.HpcManagedDatasetDAO;
@@ -172,6 +173,14 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     	return managedDatasetDAO.get(id);
 
     }
+    
+    @Override
+    public List<HpcManagedDataset> 
+           get(String userId, HpcDatasetUserAssociation association) 
+ 	          throws HpcException
+ 	{
+    	return managedDatasetDAO.get(userId, association);
+ 	}
     
     //---------------------------------------------------------------------//
     // Helper Methods

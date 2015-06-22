@@ -16,13 +16,20 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 	     
+	<!-- HPC Encryptor -->
+	<bean id="hpcEncryptor" class="gov.nih.nci.hpc.dao.mongo.codec.HpcEncryptor">
+		<constructor-arg value="${hpc.dao.mongo.encryptor.key}" />
+	</bean>
+	
 	<!--  HPC User Codecs -->
 	<bean id="hpcManagedUserCodec" 
 	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcManagedUserCodec"/>
 	<bean id="hpcUserCodec" 
 	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcUserCodec"/>
 	<bean id="hpcDataTransferAccountCodec" 
-	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcDataTransferAccountCodec"/>
+	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcDataTransferAccountCodec">
+		<constructor-arg ref="hpcEncryptor" />
+	</bean>
 	      
 	<!--  HPC Dataset Codecs -->
 	<bean id="hpcManagedDatasetCodec" 

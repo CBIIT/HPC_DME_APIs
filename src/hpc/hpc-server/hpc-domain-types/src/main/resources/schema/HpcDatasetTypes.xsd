@@ -42,7 +42,7 @@
   		</xsd:restriction>
 	</xsd:simpleType>
 	
-	<xsd:simpleType name="HpcDatasetUserType">
+	<xsd:simpleType name="HpcDatasetUserAssociation">
   		<xsd:restriction base="xsd:string">
     		<xsd:enumeration value="PRIMARY_INVESTIGATOR"/>
     		<xsd:enumeration value="CREATOR"/>

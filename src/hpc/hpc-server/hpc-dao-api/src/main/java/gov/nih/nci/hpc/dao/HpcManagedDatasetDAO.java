@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.dao;
 
 import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
-import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserType;
+import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -50,14 +50,14 @@ public interface HpcManagedDatasetDAO
      * Get managed datasets associated with a specific user.
      *
      * @param userId the user id.
-     * @param datasetUserType The type of user/dataset relationship.
-     * @return The managed dataset if found, or null otherwise.
+     * @param association The association between the dataset and the user.
+     * @return ManagedDataset collection, or null if no results found.
      * 
      * @throws HpcException
      */
-    public List<HpcManagedDataset> get(String userId, 
-                                       HpcDatasetUserType datasetUserType) 
-                                      throws HpcException;
+    public List<HpcManagedDataset> 
+           get(String userId, HpcDatasetUserAssociation association) 
+        	  throws HpcException;
 }
 
  

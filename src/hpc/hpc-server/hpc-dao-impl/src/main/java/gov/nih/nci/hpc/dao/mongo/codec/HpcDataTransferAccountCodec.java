@@ -13,6 +13,9 @@ package gov.nih.nci.hpc.dao.mongo.codec;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferType;
 
+import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.exception.HpcErrorType;
+
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
@@ -38,6 +41,9 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
     // Instance members
     //---------------------------------------------------------------------//
 	
+	// Encryptor.
+	HpcEncryptor encryptor = null;
+	
 	// The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -49,10 +55,30 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
     /**
      * Default Constructor.
      * 
+     * @throws HpcException Constructor is disabled.
      */
-    public HpcDataTransferAccountCodec() 
+    private HpcDataTransferAccountCodec() throws HpcException
     {
+    	throw new HpcException("Constructor Disabled",
+                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }   
+    
+    /**
+     * Constructor for Spring Dependency Injection.
+     * 
+     * @param encryptor An encryptor instance.
+     * 
+     * @throws HpcException If an encryptor instance was not provided.
+     */
+    private HpcDataTransferAccountCodec(HpcEncryptor encryptor) throws HpcException
+    {
+    	if(encryptor == null) {
+    	   throw new HpcException("Null Encryptor instance",
+    			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    	}
+    	
+    	this.encryptor = encryptor;
+    }
     
     //---------------------------------------------------------------------//
     // Methods
