@@ -99,8 +99,6 @@ function addTextbox() {
   <div class="row">
 	<h3><UL>HPC Dataset Registration</UL></h3><br/><br/>
 	<form class="form-horizontal" action="#" role="form" th:action="@{/registerDataset}" th:object="${hpcRegistration}" method="post" enctype="multipart/form-data">
-<metawidget id="metawidget">
-</metawidget>
 	<div class="form-group">
 	<label class="control-label col-sm-2" for="datasetName">Name:</label>
 	  <div class="col-sm-7">
@@ -194,6 +192,8 @@ function addTextbox() {
 	  <div id="addText" class="col-sm-7">
 	  </div>
 	</div>
+	<metawidget id="metawidget">
+	</metawidget>
 	<div class="form-group">
 	  <div class="col-sm-offset-2 col-sm-7">
 		<button type="submit" class="btn btn-lg btn-success">Register</button>
