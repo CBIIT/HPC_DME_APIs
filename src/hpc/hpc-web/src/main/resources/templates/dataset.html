@@ -117,19 +117,34 @@
 								</h2>
 							</div>
 							<!--panel-body start-->
-							<div class="panel-body">
+							<div class="panel-body" >
 								<div class="form-group">
+									<div class="col-md-6 form-group">
+										<label for="Name">UUID:</label> <label for="${dataset.id}" th:text="${dataset.id}"></label>
+									</div>
 									<div class="col-md-6 form-group">
 										<label for="Name">Name:</label> <label for="${dataset.name}" th:text="${dataset.name}"></label>
 									</div>
-									<div class="col-md-6 form-group">
-										<label for="textbox1">PI Name:</label> <label for="textbox1" th:text="${dataset.primaryInvestigatorId}"></label>
+									<div class="col-md-12 form-group">
+										<label for="Name">Description:</label> <label for="${dataset.description}" th:text="${dataset.description}"></label>
 									</div>
 									<div class="col-md-6 form-group">
-										<label for="Name">Created by:</label> <label for="${dataset.name}" th:text="${dataset.creatorId}"></label>
+										<label for="textbox1">PI Name:</label> <label for="${dataset.primaryInvestigatorId}" th:text="${dataset.primaryInvestigatorId}"></label>
 									</div>
 									<div class="col-md-6 form-group">
-										<label for="textbox1">Lab/Branch:</label> <label for="textbox1" th:text="${dataset.labBranch}"></label>
+										<label for="Name">Created by:</label> <label for="${dataset.creatorId}" th:text="${dataset.creatorId}"></label>
+									</div>
+									<div class="col-md-6 form-group">
+										<label for="Name">Created on:</label> <label for="${dataset.created}" th:text="${#calendars.format(dataset.created,'dd MMMM yyyy')}"></label>
+									</div>
+									<div class="col-md-6 form-group">
+										<label for="Name">Registered by:</label> <label for="${dataset.registratorId}" th:text="${dataset.registratorId}"></label>
+									</div>
+									<div class="col-md-6 form-group">
+										<label for="textbox1">Lab/Branch:</label> <label for="${dataset.labBranch}" th:text="${dataset.labBranch}"></label>
+									</div>
+									<div class="col-md-12 form-group">
+										<label for="textbox1">Comments:</label> <label for="${dataset.comments}" th:text="${dataset.comments}"></label>
 									</div>
 								</div>
 
@@ -150,16 +165,39 @@
 								<div class="panel-body">
 								<div class="form-group">
 									<div class="col-md-12 form-group">
-										<label for="Name">File Type:</label> <label for="${file.getFile().getType().value()}" th:text="${file.getFile().getType().value()}"></label>
+										<label for="Name">File Type:</label> <label for="${file.getType().value()}" th:text="${file.getType().value()}"></label>
 									</div>
 									<div class="col-md-12 form-group">
-										<label for="textbox1">Origin Endpoint:</label> <label for="${file.getFile().getLocation().getEndpoint()}" th:text="${file.getFile().getLocation().getEndpoint()}"></label>
+										<label for="textbox1">Origin Endpoint:</label> <label for="${file.getSource().getEndpoint()}" th:text="${file.getSource().getEndpoint()}"></label>
 									</div>
 									<div class="col-md-12 form-group">
-										<label for="Name">Origin Endpoint file path:</label> <label for="${file.getFile().getLocation().getPath()}" th:text="${file.getFile().getLocation().getPath()}"></label>
+										<label for="Name">Origin Endpoint file path:</label> <label for="${file.getSource().getPath()}" th:text="${file.getSource().getPath()}"></label>
+									</div>
+									<div class="col-md-12 form-group">
+										<label for="textbox1">Destination Endpoint:</label> <label for="${file.getLocation().getEndpoint()}" th:text="${file.getLocation().getEndpoint()}"></label>
+									</div>
+									<div class="col-md-12 form-group">
+										<label for="Name">Destination Endpoint file path:</label> <label for="${file.getLocation().getPath()}" th:text="${file.getLocation().getPath()}"></label>
+									</div>
+									<div class="panel-footer">
+								<div class="form-group">
+									<div class="col-md-12 form-group">
+										<label for="Name">PII:</label> <label for="${file.getMetadata().getPrimaryMetadata().isDataContainsPII()}" th:text="${file.getMetadata().getPrimaryMetadata().isDataContainsPII()}"></label>
+									</div>
+									<div class="col-md-12 form-group">
+										<label for="textbox1">Encrypted:</label> <label for="${file.getMetadata().getPrimaryMetadata().isDataEncrypted()}" th:text="${file.getMetadata().getPrimaryMetadata().isDataEncrypted()}"></label>
+									</div>
+									<div class="col-md-12 form-group">
+										<label for="Name">Funding Organization:</label> <label for="${file.getMetadata().getPrimaryMetadata().getFundingOrganization()}" th:text="${file.getMetadata().getPrimaryMetadata().getFundingOrganization()}"></label>
+									</div>
+									<div th:each="metadataItem : ${file.getMetadata().getPrimaryMetadata().getMetadataItems()}" class="panel panel-default">
+									<div class="col-md-12 form-group">
+										<label th:text="${metadataItem.getKey()}"></label>: <label for="${metadataItem.getKey()}" th:text="${metadataItem.getValue()}"></label>
+									</div>
 									</div>
 								</div>
-								
+								</div>
+								</div>
 								</div>
 							</div>
 						</div>
