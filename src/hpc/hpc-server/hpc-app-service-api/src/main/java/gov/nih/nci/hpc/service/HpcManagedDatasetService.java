@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
+import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -59,6 +60,19 @@ public interface HpcManagedDatasetService
      * @throws HpcException
      */
     public HpcManagedDataset get(String id) throws HpcException;
+    
+    /**
+     * Get managed datasets associated with a specific user.
+     *
+     * @param userId the user id.
+     * @param association The association between the dataset and the user.
+     * @return ManagedDataset collection, or null if no results found.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcManagedDataset> 
+           get(String userId, HpcDatasetUserAssociation association) 
+        	  throws HpcException;
 }
 
  
