@@ -12,7 +12,7 @@ package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
-import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserType;
+import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -43,22 +43,23 @@ public interface HpcDatasetBusService
      * Get a dataset by its ID.
      *
      * @param id The dataset id.
-     * @return The registered dataset DTO or null if not found.
+     * @return The dataset DTO or null if not found.
      * 
      * @throws HpcException
      */
     public HpcDatasetDTO getDataset(String id) throws HpcException;
     
     /**
-     * Get registered dataset by ID.
+     * Get managed datasets associated with a specific user.
      *
-     * @param creatorId The creator user id.
-     * @return A collection of datasets created by this user.
+     * @param userId the user id.
+     * @param association The association between the dataset and the user.
+     * @return The dataset DTO or null if not found.
      * 
      * @throws HpcException
      */
     public HpcDatasetDTO getDatasets(String userId, 
-    		                         HpcDatasetUserType datasetUserType) 
+    		                         HpcDatasetUserAssociation association) 
     		                        throws HpcException;
 }
 

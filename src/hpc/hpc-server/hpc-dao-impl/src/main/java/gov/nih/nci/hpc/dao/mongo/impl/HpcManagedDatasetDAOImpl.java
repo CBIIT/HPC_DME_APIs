@@ -19,7 +19,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
 
 import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
-import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserType;
+import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 
 import com.mongodb.async.client.MongoCollection;
 import static com.mongodb.client.model.Filters.*;
@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * <p>
@@ -40,6 +41,24 @@ import java.util.List;
 
 public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
 { 
+    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//    
+    
+    // Dataset ID field name.
+	public final static String DATASET_ID_FIELD_NAME = 
+			                   HpcCodec.MANAGED_DATASET_DATASET_KEY + "." + 
+	                           HpcCodec.DATASET_ID_KEY; 
+	public final static String PRIMARY_INVESTIGATOR_ID_FIELD_NAME = 
+                               HpcCodec.MANAGED_DATASET_DATASET_KEY + "." + 
+                               HpcCodec.DATASET_PRIMARY_INVESTIGATOR_ID_KEY; 
+	public final static String CREATOR_ID_FIELD_NAME = 
+                               HpcCodec.MANAGED_DATASET_DATASET_KEY + "." + 
+                               HpcCodec.DATASET_CREATOR_ID_KEY; 
+	public final static String REGISTRATOR_ID_FIELD_NAME = 
+                               HpcCodec.MANAGED_DATASET_DATASET_KEY + "." + 
+                               HpcCodec.DATASET_REGISTRATOR_ID_KEY; 
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -107,18 +126,45 @@ public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
 	{
 		HpcSingleResultCallback<HpcManagedDataset> callback = 
                        new HpcSingleResultCallback<HpcManagedDataset>();
-		String fieldName = HpcCodec.MANAGED_DATASET_DATASET_KEY + "." + 
-				           HpcCodec.DATASET_ID_KEY;
-		getCollection().find(eq(fieldName, id)).first(callback);
+		getCollection().find(eq(DATASET_ID_FIELD_NAME, id)).first(callback);
 		
 		return callback.getResult();
 	}
 	
 	public List<HpcManagedDataset> get(String userId, 
-                                       HpcDatasetUserType datasetUserType) 
+                                       HpcDatasetUserAssociation association) 
                                       throws HpcException
     {
-		return null;
+		// Determine the field name needed to query for the requested association.
+		String fieldName = null;
+		switch(association) {
+		       case CREATOR:
+		            fieldName = CREATOR_ID_FIELD_NAME;
+		            break;
+		            
+		       case PRIMARY_INVESTIGATOR:
+		            fieldName = PRIMARY_INVESTIGATOR_ID_FIELD_NAME;
+		            break;
+		            
+		       case REGISTRATOR:
+		            fieldName = REGISTRATOR_ID_FIELD_NAME;
+		            break;
+		            
+		       default:
+		    	   throw new HpcException("Invalid Association Value: " + 
+		                                  association.value(), 
+		                                  HpcErrorType.INTERNAL_ERROR);
+		}
+		
+		// Invoke the query.
+		List<HpcManagedDataset> managedDatasets = 
+				                new ArrayList<HpcManagedDataset>();
+		HpcSingleResultCallback<List<HpcManagedDataset>> callback = 
+                       new HpcSingleResultCallback<List<HpcManagedDataset>>();
+		getCollection().find(
+		                eq(fieldName, userId)).into(managedDatasets, callback); 
+		
+		return callback.getResult();
     }
 	
     //---------------------------------------------------------------------//

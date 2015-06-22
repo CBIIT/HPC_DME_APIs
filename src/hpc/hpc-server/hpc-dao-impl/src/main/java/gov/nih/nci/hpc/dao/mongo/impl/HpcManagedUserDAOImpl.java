@@ -39,6 +39,15 @@ import org.slf4j.LoggerFactory;
 public class HpcManagedUserDAOImpl implements HpcManagedUserDAO
 { 
     //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//    
+    
+    // Dataset ID field name.
+	public final static String NIH_USER_ID_FIELD_NAME = 
+							       HpcCodec.MANAGED_USER_USER_KEY + "." + 
+                                   HpcCodec.USER_NIH_USER_ID_KEY;
+	
+    //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 	
@@ -105,9 +114,8 @@ public class HpcManagedUserDAOImpl implements HpcManagedUserDAO
 	{
 		HpcSingleResultCallback<HpcManagedUser> callback = 
                        new HpcSingleResultCallback<HpcManagedUser>();
-		String fieldName = HpcCodec.MANAGED_USER_USER_KEY + "." + 
-                           HpcCodec.USER_NIH_USER_ID_KEY;
-		getCollection().find(eq(fieldName, nihUserId)).first(callback);
+		getCollection().find(
+		   eq(NIH_USER_ID_FIELD_NAME, nihUserId)).first(callback);
 		
 		return callback.getResult();
 	}

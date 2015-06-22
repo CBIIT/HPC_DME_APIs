@@ -21,7 +21,7 @@ import gov.nih.nci.hpc.domain.model.HpcManagedUser;
 import gov.nih.nci.hpc.domain.dataset.HpcDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
-import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserType;
+import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.exception.HpcErrorType;
@@ -164,7 +164,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     			                  HpcErrorType.INVALID_INPUT);	
     	}
     	
-    	// Get the managed data domain object.
+    	// Get the managed dataset domain object.
     	HpcManagedDataset managedDataset = managedDatasetService.get(id);
     	if(managedDataset == null) {
     	   return null;
@@ -178,14 +178,28 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     }
     
     @Override
-    public HpcDatasetDTO getDatasets(
-    		                          String userId, 
-                                      HpcDatasetUserType datasetUserType) 
-                                      throws HpcException
+    public HpcDatasetDTO getDatasets(String userId, 
+                                     HpcDatasetUserAssociation association) 
+                                     throws HpcException
     {
-    	HpcDatasetDTO datasetDTO = getDataset(userId);
-    	datasetDTO.getDatasets().add(datasetDTO.getDatasets().get(0));
-    	datasetDTO.getDatasets().add(datasetDTO.getDatasets().get(0));
+    	// Input validation.
+    	if(userId == null || association == null) {
+    	   throw new HpcException("Null user-id or association",
+    			                  HpcErrorType.INVALID_INPUT);	
+    	}
+    	
+    	// Get the managed dataset collection.
+    	List<HpcManagedDataset> managedDatasets = 
+    			                managedDatasetService.get(userId, association);
+    	if(managedDatasets == null || managedDatasets.size() == 0) {
+    	   return null;
+    	}
+    	
+    	// Map it to the DTO.
+    	HpcDatasetDTO datasetDTO = new HpcDatasetDTO();
+    	for(HpcManagedDataset managedDataset : managedDatasets) {
+    		datasetDTO.getDatasets().add(managedDataset.getDataset());
+    	}
     	
     	return datasetDTO;
     }
