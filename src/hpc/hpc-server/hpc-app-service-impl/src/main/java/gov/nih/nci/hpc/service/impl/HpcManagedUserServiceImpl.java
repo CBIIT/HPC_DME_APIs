@@ -99,6 +99,13 @@ public class HpcManagedUserServiceImpl implements HpcManagedUserService
     			                  HpcErrorType.INVALID_INPUT);
     	}
     	
+    	// Check if the user already exists.
+    	if(get(user.getNihUserId()) != null) {
+    	   throw new HpcException("User already exists: nihUserId=" + 
+    	                          user.getNihUserId(), 
+    	                          HpcErrorType.INVALID_INPUT);	
+    	}
+    	
     	// Create the ManagedDataset domain object.
     	HpcManagedUser managedUser = new HpcManagedUser();
 

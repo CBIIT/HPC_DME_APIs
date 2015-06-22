@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.exception.HpcErrorType;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
+import org.bson.types.Binary;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -101,10 +102,12 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
 		HpcDataTransferType dataTransferType = dataTransferAccount.getDataTransferType();
 
 		if(username != null) {
-		   document.put(DATA_TRANSFER_ACCOUNT_USERNAME_KEY, username);
+		   document.put(DATA_TRANSFER_ACCOUNT_USERNAME_KEY, 
+				        encryptor.encrypt(username));
 		}
 		if(password != null) {
-		   document.put(DATA_TRANSFER_ACCOUNT_PASSWORD_KEY, password);
+		   document.put(DATA_TRANSFER_ACCOUNT_PASSWORD_KEY, 
+				        encryptor.encrypt(password));
 		}
 		if(dataTransferType != null) {
 		   document.put(DATA_TRANSFER_ACCOUNT_DATA_TRANSFER_TYPE_KEY, 
@@ -126,14 +129,16 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
 		
 		// Map the document to HpcDataTransferAccount instance.
 		HpcDataTransferAccount dataTransferAccount = new HpcDataTransferAccount();
-		dataTransferAccount.setUsername(document.get(DATA_TRANSFER_ACCOUNT_USERNAME_KEY, 
-				                                     String.class));
-		dataTransferAccount.setPassword(document.get(DATA_TRANSFER_ACCOUNT_PASSWORD_KEY, 
-                                                     String.class));
+		dataTransferAccount.setUsername(
+			encryptor.decrypt(document.get(DATA_TRANSFER_ACCOUNT_USERNAME_KEY, 
+				                           Binary.class)));
+		dataTransferAccount.setPassword(
+			encryptor.decrypt(document.get(DATA_TRANSFER_ACCOUNT_PASSWORD_KEY, 
+                                           Binary.class)));
 		dataTransferAccount.setDataTransferType(
 		    HpcDataTransferType.valueOf(
-		    		       document.get(DATA_TRANSFER_ACCOUNT_DATA_TRANSFER_TYPE_KEY, 
-                           String.class)));
+		    	   document.get(DATA_TRANSFER_ACCOUNT_DATA_TRANSFER_TYPE_KEY, 
+                                String.class)));
 		
 		return dataTransferAccount;
 	}
