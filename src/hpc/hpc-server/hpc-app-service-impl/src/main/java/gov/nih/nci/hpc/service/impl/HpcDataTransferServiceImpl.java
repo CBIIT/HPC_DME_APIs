@@ -11,11 +11,12 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.service.HpcDataTransferService;
+
 import gov.nih.nci.hpc.transfer.impl.GlobusOnlineDataTranfer;
 import gov.nih.nci.hpc.transfer.HpcDataTransfer;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.exception.HpcErrorType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
         	return hdt.transferDataset(transferLocations,username, password);    		
     	}catch(Exception ex)
     	{
-    		throw new HpcException("Error while transfer",HpcErrorType.INVALID_INPUT);
+    		throw new HpcException("Error while transfer",HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
     }

@@ -29,5 +29,11 @@
 			</plugin>
 		</plugins>
 	</build>
-	<dependencies/>
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>hpc-domain-types</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
 </project>

@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.dao.mongo.codec;
 
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.exception.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 
 import org.bson.types.Binary;
 
@@ -84,7 +84,7 @@ public class HpcEncryptor
     		 
     	} catch(Exception e) {
     		    throw new HpcException("Failed to instantiate an AES Cipher", 
-    		    	                   HpcErrorType.INTERNAL_ERROR, e);
+    		    	                   HpcErrorType.UNEXPECTED_ERROR, e);
     	} 
     }
     
