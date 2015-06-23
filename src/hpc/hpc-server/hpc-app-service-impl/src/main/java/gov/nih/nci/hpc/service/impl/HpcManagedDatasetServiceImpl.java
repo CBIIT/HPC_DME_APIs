@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.service.HpcManagedDatasetService;
+
 import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
@@ -20,9 +21,9 @@ import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dao.HpcManagedDatasetDAO;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.exception.HpcErrorType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,8 +105,8 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     	   creatorId == null || registratorId == null || labBranch == null ||
     	   description == null ||
     	   uploadRequests == null || uploadRequests.size() == 0) {
-    	   throw new HpcException("Invalid add managed-dataset input", 
-    			                  HpcErrorType.INVALID_INPUT);
+    	   throw new HpcException("Invalid add dataset input", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	// Create the ManagedDataset domain object.
     	HpcManagedDataset managedDataset = new HpcManagedDataset();
@@ -128,8 +129,9 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
     		// Validate the upload file request.
     		if(!isValidFileUploadRequest(uploadRequest)) {
-    		   throw new HpcException("Invalid file upload request", 
-		                              HpcErrorType.INVALID_INPUT);
+    		   throw new HpcException("Invalid file upload request: " + 
+    		                          uploadRequest, 
+		                              HpcErrorType.INVALID_REQUEST_INPUT);
     		}
     		
     		// Map the upload request to a managed file instance.
@@ -162,12 +164,12 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     	// Input validation.
     	try {
     	     if(id == null || UUID.fromString(id) == null) {
-    	        throw new HpcException("Invalid managed date ID", 
-    			                       HpcErrorType.INVALID_INPUT);
+    	        throw new HpcException("Invalid dataset ID: " + id, 
+    			                       HpcErrorType.INVALID_REQUEST_INPUT);
     	     }
     	} catch(IllegalArgumentException e) {
     		    throw new HpcException("Invalid UUID: " + id, 
-                                       HpcErrorType.INVALID_INPUT, e);
+                                       HpcErrorType.INVALID_REQUEST_INPUT, e);
     	}
     	
     	return managedDatasetDAO.get(id);

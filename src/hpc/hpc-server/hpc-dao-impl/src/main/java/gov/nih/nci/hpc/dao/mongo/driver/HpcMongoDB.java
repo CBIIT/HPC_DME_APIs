@@ -13,7 +13,7 @@ package gov.nih.nci.hpc.dao.mongo.driver;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodecProvider;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.exception.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 
 import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoClients;

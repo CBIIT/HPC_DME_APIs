@@ -16,8 +16,8 @@ import gov.nih.nci.hpc.dao.mongo.driver.HpcSingleResultCallback;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.exception.HpcErrorType;
 
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 
@@ -153,7 +153,7 @@ public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
 		       default:
 		    	   throw new HpcException("Invalid Association Value: " + 
 		                                  association.value(), 
-		                                  HpcErrorType.INTERNAL_ERROR);
+		                                  HpcErrorType.UNEXPECTED_ERROR);
 		}
 		
 		// Invoke the query.

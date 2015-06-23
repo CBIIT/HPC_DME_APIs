@@ -11,12 +11,13 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcUserBusService;
+
 import gov.nih.nci.hpc.service.HpcManagedUserService;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.domain.model.HpcManagedUser;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.exception.HpcErrorType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +95,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	// Input validation.
     	if(userRegistrationDTO == null) {
     	   throw new HpcException("Null HpcUserRegistrationDTO",
-    			                  HpcErrorType.INVALID_INPUT);	
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
     	// Add the user to the managed collection.
@@ -109,7 +110,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	// Input validation.
     	if(nihUserId == null) {
     	   throw new HpcException("Null NIH User ID",
-    			                  HpcErrorType.INVALID_INPUT);	
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
     	// Get the managed data domain object.

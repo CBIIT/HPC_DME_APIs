@@ -30,6 +30,11 @@
             			</goals>
             			<configuration>
                 			<xsdOptions>
+                				<xsdOption>
+                        			<xsd>src/main/resources/schema/HpcErrorTypes.xsd</xsd>
+                        			<packagename>gov.nih.nci.hpc.domain.error</packagename>
+                        			<bindingFile>src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
+                    			</xsdOption>
                     			<xsdOption>
                         			<xsd>src/main/resources/schema/HpcUserTypes.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.domain.user</packagename>
@@ -45,7 +50,6 @@
                         			<packagename>gov.nih.nci.hpc.domain.dataset</packagename>
                         			<bindingFile>src/main/resources/schema/hpc-domain-types-dataset-types-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
-                    			
                 			</xsdOptions>
             			</configuration>
         			</execution>
@@ -59,6 +63,7 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package>
+						    gov.nih.nci.hpc.domain.error,
 							gov.nih.nci.hpc.domain.user,
 							gov.nih.nci.hpc.domain.metadata,
 							gov.nih.nci.hpc.domain.dataset

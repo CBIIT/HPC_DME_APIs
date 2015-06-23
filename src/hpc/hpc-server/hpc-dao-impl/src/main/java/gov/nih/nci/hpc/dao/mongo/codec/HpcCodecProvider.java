@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.dao.mongo.codec;
 
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.exception.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
