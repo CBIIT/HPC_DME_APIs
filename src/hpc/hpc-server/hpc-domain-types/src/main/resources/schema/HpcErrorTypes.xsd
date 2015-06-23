@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcUserTypes.xsd
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+ 
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+			xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+    		targetNamespace="http://hpc.nci.nih.gov/domain/error"
+    		elementFormDefault="unqualified">
+	
+	<xsd:simpleType name="HpcErrorType">
+  		<xsd:restriction base="xsd:string">
+  			<!-- Server Initialization / Configuration error types -->
+    		<xsd:enumeration value="SPRING_CONFIGURATION_ERROR"/>
+    		
+    		<!--  Service request Errors -->
+    		<xsd:enumeration value="INVALID_REQUEST_INPUT"/>
+    		<xsd:enumeration value="UNAUTHORIZED_REQUEST"/>
+    		<xsd:enumeration value="REQUEST_REJECTED"/>
+    		
+    		<!-- Service Implementation Errors -->
+    		<xsd:enumeration value="MONGO_ERROR"/>
+    		<xsd:enumeration value="UNEXPECTED_ERROR"/>
+    		
+    		<!--  Service Input/Request  -->
+  		</xsd:restriction>
+	</xsd:simpleType>
+	
+</xsd:schema>

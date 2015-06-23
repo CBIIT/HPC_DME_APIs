@@ -11,12 +11,13 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.service.HpcManagedUserService;
+
 import gov.nih.nci.hpc.domain.model.HpcManagedUser;
 import gov.nih.nci.hpc.domain.user.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dao.HpcManagedUserDAO;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.exception.HpcErrorType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,14 +97,14 @@ public class HpcManagedUserServiceImpl implements HpcManagedUserService
     	   user.getDataTransferAccount().getPassword() == null ||
     	   user.getDataTransferAccount().getDataTransferType() == null) {
     	   throw new HpcException("Invalid add user input", 
-    			                  HpcErrorType.INVALID_INPUT);
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
     	// Check if the user already exists.
     	if(get(user.getNihUserId()) != null) {
     	   throw new HpcException("User already exists: nihUserId=" + 
     	                          user.getNihUserId(), 
-    	                          HpcErrorType.INVALID_INPUT);	
+    	                          HpcErrorType.REQUEST_REJECTED);	
     	}
     	
     	// Create the ManagedDataset domain object.

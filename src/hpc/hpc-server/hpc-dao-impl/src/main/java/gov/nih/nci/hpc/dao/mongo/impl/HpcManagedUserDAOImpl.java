@@ -16,8 +16,8 @@ import gov.nih.nci.hpc.dao.mongo.driver.HpcSingleResultCallback;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.exception.HpcErrorType;
 
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcManagedUser;
 
 import com.mongodb.async.client.MongoCollection;

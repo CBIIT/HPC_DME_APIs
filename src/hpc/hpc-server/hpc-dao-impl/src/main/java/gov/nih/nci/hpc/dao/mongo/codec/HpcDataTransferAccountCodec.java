@@ -12,9 +12,9 @@ package gov.nih.nci.hpc.dao.mongo.codec;
 
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.exception.HpcErrorType;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
