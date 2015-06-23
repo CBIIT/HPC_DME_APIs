@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.exception.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
@@ -69,7 +69,7 @@ public abstract class HpcRestServiceImpl
      */
     protected Response toResponse(HpcException e)
     {
-    	if(e.getErrorType() == HpcErrorType.INVALID_INPUT) {
+    	if(e.getErrorType() == HpcErrorType.INVALID_REQUEST_INPUT) {
 		   return Response.status(Response.Status.BAD_REQUEST).build();
 		}
     	

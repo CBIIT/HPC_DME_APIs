@@ -13,7 +13,7 @@ package gov.nih.nci.hpc.dao.mongo.driver;
 import com.mongodb.async.SingleResultCallback;
 
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.exception.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -10,6 +10,8 @@
 
 package gov.nih.nci.hpc.exception;
 
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+
 /**
  * <p>
  * The HPC exception.

@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
+
 import gov.nih.nci.hpc.service.HpcManagedDatasetService;
 import gov.nih.nci.hpc.service.HpcManagedUserService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -22,9 +23,8 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
-
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.exception.HpcErrorType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,7 +112,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	// Input validation.
     	if(datasetRegistrationDTO == null) {
     	   throw new HpcException("Null HpcDatasetRegistrationDTO",
-    			                  HpcErrorType.INVALID_INPUT);	
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
     	// Validate the user has a valid data transfer account..
@@ -122,7 +122,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	   managedUser.getUser().getDataTransferAccount() == null) {
     	   throw new HpcException("Could not find user with nihUserID=" + 
     				              datasetRegistrationDTO.getRegistratorId(),
-	                              HpcErrorType.INVALID_INPUT);		
+	                              HpcErrorType.REQUEST_REJECTED);		
     	}
     	
     	// Add the dataset to the managed collection.
@@ -161,7 +161,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	// Input validation.
     	if(id == null) {
     	   throw new HpcException("Null Dataset ID",
-    			                  HpcErrorType.INVALID_INPUT);	
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
     	// Get the managed dataset domain object.
@@ -185,7 +185,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	// Input validation.
     	if(userId == null || association == null) {
     	   throw new HpcException("Null user-id or association",
-    			                  HpcErrorType.INVALID_INPUT);	
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
     	// Get the managed dataset collection.
