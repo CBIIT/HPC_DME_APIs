@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
@@ -41,6 +42,9 @@ public abstract class HpcRestServiceImpl
     // The URI Info context instance.
     private @Context UriInfo uriInfo;
     
+    // Enable/Disable stack trace print to exception DTO.
+    boolean stackTraceEnabled = false;
+    
 	// The Logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -50,11 +54,22 @@ public abstract class HpcRestServiceImpl
     //---------------------------------------------------------------------//
      
     /**
-     * Default Constructor.
+     * Default Constructor disabled.
      * 
      */
-    public HpcRestServiceImpl()
+    private HpcRestServiceImpl()
     {
+    }  
+    
+    /**
+     * Constructor.
+     * 
+     * @param stackTraceEnabled If set to true, stack trace will be attached to
+     *                          exception DTO.
+     */
+    protected HpcRestServiceImpl(boolean stackTraceEnabled)
+    {
+    	this.stackTraceEnabled = stackTraceEnabled;
     }  
     
     //---------------------------------------------------------------------//
@@ -62,27 +77,52 @@ public abstract class HpcRestServiceImpl
     //---------------------------------------------------------------------//
     
     /**
-     * Map HpcException to REST Response
+     * Return an error REST response instance. 
+     * Map HpcException to the appropriate HTTP code.
      *
      * @param e The HpcException
      * @return The REST response object.
      */
-    protected Response toResponse(HpcException e)
+    protected Response errorResponse(HpcException e)
     {
-    	if(e.getErrorType() == HpcErrorType.INVALID_REQUEST_INPUT) {
-		   return Response.status(Response.Status.BAD_REQUEST).build();
-		}
+    	// Map the exception to a DTO.
+    	HpcExceptionDTO exceptionDTO = new HpcExceptionDTO();
+    	exceptionDTO.setMessage(e.getMessage());
+    	exceptionDTO.setErrorType(e.getErrorType());
+    	exceptionDTO.setRequestRejectReason(e.getRequestRejectReason());
     	
-    	return Response.serverError().build();
+    	if(stackTraceEnabled) {
+    	   exceptionDTO.setStackTrace(e.getStackTraceString());
+    	}
+    	
+    	Response.ResponseBuilder responseBuilder = null;
+		switch(e.getErrorType()) {
+		       case INVALID_REQUEST_INPUT:
+		       case REQUEST_REJECTED:
+		    	   responseBuilder = 
+		    	           Response.status(Response.Status.BAD_REQUEST);	
+		    	   break;
+		    	   
+		       case UNAUTHORIZED_REQUEST:
+		    	    responseBuilder = 
+    	                    Response.status(Response.Status.UNAUTHORIZED);
+		    	    break;
+		    	    
+		       default:
+		    	   responseBuilder = 
+                   Response.status(Response.Status.INTERNAL_SERVER_ERROR);
+		}
+		
+    	return responseBuilder.entity(exceptionDTO).build();
     }
     
     /**
-     * Build a 'created' REST response instance.
+     * Build a created (HTTP 201) REST response instance.
      *
      * @param id the entity id of the created resource.
      * @return The REST response object.
      */
-    protected Response toCreatedResponse(String id)
+    protected Response createdResponse(String id)
     {
 		UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
         URI uri = uriBuilder.path(id).build();
@@ -91,17 +131,24 @@ public abstract class HpcRestServiceImpl
     }
     
     /**
-     * Build an 'ok' REST response instance.
+     * Build an 'ok' (HTTP 200) REST response instance.
      *
      * @param entity The entity to attach to the response.
+     * @param nullEntityAsNotFound If set to 'true', and entity is null - a 
+     *                             'not found' (HTTP 404) will be returned.
      * @return The REST response object.
      */
-    protected Response toOkResponse(Object entity)
+    protected Response okResponse(Object entity, boolean nullEntityAsNotFound)
     {
 		if(entity != null) {
-           return Response.ok(entity).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
+           return Response.ok(entity).
+        		           header("Access-Control-Allow-Origin", "*").
+        		           header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").
+        		           build();
+		} else if (nullEntityAsNotFound) {
+			       return Response.status(Response.Status.NOT_FOUND).build();
 		} else {
-				return Response.noContent().build();
+			    return Response.ok().build();
 		}
     }
 }

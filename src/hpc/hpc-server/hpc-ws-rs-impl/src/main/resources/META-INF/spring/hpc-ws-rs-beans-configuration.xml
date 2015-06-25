@@ -54,7 +54,8 @@
 		<property name="namespaceMap" ref="jsonNamespaceMap"/>
 	</bean>
 	<util:map id="jsonNamespaceMap" map-class="java.util.Hashtable">
-		
+		<entry key="http://hpc.nci.nih.gov/dto/error" 
+		       value="gov.nih.nci.hpc.dto.error"/>
 		<entry key="http://hpc.nci.nih.gov/dto/dataset" 
 		       value="gov.nih.nci.hpc.dto.dataset"/>
 		<entry key="http://hpc.nci.nih.gov/dto/user" 
@@ -71,10 +72,12 @@
     <bean id="hpcUserRestService" 
           class="gov.nih.nci.hpc.ws.rs.impl.HpcUserRestServiceImpl">
     	<constructor-arg ref="hpcUserBusService"/>
+    	<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}"/>
     </bean>
     <bean id="hpcDatasetRestService" 
           class="gov.nih.nci.hpc.ws.rs.impl.HpcDatasetRestServiceImpl">
     	<constructor-arg ref="hpcDatasetBusService"/>
+    	<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}"/>
 		<constructor-arg value="${dynamicfields}"/>
     </bean>
     	

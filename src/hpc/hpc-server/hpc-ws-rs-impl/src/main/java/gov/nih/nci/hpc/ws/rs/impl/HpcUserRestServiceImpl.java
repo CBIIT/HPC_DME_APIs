@@ -69,6 +69,7 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
      */
     private HpcUserRestServiceImpl() throws HpcException
     {
+    	super(false);
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }  
@@ -77,12 +78,17 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
      * Constructor for Spring Dependency Injection.
      * 
      * @param userBusService The user business service.
+     * @param stackTraceEnabled If set to true, stack trace will be attached to
+     *                          exception DTO.
      * 
-     * @throws HpcException If the bus service is not provided by Spring.
+     * @throws HpcException If parameters not provided by Spring.
      */
-    private HpcUserRestServiceImpl(HpcUserBusService userBusService)
+    private HpcUserRestServiceImpl(HpcUserBusService userBusService,
+    		                       boolean stackTraceEnabled)
                                   throws HpcException
     {
+    	super(stackTraceEnabled);
+    	
     	if(userBusService == null) {
     	   throw new HpcException("Null HpcUserBusService instance",
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -109,10 +115,10 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /user failed:", e);
-			    return toResponse(e);
+			    return errorResponse(e);
 		}
 		
-		return toCreatedResponse(userRegistrationDTO.getUser().getNihUserId());
+		return createdResponse(userRegistrationDTO.getUser().getNihUserId());
 	}
     
     @Override
@@ -126,10 +132,10 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /user/{nihUserId} failed:", e);
-			    return toResponse(e);
+			    return errorResponse(e);
 		}
 		
-		return toOkResponse(userDTO);
+		return okResponse(userDTO, true);
 	}
 	
 	@Override
