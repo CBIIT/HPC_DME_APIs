@@ -24,6 +24,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import org.slf4j.Logger;
@@ -115,14 +116,14 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Validate the user has a valid data transfer account..
+    	// Validate the user has a valid data transfer account.
     	HpcManagedUser managedUser = managedUserService.get(
     			                            datasetRegistrationDTO.getRegistratorId());
     	if(managedUser == null || 
     	   managedUser.getUser().getDataTransferAccount() == null) {
     	   throw new HpcException("Could not find user with nihUserID=" + 
     				              datasetRegistrationDTO.getRegistratorId(),
-	                              HpcErrorType.REQUEST_REJECTED);		
+	                              HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);		
     	}
     	
     	// Add the dataset to the managed collection.

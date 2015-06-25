@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.model.HpcManagedUser;
 import gov.nih.nci.hpc.domain.user.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.dao.HpcManagedUserDAO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -104,7 +105,7 @@ public class HpcManagedUserServiceImpl implements HpcManagedUserService
     	if(get(user.getNihUserId()) != null) {
     	   throw new HpcException("User already exists: nihUserId=" + 
     	                          user.getNihUserId(), 
-    	                          HpcErrorType.REQUEST_REJECTED);	
+    	                          HpcRequestRejectReason.USER_ALREADY_EXISTS);	
     	}
     	
     	// Create the ManagedDataset domain object.
