@@ -84,11 +84,11 @@ public class HpcSingleResultCallback<T> implements SingleResultCallback<T>
     	try {
     		 if(!countDownLatch.await(TIMEOUT, TimeUnit.SECONDS)) {
     	        throw new HpcException("Mongo async operation timed out", 
-    			                       HpcErrorType.MONGO_ERROR);
+    			                       HpcErrorType.DATABASE_ERROR);
     	     }
     	} catch(InterruptedException e) {
     		    throw new HpcException("Mongo async operation timed out", 
-	                                   HpcErrorType.MONGO_ERROR, e); 
+	                                   HpcErrorType.DATABASE_ERROR, e); 
     	}
     	
     	if(exception != null) {
@@ -116,7 +116,7 @@ public class HpcSingleResultCallback<T> implements SingleResultCallback<T>
     public void onResult(final T result, final Throwable t) {
     	if(t != null) {
     	   exception = new HpcException("MongoDB exception", 
-	                                    HpcErrorType.MONGO_ERROR, t);
+	                                    HpcErrorType.DATABASE_ERROR, t);
     	}
     	
     	this.result = result;

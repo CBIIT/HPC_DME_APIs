@@ -88,6 +88,11 @@
             			<configuration>
                 			<xsdOptions>
                 				<xsdOption>
+                        			<xsd>xjc-build/schema/HpcException.xsd</xsd>
+                        			<packagename>gov.nih.nci.hpc.dto.error</packagename>
+                        			<bindingFile>xjc-build/schema/hpc-dto-error-jaxb-binding.xjb</bindingFile>
+                    			</xsdOption>
+                				<xsdOption>
                         			<xsd>xjc-build/schema/HpcUser.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.dto.user</packagename>
                         			<bindingFile>xjc-build/schema/hpc-dto-user-jaxb-binding.xjb</bindingFile>
@@ -110,6 +115,7 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package>
+						gov.nih.nci.hpc.dto.error,
 							gov.nih.nci.hpc.dto.user,
 							gov.nih.nci.hpc.dto.dataset
 						</Export-Package>
