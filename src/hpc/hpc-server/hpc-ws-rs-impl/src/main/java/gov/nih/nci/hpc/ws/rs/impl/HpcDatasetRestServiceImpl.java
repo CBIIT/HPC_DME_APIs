@@ -78,6 +78,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
      */
     private HpcDatasetRestServiceImpl() throws HpcException
     {
+    	super(false);
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }  
@@ -86,13 +87,18 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
      * Constructor for Spring Dependency Injection.
      * 
      * @param registrationBusService The registration business service.
+     * @param stackTraceEnabled If set to true, stack trace will be attached to
+     *                          exception DTO.
      * 
      * @throws HpcException If the bus service is not provided by Spring.
      */
     private HpcDatasetRestServiceImpl(HpcDatasetBusService datasetBusService,
+    		                          boolean stackTraceEnabled,
     		                          String dynamicConfigFile)
                                      throws HpcException
     {
+    	super(stackTraceEnabled);
+    	
     	if(datasetBusService == null || dynamicConfigFile == null) {
     	   throw new HpcException("Null HpcDatasetBusService/confing file",
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -120,10 +126,10 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /dataset/{id}: failed:", e);
-			    return toResponse(e);
+			    return errorResponse(e);
 		}
 		
-		return toOkResponse(datasetDTO);
+		return okResponse(datasetDTO, true);
 	}
     
     @Override
@@ -139,10 +145,10 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /dataset/creator/{id}: failed:", e);
-			    return toResponse(e);
+			    return errorResponse(e);
 		}
 		
-		return toOkResponse(datasetDTO);
+		return okResponse(datasetDTO, true);
     }
     
     @Override
@@ -156,17 +162,17 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /dataset failed:", e);
-			    return toResponse(e);
+			    return errorResponse(e);
 		}
 		
-		return toCreatedResponse(datasetId);
+		return createdResponse(datasetId);
 	}
 	
     @Override
     public Response checkDataTransferStatus(String submissionId)
     {	
     	HpcDataTransfer hdt = new GlobusOnlineDataTranfer();		
-		return toCreatedResponse(hdt.getTransferStatus(submissionId));
+		return createdResponse(hdt.getTransferStatus(submissionId));
 	}
 	
     @Override

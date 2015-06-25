@@ -11,6 +11,9 @@
 package gov.nih.nci.hpc.exception;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 
 /**
  * <p>
@@ -29,6 +32,9 @@ public class HpcException extends Exception implements java.io.Serializable
 	
 	// The error type value.
     private HpcErrorType errorType = null;
+    
+	// The request reject reason value.
+    private HpcRequestRejectReason requestRejectReason = null;
 
     //---------------------------------------------------------------------//
     // constructors
@@ -42,7 +48,7 @@ public class HpcException extends Exception implements java.io.Serializable
     }
 
     /**
-     * Constructs a new HpcException with a given message.
+     * Constructs a new HpcException with a given message and error type.
      *
      * @param message The message for the exception, normally the cause.
      * @param errorType The type of the error, often the subsystem that is 
@@ -52,6 +58,20 @@ public class HpcException extends Exception implements java.io.Serializable
     {
         super(message);
         setErrorType(errorType);
+    }
+    
+    /**
+     * Constructs a new HpcException with a given message and a rejection reason.
+     *
+     * @param message The message for the exception, normally the cause.
+     * @param requestRejectReason The reason code for a request rejection. 
+     */
+    public HpcException(String message, 
+    		            HpcRequestRejectReason requestRejectReason) 
+    {
+        super(message);
+        setErrorType(HpcErrorType.REQUEST_REJECTED);
+        setRequestRejectReason(requestRejectReason);
     }
 
     /**
@@ -65,9 +85,10 @@ public class HpcException extends Exception implements java.io.Serializable
     {
         super(message, cause);
         
-        // Propagate the error type, if the cause is a HpcException.
+        // Propagate the error type, and reject reason if the cause is a HpcException.
         if(cause instanceof HpcException) {
            setErrorType(((HpcException) cause).getErrorType());
+           setRequestRejectReason(((HpcException) cause).getRequestRejectReason());
         }
     }
     
@@ -87,6 +108,24 @@ public class HpcException extends Exception implements java.io.Serializable
         setErrorType(errorType);
     }
     
+    /**
+     * Constructs a new HpcException with a given message, error type and
+     * a Throwable cause
+     *
+     * @param message The message for the exception.
+     * @param errorType The type of the error, often the subsystem that is 
+     *        the source of the error.
+     * @param cause The root cause Throwable.
+     */
+    public HpcException(String message, 
+    		            HpcRequestRejectReason requestRejectReason, 
+    		            Throwable cause) 
+    {
+        super(message, cause);
+        setErrorType(HpcErrorType.REQUEST_REJECTED);
+        setRequestRejectReason(requestRejectReason);
+    }
+    
     //---------------------------------------------------------------------//
     // Methods
     //---------------------------------------------------------------------//
@@ -98,7 +137,7 @@ public class HpcException extends Exception implements java.io.Serializable
     }
     
     /**
-     * Get the error type
+     * Get the error type.
      *
      * @return The error type.
      */
@@ -108,14 +147,46 @@ public class HpcException extends Exception implements java.io.Serializable
     }    
     
     /**
-     * Set the error type
+     * Set the error type.
      *
      * @param errorType The error type.
      */
     public void setErrorType(HpcErrorType errorType)
     {
         this.errorType = errorType;
-    }        
+    }   
+    
+    /**
+     * Get the request reject reason.
+     *
+     * @return The request reject reason.
+     */
+    public HpcRequestRejectReason getRequestRejectReason()
+    {
+        return requestRejectReason;
+    }    
+    
+    /**
+     * Set the request reject reason.
+     *
+     * @param requestRejectReason The request reject reason..
+     */
+    public void setRequestRejectReason(HpcRequestRejectReason requestRejectReason)
+    {
+        this.requestRejectReason = requestRejectReason;
+    }   
+    
+    /**
+     * Get the stack trace.
+     *
+     * @return The stack trace.
+     */
+    public String getStackTraceString() 
+    {
+    	StringWriter writer = new StringWriter();
+    	printStackTrace(new PrintWriter(writer));
+    	return writer.toString();
+    }
 }
 
 
