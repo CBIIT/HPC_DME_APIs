@@ -88,12 +88,12 @@
             			<configuration>
                 			<xsdOptions>
                 				<xsdOption>
-                        			<xsd>xjc-build/schema/HpcManagedUser.xsd</xsd>
+                        			<xsd>xjc-build/schema/HpcUser.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.domain.model</packagename>
                         			<bindingFile>xjc-build/schema/hpc-domain-managed-user-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
                     			<xsdOption>
-                        			<xsd>xjc-build/schema/HpcManagedDataset.xsd</xsd>
+                        			<xsd>xjc-build/schema/HpcDataset.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.domain.model</packagename>
                         			<bindingFile>xjc-build/schema/hpc-domain-managed-dataset-jaxb-binding.xjb</bindingFile>
                     			</xsdOption>
