@@ -30,14 +30,14 @@ public interface HpcDatasetDAO
     /**
      * Add dataset to the repository.
      *
-     * @param dataset The managed dataset to add to the DB.
+     * @param dataset The dataset to add to the DB.
      * 
      * @throws HpcException
      */
     public void add(HpcDataset dataset) throws HpcException;
     
     /**
-     * Get managed dataset from the repository by ID.
+     * Get dataset from the repository by ID.
      *
      * @param id The dataset ID.
      * @return The dataset if found, or null otherwise.
@@ -47,15 +47,15 @@ public interface HpcDatasetDAO
     public HpcDataset get(String id) throws HpcException;
     
     /**
-     * Get managed datasets associated with a specific user.
+     * Get datasets associated with a specific user.
      *
-     * @param userId the user id.
+     * @param nihUserId the user id.
      * @param association The association between the dataset and the user.
      * @return HpcDataset collection, or null if no results found.
      * 
      * @throws HpcException
      */
-    public List<HpcDataset> get(String userId, 
+    public List<HpcDataset> get(String nihUserId, 
     		                    HpcDatasetUserAssociation association) 
         	                   throws HpcException;
 }
