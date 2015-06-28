@@ -31,13 +31,12 @@ public interface HpcUserService
      *
      * @param nihAccount The user's NIH account.
      * @param dataTransferAccount The user's data transfer account.
-     * @return The registered user ID.
      * 
      * @throws HpcException
      */
-    public String add(HpcNihAccount nihAccount, 
-    		          HpcDataTransferAccount dataTransferAccount) 
-    		         throws HpcException;
+    public void add(HpcNihAccount nihAccount, 
+    		        HpcDataTransferAccount dataTransferAccount) 
+    		       throws HpcException;
     
     /**
      * Get user.
