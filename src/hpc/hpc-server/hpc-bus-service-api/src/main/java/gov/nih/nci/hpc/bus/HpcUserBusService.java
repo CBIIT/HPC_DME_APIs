@@ -29,12 +29,11 @@ public interface HpcUserBusService
      * Register a User.
      *
      * @param userRegistrationDTO The user registration DTO.
-     * @return The registered user ID.
      * 
      * @throws HpcException
      */
-    public String registerUser(HpcUserRegistrationDTO userRegistrationDTO) 
-    		                  throws HpcException;
+    public void registerUser(HpcUserRegistrationDTO userRegistrationDTO) 
+    		                throws HpcException;
     
     /**
      * Get a user by its NIH user id.

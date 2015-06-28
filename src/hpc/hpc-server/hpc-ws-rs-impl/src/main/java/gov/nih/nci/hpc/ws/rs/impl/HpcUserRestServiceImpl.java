@@ -17,7 +17,7 @@ import gov.nih.nci.hpc.transfer.HpcDataTransfer;
 import gov.nih.nci.hpc.transfer.impl.GlobusOnlineDataTranfer;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
-import gov.nih.nci.hpc.domain.user.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcNihAccount;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -118,7 +118,7 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return createdResponse(userRegistrationDTO.getUser().getNihUserId());
+		return createdResponse(userRegistrationDTO.getNihAccount().getUserId());
 	}
     
     @Override
@@ -143,7 +143,9 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
     {	
 		logger.info("Invoking RS: POST /validateUser");
     	HpcDataTransfer hdt = new GlobusOnlineDataTranfer(); 
-		return hdt.validateUserAccount(userRegistrationDTO.getUser().getDataTransferAccount().getUsername(), userRegistrationDTO.getUser().getDataTransferAccount().getPassword());
+		return hdt.validateUserAccount(
+				   userRegistrationDTO.getDataTransferAccount().getUsername(), 
+				   userRegistrationDTO.getDataTransferAccount().getPassword());
 	}  
 }
 
