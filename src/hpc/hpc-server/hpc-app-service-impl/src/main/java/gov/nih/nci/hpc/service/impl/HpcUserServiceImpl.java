@@ -1,5 +1,5 @@
 /**
- * HpcManagedUserServiceImpl.java
+ * HpcUserServiceImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,39 +10,39 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.service.HpcManagedUserService;
+import gov.nih.nci.hpc.service.HpcUserService;
 
-import gov.nih.nci.hpc.domain.model.HpcManagedUser;
-import gov.nih.nci.hpc.domain.user.HpcUser;
+import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcNihAccount;
+import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
-import gov.nih.nci.hpc.dao.HpcManagedUserDAO;
+import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.UUID;
 import java.util.Calendar;
 
 /**
  * <p>
- * HPC Managed User Application Service Implementation.
+ * HPC User Application Service Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcManagedUserServiceImpl implements HpcManagedUserService
+public class HpcUserServiceImpl implements HpcUserService
 {         
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
-    // The Managed User DAO instance.
-    private HpcManagedUserDAO managedUserDAO = null;
+    // The User DAO instance.
+    private HpcUserDAO userDAO = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -57,7 +57,7 @@ public class HpcManagedUserServiceImpl implements HpcManagedUserService
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcManagedUserServiceImpl() throws HpcException
+    private HpcUserServiceImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -68,15 +68,14 @@ public class HpcManagedUserServiceImpl implements HpcManagedUserService
      * 
      * @param managedUserDAO The managed user DAO instance.
      */
-    private HpcManagedUserServiceImpl(HpcManagedUserDAO managedUserDAO)
-                                     throws HpcException
+    private HpcUserServiceImpl(HpcUserDAO userDAO) throws HpcException
     {
-    	if(managedUserDAO == null) {
+    	if(userDAO == null) {
      	   throw new HpcException("Null HpcManagedDatasetDAO instance",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
     	
-    	this.managedUserDAO = managedUserDAO;
+    	this.userDAO = userDAO;
     }  
     
     //---------------------------------------------------------------------//
@@ -84,55 +83,51 @@ public class HpcManagedUserServiceImpl implements HpcManagedUserService
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcManagedUserService Interface Implementation
+    // HpcUserService Interface Implementation
     //---------------------------------------------------------------------//  
     
     @Override
-    public String add(HpcUser user) throws HpcException
+    public void add(HpcNihAccount nihAccount, 
+	                HpcDataTransferAccount dataTransferAccount) 
+	               throws HpcException
     {
     	// Input validation.
-    	if(user == null || user.getNihUserId() == null || 
-    	   user.getFirstName() == null || user.getLastName() == null ||
-    	   user.getDataTransferAccount() == null ||
-    	   user.getDataTransferAccount().getUsername() == null ||
-    	   user.getDataTransferAccount().getPassword() == null ||
-    	   user.getDataTransferAccount().getDataTransferType() == null) {
+    	if(nihAccount == null || nihAccount.getUserId() == null || 
+    	   nihAccount.getFirstName() == null || nihAccount.getLastName() == null ||
+    	   dataTransferAccount == null || 
+    	   dataTransferAccount.getUsername() == null || 
+    	   dataTransferAccount.getPassword() == null ||
+    	   dataTransferAccount.getDataTransferType() == null) {
     	   throw new HpcException("Invalid add user input", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
     	// Check if the user already exists.
-    	if(get(user.getNihUserId()) != null) {
+    	if(get(nihAccount.getUserId()) != null) {
     	   throw new HpcException("User already exists: nihUserId=" + 
-    	                          user.getNihUserId(), 
+    	                          nihAccount.getUserId(), 
     	                          HpcRequestRejectReason.USER_ALREADY_EXISTS);	
     	}
     	
-    	// Create the ManagedDataset domain object.
-    	HpcManagedUser managedUser = new HpcManagedUser();
+    	// Create the User domain object.
+    	HpcUser user = new HpcUser();
 
-    	// Generate and set its ID.
-    	managedUser.setId(UUID.randomUUID().toString());
-
-    	// Populate attributes.
-    	managedUser.setUser(user);
+    	user.setNihAccount(nihAccount);
+    	user.setDataTransferAccount(dataTransferAccount);
+    	
     	Calendar now = Calendar.getInstance();
-    	managedUser.setCreated(now);
-    	managedUser.setLastUpdated(now);
+    	user.setCreated(now);
+    	user.setLastUpdated(now);
     	
     	// Persist to Mongo.
-    	managedUserDAO.add(managedUser);
-   	
-    	return managedUser.getId();
+    	userDAO.add(user);
     }
     
     @Override
-    public HpcManagedUser get(String nihUserId) throws HpcException
+    public HpcUser get(String nihUserId) throws HpcException
     {
-    	return managedUserDAO.get(nihUserId);
+    	return userDAO.get(nihUserId);
     }
-    
-
 }
 
  
