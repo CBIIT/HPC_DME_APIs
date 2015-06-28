@@ -1,5 +1,5 @@
 /**
- * HpcDatasetCodec.java
+ * HpcFileSetCodec.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.domain.dataset.HpcDataset;
+import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 
 import org.bson.BsonReader;
@@ -29,14 +29,14 @@ import java.util.List;
 
 /**
  * <p>
- * HPC Managed Dataset Codec. 
+ * HPC File Set Codec. 
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcDatasetCodec extends HpcCodec<HpcDataset>
+public class HpcFileSetCodec extends HpcCodec<HpcFileSet>
 { 
     //---------------------------------------------------------------------//
     // Instance members
@@ -54,7 +54,7 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
      * Default Constructor.
      * 
      */
-    public HpcDatasetCodec()
+    public HpcFileSetCodec()
     {
     }   
     
@@ -63,58 +63,37 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // Codec<HpcDataset> Interface Implementation
+    // Codec<HpcFileSet> Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void encode(BsonWriter writer, HpcDataset dataset,
+	public void encode(BsonWriter writer, HpcFileSet fileSet,
 					   EncoderContext encoderContext) 
 	{
 		Document document = new Document();
  
 		// Extract the data from the domain object.
-		String id = dataset.getId();
-		String name = dataset.getName();
-		String primaryInvestigatorId = dataset.getPrimaryInvestigatorId();
-		String creatorId = dataset.getCreatorId();
-		String registratorId = dataset.getRegistratorId();
-		String labBranch = dataset.getLabBranch();
-		String description = dataset.getDescription();
-		String comments = dataset.getComments();
-		Calendar created = dataset.getCreated();
-		List<HpcFile> files = dataset.getFiles();
+		String name = fileSet.getName();
+		String description = fileSet.getDescription();
+		String comments = fileSet.getComments();
+		Calendar created = fileSet.getCreated();
+		List<HpcFile> files = fileSet.getFiles();
  
 		// Set the data on the BSON document.
-		if(id != null) {
-		   document.put(DATASET_ID_KEY, id);
-		}
 		if(name != null) {
-		   document.put(DATASET_NAME_KEY, name);
-		}
-		if(primaryInvestigatorId != null) {
-		   document.put(DATASET_PRIMARY_INVESTIGATOR_ID_KEY, 
-			            primaryInvestigatorId);
-		}
-		if(creatorId != null) {
-		   document.put(DATASET_CREATOR_ID_KEY, creatorId);
-		}
-		if(registratorId != null) {
-		   document.put(DATASET_REGISTRATOR_ID_KEY, registratorId);
-		}
-		if(labBranch != null) {
-		   document.put(DATASET_LAB_BRANCH_KEY, labBranch);
+		   document.put(FILE_SET_NAME_KEY, name);
 		}
 		if(description != null) {
-		   document.put(DATASET_DESCRIPTION_KEY, description);
+		   document.put(FILE_SET_DESCRIPTION_KEY, description);
 		}
 		if(comments != null) {
-		   document.put(DATASET_COMMENTS_KEY, comments);
+		   document.put(FILE_SET_COMMENTS_KEY, comments);
 		}
 		if(created != null) {
-		   document.put(DATASET_CREATED_KEY, created.getTime());
+		   document.put(FILE_SET_CREATED_KEY, created.getTime());
 		}
 		if(files != null && files.size() > 0) {
-		   document.put(DATASET_FILES_KEY, files);
+		   document.put(FILE_SET_FILES_KEY, files);
 		}
 
 		getRegistry().get(Document.class).encode(writer, document, 
@@ -122,7 +101,7 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 	}
  
 	@Override
-	public HpcDataset decode(BsonReader reader, 
+	public HpcFileSet decode(BsonReader reader, 
 			                 DecoderContext decoderContext) 
 	{
 		// Get the BSON Document.
@@ -131,40 +110,31 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 						                                  decoderContext);
 		
 		// Map the BSON Document to a domain object.
-		HpcDataset dataset = new HpcDataset();
-		dataset.setId(document.get(DATASET_ID_KEY, String.class));
-		dataset.setName(document.get(DATASET_NAME_KEY, String.class));
-		dataset.setPrimaryInvestigatorId(
-		           document.get(DATASET_PRIMARY_INVESTIGATOR_ID_KEY, 
-					            String.class));
-		dataset.setCreatorId(document.get(DATASET_CREATOR_ID_KEY, String.class));
-		dataset.setRegistratorId(document.get(DATASET_REGISTRATOR_ID_KEY, 
-				    	                      String.class));
-		dataset.setLabBranch(document.get(DATASET_LAB_BRANCH_KEY, 
-		                                  String.class));
-		dataset.setDescription(document.get(DATASET_DESCRIPTION_KEY, 
+		HpcFileSet fileSet = new HpcFileSet();
+		fileSet.setName(document.get(FILE_SET_NAME_KEY, String.class));
+		fileSet.setDescription(document.get(FILE_SET_DESCRIPTION_KEY, 
 				                            String.class));
-		dataset.setComments(document.get(DATASET_COMMENTS_KEY, String.class));
+		fileSet.setComments(document.get(FILE_SET_COMMENTS_KEY, String.class));
 		
 		Calendar created = Calendar.getInstance();
-		created.setTime(document.get(DATASET_CREATED_KEY, Date.class));
-		dataset.setCreated(created);
+		created.setTime(document.get(FILE_SET_CREATED_KEY, Date.class));
+		fileSet.setCreated(created);
 		
 		List<Document> fileDocuments = 
-				       (List<Document>) document.get(DATASET_FILES_KEY);
+				       (List<Document>) document.get(FILE_SET_FILES_KEY);
 		if(fileDocuments != null) {
 		   for(Document fileDocument : fileDocuments) {
-			   dataset.getFiles().add(decodeFile(fileDocument, decoderContext));
+			   fileSet.getFiles().add(decodeFile(fileDocument, decoderContext));
 		   }
 		}
 		
-		return dataset;
+		return fileSet;
 	}
 	
 	@Override
-	public Class<HpcDataset> getEncoderClass() 
+	public Class<HpcFileSet> getEncoderClass() 
 	{
-		return HpcDataset.class;
+		return HpcFileSet.class;
 	}
 	
     //---------------------------------------------------------------------//

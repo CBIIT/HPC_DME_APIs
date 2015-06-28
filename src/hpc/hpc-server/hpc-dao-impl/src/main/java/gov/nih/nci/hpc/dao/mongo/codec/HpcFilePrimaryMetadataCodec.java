@@ -79,6 +79,13 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 		Boolean dataEncrypted = filePrimaryMetadata.isDataEncrypted();
 		Boolean dataCompressed = filePrimaryMetadata.isDataCompressed();
 		String fundingOrganization = filePrimaryMetadata.getFundingOrganization();
+		String primaryInvestigatorNihUserId = 
+				      filePrimaryMetadata.getPrimaryInvestigatorNihUserId();
+		String creatorNihUserId = filePrimaryMetadata.getCreatorNihUserId();
+		String registratorNihUserId = 
+				          filePrimaryMetadata.getRegistratorNihUserId();
+		String labBranch = filePrimaryMetadata.getLabBranch();
+		String description = filePrimaryMetadata.getDescription();
 		List<HpcMetadataItem> metadataItems = filePrimaryMetadata.getMetadataItems();
 		
 		// Set the data on the BSON document.
@@ -101,6 +108,25 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 		if(fundingOrganization != null) {
 		   document.put(FILE_PRIMARY_METADATA_FUNDING_ORGANIZATION_KEY, 
 					    fundingOrganization);
+		}
+		if(primaryInvestigatorNihUserId != null) {
+			   document.put(
+			   FILE_PRIMARY_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY, 
+			   primaryInvestigatorNihUserId);
+		}
+		if(creatorNihUserId != null) {
+		   document.put(FILE_PRIMARY_METADATA_CREATOR_NIH_USER_ID_KEY, 
+				        creatorNihUserId);
+		}
+		if(registratorNihUserId != null) {
+		   document.put(FILE_PRIMARY_METADATA_REGISTRATOR_NIH_USER_ID_KEY, 
+				        registratorNihUserId);
+		}
+		if(labBranch != null) {
+		   document.put(FILE_PRIMARY_METADATA_LAB_BRANCH_KEY, labBranch);
+		}
+		if(description != null) {
+		   document.put(FILE_PRIMARY_METADATA_DESCRIPTION_KEY, description);
 		}
 		if(metadataItems != null && metadataItems.size() > 0) {
 		   document.put(FILE_PRIMARY_METADATA_METADATA_ITEMS_KEY, 
@@ -137,6 +163,21 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 		filePrimaryMetadata.setFundingOrganization(
 				   document.get(FILE_PRIMARY_METADATA_FUNDING_ORGANIZATION_KEY, 
                                 String.class));
+		filePrimaryMetadata.setPrimaryInvestigatorNihUserId(
+		    document.get(FILE_PRIMARY_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY, 
+			             String.class));
+		filePrimaryMetadata.setCreatorNihUserId(
+		    document.get(FILE_PRIMARY_METADATA_CREATOR_NIH_USER_ID_KEY, 
+						 String.class));
+		filePrimaryMetadata.setRegistratorNihUserId(
+		    document.get(FILE_PRIMARY_METADATA_REGISTRATOR_NIH_USER_ID_KEY, 
+				    	 String.class));
+		filePrimaryMetadata.setLabBranch(
+			document.get(FILE_PRIMARY_METADATA_LAB_BRANCH_KEY, 
+		                 String.class));
+		filePrimaryMetadata.setDescription(
+			document.get(FILE_PRIMARY_METADATA_DESCRIPTION_KEY, 
+				         String.class));
 		
 		// Map the collections.
 		List<Document> metadataItemDocuments = 

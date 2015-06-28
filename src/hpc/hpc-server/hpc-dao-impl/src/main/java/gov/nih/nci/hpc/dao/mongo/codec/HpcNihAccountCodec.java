@@ -1,5 +1,5 @@
 /**
- * HpcUserCodec.java
+ * HpcNihAccountCodec.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,8 +10,7 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.domain.user.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.domain.user.HpcNihAccount;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
@@ -26,14 +25,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * HPC User Codec. 
+ * HPC NIH Account Codec. 
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcUserCodec extends HpcCodec<HpcUser>
+public class HpcNihAccountCodec extends HpcCodec<HpcNihAccount>
 { 
     //---------------------------------------------------------------------//
     // Instance members
@@ -51,7 +50,7 @@ public class HpcUserCodec extends HpcCodec<HpcUser>
      * Default Constructor.
      * 
      */
-    public HpcUserCodec() 
+    public HpcNihAccountCodec() 
     {
     }   
     
@@ -60,34 +59,29 @@ public class HpcUserCodec extends HpcCodec<HpcUser>
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // Codec<HpcUser> Interface Implementation
+    // Codec<HpcNihAccount> Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void encode(BsonWriter writer, HpcUser user,
+	public void encode(BsonWriter writer, HpcNihAccount nihAccount,
 					   EncoderContext encoderContext) 
 	{
 		Document document = new Document();
 
 		// Extract the data from the POJO.
-		String nihUserId = user.getNihUserId();
-		String firstName = user.getFirstName();
-		String lastName = user.getLastName();
-		HpcDataTransferAccount dataTransferAccount = 
-				               user.getDataTransferAccount();
+		String userId = nihAccount.getUserId();
+		String firstName = nihAccount.getFirstName();
+		String lastName = nihAccount.getLastName();
 
 		// Set the data on the BSON document.
-		if(nihUserId != null) {
-		   document.put(USER_NIH_USER_ID_KEY, nihUserId);
+		if(userId != null) {
+		   document.put(NIH_ACCOUNT_USER_ID_KEY, userId);
 		}
 		if(firstName != null) {
-		   document.put(USER_FIRST_NAME_KEY, firstName);
+		   document.put(NIH_ACCOUNT_FIRST_NAME_KEY, firstName);
 		}
 		if(lastName != null) {
-		   document.put(USER_LAST_NAME_KEY, lastName);
-		}
-		if(dataTransferAccount != null) {
-		   document.put(USER_DATA_TRANSFER_ACCOUNT_KEY, dataTransferAccount);
+		   document.put(NIH_ACCOUNT_LAST_NAME_KEY, lastName);
 		}
 		
 		getRegistry().get(Document.class).encode(writer, document, 
@@ -95,48 +89,29 @@ public class HpcUserCodec extends HpcCodec<HpcUser>
 	}
  
 	@Override
-	public HpcUser decode(BsonReader reader, DecoderContext decoderContext) 
+	public HpcNihAccount decode(BsonReader reader, 
+			                    DecoderContext decoderContext) 
 	{
 		// Get the BSON Document.
 		Document document = getRegistry().get(Document.class).decode(reader, 
 				                                                     decoderContext);
 		
-		// Map the document to HpcUser instance.
-		HpcUser user = new HpcUser();
-		user.setNihUserId(document.get(USER_NIH_USER_ID_KEY, String.class));
-		user.setFirstName(document.get(USER_FIRST_NAME_KEY, String.class));
-		user.setLastName(document.get(USER_LAST_NAME_KEY, String.class));
-		user.setDataTransferAccount(decode(document.get(USER_DATA_TRANSFER_ACCOUNT_KEY, 
-				                                        Document.class),
-				                           decoderContext));
-				                
-		return user;
+		// Map the document to HpcNihAccount instance.
+		HpcNihAccount nihAccount = new HpcNihAccount();
+		nihAccount.setUserId(document.get(NIH_ACCOUNT_USER_ID_KEY, 
+				                          String.class));
+		nihAccount.setFirstName(document.get(NIH_ACCOUNT_FIRST_NAME_KEY, 
+				                             String.class));
+		nihAccount.setLastName(document.get(NIH_ACCOUNT_LAST_NAME_KEY, 
+				                            String.class));
+
+		return nihAccount;
 	}
 	
 	@Override
-	public Class<HpcUser> getEncoderClass() 
+	public Class<HpcNihAccount> getEncoderClass() 
 	{
-		return HpcUser.class;
-	}
-	
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-	
-    /**
-     * Decode HpcDataTransferAccount
-     *
-     * @param doc The HpcDataTransferAccount document.
-     * @param decoderContext.
-     * @return Decoded HpcDataTransferAcccount object.
-     */
-    private HpcDataTransferAccount decode(Document doc, DecoderContext decoderContext)
-    {
-    	BsonDocumentReader docReader = 
-    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
-    				                                  getRegistry()));
-		return getRegistry().get(HpcDataTransferAccount.class).decode(docReader, 
-		                                                              decoderContext);
+		return HpcNihAccount.class;
 	}
 }
 
