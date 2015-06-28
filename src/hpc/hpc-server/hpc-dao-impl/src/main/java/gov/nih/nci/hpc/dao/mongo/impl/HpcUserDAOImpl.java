@@ -1,5 +1,5 @@
 /**
- * HpcManagedUserDAOImpl.java
+ * HpcUserDAOImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.dao.mongo.impl;
 
-import gov.nih.nci.hpc.dao.HpcManagedUserDAO;
+import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcMongoDB;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcSingleResultCallback;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
@@ -18,7 +18,7 @@ import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.model.HpcManagedUser;
+import gov.nih.nci.hpc.domain.model.HpcUser;
 
 import com.mongodb.async.client.MongoCollection;
 import static com.mongodb.client.model.Filters.*;
@@ -29,14 +29,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * HPC Managed User DAO Implementation.
+ * HPC User DAO Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcManagedUserDAOImpl implements HpcManagedUserDAO
+public class HpcUserDAOImpl implements HpcUserDAO
 { 
     //---------------------------------------------------------------------//
     // Constants
@@ -67,7 +67,7 @@ public class HpcManagedUserDAOImpl implements HpcManagedUserDAO
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcManagedUserDAOImpl() throws HpcException
+    private HpcUserDAOImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -80,7 +80,7 @@ public class HpcManagedUserDAOImpl implements HpcManagedUserDAO
      * 
      * @throws HpcException If a HpcMongoDB instance was not provided.
      */
-    private HpcManagedUserDAOImpl(HpcMongoDB mongoDB) throws HpcException
+    private HpcUserDAOImpl(HpcMongoDB mongoDB) throws HpcException
     {
     	if(mongoDB == null) {
     	   throw new HpcException("Null HpcMongoDB instance",
@@ -99,21 +99,21 @@ public class HpcManagedUserDAOImpl implements HpcManagedUserDAO
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void add(HpcManagedUser managedUser) throws HpcException
+	public void add(HpcUser user) throws HpcException
     {
 		HpcSingleResultCallback<Void> callback = 
 				                      new HpcSingleResultCallback<Void>();
-		getCollection().insertOne(managedUser, callback);
+		getCollection().insertOne(user, callback);
        
 		// Throw the callback exception (if any).
 		callback.throwException();
     }
 	
 	@Override
-	public HpcManagedUser get(String nihUserId) throws HpcException
+	public HpcUser get(String nihUserId) throws HpcException
 	{
-		HpcSingleResultCallback<HpcManagedUser> callback = 
-                       new HpcSingleResultCallback<HpcManagedUser>();
+		HpcSingleResultCallback<HpcUser> callback = 
+                                         new HpcSingleResultCallback<HpcUser>();
 		getCollection().find(
 		   eq(NIH_USER_ID_FIELD_NAME, nihUserId)).first(callback);
 		
@@ -129,9 +129,9 @@ public class HpcManagedUserDAOImpl implements HpcManagedUserDAO
      *
      * @return A The managed dataset Mongo collection.
      */
-    private MongoCollection<HpcManagedUser> getCollection() throws HpcException
+    private MongoCollection<HpcUser> getCollection() throws HpcException
     {
-    	return mongoDB.getCollection(HpcManagedUser.class);
+    	return mongoDB.getCollection(HpcUser.class);
     }  
 }
 

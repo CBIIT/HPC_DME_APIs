@@ -1,5 +1,5 @@
 /**
- * HpcManagedUserDAO.java
+ * HpcUserDAO.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,38 +10,38 @@
 
 package gov.nih.nci.hpc.dao;
 
-import gov.nih.nci.hpc.domain.model.HpcManagedUser;
+import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
- * HPC Managed User DAO Interface.
+ * HPC User DAO Interface.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public interface HpcManagedUserDAO 
+public interface HpcUserDAO 
 {         
     /**
      * Add managed user to the repository.
      *
-     * @param managedUser The managed user to add to the DB.
+     * @param user The user to add to the DB.
      * 
      * @throws HpcException
      */
-    public void add(HpcManagedUser managedUser) throws HpcException;
+    public void add(HpcUser user) throws HpcException;
     
     /**
-     * Get managed user from the repository by ID.
+     * Get user from the repository by ID.
      *
      * @param nihUserId the user NIH ID.
-     * @return The managed user if found, or null otherwise.
+     * @return The user if found, or null otherwise.
      * 
      * @throws HpcException
      */
-    public HpcManagedUser get(String nihUserId) throws HpcException;
+    public HpcUser get(String nihUserId) throws HpcException;
 }
 
  
