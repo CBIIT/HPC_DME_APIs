@@ -1,5 +1,5 @@
 /**
- * HpcManagedDatasetServiceImpl.java
+ * HpcDatasetServiceImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,10 +10,10 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.service.HpcManagedDatasetService;
+import gov.nih.nci.hpc.service.HpcDatasetService;
 
-import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
-import gov.nih.nci.hpc.domain.dataset.HpcDataset;
+import gov.nih.nci.hpc.domain.model.HpcDataset;
+import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
@@ -22,7 +22,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.dao.HpcManagedDatasetDAO;
+import gov.nih.nci.hpc.dao.HpcDatasetDAO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import org.slf4j.Logger;
@@ -34,21 +34,21 @@ import java.util.Calendar;
 
 /**
  * <p>
- * HPC Managed Dataset Application Service Implementation.
+ * HPC Dataset Application Service Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
+public class HpcDatasetServiceImpl implements HpcDatasetService
 {         
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
     // The Managed Dataset DAO instance.
-    private HpcManagedDatasetDAO managedDatasetDAO = null;
+    private HpcDatasetDAO datasetDAO = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -63,7 +63,7 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcManagedDatasetServiceImpl() throws HpcException
+    private HpcDatasetServiceImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -72,17 +72,16 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param managedDatasetDAO The managed dataset DAO instance.
+     * @param datasetDAO The managed dataset DAO instance.
      */
-    private HpcManagedDatasetServiceImpl(HpcManagedDatasetDAO managedDatasetDAO)
-                                        throws HpcException
+    private HpcDatasetServiceImpl(HpcDatasetDAO datasetDAO) throws HpcException
     {
-    	if(managedDatasetDAO == null) {
-     	   throw new HpcException("Null HpcManagedDatasetDAO instance",
+    	if(datasetDAO == null) {
+     	   throw new HpcException("Null HpcDatasetDAO instance",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
     	
-    	this.managedDatasetDAO = managedDatasetDAO;
+    	this.datasetDAO = datasetDAO;
     }  
     
     //---------------------------------------------------------------------//
@@ -90,40 +89,34 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcManagedDatasetService Interface Implementation
+    // HpcDatasetService Interface Implementation
     //---------------------------------------------------------------------//  
     
     @Override
-    public String add(String name, String primaryInvestigatorId,
-		              String creatorId, String registratorId,
-		              String labBranch, String description, String comments,
+    public String add(String name, String description, String comments,
 		              List<HpcFileUploadRequest> uploadRequests) 
 		             throws HpcException
     {
     	// Input validation.
-    	if(name == null || primaryInvestigatorId == null || 
-    	   creatorId == null || registratorId == null || labBranch == null ||
-    	   description == null ||
+    	if(name == null || description == null ||
     	   uploadRequests == null || uploadRequests.size() == 0) {
     	   throw new HpcException("Invalid add dataset input", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
-    	// Create the ManagedDataset domain object.
-    	HpcManagedDataset managedDataset = new HpcManagedDataset();
+    	// Create the Dataset domain object.
     	HpcDataset dataset = new HpcDataset();
-
+    	
     	// Generate and set its ID.
     	dataset.setId(UUID.randomUUID().toString());
+    	
+    	// Associate the FileSet.
+    	HpcFileSet fileSet = new HpcFileSet();
 
     	// Populate attributes.
-    	dataset.setName(name);
-    	dataset.setPrimaryInvestigatorId(primaryInvestigatorId);
-    	dataset.setCreatorId(creatorId);
-    	dataset.setRegistratorId(registratorId);
-    	dataset.setLabBranch(labBranch);
-    	dataset.setDescription(description);
-    	dataset.setComments(comments);
-    	dataset.setCreated(Calendar.getInstance());
+    	fileSet.setName(name);
+    	fileSet.setDescription(description);
+    	fileSet.setComments(comments);
+    	fileSet.setCreated(Calendar.getInstance());
     	
        	// Attach the files to this dataset.
     	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
@@ -148,18 +141,18 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     		file.setMetadata(metadata);
     		
     		// Add the managed file to the dataset.
-    		dataset.getFiles().add(file);
+    		fileSet.getFiles().add(file);
     	}
-    	managedDataset.setDataset(dataset);
+    	dataset.setFileSet(fileSet);
     	
     	// Persist to Mongo.
-    	managedDatasetDAO.add(managedDataset);
+    	datasetDAO.add(dataset);
     	
-    	return managedDataset.getDataset().getId();
+    	return dataset.getId();
     }
     
     @Override
-    public HpcManagedDataset get(String id) throws HpcException
+    public HpcDataset get(String id) throws HpcException
     {
     	// Input validation.
     	try {
@@ -172,16 +165,14 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
                                        HpcErrorType.INVALID_REQUEST_INPUT, e);
     	}
     	
-    	return managedDatasetDAO.get(id);
-
+    	return datasetDAO.get(id);
     }
     
     @Override
-    public List<HpcManagedDataset> 
-           get(String userId, HpcDatasetUserAssociation association) 
- 	          throws HpcException
+    public List<HpcDataset> get(String userId, HpcDatasetUserAssociation association) 
+ 	                           throws HpcException
  	{
-    	return managedDatasetDAO.get(userId, association);
+    	return datasetDAO.get(userId, association);
  	}
     
     //---------------------------------------------------------------------//
@@ -232,7 +223,12 @@ public class HpcManagedDatasetServiceImpl implements HpcManagedDatasetService
     private boolean isValidDatasetPrimaryMetadata(HpcFilePrimaryMetadata metadata) 
     {
     	if(metadata == null ||
-    	   metadata.getFundingOrganization() == null) {
+    	   metadata.getFundingOrganization() == null || 
+    	   metadata.getPrimaryInvestigatorNihUserId() == null ||
+    	   metadata.getCreatorNihUserId() == null ||
+    	   metadata.getRegistratorNihUserId() == null ||
+    	   metadata.getDescription() == null ||
+    	   metadata.getLabBranch() == null) {
     	   logger.info("Invalid Dataset Primary Metadata");
      	   return false;
     	}
