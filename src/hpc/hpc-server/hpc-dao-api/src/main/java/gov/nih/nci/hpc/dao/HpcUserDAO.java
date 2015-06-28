@@ -25,7 +25,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 public interface HpcUserDAO 
 {         
     /**
-     * Add managed user to the repository.
+     * Add user to the repository.
      *
      * @param user The user to add to the DB.
      * 

@@ -1,5 +1,5 @@
 /**
- * HpcManagedUserService.java
+ * HpcUserService.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,8 +10,9 @@
 
 package gov.nih.nci.hpc.service;
 
-import gov.nih.nci.hpc.domain.model.HpcManagedUser;
-import gov.nih.nci.hpc.domain.user.HpcUser;
+import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcNihAccount;
+import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -23,27 +24,30 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @version $Id$
  */
 
-public interface HpcManagedUserService 
+public interface HpcUserService 
 {         
     /**
-     * Add managed user.
+     * Add user.
      *
-     * @param user The user to add.
+     * @param nihAccount The user's NIH account.
+     * @param dataTransferAccount The user's data transfer account.
      * @return The registered user ID.
      * 
      * @throws HpcException
      */
-    public String add(HpcUser user) throws HpcException;
+    public String add(HpcNihAccount nihAccount, 
+    		          HpcDataTransferAccount dataTransferAccount) 
+    		         throws HpcException;
     
     /**
-     * Get managed user.
+     * Get user.
      *
      * @param nihUserId The managed user NIH ID.
      * @return The managed user.
      * 
      * @throws HpcException
      */
-    public HpcManagedUser get(String nihUserId) throws HpcException;
+    public HpcUser get(String nihUserId) throws HpcException;
 }
 
  
