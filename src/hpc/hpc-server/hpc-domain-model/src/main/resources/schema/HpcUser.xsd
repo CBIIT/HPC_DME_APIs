@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--  
- * HpcManagedUser.xsd
+ * HpcUser.xsd
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -21,11 +21,12 @@
    	<xsd:import namespace="http://hpc.nci.nih.gov/domain/user" 
    	            schemaLocation="HpcUserTypes.xsd"/>
     
-    <xsd:element name="HpcManagedUser">
+    <xsd:element name="HpcUser">
     	<xsd:complexType>
   			<xsd:sequence>
-        		<xsd:element name="id" type="xsd:ID"/>
-  				<xsd:element name="user" type="hpc-domain-user:HpcUser"/>
+  				<xsd:element name="nihAccount" type="hpc-domain-user:HpcNihAccount"/>
+  				<xsd:element name="dataTransferAccount" 
+      			             type="hpc-domain-user:HpcDataTransferAccount"/>
       			<xsd:element name="created" type="xsd:dateTime"/>
       			<xsd:element name="lastUpdated" type="xsd:dateTime"/>
   			</xsd:sequence>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--  
- * HpcManagedDataset.xsd
+ * HpcDataset.xsd
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -23,10 +23,11 @@
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata" 
 	            schemaLocation="HpcMetadataTypes.xsd"/>   
     
-	<xsd:element name="HpcManagedDataset">
+	<xsd:element name="HpcDataset">
     	<xsd:complexType>
 			<xsd:sequence>
-        		<xsd:element name="dataset" type="hpc-domain-dataset:HpcDataset"/>
+				<xsd:element name="id" type="xsd:ID"/>
+        		<xsd:element name="fileSet" type="hpc-domain-dataset:HpcFileSet"/>
 				<xsd:element name="uploadRequests" 
 			             	 type="hpc-domain-dataset:HpcDataTransferRequest" 
   			             	 minOccurs="0" maxOccurs="unbounded"/>

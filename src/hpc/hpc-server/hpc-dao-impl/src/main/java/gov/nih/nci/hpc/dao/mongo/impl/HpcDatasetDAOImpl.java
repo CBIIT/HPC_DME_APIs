@@ -1,5 +1,5 @@
 /**
- * HpcManagedDatasetDAOImpl.java
+ * HpcDatasetDAOImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.dao.mongo.impl;
 
-import gov.nih.nci.hpc.dao.HpcManagedDatasetDAO;
+import gov.nih.nci.hpc.dao.HpcDatasetDAO;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcMongoDB;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcSingleResultCallback;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
@@ -18,7 +18,7 @@ import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
+import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 
 import com.mongodb.async.client.MongoCollection;
@@ -32,14 +32,14 @@ import java.util.ArrayList;
 
 /**
  * <p>
- * HPC Managed Dataset DAO Implementation.
+ * HPC Dataset DAO Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
+public class HpcDatasetDAOImpl implements HpcDatasetDAO
 { 
     //---------------------------------------------------------------------//
     // Constants
@@ -79,7 +79,7 @@ public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcManagedDatasetDAOImpl() throws HpcException
+    private HpcDatasetDAOImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -92,7 +92,7 @@ public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
      * 
      * @throws HpcException If a HpcMongoDB instance was not provided.
      */
-    private HpcManagedDatasetDAOImpl(HpcMongoDB mongoDB) throws HpcException
+    private HpcDatasetDAOImpl(HpcMongoDB mongoDB) throws HpcException
     {
     	if(mongoDB == null) {
     	   throw new HpcException("Null HpcMongoDB instance",
@@ -111,18 +111,18 @@ public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void add(HpcManagedDataset managedDataset) throws HpcException
+	public void add(HpcDataset dataset) throws HpcException
     {
 		HpcSingleResultCallback<Void> callback = 
 				                      new HpcSingleResultCallback<Void>();
-		getCollection().insertOne(managedDataset, callback);
+		getCollection().insertOne(dataset, callback);
        
 		// Throw the callback exception (if any).
 		callback.throwException();
     }
 	
 	@Override
-	public HpcManagedDataset get(String id) throws HpcException
+	public HpcDataset get(String id) throws HpcException
 	{
 		HpcSingleResultCallback<HpcManagedDataset> callback = 
                        new HpcSingleResultCallback<HpcManagedDataset>();
@@ -131,7 +131,7 @@ public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
 		return callback.getResult();
 	}
 	
-	public List<HpcManagedDataset> get(String userId, 
+	public List<HpcDataset> get(String userId, 
                                        HpcDatasetUserAssociation association) 
                                       throws HpcException
     {
@@ -157,12 +157,11 @@ public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
 		}
 		
 		// Invoke the query.
-		List<HpcManagedDataset> managedDatasets = 
-				                new ArrayList<HpcManagedDataset>();
+		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
 		HpcSingleResultCallback<List<HpcManagedDataset>> callback = 
-                       new HpcSingleResultCallback<List<HpcManagedDataset>>();
+                       new HpcSingleResultCallback<List<HpcDataset>>();
 		getCollection().find(
-		                eq(fieldName, userId)).into(managedDatasets, callback); 
+		                eq(fieldName, userId)).into(datasets, callback); 
 		
 		return callback.getResult();
     }
@@ -174,11 +173,11 @@ public class HpcManagedDatasetDAOImpl implements HpcManagedDatasetDAO
     /**
      * Get the managed dataset Mongo collection.
      *
-     * @return A The managed dataset Mongo collection.
+     * @return A The dataset Mongo collection.
      */
-    private MongoCollection<HpcManagedDataset> getCollection() throws HpcException
+    private MongoCollection<HpcDataset> getCollection() throws HpcException
     {
-    	return mongoDB.getCollection(HpcManagedDataset.class);
+    	return mongoDB.getCollection(HpcDataset.class);
     }  
 }
 
