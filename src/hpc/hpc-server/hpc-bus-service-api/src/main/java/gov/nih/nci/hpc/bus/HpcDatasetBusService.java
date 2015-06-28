@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -52,15 +53,16 @@ public interface HpcDatasetBusService
     /**
      * Get managed datasets associated with a specific user.
      *
-     * @param userId the user id.
+     * @param nihUserId the user id.
      * @param association The association between the dataset and the user.
-     * @return The dataset DTO or null if not found.
+     * @return Collection of Dataset DTO, or null if not found.
      * 
      * @throws HpcException
      */
-    public HpcDatasetDTO getDatasets(String userId, 
-    		                         HpcDatasetUserAssociation association) 
-    		                        throws HpcException;
+    public HpcDatasetCollectionDTO 
+              getDatasets(String nihUserId, 
+    		              HpcDatasetUserAssociation association) 
+    		             throws HpcException;
 }
 
  

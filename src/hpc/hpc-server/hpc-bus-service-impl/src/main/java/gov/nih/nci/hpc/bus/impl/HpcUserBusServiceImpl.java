@@ -12,10 +12,10 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcUserBusService;
 
-import gov.nih.nci.hpc.service.HpcManagedUserService;
+import gov.nih.nci.hpc.service.HpcUserService;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
-import gov.nih.nci.hpc.domain.model.HpcManagedUser;
+import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -38,7 +38,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     //---------------------------------------------------------------------//
 
     // Application service instances.
-    private HpcManagedUserService managedUserService = null;
+    private HpcUserService userService = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -62,19 +62,19 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param managedUserService The managed user application service.
+     * @param userService The user application service.
      * 
-     * @throws HpcException If managedUserService is null.
+     * @throws HpcException If userService is null.
      */
-    private HpcUserBusServiceImpl(HpcManagedUserService managedUserService)
+    private HpcUserBusServiceImpl(HpcUserService userService)
                                  throws HpcException
     {
-    	if(managedUserService == null) {
+    	if(userService == null) {
      	   throw new HpcException("Null App Service(s) instance",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
     	
-    	this.managedUserService = managedUserService;
+    	this.userService = userService;
     } 
     
     //---------------------------------------------------------------------//
@@ -86,8 +86,8 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     //---------------------------------------------------------------------//  
     
     @Override
-    public String registerUser(HpcUserRegistrationDTO userRegistrationDTO)  
-    		                     throws HpcException
+    public void registerUser(HpcUserRegistrationDTO userRegistrationDTO)  
+    		                throws HpcException
     {
     	logger.info("Invoking registerDataset(HpcDatasetDTO): " + 
                     userRegistrationDTO);
@@ -99,7 +99,8 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	}
     	
     	// Add the user to the managed collection.
-    	return managedUserService.add(userRegistrationDTO.getUser());
+    	userService.add(userRegistrationDTO.getNihAccount(), 
+    			        userRegistrationDTO.getDataTransferAccount());
     }
     
     @Override
@@ -114,17 +115,17 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	}
     	
     	// Get the managed data domain object.
-    	HpcManagedUser managedUser = managedUserService.get(nihUserId);
-    	if(managedUser == null) {
+    	HpcUser user = userService.get(nihUserId);
+    	if(user == null) {
     	   return null;
     	}
     	
     	// Map it to the DTO.
     	HpcUserDTO userDTO = new HpcUserDTO();
-    	userDTO.setId(managedUser.getId());
-    	userDTO.setUser(managedUser.getUser());
-    	userDTO.setCreated(managedUser.getCreated());
-    	userDTO.setLastUpdated(managedUser.getLastUpdated());
+    	userDTO.setNihAccount(user.getNihAccount());
+    	userDTO.setDataTransferAccount(user.getDataTransferAccount());
+    	userDTO.setCreated(user.getCreated());
+    	userDTO.setLastUpdated(user.getLastUpdated());
     	
     	return userDTO;
     }
