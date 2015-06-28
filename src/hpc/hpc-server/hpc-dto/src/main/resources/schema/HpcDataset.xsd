@@ -27,10 +27,6 @@
         <xsd:complexType>
   			<xsd:sequence>
   				<xsd:element name="name" type="xsd:string"/>
-  				<xsd:element name="primaryInvestigatorId" type="xsd:ID"/>
-  				<xsd:element name="creatorId" type="xsd:ID"/>
-  				<xsd:element name="registratorId" type="xsd:ID"/>
-  				<xsd:element name="labBranch" type="xsd:string"/>
   				<xsd:element name="description" type="xsd:string"/>
   				<xsd:element name="comments" type="xsd:string"/>
   				<xsd:element name="uploadRequests" 
@@ -40,11 +36,22 @@
         </xsd:complexType>
     </xsd:element>
 
-	<!--  Dataset DTO -->
+	<!--  Dataset DTO-->
 	<xsd:element name="HpcDatasetDTO">
-        <xsd:complexType>
-  	    	<xsd:sequence minOccurs="0" maxOccurs="unbounded">
-  	        	<xsd:element name="datasets" type="hpc-domain-dataset:HpcDataset"/>
+    	<xsd:complexType >
+  			<xsd:sequence>
+  				<xsd:element name="id" type="xsd:ID"/>
+  	    		<xsd:element name="fileSet" type="hpc-domain-dataset:HpcFileSet"/>
+    		</xsd:sequence>
+    	</xsd:complexType>
+    </xsd:element>
+    
+	<!--  Dataset Collection DTO-->
+	<xsd:element name="HpcDatasetCollectionDTO">
+    	<xsd:complexType>
+  			<xsd:sequence>
+  				<xsd:element ref="hpc-dto-dataset:HpcDatasetDTO" 
+  			    	         minOccurs="0" maxOccurs="unbounded" />
     		</xsd:sequence>
     	</xsd:complexType>
     </xsd:element>
