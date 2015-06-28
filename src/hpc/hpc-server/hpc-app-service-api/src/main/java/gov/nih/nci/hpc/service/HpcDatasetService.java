@@ -1,5 +1,5 @@
 /**
- * HpcManagedDatasetService.java
+ * HpcDatasetService.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,9 +10,7 @@
 
 package gov.nih.nci.hpc.service;
 
-import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
-import gov.nih.nci.hpc.domain.dataset.HpcFileType;
-import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
+import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -21,56 +19,50 @@ import java.util.List;
 
 /**
  * <p>
- * HPC Managed Dataset Application Service Interface.
+ * HPC Dataset Application Service Interface.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public interface HpcManagedDatasetService 
+public interface HpcDatasetService 
 {         
     /**
-     * Add managed dataset.
+     * Add dataset.
      *
-     * @param name The managed dataset name.
-     * @param primaryInvestigatorId The primary investigator user ID.
-     * @param creatorId The dataset creator user ID.
-     * @param registratorId The dataset registrator user ID.
-     * @param labBranch The lab / branch which this dataset is associated with.
+     * @param name The dataset name.
      * @param description The dataset description.
      * @param comments The dataset comments.
      * @param uploadRequests List of files to upload.
-     * @return The registered managed dataset ID.
+     * @return The registered dataset ID.
      * 
      * @throws HpcException
      */
-    public String add(String name, String primaryInvestigatorId,
-    			      String creatorId, String registratorId,
-    			      String labBranch, String description, String comments,
+    public String add(String name, String description, String comments,
     			      List<HpcFileUploadRequest> uploadRequests) 
     			     throws HpcException;
     
     /**
-     * Get managed dataset.
+     * Get dataset.
      *
-     * @param id The managed dataset ID.
-     * @return The managed dataset.
+     * @param id The dataset ID.
+     * @return The dataset.
      * 
      * @throws HpcException
      */
-    public HpcManagedDataset get(String id) throws HpcException;
+    public HpcDataset get(String id) throws HpcException;
     
     /**
-     * Get managed datasets associated with a specific user.
+     * Get datasets associated with a specific user.
      *
      * @param userId the user id.
      * @param association The association between the dataset and the user.
-     * @return ManagedDataset collection, or null if no results found.
+     * @return HpcDataset collection, or null if no results found.
      * 
      * @throws HpcException
      */
-    public List<HpcManagedDataset> 
+    public List<HpcDataset> 
            get(String userId, HpcDatasetUserAssociation association) 
         	  throws HpcException;
 }

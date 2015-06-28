@@ -44,8 +44,8 @@ public class HpcUserDAOImpl implements HpcUserDAO
     
     // Dataset ID field name.
 	public final static String NIH_USER_ID_FIELD_NAME = 
-							       HpcCodec.MANAGED_USER_USER_KEY + "." + 
-                                   HpcCodec.USER_NIH_USER_ID_KEY;
+							       HpcCodec.USER_NIH_ACCOUNT_KEY + "." + 
+                                   HpcCodec.NIH_ACCOUNT_USER_ID_KEY;
 	
     //---------------------------------------------------------------------//
     // Instance members

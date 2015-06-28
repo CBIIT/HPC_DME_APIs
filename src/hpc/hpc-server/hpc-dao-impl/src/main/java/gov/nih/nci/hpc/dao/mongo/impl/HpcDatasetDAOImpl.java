@@ -47,17 +47,25 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     
     // Dataset ID field name.
 	public final static String DATASET_ID_FIELD_NAME = 
-			                   HpcCodec.MANAGED_DATASET_DATASET_KEY + "." + 
-	                           HpcCodec.DATASET_ID_KEY; 
-	public final static String PRIMARY_INVESTIGATOR_ID_FIELD_NAME = 
-                               HpcCodec.MANAGED_DATASET_DATASET_KEY + "." + 
-                               HpcCodec.DATASET_PRIMARY_INVESTIGATOR_ID_KEY; 
-	public final static String CREATOR_ID_FIELD_NAME = 
-                               HpcCodec.MANAGED_DATASET_DATASET_KEY + "." + 
-                               HpcCodec.DATASET_CREATOR_ID_KEY; 
-	public final static String REGISTRATOR_ID_FIELD_NAME = 
-                               HpcCodec.MANAGED_DATASET_DATASET_KEY + "." + 
-                               HpcCodec.DATASET_REGISTRATOR_ID_KEY; 
+						       HpcCodec.DATASET_ID_KEY; 
+	public final static String PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
+                 HpcCodec.DATASET_FILE_SET_KEY + "." + 
+                 HpcCodec.FILE_SET_FILES_KEY + "." + 
+                 HpcCodec.FILE_METADATA_KEY + "." + 
+                 HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
+                 HpcCodec.FILE_PRIMARY_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY;
+	public final static String CREATOR_NIH_USER_ID_FIELD_NAME = 
+			     HpcCodec.DATASET_FILE_SET_KEY + "." + 
+	             HpcCodec.FILE_SET_FILES_KEY + "." + 
+	             HpcCodec.FILE_METADATA_KEY + "." + 
+	             HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
+	             HpcCodec.FILE_PRIMARY_METADATA_CREATOR_NIH_USER_ID_KEY;
+	public final static String REGISTRATOR_NIH_USER_ID_FIELD_NAME = 
+			     HpcCodec.DATASET_FILE_SET_KEY + "." + 
+		         HpcCodec.FILE_SET_FILES_KEY + "." + 
+		         HpcCodec.FILE_METADATA_KEY + "." + 
+		         HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
+		         HpcCodec.FILE_PRIMARY_METADATA_REGISTRATOR_NIH_USER_ID_KEY;
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -124,30 +132,30 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 	@Override
 	public HpcDataset get(String id) throws HpcException
 	{
-		HpcSingleResultCallback<HpcManagedDataset> callback = 
-                       new HpcSingleResultCallback<HpcManagedDataset>();
+		HpcSingleResultCallback<HpcDataset> callback = 
+                       new HpcSingleResultCallback<HpcDataset>();
 		getCollection().find(eq(DATASET_ID_FIELD_NAME, id)).first(callback);
 		
 		return callback.getResult();
 	}
 	
-	public List<HpcDataset> get(String userId, 
-                                       HpcDatasetUserAssociation association) 
-                                      throws HpcException
+	public List<HpcDataset> get(String nihUserId, 
+                                HpcDatasetUserAssociation association) 
+                               throws HpcException
     {
 		// Determine the field name needed to query for the requested association.
 		String fieldName = null;
 		switch(association) {
 		       case CREATOR:
-		            fieldName = CREATOR_ID_FIELD_NAME;
+		            fieldName = CREATOR_NIH_USER_ID_FIELD_NAME;
 		            break;
 		            
 		       case PRIMARY_INVESTIGATOR:
-		            fieldName = PRIMARY_INVESTIGATOR_ID_FIELD_NAME;
+		            fieldName = PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME;
 		            break;
 		            
 		       case REGISTRATOR:
-		            fieldName = REGISTRATOR_ID_FIELD_NAME;
+		            fieldName = REGISTRATOR_NIH_USER_ID_FIELD_NAME;
 		            break;
 		            
 		       default:
@@ -158,10 +166,10 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 		
 		// Invoke the query.
 		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
-		HpcSingleResultCallback<List<HpcManagedDataset>> callback = 
+		HpcSingleResultCallback<List<HpcDataset>> callback = 
                        new HpcSingleResultCallback<List<HpcDataset>>();
 		getCollection().find(
-		                eq(fieldName, userId)).into(datasets, callback); 
+		                eq(fieldName, nihUserId)).into(datasets, callback); 
 		
 		return callback.getResult();
     }

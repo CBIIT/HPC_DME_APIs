@@ -1,5 +1,5 @@
 /**
- * HpcManagedDatasetCodec.java
+ * HpcUserCodec.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,8 +10,9 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.domain.model.HpcManagedUser;
-import gov.nih.nci.hpc.domain.user.HpcUser;
+import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcNihAccount;
+import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
@@ -28,14 +29,14 @@ import java.util.Date;
 
 /**
  * <p>
- * HPC Managed User Codec. 
+ * HPC User Codec. 
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcManagedUserCodec extends HpcCodec<HpcManagedUser>
+public class HpcUserCodec extends HpcCodec<HpcUser>
 { 
     //---------------------------------------------------------------------//
     // Instance members
@@ -53,7 +54,7 @@ public class HpcManagedUserCodec extends HpcCodec<HpcManagedUser>
      * Default Constructor.
      * 
      */
-    public HpcManagedUserCodec()
+    public HpcUserCodec()
     {
     }   
     
@@ -62,33 +63,35 @@ public class HpcManagedUserCodec extends HpcCodec<HpcManagedUser>
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // Codec<HpcManagedUser> Interface Implementation
+    // Codec<HpcUser> Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void encode(BsonWriter writer, HpcManagedUser managedUser,
+	public void encode(BsonWriter writer, HpcUser user,
 					   EncoderContext encoderContext) 
 	{
 		Document document = new Document();
  
 		// Extract the data from the domain object.
-		String id = managedUser.getId();
-		Calendar created = managedUser.getCreated();
-		Calendar lastUpdated = managedUser.getLastUpdated();
-		HpcUser user = managedUser.getUser();
+		HpcNihAccount nihAccount = user.getNihAccount();
+		HpcDataTransferAccount dataTransferAccount = 
+				                           user.getDataTransferAccount();
+		Calendar created = user.getCreated();
+		Calendar lastUpdated = user.getLastUpdated();
+		
 		
 		// Set the data on the BSON document.
-		if(id != null) {
-		   document.put(MANAGED_USER_ID_KEY, id);
+		if(nihAccount != null) {
+		   document.put(USER_NIH_ACCOUNT_KEY, nihAccount);	
+		}
+		if(dataTransferAccount != null) {
+		   document.put(USER_DATA_TRANSFER_ACCOUNT_KEY, dataTransferAccount);	
 		}
 		if(created != null) {
-		   document.put(MANAGED_USER_CREATED_KEY, created.getTime());
+		   document.put(USER_CREATED_KEY, created.getTime());
 		}
 		if(lastUpdated != null) {
-		   document.put(MANAGED_USER_LAST_UPDATED_KEY, lastUpdated.getTime());
-		}
-		if(user != null) {
-		   document.put(MANAGED_USER_USER_KEY, user);	
+		   document.put(USER_LAST_UPDATED_KEY, lastUpdated.getTime());
 		}
 
 		getRegistry().get(Document.class).encode(writer, document, 
@@ -96,8 +99,7 @@ public class HpcManagedUserCodec extends HpcCodec<HpcManagedUser>
 	}
  
 	@Override
-	public HpcManagedUser decode(BsonReader reader, 
-           	                     DecoderContext decoderContext) 
+	public HpcUser decode(BsonReader reader, DecoderContext decoderContext) 
 	{
 		// Get the BSON Document.
 		Document document = 
@@ -105,28 +107,31 @@ public class HpcManagedUserCodec extends HpcCodec<HpcManagedUser>
 						                                  decoderContext);
 		
 		// Map the BSON Document to a domain object.
-		HpcManagedUser managedUser = new HpcManagedUser();
-		managedUser.setId(document.get(MANAGED_USER_ID_KEY, String.class));
+		HpcUser user = new HpcUser();
+		user.setNihAccount(decodeNihAccount(document.get(USER_NIH_ACCOUNT_KEY, 
+                                                         Document.class),
+                                            decoderContext));
+
+		user.setDataTransferAccount(decodeDataTransferAccount(
+				                    document.get(USER_DATA_TRANSFER_ACCOUNT_KEY, 
+                                                 Document.class),
+                                    decoderContext));
 		
 		Calendar created = Calendar.getInstance();
-		created.setTime(document.get(MANAGED_USER_CREATED_KEY, Date.class));
-		managedUser.setCreated(created);
+		created.setTime(document.get(USER_CREATED_KEY, Date.class));
+		user.setCreated(created);
 		
 		Calendar lastUpdated = Calendar.getInstance();
-		lastUpdated.setTime(document.get(MANAGED_USER_LAST_UPDATED_KEY, 
-				                         Date.class));
-		managedUser.setLastUpdated(lastUpdated);
-		managedUser.setUser(decode(document.get(MANAGED_USER_USER_KEY, 
-                                                Document.class),
-                                   decoderContext));
+		lastUpdated.setTime(document.get(USER_LAST_UPDATED_KEY, Date.class));
+		user.setLastUpdated(lastUpdated);
 		
-		return managedUser;
+		return user;
 	}
 	
 	@Override
-	public Class<HpcManagedUser> getEncoderClass() 
+	public Class<HpcUser> getEncoderClass() 
 	{
-		return HpcManagedUser.class;
+		return HpcUser.class;
 	}
 	
     //---------------------------------------------------------------------//
@@ -134,18 +139,37 @@ public class HpcManagedUserCodec extends HpcCodec<HpcManagedUser>
     //---------------------------------------------------------------------//  
 	
     /**
-     * Decode HpcUser
+     * Decode HpcNihAccount
      *
-     * @param doc The HpcUser document.
+     * @param doc The HpcNihAccount document.
      * @param decoderContext.
-     * @return Decoded HpcUser object.
+     * @return Decoded HpcNihAccount object.
      */
-    private HpcUser decode(Document doc, DecoderContext decoderContext)
+    private HpcNihAccount decodeNihAccount(Document doc, 
+    		                               DecoderContext decoderContext)
     {
     	BsonDocumentReader docReader = 
     		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
     				                                  getRegistry()));
-		return getRegistry().get(HpcUser.class).decode(docReader, decoderContext);
+		return getRegistry().get(HpcNihAccount.class).decode(docReader, 
+				                                             decoderContext);
+	}
+    
+    /**
+     * Decode HpcDataTransferAccount
+     *
+     * @param doc The HpcDataTransferAccount document.
+     * @param decoderContext.
+     * @return Decoded HpcDataTransferAcccount object.
+     */
+    private HpcDataTransferAccount decodeDataTransferAccount(
+    		                       Document doc, DecoderContext decoderContext)
+    {
+    	BsonDocumentReader docReader = 
+    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
+    				                                  getRegistry()));
+		return getRegistry().get(HpcDataTransferAccount.class).decode(docReader, 
+		                                                              decoderContext);
 	}
 }
 

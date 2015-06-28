@@ -31,18 +31,17 @@ public abstract class HpcCodec<T> implements Codec<T>
     // Constants
     //---------------------------------------------------------------------//    
     
-    // HpcManagedUser Document keys.
-	public final static String MANAGED_USER_ID_KEY = "id"; 
-	public final static String MANAGED_USER_CREATED_KEY = "created"; 
-	public final static String MANAGED_USER_LAST_UPDATED_KEY = "last_updated"; 
-	public final static String MANAGED_USER_USER_KEY = "user"; 
-	
-	// HpcUser Document keys.
-	public final static String USER_NIH_USER_ID_KEY = "nih_user_id"; 
-	public final static String USER_FIRST_NAME_KEY = "first_name"; 
-	public final static String USER_LAST_NAME_KEY = "last_name"; 
+    // HpcUser Document keys.
+	public final static String USER_CREATED_KEY = "created"; 
+	public final static String USER_LAST_UPDATED_KEY = "last_updated"; 
+	public final static String USER_NIH_ACCOUNT_KEY = "nih_account"; 
 	public final static String USER_DATA_TRANSFER_ACCOUNT_KEY = 
-			                   "data_transfer_account";
+			                   "data_transfer_account"; 
+	
+	// HpcNihAccount Document keys.
+	public final static String NIH_ACCOUNT_USER_ID_KEY = "user_id"; 
+	public final static String NIH_ACCOUNT_FIRST_NAME_KEY = "first_name"; 
+	public final static String NIH_ACCOUNT_LAST_NAME_KEY = "last_name"; 
 	
 	// HpcDataTransferAccount Document keys.
 	public final static String DATA_TRANSFER_ACCOUNT_USERNAME_KEY = "username";
@@ -50,25 +49,20 @@ public abstract class HpcCodec<T> implements Codec<T>
 	public final static String DATA_TRANSFER_ACCOUNT_DATA_TRANSFER_TYPE_KEY = 
 			                   "data_transfer_type";
 	
-    // HpcdDataset Document keys.
+	// HpcDataset Document keys.
 	public final static String DATASET_ID_KEY = "id"; 
-	public final static String DATASET_NAME_KEY = "name"; 
-	public final static String DATASET_PRIMARY_INVESTIGATOR_ID_KEY = 
-			                   "primary_investigator_id"; 
-	public final static String DATASET_CREATOR_ID_KEY = "creator_id"; 
-	public final static String DATASET_REGISTRATOR_ID_KEY = "registrator_id"; 
-	public final static String DATASET_LAB_BRANCH_KEY = "lab_branch"; 
-	public final static String DATASET_DESCRIPTION_KEY = "description";
-	public final static String DATASET_COMMENTS_KEY = "comments";
-	public final static String DATASET_CREATED_KEY = "created"; 
-	public final static String DATASET_FILES_KEY = "files";
-	
-	// HpcdDataset Document keys.
-	public final static String MANAGED_DATASET_DATASET_KEY = "dataset";
-	public final static String MANAGED_DATASET_UPLOAD_REQUESTS_KEY = 
+	public final static String DATASET_FILE_SET_KEY = "file_set";
+	public final static String DATASET_UPLOAD_REQUESTS_KEY = 
 			                   "upload_requests";
-	public final static String MANAGED_DATASET_DOWNLOAD_REQUESTS_KEY = 
+	public final static String DATASET_DOWNLOAD_REQUESTS_KEY = 
                                "download_requests";
+	
+    // HpcdFileSet Document keys.
+	public final static String FILE_SET_NAME_KEY = "name"; 
+	public final static String FILE_SET_DESCRIPTION_KEY = "description";
+	public final static String FILE_SET_COMMENTS_KEY = "comments";
+	public final static String FILE_SET_CREATED_KEY = "created"; 
+	public final static String FILE_SET_FILES_KEY = "files";
     
     // HpcFile Document keys.
     public final static String FILE_ID_KEY = "id"; 
@@ -86,7 +80,7 @@ public abstract class HpcCodec<T> implements Codec<T>
     public final static String FILE_METADATA_PRIMARY_METADATA_KEY = 
     		                   "primary_metadata";
     
-    // HpcFileMetadata Document keys.
+    // HpcFilePrimaryMetadata Document keys.
     public final static String FILE_PRIMARY_METADATA_DATA_CONTAINS_PII_KEY = 
     		                   "data_contains_pii";
     public final static String FILE_PRIMARY_METADATA_DATA_CONTAINS_PHI_KEY = 
@@ -97,6 +91,17 @@ public abstract class HpcCodec<T> implements Codec<T>
 			                   "data_compressed";
     public final static String FILE_PRIMARY_METADATA_FUNDING_ORGANIZATION_KEY = 
                                "funding_organization";
+    public final static String 
+                 FILE_PRIMARY_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY = 
+            				   "primary_investigator_nih_user_id"; 
+    public final static String FILE_PRIMARY_METADATA_CREATOR_NIH_USER_ID_KEY = 
+    		                   "creator_nih_user_id"; 
+    public final static String FILE_PRIMARY_METADATA_REGISTRATOR_NIH_USER_ID_KEY = 
+    		                   "registrator_nih_user_id"; 
+    public final static String FILE_PRIMARY_METADATA_LAB_BRANCH_KEY = 
+    		                   "lab_branch"; 
+    public final static String FILE_PRIMARY_METADATA_DESCRIPTION_KEY = 
+    		                   "description";
     public final static String FILE_PRIMARY_METADATA_METADATA_ITEMS_KEY = 
                                "metadata_items";
     
