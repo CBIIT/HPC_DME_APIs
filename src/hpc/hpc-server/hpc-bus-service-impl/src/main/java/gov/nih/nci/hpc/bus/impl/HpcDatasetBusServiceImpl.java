@@ -12,14 +12,15 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
 
-import gov.nih.nci.hpc.service.HpcManagedDatasetService;
-import gov.nih.nci.hpc.service.HpcManagedUserService;
+import gov.nih.nci.hpc.service.HpcDatasetService;
+import gov.nih.nci.hpc.service.HpcUserService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
-import gov.nih.nci.hpc.domain.model.HpcManagedDataset;
-import gov.nih.nci.hpc.domain.model.HpcManagedUser;
-import gov.nih.nci.hpc.domain.dataset.HpcDataset;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
+import gov.nih.nci.hpc.domain.model.HpcDataset;
+import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
@@ -48,9 +49,9 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     //---------------------------------------------------------------------//
 
     // Application service instances.
-    private HpcManagedDatasetService managedDatasetService = null;
-    private HpcManagedUserService managedUserService = null;
-    private HpcDataTransferService hpcDataTransferService = null;
+    private HpcDatasetService datasetService = null;
+    private HpcUserService userService = null;
+    private HpcDataTransferService dataTransferService = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -74,25 +75,27 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param managedDataService The managed dataset application service.
+     * @param dataService The dataset application service.
+     * @param userService The user application service.
+     * @param dataTransferService The data transfer application service.
      * 
-     * @throws HpcException If managedDatasetService is null.
+     * @throws HpcException If any application service provided is null.
      */
     private HpcDatasetBusServiceImpl(
-    		          HpcManagedDatasetService managedDatasetService,
-    		          HpcManagedUserService managedUserService,
-    		          HpcDataTransferService hpcDataTransferService)
+    		          HpcDatasetService datasetService,
+    		          HpcUserService userService,
+    		          HpcDataTransferService dataTransferService)
                       throws HpcException
     {
-    	if(managedDatasetService == null || managedDatasetService == null ||
-    	   hpcDataTransferService ==null) {
+    	if(datasetService == null || userService == null ||
+    	   dataTransferService == null) {
      	   throw new HpcException("Null App Service(s) instance",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
     	
-    	this.managedDatasetService = managedDatasetService;
-    	this.managedUserService = managedUserService;
-    	this.hpcDataTransferService = hpcDataTransferService;
+    	this.datasetService = datasetService;
+    	this.userService = userService;
+    	this.dataTransferService = dataTransferService;
     }  
     
     //---------------------------------------------------------------------//
@@ -117,41 +120,36 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	}
     	
     	// Validate the user has a valid data transfer account.
-    	HpcManagedUser managedUser = managedUserService.get(
-    			                            datasetRegistrationDTO.getRegistratorId());
-    	if(managedUser == null || 
-    	   managedUser.getUser().getDataTransferAccount() == null) {
-    	   throw new HpcException("Could not find user with nihUserID=" + 
-    				              datasetRegistrationDTO.getRegistratorId(),
-	                              HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);		
-    	}
+    	//HpcUser user = userService.get(datasetRegistrationDTO.getRegistratorId());
+    	//if(managedUser == null || 
+    	  // managedUser.getUser().getDataTransferAccount() == null) {
+    	   //throw new HpcException("Could not find user with nihUserID=" + 
+    		//		              datasetRegistrationDTO.getRegistratorId(),
+	          //                    HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);		
+    	//}
     	
     	// Add the dataset to the managed collection.
-    	String managedDatasetId = 
-    		   managedDatasetService.add(
+    	String datasetId = 
+    		   datasetService.add(
     				  datasetRegistrationDTO.getName(), 
-    				  datasetRegistrationDTO.getPrimaryInvestigatorId(),
-    				  datasetRegistrationDTO.getCreatorId(), 
-    				  datasetRegistrationDTO.getRegistratorId(),
-    				  datasetRegistrationDTO.getLabBranch(), 
     				  datasetRegistrationDTO.getDescription(),
     				  datasetRegistrationDTO.getComments(),
     				  datasetRegistrationDTO.getUploadRequests());
     	
     	// Extract the data transfer account credentials.
-    	String username  = managedUser.getUser().getDataTransferAccount().getUsername();
-    	String password  = managedUser.getUser().getDataTransferAccount().getPassword();
+    	//String username  = managedUser.getUser().getDataTransferAccount().getUsername();
+    	//String password  = managedUser.getUser().getDataTransferAccount().getPassword();
     	
     	// Submit data transfer requests for the files in this dataset 
-    	for(HpcFileUploadRequest fileUploadRequest : datasetRegistrationDTO.getUploadRequests()) {  
-    		logger.info("Submiting Data Transfer Request: "+ fileUploadRequest.getLocations());
-    		boolean transferStatus = 
-    				hpcDataTransferService.transferDataset(
-    						                       fileUploadRequest.getLocations(), 
-    						                       username, password);
-    		logger.info("Data Transfer status : " + transferStatus);
-    	}
-    	return managedDatasetId;
+    	//for(HpcFileUploadRequest fileUploadRequest : datasetRegistrationDTO.getUploadRequests()) {  
+    		//logger.info("Submiting Data Transfer Request: "+ fileUploadRequest.getLocations());
+    		//boolean transferStatus = 
+    			//	hpcDataTransferService.transferDataset(
+    				//		                       fileUploadRequest.getLocations(), 
+    					//	                       username, password);
+    		//logger.info("Data Transfer status : " + transferStatus);
+    	//}
+    	return datasetId;
     }
     
     @Override
@@ -165,23 +163,14 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Get the managed dataset domain object.
-    	HpcManagedDataset managedDataset = managedDatasetService.get(id);
-    	if(managedDataset == null) {
-    	   return null;
-    	}
-    	
-    	// Map it to the DTO.
-    	HpcDatasetDTO datasetDTO = new HpcDatasetDTO();
-    	datasetDTO.getDatasets().add(managedDataset.getDataset());
-    	
-    	return datasetDTO;
+    	// Get the managed dataset domain object and return it as DTO.
+    	return toDTO(datasetService.get(id));
     }
     
     @Override
-    public HpcDatasetDTO getDatasets(String userId, 
-                                     HpcDatasetUserAssociation association) 
-                                     throws HpcException
+    public HpcDatasetCollectionDTO getDatasets(String userId, 
+                                      HpcDatasetUserAssociation association) 
+                                      throws HpcException
     {
     	// Input validation.
     	if(userId == null || association == null) {
@@ -190,20 +179,44 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	}
     	
     	// Get the managed dataset collection.
-    	List<HpcManagedDataset> managedDatasets = 
-    			                managedDatasetService.get(userId, association);
-    	if(managedDatasets == null || managedDatasets.size() == 0) {
+    	List<HpcDataset> datasets = datasetService.get(userId, association);
+    	if(datasets == null || datasets.size() == 0) {
     	   return null;
     	}
     	
     	// Map it to the DTO.
-    	HpcDatasetDTO datasetDTO = new HpcDatasetDTO();
-    	for(HpcManagedDataset managedDataset : managedDatasets) {
-    		datasetDTO.getDatasets().add(managedDataset.getDataset());
+    	HpcDatasetCollectionDTO datasetCollectionDTO = 
+    			                       new HpcDatasetCollectionDTO();
+    	for(HpcDataset dataset : datasets) {
+    		datasetCollectionDTO.getHpcDatasetDTO().add(toDTO(dataset));
     	}
     	
-    	return datasetDTO;
+    	return datasetCollectionDTO;
     }
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//  
+	
+    /**
+     * Create a dataset DTO from a domain object
+     * 
+     * @param dataset the domain object.
+     *
+     * @return The DTO.
+     */
+    private HpcDatasetDTO toDTO(HpcDataset dataset)
+    {
+    	if(dataset == null) {
+     	   return null;
+     	}
+    	
+    	HpcDatasetDTO datasetDTO = new HpcDatasetDTO();
+    	datasetDTO.setId(dataset.getId());
+    	datasetDTO.setFileSet(dataset.getFileSet());
+    	
+    	return datasetDTO;
+    }  
 }
 
  
