@@ -4,8 +4,9 @@ var linkCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
 '</div>';
 app.controller('MyCtrl', function($scope, $http, $q, $attrs) {
 	var deferred = $q.defer();
-	//$http({method: 'GET', url: '/users', params: {'limit': $scope.pagingOptions.pageSize, 'page': $scope.pagingOptions.currentPage}})
-	$http.get('http://localhost:7737/hpc-server/dataset/?creatorId=pkonka').
+	$scope.$watch('userId', function () {
+	console.log('userId', $scope.userId);
+	$http.get($scope.baseURL + '/dataset/?creatorId=' + $scope.userId).
 	//$http.get('/js/hpcDatasets.json').
 	  success(function(data, status, headers, config) {
 		        var datasets = data["gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO"];
@@ -14,10 +15,9 @@ app.controller('MyCtrl', function($scope, $http, $q, $attrs) {
 				deferred.resolve($scope.hpcData);
 	  }).
 	  error(function(data, status, headers, config) {
-		// called asynchronously if an error occurs
-		// or server returns response with an error status.
 		console.log('Failure', status);
 	  });
+	});
 
 $scope.gridOptions = {
         data: 'hpcData',
@@ -36,12 +36,12 @@ $scope.gridOptions = {
             enableCellEdit: false
          }, {
             field: 'creatorId',
-            displayName: 'Creator Id',
+            displayName: 'Creator By',
             enableCellEdit: false
          },
          {
-            field: 'files.length',
-            displayName: 'Number of files',
+            field: 'registratorId',
+            displayName: 'Registered by',
             enableCellEdit: false
          },        {
             field: 'created',

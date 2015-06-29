@@ -44,6 +44,8 @@ import org.springframework.web.client.RestTemplate;
 public class HpcLoginController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.login}")
     private String serviceURL;
+	@Value("${gov.nih.nci.hpc.server}")
+	private String baseURL;
 
 
   @RequestMapping(method = RequestMethod.GET)
@@ -84,6 +86,7 @@ public class HpcLoginController extends AbstractHpcController {
 		  model.addAttribute("hpcLogin", hpcLogin);
 		  return "index";
 	  }
+	  model.addAttribute("baseURL", baseURL);
 	  return "dashboard";
   }
 }
