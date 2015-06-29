@@ -18,10 +18,16 @@ import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.web.model.HpcDatasetRegistration;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
@@ -55,6 +61,7 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.nihfnlcr.name}")
     private String destinationEndpoint;
 	
+	private final List<String> staticList = new ArrayList<String>(Arrays.asList("1233456", "6789123"));
 	
 
   @RequestMapping(method = RequestMethod.GET)
@@ -72,14 +79,14 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 	    	   dataset.getLocation().getDataTransfer() == null)
 	 */
   @RequestMapping(method = RequestMethod.POST)
-  public String register(@Valid @ModelAttribute("hpcRegistration")  HpcDatasetRegistration registration, Model model, BindingResult bindingResult, HttpSession session) {
+  public String register(@Valid @ModelAttribute("hpcRegistration")  HpcDatasetRegistration registration, Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 	  HpcUserDTO user = (HpcUserDTO)session.getAttribute("hpcUser");
 	  //TODO: Add error message
 	  if(user == null)
 	  {
 		return "index";  
 	  }
-	  
+	  List<HpcMetadataItem> eItems = getMetadataitems(request);
 	  RestTemplate restTemplate = new RestTemplate();
 	  HpcDatasetRegistrationDTO dto = new HpcDatasetRegistrationDTO();
 	  dto.setName(registration.getDatasetName());
@@ -116,6 +123,7 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 		  metadata.setDataEncrypted(registration.getEncrypted().equalsIgnoreCase("Yes"));
 		  metadata.setDataContainsPII(registration.getPii().equalsIgnoreCase("Yes"));
 		  metadata.setFundingOrganization(registration.getFundingOrganization());
+		  metadata.getMetadataItems().addAll(eItems);
 		  upload.setMetadata(metadata);
 		  dto.getUploadRequests().add(upload);
 	  }
@@ -140,5 +148,27 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 		  return "datasetRegistration";
 	  }
 	  return "datasetRegisterResult";
+  }
+  
+  private List<HpcMetadataItem> getMetadataitems(HttpServletRequest request)
+  {
+	  List<HpcMetadataItem> items = new ArrayList<HpcMetadataItem>();
+	  Enumeration<String> names = request.getParameterNames();
+	  Field[] fields = HpcDatasetRegistration.class.getDeclaredFields();
+	  List<String> fieldNames = new ArrayList<String>();
+	  for(int i=0;i<fields.length;i++)
+		  fieldNames.add(fields[i].getName());
+	  while(names.hasMoreElements())
+	  {
+		  String attr = names.nextElement();
+		  if(!fieldNames.contains(attr))
+		  {
+			  HpcMetadataItem item = new HpcMetadataItem();
+			  item.setKey(attr);
+			  item.setValue(request.getParameter(attr));
+			  items.add(item);
+		  }
+	  }
+	  return items;
   }
 }

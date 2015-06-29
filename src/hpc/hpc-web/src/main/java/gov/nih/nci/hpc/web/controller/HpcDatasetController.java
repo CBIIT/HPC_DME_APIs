@@ -9,10 +9,12 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.domain.dataset.HpcDataset;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
@@ -44,11 +46,13 @@ public class HpcDatasetController extends AbstractHpcController {
 	private String serviceURL;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public String home( Model model,  HttpSession session
+	public String home( String id, Model model,  HttpSession session
 			) {
 		RestTemplate restTemplate = new RestTemplate();
 		try {
-			URI uri = new URI(serviceURL + "/test");
+			if(id == null)
+				return "dashboard";
+			URI uri = new URI(serviceURL + "/"+id);
 			ResponseEntity<HpcDatasetDTO> dataEntity = restTemplate
 					.getForEntity(uri, HpcDatasetDTO.class);
 			if (dataEntity == null || !dataEntity.hasBody()) {
@@ -57,7 +61,16 @@ public class HpcDatasetController extends AbstractHpcController {
 				//bindingResult.addError(error);
 			} else {
 				HpcDatasetDTO dataDTO = dataEntity.getBody();
-				model.addAttribute("dataset", dataDTO);
+				if(dataDTO != null)
+				{
+					List<HpcDataset> datasets = dataDTO.getDatasets();
+					if(datasets.size() > 0)
+						model.addAttribute("dataset", datasets.get(0));
+					else
+						model.addAttribute("dataset", new HpcDatasetDTO());
+				}
+				else
+					model.addAttribute("dataset", new HpcDatasetDTO());
 				//Get file upload status
 			}
 		} catch (URISyntaxException e) {
