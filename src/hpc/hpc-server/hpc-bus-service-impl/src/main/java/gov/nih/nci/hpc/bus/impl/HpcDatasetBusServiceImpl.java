@@ -119,14 +119,10 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Validate the user has a valid data transfer account.
-    	//HpcUser user = userService.get(datasetRegistrationDTO.getRegistratorId());
-    	//if(managedUser == null || 
-    	  // managedUser.getUser().getDataTransferAccount() == null) {
-    	   //throw new HpcException("Could not find user with nihUserID=" + 
-    		//		              datasetRegistrationDTO.getRegistratorId(),
-	          //                    HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);		
-    	//}
+    	// Validate the associated users with this dataset have valid NIH 
+    	// account registered with HPC. In addition, validate the registrator
+    	// has a valid data transfer account.
+    	validateAssociatedUsers(datasetRegistrationDTO.getUploadRequests());
     	
     	// Add the dataset to the managed collection.
     	String datasetId = 
@@ -217,6 +213,55 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	
     	return datasetDTO;
     }  
+    
+    /**
+     * Validate the users associated with the upload request are valid.
+     * The associated users are - creator, registrator and primary investigator.
+     * 
+     * @param uploadRequests The upload requests to validate. 
+     *
+     * @throws HpcException if any validation error found.
+     */
+    private void validateAssociatedUsers(
+    		             List<HpcFileUploadRequest> uploadRequests)
+    		             throws HpcException
+    {
+    	if(uploadRequests == null) {
+    	   return;
+    	}
+    	
+    	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
+    		if(uploadRequest.getMetadata() == null) {
+    		   continue;	
+    		}
+    		
+    		validateUser(uploadRequest.getMetadata().getPrimaryInvestigatorNihUserId(),
+    				     HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR);
+    		validateUser(uploadRequest.getMetadata().getCreatorNihUserId(),
+				         HpcDatasetUserAssociation.CREATOR);
+    		validateUser(uploadRequest.getMetadata().getRegistratorNihUserId(),
+			             HpcDatasetUserAssociation.REGISTRATOR);
+    	}
+    }
+    
+    /**
+     * Validate a user is registered with HPC
+     * 
+     * @param nihUserId The NIH User ID.
+     * @param userAssociation The user's association to the dataset.
+     *
+     * @throws HpcException if the user is not registered with HPC.
+     */
+    private void validateUser(String nihUserId, 
+    		                  HpcDatasetUserAssociation userAssociation)
+    		                 throws HpcException
+    {
+    	if(userService.get(nihUserId) == null) {
+    	   throw new HpcException("Could not find "+ userAssociation +
+    				               " user with nihUserID = " + nihUserId,
+    		                       HpcRequestRejectReason.INVALID_NIH_ACCOUNT);	
+    	}
+    }
 }
 
  

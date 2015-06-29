@@ -126,6 +126,12 @@ public class HpcUserServiceImpl implements HpcUserService
     @Override
     public HpcUser get(String nihUserId) throws HpcException
     {
+    	// Input validation.
+    	if(nihUserId == null) {
+    	   throw new HpcException("Null NIH user ID", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
     	return userDAO.get(nihUserId);
     }
 }
