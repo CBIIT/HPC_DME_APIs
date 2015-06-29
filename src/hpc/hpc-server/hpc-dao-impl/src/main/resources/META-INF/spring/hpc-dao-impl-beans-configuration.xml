@@ -35,7 +35,7 @@
 	<bean id="hpcDatasetCodec" 
 	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcDatasetCodec"/>
 	<bean id="hpcFileSetCodec" 
-	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileCodec"/>
+	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileSetCodec"/>
 	<bean id="hpcFileCodec" 
 	      class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileCodec"/>
 	<bean id="hpcFileLocationCodec" 
