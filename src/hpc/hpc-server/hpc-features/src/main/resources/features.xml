@@ -21,11 +21,15 @@
     </feature>
     
 	
-    <!-- HPC API Server -->  
+    <!-- HPC Server -->  
     <feature name="hpc-server" version="${project.version}">
-	   
-    	<feature version="${mongodb.version}">hpc-mongo-async-driver</feature>		
+    	<feature version="${mongodb.version}">hpc-mongo-async-driver</feature>	
+    	
+    	<!--  Config files -->
+    	<configfile finalname="/etc/gov.nih.nci.hpc.cfg" override="true">mvn:${project.groupId}/hpc-features/${project.version}/properties/hpc-server</configfile>
+  		<configfile finalname="/etc/hpc-server/dynamicfields.json" override="true">mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}/json/dynamicfields</configfile>	
   
+  		<!-- Server Bundles -->
         <bundle>mvn:${project.groupId}/hpc-common/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-domain-types/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-domain-model/${project.version}</bundle>
@@ -42,7 +46,7 @@
         <bundle>mvn:${project.groupId}/hpc-bus-service-impl/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-ws-rs-api/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}</bundle>
-       <configfile finalname="/etc/hpc-server/dynamicfields.json" override="true">mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}/json/dynamicfields</configfile>		
+       	
     </feature>
     
 </features>
