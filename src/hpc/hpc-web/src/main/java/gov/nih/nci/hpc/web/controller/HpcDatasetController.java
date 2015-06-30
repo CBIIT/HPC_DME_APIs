@@ -9,7 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.domain.dataset.HpcDataset;
+import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 
 import java.net.URI;
@@ -58,14 +58,15 @@ public class HpcDatasetController extends AbstractHpcController {
 			if (dataEntity == null || !dataEntity.hasBody()) {
 				ObjectError error = new ObjectError("id",
 						"Dataset is not found!");
+				model.addAttribute("error", "Failed to get Dataset: "+ id);
 				//bindingResult.addError(error);
 			} else {
 				HpcDatasetDTO dataDTO = dataEntity.getBody();
 				if(dataDTO != null)
 				{
-					List<HpcDataset> datasets = dataDTO.getDatasets();
-					if(datasets.size() > 0)
-						model.addAttribute("dataset", datasets.get(0));
+					HpcFileSet dataset = dataDTO.getFileSet();
+					if(dataset != null)
+						model.addAttribute("dataset", dataDTO);
 					else
 						model.addAttribute("dataset", new HpcDatasetDTO());
 				}
@@ -75,6 +76,7 @@ public class HpcDatasetController extends AbstractHpcController {
 			}
 		} catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
+			model.addAttribute("error", "Failed to get Dataset: "+e.getMessage());
 			e.printStackTrace();
 		}
 

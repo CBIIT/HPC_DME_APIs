@@ -116,6 +116,13 @@
 									<i class="fa fa-list-alt red"></i><strong>Dataset</strong>
 								</h2>
 							</div>
+							<div th:if="${error != null}">
+								<div class="alert alert-error">  
+								  <a class="close" data-dismiss="alert">×</a>  
+									   <label for="${error}" th:text="${error}"></label>
+								</div>  
+							</div>
+							<div th:if="${error == null}">
 							<!--panel-body start-->
 							<div class="panel-body" >
 								<div class="form-group">
@@ -123,37 +130,25 @@
 										<label for="Name">UUID:</label> <label for="${dataset.id}" th:text="${dataset.id}"></label>
 									</div>
 									<div class="col-md-6 form-group">
-										<label for="Name">Name:</label> <label for="${dataset.name}" th:text="${dataset.name}"></label>
+										<label for="Name">Name:</label> <label for="${dataset.fileSet.name}" th:text="${dataset.fileSet.name}"></label>
 									</div>
 									<div class="col-md-12 form-group">
-										<label for="Name">Description:</label> <label for="${dataset.description}" th:text="${dataset.description}"></label>
+										<label for="Name">Description:</label> <label for="${dataset.fileSet.description}" th:text="${dataset.fileSet.description}"></label>
 									</div>
 									<div class="col-md-6 form-group">
-										<label for="textbox1">PI Name:</label> <label for="${dataset.primaryInvestigatorId}" th:text="${dataset.primaryInvestigatorId}"></label>
+										<label for="textbox1">Comments:</label> <label for="${dataset.fileSet.comments}" th:text="${dataset.fileSet.comments}"></label>
 									</div>
 									<div class="col-md-6 form-group">
-										<label for="Name">Created by:</label> <label for="${dataset.creatorId}" th:text="${dataset.creatorId}"></label>
-									</div>
-									<div class="col-md-6 form-group">
-										<label for="Name">Created on:</label> <label for="${dataset.created}" th:text="${#calendars.format(dataset.created,'dd MMMM yyyy')}"></label>
-									</div>
-									<div class="col-md-6 form-group">
-										<label for="Name">Registered by:</label> <label for="${dataset.registratorId}" th:text="${dataset.registratorId}"></label>
-									</div>
-									<div class="col-md-6 form-group">
-										<label for="textbox1">Lab/Branch:</label> <label for="${dataset.labBranch}" th:text="${dataset.labBranch}"></label>
-									</div>
-									<div class="col-md-12 form-group">
-										<label for="textbox1">Comments:</label> <label for="${dataset.comments}" th:text="${dataset.comments}"></label>
+										<label for="textbox1">Created on:</label> <label for="${dataset.fileSet.created}" th:text="${#calendars.format(dataset.fileSet.created,'dd MMMM yyyy')}"></label>
 									</div>
 								</div>
-
+								</div>
 
 								
 							</div>
 							<div class="panel-footer">
 				<div class="panel-group" id="accordion">
-						<div th:each="file : ${dataset.files}" th:with="counter=${#ids.seq('')}" class="panel panel-default">
+						<div th:each="file : ${dataset.fileSet.files}" th:with="counter=${#ids.seq('')}" class="panel panel-default">
 							<div class="panel-heading">
 								<h4 class="panel-title">
 								
@@ -164,8 +159,17 @@
 							<div th:id="'collapse'+${counter}" class="panel-collapse collapse">
 								<div class="panel-body">
 								<div class="form-group">
-									<div class="col-md-12 form-group">
-										<label for="Name">File Type:</label> <label for="${file.getType().value()}" th:text="${file.getType().value()}"></label>
+									<div class="col-md-6 form-group">
+										<label for="Name">ID:</label> <label for="${file.id}" th:text="${file.id}"></label>
+									</div>
+									<div class="col-md-6 form-group">
+										<label for="Name">Description:</label> <label for="${file.metadata.primaryMetadata.description}" th:text="${file.metadata.primaryMetadata.description}"></label>
+									</div>
+									<div class="col-md-6 form-group">
+										<label for="Name">Type:</label> <label for="${file.type.value()}" th:text="${file.type.value()}"></label>
+									</div>
+									<div class="col-md-6 form-group">
+										<label for="Name">Size:</label> <label for="${file.size}" th:text="${file.size}"></label>
 									</div>
 									<div class="col-md-12 form-group">
 										<label for="textbox1">Origin Endpoint:</label> <label for="${file.getSource().getEndpoint()}" th:text="${file.getSource().getEndpoint()}"></label>
@@ -179,17 +183,36 @@
 									<div class="col-md-12 form-group">
 										<label for="Name">Destination Endpoint file path:</label> <label for="${file.getLocation().getPath()}" th:text="${file.getLocation().getPath()}"></label>
 									</div>
+									<div class="col-md-6 form-group">
+										<label for="Name">PII:</label> <label for="${file.metadata.primaryMetadata.dataContainsPII}" th:text="${file.metadata.primaryMetadata.dataContainsPII}"></label>
+									</div>
+									<div class="col-md-6 form-group">
+										<label for="Name">PHI:</label> <label for="${file.metadata.primaryMetadata.dataContainsPHI}" th:text="${file.metadata.primaryMetadata.dataContainsPHI}"></label>
+									</div>
+									<div class="col-md-6 form-group">
+										<label for="Name">Encrypted:</label> <label for="${file.metadata.primaryMetadata.dataEncrypted}" th:text="${file.metadata.primaryMetadata.dataEncrypted}"></label>
+									</div>
+									<div class="col-md-6 form-group">
+										<label for="Name">Compressed:</label> <label for="${file.metadata.primaryMetadata.dataCompressed}" th:text="${file.metadata.primaryMetadata.dataCompressed}"></label>
+									</div>
+									<div class="col-md-6 form-group">
+										<label for="Name">Funding Organization:</label> <label for="${file.metadata.primaryMetadata.fundingOrganization}" th:text="${file.metadata.primaryMetadata.fundingOrganization}"></label>
+									</div>
+									<div class="col-md-6 form-group">
+										<label for="Name">PII:</label> <label for="${file.metadata.primaryMetadata.primaryInvestigatorNihUserId}" th:text="${file.metadata.primaryMetadata.primaryInvestigatorNihUserId}"></label>
+									</div>
+									<div class="col-md-6 form-group">
+										<label for="Name">Created By:</label> <label for="${file.metadata.primaryMetadata.creatorNihUserId}" th:text="${file.metadata.primaryMetadata.creatorNihUserId}"></label>
+									</div>
+									<div class="col-md-6 form-group">
+										<label for="Name">Registered by:</label> <label for="${file.metadata.primaryMetadata.registratorNihUserId}" th:text="${file.metadata.primaryMetadata.registratorNihUserId}"></label>
+									</div>
+									<div class="col-md-6 form-group">
+										<label for="Name">Lab/Branch:</label> <label for="${file.metadata.primaryMetadata.labBranch}" th:text="${file.metadata.primaryMetadata.labBranch}"></label>
+									</div>
+<!-- 
 									<div class="panel-footer">
-								<div class="form-group">
-									<div class="col-md-12 form-group">
-										<label for="Name">PII:</label> <label for="${file.getMetadata().getPrimaryMetadata().isDataContainsPII()}" th:text="${file.getMetadata().getPrimaryMetadata().isDataContainsPII()}"></label>
-									</div>
-									<div class="col-md-12 form-group">
-										<label for="textbox1">Encrypted:</label> <label for="${file.getMetadata().getPrimaryMetadata().isDataEncrypted()}" th:text="${file.getMetadata().getPrimaryMetadata().isDataEncrypted()}"></label>
-									</div>
-									<div class="col-md-12 form-group">
-										<label for="Name">Funding Organization:</label> <label for="${file.getMetadata().getPrimaryMetadata().getFundingOrganization()}" th:text="${file.getMetadata().getPrimaryMetadata().getFundingOrganization()}"></label>
-									</div>
+									<div class="form-group">
 									<div th:each="metadataItem : ${file.getMetadata().getPrimaryMetadata().getMetadataItems()}" class="panel panel-default">
 									<div class="col-md-12 form-group">
 										<label th:text="${metadataItem.getKey()}"></label>: <label for="${metadataItem.getKey()}" th:text="${metadataItem.getValue()}"></label>
@@ -197,6 +220,7 @@
 									</div>
 								</div>
 								</div>
+-->
 								</div>
 								</div>
 							</div>
