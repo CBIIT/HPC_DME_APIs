@@ -26,7 +26,7 @@
                         http://www.springframework.org/schema/osgi-compendium http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd">
 
 	<!--  HPC Rest Server OSGi Properties -->
-	<osgix:cm-properties id="preProps" persistent-id="hpc.rs">
+	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		<prop key="hpc.ws.rs.host">localhost</prop>
 		<prop key="hpc.ws.rs.port">7737</prop>
 		<prop key="hpc.ws.rs.path">hpc-server</prop>

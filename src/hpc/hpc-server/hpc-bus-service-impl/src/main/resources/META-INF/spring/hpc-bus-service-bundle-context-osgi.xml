@@ -22,7 +22,7 @@
                         http://www.springframework.org/schema/osgi-compendium http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd">
 
 	<!--  HPC Application Services OSGi Properties -->
-	<osgix:cm-properties id="preProps" persistent-id="hpc.service">
+	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		
 	</osgix:cm-properties>
 
