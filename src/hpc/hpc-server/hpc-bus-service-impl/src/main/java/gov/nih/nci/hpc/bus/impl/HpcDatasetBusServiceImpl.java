@@ -24,6 +24,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
+import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -131,20 +132,28 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     				  datasetRegistrationDTO.getDescription(),
     				  datasetRegistrationDTO.getComments(),
     				  datasetRegistrationDTO.getUploadRequests());
+    	logger.info("Registered dataset id = " + datasetId);
     	
-    	// Extract the data transfer account credentials.
-    	//String username  = managedUser.getUser().getDataTransferAccount().getUsername();
-    	//String password  = managedUser.getUser().getDataTransferAccount().getPassword();
+    	// Upload all files in registration request.
+    	for(HpcFileUploadRequest uploadRequest : 
+    		datasetRegistrationDTO.getUploadRequests()) { 
+    		// Get the data transfer account of the registrator.
+    		HpcDataTransferAccount dataTransferAccount = 
+    		   userService.get(
+    			   uploadRequest.getMetadata().getRegistratorNihUserId()).
+    			                               getDataTransferAccount();
+        	
+        	// Submit data transfer request for this file.
+    		logger.info("Submiting Data Transfer Request: "+ 
+        	            uploadRequest.getLocations());
+    		boolean transferStatus = 
+    				dataTransferService.transferDataset(
+    				                    uploadRequest.getLocations(), 
+    				                    dataTransferAccount.getUsername(), 
+    				                    dataTransferAccount.getPassword());
+    		logger.info("Data Transfer status : " + transferStatus);
+    	}
     	
-    	// Submit data transfer requests for the files in this dataset 
-    	//for(HpcFileUploadRequest fileUploadRequest : datasetRegistrationDTO.getUploadRequests()) {  
-    		//logger.info("Submiting Data Transfer Request: "+ fileUploadRequest.getLocations());
-    		//boolean transferStatus = 
-    			//	hpcDataTransferService.transferDataset(
-    				//		                       fileUploadRequest.getLocations(), 
-    					//	                       username, password);
-    		//logger.info("Data Transfer status : " + transferStatus);
-    	//}
     	return datasetId;
     }
     
