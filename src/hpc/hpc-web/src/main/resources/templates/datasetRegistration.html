@@ -90,14 +90,20 @@ function addTextbox() {
 						</h3>
 						<ol class="breadcrumb">
 							<li><i class="fa fa-dashboard"></i><a th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Dataset Registration</li>
+							<li><i class="fa fa-list-alt"></i>FileSet Registration</li>
 						</ol>
 					</div>
 				</div>
 			<!--Title End-->
 			<!--Row start-->
   <div class="row">
-	<h3><UL>HPC Dataset Registration</UL></h3><br/><br/>
+	<h3><UL>HPC FileSet Registration</UL></h3><br/><br/>
+	<div th:if="${error != null}">
+		<div class="alert alert-error">  
+		  <a class="close" data-dismiss="alert">×</a>  
+			   <label for="${error}" th:text="${error}"></label>
+		</div>  
+	</div>
 	<form class="form-horizontal" action="#" role="form" th:action="@{/registerDataset}" th:object="${hpcRegistration}" method="post" enctype="multipart/form-data">
 	<div class="form-group">
 	<label class="control-label col-sm-2" for="datasetName">Name:</label>
@@ -116,15 +122,23 @@ function addTextbox() {
 	<div class="form-group">
 	  <label class="control-label col-sm-2" for="investigatorName">Investigator Name:</label>
 	  <div class="col-sm-7">
-		<label th:if="${#fields.hasErrors('investigatorName')}" th:errors="*{investigatorName}">investigatorName Error</label>
-		<input type="text" class="form-control" th:field="*{investigatorName}" th:required="required" placeholder="Enter Investigator Name"/>
+		<label th:if="${#fields.hasErrors('investigatorId')}" th:errors="*{investigatorId}">investigatorName Error</label>
+		<select th:field="*{investigatorId}" class="form-control" th:required="required">
+		    <option value="-1">----Select----</option>
+		    <option th:each="entry : ${piList.entrySet()}" th:value="${entry.key}" th:text="${entry.value}">
+			Wireframe</option>
+        </select>
 	  </div>
 	</div>
 	<div class="form-group">
 	  <label class="control-label col-sm-2" for="investigatorName">Created By:</label>
 	  <div class="col-sm-7">
-		<label th:if="${#fields.hasErrors('creatorName')}" th:errors="*{creatorName}">creatorName Error</label>
-		<input type="text" class="form-control" th:field="*{creatorName}" th:required="required" placeholder="Enter Data Created by"/>
+		<label th:if="${#fields.hasErrors('creatorId')}" th:errors="*{creatorId}">creatorName Error</label>
+		<select th:field="*{creatorId}" class="form-control" th:required="required">
+		    <option value="-1">----Select----</option>
+		    <option th:each="entry : ${creatorList.entrySet()}" th:value="${entry.key}" th:text="${entry.value}">
+			Wireframe</option>
+        </select>
 	  </div>
 	</div>
 	<div class="form-group">
@@ -192,8 +206,10 @@ function addTextbox() {
 	  <div id="addText" class="col-sm-7">
 	  </div>
 	</div>
+<!-- 	
 	<metawidget id="metawidget">
 	</metawidget>
+-->
 	<div class="form-group">
 	  <div class="col-sm-offset-2 col-sm-7">
 		<button type="submit" class="btn btn-lg btn-success">Register</button>
