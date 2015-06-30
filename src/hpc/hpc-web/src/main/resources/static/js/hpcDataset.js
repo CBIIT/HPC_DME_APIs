@@ -6,12 +6,14 @@ app.controller('MyCtrl', function($scope, $http, $q, $attrs) {
 	var deferred = $q.defer();
 	$scope.$watch('userId', function () {
 	console.log('userId', $scope.userId);
+	console.log('baseURL', $scope.baseURL);
 	$http.get($scope.baseURL + '/dataset/?creatorId=' + $scope.userId).
 	//$http.get('/js/hpcDatasets.json').
 	  success(function(data, status, headers, config) {
-		        var datasets = data["gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO"];
-				console.log('Success', datasets["datasets"]);
-				$scope.hpcData = datasets["datasets"];
+		        var collection = data["gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO"];
+		        var datasets = collection["gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO"];
+				console.log('Success', datasets["fileSet"]);
+				$scope.hpcData = datasets;
 				deferred.resolve($scope.hpcData);
 	  }).
 	  error(function(data, status, headers, config) {
@@ -26,25 +28,16 @@ $scope.gridOptions = {
         showSelectionCheckbox: false,
         selectedItems:$scope.selectedRows,
         columnDefs: [{
-            field: 'name',
-            displayName: 'Dataset Name',
+            field: 'id',
+            displayName: 'Id',
             enableCellEdit: false,
             cellTemplate: linkCellTemplate
          }, {
-            field: 'primaryInvestigatorId',
-            displayName: 'PI Id',
-            enableCellEdit: false
+             field: 'fileSet.name',
+             displayName: 'Dataset Name',
+             enableCellEdit: false
          }, {
-            field: 'creatorId',
-            displayName: 'Creator By',
-            enableCellEdit: false
-         },
-         {
-            field: 'registratorId',
-            displayName: 'Registered by',
-            enableCellEdit: false
-         },        {
-            field: 'created',
+            field: 'fileSet.created',
             displayName: 'Created Date',
             enableCellEdit: false
          }]

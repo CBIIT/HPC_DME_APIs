@@ -9,14 +9,14 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import java.net.URI;
-
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferType;
-import gov.nih.nci.hpc.domain.user.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcNihAccount;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
+
+import java.net.URI;
 
 import javax.validation.Valid;
 
@@ -68,7 +68,9 @@ public class HpcUserController extends AbstractHpcController {
 
 	  try
 	  {
+
 		  URI uri = new URI(serviceUserURL+"/"+hpcUser.getNihUserId());
+/*
 		  ResponseEntity<HpcUserDTO> userEntity = restTemplate.getForEntity(uri, HpcUserDTO.class);
 		  if(userEntity != null && userEntity.hasBody() && userEntity.getBody() != null)
 		  {
@@ -79,20 +81,20 @@ public class HpcUserController extends AbstractHpcController {
 	      if (bindingResult.hasErrors()) {
 	          return "enroll";
 	      }
-	  
+	*/  
 		 // HpcProxy client =  new HpcProxyImpl(serverURL);
 		 // HpcUserRegistrationRestService userRegistration = client.getUserRegistrationServiceProxy();
 	      HpcUserRegistrationDTO userDTO = new HpcUserRegistrationDTO();
-		  HpcUser user = new HpcUser();
-		  user.setNihUserId(hpcUser.getNihUserId());
+	      HpcNihAccount user = new HpcNihAccount();
+		  user.setUserId(hpcUser.getNihUserId());
 		  user.setFirstName(hpcUser.getFirstName());
 		  user.setLastName(hpcUser.getLastName());
 		  HpcDataTransferAccount dtAccount = new HpcDataTransferAccount();
 		  dtAccount.setUsername(hpcUser.getGlobusUserId());
 		  dtAccount.setPassword(hpcUser.getGlobusPasswd());
 		  dtAccount.setDataTransferType(HpcDataTransferType.GLOBUS);
-		  user.setDataTransferAccount(dtAccount);
-		  userDTO.setUser(user);
+		  userDTO.setDataTransferAccount(dtAccount);
+		  userDTO.setNihAccount(user);
 
 		  Boolean validGlobusCredentials = restTemplate.postForObject(new URI(serviceGlobusUserURL),  userDTO, Boolean.class);
 		  if(validGlobusCredentials != null)
