@@ -95,8 +95,8 @@ public class HpcFileLocationCodec extends HpcCodec<HpcFileLocation>
 		HpcFileLocation location = new HpcFileLocation();
 		location.setEndpoint(document.get(FILE_LOCATION_ENDPOINT_KEY, 
 				                          String.class));
-		location.setEndpoint(document.get(FILE_LOCATION_PATH_KEY, 
-                                          String.class));
+		location.setPath(document.get(FILE_LOCATION_PATH_KEY, 
+                                      String.class));
 		
 		return location;
 	}
