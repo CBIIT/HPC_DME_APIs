@@ -46,11 +46,6 @@ public class HpcDataRegistrationControllerTest {
 		  HpcDatasetRegistrationDTO dto = new HpcDatasetRegistrationDTO();
 		  dto.setName("Dataset1");
 		  //TODO: Lookup Id
-		  dto.setPrimaryInvestigatorId("Investigator1");
-		  dto.setRegistratorId("konkapv");
-		  //TODO: ID Lookup
-		  dto.setCreatorId("konkapv");
-		  dto.setLabBranch("CBIIT");
 		  dto.setDescription("description");
 		  dto.setComments("Comments");
 		  String files = "test1.txt,test2.txt";
@@ -76,6 +71,11 @@ public class HpcDataRegistrationControllerTest {
 			  metadata.setDataEncrypted(false);
 			  metadata.setDataContainsPII(false);
 			  metadata.setFundingOrganization("funding1");
+			  metadata.setPrimaryInvestigatorNihUserId("Investigator1");
+			  metadata.setRegistratorNihUserId("konkapv");
+			  //TODO: ID Lookup
+			  metadata.setCreatorNihUserId("konkapv");
+			  metadata.setLabBranch("CBIIT");
 			  upload.setMetadata(metadata);
 			  dto.getUploadRequests().add(upload);
 		  }		  try

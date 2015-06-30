@@ -24,7 +24,11 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -68,6 +72,7 @@ public class HpcDataRegistrationController extends AbstractHpcController {
   public String home(Model model){
 	  HpcDatasetRegistration hpcRegistration = new HpcDatasetRegistration();
 	  model.addAttribute("hpcRegistration", hpcRegistration);
+	  getPIs(model);
       return "datasetRegistration";
   }
 
@@ -90,14 +95,10 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 	  RestTemplate restTemplate = new RestTemplate();
 	  HpcDatasetRegistrationDTO dto = new HpcDatasetRegistrationDTO();
 	  dto.setName(registration.getDatasetName());
-	  //TODO: Lookup Id
-	  dto.setPrimaryInvestigatorId(registration.getInvestigatorName());
-	  dto.setRegistratorId(user.getUser().getNihUserId());
-	  //TODO: ID Lookup
-	  dto.setCreatorId(registration.getCreatorName());
-	  dto.setLabBranch(registration.getBranchName());
 	  dto.setDescription(registration.getDescription());
 	  dto.setComments(registration.getComments());
+	  
+	  //TODO: Lookup Id
 	  String files = registration.getOriginEndpointFilePath();
 	  StringTokenizer tokens = new StringTokenizer(files, ",");
 	  while(tokens.hasMoreTokens())
@@ -123,6 +124,12 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 		  metadata.setDataEncrypted(registration.getEncrypted().equalsIgnoreCase("Yes"));
 		  metadata.setDataContainsPII(registration.getPii().equalsIgnoreCase("Yes"));
 		  metadata.setFundingOrganization(registration.getFundingOrganization());
+		  metadata.setPrimaryInvestigatorNihUserId(registration.getInvestigatorId());
+		  metadata.setRegistratorNihUserId(user.getNihAccount().getUserId());
+		  metadata.setDescription(registration.getDescription());
+		  //TODO: ID Lookup
+		  metadata.setCreatorNihUserId(registration.getCreatorId());
+		  metadata.setLabBranch(registration.getBranchName());
 		  metadata.getMetadataItems().addAll(eItems);
 		  upload.setMetadata(metadata);
 		  dto.getUploadRequests().add(upload);
@@ -144,8 +151,12 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 		  ObjectError error = new ObjectError("hpcLogin", "Failed to register: " + e.getMessage());
 		  bindingResult.addError(error);
 		  model.addAttribute("registrationStatus", false);
-		  model.addAttribute("registrationOutput", "Failed to register your request due to: "+e.getMessage());
+		  model.addAttribute("error", "Failed to register your request due to: "+e.getMessage());
 		  return "datasetRegistration";
+	  }
+	  finally
+	  {
+		  getPIs(model);
 	  }
 	  return "datasetRegisterResult";
   }
@@ -170,5 +181,22 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 		  }
 	  }
 	  return items;
+  }
+  
+  
+  private void getPIs(Model model)
+  {
+	  Map<String, String> users = new HashMap<String, String>();
+	  users.put("konkapv", "Prasad Konka");
+	  users.put("narram", "Mahidhar Narra");
+	  users.put("rosenbergea", "Eran Rosenberg");
+	  users.put("luz6", "Zhengwu Lu");
+	  users.put("stahlbergea", "Eric A Stahlberg");
+	  users.put("sdavis2", "Sean R Davis");
+	  users.put("maggiec", "Margaret C Cam");
+	  users.put("fitzgepe", "Peter C Fitzgerald");
+	  users.put("zhaoyong", "Yongmei Zhao");
+	  model.addAttribute("piList", users);
+	  model.addAttribute("creatorList", users);
   }
 }

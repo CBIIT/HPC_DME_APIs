@@ -11,9 +11,9 @@ public class HpcDatasetRegistration {
 	private String description;
 	private String comments;
 	@NotEmpty(message="Investigator name is required")
-	private String investigatorName;
+	private String investigatorId;
 	@NotEmpty(message="Creator name is required")
-	private String creatorName;
+	private String creatorId;
 	@NotEmpty(message="Lab/Branch is required")
 	private String branchName;
 	@NotEmpty(message="PII is required")
@@ -42,11 +42,11 @@ public class HpcDatasetRegistration {
 	public void setDatasetName(String datasetName) {
 		this.datasetName = datasetName;
 	}
-	public String getInvestigatorName() {
-		return investigatorName;
+	public String getInvestigatorId() {
+		return investigatorId;
 	}
-	public void setInvestigatorName(String investigatorName) {
-		this.investigatorName = investigatorName;
+	public void setInvestigatorId(String investigatorId) {
+		this.investigatorId = investigatorId;
 	}
 	public String getBranchName() {
 		return branchName;
@@ -90,11 +90,11 @@ public class HpcDatasetRegistration {
 	public void setComments(String comments) {
 		this.comments = comments;
 	}
-	public String getCreatorName() {
-		return creatorName;
+	public String getCreatorId() {
+		return creatorId;
 	}
-	public void setCreatorName(String creatorName) {
-		this.creatorName = creatorName;
+	public void setCreatorId(String creatorId) {
+		this.creatorId = creatorId;
 	}
 	public String getFundingOrganization() {
 		return fundingOrganization;
