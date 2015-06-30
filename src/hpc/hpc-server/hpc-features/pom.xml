@@ -52,6 +52,11 @@
                                     <type>xml</type>
                                     <classifier>features</classifier>
                                 </artifact>
+                                 <artifact>
+                                    <file>src/main/resources/hpc-server.properties</file>
+                                    <type>properties</type>
+                                    <classifier>hpc-server</classifier>
+                                </artifact>
                             </artifacts>
                         </configuration>
                     </execution>
