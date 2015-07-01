@@ -36,7 +36,6 @@
         <bundle>mvn:${project.groupId}/hpc-dto/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-dao-api/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-dao-impl/${project.version}</bundle>
-		<bundle>mvn:${project.groupId}/hpc-data-transfer/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-integration-api/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-integration-impl/${project.version}</bundle>
         <bundle>mvn:${project.groupId}/hpc-data-transfer/${project.version}</bundle>

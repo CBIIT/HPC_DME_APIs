@@ -8,13 +8,12 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 
-package gov.nih.nci.hpc.service;
+package gov.nih.nci.hpc.integration.transfer;
+
+import java.util.List;
 
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
-import gov.nih.nci.hpc.exception.HpcException;
-
-import java.util.List;
 
 /**
  * <p>
@@ -22,10 +21,10 @@ import java.util.List;
  * </p>
  *
  * @author <a href="mailto:Mahidhar.Narra@nih.gov">Mahidhar Narra</a>
- * @version $Id$
+ * @version $Id: HpcDataTransfer.java 
  */
 
-public interface HpcDataTransferService 
+public interface HpcDataTransfer 
 {         
     /**
      * transfer data.
@@ -36,7 +35,12 @@ public interface HpcDataTransferService
      * 
      * @throws HpcTransferException
      */
-    public HpcDataTransferReport transferDataset(HpcDataTransferLocations transferLocations,String username, String password) throws HpcException;
+    public HpcDataTransferReport transferDataset(HpcDataTransferLocations transferLocations, 
+    		                       String username, 
+    		                       String password) throws Exception;
+    public boolean validateUserAccount(String username, String password);
+    public String getTransferStatus(String submissionId);
+    
 }
 
  

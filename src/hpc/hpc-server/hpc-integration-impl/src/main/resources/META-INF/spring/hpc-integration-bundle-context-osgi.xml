@@ -29,7 +29,7 @@
 	<ctx:property-placeholder properties-ref="preProps" />
 
 	<!--  OSGi beans export -->
-	
+	<osgi:service ref="hpcDataTransfer" interface="gov.nih.nci.hpc.integration.transfer.HpcDataTransfer" />
 	<!-- OSGi beans import -->
 	
 </beans>

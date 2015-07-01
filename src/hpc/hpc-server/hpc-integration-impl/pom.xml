@@ -14,13 +14,64 @@
 	<build>
 		<plugins>
 			<plugin>
+			   <groupId>org.apache.maven.plugins</groupId>
+			   <artifactId>maven-install-plugin</artifactId>
+			   <version>2.5.1</version>
+			   <configuration>
+				  <groupId>org.globusonline</groupId>
+				  <artifactId>TransferAPIClient</artifactId>
+				  <version>1.0</version>
+				  <packaging>jar</packaging>
+				  <file>${basedir}/lib/TransferAPIClient-1.0.jar</file>
+				  <generatePom>true</generatePom>
+			   </configuration>
+			   <executions>
+				  <execution>
+					 <id>install-jar-lib</id>
+					 <goals>
+						<goal>install-file</goal>
+					 </goals>
+					 <phase>validate</phase>
+				  </execution>
+			   </executions>
+			</plugin>
+			<plugin>
+			   <groupId>org.apache.maven.plugins</groupId>
+			   <artifactId>maven-install-plugin</artifactId>
+			   <version>2.5.1</version>
+			   <configuration>
+				  <groupId>org.globusonline</groupId>
+				  <artifactId>java_nexus_client</artifactId>
+				  <version>0.0.2</version>
+				  <packaging>jar</packaging>
+				  <file>${basedir}/lib/java_nexus_client-0.0.2.jar</file>
+				  <generatePom>true</generatePom>
+			   </configuration>
+			   <executions>
+				  <execution>
+					 <id>install-jar-lib</id>
+					 <goals>
+						<goal>install-file</goal>
+					 </goals>
+					 <phase>validate</phase>
+				  </execution>
+			   </executions>
+			</plugin>		
+			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-						<Export-Package/>
+						<Export-Package>
+							gov.nih.nci.hpc.integration.transfer.impl,
+							gov.nih.nci.hpc.integration.globus.driver,
+							org.globusonline.*,
+							org.bouncycastle.jce.provider,
+							org.bouncycastle.*,
+							org.json.*
+						</Export-Package>
 						<Private-Package>
 							gov.nih.nci.hpc.integration.impl
 						</Private-Package>
@@ -40,5 +91,25 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpkix-jdk15on</artifactId>
+			<version>1.52</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on</artifactId>
+			<version>1.52</version>
+		</dependency>
+		<dependency>
+			<groupId>org.globusonline</groupId>
+			<artifactId>TransferAPIClient</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.globusonline</groupId>
+			<artifactId>java_nexus_client</artifactId>
+			<version>0.0.2</version>
+		</dependency>		
 	</dependencies>
 </project>
