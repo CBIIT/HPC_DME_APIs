@@ -15,5 +15,14 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-
+	<!-- HPC HpcGOTransfer instance -->
+	<bean id="hpcGOTransfer" class="gov.nih.nci.hpc.integration.globus.driver.HpcGOTransfer">
+		<constructor-arg value="mahinarra" index="0"/>
+		<constructor-arg value="Tsugua13" index="1"/>
+	</bean>
+	
+	<bean id="hpcDataTransfer" 
+	      class="gov.nih.nci.hpc.integration.transfer.impl.HpcDataTransferImpl">
+		<constructor-arg ref="hpcGOTransfer"/>
+	</bean>	
 </beans>

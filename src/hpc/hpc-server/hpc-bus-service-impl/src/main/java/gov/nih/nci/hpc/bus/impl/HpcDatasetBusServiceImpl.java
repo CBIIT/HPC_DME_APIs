@@ -11,7 +11,6 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
-
 import gov.nih.nci.hpc.service.HpcDatasetService;
 import gov.nih.nci.hpc.service.HpcUserService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -20,6 +19,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
@@ -146,12 +146,12 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
         	// Submit data transfer request for this file.
     		logger.info("Submiting Data Transfer Request: "+ 
         	            uploadRequest.getLocations());
-    		boolean transferStatus = 
+    		HpcDataTransferReport hpcDataTransferReport = 
     				dataTransferService.transferDataset(
     				                    uploadRequest.getLocations(), 
     				                    dataTransferAccount.getUsername(), 
     				                    dataTransferAccount.getPassword());
-    		logger.info("Data Transfer status : " + transferStatus);
+    		logger.info("Data Transfer status : " + hpcDataTransferReport.getTaskID());
     	}
     	
     	return datasetId;
