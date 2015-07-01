@@ -36,5 +36,6 @@
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcUserDAO" interface="gov.nih.nci.hpc.dao.HpcUserDAO" />
 	<osgi:reference id="hpcDatasetDAO" interface="gov.nih.nci.hpc.dao.HpcDatasetDAO" />
+	<osgi:reference id="hpcDataTransfer" interface="gov.nih.nci.hpc.integration.transfer.HpcDataTransfer" />
 	
 </beans>

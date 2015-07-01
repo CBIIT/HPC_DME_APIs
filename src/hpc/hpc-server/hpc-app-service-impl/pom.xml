@@ -43,7 +43,7 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>hpc-data-transfer</artifactId>
+			<artifactId>hpc-integration-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
