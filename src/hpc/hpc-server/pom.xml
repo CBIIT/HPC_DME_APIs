@@ -12,6 +12,7 @@
 	
 	<properties>
 		<cxf.version>3.0.2</cxf.version>
+		<cxf-xjc.version>3.0.3</cxf-xjc.version>
 		<felix.version>2.5.3</felix.version>
 		<mongodb.version>3.0.1</mongodb.version>
 		<slf4j.version>1.7.12</slf4j.version>
@@ -24,7 +25,6 @@
 		<module>hpc-dto</module>
 		<module>hpc-dao-api</module>
 		<module>hpc-dao-impl</module>
-		<module>hpc-data-transfer</module>
 		<module>hpc-integration-api</module>
 		<module>hpc-integration-impl</module>
 		<module>hpc-app-service-api</module>
@@ -43,7 +43,7 @@
 				<plugin>
 					<groupId>org.apache.cxf</groupId>
     				<artifactId>cxf-xjc-plugin</artifactId>
-    				<version>${cxf.version}</version>
+    				<version>${cxf-xjc.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.felix</groupId>
@@ -82,6 +82,11 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
+				<groupId>commons-lang</groupId>
+				<artifactId>commons-lang</artifactId>
+				<version>2.6</version>
+			</dependency>
+			<dependency>
 				<groupId>org.apache.cxf</groupId>
 				<artifactId>cxf-rt-frontend-jaxrs</artifactId>
 				<version>${cxf.version}</version>
@@ -100,6 +105,11 @@
   				<groupId>org.apache.cxf</groupId>
   				<artifactId>cxf-rt-rs-client</artifactId>
   				<version>${cxf.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.cxf.xjc-utils</groupId>
+				<artifactId>cxf-xjc-runtime</artifactId>
+				<version>${cxf-xjc.version}</version>
 			</dependency>
 			<dependency>
         		<groupId>org.mongodb</groupId>

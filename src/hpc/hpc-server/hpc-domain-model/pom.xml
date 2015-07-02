@@ -75,7 +75,8 @@
     			<artifactId>cxf-xjc-plugin</artifactId>
     			<configuration>
         			<extensions>
-            			<extension>org.apache.cxf.xjcplugins:cxf-xjc-dv:3.0.2</extension>
+            			<extension>org.apache.cxf.xjcplugins:cxf-xjc-ts:${cxf-xjc.version}</extension>
+            			<extension>org.apache.cxf.xjcplugins:cxf-xjc-boolean:${cxf-xjc.version}</extension>
         			</extensions>
     			</configuration>
     			<executions>
@@ -91,11 +92,17 @@
                         			<xsd>xjc-build/schema/HpcUser.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.domain.model</packagename>
                         			<bindingFile>xjc-build/schema/hpc-domain-managed-user-jaxb-binding.xjb</bindingFile>
+                        			<extensionArgs>
+                        				<arg>-Xts:style:multiline</arg><arg>-Xbg</arg>
+                 					</extensionArgs>
                     			</xsdOption>
                     			<xsdOption>
                         			<xsd>xjc-build/schema/HpcDataset.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.domain.model</packagename>
                         			<bindingFile>xjc-build/schema/hpc-domain-managed-dataset-jaxb-binding.xjb</bindingFile>
+                        			<extensionArgs>
+                        				<arg>-Xts:style:multiline</arg><arg>-Xbg</arg>
+                 					</extensionArgs>
                     			</xsdOption>
                 			</xsdOptions>
             			</configuration>

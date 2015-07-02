@@ -1,5 +1,5 @@
 /**
- * HpcManagedDatasetsServiceImpl.java
+ * HpcDataTransferServiceImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -11,11 +11,13 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.service.HpcDataTransferService;
-import gov.nih.nci.hpc.integration.transfer.HpcDataTransfer;
-import gov.nih.nci.hpc.dao.HpcUserDAO;
+
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
+import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import org.slf4j.Logger;
@@ -27,13 +29,13 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * @author <a href="mailto:Mahidhar.Narra@nih.gov">Mahidhar Narra</a>
- * @version $Id: HpcDataTransferService.java 
+ * @version $Id$
  */
 
 public class HpcDataTransferServiceImpl implements HpcDataTransferService
 {            
-    // The User DAO instance.
-    private HpcDataTransfer hpcDataTransfer = null;
+    // The Data Transfer Proxy.
+    private HpcDataTransferProxy dataTransferProxy = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -57,16 +59,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param managedUserDAO The managed user DAO instance.
+     * @param dataTransferProxy The data transfer proxy instance.
      */
-    private HpcDataTransferServiceImpl(HpcDataTransfer hpcDataTransfer) throws HpcException
+    private HpcDataTransferServiceImpl(HpcDataTransferProxy dataTransferProxy) 
+    		                          throws HpcException
     {
-    	if(hpcDataTransfer == null) {
-     	   throw new HpcException("Null HpcManagedDatasetDAO instance",
+    	if(dataTransferProxy == null) {
+     	   throw new HpcException("Null HpcDataTransferProxy instance",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
     	
-    	this.hpcDataTransfer = hpcDataTransfer;
+    	this.dataTransferProxy = dataTransferProxy;
     }      
      
     //---------------------------------------------------------------------//
@@ -74,16 +77,43 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     //---------------------------------------------------------------------//  
     
     @Override
-    public HpcDataTransferReport transferDataset(HpcDataTransferLocations transferLocations,String username, String password) throws HpcException
+    public HpcDataTransferReport 
+                  transferDataset(HpcDataTransferLocations dataTransferLocations,
+	                              HpcDataTransferAccount dataTransferAccount) 
+	                             throws HpcException
     {   
-    	try{
-        	return hpcDataTransfer.transferDataset(transferLocations,username, password);    		
-    	}catch(Exception ex)
-    	{
-    		throw new HpcException("Error while transfer",HpcErrorType.INVALID_REQUEST_INPUT);
+    	// Input validation.
+    	if(!HpcDomainValidator.isValidDataTransferLocations(dataTransferLocations) ||
+    	   !HpcDomainValidator.isValidDataTransferAccount(dataTransferAccount)) {	
+    	   throw new HpcException("Invalid data transfer request input", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
-
+    	
+    	try {
+        	 return dataTransferProxy.transferDataset(
+        			                          dataTransferLocations,
+        			                          dataTransferAccount.getUsername(), 
+        			                          dataTransferAccount.getPassword());
+        	 
+    	} catch(Exception ex) {
+    		    throw new HpcException("Error while transfer",
+    		    		               HpcErrorType.DATA_TRANSFER_ERROR);
+    	}
     }
+    
+	@Override
+	public boolean isValidDataTransferAccount(
+                                      HpcDataTransferAccount transferAccount)
+                                      throws HpcException
+    {
+		/*
+    	HpcDataTransfer hdt = new GlobusOnlineDataTranfer(); 
+		return hdt.validateUserAccount(
+				   userRegistrationDTO.getDataTransferAccount().getUsername(), 
+				   userRegistrationDTO.getDataTransferAccount().getPassword());
+				   */
+		return true;
+	}  
 
 }
  

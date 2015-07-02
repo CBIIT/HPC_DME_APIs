@@ -149,9 +149,8 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		HpcDataTransferReport hpcDataTransferReport = 
     				dataTransferService.transferDataset(
     				                    uploadRequest.getLocations(), 
-    				                    dataTransferAccount.getUsername(), 
-    				                    dataTransferAccount.getPassword());
-    		logger.info("Data Transfer status : " + hpcDataTransferReport.getTaskID());
+    				                    dataTransferAccount);
+    		logger.info("Data Transfer Report : " + hpcDataTransferReport);
     	}
     	
     	return datasetId;
