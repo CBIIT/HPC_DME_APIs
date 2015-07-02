@@ -10,8 +10,6 @@
 
 package gov.nih.nci.hpc.integration;
 
-import java.util.List;
-
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 
@@ -38,7 +36,6 @@ public interface HpcDataTransferProxy
     public HpcDataTransferReport transferDataset(HpcDataTransferLocations transferLocations, 
     		                       String username, 
     		                       String password) throws Exception;
-    public boolean validateUserAccount(String username, String password);
     public String getTransferStatus(String submissionId);
     
 }

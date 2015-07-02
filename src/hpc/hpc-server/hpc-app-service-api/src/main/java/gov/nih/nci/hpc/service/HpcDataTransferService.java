@@ -43,12 +43,12 @@ public interface HpcDataTransferService
     /**
      * Validate a data transfer account.
      *
-     * @param transferAccount The account to use for the transfer.
+     * @param dataTransferAccount The account to use for the transfer.
      * @return True if the account is valid, or false otherwise.
      */
-    public boolean isValidDataTransferAccount(
-    		              HpcDataTransferAccount transferAccount)
-    		              throws HpcException;
+    public boolean validateDataTransferAccount(
+    		               HpcDataTransferAccount dataTransferAccount)
+    		               throws HpcException;
 }
 
  
