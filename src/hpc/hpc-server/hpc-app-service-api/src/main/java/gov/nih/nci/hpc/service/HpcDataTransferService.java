@@ -1,5 +1,5 @@
 /**
- * HpcManagedDataService.java
+ * HpcDataTransferService.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -12,9 +12,8 @@ package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.exception.HpcException;
-
-import java.util.List;
 
 /**
  * <p>
@@ -28,15 +27,28 @@ import java.util.List;
 public interface HpcDataTransferService 
 {         
     /**
-     * transfer data.
+     * Request Data (file) Transfer.
      *
-     * @param type The managed data type.
-     * @param datasets The datasets to start manage.
-     * @return Submit the data transfer request
+     * @param dataTransferLocations The file source/destination
+     * @param dataTransferAccount The account to use for the transfer.
+     * @return A transfer report.
      * 
-     * @throws HpcTransferException
+     * @throws HpcException
      */
-    public HpcDataTransferReport transferDataset(HpcDataTransferLocations transferLocations,String username, String password) throws HpcException;
+    public HpcDataTransferReport 
+              transferDataset(HpcDataTransferLocations dataTransferLocations,
+    		                  HpcDataTransferAccount dataTransferAccount) 
+    		                 throws HpcException;
+    
+    /**
+     * Validate a data transfer account.
+     *
+     * @param transferAccount The account to use for the transfer.
+     * @return True if the account is valid, or false otherwise.
+     */
+    public boolean isValidDataTransferAccount(
+    		              HpcDataTransferAccount transferAccount)
+    		              throws HpcException;
 }
 
  

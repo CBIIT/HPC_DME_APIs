@@ -18,7 +18,8 @@
     			<artifactId>cxf-xjc-plugin</artifactId>
     			<configuration>
         			<extensions>
-            			<extension>org.apache.cxf.xjcplugins:cxf-xjc-dv:3.0.2</extension>
+            			<extension>org.apache.cxf.xjcplugins:cxf-xjc-ts:${cxf-xjc.version}</extension>
+            			<extension>org.apache.cxf.xjcplugins:cxf-xjc-boolean:${cxf-xjc.version}</extension>
         			</extensions>
     			</configuration>
     			<executions>
@@ -34,21 +35,33 @@
                         			<xsd>src/main/resources/schema/HpcErrorTypes.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.domain.error</packagename>
                         			<bindingFile>src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
+                        			<extensionArgs>
+                        				<arg>-Xts:style:multiline</arg><arg>-Xbg</arg>
+                 					</extensionArgs>
                     			</xsdOption>
                     			<xsdOption>
                         			<xsd>src/main/resources/schema/HpcUserTypes.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.domain.user</packagename>
                         			<bindingFile>src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
+                        			<extensionArgs>
+                        				<arg>-Xts:style:multiline</arg><arg>-Xbg</arg>
+                 					</extensionArgs>
                     			</xsdOption>
                     			<xsdOption>
                         			<xsd>src/main/resources/schema/HpcMetadataTypes.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.domain.metadata</packagename>
                         			<bindingFile>src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
+                        			<extensionArgs>
+                        				<arg>-Xts:style:multiline</arg><arg>-Xbg</arg>
+                 					</extensionArgs>
                     			</xsdOption>
                     			<xsdOption>
                         			<xsd>src/main/resources/schema/HpcDatasetTypes.xsd</xsd>
                         			<packagename>gov.nih.nci.hpc.domain.dataset</packagename>
                         			<bindingFile>src/main/resources/schema/hpc-domain-types-dataset-types-jaxb-binding.xjb</bindingFile>
+                        			<extensionArgs>
+                        				<arg>-Xts:style:multiline</arg><arg>-Xbg</arg>
+                 					</extensionArgs>
                     			</xsdOption>
                 			</xsdOptions>
             			</configuration>
@@ -74,6 +87,15 @@
 			</plugin>
 		</plugins>
 	</build>
-	<dependencies/>
+	<dependencies>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf.xjc-utils</groupId>
+			<artifactId>cxf-xjc-runtime</artifactId>
+		</dependency>
+	</dependencies>
 	
 </project>

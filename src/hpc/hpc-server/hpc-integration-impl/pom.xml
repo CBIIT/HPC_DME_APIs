@@ -73,7 +73,7 @@
 							org.json.*
 						</Export-Package>
 						<Private-Package>
-							gov.nih.nci.hpc.integration.impl
+							gov.nih.nci.hpc.integration.globus.impl
 						</Private-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>
