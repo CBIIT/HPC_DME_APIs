@@ -74,10 +74,10 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 		Document document = new Document();
  
 		// Extract the data from the domain object.
-		Boolean dataContainsPII = filePrimaryMetadata.isDataContainsPII();
-		Boolean dataContainsPHI = filePrimaryMetadata.isDataContainsPHI();
-		Boolean dataEncrypted = filePrimaryMetadata.isDataEncrypted();
-		Boolean dataCompressed = filePrimaryMetadata.isDataCompressed();
+		Boolean dataContainsPII = filePrimaryMetadata.getDataContainsPII();
+		Boolean dataContainsPHI = filePrimaryMetadata.getDataContainsPHI();
+		Boolean dataEncrypted = filePrimaryMetadata.getDataEncrypted();
+		Boolean dataCompressed = filePrimaryMetadata.getDataCompressed();
 		String fundingOrganization = filePrimaryMetadata.getFundingOrganization();
 		String primaryInvestigatorNihUserId = 
 				      filePrimaryMetadata.getPrimaryInvestigatorNihUserId();

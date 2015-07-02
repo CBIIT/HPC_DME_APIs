@@ -121,7 +121,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
        	// Attach the files to this dataset.
     	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
     		// Validate the upload file request.
-    		if(!isValidFileUploadRequest(uploadRequest)) {
+    		if(!HpcDomainValidator.isValidFileUploadRequest(uploadRequest)) {
     		   throw new HpcException("Invalid file upload request: " + 
     		                          uploadRequest, 
 		                              HpcErrorType.INVALID_REQUEST_INPUT);
@@ -179,61 +179,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     // Helper Methods
     //---------------------------------------------------------------------//  
 	
-    /**
-     * Validate a file upload request object.
-     *
-     * @param file the object to be validated.
-     * @return true if valid, false otherwise.
-     */
-    private boolean isValidFileUploadRequest(HpcFileUploadRequest request) 
-    {
-    	if(request.getType() == null || request.getLocations() == null ||
-    	   !isValidFileLocation(request.getLocations().getSource()) ||
-    	   !isValidFileLocation(request.getLocations().getDestination()) ||
-    	   !isValidDatasetPrimaryMetadata(request.getMetadata())) {
-    	   logger.info("Invalid File Upload Request");
-    	   return false;
-    	}
-    	return true;
-    }  
-    
-    /**
-     * Validate a file location object.
-     *
-     * @param location the object to be validated.
-     * @return true if valid, false otherwise.
-     */
-    private boolean isValidFileLocation(HpcFileLocation location) 
-    {
-    	if(location == null ||
-    	   location.getEndpoint() == null ||
-    	   location.getPath() == null) {
-     	   logger.info("Invalid File Location");
-     	   return false;
-    	}
-    	return true;
-    }  
-    
-    /**
-     * Validate a dataset primary metadata object.
-     *
-     * @param metadata the object to be validated.
-     * @return true if valid, false otherwise.
-     */
-    private boolean isValidDatasetPrimaryMetadata(HpcFilePrimaryMetadata metadata) 
-    {
-    	if(metadata == null ||
-    	   metadata.getFundingOrganization() == null || 
-    	   metadata.getPrimaryInvestigatorNihUserId() == null ||
-    	   metadata.getCreatorNihUserId() == null ||
-    	   metadata.getRegistratorNihUserId() == null ||
-    	   metadata.getDescription() == null ||
-    	   metadata.getLabBranch() == null) {
-    	   logger.info("Invalid Dataset Primary Metadata");
-     	   return false;
-    	}
-    	return true;
-    }  
+
 }
 
  

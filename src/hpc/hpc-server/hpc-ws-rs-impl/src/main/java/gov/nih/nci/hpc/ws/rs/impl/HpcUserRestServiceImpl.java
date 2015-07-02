@@ -13,12 +13,8 @@ package gov.nih.nci.hpc.ws.rs.impl;
 import gov.nih.nci.hpc.ws.rs.HpcUserRestService;
 
 import gov.nih.nci.hpc.bus.HpcUserBusService;
-import gov.nih.nci.hpc.transfer.HpcDataTransfer;
-import gov.nih.nci.hpc.transfer.impl.GlobusOnlineDataTranfer;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
-import gov.nih.nci.hpc.domain.user.HpcNihAccount;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -137,16 +133,6 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 		
 		return okResponse(userDTO, true);
 	}
-	
-	@Override
-    public boolean validateUser(HpcUserRegistrationDTO userRegistrationDTO)
-    {	
-		logger.info("Invoking RS: POST /validateUser");
-    	HpcDataTransfer hdt = new GlobusOnlineDataTranfer(); 
-		return hdt.validateUserAccount(
-				   userRegistrationDTO.getDataTransferAccount().getUsername(), 
-				   userRegistrationDTO.getDataTransferAccount().getPassword());
-	}  
 }
 
  

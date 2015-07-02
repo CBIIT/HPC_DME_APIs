@@ -1,7 +1,7 @@
-package gov.nih.nci.hpc.integration.transfer.impl;
+package gov.nih.nci.hpc.integration.globus.impl;
 
 import gov.nih.nci.hpc.integration.globus.driver.HpcGOTransfer;
-import gov.nih.nci.hpc.integration.transfer.HpcDataTransfer;
+import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 
 import java.security.GeneralSecurityException;
 import java.util.*;
@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.globusonline.nexus.exception.NexusClientException;
 
-public class HpcDataTransferImpl implements HpcDataTransfer{
+public class HpcDataTransferProxyImpl implements HpcDataTransferProxy{
 	
 	// The logger instance.
 	private final Logger logger = 
@@ -31,7 +31,7 @@ public class HpcDataTransferImpl implements HpcDataTransfer{
     private static DateFormat isoDateFormat =
                             new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
-    public HpcDataTransferImpl() throws HpcException
+    public HpcDataTransferProxyImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                 HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -44,7 +44,7 @@ public class HpcDataTransferImpl implements HpcDataTransfer{
      * 
      * @throws HpcException If a HpcGOTransfer instance was not provided.
      */
-    private HpcDataTransferImpl(HpcGOTransfer hpcGOTransfer) throws HpcException
+    private HpcDataTransferProxyImpl(HpcGOTransfer hpcGOTransfer) throws HpcException
     {
     	if(hpcGOTransfer == null) {
     	   throw new HpcException("Null HpcGOTransfer instance",

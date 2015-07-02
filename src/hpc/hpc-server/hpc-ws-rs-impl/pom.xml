@@ -71,14 +71,11 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>hpc-data-transfer</artifactId>
-			<version>${project.version}</version>
-		</dependency>		
-		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
+				
+
 		<dependency>
 	    	<groupId>com.googlecode.json-simple</groupId>
 	    	<artifactId>json-simple</artifactId>
