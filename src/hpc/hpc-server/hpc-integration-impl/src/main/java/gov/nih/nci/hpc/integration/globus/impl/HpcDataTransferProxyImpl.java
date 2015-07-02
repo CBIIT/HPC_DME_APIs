@@ -2,6 +2,7 @@ package gov.nih.nci.hpc.integration.globus.impl;
 
 import gov.nih.nci.hpc.integration.globus.driver.HpcGOTransfer;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
+import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy;
 
 import java.security.GeneralSecurityException;
 import java.util.*;
@@ -11,6 +12,7 @@ import java.text.SimpleDateFormat;
 
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -21,7 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.globusonline.nexus.exception.NexusClientException;
 
-public class HpcDataTransferProxyImpl implements HpcDataTransferProxy{
+public class HpcDataTransferProxyImpl 
+       implements HpcDataTransferProxy, HpcDataTransferAccountValidatorProxy {
 	
 	// The logger instance.
 	private final Logger logger = 
@@ -54,7 +57,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy{
     	this.hpcGOTransfer = hpcGOTransfer;
     }
     
-    
+    @Override
     public HpcDataTransferReport transferDataset(HpcDataTransferLocations transferLocations,String username, String password )
     {
     	try
@@ -69,11 +72,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy{
 	    }
     }
     
-    public boolean validateUserAccount(String username, String password )
+    @Override
+    public boolean validateDataTransferAccount(
+                           HpcDataTransferAccount dataTransferAccount)
     {
     	try
     	{    	
-            GoauthClient cli = new GoauthClient("nexus.api.globusonline.org", "www.globusonline.org", username, password);
+            GoauthClient cli = new GoauthClient("nexus.api.globusonline.org", "www.globusonline.org", 
+            		                            dataTransferAccount.getUsername(), 
+            		                            dataTransferAccount.getPassword());
     		JSONObject accessTokenJSON = cli.getClientOnlyAccessToken();
     		String accessToken = accessTokenJSON.getString("access_token");
     		System.out.println("Client only access token: " + accessToken);
@@ -85,6 +92,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy{
     	return false;
     }
  
+    @Override
     public String getTransferStatus(String submissionId)
     {
     	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();

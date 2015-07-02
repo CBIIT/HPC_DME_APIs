@@ -27,6 +27,7 @@
 	
 	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl">
 		<constructor-arg ref="hpcDataTransferProxy"/>
+		<constructor-arg ref="hpcDataTransferAccountValidatorProxy"/>
 	</bean>
 	
 </beans>

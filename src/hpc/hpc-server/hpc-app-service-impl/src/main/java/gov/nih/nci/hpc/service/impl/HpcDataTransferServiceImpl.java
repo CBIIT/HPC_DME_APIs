@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
+import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -36,6 +37,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 {            
     // The Data Transfer Proxy.
     private HpcDataTransferProxy dataTransferProxy = null;
+    
+    // The Data Transfer Account Validator Proxy.
+    private HpcDataTransferAccountValidatorProxy 
+                                  dataTransferAccountValidatorProxy = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -60,16 +65,23 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * Constructor for Spring Dependency Injection.
      * 
      * @param dataTransferProxy The data transfer proxy instance.
+     * @param dataTransferAccountValidatorProxy 
+     *        The data transfer account validator proxy instance.
      */
-    private HpcDataTransferServiceImpl(HpcDataTransferProxy dataTransferProxy) 
-    		                          throws HpcException
+    private HpcDataTransferServiceImpl(
+    		   HpcDataTransferProxy dataTransferProxy,
+    		   HpcDataTransferAccountValidatorProxy dataTransferAccountValidatorProxy) 
+    		   throws HpcException
     {
-    	if(dataTransferProxy == null) {
-     	   throw new HpcException("Null HpcDataTransferProxy instance",
+    	if(dataTransferProxy == null || 
+    	   dataTransferAccountValidatorProxy == null) {
+     	   throw new HpcException("Null Integration beans",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
     	
     	this.dataTransferProxy = dataTransferProxy;
+    	this.dataTransferAccountValidatorProxy = 
+    			                         dataTransferAccountValidatorProxy;
     }      
      
     //---------------------------------------------------------------------//
@@ -102,17 +114,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     }
     
 	@Override
-	public boolean isValidDataTransferAccount(
-                                      HpcDataTransferAccount transferAccount)
-                                      throws HpcException
+	public boolean validateDataTransferAccount(
+                                       HpcDataTransferAccount dataTransferAccount)
+                                       throws HpcException
     {
-		/*
-    	HpcDataTransfer hdt = new GlobusOnlineDataTranfer(); 
-		return hdt.validateUserAccount(
-				   userRegistrationDTO.getDataTransferAccount().getUsername(), 
-				   userRegistrationDTO.getDataTransferAccount().getPassword());
-				   */
-		return true;
+    	// Input validation.
+    	if(!HpcDomainValidator.isValidDataTransferAccount(dataTransferAccount)) {	
+    	   throw new HpcException("Invalid data transfer account", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}	
+    	
+		return dataTransferAccountValidatorProxy.validateDataTransferAccount(
+				                                         dataTransferAccount);
 	}  
 
 }
