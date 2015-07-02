@@ -13,8 +13,6 @@ package gov.nih.nci.hpc.ws.rs.impl;
 import gov.nih.nci.hpc.ws.rs.HpcDatasetRestService;
 
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
-import gov.nih.nci.hpc.transfer.HpcDataTransfer;
-import gov.nih.nci.hpc.transfer.impl.GlobusOnlineDataTranfer;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
@@ -172,8 +170,9 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response checkDataTransferStatus(String submissionId)
     {	
-    	HpcDataTransfer hdt = new GlobusOnlineDataTranfer();		
-		return createdResponse(hdt.getTransferStatus(submissionId));
+    	//HpcDataTransfer hdt = new GlobusOnlineDataTranfer();		
+		//return createdResponse(hdt.getTransferStatus(submissionId));
+    	return null;
 	}
 	
     @Override

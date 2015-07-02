@@ -92,12 +92,8 @@ public class HpcUserServiceImpl implements HpcUserService
 	               throws HpcException
     {
     	// Input validation.
-    	if(nihAccount == null || nihAccount.getUserId() == null || 
-    	   nihAccount.getFirstName() == null || nihAccount.getLastName() == null ||
-    	   dataTransferAccount == null || 
-    	   dataTransferAccount.getUsername() == null || 
-    	   dataTransferAccount.getPassword() == null ||
-    	   dataTransferAccount.getDataTransferType() == null) {
+    	if(!HpcDomainValidator.isValidNihAccount(nihAccount) ||
+    	   !HpcDomainValidator.isValidDataTransferAccount(dataTransferAccount)) {	
     	   throw new HpcException("Invalid add user input", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}

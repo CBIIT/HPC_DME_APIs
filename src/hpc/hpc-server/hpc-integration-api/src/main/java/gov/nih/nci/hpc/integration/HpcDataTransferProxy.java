@@ -8,7 +8,7 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 
-package gov.nih.nci.hpc.integration.transfer;
+package gov.nih.nci.hpc.integration;
 
 import java.util.List;
 
@@ -17,14 +17,14 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 
 /**
  * <p>
- * HPC Data Transfer Service Interface.
+ * HPC Data Transfer Proxy Interface.
  * </p>
  *
  * @author <a href="mailto:Mahidhar.Narra@nih.gov">Mahidhar Narra</a>
  * @version $Id: HpcDataTransfer.java 
  */
 
-public interface HpcDataTransfer 
+public interface HpcDataTransferProxy 
 {         
     /**
      * transfer data.

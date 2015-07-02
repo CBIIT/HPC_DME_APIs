@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--  
- * hpc-service-bundle-context-osgi.xml
+ * hpc-integration-bundle-context-osgi.xml
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -9,7 +9,7 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: hpc-app-service-bundle-context-osgi.xml 39 2015-05-13 01:48:13Z rosenbergea $
+ * @version $Id$
  -->
  
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -29,7 +29,7 @@
 	<ctx:property-placeholder properties-ref="preProps" />
 
 	<!--  OSGi beans export -->
-	<osgi:service ref="hpcDataTransfer" interface="gov.nih.nci.hpc.integration.transfer.HpcDataTransfer" />
+	<osgi:service ref="hpcDataTransferProxy" interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
 	<!-- OSGi beans import -->
 	
 </beans>
