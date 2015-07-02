@@ -1,5 +1,5 @@
 /**
- * HpcManagedDataService.java
+ * HpcDataTransferProxy.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -21,7 +21,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
  * </p>
  *
  * @author <a href="mailto:Mahidhar.Narra@nih.gov">Mahidhar Narra</a>
- * @version $Id: HpcDataTransfer.java 
+ * @version $Id$ 
  */
 
 public interface HpcDataTransferProxy 
