@@ -15,6 +15,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
 	<!-- HPC HpcGOTransfer instance -->
 	<bean id="hpcGOTransfer" class="gov.nih.nci.hpc.integration.globus.driver.HpcGOTransfer">
 		<constructor-arg value="mahinarra" index="0"/>
@@ -22,6 +23,11 @@
 	</bean>
 	
 	<bean id="hpcDataTransferProxy" 
+	      class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl">
+		<constructor-arg ref="hpcGOTransfer"/>
+	</bean>	
+	
+	<bean id="hpcDataTransferAccountValidatorProxy" 
 	      class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl">
 		<constructor-arg ref="hpcGOTransfer"/>
 	</bean>	
