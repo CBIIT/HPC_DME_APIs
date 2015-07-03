@@ -1,44 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--  
- * HpcUserTypes.xsd
- *
- * Copyright SVG, Inc.
- * Copyright Leidos Biomedical Research, Inc
- * 
- * Distributed under the OSI-approved BSD 3-Clause License.
- * See http://ncip.github.com/HPC/LICENSE.txt for details.
- *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
- -->
- 
+<!-- * HpcUserTypes.xsd * * Copyright SVG, Inc. * Copyright Leidos Biomedical 
+	Research, Inc * * Distributed under the OSI-approved BSD 3-Clause License. 
+	* See http://ncip.github.com/HPC/LICENSE.txt for details. * * @author <a 
+	href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> * @version $Id: HpcUserTypes.xsd 
+	258 2015-06-28 19:32:24Z rosenbergea $ -->
+
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-			xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
-			xmlns:hpc-domain-user="http://hpc.nci.nih.gov/domain/user"
-    		targetNamespace="http://hpc.nci.nih.gov/domain/user"
-    		elementFormDefault="unqualified">
-	
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-user="http://hpc.nci.nih.gov/domain/user"
+	targetNamespace="http://hpc.nci.nih.gov/domain/user"
+	elementFormDefault="unqualified">
+
 	<xsd:simpleType name="HpcDataTransferType">
-  		<xsd:restriction base="xsd:string">
-    		<xsd:enumeration value="GLOBUS"/>
-  		</xsd:restriction>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="GLOBUS" />
+		</xsd:restriction>
 	</xsd:simpleType>
-	
+
 	<xsd:complexType name="HpcDataTransferAccount">
-  	    <xsd:sequence>
-  	        <xsd:element name="username" type="xsd:string"/>
-  			<xsd:element name="password" type="xsd:string"/>
-  			<xsd:element name="dataTransferType" 
-  			             type="hpc-domain-user:HpcDataTransferType"/>
-    	</xsd:sequence>
-    </xsd:complexType>
-    
+		<xsd:sequence>
+			<xsd:element name="username" type="xsd:string" />
+			<xsd:element name="password" type="xsd:string" />
+			<xsd:element name="dataTransferType" type="hpc-domain-user:HpcDataTransferType" />
+		</xsd:sequence>
+	</xsd:complexType>
+
 	<xsd:complexType name="HpcNihAccount">
-  	    	<xsd:sequence>
-  	        	<xsd:element name="userId" type="xsd:string"/>
-  				<xsd:element name="firstName" type="xsd:string"/>
-  				<xsd:element name="lastName" type="xsd:string"/>
-    		</xsd:sequence>
-    </xsd:complexType>
+		<xsd:sequence>
+			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="firstName" type="xsd:string" />
+			<xsd:element name="lastName" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
 
 </xsd:schema>

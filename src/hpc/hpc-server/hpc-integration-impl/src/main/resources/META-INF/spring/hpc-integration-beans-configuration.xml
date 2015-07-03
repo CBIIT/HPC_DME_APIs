@@ -1,34 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--  
- * hpc-integration-beans-configuration.xml
- *
- * Copyright SVG, Inc.
- * Copyright Leidos Biomedical Research, Inc
- * 
- * Distributed under the OSI-approved BSD 3-Clause License.
- * See http://ncip.github.com/HPC/LICENSE.txt for details.
- *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
- -->
- 
+<!-- * hpc-integration-beans-configuration.xml * * Copyright SVG, Inc. * 
+	Copyright Leidos Biomedical Research, Inc * * Distributed under the OSI-approved 
+	BSD 3-Clause License. * See http://ncip.github.com/HPC/LICENSE.txt for details. 
+	* * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> * 
+	@version $Id: hpc-integration-beans-configuration.xml 275 2015-07-02 22:42:45Z 
+	rosenbergea $ -->
+
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- HPC HpcGOTransfer instance -->
 	<bean id="hpcGOTransfer" class="gov.nih.nci.hpc.integration.globus.driver.HpcGOTransfer">
-		<constructor-arg value="mahinarra" index="0"/>
-		<constructor-arg value="Tsugua13" index="1"/>
+		<constructor-arg value="mahinarra" index="0" />
+		<constructor-arg value="Tsugua13" index="1" />
 	</bean>
-	
-	<bean id="hpcDataTransferProxy" 
-	      class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl">
-		<constructor-arg ref="hpcGOTransfer"/>
-	</bean>	
-	
-	<bean id="hpcDataTransferAccountValidatorProxy" 
-	      class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl">
-		<constructor-arg ref="hpcGOTransfer"/>
-	</bean>	
+
+	<bean id="hpcDataTransferProxy"
+		class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl">
+		<constructor-arg ref="hpcGOTransfer" />
+	</bean>
+
+	<bean id="hpcDataTransferAccountValidatorProxy"
+		class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl">
+		<constructor-arg ref="hpcGOTransfer" />
+	</bean>
 </beans>

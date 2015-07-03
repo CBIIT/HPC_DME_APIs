@@ -1,31 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--  
- * hpc-metadata-rs-beans-configuration.xml
- *
- * Copyright (c) 2015 National Institution of Health (NIH).
- * All rights reserved.
- *
- * This software is the confidential and proprietary information of 
- * NIH. You shall not disclose such Confidential Information and shall 
- * use it only in accordance with the terms of the agreement you have with NIH.
- *
- * HPC Datasets Registration REST Service Spring Beans.
- *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
- -->
- 
+<!-- * hpc-metadata-rs-beans-configuration.xml * * Copyright (c) 2015 National 
+	Institution of Health (NIH). * All rights reserved. * * This software is 
+	the confidential and proprietary information of * NIH. You shall not disclose 
+	such Confidential Information and shall * use it only in accordance with 
+	the terms of the agreement you have with NIH. * * HPC Datasets Registration 
+	REST Service Spring Beans. * * @author <a href="mailto:eran.rosenberg@nih.gov">Eran 
+	Rosenberg</a> * @version $Id: hpc-ws-rs-beans-configuration.xml 254 2015-06-25 
+	00:05:43Z rosenbergea $ -->
+
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:util="http://www.springframework.org/schema/util" 
-	xmlns:cxf="http://cxf.apache.org/core"
-	xmlns:wsa="http://cxf.apache.org/ws/addressing" 
-	xmlns:jaxws="http://cxf.apache.org/jaxws"
-	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
-	xmlns:sec="http://cxf.apache.org/configuration/security" 
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:cxf="http://cxf.apache.org/core"
+	xmlns:wsa="http://cxf.apache.org/ws/addressing" xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs" xmlns:sec="http://cxf.apache.org/configuration/security"
 	xmlns:http="http://cxf.apache.org/transports/http/configuration"
 	xmlns:httpj="http://cxf.apache.org/transports/http-jetty/configuration"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
                         http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
@@ -35,62 +24,55 @@
                         http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
                         http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
                         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
-                        
- 	<context:annotation-config />
+
+	<context:annotation-config />
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 
- 	<!-- JAXB Provider -->
+	<!-- JAXB Provider -->
 	<bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JAXBElementProvider">
-		<property name="marshallerProperties" ref="propertiesMap"/>
+		<property name="marshallerProperties" ref="propertiesMap" />
 	</bean>
 	<util:map id="propertiesMap">
 		<entry key="jaxb.formatted.output">
-   			<value type="java.lang.Boolean">true</value>
+			<value type="java.lang.Boolean">true</value>
 		</entry>
 	</util:map>
-	
+
 	<!-- JSON Provider -->
 	<bean id="jsonProvider" class="org.apache.cxf.jaxrs.provider.json.JSONProvider">
-		<property name="namespaceMap" ref="jsonNamespaceMap"/>
+		<property name="namespaceMap" ref="jsonNamespaceMap" />
 	</bean>
 	<util:map id="jsonNamespaceMap" map-class="java.util.Hashtable">
-		<entry key="http://hpc.nci.nih.gov/dto/error" 
-		       value="gov.nih.nci.hpc.dto.error"/>
-		<entry key="http://hpc.nci.nih.gov/dto/dataset" 
-		       value="gov.nih.nci.hpc.dto.dataset"/>
-		<entry key="http://hpc.nci.nih.gov/dto/user" 
-		       value="gov.nih.nci.hpc.dto.user"/>
-		<entry key="http://hpc.nci.nih.gov/domain/dataset" 
-		       value="gov.nih.nci.hpc.domain.dataset"/>
-		<entry key="http://hpc.nci.nih.gov/domain/metadata" 
-		       value="gov.nih.nci.hpc.domain.metadata"/>
-		<entry key="http://hpc.nci.nih.gov/domain/user" 
-		       value="gov.nih.nci.hpc.domain.user"/>
+		<entry key="http://hpc.nci.nih.gov/dto/error" value="gov.nih.nci.hpc.dto.error" />
+		<entry key="http://hpc.nci.nih.gov/dto/dataset" value="gov.nih.nci.hpc.dto.dataset" />
+		<entry key="http://hpc.nci.nih.gov/dto/user" value="gov.nih.nci.hpc.dto.user" />
+		<entry key="http://hpc.nci.nih.gov/domain/dataset" value="gov.nih.nci.hpc.domain.dataset" />
+		<entry key="http://hpc.nci.nih.gov/domain/metadata" value="gov.nih.nci.hpc.domain.metadata" />
+		<entry key="http://hpc.nci.nih.gov/domain/user" value="gov.nih.nci.hpc.domain.user" />
 	</util:map>
-	
+
 	<!-- JAX-RS Service Beans -->
-    <bean id="hpcUserRestService" 
-          class="gov.nih.nci.hpc.ws.rs.impl.HpcUserRestServiceImpl">
-    	<constructor-arg ref="hpcUserBusService"/>
-    	<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}"/>
-    </bean>
-    <bean id="hpcDatasetRestService" 
-          class="gov.nih.nci.hpc.ws.rs.impl.HpcDatasetRestServiceImpl">
-    	<constructor-arg ref="hpcDatasetBusService"/>
-    	<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}"/>
-		<constructor-arg value="${dynamicfields}"/>
-    </bean>
-    	
+	<bean id="hpcUserRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcUserRestServiceImpl">
+		<constructor-arg ref="hpcUserBusService" />
+		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
+	</bean>
+	<bean id="hpcDatasetRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDatasetRestServiceImpl">
+		<constructor-arg ref="hpcDatasetBusService" />
+		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
+		<constructor-arg value="${dynamicfields}" />
+	</bean>
+
 	<!-- CXF JAX-RS Server Config -->
-    <jaxrs:server id="hpc-server" address="${hpc.ws.rs.url}" bus="cxf">
-        <jaxrs:serviceBeans>
-       		<ref bean="hpcUserRestService"/>
-       		<ref bean="hpcDatasetRestService"/>
-        </jaxrs:serviceBeans>
-        <jaxrs:providers>
-    		<ref bean="jaxbProvider"/>
-    		<ref bean="jsonProvider"/>
-  		</jaxrs:providers>
-     </jaxrs:server>
+	<jaxrs:server id="hpc-server" address="${hpc.ws.rs.url}"
+		bus="cxf">
+		<jaxrs:serviceBeans>
+			<ref bean="hpcUserRestService" />
+			<ref bean="hpcDatasetRestService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+			<ref bean="jaxbProvider" />
+			<ref bean="jsonProvider" />
+		</jaxrs:providers>
+	</jaxrs:server>
 </beans>
 

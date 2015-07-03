@@ -1,23 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--  
- * hpc-metadata-rs-bundle-context-osgi.xml
- *
- * Copyright (c) 2015 National Institution of Health (NIH).
- * All rights reserved.
- *
- * This software is the confidential and proprietary information of 
- * NIH. You shall not disclose such Confidential Information and shall 
- * use it only in accordance with the terms of the agreement you have with NIH.
- *
- * HPC Datasets Registration REST Service OSGi Properties.
- *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
- -->
- 
+<!-- * hpc-metadata-rs-bundle-context-osgi.xml * * Copyright (c) 2015 National 
+	Institution of Health (NIH). * All rights reserved. * * This software is 
+	the confidential and proprietary information of * NIH. You shall not disclose 
+	such Confidential Information and shall * use it only in accordance with 
+	the terms of the agreement you have with NIH. * * HPC Datasets Registration 
+	REST Service OSGi Properties. * * @author <a href="mailto:eran.rosenberg@nih.gov">Eran 
+	Rosenberg</a> * @version $Id: hpc-ws-rs-bundle-context-osgi.xml 267 2015-06-30 
+	19:28:43Z rosenbergea $ -->
+
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:ctx="http://www.springframework.org/schema/context"
-	xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xmlns:ctx="http://www.springframework.org/schema/context" xmlns:osgi="http://www.springframework.org/schema/osgi"
 	xmlns:osgix="http://www.springframework.org/schema/osgi-compendium"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
@@ -25,12 +17,13 @@
                         http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd
                         http://www.springframework.org/schema/osgi-compendium http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd">
 
-	<!--  HPC Rest Server OSGi Properties -->
+	<!-- HPC Rest Server OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		<prop key="hpc.ws.rs.host">localhost</prop>
 		<prop key="hpc.ws.rs.port">7737</prop>
 		<prop key="hpc.ws.rs.path">hpc-server</prop>
-		<prop key="hpc.ws.rs.url">http://${hpc.ws.rs.host}:${hpc.ws.rs.port}/${hpc.ws.rs.path}</prop>
+		<prop key="hpc.ws.rs.url">http://${hpc.ws.rs.host}:${hpc.ws.rs.port}/${hpc.ws.rs.path}
+		</prop>
 		<prop key="hpc.ws.rs.stackTraceEnabled">true</prop>
 		<prop key="dynamicfields">${karaf.base}/etc/hpc-server/dynamicfields.json</prop>
 	</osgix:cm-properties>
@@ -38,7 +31,9 @@
 	<ctx:property-placeholder properties-ref="preProps" />
 
 	<!-- OSGi beans import -->
-	<osgi:reference id="hpcUserBusService" interface="gov.nih.nci.hpc.bus.HpcUserBusService" />
-	<osgi:reference id="hpcDatasetBusService" interface="gov.nih.nci.hpc.bus.HpcDatasetBusService" />
-	
+	<osgi:reference id="hpcUserBusService"
+		interface="gov.nih.nci.hpc.bus.HpcUserBusService" />
+	<osgi:reference id="hpcDatasetBusService"
+		interface="gov.nih.nci.hpc.bus.HpcDatasetBusService" />
+
 </beans>

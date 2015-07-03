@@ -1,37 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--  
- * HpcException.xsd
- *
- * Copyright SVG, Inc.
- * Copyright Leidos Biomedical Research, Inc
- * 
- * Distributed under the OSI-approved BSD 3-Clause License.
- * See http://ncip.github.com/HPC/LICENSE.txt for details.
- *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
- -->
- 
+<!-- * HpcException.xsd * * Copyright SVG, Inc. * Copyright Leidos Biomedical 
+	Research, Inc * * Distributed under the OSI-approved BSD 3-Clause License. 
+	* See http://ncip.github.com/HPC/LICENSE.txt for details. * * @author <a 
+	href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> * @version $Id$ -->
+
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-			xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
-			xmlns:hpc-domain-error="http://hpc.nci.nih.gov/domain/error"
-    		targetNamespace="http://hpc.nci.nih.gov/dto/error"
-    		elementFormDefault="unqualified">
-    		
-   	<xsd:import namespace="http://hpc.nci.nih.gov/domain/error" 
-   	            schemaLocation="HpcErrorTypes.xsd"/>
-    
-    <!--  Exception DTO -->
-    <xsd:element name="HpcExceptionDTO">
-        <xsd:complexType>
-  	    	<xsd:sequence>
-  	        	<xsd:element name="errorType" type="hpc-domain-error:HpcErrorType"/>
-  	        	<xsd:element name="requestRejectReason" 
-  	        	             type="hpc-domain-error:HpcRequestRejectReason"/>
-  	        	<xsd:element name="message" type="xsd:string"/>
-  	        	<xsd:element name="stackTrace" type="xsd:string"/>
-    		</xsd:sequence>
-    	</xsd:complexType>
-    </xsd:element>
-    
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-error="http://hpc.nci.nih.gov/domain/error"
+	targetNamespace="http://hpc.nci.nih.gov/dto/error" elementFormDefault="unqualified">
+
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/error"
+		schemaLocation="HpcErrorTypes.xsd" />
+
+	<!-- Exception DTO -->
+	<xsd:element name="HpcExceptionDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="errorType" type="hpc-domain-error:HpcErrorType" />
+				<xsd:element name="requestRejectReason"
+					type="hpc-domain-error:HpcRequestRejectReason" />
+				<xsd:element name="message" type="xsd:string" />
+				<xsd:element name="stackTrace" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
 </xsd:schema>

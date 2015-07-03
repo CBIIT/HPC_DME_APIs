@@ -1,52 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--  
- * HpcManagedData.xsd
- *
- * Copyright SVG, Inc.
- * Copyright Leidos Biomedical Research, Inc
- * 
- * Distributed under the OSI-approved BSD 3-Clause License.
- * See http://ncip.github.com/HPC/LICENSE.txt for details.
- *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
- -->
- 
+<!-- * HpcManagedData.xsd * * Copyright SVG, Inc. * Copyright Leidos Biomedical 
+	Research, Inc * * Distributed under the OSI-approved BSD 3-Clause License. 
+	* See http://ncip.github.com/HPC/LICENSE.txt for details. * * @author <a 
+	href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> * @version $Id: HpcMetadataTypes.xsd 
+	255 2015-06-28 16:54:14Z rosenbergea $ -->
+
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-			xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
-			xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
-    		targetNamespace="http://hpc.nci.nih.gov/domain/metadata"
-    		elementFormDefault="unqualified">
-	
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
+	targetNamespace="http://hpc.nci.nih.gov/domain/metadata"
+	elementFormDefault="unqualified">
+
 	<xsd:complexType name="HpcMetadataItem">
-    	<xsd:sequence>
-      		<xsd:element name="key" type="xsd:string"/>
-      		<xsd:element name="value" type="xsd:string"/>
-    	</xsd:sequence>
-  	</xsd:complexType>
-  
-    <xsd:complexType name="HpcFilePrimaryMetadata">
-  	    <xsd:sequence>
-  			<xsd:element name="dataContainsPII" type="xsd:boolean"/>
-  			<xsd:element name="dataContainsPHI" type="xsd:boolean"/>
-  			<xsd:element name="dataEncrypted" type="xsd:boolean"/>
-  			<xsd:element name="dataCompressed" type="xsd:boolean"/>
-  			<xsd:element name="fundingOrganization" type="xsd:string"/>
-  			<xsd:element name="primaryInvestigatorNihUserId" type="xsd:string"/>
-  			<xsd:element name="creatorNihUserId" type="xsd:ID"/>
-  			<xsd:element name="registratorNihUserId" type="xsd:ID"/>
-  			<xsd:element name="description" type="xsd:string"/>
-  			<xsd:element name="labBranch" type="xsd:string"/>
-  			<xsd:element name="metadataItems" 
-  			             type="hpc-domain-metadata:HpcMetadataItem" 
-  			             minOccurs="0" maxOccurs="unbounded"/>
-    	</xsd:sequence>
-    </xsd:complexType>
-    
-    <xsd:complexType name="HpcFileMetadata">
-    	<xsd:sequence>
-  			<xsd:element name="primaryMetadata" type="hpc-domain-metadata:HpcFilePrimaryMetadata"/>
-    	</xsd:sequence>
-    </xsd:complexType>
-    
+		<xsd:sequence>
+			<xsd:element name="key" type="xsd:string" />
+			<xsd:element name="value" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="HpcFilePrimaryMetadata">
+		<xsd:sequence>
+			<xsd:element name="dataContainsPII" type="xsd:boolean" />
+			<xsd:element name="dataContainsPHI" type="xsd:boolean" />
+			<xsd:element name="dataEncrypted" type="xsd:boolean" />
+			<xsd:element name="dataCompressed" type="xsd:boolean" />
+			<xsd:element name="fundingOrganization" type="xsd:string" />
+			<xsd:element name="primaryInvestigatorNihUserId" type="xsd:string" />
+			<xsd:element name="creatorNihUserId" type="xsd:ID" />
+			<xsd:element name="registratorNihUserId" type="xsd:ID" />
+			<xsd:element name="description" type="xsd:string" />
+			<xsd:element name="labBranch" type="xsd:string" />
+			<xsd:element name="metadataItems" type="hpc-domain-metadata:HpcMetadataItem"
+				minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="HpcFileMetadata">
+		<xsd:sequence>
+			<xsd:element name="primaryMetadata"
+				type="hpc-domain-metadata:HpcFilePrimaryMetadata" />
+		</xsd:sequence>
+	</xsd:complexType>
+
 </xsd:schema>
