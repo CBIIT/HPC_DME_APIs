@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.integration;
 
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
@@ -28,9 +29,12 @@ public interface HpcDataTransferAccountValidatorProxy
      *
      * @param dataTransferAccount The account to use for the transfer.
      * @return True if the account is valid, or false otherwise.
+     * 
+     * @throws HpcException
      */
     public boolean validateDataTransferAccount(
-    		               HpcDataTransferAccount dataTransferAccount);
+    		                   HpcDataTransferAccount dataTransferAccount)
+    		                   throws HpcException; 
 }
 
  
