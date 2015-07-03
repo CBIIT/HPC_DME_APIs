@@ -19,10 +19,12 @@
 	<!-- HPC Application Services Beans -->
 	<bean id="hpcUserService" class="gov.nih.nci.hpc.service.impl.HpcUserServiceImpl">
 		<constructor-arg ref="hpcUserDAO"/>
+		<constructor-arg ref="hpcDataTransferService"/>
 	</bean>
 	
 	<bean id="hpcDatasetService" class="gov.nih.nci.hpc.service.impl.HpcDatasetServiceImpl">
 		<constructor-arg ref="hpcDatasetDAO"/>
+		<constructor-arg ref="hpcDataTransferService"/>
 	</bean>
 	
 	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl">
