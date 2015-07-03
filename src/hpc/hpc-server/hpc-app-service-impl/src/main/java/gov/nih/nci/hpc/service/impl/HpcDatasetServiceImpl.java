@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.service.HpcDatasetService;
 
+import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
@@ -50,6 +51,9 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     // The Managed Dataset DAO instance.
     private HpcDatasetDAO datasetDAO = null;
     
+    // The Data Transfer Service instance.
+    private HpcDataTransferService dataTransferService = null;
+    
     // The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -72,16 +76,20 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param datasetDAO The managed dataset DAO instance.
+     * @param datasetDAO The dataset DAO instance.
+     * @param dataTransferService The data transfer service instance.
      */
-    private HpcDatasetServiceImpl(HpcDatasetDAO datasetDAO) throws HpcException
+    private HpcDatasetServiceImpl(HpcDatasetDAO datasetDAO,
+    		                      HpcDataTransferService dataTransferService) 
+    		                     throws HpcException
     {
-    	if(datasetDAO == null) {
-     	   throw new HpcException("Null HpcDatasetDAO instance",
+    	if(datasetDAO == null || dataTransferService == null) {
+     	   throw new HpcException("Null DatasetDAO or DataTransferService instance",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
     	
     	this.datasetDAO = datasetDAO;
+    	this.dataTransferService = dataTransferService;
     }  
     
     //---------------------------------------------------------------------//
@@ -174,12 +182,6 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
  	{
     	return datasetDAO.get(userId, association);
  	}
-    
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-	
-
 }
 
  

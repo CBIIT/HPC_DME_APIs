@@ -22,6 +22,7 @@ import org.json.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.globusonline.nexus.exception.NexusClientException;
+import org.globusonline.nexus.exception.InvalidCredentialsException;
 
 public class HpcDataTransferProxyImpl 
        implements HpcDataTransferProxy, HpcDataTransferAccountValidatorProxy {
@@ -74,7 +75,8 @@ public class HpcDataTransferProxyImpl
     
     @Override
     public boolean validateDataTransferAccount(
-                           HpcDataTransferAccount dataTransferAccount)
+                               HpcDataTransferAccount dataTransferAccount) 
+                        	   throws HpcException
     {
     	try
     	{    	
@@ -85,11 +87,17 @@ public class HpcDataTransferProxyImpl
     		String accessToken = accessTokenJSON.getString("access_token");
     		System.out.println("Client only access token: " + accessToken);
     		cli.validateAccessToken(accessToken);
-    		return true;
-	    } catch (Exception e) {
-	        e.printStackTrace();
+    		
+    	} catch(InvalidCredentialsException ice) {
+    		    return false;
+    		    
+	    } catch(Exception e) {
+	    	    throw new HpcException("Failed to invoke GLOBUS account validation",
+	    	    		               HpcErrorType.DATA_TRANSFER_ERROR);
+	        	
 	    }
-    	return false;
+    	
+    	return true;
     }
  
     @Override
