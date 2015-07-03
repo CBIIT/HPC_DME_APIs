@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<name>HPC Data Transfer Objects (DTO)</name>
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
@@ -71,52 +71,55 @@
 				</executions>
 			</plugin>
 			<plugin>
-    			<groupId>org.apache.cxf</groupId>
-    			<artifactId>cxf-xjc-plugin</artifactId>
-    			<configuration>
-        			<extensions>
-            			<extension>org.apache.cxf.xjcplugins:cxf-xjc-ts:${cxf-xjc.version}</extension>
-            			<extension>org.apache.cxf.xjcplugins:cxf-xjc-boolean:${cxf-xjc.version}</extension>
-        			</extensions>
-    			</configuration>
-    			<executions>
-        			<execution>
-            			<id>generate-sources</id>
-            			<phase>generate-sources</phase>
-            			<goals>
-                			<goal>xsdtojava</goal>
-            			</goals>
-            			<configuration>
-                			<xsdOptions>
-                				<xsdOption>
-                        			<xsd>xjc-build/schema/HpcException.xsd</xsd>
-                        			<packagename>gov.nih.nci.hpc.dto.error</packagename>
-                        			<bindingFile>xjc-build/schema/hpc-dto-error-jaxb-binding.xjb</bindingFile>
-                        			<extensionArgs>
-                        				<arg>-Xts:style:multiline</arg><arg>-Xbg</arg>
-                 					</extensionArgs>
-                    			</xsdOption>
-                				<xsdOption>
-                        			<xsd>xjc-build/schema/HpcUser.xsd</xsd>
-                        			<packagename>gov.nih.nci.hpc.dto.user</packagename>
-                        			<bindingFile>xjc-build/schema/hpc-dto-user-jaxb-binding.xjb</bindingFile>
-                        			<extensionArgs>
-                        				<arg>-Xts:style:multiline</arg><arg>-Xbg</arg>
-                 					</extensionArgs>
-                    			</xsdOption>
-                				<xsdOption>
-                        			<xsd>xjc-build/schema/HpcDataset.xsd</xsd>
-                        			<packagename>gov.nih.nci.hpc.dto.dataset</packagename>
-                        			<bindingFile>xjc-build/schema/hpc-dto-dataset-jaxb-binding.xjb</bindingFile>
-                        			<extensionArgs>
-                        				<arg>-Xts:style:multiline</arg><arg>-Xbg</arg>
-                 					</extensionArgs>
-                    			</xsdOption>
-                			</xsdOptions>
-            			</configuration>
-        			</execution>
-    			</executions>
-			</plugin>			
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-xjc-plugin</artifactId>
+				<configuration>
+					<extensions>
+						<extension>org.apache.cxf.xjcplugins:cxf-xjc-ts:${cxf-xjc.version}</extension>
+						<extension>org.apache.cxf.xjcplugins:cxf-xjc-boolean:${cxf-xjc.version}</extension>
+					</extensions>
+				</configuration>
+				<executions>
+					<execution>
+						<id>generate-sources</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>xsdtojava</goal>
+						</goals>
+						<configuration>
+							<xsdOptions>
+								<xsdOption>
+									<xsd>xjc-build/schema/HpcException.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.dto.error</packagename>
+									<bindingFile>xjc-build/schema/hpc-dto-error-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:multiline</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
+								<xsdOption>
+									<xsd>xjc-build/schema/HpcUser.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.dto.user</packagename>
+									<bindingFile>xjc-build/schema/hpc-dto-user-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:multiline</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
+								<xsdOption>
+									<xsd>xjc-build/schema/HpcDataset.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.dto.dataset</packagename>
+									<bindingFile>xjc-build/schema/hpc-dto-dataset-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:multiline</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
+							</xsdOptions>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -125,7 +128,7 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package>
-						gov.nih.nci.hpc.dto.error,
+							gov.nih.nci.hpc.dto.error,
 							gov.nih.nci.hpc.dto.user,
 							gov.nih.nci.hpc.dto.dataset
 						</Export-Package>

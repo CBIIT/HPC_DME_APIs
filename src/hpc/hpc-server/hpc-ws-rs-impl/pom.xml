@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<name>HPC REST Services Implementation</name>
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
@@ -34,7 +34,7 @@
 						</Import-Package>
 					</instructions>
 				</configuration>
-			</plugin>	
+			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
@@ -74,12 +74,12 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-				
+
 
 		<dependency>
-	    	<groupId>com.googlecode.json-simple</groupId>
-	    	<artifactId>json-simple</artifactId>
-	    	<version>1.1</version>
-		</dependency>	
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1</version>
+		</dependency>
 	</dependencies>
 </project>

@@ -1,35 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--  
- * hpc-service-beans-configuration.xml
- *
- * Copyright SVG, Inc.
- * Copyright Leidos Biomedical Research, Inc
- * 
- * Distributed under the OSI-approved BSD 3-Clause License.
- * See http://ncip.github.com/HPC/LICENSE.txt for details.
- *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
- -->
- 
+<!-- * hpc-service-beans-configuration.xml * * Copyright SVG, Inc. * Copyright 
+	Leidos Biomedical Research, Inc * * Distributed under the OSI-approved BSD 
+	3-Clause License. * See http://ncip.github.com/HPC/LICENSE.txt for details. 
+	* * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> * 
+	@version $Id: hpc-app-service-beans-configuration.xml 277 2015-07-03 02:40:33Z 
+	rosenbergea $ -->
+
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- HPC Application Services Beans -->
 	<bean id="hpcUserService" class="gov.nih.nci.hpc.service.impl.HpcUserServiceImpl">
-		<constructor-arg ref="hpcUserDAO"/>
-		<constructor-arg ref="hpcDataTransferService"/>
+		<constructor-arg ref="hpcUserDAO" />
+		<constructor-arg ref="hpcDataTransferService" />
 	</bean>
-	
+
 	<bean id="hpcDatasetService" class="gov.nih.nci.hpc.service.impl.HpcDatasetServiceImpl">
-		<constructor-arg ref="hpcDatasetDAO"/>
-		<constructor-arg ref="hpcDataTransferService"/>
+		<constructor-arg ref="hpcDatasetDAO" />
+		<constructor-arg ref="hpcDataTransferService" />
 	</bean>
-	
+
 	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl">
-		<constructor-arg ref="hpcDataTransferProxy"/>
-		<constructor-arg ref="hpcDataTransferAccountValidatorProxy"/>
+		<constructor-arg ref="hpcDataTransferProxy" />
+		<constructor-arg ref="hpcDataTransferAccountValidatorProxy" />
 	</bean>
-	
+
 </beans>
