@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--  
- * hpc-dao-impl-bundle-context-osgi.xml
- *
- * Copyright SVG, Inc.
- * Copyright Leidos Biomedical Research, Inc
- * 
- * Distributed under the OSI-approved BSD 3-Clause License.
- * See http://ncip.github.com/HPC/LICENSE.txt for details.
- *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
- -->
- 
+<!-- * hpc-dao-impl-bundle-context-osgi.xml * * Copyright SVG, Inc. * Copyright 
+	Leidos Biomedical Research, Inc * * Distributed under the OSI-approved BSD 
+	3-Clause License. * See http://ncip.github.com/HPC/LICENSE.txt for details. 
+	* * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> * 
+	@version $Id: hpc-dao-impl-bundle-context-osgi.xml 267 2015-06-30 19:28:43Z 
+	rosenbergea $ -->
+
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:ctx="http://www.springframework.org/schema/context" xmlns:osgi="http://www.springframework.org/schema/osgi"
 	xmlns:osgix="http://www.springframework.org/schema/osgi-compendium"
@@ -21,17 +15,17 @@
                         http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd
                         http://www.springframework.org/schema/osgi-compendium http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd">
 
-	<!--  HPC Application Services OSGi Properties -->
+	<!-- HPC Application Services OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		<prop key="hpc.dao.mongo.dbName">hpc</prop>
 		<prop key="hpc.dao.mongo.server.host">localhost</prop>
 		<prop key="hpc.dao.mongo.encryptor.key">***128-bit-key**</prop>
 	</osgix:cm-properties>
 
-	<ctx:property-placeholder properties-ref="preProps"/>
+	<ctx:property-placeholder properties-ref="preProps" />
 
-	<!--  OSGi beans export -->
+	<!-- OSGi beans export -->
 	<osgi:service ref="hpcUserDAO" interface="gov.nih.nci.hpc.dao.HpcUserDAO" />
 	<osgi:service ref="hpcDatasetDAO" interface="gov.nih.nci.hpc.dao.HpcDatasetDAO" />
-	
+
 </beans>

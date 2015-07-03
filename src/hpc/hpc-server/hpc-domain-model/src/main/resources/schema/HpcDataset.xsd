@@ -1,41 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--  
- * HpcDataset.xsd
- *
- * Copyright SVG, Inc.
- * Copyright Leidos Biomedical Research, Inc
- * 
- * Distributed under the OSI-approved BSD 3-Clause License.
- * See http://ncip.github.com/HPC/LICENSE.txt for details.
- *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
- -->
- 
+<!-- * HpcDataset.xsd * * Copyright SVG, Inc. * Copyright Leidos Biomedical 
+	Research, Inc * * Distributed under the OSI-approved BSD 3-Clause License. 
+	* See http://ncip.github.com/HPC/LICENSE.txt for details. * * @author <a 
+	href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> * @version $Id: HpcDataset.xsd 
+	255 2015-06-28 16:54:14Z rosenbergea $ -->
+
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-			xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
-			xmlns:hpc-domain-dataset="http://hpc.nci.nih.gov/domain/dataset"
-    		targetNamespace="http://hpc.nci.nih.gov/domain/model"
-    		elementFormDefault="unqualified">
-    		
- 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/dataset" 
-	            schemaLocation="HpcDatasetTypes.xsd"/>
-	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata" 
-	            schemaLocation="HpcMetadataTypes.xsd"/>   
-    
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-dataset="http://hpc.nci.nih.gov/domain/dataset"
+	targetNamespace="http://hpc.nci.nih.gov/domain/model"
+	elementFormDefault="unqualified">
+
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/dataset"
+		schemaLocation="HpcDatasetTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
+		schemaLocation="HpcMetadataTypes.xsd" />
+
 	<xsd:element name="HpcDataset">
-    	<xsd:complexType>
+		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="id" type="xsd:ID"/>
-        		<xsd:element name="fileSet" type="hpc-domain-dataset:HpcFileSet"/>
-				<xsd:element name="uploadRequests" 
-			             	 type="hpc-domain-dataset:HpcDataTransferRequest" 
-  			             	 minOccurs="0" maxOccurs="unbounded"/>
-  				<xsd:element name="downloadRequests" 
-  			             	 type="hpc-domain-dataset:HpcDataTransferRequest" 
-  			                 minOccurs="0" maxOccurs="unbounded"/>
+				<xsd:element name="id" type="xsd:ID" />
+				<xsd:element name="fileSet" type="hpc-domain-dataset:HpcFileSet" />
+				<xsd:element name="uploadRequests"
+					type="hpc-domain-dataset:HpcDataTransferRequest" minOccurs="0"
+					maxOccurs="unbounded" />
+				<xsd:element name="downloadRequests"
+					type="hpc-domain-dataset:HpcDataTransferRequest" minOccurs="0"
+					maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-	
+
 </xsd:schema>

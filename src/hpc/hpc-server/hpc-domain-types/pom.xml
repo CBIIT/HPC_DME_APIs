@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<name>HPC Domain Types</name>
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
@@ -14,60 +14,64 @@
 	<build>
 		<plugins>
 			<plugin>
-    			<groupId>org.apache.cxf</groupId>
-    			<artifactId>cxf-xjc-plugin</artifactId>
-    			<configuration>
-        			<extensions>
-            			<extension>org.apache.cxf.xjcplugins:cxf-xjc-ts:${cxf-xjc.version}</extension>
-            			<extension>org.apache.cxf.xjcplugins:cxf-xjc-boolean:${cxf-xjc.version}</extension>
-        			</extensions>
-    			</configuration>
-    			<executions>
-        			<execution>
-            			<id>generate-sources</id>
-            			<phase>generate-sources</phase>
-            			<goals>
-                			<goal>xsdtojava</goal>
-            			</goals>
-            			<configuration>
-                			<xsdOptions>
-                				<xsdOption>
-                        			<xsd>src/main/resources/schema/HpcErrorTypes.xsd</xsd>
-                        			<packagename>gov.nih.nci.hpc.domain.error</packagename>
-                        			<bindingFile>src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
-                        			<extensionArgs>
-                        				<arg>-Xts:style:multiline</arg><arg>-Xbg</arg>
-                 					</extensionArgs>
-                    			</xsdOption>
-                    			<xsdOption>
-                        			<xsd>src/main/resources/schema/HpcUserTypes.xsd</xsd>
-                        			<packagename>gov.nih.nci.hpc.domain.user</packagename>
-                        			<bindingFile>src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
-                        			<extensionArgs>
-                        				<arg>-Xts:style:multiline</arg><arg>-Xbg</arg>
-                 					</extensionArgs>
-                    			</xsdOption>
-                    			<xsdOption>
-                        			<xsd>src/main/resources/schema/HpcMetadataTypes.xsd</xsd>
-                        			<packagename>gov.nih.nci.hpc.domain.metadata</packagename>
-                        			<bindingFile>src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
-                        			<extensionArgs>
-                        				<arg>-Xts:style:multiline</arg><arg>-Xbg</arg>
-                 					</extensionArgs>
-                    			</xsdOption>
-                    			<xsdOption>
-                        			<xsd>src/main/resources/schema/HpcDatasetTypes.xsd</xsd>
-                        			<packagename>gov.nih.nci.hpc.domain.dataset</packagename>
-                        			<bindingFile>src/main/resources/schema/hpc-domain-types-dataset-types-jaxb-binding.xjb</bindingFile>
-                        			<extensionArgs>
-                        				<arg>-Xts:style:multiline</arg><arg>-Xbg</arg>
-                 					</extensionArgs>
-                    			</xsdOption>
-                			</xsdOptions>
-            			</configuration>
-        			</execution>
-    			</executions>
-			</plugin>			
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-xjc-plugin</artifactId>
+				<configuration>
+					<extensions>
+						<extension>org.apache.cxf.xjcplugins:cxf-xjc-ts:${cxf-xjc.version}</extension>
+						<extension>org.apache.cxf.xjcplugins:cxf-xjc-boolean:${cxf-xjc.version}</extension>
+					</extensions>
+				</configuration>
+				<executions>
+					<execution>
+						<id>generate-sources</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>xsdtojava</goal>
+						</goals>
+						<configuration>
+							<xsdOptions>
+								<xsdOption>
+									<xsd>src/main/resources/schema/HpcErrorTypes.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.domain.error</packagename>
+									<bindingFile>src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:multiline</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
+								<xsdOption>
+									<xsd>src/main/resources/schema/HpcUserTypes.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.domain.user</packagename>
+									<bindingFile>src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:multiline</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
+								<xsdOption>
+									<xsd>src/main/resources/schema/HpcMetadataTypes.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.domain.metadata</packagename>
+									<bindingFile>src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:multiline</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
+								<xsdOption>
+									<xsd>src/main/resources/schema/HpcDatasetTypes.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.domain.dataset</packagename>
+									<bindingFile>src/main/resources/schema/hpc-domain-types-dataset-types-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:multiline</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
+							</xsdOptions>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -76,7 +80,7 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package>
-						    gov.nih.nci.hpc.domain.error,
+							gov.nih.nci.hpc.domain.error,
 							gov.nih.nci.hpc.domain.user,
 							gov.nih.nci.hpc.domain.metadata,
 							gov.nih.nci.hpc.domain.dataset
@@ -97,5 +101,5 @@
 			<artifactId>cxf-xjc-runtime</artifactId>
 		</dependency>
 	</dependencies>
-	
+
 </project>
