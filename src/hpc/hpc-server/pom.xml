@@ -1,6 +1,7 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<name>HPC Server</name>
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
@@ -9,7 +10,7 @@
 	</parent>
 	<artifactId>hpc-server</artifactId>
 	<packaging>pom</packaging>
-	
+
 	<properties>
 		<cxf.version>3.0.2</cxf.version>
 		<cxf-xjc.version>3.0.3</cxf-xjc.version>
@@ -17,7 +18,7 @@
 		<mongodb.version>3.0.1</mongodb.version>
 		<slf4j.version>1.7.12</slf4j.version>
 	</properties>
-	
+
 	<modules>
 		<module>hpc-common</module>
 		<module>hpc-domain-types</module>
@@ -36,14 +37,14 @@
 		<module>hpc-client</module>
 		<module>hpc-features</module>
 	</modules>
-	
+
 	<build>
 		<pluginManagement>
 			<plugins>
 				<plugin>
 					<groupId>org.apache.cxf</groupId>
-    				<artifactId>cxf-xjc-plugin</artifactId>
-    				<version>${cxf-xjc.version}</version>
+					<artifactId>cxf-xjc-plugin</artifactId>
+					<version>${cxf-xjc.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.felix</groupId>
@@ -78,7 +79,7 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-	
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -102,9 +103,9 @@
 				<version>${cxf.version}</version>
 			</dependency>
 			<dependency>
-  				<groupId>org.apache.cxf</groupId>
-  				<artifactId>cxf-rt-rs-client</artifactId>
-  				<version>${cxf.version}</version>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-rt-rs-client</artifactId>
+				<version>${cxf.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.cxf.xjc-utils</groupId>
@@ -112,11 +113,11 @@
 				<version>${cxf-xjc.version}</version>
 			</dependency>
 			<dependency>
-        		<groupId>org.mongodb</groupId>
-        		<artifactId>mongodb-driver-async</artifactId>
-        		<version>${mongodb.version}</version>
-    		</dependency>
-    		<dependency>
+				<groupId>org.mongodb</groupId>
+				<artifactId>mongodb-driver-async</artifactId>
+				<version>${mongodb.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
 				<version>${slf4j.version}</version>

@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--  
- * hpc-integration-bundle-context-osgi.xml
- *
- * Copyright SVG, Inc.
- * Copyright Leidos Biomedical Research, Inc
- * 
- * Distributed under the OSI-approved BSD 3-Clause License.
- * See http://ncip.github.com/HPC/LICENSE.txt for details.
- *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
- -->
- 
+<!-- * hpc-integration-bundle-context-osgi.xml * * Copyright SVG, Inc. * 
+	Copyright Leidos Biomedical Research, Inc * * Distributed under the OSI-approved 
+	BSD 3-Clause License. * See http://ncip.github.com/HPC/LICENSE.txt for details. 
+	* * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> * 
+	@version $Id: hpc-integration-bundle-context-osgi.xml 275 2015-07-02 22:42:45Z 
+	rosenbergea $ -->
+
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:ctx="http://www.springframework.org/schema/context" xmlns:osgi="http://www.springframework.org/schema/osgi"
 	xmlns:osgix="http://www.springframework.org/schema/osgi-compendium"
@@ -21,17 +15,19 @@
                         http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd
                         http://www.springframework.org/schema/osgi-compendium http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd">
 
-	<!--  HPC Integration OSGi Properties -->
+	<!-- HPC Integration OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
-		
+
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
 
-	<!--  OSGi beans export -->
-	<osgi:service ref="hpcDataTransferProxy" interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
-	<osgi:service ref="hpcDataTransferAccountValidatorProxy" interface="gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy" />
-		
+	<!-- OSGi beans export -->
+	<osgi:service ref="hpcDataTransferProxy"
+		interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
+	<osgi:service ref="hpcDataTransferAccountValidatorProxy"
+		interface="gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy" />
+
 	<!-- OSGi beans import -->
-	
+
 </beans>
