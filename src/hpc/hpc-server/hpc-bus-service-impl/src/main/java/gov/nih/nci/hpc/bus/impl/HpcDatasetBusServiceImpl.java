@@ -243,12 +243,23 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		   continue;	
     		}
     		
+    		// Verify PI, Creator and Registrator are registered with HPC.
     		validateUser(uploadRequest.getMetadata().getPrimaryInvestigatorNihUserId(),
     				     HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR);
     		validateUser(uploadRequest.getMetadata().getCreatorNihUserId(),
 				         HpcDatasetUserAssociation.CREATOR);
+    		HpcUser registrator =
     		validateUser(uploadRequest.getMetadata().getRegistratorNihUserId(),
 			             HpcDatasetUserAssociation.REGISTRATOR);
+    		
+    		// Validate the registrator Data Transfer Account.
+        	if(!dataTransferService.validateDataTransferAccount(
+        	   registrator.getDataTransferAccount())) {
+         	   throw new HpcException(
+         			        "Invalid Data Transfer Account: username = " + 
+         			        registrator.getDataTransferAccount().getUsername(), 
+                            HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);	
+         	}
     	}
     }
     
@@ -257,18 +268,23 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
      * 
      * @param nihUserId The NIH User ID.
      * @param userAssociation The user's association to the dataset.
+     * 
+     * @return The HpcUser.
      *
      * @throws HpcException if the user is not registered with HPC.
      */
-    private void validateUser(String nihUserId, 
-    		                  HpcDatasetUserAssociation userAssociation)
-    		                 throws HpcException
+    private HpcUser validateUser(String nihUserId, 
+    		                     HpcDatasetUserAssociation userAssociation)
+    		                    throws HpcException
     {
-    	if(userService.get(nihUserId) == null) {
+    	HpcUser user = userService.get(nihUserId);
+    	if(user == null) {
     	   throw new HpcException("Could not find "+ userAssociation +
     				               " user with nihUserID = " + nihUserId,
     		                       HpcRequestRejectReason.INVALID_NIH_ACCOUNT);	
     	}
+    	
+    	return user;
     }
 }
 

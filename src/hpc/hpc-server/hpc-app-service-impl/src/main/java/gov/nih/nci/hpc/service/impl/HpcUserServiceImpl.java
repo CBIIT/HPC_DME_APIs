@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.service.HpcUserService;
 
+import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcNihAccount;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
@@ -44,6 +45,9 @@ public class HpcUserServiceImpl implements HpcUserService
     // The User DAO instance.
     private HpcUserDAO userDAO = null;
     
+    // The Data Transfer Service instance.
+    private HpcDataTransferService dataTransferService = null;
+    
     // The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -66,16 +70,20 @@ public class HpcUserServiceImpl implements HpcUserService
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param managedUserDAO The managed user DAO instance.
+     * @param userDAO The user DAO instance.
+     * @param dataTransferService The data transfer service instance.
      */
-    private HpcUserServiceImpl(HpcUserDAO userDAO) throws HpcException
+    private HpcUserServiceImpl(HpcUserDAO userDAO,
+    		                   HpcDataTransferService dataTransferService) 
+    		                  throws HpcException
     {
-    	if(userDAO == null) {
-     	   throw new HpcException("Null HpcManagedDatasetDAO instance",
+    	if(userDAO == null || dataTransferService == null) {
+     	   throw new HpcException("Null UserDAO or DataTransferService instance",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
     	
     	this.userDAO = userDAO;
+    	this.dataTransferService = dataTransferService;
     }  
     
     //---------------------------------------------------------------------//
@@ -100,9 +108,17 @@ public class HpcUserServiceImpl implements HpcUserService
     	
     	// Check if the user already exists.
     	if(get(nihAccount.getUserId()) != null) {
-    	   throw new HpcException("User already exists: nihUserId=" + 
+    	   throw new HpcException("User already exists: nihUserId = " + 
     	                          nihAccount.getUserId(), 
     	                          HpcRequestRejectReason.USER_ALREADY_EXISTS);	
+    	}
+    	
+    	// Validate the data transfer account.
+    	if(!dataTransferService.validateDataTransferAccount(dataTransferAccount)) {
+    	   throw new HpcException(
+    			        "Invalid Data Transfer Account: username = " + 
+    			        dataTransferAccount.getUsername(), 
+                        HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);	
     	}
     	
     	// Create the User domain object.
