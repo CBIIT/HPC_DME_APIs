@@ -15,7 +15,7 @@
 			  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 	
 	<jxb:globalBindings>
-		<jxb:serializable/>
+		<jxb:serializable uid="1"/>
 		
 		<!-- use Calendar instead of XMLGregorianCalendar -->
         <jxb:javaType name="java.util.Calendar" xmlType="xsd:dateTime"
