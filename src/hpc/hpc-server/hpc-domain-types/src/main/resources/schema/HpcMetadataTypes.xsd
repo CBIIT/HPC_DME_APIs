@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- * HpcManagedData.xsd * * Copyright SVG, Inc. * Copyright Leidos Biomedical 
-	Research, Inc * * Distributed under the OSI-approved BSD 3-Clause License. 
-	* See http://ncip.github.com/HPC/LICENSE.txt for details. * * @author <a 
-	href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> * @version $Id: HpcMetadataTypes.xsd 
-	255 2015-06-28 16:54:14Z rosenbergea $ -->
+<!--  
+ * HpcMetadataTypes.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
