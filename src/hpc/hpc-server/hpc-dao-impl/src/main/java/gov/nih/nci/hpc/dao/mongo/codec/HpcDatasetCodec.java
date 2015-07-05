@@ -10,21 +10,18 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.domain.model.HpcDataset;
-import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
+import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
+import gov.nih.nci.hpc.domain.model.HpcDataset;
 
+import java.util.List;
+
+import org.bson.BsonDocumentReader;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
-import org.bson.BsonDocumentReader;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * <p>
@@ -37,14 +34,6 @@ import java.util.List;
 
 public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 { 
-    //---------------------------------------------------------------------//
-    // Instance members
-    //---------------------------------------------------------------------//
-	
-	// The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -98,6 +87,7 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 	}
  
 	@Override
+	@SuppressWarnings("unchecked")
 	public HpcDataset decode(BsonReader reader, 
 			                 DecoderContext decoderContext) 
 	{

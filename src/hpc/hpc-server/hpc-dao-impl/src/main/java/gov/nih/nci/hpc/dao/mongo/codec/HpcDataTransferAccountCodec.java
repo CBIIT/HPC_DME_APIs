@@ -10,22 +10,17 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferType;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-
 import gov.nih.nci.hpc.exception.HpcException;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
-import org.bson.types.Binary;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
-import org.bson.codecs.configuration.CodecRegistry;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.bson.types.Binary;
 
 /**
  * <p>
@@ -44,10 +39,6 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
 	
 	// Encryptor.
 	HpcEncryptor encryptor = null;
-	
-	// The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors

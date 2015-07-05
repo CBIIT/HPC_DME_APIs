@@ -13,9 +13,6 @@ package gov.nih.nci.hpc.dao.mongo.codec;
 import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecRegistry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * <p>
  * HPC Codec abstract base class. 
@@ -112,10 +109,6 @@ public abstract class HpcCodec<T> implements Codec<T>
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
-	
-	// The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
 	
 	// The codec registry.
 	private CodecRegistry codecRegistry;

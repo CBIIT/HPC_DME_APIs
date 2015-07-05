@@ -10,25 +10,20 @@
 
 package gov.nih.nci.hpc.dao.mongo.impl;
 
+import static com.mongodb.client.model.Filters.eq;
 import gov.nih.nci.hpc.dao.HpcDatasetDAO;
+import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcMongoDB;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcSingleResultCallback;
-import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
-
-import gov.nih.nci.hpc.exception.HpcException;
-
+import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
-import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
+import gov.nih.nci.hpc.exception.HpcException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.mongodb.async.client.MongoCollection;
-import static com.mongodb.client.model.Filters.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * <p>
@@ -70,10 +65,6 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
-	
-	// The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
 	
 	// HpcMongoDB instance.
 	private HpcMongoDB mongoDB = null;

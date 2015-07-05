@@ -10,17 +10,13 @@
 
 package gov.nih.nci.hpc.dao.mongo.driver;
 
-import com.mongodb.async.SingleResultCallback;
-
-import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.lang.InterruptedException;
+
+import com.mongodb.async.SingleResultCallback;
 
 /**
  * <p>
@@ -44,10 +40,6 @@ public class HpcSingleResultCallback<T> implements SingleResultCallback<T>
     // Instance members
     //---------------------------------------------------------------------//
 	
-	// The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
 	// The exception.
 	private HpcException exception = null;
 	
@@ -56,7 +48,6 @@ public class HpcSingleResultCallback<T> implements SingleResultCallback<T>
 	
 	// The countdown latch.
 	CountDownLatch countDownLatch = new CountDownLatch(1);
-	
 	
     //---------------------------------------------------------------------//
     // Constructors

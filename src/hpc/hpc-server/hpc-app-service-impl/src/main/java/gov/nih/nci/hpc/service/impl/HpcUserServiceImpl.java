@@ -10,22 +10,20 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.service.HpcUserService;
-
-import gov.nih.nci.hpc.service.HpcDataTransferService;
-import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcNihAccount;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferType;
+import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
-import gov.nih.nci.hpc.dao.HpcUserDAO;
+import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.domain.user.HpcNihAccount;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcDataTransferService;
+import gov.nih.nci.hpc.service.HpcUserService;
+
+import java.util.Calendar;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Calendar;
 
 /**
  * <p>
@@ -133,6 +131,8 @@ public class HpcUserServiceImpl implements HpcUserService
     	
     	// Persist to Mongo.
     	userDAO.add(user);
+    	
+    	logger.debug("User Created: " + user);
     }
     
     @Override
