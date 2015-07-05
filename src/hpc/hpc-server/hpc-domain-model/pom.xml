@@ -91,7 +91,7 @@
 								<xsdOption>
 									<xsd>xjc-build/schema/HpcUser.xsd</xsd>
 									<packagename>gov.nih.nci.hpc.domain.model</packagename>
-									<bindingFile>xjc-build/schema/hpc-domain-managed-user-jaxb-binding.xjb</bindingFile>
+									<bindingFile>xjc-build/schema/hpc-domain-user-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
 										<arg>-Xts:style:multiline</arg>
 										<arg>-Xbg</arg>
@@ -100,7 +100,7 @@
 								<xsdOption>
 									<xsd>xjc-build/schema/HpcDataset.xsd</xsd>
 									<packagename>gov.nih.nci.hpc.domain.model</packagename>
-									<bindingFile>xjc-build/schema/hpc-domain-managed-dataset-jaxb-binding.xjb</bindingFile>
+									<bindingFile>xjc-build/schema/hpc-domain-dataset-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
 										<arg>-Xts:style:multiline</arg>
 										<arg>-Xbg</arg>

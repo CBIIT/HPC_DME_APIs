@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--  
- * hpc-domain-managed-dataset-jaxb-binding.xjb
+ * hpc-domain-managed-jaxb-binding.xjb
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -14,7 +14,7 @@
 <jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1"
 			  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 	<jxb:globalBindings>
-		<jxb:serializable/>
+		<jxb:serializable uid="1"/>
 		
 		<!-- use Calendar instead of XMLGregorianCalendar -->
         <jxb:javaType name="java.util.Calendar" xmlType="xsd:dateTime"
