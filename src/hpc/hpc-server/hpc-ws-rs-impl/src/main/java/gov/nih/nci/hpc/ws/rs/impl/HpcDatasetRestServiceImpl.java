@@ -169,9 +169,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     	
 		HpcDatasetCollectionDTO datasetCollectionDTO = null;
 		try {
-			 datasetCollectionDTO = datasetBusService.getDatasets(
-					                       name, 
-						                   HpcDatasetUserAssociation.CREATOR); 
+			 datasetCollectionDTO = datasetBusService.getDatasets(name); 
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /dataset/query/namer/{name}: failed:", e);
