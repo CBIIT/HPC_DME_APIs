@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- * hpc-integration-beans-configuration.xml * * Copyright SVG, Inc. * 
-	Copyright Leidos Biomedical Research, Inc * * Distributed under the OSI-approved 
-	BSD 3-Clause License. * See http://ncip.github.com/HPC/LICENSE.txt for details. 
-	* * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> * 
-	@version $Id: hpc-integration-beans-configuration.xml 275 2015-07-02 22:42:45Z 
-	rosenbergea $ -->
+<!--  
+ * hpc-dao-impl-bundle-context-osgi.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
