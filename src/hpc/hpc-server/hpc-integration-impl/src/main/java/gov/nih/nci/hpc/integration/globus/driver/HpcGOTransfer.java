@@ -10,8 +10,11 @@
 
 package gov.nih.nci.hpc.integration.globus.driver;
 
-import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.exception.HpcException;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 import org.globusonline.nexus.GoauthClient;
 import org.globusonline.nexus.exception.NexusClientException;
@@ -21,13 +24,6 @@ import org.globusonline.transfer.GoauthAuthenticator;
 import org.globusonline.transfer.JSONTransferAPIClient;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.Vector;
-import java.util.Map;
 
 /**
  * <p>
@@ -44,10 +40,6 @@ public class HpcGOTransfer
     // Instance members
     //---------------------------------------------------------------------//
 	
-	// The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
 	// The JSONTransferAPIClient client instance.
 	private JSONTransferAPIClient transferClient = null;
 	
@@ -57,7 +49,8 @@ public class HpcGOTransfer
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcGOTransfer() throws HpcException
+    @SuppressWarnings("unused")
+	private HpcGOTransfer() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);

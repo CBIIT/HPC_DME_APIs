@@ -10,20 +10,16 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
+import gov.nih.nci.hpc.bus.HpcUserBusService;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.dto.user.HpcUserDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
+import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcUserRestService;
 
-import gov.nih.nci.hpc.bus.HpcUserBusService;
-import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
-import gov.nih.nci.hpc.dto.user.HpcUserDTO;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.exception.HpcException;
-
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.Context;
-
-import java.net.URI;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

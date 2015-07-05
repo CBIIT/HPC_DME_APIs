@@ -11,26 +11,22 @@
 package gov.nih.nci.hpc.dao.mongo.driver;
 
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodecProvider;
-import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
-import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.exception.HpcException;
 
-import com.mongodb.async.client.MongoClient;
-import com.mongodb.async.client.MongoClients;
-import com.mongodb.async.client.MongoClientSettings;
-import com.mongodb.async.client.MongoDatabase;
-import com.mongodb.async.client.MongoCollection;
-import com.mongodb.connection.ClusterSettings;
-import com.mongodb.ServerAddress;
+import java.util.Map;
+import java.util.Vector;
 
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Vector;
-import java.util.Map;
+import com.mongodb.ServerAddress;
+import com.mongodb.async.client.MongoClient;
+import com.mongodb.async.client.MongoClientSettings;
+import com.mongodb.async.client.MongoClients;
+import com.mongodb.async.client.MongoCollection;
+import com.mongodb.async.client.MongoDatabase;
+import com.mongodb.connection.ClusterSettings;
 
 /**
  * <p>
@@ -47,10 +43,6 @@ public class HpcMongoDB
     // Instance members
     //---------------------------------------------------------------------//
 	
-	// The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
 	// The mongo client instance.
 	private MongoClient mongoClient = null;
 	
@@ -58,6 +50,7 @@ public class HpcMongoDB
 	private String dbName = null;
 	
 	// Map of MongoDB collection classes to names.
+	@SuppressWarnings("rawtypes")
 	private Map<Class, String> collections = null;
 	
     //---------------------------------------------------------------------//
@@ -83,7 +76,8 @@ public class HpcMongoDB
      * 
      * @throws HpcException If a HpcCodecProvider instance was not provided.
      */
-    private HpcMongoDB(String dbName, String mongoHost,
+    @SuppressWarnings("rawtypes")
+	private HpcMongoDB(String dbName, String mongoHost,
     		           HpcCodecProvider hpcCodecProvider,
     		           Map<Class, String> collections) throws HpcException
     {

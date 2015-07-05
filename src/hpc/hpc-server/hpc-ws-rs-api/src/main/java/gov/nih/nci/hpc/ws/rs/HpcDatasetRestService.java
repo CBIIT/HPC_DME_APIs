@@ -11,14 +11,13 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
@@ -33,7 +32,17 @@ import javax.ws.rs.core.Response;
 
 @Path("/")
 public interface HpcDatasetRestService
-{    
+{   
+    /**
+     * POST registration request.
+     *
+     * @param registrationInput The data registration input DTO.
+     */
+    @POST
+    @Path("/dataset")
+    @Consumes("application/json,application/xml")
+    public Response registerDataset(HpcDatasetRegistrationDTO datasetRegistrationDTO);
+    
     /**
      * GET Dataset by ID.
      *
@@ -46,25 +55,27 @@ public interface HpcDatasetRestService
     public Response getDataset(@PathParam("id") String id); 
     
     /**
-     * GET Datasets associated with a specific creator.
+     * GET Datasets by creator ID.
      *
-     * @param creatorId The creator user ID.
-     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO entity.
+     * @param creatorId Get datasets associated with this creator ID.
+     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @GET
-    @Path("/dataset")
+    @Path("/dataset/query/creator/{id}")
     @Produces("application/json,application/xml")
-    public Response getDatasets(@QueryParam("creatorId") String creatorId); 
+    public Response getDatasetsByCreatorId(@PathParam("id") String creatorId); 
     
     /**
-     * POST registration request.
+     * GET Datasets by name.
      *
-     * @param registrationInput The data registration input DTO.
+     * @param name Get datasets which 'name' is contained in their name.
+     * 
+     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
-    @POST
-    @Path("/dataset")
-    @Consumes("application/json,application/xml")
-    public Response registerDataset(HpcDatasetRegistrationDTO datasetRegistrationDTO);
+    @GET
+    @Path("/dataset/query/name/{name}")
+    @Produces("application/json,application/xml")
+    public Response getDatasetsByName(@PathParam("name") String name); 
     
     /**
      * GET Configurable items by ID.

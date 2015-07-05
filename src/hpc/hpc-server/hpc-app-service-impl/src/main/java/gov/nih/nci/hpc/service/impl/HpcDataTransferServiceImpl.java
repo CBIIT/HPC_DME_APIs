@@ -10,19 +10,14 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.service.HpcDataTransferService;
-
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
-import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy;
-import gov.nih.nci.hpc.dao.HpcUserDAO;
+import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.exception.HpcException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy;
+import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
+import gov.nih.nci.hpc.service.HpcDataTransferService;
 
 /**
  * <p>
@@ -42,10 +37,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     private HpcDataTransferAccountValidatorProxy 
                                   dataTransferAccountValidatorProxy = null;
     
-    // The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//

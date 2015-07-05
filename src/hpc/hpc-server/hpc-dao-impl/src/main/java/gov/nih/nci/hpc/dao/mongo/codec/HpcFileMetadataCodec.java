@@ -13,15 +13,12 @@ package gov.nih.nci.hpc.dao.mongo.codec;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 
+import org.bson.BsonDocumentReader;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
-import org.bson.BsonDocumentReader;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -34,14 +31,6 @@ import org.slf4j.LoggerFactory;
 
 public class HpcFileMetadataCodec extends HpcCodec<HpcFileMetadata>
 { 
-    //---------------------------------------------------------------------//
-    // Instance members
-    //---------------------------------------------------------------------//
-	
-	// The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//

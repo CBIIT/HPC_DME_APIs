@@ -11,21 +11,18 @@
 package gov.nih.nci.hpc.dao.mongo.codec;
 
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcNihAccount;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
-
-import org.bson.BsonReader;
-import org.bson.BsonWriter;
-import org.bson.Document;
-import org.bson.BsonDocumentReader;
-import org.bson.codecs.DecoderContext;
-import org.bson.codecs.EncoderContext;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import gov.nih.nci.hpc.domain.user.HpcNihAccount;
 
 import java.util.Calendar;
 import java.util.Date;
+
+import org.bson.BsonDocumentReader;
+import org.bson.BsonReader;
+import org.bson.BsonWriter;
+import org.bson.Document;
+import org.bson.codecs.DecoderContext;
+import org.bson.codecs.EncoderContext;
 
 /**
  * <p>
@@ -38,14 +35,6 @@ import java.util.Date;
 
 public class HpcUserCodec extends HpcCodec<HpcUser>
 { 
-    //---------------------------------------------------------------------//
-    // Instance members
-    //---------------------------------------------------------------------//
-	
-	// The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
