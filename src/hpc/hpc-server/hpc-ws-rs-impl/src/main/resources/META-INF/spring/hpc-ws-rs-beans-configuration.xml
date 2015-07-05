@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- * hpc-metadata-rs-beans-configuration.xml * * Copyright (c) 2015 National 
-	Institution of Health (NIH). * All rights reserved. * * This software is 
-	the confidential and proprietary information of * NIH. You shall not disclose 
-	such Confidential Information and shall * use it only in accordance with 
-	the terms of the agreement you have with NIH. * * HPC Datasets Registration 
-	REST Service Spring Beans. * * @author <a href="mailto:eran.rosenberg@nih.gov">Eran 
-	Rosenberg</a> * @version $Id: hpc-ws-rs-beans-configuration.xml 254 2015-06-25 
-	00:05:43Z rosenbergea $ -->
+<!--  
+ * hpc-integration-bundle-context-osgi.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:util="http://www.springframework.org/schema/util" xmlns:cxf="http://cxf.apache.org/core"
