@@ -10,21 +10,16 @@
 
 package gov.nih.nci.hpc.dao.mongo.impl;
 
+import static com.mongodb.client.model.Filters.eq;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
+import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcMongoDB;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcSingleResultCallback;
-import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
-
-import gov.nih.nci.hpc.exception.HpcException;
-
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.exception.HpcException;
 
 import com.mongodb.async.client.MongoCollection;
-import static com.mongodb.client.model.Filters.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -50,10 +45,6 @@ public class HpcUserDAOImpl implements HpcUserDAO
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
-	
-	// The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
 	
 	// HpcMongoDB instance.
 	private HpcMongoDB mongoDB = null;

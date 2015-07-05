@@ -1,39 +1,31 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
-import gov.nih.nci.hpc.integration.globus.driver.HpcGOTransfer;
-import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
-import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy;
-
-import java.security.GeneralSecurityException;
-import java.util.*;
-import java.io.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy;
+import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
+import gov.nih.nci.hpc.integration.globus.driver.HpcGOTransfer;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.globusonline.nexus.GoauthClient;
-import org.globusonline.transfer.*;
-import org.json.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.globusonline.nexus.exception.NexusClientException;
 import org.globusonline.nexus.exception.InvalidCredentialsException;
+import org.globusonline.transfer.APIError;
+import org.globusonline.transfer.BaseTransferAPIClient;
+import org.globusonline.transfer.JSONTransferAPIClient;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class HpcDataTransferProxyImpl 
        implements HpcDataTransferProxy, HpcDataTransferAccountValidatorProxy {
 	
-	// The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
     private HpcGOTransfer hpcGOTransfer = null;
-    private static DateFormat isoDateFormat =
-                            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
     public HpcDataTransferProxyImpl() throws HpcException
     {
@@ -48,7 +40,8 @@ public class HpcDataTransferProxyImpl
      * 
      * @throws HpcException If a HpcGOTransfer instance was not provided.
      */
-    private HpcDataTransferProxyImpl(HpcGOTransfer hpcGOTransfer) throws HpcException
+    @SuppressWarnings("unused")
+	private HpcDataTransferProxyImpl(HpcGOTransfer hpcGOTransfer) throws HpcException
     {
     	if(hpcGOTransfer == null) {
     	   throw new HpcException("Null HpcGOTransfer instance",
@@ -191,7 +184,7 @@ public class HpcDataTransferProxyImpl
                           + "/ls";
         try
         {
-        	JSONTransferAPIClient.Result r = client.getResult(resource, params);
+        	client.getResult(resource, params);
         }catch(APIError error)
         {
         	if("ExternalError.DirListingFailed.NotDirectory".equals(error.code))

@@ -16,7 +16,6 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.Codec;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +41,7 @@ public class HpcCodecProvider implements CodecProvider
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
 	
+	@SuppressWarnings("rawtypes")
 	private Map<Class, HpcCodec> codecs = new HashMap<Class, HpcCodec>();
 	
     //---------------------------------------------------------------------//
@@ -66,6 +66,7 @@ public class HpcCodecProvider implements CodecProvider
      * 
      * @throws HpcException If a HpcCodecProvider instance was not provided.
      */
+    @SuppressWarnings("rawtypes")
     private HpcCodecProvider(Map<Class, HpcCodec> codecs) 
     		                throws HpcException
     {
@@ -75,6 +76,7 @@ public class HpcCodecProvider implements CodecProvider
      	}
     	
     	this.codecs.putAll(codecs);
+    	logger.info("Registered Codecs: " + codecs);
     } 
     
     //---------------------------------------------------------------------//
@@ -85,15 +87,16 @@ public class HpcCodecProvider implements CodecProvider
     // CodecProvider Interface Implementation
     //---------------------------------------------------------------------//  
     
-    @Override                                                                                          
+    @Override    
+    @SuppressWarnings("unchecked")
     public <T> Codec<T> get(final Class<T> clazz, 
     		                final CodecRegistry registry) {  
-    	HpcCodec codec = codecs.get(clazz);
+		HpcCodec<T> codec = codecs.get(clazz);
     	if(codec != null) {
     	   codec.setRegistry(registry);	
     	}
     	
-    	return  codec;                                        
+    	return codec;                                        
     }                    
 }
 

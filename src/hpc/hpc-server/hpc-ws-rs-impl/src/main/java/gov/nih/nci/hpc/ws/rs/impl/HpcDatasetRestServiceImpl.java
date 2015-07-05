@@ -10,33 +10,28 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
-import gov.nih.nci.hpc.ws.rs.HpcDatasetRestService;
-
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.Context;
+import gov.nih.nci.hpc.ws.rs.HpcDatasetRestService;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URI;
+
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * <p>
@@ -115,6 +110,23 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//  
 	
     @Override
+    public Response registerDataset(HpcDatasetRegistrationDTO datasetRegistrationDTO)
+    {	
+		logger.info("Invoking RS: POST /dataset: " + datasetRegistrationDTO);
+		
+		String datasetId = null;
+		try {
+			 datasetId = datasetBusService.registerDataset(datasetRegistrationDTO);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /dataset failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return createdResponse(datasetId);
+	}
+    
+    @Override
     public Response getDataset(String id)
     {
 		logger.info("Invoking RS: GET /dataset/{id}: " + id);
@@ -132,9 +144,9 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response getDatasets(String creatorId)
+    public Response getDatasetsByCreatorId(String creatorId)
     {
-    	logger.info("Invoking RS: GET /dataset/creator/{id}: " + creatorId);
+    	logger.info("Invoking RS: GET /dataset/query/creator/{id}: " + creatorId);
     	
 		HpcDatasetCollectionDTO datasetCollectionDTO = null;
 		try {
@@ -143,7 +155,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 						                   HpcDatasetUserAssociation.CREATOR); 
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/creator/{id}: failed:", e);
+			    logger.error("RS: GET /dataset/query/creator/{id}: failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -151,22 +163,24 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response registerDataset(HpcDatasetRegistrationDTO datasetRegistrationDTO)
-    {	
-		logger.info("Invoking RS: POST /dataset: " + datasetRegistrationDTO);
-		
-		String datasetId = null;
+    public Response getDatasetsByName(String name)
+    {
+    	logger.info("Invoking RS: GET /dataset/query/namer/{name}: " + name);
+    	
+		HpcDatasetCollectionDTO datasetCollectionDTO = null;
 		try {
-			 datasetId = datasetBusService.registerDataset(datasetRegistrationDTO);
+			 datasetCollectionDTO = datasetBusService.getDatasets(
+					                       name, 
+						                   HpcDatasetUserAssociation.CREATOR); 
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /dataset failed:", e);
+			    logger.error("RS: GET /dataset/query/namer/{name}: failed:", e);
 			    return errorResponse(e);
 		}
 		
-		return createdResponse(datasetId);
-	}
-	
+		return okResponse(datasetCollectionDTO, true);
+    }
+    
     @Override
     public Response checkDataTransferStatus(String submissionId)
     {	

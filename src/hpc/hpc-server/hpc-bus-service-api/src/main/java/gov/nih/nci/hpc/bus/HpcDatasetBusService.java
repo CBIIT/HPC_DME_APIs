@@ -16,8 +16,6 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import java.util.List;
-
 /**
  * <p>
  * HPC Dataset Business Service Interface.
@@ -51,7 +49,7 @@ public interface HpcDatasetBusService
     public HpcDatasetDTO getDataset(String id) throws HpcException;
     
     /**
-     * Get managed datasets associated with a specific user.
+     * Get datasets associated with a specific user.
      *
      * @param nihUserId the user id.
      * @param association The association between the dataset and the user.
@@ -63,6 +61,16 @@ public interface HpcDatasetBusService
               getDatasets(String nihUserId, 
     		              HpcDatasetUserAssociation association) 
     		             throws HpcException;
+    
+    /**
+     * Get datasets which has 'name' contained within its name.
+     *
+     * @param name Get datasets which 'name' is contained in their name.
+     * @return Collection of Dataset DTO, or null if not found.
+     * 
+     * @throws HpcException
+     */
+    public HpcDatasetCollectionDTO getDatasets(String name) throws HpcException;
 }
 
  
