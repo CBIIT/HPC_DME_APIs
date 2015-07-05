@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.dao.mongo.impl;
 
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.regex;
 import gov.nih.nci.hpc.dao.HpcDatasetDAO;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcMongoDB;
@@ -43,6 +44,9 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     // Dataset ID field name.
 	public final static String DATASET_ID_FIELD_NAME = 
 						       HpcCodec.DATASET_ID_KEY; 
+	public final static String DATASET_NAME_FIELD_NAME = 
+							   HpcCodec.DATASET_FILE_SET_KEY + "." + 
+	                           HpcCodec.FILE_SET_NAME_KEY;
 	public final static String PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
                  HpcCodec.DATASET_FILE_SET_KEY + "." + 
                  HpcCodec.FILE_SET_FILES_KEY + "." + 
@@ -121,7 +125,7 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     }
 	
 	@Override
-	public HpcDataset get(String id) throws HpcException
+	public HpcDataset getDataset(String id) throws HpcException
 	{
 		HpcSingleResultCallback<HpcDataset> callback = 
                        new HpcSingleResultCallback<HpcDataset>();
@@ -130,9 +134,10 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 		return callback.getResult();
 	}
 	
-	public List<HpcDataset> get(String nihUserId, 
-                                HpcDatasetUserAssociation association) 
-                               throws HpcException
+	@Override
+	public List<HpcDataset> getDatasets(String nihUserId, 
+                                        HpcDatasetUserAssociation association) 
+                                       throws HpcException
     {
 		// Determine the field name needed to query for the requested association.
 		String fieldName = null;
@@ -164,6 +169,19 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 		
 		return callback.getResult();
     }
+	
+	@Override
+	public List<HpcDataset> getDatasets(String name) throws HpcException
+	{
+		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
+		HpcSingleResultCallback<List<HpcDataset>> callback = 
+                       new HpcSingleResultCallback<List<HpcDataset>>();
+		getCollection().find(
+		                regex(DATASET_NAME_FIELD_NAME, 
+		                	  name, "i")).into(datasets, callback); 
+		
+		return callback.getResult();
+	}
 	
     //---------------------------------------------------------------------//
     // Helper Methods

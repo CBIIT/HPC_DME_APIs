@@ -44,7 +44,7 @@ public interface HpcDatasetDAO
      * 
      * @throws HpcException
      */
-    public HpcDataset get(String id) throws HpcException;
+    public HpcDataset getDataset(String id) throws HpcException;
     
     /**
      * Get datasets associated with a specific user.
@@ -55,9 +55,19 @@ public interface HpcDatasetDAO
      * 
      * @throws HpcException
      */
-    public List<HpcDataset> get(String nihUserId, 
-    		                    HpcDatasetUserAssociation association) 
-        	                   throws HpcException;
+    public List<HpcDataset> getDatasets(String nihUserId, 
+    		                            HpcDatasetUserAssociation association) 
+        	                           throws HpcException;
+    
+    /**
+     * Get datasets which has 'name' contained within its name.
+     *
+     * @param name Get datasets which 'name' is contained in their name.
+     * @return HpcDataset collection, or null if no results found.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcDataset> getDatasets(String name) throws HpcException;
 }
 
  
