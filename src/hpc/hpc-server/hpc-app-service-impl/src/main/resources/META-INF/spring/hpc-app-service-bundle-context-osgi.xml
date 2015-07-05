@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- * hpc-service-bundle-context-osgi.xml * * Copyright SVG, Inc. * Copyright 
-	Leidos Biomedical Research, Inc * * Distributed under the OSI-approved BSD 
-	3-Clause License. * See http://ncip.github.com/HPC/LICENSE.txt for details. 
-	* * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> * 
-	@version $Id: hpc-app-service-bundle-context-osgi.xml 275 2015-07-02 22:42:45Z 
-	rosenbergea $ -->
+<!--  
+ * hpc-app-service-beans-configuration.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:ctx="http://www.springframework.org/schema/context" xmlns:osgi="http://www.springframework.org/schema/osgi"
@@ -25,16 +31,16 @@
 	<!-- OSGi beans export -->
 	<osgi:service ref="hpcUserService" interface="gov.nih.nci.hpc.service.HpcUserService" />
 	<osgi:service ref="hpcDatasetService"
-		interface="gov.nih.nci.hpc.service.HpcDatasetService" />
+		          interface="gov.nih.nci.hpc.service.HpcDatasetService" />
 	<osgi:service ref="hpcDataTransferService"
-		interface="gov.nih.nci.hpc.service.HpcDataTransferService" />
+		          interface="gov.nih.nci.hpc.service.HpcDataTransferService" />
 
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcUserDAO" interface="gov.nih.nci.hpc.dao.HpcUserDAO" />
 	<osgi:reference id="hpcDatasetDAO" interface="gov.nih.nci.hpc.dao.HpcDatasetDAO" />
 	<osgi:reference id="hpcDataTransferProxy"
-		interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
+		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
 	<osgi:reference id="hpcDataTransferAccountValidatorProxy"
-		interface="gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy" />
+		            interface="gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy" />
 
 </beans>
