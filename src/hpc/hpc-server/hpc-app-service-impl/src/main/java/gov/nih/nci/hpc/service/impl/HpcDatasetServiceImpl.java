@@ -10,28 +10,23 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import gov.nih.nci.hpc.dao.HpcDatasetDAO;
+import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
+import gov.nih.nci.hpc.domain.dataset.HpcFile;
+import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
+import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
+import gov.nih.nci.hpc.domain.model.HpcDataset;
+import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDatasetService;
 
-import gov.nih.nci.hpc.service.HpcDataTransferService;
-import gov.nih.nci.hpc.domain.model.HpcDataset;
-import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
-import gov.nih.nci.hpc.domain.dataset.HpcFile;
-import gov.nih.nci.hpc.domain.dataset.HpcFileType;
-import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
-import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
-import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
-import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
-import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.dao.HpcDatasetDAO;
-import gov.nih.nci.hpc.exception.HpcException;
+import java.util.Calendar;
+import java.util.List;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.Calendar;
 
 /**
  * <p>
@@ -50,9 +45,6 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
 
     // The Managed Dataset DAO instance.
     private HpcDatasetDAO datasetDAO = null;
-    
-    // The Data Transfer Service instance.
-    private HpcDataTransferService dataTransferService = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -77,19 +69,16 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
      * Constructor for Spring Dependency Injection.
      * 
      * @param datasetDAO The dataset DAO instance.
-     * @param dataTransferService The data transfer service instance.
      */
-    private HpcDatasetServiceImpl(HpcDatasetDAO datasetDAO,
-    		                      HpcDataTransferService dataTransferService) 
+    private HpcDatasetServiceImpl(HpcDatasetDAO datasetDAO)
     		                     throws HpcException
     {
-    	if(datasetDAO == null || dataTransferService == null) {
-     	   throw new HpcException("Null DatasetDAO or DataTransferService instance",
+    	if(datasetDAO == null) {
+     	   throw new HpcException("Null DatasetDAO",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
     	
     	this.datasetDAO = datasetDAO;
-    	this.dataTransferService = dataTransferService;
     }  
     
     //---------------------------------------------------------------------//
@@ -155,6 +144,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	
     	// Persist to Mongo.
     	datasetDAO.add(dataset);
+    	logger.debug("Dataset added: " + dataset);
     	
     	return dataset.getId();
     }

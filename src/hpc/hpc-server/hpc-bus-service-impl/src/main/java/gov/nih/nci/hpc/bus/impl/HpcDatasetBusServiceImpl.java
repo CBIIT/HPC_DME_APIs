@@ -11,28 +11,27 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
-import gov.nih.nci.hpc.service.HpcDatasetService;
-import gov.nih.nci.hpc.service.HpcUserService;
-import gov.nih.nci.hpc.service.HpcDataTransferService;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
-import gov.nih.nci.hpc.domain.model.HpcDataset;
-import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
-import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
-import gov.nih.nci.hpc.domain.dataset.HpcFile;
-import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.model.HpcDataset;
+import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcDataTransferService;
+import gov.nih.nci.hpc.service.HpcDatasetService;
+import gov.nih.nci.hpc.service.HpcUserService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * <p>
@@ -184,6 +183,30 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	
     	// Get the managed dataset collection.
     	List<HpcDataset> datasets = datasetService.get(userId, association);
+    	if(datasets == null || datasets.size() == 0) {
+    	   return null;
+    	}
+    	
+    	// Map it to the DTO.
+    	HpcDatasetCollectionDTO datasetCollectionDTO = 
+    			                       new HpcDatasetCollectionDTO();
+    	for(HpcDataset dataset : datasets) {
+    		datasetCollectionDTO.getHpcDatasetDTO().add(toDTO(dataset));
+    	}
+    	
+    	return datasetCollectionDTO;
+    }
+    
+    @Override
+    public HpcDatasetCollectionDTO getDatasets(String name) throws HpcException
+    {
+    	// Input validation.
+    	if(name == null) {
+    	   throw new HpcException("Null name", HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Get the managed dataset collection.
+    	List<HpcDataset> datasets = new ArrayList<HpcDataset>();//datasetService.get(userId, association);
     	if(datasets == null || datasets.size() == 0) {
     	   return null;
     	}

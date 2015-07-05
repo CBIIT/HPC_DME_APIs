@@ -13,19 +13,14 @@ package gov.nih.nci.hpc.dao.mongo.codec;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 
+import java.util.List;
+
+import org.bson.BsonDocumentReader;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
-import org.bson.BsonDocumentReader;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 
 /**
  * <p>
@@ -38,14 +33,6 @@ import java.util.List;
 
 public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata>
 { 
-    //---------------------------------------------------------------------//
-    // Instance members
-    //---------------------------------------------------------------------//
-	
-	// The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -138,6 +125,7 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 	}
  
 	@Override
+	@SuppressWarnings("unchecked")
 	public HpcFilePrimaryMetadata decode(BsonReader reader, 
 			                             DecoderContext decoderContext) 
 	{

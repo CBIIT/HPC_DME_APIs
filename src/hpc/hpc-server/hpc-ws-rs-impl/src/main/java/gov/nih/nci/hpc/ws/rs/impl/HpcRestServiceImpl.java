@@ -10,19 +10,15 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
-import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
+import gov.nih.nci.hpc.exception.HpcException;
 
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.Context;
 import java.net.URI;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
 /**
  * <p>
@@ -45,10 +41,6 @@ public abstract class HpcRestServiceImpl
     // Enable/Disable stack trace print to exception DTO.
     boolean stackTraceEnabled = false;
     
-	// The Logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-    
     //---------------------------------------------------------------------//
     // constructors
     //---------------------------------------------------------------------//
@@ -57,7 +49,8 @@ public abstract class HpcRestServiceImpl
      * Default Constructor disabled.
      * 
      */
-    private HpcRestServiceImpl()
+    @SuppressWarnings("unused")
+	private HpcRestServiceImpl()
     {
     }  
     

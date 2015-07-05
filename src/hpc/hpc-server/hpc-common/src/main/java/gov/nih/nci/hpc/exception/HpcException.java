@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.exception;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+
 import java.io.StringWriter;
 import java.io.PrintWriter;
 
@@ -30,6 +31,9 @@ public class HpcException extends Exception implements java.io.Serializable
     // Instance members
     //---------------------------------------------------------------------//
 	
+	// UID.
+	private final static long serialVersionUID = 1L;
+	
 	// The error type value.
     private HpcErrorType errorType = null;
     
@@ -43,7 +47,8 @@ public class HpcException extends Exception implements java.io.Serializable
     /**
      * Default constructor is disabled.
      */
-    private HpcException() 
+    @SuppressWarnings("unused")
+	private HpcException() 
     {
     }
 
