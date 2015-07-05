@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileUploadRequest;
 import gov.nih.nci.hpc.dao.HpcDatasetDAO;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
@@ -118,7 +119,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
        	// Attach the files to this dataset.
     	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
     		// Validate the upload file request.
-    		if(!HpcDomainValidator.isValidFileUploadRequest(uploadRequest)) {
+    		if(!isValidFileUploadRequest(uploadRequest)) {
     		   throw new HpcException("Invalid file upload request: " + 
     		                          uploadRequest, 
 		                              HpcErrorType.INVALID_REQUEST_INPUT);
@@ -150,7 +151,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     }
     
     @Override
-    public HpcDataset get(String id) throws HpcException
+    public HpcDataset getDataset(String id) throws HpcException
     {
     	// Input validation.
     	try {
@@ -163,14 +164,20 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
                                        HpcErrorType.INVALID_REQUEST_INPUT, e);
     	}
     	
-    	return datasetDAO.get(id);
+    	return datasetDAO.getDataset(id);
     }
     
     @Override
-    public List<HpcDataset> get(String userId, HpcDatasetUserAssociation association) 
- 	                           throws HpcException
+    public List<HpcDataset> getDatasets(String userId, HpcDatasetUserAssociation association) 
+ 	                                   throws HpcException
  	{
-    	return datasetDAO.get(userId, association);
+    	return datasetDAO.getDatasets(userId, association);
+ 	}
+    
+    @Override
+    public List<HpcDataset> getDatasets(String name) throws HpcException
+ 	{
+    	return datasetDAO.getDatasets(name);
  	}
 }
 

@@ -10,6 +10,8 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidDataTransferAccount;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNihAccount;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -24,7 +26,6 @@ import java.util.Calendar;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 /**
  * <p>
  * HPC User Application Service Implementation.
@@ -98,8 +99,8 @@ public class HpcUserServiceImpl implements HpcUserService
 	               throws HpcException
     {
     	// Input validation.
-    	if(!HpcDomainValidator.isValidNihAccount(nihAccount) ||
-    	   !HpcDomainValidator.isValidDataTransferAccount(dataTransferAccount)) {	
+    	if(!isValidNihAccount(nihAccount) ||
+    	   !isValidDataTransferAccount(dataTransferAccount)) {	
     	   throw new HpcException("Invalid add user input", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}

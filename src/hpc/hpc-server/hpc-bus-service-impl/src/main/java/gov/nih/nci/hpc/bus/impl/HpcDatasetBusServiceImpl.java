@@ -27,7 +27,6 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcDatasetService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -167,7 +166,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	}
     	
     	// Get the managed dataset domain object and return it as DTO.
-    	return toDTO(datasetService.get(id));
+    	return toDTO(datasetService.getDataset(id));
     }
     
     @Override
@@ -181,20 +180,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Get the managed dataset collection.
-    	List<HpcDataset> datasets = datasetService.get(userId, association);
-    	if(datasets == null || datasets.size() == 0) {
-    	   return null;
-    	}
-    	
-    	// Map it to the DTO.
-    	HpcDatasetCollectionDTO datasetCollectionDTO = 
-    			                       new HpcDatasetCollectionDTO();
-    	for(HpcDataset dataset : datasets) {
-    		datasetCollectionDTO.getHpcDatasetDTO().add(toDTO(dataset));
-    	}
-    	
-    	return datasetCollectionDTO;
+    	return toCollectionDTO(datasetService.getDatasets(userId, association));
     }
     
     @Override
@@ -205,20 +191,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	   throw new HpcException("Null name", HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Get the managed dataset collection.
-    	List<HpcDataset> datasets = new ArrayList<HpcDataset>();//datasetService.get(userId, association);
-    	if(datasets == null || datasets.size() == 0) {
-    	   return null;
-    	}
-    	
-    	// Map it to the DTO.
-    	HpcDatasetCollectionDTO datasetCollectionDTO = 
-    			                       new HpcDatasetCollectionDTO();
-    	for(HpcDataset dataset : datasets) {
-    		datasetCollectionDTO.getHpcDatasetDTO().add(toDTO(dataset));
-    	}
-    	
-    	return datasetCollectionDTO;
+    	return toCollectionDTO(datasetService.getDatasets(name));
     }
     
     //---------------------------------------------------------------------//
@@ -226,7 +199,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     //---------------------------------------------------------------------//  
 	
     /**
-     * Create a dataset DTO from a domain object
+     * Create a dataset DTO from a domain object.
      * 
      * @param dataset the domain object.
      *
@@ -244,6 +217,28 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	
     	return datasetDTO;
     }  
+    
+    /**
+     * Create a dataset collection DTO from a list of domain objects.
+     * 
+     * @param datasets the domain object.
+     *
+     * @return The collection DTO.
+     */
+    private HpcDatasetCollectionDTO toCollectionDTO(List<HpcDataset> datasets)
+    {
+    	if(datasets == null || datasets.size() == 0) {
+    	   return null;
+    	}
+ 	
+    	HpcDatasetCollectionDTO datasetCollectionDTO = 
+ 			                    new HpcDatasetCollectionDTO();
+ 	    for(HpcDataset dataset : datasets) {
+ 		    datasetCollectionDTO.getHpcDatasetDTO().add(toDTO(dataset));
+ 	    }
+ 	    
+ 	    return datasetCollectionDTO;
+    }
     
     /**
      * Validate the users associated with the upload request are valid.
