@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDatasetRestService;
 
@@ -165,19 +166,39 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getDatasetsByName(String name)
     {
-    	logger.info("Invoking RS: GET /dataset/query/namer/{name}: " + name);
+    	logger.info("Invoking RS: GET /dataset/query/name/{name}: " + name);
     	
 		HpcDatasetCollectionDTO datasetCollectionDTO = null;
 		try {
 			 datasetCollectionDTO = datasetBusService.getDatasets(name); 
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/namer/{name}: failed:", e);
+			    logger.error("RS: GET /dataset/query/name/{name}: failed:", e);
 			    return errorResponse(e);
 		}
 		
 		return okResponse(datasetCollectionDTO, true);
     }
+    
+    @Override
+    public Response getDatasetsByPrimaryMetadata(
+    		           HpcPrimaryMetadataQueryDTO primaryMetadataQueryDTO)
+	{
+    	logger.info("Invoking RS: POST /dataset/query/primaryMetadata: " + 
+    			    primaryMetadataQueryDTO);
+    	
+		HpcDatasetCollectionDTO datasetCollectionDTO = null;
+		try {
+			 datasetCollectionDTO = 
+					datasetBusService.getDatasets(primaryMetadataQueryDTO); 
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /dataset/query/primaryMetadata: failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(datasetCollectionDTO, true);
+	}
     
     @Override
     public Response checkDataTransferStatus(String submissionId)

@@ -1,19 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- * HpcDataset.xsd * * Copyright SVG, Inc. * Copyright Leidos Biomedical 
-	Research, Inc * * Distributed under the OSI-approved BSD 3-Clause License. 
-	* See http://ncip.github.com/HPC/LICENSE.txt for details. * * @author <a 
-	href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> * @version $Id: HpcDataset.xsd 
-	255 2015-06-28 16:54:14Z rosenbergea $ -->
+<!--  
+ * HpcDataset.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	xmlns:hpc-domain-dataset="http://hpc.nci.nih.gov/domain/dataset"
+	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
 	xmlns:hpc-dto-dataset="http://hpc.nci.nih.gov/dto/dataset"
 	targetNamespace="http://hpc.nci.nih.gov/dto/dataset"
 	elementFormDefault="unqualified">
 
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/dataset"
-		schemaLocation="HpcDatasetTypes.xsd" />
+		        schemaLocation="HpcDatasetTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
+		        schemaLocation="HpcMetadataTypes.xsd" />
 
 	<!-- Dataset Registration DTO -->
 	<xsd:element name="HpcDatasetRegistrationDTO">
@@ -23,7 +33,8 @@
 				<xsd:element name="description" type="xsd:string" />
 				<xsd:element name="comments" type="xsd:string" />
 				<xsd:element name="uploadRequests"
-					type="hpc-domain-dataset:HpcFileUploadRequest" maxOccurs="unbounded" />
+					         type="hpc-domain-dataset:HpcFileUploadRequest" 
+					         maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -43,7 +54,16 @@
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element ref="hpc-dto-dataset:HpcDatasetDTO"
-					minOccurs="0" maxOccurs="unbounded" />
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="HpcPrimaryMetadataQueryDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="metadata"
+					         type="hpc-domain-metadata:HpcFilePrimaryMetadata" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.dao;
 
+import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -68,6 +69,17 @@ public interface HpcDatasetDAO
      * @throws HpcException
      */
     public List<HpcDataset> getDatasets(String name) throws HpcException;
+    
+    /**
+     * GET Datasets by primary metadata.
+     *
+     * @param primaryMetadata The meatada to match.
+     *  @return HpcDataset collection, or null if no results found.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcDataset> getDatasets(HpcFilePrimaryMetadata primaryMetadata) 
+    		                           throws HpcException;
 }
 
  

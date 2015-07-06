@@ -22,6 +22,7 @@ import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcDatasetService;
@@ -193,6 +194,20 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	
     	return toCollectionDTO(datasetService.getDatasets(name));
     }
+    
+    public HpcDatasetCollectionDTO getDatasets(
+    		         HpcPrimaryMetadataQueryDTO primaryMetadataQueryDTO) 
+                     throws HpcException
+    {
+    	// Input validation.
+    	if(primaryMetadataQueryDTO == null) {
+    	   throw new HpcException("Null primary metadata query DTO", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	return toCollectionDTO(datasetService.getDatasets(
+    			                      primaryMetadataQueryDTO.getMetadata()));
+    }    
     
     //---------------------------------------------------------------------//
     // Helper Methods
