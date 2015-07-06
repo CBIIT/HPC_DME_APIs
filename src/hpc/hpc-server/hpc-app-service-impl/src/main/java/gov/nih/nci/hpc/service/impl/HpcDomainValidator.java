@@ -146,6 +146,10 @@ class HpcDomainValidator
     public static boolean isValidDatasetPrimaryMetadata(HpcFilePrimaryMetadata metadata) 
     {
     	if(metadata == null ||
+    	   metadata.getDataContainsPII() == null || 	
+    	   metadata.getDataContainsPHI() == null ||
+    	   metadata.getDataEncrypted() == null ||
+    	   metadata.getDataCompressed() == null ||
     	   metadata.getFundingOrganization() == null || 
     	   metadata.getPrimaryInvestigatorNihUserId() == null ||
     	   metadata.getCreatorNihUserId() == null ||

@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -76,6 +77,20 @@ public interface HpcDatasetRestService
     @Path("/dataset/query/name/{name}")
     @Produces("application/json,application/xml")
     public Response getDatasetsByName(@PathParam("name") String name); 
+    
+    /**
+     * POST Datasets by primary metadata.
+     *
+     * @param primaryMetadataQueryDTO Get datasets that matches the primary 
+     *                                metadata search criteria.
+     * 
+     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
+     */
+    @POST
+    @Path("/dataset/query/primaryMetadata")
+    @Produces("application/json,application/xml")
+    public Response getDatasetsByPrimaryMetadata(
+    		            HpcPrimaryMetadataQueryDTO primaryMetadataQueryDTO);
     
     /**
      * GET Configurable items by ID.
