@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--  
- * hpc-dto-user-jaxb-binding.xjb
+ * hpc-dto-error-jaxb-binding.xjb
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -9,7 +9,7 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: hpc-dto-user-jaxb-binding.xjb 209 2015-06-19 01:55:47Z rosenbergea $
+ * @version $Id$
  -->
 <jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1"
 			  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
