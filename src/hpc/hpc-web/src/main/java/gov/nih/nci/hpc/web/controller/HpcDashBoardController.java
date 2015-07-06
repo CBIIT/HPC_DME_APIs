@@ -35,12 +35,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public class HpcDashBoardController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.dataset}")
 	private String serviceURL;
-	@Value("${gov.nih.nci.hpc.server}")
-	private String baseURL;
+	@Value("${gov.nih.nci.hpc.server.dataset.query.creator}")
+	private String datasetURL;
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(Model model, HttpSession session) {
-		model.addAttribute("baseURL", baseURL);
+		model.addAttribute("datasetURL", datasetURL);
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
 			return "redirect:/";

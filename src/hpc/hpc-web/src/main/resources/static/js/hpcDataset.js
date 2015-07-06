@@ -6,8 +6,8 @@ app.controller('MyCtrl', function($scope, $http, $q, $attrs) {
 	var deferred = $q.defer();
 	$scope.$watch('userId', function () {
 	console.log('userId', $scope.userId);
-	console.log('baseURL', $scope.baseURL);
-	$http.get($scope.baseURL + '/dataset/?creatorId=' + $scope.userId).
+	console.log('datasetURL', $scope.datasetURL);
+	$http.get($scope.datasetURL + '/' + $scope.userId).
 	//$http.get('/js/hpcDatasets.json').
 	  success(function(data, status, headers, config) {
 		        var collection = data["gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO"];

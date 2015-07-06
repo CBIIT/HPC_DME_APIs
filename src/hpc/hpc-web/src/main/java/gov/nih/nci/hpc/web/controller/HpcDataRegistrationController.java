@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
+import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.web.model.HpcDatasetRegistration;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
@@ -46,6 +47,8 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 /**
  * <p>
@@ -93,6 +96,7 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 	  }
 	  List<HpcMetadataItem> eItems = getMetadataitems(request);
 	  RestTemplate restTemplate = new RestTemplate();
+	  restTemplate.setErrorHandler(new HpcResponseErrorHandler());
 	  HpcDatasetRegistrationDTO dto = new HpcDatasetRegistrationDTO();
 	  dto.setName(registration.getDatasetName());
 	  dto.setDescription(registration.getDescription());
@@ -145,6 +149,21 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 		  registration.setId(id);
 		  model.addAttribute("registrationStatus", true);
 		  model.addAttribute("registration", registration);
+	  } catch(HttpStatusCodeException e){
+		  String errorpayload = e.getResponseBodyAsString();
+		  ObjectError error = new ObjectError("hpcLogin", "Failed to register: " + errorpayload);
+		  bindingResult.addError(error);
+		  model.addAttribute("registrationStatus", false);
+		  model.addAttribute("error", "Failed to register your request due to: "+errorpayload);
+		  return "datasetRegistration";
+	  }
+	  catch(RestClientException e)
+	  {
+		  ObjectError error = new ObjectError("hpcLogin", "Failed to register: " + e.getMessage());
+		  bindingResult.addError(error);
+		  model.addAttribute("registrationStatus", false);
+		  model.addAttribute("error", "Failed to register your request due to: "+e.getMessage());
+		  return "datasetRegistration";
 	  }
 	  catch(Exception e)
 	  {
