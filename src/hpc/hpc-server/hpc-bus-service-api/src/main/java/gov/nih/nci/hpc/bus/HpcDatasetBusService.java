@@ -10,10 +10,11 @@
 
 package gov.nih.nci.hpc.bus;
 
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -71,6 +72,18 @@ public interface HpcDatasetBusService
      * @throws HpcException
      */
     public HpcDatasetCollectionDTO getDatasets(String name) throws HpcException;
+    
+    /**
+     * GET Datasets by primary metadata.
+     *
+     * @param primaryMetadataQueryDTO The metadata to query for.
+     * @return Collection of Dataset DTO, or null if not found.
+     * 
+     * @throws HpcException
+     */
+    public HpcDatasetCollectionDTO getDatasets(
+    		         HpcPrimaryMetadataQueryDTO primaryMetadataQueryDTO) 
+    		         throws HpcException;
 }
 
  
