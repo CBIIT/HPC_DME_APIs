@@ -10,6 +10,8 @@
 
 package gov.nih.nci.hpc.dao.mongo.impl;
 
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.all;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.regex;
 import gov.nih.nci.hpc.dao.HpcDatasetDAO;
@@ -18,11 +20,14 @@ import gov.nih.nci.hpc.dao.mongo.driver.HpcMongoDB;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcSingleResultCallback;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.bson.conversions.Bson;
 
 import com.mongodb.async.client.MongoCollection;
 
@@ -41,12 +46,16 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     // Constants
     //---------------------------------------------------------------------//    
     
-    // Dataset ID field name.
+    // Field name to query by Dataset ID.
 	public final static String DATASET_ID_FIELD_NAME = 
 						       HpcCodec.DATASET_ID_KEY; 
+	
+	// Field name to query by Dataset name.
 	public final static String DATASET_NAME_FIELD_NAME = 
 							   HpcCodec.DATASET_FILE_SET_KEY + "." + 
 	                           HpcCodec.FILE_SET_NAME_KEY;
+	
+	// Field names to query by NIH user id.
 	public final static String PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
                  HpcCodec.DATASET_FILE_SET_KEY + "." + 
                  HpcCodec.FILE_SET_FILES_KEY + "." + 
@@ -65,6 +74,56 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 		         HpcCodec.FILE_METADATA_KEY + "." + 
 		         HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
 		         HpcCodec.FILE_PRIMARY_METADATA_REGISTRATOR_NIH_USER_ID_KEY;
+	
+	// Field names to query by Primary Metadata.
+	public final static String DATA_CONTAINS_PII_FIELD_NAME = 
+            HpcCodec.DATASET_FILE_SET_KEY + "." + 
+            HpcCodec.FILE_SET_FILES_KEY + "." + 
+            HpcCodec.FILE_METADATA_KEY + "." + 
+            HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
+            HpcCodec.FILE_PRIMARY_METADATA_DATA_CONTAINS_PII_KEY;
+	public final static String DATA_CONTAINS_PHI_FIELD_NAME = 
+            HpcCodec.DATASET_FILE_SET_KEY + "." + 
+            HpcCodec.FILE_SET_FILES_KEY + "." + 
+            HpcCodec.FILE_METADATA_KEY + "." + 
+            HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
+            HpcCodec.FILE_PRIMARY_METADATA_DATA_CONTAINS_PHI_KEY;
+	public final static String DATA_ENCRYPTED_FIELD_NAME = 
+            HpcCodec.DATASET_FILE_SET_KEY + "." + 
+            HpcCodec.FILE_SET_FILES_KEY + "." + 
+            HpcCodec.FILE_METADATA_KEY + "." + 
+            HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
+            HpcCodec.FILE_PRIMARY_METADATA_DATA_ENCRYPTED_KEY;
+	public final static String DATA_COMPRESSED_FIELD_NAME = 
+            HpcCodec.DATASET_FILE_SET_KEY + "." + 
+            HpcCodec.FILE_SET_FILES_KEY + "." + 
+            HpcCodec.FILE_METADATA_KEY + "." + 
+            HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
+            HpcCodec.FILE_PRIMARY_METADATA_DATA_COMPRESSED_KEY;
+	public final static String FUNDING_ORGANIZATION_FIELD_NAME = 
+            HpcCodec.DATASET_FILE_SET_KEY + "." + 
+            HpcCodec.FILE_SET_FILES_KEY + "." + 
+            HpcCodec.FILE_METADATA_KEY + "." + 
+            HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
+            HpcCodec.FILE_PRIMARY_METADATA_FUNDING_ORGANIZATION_KEY;
+	public final static String DESCRIPTION_FIELD_NAME = 
+            HpcCodec.DATASET_FILE_SET_KEY + "." + 
+            HpcCodec.FILE_SET_FILES_KEY + "." + 
+            HpcCodec.FILE_METADATA_KEY + "." + 
+            HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
+            HpcCodec.FILE_PRIMARY_METADATA_DESCRIPTION_KEY;
+	public final static String LAB_BRANCH_FIELD_NAME = 
+            HpcCodec.DATASET_FILE_SET_KEY + "." + 
+            HpcCodec.FILE_SET_FILES_KEY + "." + 
+            HpcCodec.FILE_METADATA_KEY + "." + 
+            HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
+            HpcCodec.FILE_PRIMARY_METADATA_LAB_BRANCH_KEY;
+	public final static String METADATA_ITEMS_FIELD_NAME = 
+            HpcCodec.DATASET_FILE_SET_KEY + "." + 
+            HpcCodec.FILE_SET_FILES_KEY + "." + 
+            HpcCodec.FILE_METADATA_KEY + "." + 
+            HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
+            HpcCodec.FILE_PRIMARY_METADATA_METADATA_ITEMS_KEY;
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -183,6 +242,18 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 		return callback.getResult();
 	}
 	
+	public List<HpcDataset> getDatasets(HpcFilePrimaryMetadata primaryMetadata) 
+                                       throws HpcException
+    {
+		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
+		HpcSingleResultCallback<List<HpcDataset>> callback = 
+                       new HpcSingleResultCallback<List<HpcDataset>>();
+		getCollection().find(
+				        and(getFilters(primaryMetadata))).into(datasets, callback); 
+		
+		return callback.getResult();
+    }
+	
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -195,6 +266,64 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     private MongoCollection<HpcDataset> getCollection() throws HpcException
     {
     	return mongoDB.getCollection(HpcDataset.class);
+    }  
+    
+    /**
+     * Get a collection of filters to query by primary metadata.
+     *
+     * @param primaryMetadata The metadata to query.
+     * @return A collection of filters.
+     */
+    private List<Bson> getFilters(HpcFilePrimaryMetadata primaryMetadata) 
+    {
+    	List<Bson> filters = new ArrayList<Bson>();
+    	
+    	if(primaryMetadata.getDataContainsPII() != null) {
+    	   filters.add(eq(DATA_CONTAINS_PII_FIELD_NAME, 
+    			          primaryMetadata.getDataContainsPII()));
+    	}
+    	if(primaryMetadata.getDataContainsPHI() != null) {
+     	   filters.add(eq(DATA_CONTAINS_PHI_FIELD_NAME, 
+     			          primaryMetadata.getDataContainsPHI()));
+     	}
+    	if(primaryMetadata.getDataEncrypted() != null) {
+       	   filters.add(eq(DATA_ENCRYPTED_FIELD_NAME, 
+       			          primaryMetadata.getDataEncrypted()));
+       	}
+    	if(primaryMetadata.getDataCompressed() != null) {
+      	   filters.add(eq(DATA_COMPRESSED_FIELD_NAME, 
+      			          primaryMetadata.getDataCompressed()));
+      	}
+    	if(primaryMetadata.getFundingOrganization() != null) {
+       	   filters.add(eq(FUNDING_ORGANIZATION_FIELD_NAME, 
+       			          primaryMetadata.getFundingOrganization()));
+       	}
+    	if(primaryMetadata.getPrimaryInvestigatorNihUserId() != null) {
+           filters.add(eq(PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME, 
+        		          primaryMetadata.getPrimaryInvestigatorNihUserId()));
+        }
+    	if(primaryMetadata.getCreatorNihUserId() != null) {
+     	   filters.add(eq(CREATOR_NIH_USER_ID_FIELD_NAME, 
+     			          primaryMetadata.getCreatorNihUserId()));
+    	}
+    	if(primaryMetadata.getRegistratorNihUserId() != null) {
+      	   filters.add(eq(REGISTRATOR_NIH_USER_ID_FIELD_NAME, 
+      			          primaryMetadata.getRegistratorNihUserId()));
+     	}
+    	if(primaryMetadata.getDescription() != null) {
+       	   filters.add(regex(DESCRIPTION_FIELD_NAME, 
+       			             primaryMetadata.getDescription(), "i"));
+      	}
+    	if(primaryMetadata.getLabBranch() != null) {
+           filters.add(eq(LAB_BRANCH_FIELD_NAME, 
+        		          primaryMetadata.getLabBranch()));
+       	}
+    	if(primaryMetadata.getMetadataItems() != null) {
+     	   filters.add(all(METADATA_ITEMS_FIELD_NAME, 
+     			           primaryMetadata.getMetadataItems()));
+    	}
+    	
+    	return filters;
     }  
 }
 

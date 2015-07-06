@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDatasetService;
@@ -179,6 +180,31 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
  	{
     	return datasetDAO.getDatasets(name);
  	}
+    
+    @Override
+    public List<HpcDataset> getDatasets(HpcFilePrimaryMetadata primaryMetadata) 
+                                       throws HpcException
+    {
+    	// Input Validation. At least one metadata element needs to be provided
+    	// to query for.
+    	if(primaryMetadata == null ||
+    	   (primaryMetadata.getDataContainsPII() == null && 	
+    		primaryMetadata.getDataContainsPHI() == null &&
+    		primaryMetadata.getDataEncrypted() == null &&
+    		primaryMetadata.getDataCompressed() == null &&
+    		primaryMetadata.getFundingOrganization() == null && 
+    		primaryMetadata.getPrimaryInvestigatorNihUserId() == null &&
+    		primaryMetadata.getCreatorNihUserId() == null &&
+    		primaryMetadata.getRegistratorNihUserId() == null &&
+    		primaryMetadata.getDescription() == null &&
+    		primaryMetadata.getLabBranch() == null &&
+    		primaryMetadata.getMetadataItems() == null)) {
+    		throw new HpcException("Invalid primary metadata", 
+                                   HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	return datasetDAO.getDatasets(primaryMetadata);
+    }
 }
 
  
