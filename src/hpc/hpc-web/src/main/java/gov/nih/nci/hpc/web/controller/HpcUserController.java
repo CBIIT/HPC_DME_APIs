@@ -10,9 +10,8 @@
 package gov.nih.nci.hpc.web.controller;
 
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.user.HpcDataTransferAccountType;
 import gov.nih.nci.hpc.domain.user.HpcNihAccount;
-import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
 
@@ -24,7 +23,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -92,7 +90,7 @@ public class HpcUserController extends AbstractHpcController {
 		  HpcDataTransferAccount dtAccount = new HpcDataTransferAccount();
 		  dtAccount.setUsername(hpcUser.getGlobusUserId());
 		  dtAccount.setPassword(hpcUser.getGlobusPasswd());
-		  dtAccount.setDataTransferType(HpcDataTransferType.GLOBUS);
+		  dtAccount.setAccountType(HpcDataTransferAccountType.GLOBUS);
 		  userDTO.setDataTransferAccount(dtAccount);
 		  userDTO.setNihAccount(user);
 
