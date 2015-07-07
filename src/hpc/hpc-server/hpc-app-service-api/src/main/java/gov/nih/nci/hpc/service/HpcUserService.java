@@ -17,7 +17,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
- * HPC Managed User Application Service Interface.
+ * HPC User Application Service Interface.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
