@@ -30,9 +30,9 @@
 
 	<!-- OSGi beans export -->
 	<osgi:service ref="hpcDataTransferProxy"
-		interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
-	<osgi:service ref="hpcDataTransferAccountValidatorProxy"
-		interface="gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy" />
+		          interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
+	<osgi:service ref="hpcDataTransferAccountValidatorProvider"
+		          interface="gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProvider" />
 
 	<!-- OSGi beans import -->
 
