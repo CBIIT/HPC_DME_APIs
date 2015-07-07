@@ -1,25 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- * HpcUser.xsd * * Copyright SVG, Inc. * Copyright Leidos Biomedical 
-	Research, Inc * * Distributed under the OSI-approved BSD 3-Clause License. 
-	* See http://ncip.github.com/HPC/LICENSE.txt for details. * * @author <a 
-	href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> * @version $Id: HpcUser.xsd 
-	255 2015-06-28 16:54:14Z rosenbergea $ -->
+<!--  
+ * HpcUser.xsd
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
-	xmlns:hpc-domain-user="http://hpc.nci.nih.gov/domain/user"
-	targetNamespace="http://hpc.nci.nih.gov/domain/model"
-	elementFormDefault="unqualified">
+	        xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	        xmlns:hpc-domain-user="http://hpc.nci.nih.gov/domain/user"
+	        targetNamespace="http://hpc.nci.nih.gov/domain/model"
+	        elementFormDefault="unqualified">
 
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/user"
-		schemaLocation="HpcUserTypes.xsd" />
-
+		        schemaLocation="HpcUserTypes.xsd" />
+      
 	<xsd:element name="HpcUser">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="nihAccount" type="hpc-domain-user:HpcNihAccount" />
 				<xsd:element name="dataTransferAccount"
-					type="hpc-domain-user:HpcDataTransferAccount" />
+					         type="hpc-domain-user:HpcDataTransferAccount" />
 				<xsd:element name="created" type="xsd:dateTime" />
 				<xsd:element name="lastUpdated" type="xsd:dateTime" />
 			</xsd:sequence>
