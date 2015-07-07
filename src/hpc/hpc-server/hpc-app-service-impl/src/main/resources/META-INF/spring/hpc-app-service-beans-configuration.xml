@@ -13,8 +13,8 @@
  -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- HPC Application Services Beans -->
 	<bean id="hpcUserService" class="gov.nih.nci.hpc.service.impl.HpcUserServiceImpl">
@@ -29,7 +29,7 @@
 
 	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl">
 		<constructor-arg ref="hpcDataTransferProxy" />
-		<constructor-arg ref="hpcDataTransferAccountValidatorProxy" />
+		<constructor-arg ref="hpcDataTransferAccountValidatorProvider" />
 	</bean>
 	
 	<bean id="hpcKeyGenerator" class="gov.nih.nci.hpc.service.impl.HpcUUIDKeyGeneratorImpl" />

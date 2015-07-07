@@ -31,8 +31,8 @@
 	</jxb:globalBindings>
 	
 	<jxb:bindings schemaLocation="HpcUserTypes.xsd">
-			<jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferType']">
-                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.user.HpcDataTransferType"/>
+			<jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferAccountType']">
+                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.user.HpcDataTransferAccountType"/>
             </jxb:bindings>
 		    <jxb:bindings node="//xsd:complexType[@name='HpcDataTransferAccount']">
                 <jxb:class ref="gov.nih.nci.hpc.domain.user.HpcDataTransferAccount"/>

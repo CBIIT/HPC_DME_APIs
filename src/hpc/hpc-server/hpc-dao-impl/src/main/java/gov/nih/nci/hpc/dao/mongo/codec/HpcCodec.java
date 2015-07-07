@@ -43,8 +43,8 @@ public abstract class HpcCodec<T> implements Codec<T>
 	// HpcDataTransferAccount Document keys.
 	public final static String DATA_TRANSFER_ACCOUNT_USERNAME_KEY = "username";
 	public final static String DATA_TRANSFER_ACCOUNT_PASSWORD_KEY = "password";
-	public final static String DATA_TRANSFER_ACCOUNT_DATA_TRANSFER_TYPE_KEY = 
-			                   "data_transfer_type";
+	public final static String DATA_TRANSFER_ACCOUNT_ACCOUNT_TYPE_KEY = 
+			                   "account_type";
 	
 	// HpcDataset Document keys.
 	public final static String DATASET_ID_KEY = "id"; 
