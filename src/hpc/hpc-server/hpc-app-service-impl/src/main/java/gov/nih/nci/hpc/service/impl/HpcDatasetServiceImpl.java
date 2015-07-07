@@ -25,7 +25,6 @@ import gov.nih.nci.hpc.service.HpcDatasetService;
 
 import java.util.Calendar;
 import java.util.List;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +46,9 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
 
     // The Managed Dataset DAO instance.
     private HpcDatasetDAO datasetDAO = null;
+    
+    // Key Generator.
+    private HpcKeyGenerator keyGenerator = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -71,16 +73,19 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
      * Constructor for Spring Dependency Injection.
      * 
      * @param datasetDAO The dataset DAO instance.
+     * @param keyGenerator The key generator.
      */
-    private HpcDatasetServiceImpl(HpcDatasetDAO datasetDAO)
+    private HpcDatasetServiceImpl(HpcDatasetDAO datasetDAO, 
+    		                      HpcKeyGenerator keyGenerator)
     		                     throws HpcException
     {
-    	if(datasetDAO == null) {
-     	   throw new HpcException("Null DatasetDAO",
+    	if(datasetDAO == null || keyGenerator == null) {
+     	   throw new HpcException("Null DatasetDAO / HpcKeyGenerator",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
     	
     	this.datasetDAO = datasetDAO;
+    	this.keyGenerator = keyGenerator;
     }  
     
     //---------------------------------------------------------------------//
@@ -106,7 +111,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	HpcDataset dataset = new HpcDataset();
     	
     	// Generate and set its ID.
-    	dataset.setId(UUID.randomUUID().toString());
+    	dataset.setId(keyGenerator.generateKey());
     	
     	// Associate the FileSet.
     	HpcFileSet fileSet = new HpcFileSet();
@@ -128,7 +133,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     		
     		// Map the upload request to a managed file instance.
     		HpcFile file = new HpcFile();
-    		file.setId(UUID.randomUUID().toString());
+    		file.setId(keyGenerator.generateKey());
     		file.setType(uploadRequest.getType());
     		file.setSize(0);
     		file.setSource(uploadRequest.getLocations().getSource());
@@ -155,14 +160,9 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     public HpcDataset getDataset(String id) throws HpcException
     {
     	// Input validation.
-    	try {
-    	     if(id == null || UUID.fromString(id) == null) {
-    	        throw new HpcException("Invalid dataset ID: " + id, 
-    			                       HpcErrorType.INVALID_REQUEST_INPUT);
-    	     }
-    	} catch(IllegalArgumentException e) {
-    		    throw new HpcException("Invalid UUID: " + id, 
-                                       HpcErrorType.INVALID_REQUEST_INPUT, e);
+    	if(!keyGenerator.validateKey(id)) {
+    	   throw new HpcException("Invalid dataset ID: " + id, 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
     	return datasetDAO.getDataset(id);
