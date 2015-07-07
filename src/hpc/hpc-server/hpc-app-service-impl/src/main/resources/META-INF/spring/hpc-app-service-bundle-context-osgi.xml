@@ -40,7 +40,7 @@
 	<osgi:reference id="hpcDatasetDAO" interface="gov.nih.nci.hpc.dao.HpcDatasetDAO" />
 	<osgi:reference id="hpcDataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
-	<osgi:reference id="hpcDataTransferAccountValidatorProxy"
-		            interface="gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy" />
+	<osgi:reference id="hpcDataTransferAccountValidatorProvider"
+		            interface="gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProvider" />
 
 </beans>

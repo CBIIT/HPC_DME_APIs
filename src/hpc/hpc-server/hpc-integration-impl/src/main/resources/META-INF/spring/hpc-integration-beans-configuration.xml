@@ -16,18 +16,28 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<!-- HPC HpcGOTransfer instance -->
+	
+	<!-- HPC Data Transfer Proxy -->
+	<bean id="hpcDataTransferProxy"
+		class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl">
+		<constructor-arg ref="hpcGOTransfer" />
+	</bean>
+	
 	<bean id="hpcGOTransfer" class="gov.nih.nci.hpc.integration.globus.driver.HpcGOTransfer">
 		<constructor-arg value="mahinarra" index="0" />
 		<constructor-arg value="Tsugua13" index="1" />
 	</bean>
 
-	<bean id="hpcDataTransferProxy"
-		class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl">
-		<constructor-arg ref="hpcGOTransfer" />
+	<!--  HPC Data Transfer Account Validators -->
+	<bean id="hpcDataTransferAccountValidatorProvider" class="gov.nih.nci.hpc.integration.impl.HpcDataTransferAccountValidatorProviderImpl">
+		<constructor-arg>
+			<map>
+				<entry key="GLOBUS" value-ref="hpcGlobusDataTransferAccountValidatorProxy" />
+			</map>
+		</constructor-arg>
 	</bean>
 
-	<bean id="hpcDataTransferAccountValidatorProxy"
+	<bean id="hpcGlobusDataTransferAccountValidatorProxy"
 		class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl">
 		<constructor-arg ref="hpcGOTransfer" />
 	</bean>

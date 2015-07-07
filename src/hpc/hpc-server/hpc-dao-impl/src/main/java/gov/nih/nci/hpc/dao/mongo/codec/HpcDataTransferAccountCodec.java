@@ -12,7 +12,7 @@ package gov.nih.nci.hpc.dao.mongo.codec;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.user.HpcDataTransferAccountType;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import org.bson.BsonReader;
@@ -90,7 +90,7 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
 		// Extract the data from the POJO.
 		String username = dataTransferAccount.getUsername();
 		String password = dataTransferAccount.getPassword();
-		HpcDataTransferType dataTransferType = dataTransferAccount.getDataTransferType();
+		HpcDataTransferAccountType accountType = dataTransferAccount.getAccountType();
 
 		if(username != null) {
 		   document.put(DATA_TRANSFER_ACCOUNT_USERNAME_KEY, 
@@ -100,9 +100,9 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
 		   document.put(DATA_TRANSFER_ACCOUNT_PASSWORD_KEY, 
 				        encryptor.encrypt(password));
 		}
-		if(dataTransferType != null) {
-		   document.put(DATA_TRANSFER_ACCOUNT_DATA_TRANSFER_TYPE_KEY, 
-				        dataTransferType.value());
+		if(accountType != null) {
+		   document.put(DATA_TRANSFER_ACCOUNT_ACCOUNT_TYPE_KEY, 
+				        accountType.value());
 		}
 		
 		getRegistry().get(Document.class).encode(writer, document, 
@@ -126,9 +126,9 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
 		dataTransferAccount.setPassword(
 			encryptor.decrypt(document.get(DATA_TRANSFER_ACCOUNT_PASSWORD_KEY, 
                                            Binary.class)));
-		dataTransferAccount.setDataTransferType(
-		    HpcDataTransferType.valueOf(
-		    	   document.get(DATA_TRANSFER_ACCOUNT_DATA_TRANSFER_TYPE_KEY, 
+		dataTransferAccount.setAccountType(
+		    HpcDataTransferAccountType.valueOf(
+		    	   document.get(DATA_TRANSFER_ACCOUNT_ACCOUNT_TYPE_KEY, 
                                 String.class)));
 		
 		return dataTransferAccount;

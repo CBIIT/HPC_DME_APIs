@@ -72,7 +72,7 @@ class HpcDomainValidator
     	if(dataTransferAccount == null || 
     	   dataTransferAccount.getUsername() == null || 
     	   dataTransferAccount.getPassword() == null ||
-    	   dataTransferAccount.getDataTransferType() == null) {
+    	   dataTransferAccount.getAccountType() == null) {
     	   logger.info("Invalid Data Transfer Account: " + dataTransferAccount);
     	   return false;
     	}
