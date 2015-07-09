@@ -145,18 +145,19 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response getDatasetsByCreatorId(String creatorId)
+    public Response getDatasetsByRegistrarId(String registrarNihUserId)
     {
-    	logger.info("Invoking RS: GET /dataset/query/creator/{id}: " + creatorId);
+    	logger.info("Invoking RS: GET /dataset/query/registrar/{id}: " + 
+                    registrarNihUserId);
     	
 		HpcDatasetCollectionDTO datasetCollectionDTO = null;
 		try {
 			 datasetCollectionDTO = datasetBusService.getDatasets(
-					                       creatorId, 
-						                   HpcDatasetUserAssociation.CREATOR); 
+					                       registrarNihUserId, 
+						                   HpcDatasetUserAssociation.REGISTRAR); 
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/creator/{id}: failed:", e);
+			    logger.error("RS: GET /dataset/query/registrar/{id}: failed:", e);
 			    return errorResponse(e);
 		}
 		

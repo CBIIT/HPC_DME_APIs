@@ -46,7 +46,7 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="PRIMARY_INVESTIGATOR" />
 			<xsd:enumeration value="CREATOR" />
-			<xsd:enumeration value="REGISTRATOR" />
+			<xsd:enumeration value="REGISTRAR" />
 		</xsd:restriction>
 	</xsd:simpleType>
 

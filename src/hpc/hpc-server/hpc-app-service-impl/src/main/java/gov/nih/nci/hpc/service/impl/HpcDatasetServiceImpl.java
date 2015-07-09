@@ -194,8 +194,8 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     		primaryMetadata.getDataCompressed() == null &&
     		primaryMetadata.getFundingOrganization() == null && 
     		primaryMetadata.getPrimaryInvestigatorNihUserId() == null &&
-    		primaryMetadata.getCreatorNihUserId() == null &&
-    		primaryMetadata.getRegistratorNihUserId() == null &&
+    		primaryMetadata.getCreatorName() == null &&
+    		primaryMetadata.getRegistrarNihUserId() == null &&
     		primaryMetadata.getDescription() == null &&
     		primaryMetadata.getLabBranch() == null &&
     		primaryMetadata.getMetadataItems() == null)) {
