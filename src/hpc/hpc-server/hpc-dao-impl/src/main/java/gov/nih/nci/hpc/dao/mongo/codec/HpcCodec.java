@@ -113,10 +113,10 @@ public abstract class HpcCodec<T> implements Codec<T>
     public final static String 
                  FILE_PRIMARY_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY = 
             				   "primary_investigator_nih_user_id"; 
-    public final static String FILE_PRIMARY_METADATA_CREATOR_NIH_USER_ID_KEY = 
-    		                   "creator_nih_user_id"; 
-    public final static String FILE_PRIMARY_METADATA_REGISTRATOR_NIH_USER_ID_KEY = 
-    		                   "registrator_nih_user_id"; 
+    public final static String FILE_PRIMARY_METADATA_CREATOR_NAME_KEY = 
+    		                   "creator_name"; 
+    public final static String FILE_PRIMARY_METADATA_REGISTRAR_NIH_USER_ID_KEY = 
+    		                   "registrar_nih_user_id"; 
     public final static String FILE_PRIMARY_METADATA_LAB_BRANCH_KEY = 
     		                   "lab_branch"; 
     public final static String FILE_PRIMARY_METADATA_DESCRIPTION_KEY = 

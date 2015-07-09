@@ -68,9 +68,9 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 		String fundingOrganization = filePrimaryMetadata.getFundingOrganization();
 		String primaryInvestigatorNihUserId = 
 				      filePrimaryMetadata.getPrimaryInvestigatorNihUserId();
-		String creatorNihUserId = filePrimaryMetadata.getCreatorNihUserId();
-		String registratorNihUserId = 
-				          filePrimaryMetadata.getRegistratorNihUserId();
+		String creatorName = filePrimaryMetadata.getCreatorName();
+		String registrarNihUserId = 
+				        filePrimaryMetadata.getRegistrarNihUserId();
 		String labBranch = filePrimaryMetadata.getLabBranch();
 		String description = filePrimaryMetadata.getDescription();
 		List<HpcMetadataItem> metadataItems = filePrimaryMetadata.getMetadataItems();
@@ -101,13 +101,13 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 			   FILE_PRIMARY_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY, 
 			   primaryInvestigatorNihUserId);
 		}
-		if(creatorNihUserId != null) {
-		   document.put(FILE_PRIMARY_METADATA_CREATOR_NIH_USER_ID_KEY, 
-				        creatorNihUserId);
+		if(creatorName != null) {
+		   document.put(FILE_PRIMARY_METADATA_CREATOR_NAME_KEY, 
+				        creatorName);
 		}
-		if(registratorNihUserId != null) {
-		   document.put(FILE_PRIMARY_METADATA_REGISTRATOR_NIH_USER_ID_KEY, 
-				        registratorNihUserId);
+		if(registrarNihUserId != null) {
+		   document.put(FILE_PRIMARY_METADATA_REGISTRAR_NIH_USER_ID_KEY, 
+				        registrarNihUserId);
 		}
 		if(labBranch != null) {
 		   document.put(FILE_PRIMARY_METADATA_LAB_BRANCH_KEY, labBranch);
@@ -154,11 +154,11 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 		filePrimaryMetadata.setPrimaryInvestigatorNihUserId(
 		    document.get(FILE_PRIMARY_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY, 
 			             String.class));
-		filePrimaryMetadata.setCreatorNihUserId(
-		    document.get(FILE_PRIMARY_METADATA_CREATOR_NIH_USER_ID_KEY, 
+		filePrimaryMetadata.setCreatorName(
+		    document.get(FILE_PRIMARY_METADATA_CREATOR_NAME_KEY, 
 						 String.class));
-		filePrimaryMetadata.setRegistratorNihUserId(
-		    document.get(FILE_PRIMARY_METADATA_REGISTRATOR_NIH_USER_ID_KEY, 
+		filePrimaryMetadata.setRegistrarNihUserId(
+		    document.get(FILE_PRIMARY_METADATA_REGISTRAR_NIH_USER_ID_KEY, 
 				    	 String.class));
 		filePrimaryMetadata.setLabBranch(
 			document.get(FILE_PRIMARY_METADATA_LAB_BRANCH_KEY, 

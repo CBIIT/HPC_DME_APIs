@@ -139,7 +139,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		// Get the data transfer account of the registrator.
     		HpcDataTransferAccount dataTransferAccount = 
     		   userService.get(
-    			   uploadRequest.getMetadata().getRegistratorNihUserId()).
+    			   uploadRequest.getMetadata().getRegistrarNihUserId()).
     			                               getDataTransferAccount();
         	
         	// Submit data transfer request for this file.
@@ -276,14 +276,12 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		   continue;	
     		}
     		
-    		// Verify PI, Creator and Registrator are registered with HPC.
+    		// Verify PI and Registrar are registered with HPC.
     		validateUser(uploadRequest.getMetadata().getPrimaryInvestigatorNihUserId(),
     				     HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR);
-    		validateUser(uploadRequest.getMetadata().getCreatorNihUserId(),
-				         HpcDatasetUserAssociation.CREATOR);
     		HpcUser registrator =
-    		validateUser(uploadRequest.getMetadata().getRegistratorNihUserId(),
-			             HpcDatasetUserAssociation.REGISTRATOR);
+    		validateUser(uploadRequest.getMetadata().getRegistrarNihUserId(),
+			             HpcDatasetUserAssociation.REGISTRAR);
     		
     		// Validate the registrator Data Transfer Account.
         	if(!dataTransferService.validateDataTransferAccount(
