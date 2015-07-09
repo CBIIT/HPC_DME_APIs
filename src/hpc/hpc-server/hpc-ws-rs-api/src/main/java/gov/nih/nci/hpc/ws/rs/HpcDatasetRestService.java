@@ -58,13 +58,13 @@ public interface HpcDatasetRestService
     /**
      * GET Datasets by creator ID.
      *
-     * @param creatorId Get datasets associated with this creator ID.
+     * @param registrarNihUserId Get datasets associated with this registrar.
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @GET
-    @Path("/dataset/query/creator/{id}")
+    @Path("/dataset/query/registrar/{id}")
     @Produces("application/json,application/xml")
-    public Response getDatasetsByCreatorId(@PathParam("id") String creatorId); 
+    public Response getDatasetsByRegistrarId(@PathParam("id") String registrarNihUserId); 
     
     /**
      * GET Datasets by name.

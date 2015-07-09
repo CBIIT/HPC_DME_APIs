@@ -152,8 +152,8 @@ class HpcDomainValidator
     	   metadata.getDataCompressed() == null ||
     	   metadata.getFundingOrganization() == null || 
     	   metadata.getPrimaryInvestigatorNihUserId() == null ||
-    	   metadata.getCreatorNihUserId() == null ||
-    	   metadata.getRegistratorNihUserId() == null ||
+    	   metadata.getCreatorName() == null ||
+    	   metadata.getRegistrarNihUserId() == null ||
     	   metadata.getDescription() == null ||
     	   metadata.getLabBranch() == null) {
     	   logger.info("Invalid Dataset Primary Metadata");

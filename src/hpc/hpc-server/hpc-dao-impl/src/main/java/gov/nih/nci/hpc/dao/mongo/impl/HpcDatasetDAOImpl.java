@@ -62,18 +62,18 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
                  HpcCodec.FILE_METADATA_KEY + "." + 
                  HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
                  HpcCodec.FILE_PRIMARY_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY;
-	public final static String CREATOR_NIH_USER_ID_FIELD_NAME = 
+	public final static String CREATOR_NAME_FIELD_NAME = 
 			     HpcCodec.DATASET_FILE_SET_KEY + "." + 
 	             HpcCodec.FILE_SET_FILES_KEY + "." + 
 	             HpcCodec.FILE_METADATA_KEY + "." + 
 	             HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
-	             HpcCodec.FILE_PRIMARY_METADATA_CREATOR_NIH_USER_ID_KEY;
-	public final static String REGISTRATOR_NIH_USER_ID_FIELD_NAME = 
+	             HpcCodec.FILE_PRIMARY_METADATA_CREATOR_NAME_KEY;
+	public final static String REGISTRAR_NIH_USER_ID_FIELD_NAME = 
 			     HpcCodec.DATASET_FILE_SET_KEY + "." + 
 		         HpcCodec.FILE_SET_FILES_KEY + "." + 
 		         HpcCodec.FILE_METADATA_KEY + "." + 
 		         HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
-		         HpcCodec.FILE_PRIMARY_METADATA_REGISTRATOR_NIH_USER_ID_KEY;
+		         HpcCodec.FILE_PRIMARY_METADATA_REGISTRAR_NIH_USER_ID_KEY;
 	
 	// Field names to query by Primary Metadata.
 	public final static String DATA_CONTAINS_PII_FIELD_NAME = 
@@ -201,16 +201,12 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 		// Determine the field name needed to query for the requested association.
 		String fieldName = null;
 		switch(association) {
-		       case CREATOR:
-		            fieldName = CREATOR_NIH_USER_ID_FIELD_NAME;
-		            break;
-		            
 		       case PRIMARY_INVESTIGATOR:
 		            fieldName = PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME;
 		            break;
 		            
-		       case REGISTRATOR:
-		            fieldName = REGISTRATOR_NIH_USER_ID_FIELD_NAME;
+		       case REGISTRAR:
+		            fieldName = REGISTRAR_NIH_USER_ID_FIELD_NAME;
 		            break;
 		            
 		       default:
@@ -302,13 +298,13 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
            filters.add(eq(PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME, 
         		          primaryMetadata.getPrimaryInvestigatorNihUserId()));
         }
-    	if(primaryMetadata.getCreatorNihUserId() != null) {
-     	   filters.add(eq(CREATOR_NIH_USER_ID_FIELD_NAME, 
-     			          primaryMetadata.getCreatorNihUserId()));
+    	if(primaryMetadata.getCreatorName() != null) {
+     	   filters.add(eq(CREATOR_NAME_FIELD_NAME, 
+     			          primaryMetadata.getCreatorName()));
     	}
-    	if(primaryMetadata.getRegistratorNihUserId() != null) {
-      	   filters.add(eq(REGISTRATOR_NIH_USER_ID_FIELD_NAME, 
-      			          primaryMetadata.getRegistratorNihUserId()));
+    	if(primaryMetadata.getRegistrarNihUserId() != null) {
+      	   filters.add(eq(REGISTRAR_NIH_USER_ID_FIELD_NAME, 
+      			          primaryMetadata.getRegistrarNihUserId()));
      	}
     	if(primaryMetadata.getDescription() != null) {
        	   filters.add(regex(DESCRIPTION_FIELD_NAME, 
