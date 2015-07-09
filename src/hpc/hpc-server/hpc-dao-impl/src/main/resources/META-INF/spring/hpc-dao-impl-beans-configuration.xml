@@ -31,6 +31,8 @@
 
 	<!-- HPC Dataset Codecs -->
 	<bean id="hpcDatasetCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcDatasetCodec" />
+	<bean id="hpcProjectCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcProjectCodec" />
+	<bean id="hpcProjectMetadataCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcProjectMetadataCodec" />
 	<bean id="hpcFileSetCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileSetCodec" />
 	<bean id="hpcFileCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileCodec" />
 	<bean id="hpcFileLocationCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileLocationCodec" />
@@ -62,6 +64,10 @@
 					value-ref="hpcFilePrimaryMetadataCodec" />
 				<entry key="gov.nih.nci.hpc.domain.metadata.HpcMetadataItem"
 					value-ref="hpcMetadataItemCodec" />
+				<entry key="gov.nih.nci.hpc.domain.model.HpcProject"
+					value-ref="hpcProjectCodec" />
+				<entry key="gov.nih.nci.hpc.domain.model.HpcProjectMetadata"
+					value-ref="hpcProjectMetadataCodec" />
 			</map>
 		</constructor-arg>
 	</bean>
@@ -77,6 +83,7 @@
 			<map>
 				<entry key="gov.nih.nci.hpc.domain.model.HpcUser" value="user" />
 				<entry key="gov.nih.nci.hpc.domain.model.HpcDataset" value="dataset" />
+				<entry key="gov.nih.nci.hpc.domain.model.HpcProject" value="project" />
 			</map>
 		</constructor-arg>
 	</bean>
@@ -86,6 +93,9 @@
 		<constructor-arg ref="hpcMongoDB" />
 	</bean>
 	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.mongo.impl.HpcUserDAOImpl">
+		<constructor-arg ref="hpcMongoDB" />
+	</bean>
+	<bean id="hpcProjectDAO" class="gov.nih.nci.hpc.dao.mongo.impl.HpcProjectDAOImpl">
 		<constructor-arg ref="hpcMongoDB" />
 	</bean>
 
