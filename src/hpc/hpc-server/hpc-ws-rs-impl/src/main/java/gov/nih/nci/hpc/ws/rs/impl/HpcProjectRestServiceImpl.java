@@ -152,7 +152,7 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
 		try {
 			projectCollectionDTO = projectBusService.getProjects(
 										   registratorId, 
-						                   HpcDatasetUserAssociation.REGISTRATOR); 
+						                   HpcDatasetUserAssociation.REGISTRAR); 
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /dataset/query/creator/{id}: failed:", e);
