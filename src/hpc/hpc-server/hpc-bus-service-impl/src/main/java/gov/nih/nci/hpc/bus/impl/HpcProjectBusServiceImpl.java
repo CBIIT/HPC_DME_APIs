@@ -313,7 +313,7 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     				     HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR);
     		HpcUser registrator =
     		validateUser(projectDTO.getMetadata().getRegistratorNihUserId(),
-			             HpcDatasetUserAssociation.REGISTRATOR);
+			             HpcDatasetUserAssociation.REGISTRAR);
     		
     }
     
