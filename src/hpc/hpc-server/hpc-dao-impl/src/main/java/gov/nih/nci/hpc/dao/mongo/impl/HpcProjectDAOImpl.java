@@ -135,7 +135,7 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
 		            fieldName = PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME;
 		            break;
 		            
-		       case REGISTRATOR:
+		       case REGISTRAR:
 		            fieldName = REGISTRATOR_NIH_USER_ID_FIELD_NAME;
 		            break;
 		            
