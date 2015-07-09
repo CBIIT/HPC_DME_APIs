@@ -33,5 +33,6 @@
 	<!-- OSGi beans export -->
 	<osgi:service ref="hpcUserDAO" interface="gov.nih.nci.hpc.dao.HpcUserDAO" />
 	<osgi:service ref="hpcDatasetDAO" interface="gov.nih.nci.hpc.dao.HpcDatasetDAO" />
+	<osgi:service ref="hpcProjectDAO" interface="gov.nih.nci.hpc.dao.HpcProjectDAO" />
 
 </beans>

@@ -83,7 +83,8 @@
 							gov.nih.nci.hpc.domain.error,
 							gov.nih.nci.hpc.domain.user,
 							gov.nih.nci.hpc.domain.metadata,
-							gov.nih.nci.hpc.domain.dataset
+							gov.nih.nci.hpc.domain.dataset,
+							gov.nih.nci.hpc.domain.project
 						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>
