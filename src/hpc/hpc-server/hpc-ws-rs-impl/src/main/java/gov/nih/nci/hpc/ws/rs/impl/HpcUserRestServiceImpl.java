@@ -101,7 +101,6 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
     public Response registerUser(HpcUserRegistrationDTO userRegistrationDTO)
     {	
 		logger.info("Invoking RS: POST /user: " + userRegistrationDTO);
-		System.out.println("Invoking RS: POST /user: " + userRegistrationDTO);
 		
 		try {
 			 userBusService.registerUser(userRegistrationDTO);
@@ -118,7 +117,7 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
     public Response getUser(String nihUserId)
     {
 		logger.info("Invoking RS: GET /user/{nihUserId}: " + nihUserId);
-		System.out.println("Invoking RS: GET /user/{nihUserId}: " + nihUserId);		
+		
 		HpcUserDTO userDTO = null;
 		try {
 			 userDTO = userBusService.getUser(nihUserId);
