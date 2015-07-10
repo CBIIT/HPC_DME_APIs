@@ -94,7 +94,7 @@ public class HpcDataTransferProxyImpl
     }
  
     @Override
-    public String getTransferStatus(String submissionId)
+    public HpcDataTransferReport getTransferStatus(HpcDataTransferReport hpcDataTransferReport)
     {
     	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();
     	String status = "ACTIVE";
@@ -103,17 +103,20 @@ public class HpcDataTransferProxyImpl
     	{    	            
             JSONTransferAPIClient.Result r;
 
-            String resource = "/task/" +  submissionId;
+            String resource = "/task/" +  hpcDataTransferReport.getTaskID();
             Map<String, String> params = new HashMap<String, String>();
             params.put("fields", "status");
 
             r = client.getResult(resource, params);
             status = r.document.getString("status");
 
+            hpcDataTransferReport.setStatus(status);
+            //hpcDataTransferReport.setTaskID(r.document.getString("completed_time"));
+
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	    }
-    	return status;
+    	return hpcDataTransferReport;
     }
     
       
