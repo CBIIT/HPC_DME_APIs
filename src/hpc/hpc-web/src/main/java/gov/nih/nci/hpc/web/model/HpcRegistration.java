@@ -1,11 +1,14 @@
 package gov.nih.nci.hpc.web.model;
 
+import java.util.HashMap;
+
 public class HpcRegistration {
 	private String id;
 	private String projectName;
 	private String investigatorName;
 	private String originDataendpoint;
 	private String originDataLocation;
+	private HashMap dynamicFieldMap;
 
 	public String getId() {
 		return id;
@@ -37,6 +40,11 @@ public class HpcRegistration {
 	public void setOriginDataLocation(String originDataLocation) {
 		this.originDataLocation = originDataLocation;
 	}
-	
+	public HashMap getDynamicFieldMap() {
+		return dynamicFieldMap;
+	}
+	public void getDynamicFieldMap(HashMap dynamicFieldMap) {
+		this.dynamicFieldMap = dynamicFieldMap;
+	}	
 	
 }

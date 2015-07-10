@@ -36,7 +36,7 @@ public interface HpcDataTransferProxy
     public HpcDataTransferReport transferDataset(HpcDataTransferLocations transferLocations, 
     		                       String username, 
     		                       String password) throws Exception;
-    public String getTransferStatus(String submissionId);
+    public HpcDataTransferReport getTransferStatus(HpcDataTransferReport hpcDataTransferReport);
     
 }
 
