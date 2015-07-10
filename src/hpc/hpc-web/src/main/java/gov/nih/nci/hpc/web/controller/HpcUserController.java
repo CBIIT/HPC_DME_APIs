@@ -93,7 +93,7 @@ public class HpcUserController extends AbstractHpcController {
 		  dtAccount.setAccountType(HpcDataTransferAccountType.GLOBUS);
 		  userDTO.setDataTransferAccount(dtAccount);
 		  userDTO.setNihAccount(user);
-
+/*
 		  Boolean validGlobusCredentials = restTemplate.postForObject(new URI(serviceGlobusUserURL),  userDTO, Boolean.class);
 		  if(validGlobusCredentials != null)
 		  {
@@ -105,7 +105,7 @@ public class HpcUserController extends AbstractHpcController {
 				  return "enroll";
 			  }
 		  }
-		  
+	*/	  
 		  
 		  HttpEntity<String> response = restTemplate.postForEntity(serviceURL,  userDTO, String.class);
 		  String resultString = response.getBody();

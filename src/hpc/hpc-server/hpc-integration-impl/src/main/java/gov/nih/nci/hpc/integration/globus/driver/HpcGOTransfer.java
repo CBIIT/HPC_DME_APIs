@@ -27,10 +27,10 @@ import org.json.JSONObject;
 
 /**
  * <p>
- * HPC MongoDB. 
+ * HPC GO Transfer. 
  * </p>
  *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @author <a href="mailto:mahidhar.narra@nih.gov">Mahidhar Narra</a>
  * @version $Id$
  */
 
@@ -59,10 +59,10 @@ public class HpcGOTransfer
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param mongoHost The Mongo hostname.
-     * @param hpcCodecProvider The HPC codec provider instance.
+     * @param username The GO username.
+     * @param password The GO password.
      * 
-     * @throws HpcException If a HpcCodecProvider instance was not provided.
+     * @throws HpcException.
      */
     public HpcGOTransfer(String username, String password) throws IOException, JSONException, GeneralSecurityException, APIError,NexusClientException,HpcException
     {
