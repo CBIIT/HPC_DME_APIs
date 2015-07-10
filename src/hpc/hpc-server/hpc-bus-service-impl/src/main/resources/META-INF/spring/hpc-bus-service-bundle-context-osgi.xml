@@ -42,6 +42,8 @@
 		interface="gov.nih.nci.hpc.service.HpcDatasetService" />
 	<osgi:reference id="hpcDataTransferService"
 		interface="gov.nih.nci.hpc.service.HpcDataTransferService" />
+	<osgi:reference id="hpcTransferStatusService"
+		interface="gov.nih.nci.hpc.service.HpcTransferStatusService" />		
 	<osgi:reference id="hpcProjectService"
 		interface="gov.nih.nci.hpc.service.HpcProjectService" />
 

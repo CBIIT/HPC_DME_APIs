@@ -12,7 +12,9 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
+import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -26,6 +28,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcDatasetService;
+import gov.nih.nci.hpc.service.HpcTransferStatusService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
 import java.util.List;
@@ -38,7 +41,7 @@ import org.slf4j.LoggerFactory;
  * HPC Dataset Business Service Implementation.
  * </p>
  *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @author <a href="mailto:mahidhar.narra@nih.gov">Mahidhar Narra</a>
  * @version $Id$
  */
 
@@ -52,6 +55,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     private HpcDatasetService datasetService = null;
     private HpcUserService userService = null;
     private HpcDataTransferService dataTransferService = null;
+    private HpcTransferStatusService transferStatusService = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -84,11 +88,12 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     private HpcDatasetBusServiceImpl(
     		          HpcDatasetService datasetService,
     		          HpcUserService userService,
-    		          HpcDataTransferService dataTransferService)
+    		          HpcDataTransferService dataTransferService,
+    		          HpcTransferStatusService transferStatusService)
                       throws HpcException
     {
     	if(datasetService == null || userService == null ||
-    	   dataTransferService == null) {
+    	   dataTransferService == null || transferStatusService == null) {
      	   throw new HpcException("Null App Service(s) instance",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
@@ -96,6 +101,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	this.datasetService = datasetService;
     	this.userService = userService;
     	this.dataTransferService = dataTransferService;
+    	this.transferStatusService = transferStatusService;
     }  
     
     //---------------------------------------------------------------------//
@@ -150,6 +156,20 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     				                    uploadRequest.getLocations(), 
     				                    dataTransferAccount);
     		logger.info("Data Transfer Report : " + hpcDataTransferReport);
+    		
+        	for(HpcFile hpcFile : 
+      		   datasetService.getDataset(datasetId).getFileSet().getFiles()) { 
+         		HpcDataTransferRequest hpcDataTransferRequest = new HpcDataTransferRequest(); 
+             	
+         		hpcDataTransferRequest.setReport(hpcDataTransferReport);
+         		hpcDataTransferRequest.setFileId(hpcFile.getId());
+         		hpcDataTransferRequest.setLocations(uploadRequest.getLocations());
+
+            	HpcDataTransferRequest statusId = 
+             		   transferStatusService.addUpdateStatus(hpcDataTransferRequest);
+             	logger.info("statusId  = " + statusId);
+         	}
+         	       		
     	}
     	
     	return datasetId;
