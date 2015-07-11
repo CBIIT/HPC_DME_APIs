@@ -72,9 +72,9 @@ public class HpcDataRegistrationControllerTest {
 			  metadata.setDataContainsPII(false);
 			  metadata.setFundingOrganization("funding1");
 			  metadata.setPrimaryInvestigatorNihUserId("Investigator1");
-			  metadata.setRegistratorNihUserId("konkapv");
+			  metadata.setRegistrarNihUserId("konkapv");
 			  //TODO: ID Lookup
-			  metadata.setCreatorNihUserId("konkapv");
+			  metadata.setCreatorName("konkapv");
 			  metadata.setLabBranch("CBIIT");
 			  upload.setMetadata(metadata);
 			  dto.getUploadRequests().add(upload);
