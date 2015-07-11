@@ -129,10 +129,10 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 		  metadata.setDataContainsPII(registration.getPii().equalsIgnoreCase("Yes"));
 		  metadata.setFundingOrganization(registration.getFundingOrganization());
 		  metadata.setPrimaryInvestigatorNihUserId(registration.getInvestigatorId());
-		  metadata.setRegistratorNihUserId(user.getNihAccount().getUserId());
+		  metadata.setRegistrarNihUserId(user.getNihAccount().getUserId());
 		  metadata.setDescription(registration.getDescription());
 		  //TODO: ID Lookup
-		  metadata.setCreatorNihUserId(registration.getCreatorId());
+		  metadata.setCreatorName(registration.getCreatorId());
 		  metadata.setLabBranch(registration.getBranchName());
 		  metadata.getMetadataItems().addAll(eItems);
 		  upload.setMetadata(metadata);
