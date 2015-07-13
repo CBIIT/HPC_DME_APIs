@@ -14,9 +14,9 @@ import gov.nih.nci.hpc.bus.HpcUserBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcUserRestService;
-
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -85,7 +85,6 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
     	   throw new HpcException("Null HpcUserBusService instance",
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
-    	
     	this.userBusService = userBusService;
     }  
     
@@ -129,6 +128,28 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 		
 		return okResponse(userDTO, true);
 	}
+    
+    @Override
+    public Response authenticate(HpcUserCredentialsDTO credentials)
+    {
+		logger.info("Invoking RS: POST /user/authenticate: " + credentials.getUserName());
+		boolean valid = false;
+		try {
+			 valid = userBusService.authenticate(credentials); 
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /user/{nihUserId} failed:", e);
+			    return errorResponse(e);
+		}
+		if(valid)
+			return okResponse(valid, true);
+		else
+		{
+			HpcException ex = new HpcException("Invalid login credentials", HpcErrorType.INVALID_LOGIN);
+			return errorResponse(ex);
+			
+		}
+	}    
 }
 
  

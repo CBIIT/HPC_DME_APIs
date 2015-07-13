@@ -26,6 +26,7 @@
 			<!-- Service request Errors -->
 			<xsd:enumeration value="INVALID_REQUEST_INPUT" />
 			<xsd:enumeration value="UNAUTHORIZED_REQUEST" />
+			<xsd:enumeration value="INVALID_LOGIN" />
 			<xsd:enumeration value="REQUEST_REJECTED" />
 
 			<!-- Service Implementation Errors -->

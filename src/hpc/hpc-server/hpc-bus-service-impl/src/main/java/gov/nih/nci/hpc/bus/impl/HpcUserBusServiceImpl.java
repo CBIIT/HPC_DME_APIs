@@ -11,14 +11,14 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcUserBusService;
-
 import gov.nih.nci.hpc.service.HpcUserService;
+import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
-
+import gov.nih.nci.hpc.service.HpcLdapAuthenticationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +39,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
 
     // Application service instances.
     private HpcUserService userService = null;
-    
+    private HpcLdapAuthenticationService authService = null;
     // The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -66,7 +66,8 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
      * 
      * @throws HpcException If userService is null.
      */
-    private HpcUserBusServiceImpl(HpcUserService userService)
+    private HpcUserBusServiceImpl(HpcUserService userService,
+    							  HpcLdapAuthenticationService authService)
                                  throws HpcException
     {
     	if(userService == null) {
@@ -75,6 +76,8 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
      	}
     	
     	this.userService = userService;
+    	this.authService = authService;
+    	
     } 
     
     //---------------------------------------------------------------------//
@@ -129,6 +132,20 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	
     	return userDTO;
     }
+    
+    /**
+     * Authenticate User by NIH LDAP credentials.
+     *
+     * @param credentials The user's NIH user id and password.
+     * @return boolean.
+     * 
+     * @throws HpcException
+     */
+    public boolean authenticate(HpcUserCredentialsDTO credentials) throws HpcException
+    {
+    	return authService.authenticate(credentials.getUserName(), credentials.getPassword());
+    }
+    
 }
 
  
