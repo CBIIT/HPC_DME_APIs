@@ -127,6 +127,63 @@ public abstract class HpcCodec<T> implements Codec<T>
     // HpcMetadataItem Document keys.
     public final static String METADATA_ITEM_KEY_KEY = "key";
     public final static String METADATA_ITEM_VALUE_KEY = "value";
+
+    public final static String TRANSFER_STATUS_REQUEST_KEY = 
+            "transfer_status_request_id";
+    public final static String TRANSFER_STATUS_REQUEST = 
+            "transfer_status_request"; 
+    public final static String TRANSFER_STATUS_REQUEST_STATUS = 
+            "transfer_status_request_status";
+    public final static String TRANSFER_STATUS_REPORT_COMMAND = 
+            "transfer_status_report_command";
+    public final static String TRANSFER_STATUS_REPORT_DEST_ENDPOINT = 
+            "transfer_status_report_dest_endpoint";
+  
+    public final static String TRANSFER_STATUS_REPORT_SOURCE_ENDPOINT = 
+            "transfer_status_report_source_endpoint";
+    public final static String TRANSFER_STATUS_REPORT_STATUS = 
+            "transfer_status_report_status"; 
+    public final static String TRANSFER_STATUS_REPORT_TASKID = 
+            "transfer_status_report_taskid"; 
+    public final static String TRANSFER_STATUS_REPORT_BYTESCHECKSUMMED = 
+            "transfer_status_report_byteschecksummed";
+    public final static String TRANSFER_STATUS_REPORT_BYTESTRANSFERRED = 
+            "transfer_status_report_bytestransferred";
+    public final static String TRANSFER_STATUS_REPORT_COMPLETIONTIME = 
+            "transfer_status_report_completiontime";
+    public final static String TRANSFER_STATUS_REPORT_DATAENCRIPTION = 
+            "transfer_status_report_dataencription";
+    public final static String TRANSFER_STATUS_REPORT_DEADLINE = 
+            "transfer_status_report_deadline";
+    public final static String TRANSFER_STATUS_REPORT_DELETE = 
+            "transfer_status_report_delete";
+    public final static String TRANSFER_STATUS_REPORT_DIRECTORIES = 
+            "transfer_status_report_directories";
+    public final static String TRANSFER_STATUS_REPORT_FILES = 
+            "transfer_status_report_files";
+    public final static String TRANSFER_STATUS_REPORT_EXPANSIONS = 
+            "transfer_status_report_expansions";
+    public final static String TRANSFER_STATUS_REPORT_EFFECTIVEMBITS = 
+            "transfer_status_report_effective_bits";
+    public final static String TRANSFER_STATUS_REPORT_FAULTS = 
+            "transfer_status_report_faults";
+    public final static String TRANSFER_STATUS_REPORT_FILESSKIPPED = 
+            "transfer_status_report_filesskipped";
+    public final static String TRANSFER_STATUS_REPORT_TOTALTASKS = 
+            "transfer_status_report_totaltasks";
+    public final static String TRANSFER_STATUS_REPORT_TASKSSUCCESSFUL = 
+            "transfer_status_report_taskssuccessful";
+    public final static String TRANSFER_STATUS_REPORT_TASKSEXPIRED = 
+            "transfer_status_report_tasksexpired";    
+    public final static String TRANSFER_STATUS_REPORT_TASKSCANCELLED = 
+            "transfer_status_report_taskscancelled"; 
+    public final static String TRANSFER_STATUS_REPORT_TASKSFAILED = 
+            "transfer_status_report_tasksfailed"; 
+    public final static String TRANSFER_STATUS_REPORT_TASKSPENDING = 
+            "transfer_status_report_taskspending"; 
+    public final static String TRANSFER_STATUS_REPORT_TASKSRETRYING = 
+            "transfer_status_report_tasksretrying"; 
+  
     
     //---------------------------------------------------------------------//
     // Instance members

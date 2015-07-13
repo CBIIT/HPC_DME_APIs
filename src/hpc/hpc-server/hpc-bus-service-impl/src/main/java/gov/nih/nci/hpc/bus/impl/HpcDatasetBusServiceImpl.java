@@ -139,39 +139,6 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     				  datasetRegistrationDTO.getUploadRequests());
     	logger.info("Registered dataset id = " + datasetId);
     	
-    	// Upload all files in registration request.
-    	for(HpcFileUploadRequest uploadRequest : 
-    		datasetRegistrationDTO.getUploadRequests()) { 
-    		// Get the data transfer account of the registrator.
-    		HpcDataTransferAccount dataTransferAccount = 
-    		   userService.get(
-    			   uploadRequest.getMetadata().getRegistrarNihUserId()).
-    			                               getDataTransferAccount();
-        	
-        	// Submit data transfer request for this file.
-    		logger.info("Submiting Data Transfer Request: "+ 
-        	            uploadRequest.getLocations());
-    		HpcDataTransferReport hpcDataTransferReport = 
-    				dataTransferService.transferDataset(
-    				                    uploadRequest.getLocations(), 
-    				                    dataTransferAccount);
-    		logger.info("Data Transfer Report : " + hpcDataTransferReport);
-    		
-        	for(HpcFile hpcFile : 
-      		   datasetService.getDataset(datasetId).getFileSet().getFiles()) { 
-         		HpcDataTransferRequest hpcDataTransferRequest = new HpcDataTransferRequest(); 
-             	
-         		hpcDataTransferRequest.setReport(hpcDataTransferReport);
-         		hpcDataTransferRequest.setFileId(hpcFile.getId());
-         		hpcDataTransferRequest.setLocations(uploadRequest.getLocations());
-
-            	HpcDataTransferRequest statusId = 
-             		   transferStatusService.addUpdateStatus(hpcDataTransferRequest);
-             	logger.info("statusId  = " + statusId);
-         	}
-         	       		
-    	}
-    	
     	return datasetId;
     }
     
