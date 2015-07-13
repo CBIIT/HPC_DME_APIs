@@ -59,9 +59,7 @@ public abstract class HpcCodec<T> implements Codec<T>
             "primary_metadata";
     public final static String FUNDING_ORGANIZATION_KEY = 
             "funding_organization";
-	public final static String DIVISION_KEY = "division";
-	public final static String CENTER_KEY = "center";
-	public final static String ORGANIZATION_KEY = "organization";
+	public final static String DOC_KEY = "doc";
 	public final static String PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY = "primary_investigator_nih_user_id";
 	public final static String CREATOR_NIH_USER_ID_KEY = "creator_nih_user_id";
 	public final static String REGISTRATOR_NIH_USER_ID_KEY = "registrator_nih_user_id";

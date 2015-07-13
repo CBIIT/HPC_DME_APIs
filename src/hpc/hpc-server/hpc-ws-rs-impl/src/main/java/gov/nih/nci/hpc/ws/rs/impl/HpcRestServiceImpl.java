@@ -92,6 +92,7 @@ public abstract class HpcRestServiceImpl
 		switch(e.getErrorType()) {
 		       case INVALID_REQUEST_INPUT:
 		       case REQUEST_REJECTED:
+		       case INVALID_LOGIN:
 		    	   responseBuilder = 
 		    	           Response.status(Response.Status.BAD_REQUEST);	
 		    	   break;
@@ -100,7 +101,6 @@ public abstract class HpcRestServiceImpl
 		    	    responseBuilder = 
     	                    Response.status(Response.Status.UNAUTHORIZED);
 		    	    break;
-		    	    
 		       default:
 		    	   responseBuilder = 
                    Response.status(Response.Status.INTERNAL_SERVER_ERROR);
