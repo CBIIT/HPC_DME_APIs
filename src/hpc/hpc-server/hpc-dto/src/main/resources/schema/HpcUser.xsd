@@ -43,5 +43,13 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-
+	
+	<xsd:element name="HpcUserCredentialsDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="userName" type="xsd:string" />
+				<xsd:element name="password" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 </xsd:schema>
