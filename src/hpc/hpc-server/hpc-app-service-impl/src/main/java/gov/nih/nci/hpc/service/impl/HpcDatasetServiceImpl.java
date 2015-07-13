@@ -11,7 +11,10 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileUploadRequest;
+
 import gov.nih.nci.hpc.dao.HpcDatasetDAO;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
@@ -20,8 +23,12 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
+import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcDatasetService;
+import gov.nih.nci.hpc.service.HpcTransferStatusService;
+import gov.nih.nci.hpc.service.HpcUserService;
 
 import java.util.Calendar;
 import java.util.List;
@@ -50,6 +57,10 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     // Key Generator.
     private HpcKeyGenerator keyGenerator = null;
     
+    private HpcUserService userService = null;
+    private HpcDataTransferService dataTransferService = null;
+    private HpcTransferStatusService transferStatusService = null;    
+    
     // The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -76,7 +87,10 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
      * @param keyGenerator The key generator.
      */
     private HpcDatasetServiceImpl(HpcDatasetDAO datasetDAO, 
-    		                      HpcKeyGenerator keyGenerator)
+    		                      HpcKeyGenerator keyGenerator,
+    		    		          HpcUserService userService,
+    		    		          HpcDataTransferService dataTransferService,
+    		    		          HpcTransferStatusService transferStatusService)
     		                     throws HpcException
     {
     	if(datasetDAO == null || keyGenerator == null) {
@@ -86,6 +100,9 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	
     	this.datasetDAO = datasetDAO;
     	this.keyGenerator = keyGenerator;
+    	this.userService = userService;
+    	this.dataTransferService = dataTransferService;
+    	this.transferStatusService = transferStatusService;    	
     }  
     
     //---------------------------------------------------------------------//
@@ -146,6 +163,31 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     		
     		// Add the managed file to the dataset.
     		fileSet.getFiles().add(file);
+    		
+    		//Transfer file 
+    		HpcDataTransferAccount dataTransferAccount = 
+    	    		   userService.get(
+    	    			   uploadRequest.getMetadata().getRegistrarNihUserId()).
+    	    			                               getDataTransferAccount();
+    	        	
+    	        	// Submit data transfer request for this file.
+    	    		logger.info("Submiting Data Transfer Request: "+ 
+    	        	            uploadRequest.getLocations());
+    		HpcDataTransferReport hpcDataTransferReport = 
+    				dataTransferService.transferDataset(
+    				                    uploadRequest.getLocations(), 
+    				                    dataTransferAccount);
+    		logger.info("Data Transfer Report : " + hpcDataTransferReport);    	    		
+    		//Add status 
+    		
+     		HpcDataTransferRequest hpcDataTransferRequest = new HpcDataTransferRequest(); 
+         	
+     		hpcDataTransferRequest.setReport(hpcDataTransferReport);
+     		hpcDataTransferRequest.setFileId(file.getId());
+     		hpcDataTransferRequest.setLocations(uploadRequest.getLocations());
+     		dataset.getUploadRequests().add(hpcDataTransferRequest);
+     		transferStatusService.addUpdateStatus(hpcDataTransferRequest);
+        	
     	}
     	dataset.setFileSet(fileSet);
     	

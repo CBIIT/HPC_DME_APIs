@@ -25,6 +25,9 @@
 	<bean id="hpcDatasetService" class="gov.nih.nci.hpc.service.impl.HpcDatasetServiceImpl">
 		<constructor-arg ref="hpcDatasetDAO" />
 		<constructor-arg ref="hpcKeyGenerator" />
+		<constructor-arg ref="hpcUserService" />
+		<constructor-arg ref="hpcDataTransferService" />
+		<constructor-arg ref="hpcTransferStatusService" />		
 	</bean>
 
 	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl">
