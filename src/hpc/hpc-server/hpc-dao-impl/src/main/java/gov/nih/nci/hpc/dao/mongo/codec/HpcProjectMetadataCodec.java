@@ -69,9 +69,8 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		String registratorNihUserId = 
 				          projectMetadata.getRegistratorNihUserId();
 		String labBranch = projectMetadata.getLabBranch();
-		String division = projectMetadata.getDivision();
-		String center = projectMetadata.getCenter();
-		String organization = projectMetadata.getOrganization();
+		String doc = projectMetadata.getDoc();
+		String fundingOrganization = projectMetadata.getFundingOrganization();
 		String internalProjectId = projectMetadata.getInternalProjectId();
 		String experimentId = projectMetadata.getExperimentId();
 		List<HpcMetadataItem> metadataItems = projectMetadata.getMetadataItems();
@@ -97,14 +96,11 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		if(labBranch != null) {
 		   document.put(LAB_BRANCH_KEY, labBranch);
 		}
-		if(division != null) {
-			   document.put(DIVISION_KEY, division);
+		if(doc != null) {
+			   document.put(DOC_KEY, doc);
 			}
-		if(center != null) {
-			   document.put(CENTER_KEY, center);
-			}
-		if(organization != null) {
-			   document.put(ORGANIZATION_KEY, organization);
+		if(fundingOrganization != null) {
+			   document.put(FUNDING_ORGANIZATION_KEY, fundingOrganization);
 			}
 		if(internalProjectId != null) {
 			   document.put(PROJECT_INTERNAL_PROJECT_ID_KEY, internalProjectId);
@@ -149,14 +145,11 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		projectMetadata.setLabBranch(
 			document.get(LAB_BRANCH_KEY, 
 		                 String.class));
-		projectMetadata.setDivision(
-				document.get(DIVISION_KEY, 
+		projectMetadata.setDoc(
+				document.get(DOC_KEY, 
 			                 String.class));
-		projectMetadata.setCenter(
-				document.get(CENTER_KEY, 
-			                 String.class));
-		projectMetadata.setOrganization(
-				document.get(ORGANIZATION_KEY, 
+		projectMetadata.setFundingOrganization(
+				document.get(FUNDING_ORGANIZATION_KEY, 
 			                 String.class));
 		projectMetadata.setInternalProjectId(
 				document.get(PROJECT_INTERNAL_PROJECT_ID_KEY, 

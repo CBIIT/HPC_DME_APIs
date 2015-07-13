@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -52,6 +53,18 @@ public interface HpcUserRestService
     @Path("/user/{nihUserId}")
     @Produces("application/json,application/xml")
     public Response getUser(@PathParam("nihUserId") String nihUserId); 
+
+    /**
+     * Authenticate
+     *
+     * @param nihUserId The registered user ID.
+     * @param password NIH LDAP password
+     * @return boolean entity.
+     */
+    @POST
+    @Path("/user/authenticate")
+    @Produces("application/json,application/xml")
+    public Response authenticate(HpcUserCredentialsDTO credentials);
 }
 
  

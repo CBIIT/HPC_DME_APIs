@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.bus;
 
+import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -44,6 +45,17 @@ public interface HpcUserBusService
      * @throws HpcException
      */
     public HpcUserDTO getUser(String nihUserId) throws HpcException;
+    
+    
+    /**
+     * Authenticate User by NIH LDAP credentials.
+     *
+     * @param credentials The user's NIH user id and password.
+     * @return boolean.
+     * 
+     * @throws HpcException
+     */
+    public boolean authenticate(HpcUserCredentialsDTO credentials) throws HpcException;    
 }
 
  

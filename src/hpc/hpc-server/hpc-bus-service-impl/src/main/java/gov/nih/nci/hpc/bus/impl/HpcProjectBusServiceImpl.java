@@ -270,20 +270,16 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
   	   	   throw new HpcException("Lab/Branch value is missing for project",
   	   			HpcErrorType.INVALID_REQUEST_INPUT);	
 
-    	if(metadata.getDivision() == null)
-  	   	   throw new HpcException("Division value is missing for project",
-  	   			HpcErrorType.INVALID_REQUEST_INPUT);	
-
-    	if(metadata.getCenter() == null)
-  	   	   throw new HpcException("Center value is missing for project",
+    	if(metadata.getDoc() == null)
+  	   	   throw new HpcException("DOCn value is missing for project",
   	   			HpcErrorType.INVALID_REQUEST_INPUT);	
 
     	if(metadata.getInternalProjectId() == null)
    	   	   throw new HpcException("Internal Project Id value is missing for project",
    	   			HpcErrorType.INVALID_REQUEST_INPUT);	
 
-    	if(metadata.getOrganization() == null)
-   	   	   throw new HpcException("Organization value is missing for project",
+    	if(metadata.getFundingOrganization() == null)
+   	   	   throw new HpcException("Funding Organization value is missing for project",
    	   			HpcErrorType.INVALID_REQUEST_INPUT);	
 
     	if(metadata.getExperimentId() == null)
