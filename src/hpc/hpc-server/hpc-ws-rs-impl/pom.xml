@@ -30,6 +30,44 @@
 						<Import-Package>
 							META-INF.cxf,
 							org.apache.cxf.bus.spring,
+							
+							org.springframework.security.web,
+							org.springframework.security.web.authentication,
+							org.springframework.security.web.util,
+							org.springframework.security.web.context,
+							org.springframework.security.web.authentication.session,
+							org.springframework.security.web.authentication.logout,
+							org.springframework.security.web.authentication.ui,
+							org.springframework.security.web.authentication.www,
+							org.springframework.security.web.servletapi,
+							org.springframework.security.web.savedrequest,
+							org.springframework.security.web.session,
+							org.springframework.security.web.access,
+							org.springframework.security.web.access.intercept,
+							org.springframework.security.authentication,
+							org.springframework.security.authentication.dao,
+						    org.springframework.security.access.vote,
+						    org.springframework.security.access.intercept.aopalliance,
+						    org.springframework.security.access.intercept,
+						    org.springframework.security.provisioning,
+						    org.springframework.security.config.method,
+						    org.springframework.security.config.authentication,
+						    org.springframework.security.config.http,
+						    org.springframework.web.filter,
+						    
+						    org.springframework.aop,
+						    org.springframework.aop.framework,
+						    
+						    org.springframework.beans.factory.config,
+						    org.springframework.beans.support,
+						    org.springframework.util,
+						    
+						    org.apache.cxf.jaxrs.spring,
+						    org.apache.cxf.jaxrs,
+						    org.apache.cxf.endpoint,
+						    org.apache.cxf.interceptor,
+						    
+						    org.aopalliance.aop,
 							*
 						</Import-Package>
 					</instructions>
@@ -74,8 +112,18 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-
-
+		<dependency>
+        	<groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+        </dependency>
+        <dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-web</artifactId>
+		</dependency>
+        <dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-config</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
