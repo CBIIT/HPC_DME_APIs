@@ -52,7 +52,7 @@
 
 	<bean id="contextSource"
 	        class="org.springframework.security.ldap.DefaultSpringSecurityContextSource">
-	  <constructor-arg value="ldaps://ncids4a.nci.nih.gov:636,ou=nci,o=nih"/>
+	  <constructor-arg value="ldaps://ncids4a.nci.nih.gov:636"/>
 	</bean>
 	
 	<bean id="ldapAuthProvider"
