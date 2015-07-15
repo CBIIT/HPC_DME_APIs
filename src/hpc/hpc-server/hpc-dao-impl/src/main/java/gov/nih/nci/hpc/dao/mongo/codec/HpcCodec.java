@@ -128,6 +128,10 @@ public abstract class HpcCodec<T> implements Codec<T>
 
     public final static String TRANSFER_STATUS_REQUEST_KEY = 
             "transfer_status_request_id";
+	
+    public final static String TRANSFER_STATUS_FILE_ID = "file_id";
+    public final static String TRANSFER_STATUS_DATA_TRANSFER_ID = "transfer_id";
+    
     public final static String TRANSFER_STATUS_REQUEST = 
             "transfer_status_request"; 
     public final static String TRANSFER_STATUS_REQUEST_STATUS = 

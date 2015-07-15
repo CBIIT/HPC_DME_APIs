@@ -29,14 +29,24 @@ public interface HpcDataTransferProxy
      *
      * @param type The managed data type.
      * @param datasets The datasets to start manage.
-     * @return Submit the data transfer request
+     * @return HpcDataTransferReport the data transfer report
      * 
      * @throws HpcTransferException
      */
     public HpcDataTransferReport transferDataset(HpcDataTransferLocations transferLocations, 
     		                       String username, 
-    		                       String password) throws Exception;
-    public HpcDataTransferReport getTransferStatus(HpcDataTransferReport hpcDataTransferReport);
+    		                       String password,
+    		                       String nihUsername) throws Exception;
+
+    /**
+     * Retrive task status.
+     *
+     * @param taskId taskid to retrive status.
+     * @return HpcDataTransferReport the data transfer report
+     * 
+     * @throws HpcTransferException
+     */
+    public HpcDataTransferReport getTaskStatusReport(String taskId) throws Exception;
     
 }
 
