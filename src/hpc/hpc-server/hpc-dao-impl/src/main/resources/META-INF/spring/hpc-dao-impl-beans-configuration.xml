@@ -37,8 +37,7 @@
 	<bean id="hpcFileCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileCodec" />
 	<bean id="hpcFileLocationCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileLocationCodec" />
 	<bean id="hpcFileMetadataCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileMetadataCodec" />
-	<bean id="hpcFilePrimaryMetadataCodec"
-		class="gov.nih.nci.hpc.dao.mongo.codec.HpcFilePrimaryMetadataCodec" />
+	<bean id="hpcFilePrimaryMetadataCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFilePrimaryMetadataCodec" />
 	<bean id="hpcMetadataItemCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcMetadataItemCodec" />
 	<bean id="hpcDataTransferRequestCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcDataTransferRequestCodec" />
 	<bean id="hpcDataTransferReportCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcDataTransferReportCodec" />
