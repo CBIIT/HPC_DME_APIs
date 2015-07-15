@@ -131,6 +131,7 @@ public abstract class HpcCodec<T> implements Codec<T>
 	
     public final static String TRANSFER_STATUS_FILE_ID = "file_id";
     public final static String TRANSFER_STATUS_DATA_TRANSFER_ID = "transfer_id";
+    public final static String TRANSFER_STATUS_DATA_TRANSFER_STATUS = "transfer_status";
     
     public final static String TRANSFER_STATUS_REQUEST = 
             "transfer_status_request"; 
@@ -153,6 +154,8 @@ public abstract class HpcCodec<T> implements Codec<T>
             "transfer_status_report_bytestransferred";
     public final static String TRANSFER_STATUS_REPORT_COMPLETIONTIME = 
             "transfer_status_report_completiontime";
+    public final static String TRANSFER_STATUS_REPORT_REQUESTTIME = 
+            "transfer_status_report_requesttime";    
     public final static String TRANSFER_STATUS_REPORT_DATAENCRIPTION = 
             "transfer_status_report_dataencription";
     public final static String TRANSFER_STATUS_REPORT_DEADLINE = 

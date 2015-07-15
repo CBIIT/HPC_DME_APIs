@@ -133,11 +133,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	
 	   @Override
 	    public HpcDataTransferReport 
-	                  retriveTransferStatus(String taskId) 
+	                  retriveTransferStatus(String taskId,
+	                		  	HpcDataTransferAccount dataTransferAccount) 
 		                             throws HpcException
 	    {	
 	    	try {
-	        	 return dataTransferProxy.getTaskStatusReport(taskId);
+	        	 return dataTransferProxy.getTaskStatusReport(taskId,dataTransferAccount);
 	        	 
 	    	} catch(Exception ex) {
 	    		    throw new HpcException("Error while retriving status",

@@ -11,7 +11,6 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileUploadRequest;
-
 import gov.nih.nci.hpc.dao.HpcDatasetDAO;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
@@ -19,11 +18,13 @@ import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcDatasetService;
@@ -32,6 +33,7 @@ import gov.nih.nci.hpc.service.HpcUserService;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +62,8 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     private HpcUserService userService = null;
     private HpcDataTransferService dataTransferService = null;
     private HpcTransferStatusService transferStatusService = null;    
+	@SuppressWarnings("rawtypes")
+	private Map<String, String> collections = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -90,7 +94,8 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     		                      HpcKeyGenerator keyGenerator,
     		    		          HpcUserService userService,
     		    		          HpcDataTransferService dataTransferService,
-    		    		          HpcTransferStatusService transferStatusService)
+    		    		          HpcTransferStatusService transferStatusService,
+    		    		          Map<String, String> collections)
     		                     throws HpcException
     {
     	if(datasetDAO == null || keyGenerator == null) {
@@ -102,7 +107,8 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	this.keyGenerator = keyGenerator;
     	this.userService = userService;
     	this.dataTransferService = dataTransferService;
-    	this.transferStatusService = transferStatusService;    	
+    	this.transferStatusService = transferStatusService;
+    	this.collections = collections;
     }  
     
     //---------------------------------------------------------------------//
@@ -186,6 +192,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
      		
      		hpcDataTransferRequest.setReport(hpcDataTransferReport);
      		hpcDataTransferRequest.setFileId(file.getId());
+     		hpcDataTransferRequest.setStatus(HpcDataTransferStatus.valueOf(collections.get(hpcDataTransferReport.getStatus())));
      		hpcDataTransferRequest.setDataTransferId(hpcDataTransferReport.getTaskID());
      		//hpcDataTransferRequest.setLocations(uploadRequest.getLocations());
      		dataset.getUploadRequests().add(hpcDataTransferRequest);
@@ -210,12 +217,18 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	HpcDataset hpcDataset  = datasetDAO.getDataset(id);
-    	if(datasetDAO.getDataset(hpcDataset.getId()) != null)
+    	if(!hpcDataset.getFileSet().getFiles().isEmpty())
     	{
     		for(HpcDataTransferRequest uploadRequest : hpcDataset.getUploadRequests())
     		{
-    			HpcDataTransferReport hpcDataTransferReport = dataTransferService.retriveTransferStatus(uploadRequest.getDataTransferId());
+        		HpcDataTransferAccount dataTransferAccount = 
+     	    		   userService.get(
+     	    				  hpcDataset.getFileSet().getFiles().get(1).getMetadata().getPrimaryMetadata().getRegistrarNihUserId()).
+     	    			                               getDataTransferAccount();
+        		
+    			HpcDataTransferReport hpcDataTransferReport = dataTransferService.retriveTransferStatus(uploadRequest.getDataTransferId(),dataTransferAccount);
     			uploadRequest.setReport(hpcDataTransferReport);
+    			uploadRequest.setStatus(HpcDataTransferStatus.valueOf(collections.get(hpcDataTransferReport.getStatus())));
     			
     			datasetDAO.updateReplace(hpcDataset);
     		}
@@ -260,6 +273,10 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	
     	return datasetDAO.getDatasets(primaryMetadata);
     }
+
+	public List<HpcDataset> getDatasetsByStatus(String transferStatus) throws HpcException{
+		return datasetDAO.getDatasetsByStatus(transferStatus);
+	}
 }
 
  

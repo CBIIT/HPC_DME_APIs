@@ -45,6 +45,9 @@
 			<xsd:sequence>
 				<xsd:element name="id" type="xsd:ID" />
 				<xsd:element name="fileSet" type="hpc-domain-dataset:HpcFileSet" />
+				<xsd:element name="uploadRequests"
+					         type="hpc-domain-dataset:HpcDataTransferRequest" 
+					         minOccurs="0" maxOccurs="unbounded" />				
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
