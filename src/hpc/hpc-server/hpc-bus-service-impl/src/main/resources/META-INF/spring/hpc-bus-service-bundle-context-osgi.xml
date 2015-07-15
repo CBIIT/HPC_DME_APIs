@@ -29,22 +29,25 @@
 	<ctx:property-placeholder properties-ref="preProps" />
 
 	<!-- OSGi beans export -->
-	<osgi:service ref="hpcUserBusService" interface="gov.nih.nci.hpc.bus.HpcUserBusService" />
+	<osgi:service ref="hpcUserBusService" 
+	              interface="gov.nih.nci.hpc.bus.HpcUserBusService" />
 	<osgi:service ref="hpcDatasetBusService"
-		interface="gov.nih.nci.hpc.bus.HpcDatasetBusService" />
+		          interface="gov.nih.nci.hpc.bus.HpcDatasetBusService" />
 	<osgi:service ref="hpcProjectBusService"
-		interface="gov.nih.nci.hpc.bus.HpcProjectBusService" />
+		          interface="gov.nih.nci.hpc.bus.HpcProjectBusService" />
 
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcUserService"
-		interface="gov.nih.nci.hpc.service.HpcUserService" />
+		            interface="gov.nih.nci.hpc.service.HpcUserService" />
 	<osgi:reference id="hpcDatasetService"
-		interface="gov.nih.nci.hpc.service.HpcDatasetService" />
+		            interface="gov.nih.nci.hpc.service.HpcDatasetService" />
 	<osgi:reference id="hpcDataTransferService"
-		interface="gov.nih.nci.hpc.service.HpcDataTransferService" />
+		            interface="gov.nih.nci.hpc.service.HpcDataTransferService" />
 	<osgi:reference id="hpcTransferStatusService"
-		interface="gov.nih.nci.hpc.service.HpcTransferStatusService" />		
+		            interface="gov.nih.nci.hpc.service.HpcTransferStatusService" />		
 	<osgi:reference id="hpcProjectService"
-		interface="gov.nih.nci.hpc.service.HpcProjectService" />
+		            interface="gov.nih.nci.hpc.service.HpcProjectService" />
+	<osgi:reference id="hpcLdapAuthenticationService"
+		            interface="gov.nih.nci.hpc.service.HpcLdapAuthenticationService" />
 
 </beans>

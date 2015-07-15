@@ -20,10 +20,22 @@
 		<bundle>mvn:org.mongodb/bson/${mongodb.version}</bundle>
 	</feature>
 	
+	<!-- Spring Security LDAP -->
+	<feature name="hpc-spring-security-ldap" version="${spring-security.version}">
+		<feature version="${spring-security.version}">spring-security</feature>
+		
+		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-jdbc/3.2.11.RELEASE_2</bundle>
+		<bundle>mvn:org.springframework.data/spring-data-commons-core/1.4.1.RELEASE</bundle>
+		<bundle>mvn:org.springframework.batch/spring-batch-core/2.2.7.RELEASE</bundle>
+		<bundle>mvn:org.springframework.batch/spring-batch-infrastructure/2.2.7.RELEASE</bundle>
+		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-ldap/1.3.1.RELEASE_3</bundle>
+		<bundle>mvn:org.springframework.security/spring-security-ldap/${spring-security.version}</bundle>
+	</feature>
+	
 	<!-- HPC Server -->
 	<feature name="hpc-server" version="${project.version}">
-		<feature version="${spring-security.version}">spring-security</feature>
 		<feature version="${mongodb.version}">hpc-mongo-async-driver</feature>
+		<feature version="${spring-security.version}">hpc-spring-security-ldap</feature>
 
 		<!-- Config files -->
 		<configfile finalname="/etc/gov.nih.nci.hpc.cfg" override="true">mvn:${project.groupId}/hpc-features/${project.version}/properties/hpc-server</configfile>

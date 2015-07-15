@@ -28,9 +28,12 @@
 							gov.nih.nci.hpc.ws.rs.impl
 						</Private-Package>
 						<Import-Package>
+						
+							<!--  CX Import Packages -->
 							META-INF.cxf,
 							org.apache.cxf.bus.spring,
 							
+							<!--  Spring Security Import Packages -->
 							org.springframework.security.web,
 							org.springframework.security.web.authentication,
 							org.springframework.security.web.util,
@@ -54,20 +57,17 @@
 						    org.springframework.security.config.authentication,
 						    org.springframework.security.config.http,
 						    org.springframework.web.filter,
-						    
 						    org.springframework.aop,
 						    org.springframework.aop.framework,
-						    
 						    org.springframework.beans.factory.config,
 						    org.springframework.beans.support,
 						    org.springframework.util,
-						    
 						    org.apache.cxf.jaxrs.spring,
 						    org.apache.cxf.jaxrs,
 						    org.apache.cxf.endpoint,
 						    org.apache.cxf.interceptor,
-						    
 						    org.aopalliance.aop,
+						    
 							*
 						</Import-Package>
 					</instructions>

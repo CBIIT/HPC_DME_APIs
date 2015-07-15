@@ -41,9 +41,6 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
     // The User Business Service instance.
     private HpcUserBusService userBusService = null;
     
-    // The URI Info context instance.
-    //private @Context UriInfo uriInfo;
-    
 	// The Logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());

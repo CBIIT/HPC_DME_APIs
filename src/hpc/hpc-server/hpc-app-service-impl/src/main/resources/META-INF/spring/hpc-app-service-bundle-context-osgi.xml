@@ -29,8 +29,10 @@
 	<ctx:property-placeholder properties-ref="preProps" />
 
 	<!-- OSGi beans export -->
-	<osgi:service ref="hpcUserService" interface="gov.nih.nci.hpc.service.HpcUserService" />
-	<osgi:service ref="hpcLdapAuthenticationService" interface="gov.nih.nci.hpc.service.HpcLdapAuthenticationService" />
+	<osgi:service ref="hpcUserService" 
+	              interface="gov.nih.nci.hpc.service.HpcUserService" />
+	<osgi:service ref="hpcLdapAuthenticationService" 
+	              interface="gov.nih.nci.hpc.service.HpcLdapAuthenticationService" />
 	<osgi:service ref="hpcDatasetService"
 		          interface="gov.nih.nci.hpc.service.HpcDatasetService" />
 	<osgi:service ref="hpcDataTransferService"
@@ -41,14 +43,14 @@
 		          interface="gov.nih.nci.hpc.service.HpcProjectService" />	
 
 	<!-- OSGi beans import -->
-	<osgi:reference id="hpcUserDAO" interface="gov.nih.nci.hpc.dao.HpcUserDAO" />
-	<osgi:reference id="hpcDatasetDAO" interface="gov.nih.nci.hpc.dao.HpcDatasetDAO" />
-
+	<osgi:reference id="hpcUserDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcUserDAO" />
+	<osgi:reference id="hpcDatasetDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcDatasetDAO" />
 	<osgi:reference id="hpcDataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
 	<osgi:reference id="hpcDataTransferAccountValidatorProvider"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProvider" />
-
 	<osgi:reference id="transferStatusDAO" 
 					interface="gov.nih.nci.hpc.dao.HpcTransferStatusDAO" />
 	<osgi:reference id="hpcProjectDAO" 
