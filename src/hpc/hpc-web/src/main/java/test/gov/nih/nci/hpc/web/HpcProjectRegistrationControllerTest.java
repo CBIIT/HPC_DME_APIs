@@ -1,0 +1,129 @@
+package test.gov.nih.nci.hpc.web;
+
+import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
+import gov.nih.nci.hpc.web.Application;
+
+import java.net.URL;
+import java.util.List;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.TestRestTemplate;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.web.client.RestTemplate;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = Application.class)
+@WebAppConfiguration
+@IntegrationTest({ "server.port=8080" })
+public class HpcProjectRegistrationControllerTest {
+
+	@Value("${local.server.port}")
+	private int port;
+
+	private URL base;
+	private RestTemplate template;
+
+	@Before
+	public void setUp() throws Exception {
+		this.base = new URL("http://localhost:7737/hpc-server/project");
+		template = new TestRestTemplate();
+	}
+
+	@Test
+	public void register() throws Exception {
+		HpcProjectRegistrationDTO dto = new HpcProjectRegistrationDTO();
+
+		HpcProjectMetadata metadata = new HpcProjectMetadata();
+		metadata.setName("Project");
+		metadata.setDescription("Description");
+		metadata.setDoc("Division");
+		metadata.setExperimentId("Test");
+		metadata.setInternalProjectId("Iproject");
+		metadata.setLabBranch("CCR");
+		metadata.setFundingOrganization("Org");
+		metadata.setPrimaryInvestigatorNihUserId("konkapv");
+		metadata.setRegistratorNihUserId("konkapv");
+		dto.setMetadata(metadata);
+		Client client = ClientBuilder.newClient().register(
+				ClientResponseLoggingFilter.class);
+		Response res = client
+				.target("http://localhost:7737/hpc-server/project").request()
+				.post(Entity.entity(dto, MediaType.APPLICATION_XML));
+		if (res.getStatus() != 201) {
+			throw new RuntimeException("Failed : HTTP error code : "
+					+ res.getStatus());
+		}
+		String projectId = (String) res.getEntity();
+		System.out.println("res: " + res);
+	}
+
+	@Test
+	public void getProjectById() throws Exception {
+		try {
+			Client client = ClientBuilder.newClient().register(
+					ClientResponseLoggingFilter.class);
+			WebTarget resourceTarget = client
+					.target("http://localhost:7737/hpc-server/project/2fabe981-de44-4fb5-84fd-b74c4be7b978");
+			Invocation invocation = resourceTarget.request(
+					MediaType.APPLICATION_XML).buildGet();
+			HpcProjectDTO response = invocation.invoke(HpcProjectDTO.class);
+			System.out.println(response);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("Failed to get Project by Registrator");
+		}
+	}
+
+	@Test
+	public void getProjectByRegistrator() throws Exception {
+		try {
+			Client client = ClientBuilder.newClient().register(
+					ClientResponseLoggingFilter.class);
+			WebTarget resourceTarget = client
+					.target("http://localhost:7737/hpc-server/project/query/registrator/konkapv");
+			Invocation invocation = resourceTarget.request(
+					MediaType.APPLICATION_XML).buildGet();
+			HpcProjectDTO response = invocation.invoke(HpcProjectDTO.class);
+			System.out.println(response);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("Failed to get Project by Registrator");
+		}
+	}
+
+	@Test
+	public void getProjectByInvestigator() throws Exception {
+		try {
+			Client client = ClientBuilder.newClient().register(
+					ClientResponseLoggingFilter.class);
+			WebTarget resourceTarget = client
+					.target("http://localhost:7737/hpc-server/project/query/investigator/konkapv");
+			Invocation invocation = resourceTarget.request(
+					MediaType.APPLICATION_XML).buildGet();
+			HpcProjectDTO response = invocation.invoke(HpcProjectDTO.class);
+			System.out.println(response);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("Failed to get Project by Registrator");
+		}
+	}
+}
