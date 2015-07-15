@@ -27,7 +27,14 @@
 		<constructor-arg ref="hpcKeyGenerator" />
 		<constructor-arg ref="hpcUserService" />
 		<constructor-arg ref="hpcDataTransferService" />
-		<constructor-arg ref="hpcTransferStatusService" />		
+		<constructor-arg ref="hpcTransferStatusService" />
+		<constructor-arg>
+			<map>
+				<entry key="ACTIVE" value="IN_PROGRESS" />
+				<entry key="SUCCEEDED" value="COMPLETED" />
+				<entry key="FAILED" value="FAILED" />
+			</map>
+		</constructor-arg>		
 	</bean>
 
 	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl">

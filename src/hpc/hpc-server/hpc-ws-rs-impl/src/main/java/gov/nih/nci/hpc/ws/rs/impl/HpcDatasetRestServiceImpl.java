@@ -202,11 +202,21 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response checkDataTransferStatus(String submissionId)
+    public Response getDatasetsByTransferStatus(String transferStatus)
     {	
-    	//HpcDataTransfer hdt = new GlobusOnlineDataTranfer();		
-		//return createdResponse(hdt.getTransferStatus(submissionId));
-    	return null;
+    	logger.info("Invoking RS: POST /dataset/query/getDatasetsByTransferStatus: " + transferStatus);
+	
+    	HpcDatasetCollectionDTO datasetCollectionDTO = null;
+		try {
+			 datasetCollectionDTO = 
+					datasetBusService.getDatasetsByStatus(transferStatus); 
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /dataset/query/primaryMetadata: failed:", e);
+			    return errorResponse(e);
+		}
+	
+		return okResponse(datasetCollectionDTO, true);
 	}
 	
     @Override

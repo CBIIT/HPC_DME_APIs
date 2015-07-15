@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.integration;
 
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 
 /**
  * <p>
@@ -42,11 +43,12 @@ public interface HpcDataTransferProxy
      * Retrive task status.
      *
      * @param taskId taskid to retrive status.
+     * @param dataTransferAccount 
      * @return HpcDataTransferReport the data transfer report
      * 
      * @throws HpcTransferException
      */
-    public HpcDataTransferReport getTaskStatusReport(String taskId) throws Exception;
+    public HpcDataTransferReport getTaskStatusReport(String taskId, HpcDataTransferAccount dataTransferAccount) throws Exception;
     
 }
 

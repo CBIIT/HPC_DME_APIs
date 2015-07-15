@@ -99,9 +99,9 @@ public interface HpcDatasetRestService
      * @return The registered data.
      */
     @GET
-    @Path("/checkDataTransferStatus/{type}")
+    @Path("/dataset/query/transferStatus/{type}")
     @Produces("application/json")
-    public Response checkDataTransferStatus(@PathParam("type") String id);
+    public Response getDatasetsByTransferStatus(@PathParam("type") String transferStatus);
     
    /**
      * GET Configurable items by ID.

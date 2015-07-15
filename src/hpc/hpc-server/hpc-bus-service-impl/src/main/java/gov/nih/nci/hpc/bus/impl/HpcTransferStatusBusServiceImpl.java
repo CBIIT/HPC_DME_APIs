@@ -101,7 +101,19 @@ public class HpcTransferStatusBusServiceImpl implements HpcTransferStatusBusServ
     {
     	logger.info("Invoking retriveSaveTransferStatus(datasetId): " + 
     			datasetId);
-
+//    	
+//    	for(HpcFile hpcFile : 
+////   		   datasetService.getDataset(datasetId).getFileSet().getFiles()) { 
+////      		HpcDataTransferRequest hpcDataTransferRequest = new HpcDataTransferRequest(); 
+////          	
+////      		hpcDataTransferRequest.setReport(hpcDataTransferReport);
+////      		hpcDataTransferRequest.setFileId(hpcFile.getId());
+////      		hpcDataTransferRequest.setLocations(uploadRequest.getLocations());
+////
+////         	HpcDataTransferRequest statusId = 
+////          		   transferStatusService.addUpdateStatus(hpcDataTransferRequest);
+////          	logger.info("statusId  = " + statusId);
+//      	}
 
     	return datasetId;
     }

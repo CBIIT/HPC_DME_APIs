@@ -14,12 +14,15 @@ import java.util.List;
 
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
+import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccountType;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import org.bson.BsonDocumentReader;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
@@ -71,6 +74,7 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
 		// Extract the data from the domain object.
 		String id = hpcDataTransferRequest.getReport().getTaskID();
 		HpcDataTransferReport hpcDataTransferReport = hpcDataTransferRequest.getReport();
+		HpcDataTransferStatus hpcDataTransferStatus = hpcDataTransferRequest.getStatus();
 
  
 		// Set the data on the BSON document.
@@ -82,7 +86,10 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
 		}
 		if(hpcDataTransferRequest.getDataTransferId() != null) {
 			   document.put(TRANSFER_STATUS_DATA_TRANSFER_ID, hpcDataTransferRequest.getDataTransferId());
-			}		
+		}
+		if(hpcDataTransferStatus != null) {
+			   document.put(TRANSFER_STATUS_DATA_TRANSFER_STATUS, hpcDataTransferStatus.value());
+		}		
 		if(hpcDataTransferReport != null) {
 		   document.put(TRANSFER_STATUS_REQUEST, hpcDataTransferReport);
 		}
@@ -105,6 +112,10 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
 		HpcDataTransferRequest hpcDataTransferRequest = new HpcDataTransferRequest();
 		hpcDataTransferRequest.setDataTransferId(document.get(TRANSFER_STATUS_DATA_TRANSFER_ID, String.class));
 		hpcDataTransferRequest.setFileId(document.get(TRANSFER_STATUS_FILE_ID, String.class));
+		hpcDataTransferRequest.setStatus(HpcDataTransferStatus.valueOf(
+		        document.get(TRANSFER_STATUS_DATA_TRANSFER_STATUS, String.class)));
+		hpcDataTransferRequest.setReport(decodeTransferReport(document.get(TRANSFER_STATUS_REQUEST, 
+                				Document.class),decoderContext));		
 		
 		return hpcDataTransferRequest;
 	}
@@ -114,6 +125,26 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
 	{
 		return HpcDataTransferRequest.class;
 	}
+	
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//  
+	
+    /**
+     * Decode HpcDataTransferReport
+     *
+     * @param doc The HpcDataTransferReport document
+     * @param decoderContext
+     * @return Decoded HpcDataTransferReport object.
+     */
+    private HpcDataTransferReport decodeTransferReport(Document doc, DecoderContext decoderContext)
+    {
+    	BsonDocumentReader docReader = 
+    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
+    				                                  getRegistry()));
+		return getRegistry().get(HpcDataTransferReport.class).decode(docReader, 
+		                                                  decoderContext);
+	}	
 }
 
  
