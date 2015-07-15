@@ -20,7 +20,7 @@
 	elementFormDefault="unqualified">
 
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
-		schemaLocation="HpcMetadataTypes.xsd" />
+		        schemaLocation="HpcMetadataTypes.xsd" />
 
 	<xsd:simpleType name="HpcFileType">
 		<xsd:restriction base="xsd:string">
