@@ -73,6 +73,12 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcFileMetadata']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcFileMetadata"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcProjectMetadata']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcProjectType']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcProjectType"/>
+		</jxb:bindings>
     </jxb:bindings>
 
 </jxb:bindings>
