@@ -16,6 +16,7 @@
 		<cxf-xjc.version>3.0.3</cxf-xjc.version>
 		<felix.version>2.5.3</felix.version>
 		<mongodb.version>3.0.1</mongodb.version>
+		<spring.security.version>4.0.1.RELEASE</spring.security.version>
 		<slf4j.version>1.7.12</slf4j.version>
 	</properties>
 
@@ -107,6 +108,11 @@
 				<artifactId>cxf-rt-rs-client</artifactId>
 				<version>${cxf.version}</version>
 			</dependency>
+			<dependency>
+			  <groupId>org.apache.cxf</groupId>
+			  <artifactId>cxf-rt-rs-service-description</artifactId>
+			  <version>3.0.0-milestone1</version>
+			</dependency>		
 			<dependency>
 				<groupId>org.apache.cxf.xjc-utils</groupId>
 				<artifactId>cxf-xjc-runtime</artifactId>
