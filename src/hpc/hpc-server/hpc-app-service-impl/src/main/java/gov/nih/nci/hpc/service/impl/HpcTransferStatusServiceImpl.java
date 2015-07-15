@@ -78,19 +78,19 @@ public class HpcTransferStatusServiceImpl implements HpcTransferStatusService
     public HpcDataTransferRequest addUpdateStatus(HpcDataTransferRequest hpcDataTransferRequest) 
 	                             throws HpcException
     {   
-    	try{
-		    	HpcDataTransferReport hpcDataTransferReport = dataTransferProxy.getTaskStatusReport(hpcDataTransferRequest.getDataTransferId());
-		    	hpcDataTransferRequest.setReport(hpcDataTransferReport);
-		    	// Persist to Mongo.
-		    	transferStatusDao.add(hpcDataTransferRequest);
-		    	//hpcDataTransferRequest.setDataTransferId(statusId);
-		    	return hpcDataTransferRequest;
-			} 
-    		catch(Exception ex) {
-			    throw new HpcException("Error while retriving status",
-			    		               HpcErrorType.DATA_TRANSFER_ERROR);
-		}
-
+//    	try{
+//		    	HpcDataTransferReport hpcDataTransferReport = dataTransferProxy.getTaskStatusReport(hpcDataTransferRequest.getDataTransferId());
+//		    	hpcDataTransferRequest.setReport(hpcDataTransferReport);
+//		    	// Persist to Mongo.
+//		    	transferStatusDao.add(hpcDataTransferRequest);
+//		    	//hpcDataTransferRequest.setDataTransferId(statusId);
+//		    	return hpcDataTransferRequest;
+//			} 
+//    		catch(Exception ex) {
+//			    throw new HpcException("Error while retriving status",
+//			    		               HpcErrorType.DATA_TRANSFER_ERROR);
+//		}
+    	return null;
     }    
 }
  

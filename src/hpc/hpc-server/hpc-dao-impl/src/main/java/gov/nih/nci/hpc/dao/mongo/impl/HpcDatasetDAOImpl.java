@@ -127,6 +127,10 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
             HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
             HpcCodec.FILE_PRIMARY_METADATA_METADATA_ITEMS_KEY;
 	
+	public final static String DATASET_TRANSFER_STATUS_NAME =
+							   HpcCodec.DATASET_UPLOAD_REQUESTS_KEY + "." + 
+	                           HpcCodec.TRANSFER_STATUS_DATA_TRANSFER_STATUS;
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -333,7 +337,19 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     	}
     	
     	return filters;
-    }  
+    }
+
+	public List<HpcDataset> getDatasetsByStatus(String transferStatus)
+			throws HpcException {
+		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
+		HpcSingleResultCallback<List<HpcDataset>> callback = 
+                       new HpcSingleResultCallback<List<HpcDataset>>();
+		getCollection().find(
+		                regex(DATASET_TRANSFER_STATUS_NAME, 
+		                		transferStatus, "i")).into(datasets, callback); 
+		
+		return callback.getResult();
+	}  
 }
 
  

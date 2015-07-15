@@ -89,6 +89,15 @@ public interface HpcDatasetDAO
      * @throws HpcException
      */
     public void updateReplace(HpcDataset dataset) throws HpcException;
+
+    /**
+     * Get datasets by status.
+     *
+     * @param transferStatus status as string.
+     * 
+     * @throws HpcException
+     */
+	public List<HpcDataset> getDatasetsByStatus(String transferStatus) throws HpcException;
 }
 
  
