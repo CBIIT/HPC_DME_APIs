@@ -80,6 +80,15 @@ public interface HpcDatasetDAO
      */
     public List<HpcDataset> getDatasets(HpcFilePrimaryMetadata primaryMetadata) 
     		                           throws HpcException;
+
+    /**
+     * Replaces dataset to the repository.
+     *
+     * @param dataset The dataset to add to the DB.
+     * 
+     * @throws HpcException
+     */
+    public void updateReplace(HpcDataset dataset) throws HpcException;
 }
 
  

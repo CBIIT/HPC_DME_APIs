@@ -15,6 +15,8 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import org.globusonline.nexus.GoauthClient;
 import org.globusonline.nexus.exception.NexusClientException;
@@ -42,8 +44,8 @@ public class HpcGOTransfer
 	
 	// The JSONTransferAPIClient client instance.
 	private JSONTransferAPIClient transferClient = null;
+	private String destinationBaseLocation = null;
 	
-
 	/**
      * Default Constructor.
      * 
@@ -59,14 +61,24 @@ public class HpcGOTransfer
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param username The GO username.
-     * @param password The GO password.
+     * @param destinationBaseLocation The base location for storing files.
      * 
      * @throws HpcException.
      */
-    public HpcGOTransfer(String username, String password) throws IOException, JSONException, GeneralSecurityException, APIError,NexusClientException,HpcException
+    public HpcGOTransfer(String destinationBaseLocation) throws IOException, JSONException, GeneralSecurityException, APIError,NexusClientException,HpcException
     {
-    	if(username == null || password == null ) {
+        this.destinationBaseLocation = destinationBaseLocation;
+    }
+
+    
+    //---------------------------------------------------------------------//
+    // Methods
+    //---------------------------------------------------------------------//
+    
+    public void setTransferCient(String username, String password)
+			throws HpcException, NexusClientException, JSONException,
+			KeyManagementException, NoSuchAlgorithmException {
+		if(username == null || password == null ) {
     	   throw new HpcException("Null HpcGOTransfer username/password",
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
@@ -80,15 +92,18 @@ public class HpcGOTransfer
         Authenticator authenticator = new GoauthAuthenticator(accessToken);
         transferClient = new JSONTransferAPIClient(username, null, null);
         transferClient.setAuthenticator(authenticator);
-    }  
-    
-    //---------------------------------------------------------------------//
-    // Methods
-    //---------------------------------------------------------------------//
+	} 
+
+     
 	
     public JSONTransferAPIClient getTransferClient() {
 		return transferClient;
-	}       
+	}  
+    
+	public String getDestinationBaseLocation() {
+		return destinationBaseLocation;
+	}
+    
 }
 
  
