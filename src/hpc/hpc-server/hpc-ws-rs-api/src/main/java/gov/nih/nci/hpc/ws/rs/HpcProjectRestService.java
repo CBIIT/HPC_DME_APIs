@@ -72,7 +72,7 @@ public interface HpcProjectRestService
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @GET
-    @Path("/project/query/inverstigator/{id}")
+    @Path("/project/query/investigator/{id}")
     @Produces("application/json,application/xml")
     public Response getProjectsByInvestigatorId(@PathParam("id") String inverstigatorId); 
 }

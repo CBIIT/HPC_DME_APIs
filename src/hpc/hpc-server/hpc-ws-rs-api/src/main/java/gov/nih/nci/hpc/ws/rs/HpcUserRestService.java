@@ -63,7 +63,7 @@ public interface HpcUserRestService
      */
     @POST
     @Path("/user/authenticate")
-    @Produces("application/json,application/xml")
+    @Consumes("application/json,application/xml")
     public Response authenticate(HpcUserCredentialsDTO credentials);
 }
 
