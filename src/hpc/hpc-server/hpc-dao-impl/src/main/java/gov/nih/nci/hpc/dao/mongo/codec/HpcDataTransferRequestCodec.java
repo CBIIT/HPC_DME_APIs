@@ -42,8 +42,9 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
-	
-    /**
+
+
+	/**
      * Default Constructor.
      * 
      * 
@@ -76,9 +77,12 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
 		if(id != null) {
 		   document.put(TRANSFER_STATUS_REQUEST_KEY, id);
 		}
-//		if(hpcDataTransferRequest != null) {
-//		   document.put(TRANSFER_STATUS_REQUEST_STATUS, hpcDataTransferRequest.getStatus());
-//		}
+		if(hpcDataTransferRequest.getFileId() != null) {
+		   document.put(TRANSFER_STATUS_FILE_ID, hpcDataTransferRequest.getFileId());
+		}
+		if(hpcDataTransferRequest.getDataTransferId() != null) {
+			   document.put(TRANSFER_STATUS_DATA_TRANSFER_ID, hpcDataTransferRequest.getDataTransferId());
+			}		
 		if(hpcDataTransferReport != null) {
 		   document.put(TRANSFER_STATUS_REQUEST, hpcDataTransferReport);
 		}
@@ -99,7 +103,8 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
 		
 		// Map the document to HpcDataTransferAccount instance.
 		HpcDataTransferRequest hpcDataTransferRequest = new HpcDataTransferRequest();
-
+		hpcDataTransferRequest.setDataTransferId(document.get(TRANSFER_STATUS_DATA_TRANSFER_ID, String.class));
+		hpcDataTransferRequest.setFileId(document.get(TRANSFER_STATUS_FILE_ID, String.class));
 		
 		return hpcDataTransferRequest;
 	}
