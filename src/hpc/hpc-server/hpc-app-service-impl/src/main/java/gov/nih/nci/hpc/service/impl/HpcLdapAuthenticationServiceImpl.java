@@ -11,6 +11,8 @@ package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcLdapAuthenticationService;
+
 import org.springframework.security.ldap.authentication.LdapAuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 /**
@@ -21,7 +23,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
  * @author <a href="mailto:prasad.konka@nih.gov">Prasad Konka</a>
  * @version $Id:  $
  */
-public class HpcLdapAuthenticationServiceImpl {
+public class HpcLdapAuthenticationServiceImpl implements HpcLdapAuthenticationService {
 
 	LdapAuthenticationProvider ldapProvider;
 	
