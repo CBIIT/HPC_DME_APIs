@@ -44,7 +44,7 @@ public interface HpcProjectRestService
     public Response registerProject(HpcProjectRegistrationDTO projectRegistrationDTO);
     
     /**
-     * GET Dataset by ID.
+     * GET project by ID.
      *
      * @param id The Project ID.
      * @return gov.nih.nci.hpc.dto.project.HpcProjectDTO entity.
