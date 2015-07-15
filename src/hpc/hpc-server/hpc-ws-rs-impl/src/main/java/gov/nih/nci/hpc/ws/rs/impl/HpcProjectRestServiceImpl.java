@@ -155,7 +155,7 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
 						                   HpcDatasetUserAssociation.REGISTRAR); 
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/creator/{id}: failed:", e);
+			    logger.error("RS: GET /dataset/query/registrator/{id}: failed:", e);
 			    return errorResponse(e);
 		}
 		
