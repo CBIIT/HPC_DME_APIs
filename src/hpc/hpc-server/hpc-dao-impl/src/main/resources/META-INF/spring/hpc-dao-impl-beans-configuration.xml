@@ -46,43 +46,42 @@
 	<bean id="hpcCodecProvider" class="gov.nih.nci.hpc.dao.mongo.codec.HpcCodecProvider">
 		<constructor-arg>
 			<map>
-				<entry key="gov.nih.nci.hpc.domain.model.HpcUser" value-ref="hpcUserCodec" />
+				<entry key="gov.nih.nci.hpc.domain.model.HpcUser" 
+				       value-ref="hpcUserCodec" />
 				<entry key="gov.nih.nci.hpc.domain.user.HpcNihAccount"
-					value-ref="hpcNihAccountCodec" />
+					   value-ref="hpcNihAccountCodec" />
 				<entry key="gov.nih.nci.hpc.domain.user.HpcDataTransferAccount"
-					value-ref="hpcDataTransferAccountCodec" />
-
+					   value-ref="hpcDataTransferAccountCodec" />
 				<entry key="gov.nih.nci.hpc.domain.model.HpcDataset"
-					value-ref="hpcDatasetCodec" />
+					   value-ref="hpcDatasetCodec" />
 				<entry key="gov.nih.nci.hpc.domain.dataset.HpcFileSet"
-					value-ref="hpcFileSetCodec" />
-				<entry key="gov.nih.nci.hpc.domain.dataset.HpcFile" value-ref="hpcFileCodec" />
+				 	   value-ref="hpcFileSetCodec" />
+				<entry key="gov.nih.nci.hpc.domain.dataset.HpcFile" 
+				       value-ref="hpcFileCodec" />
 				<entry key="gov.nih.nci.hpc.domain.dataset.HpcFileLocation"
-					value-ref="hpcFileLocationCodec" />
+					   value-ref="hpcFileLocationCodec" />
 				<entry key="gov.nih.nci.hpc.domain.metadata.HpcFileMetadata"
-					value-ref="hpcFileMetadataCodec" />
+					   value-ref="hpcFileMetadataCodec" />
 				<entry key="gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata"
-					value-ref="hpcFilePrimaryMetadataCodec" />
+					   value-ref="hpcFilePrimaryMetadataCodec" />
 				<entry key="gov.nih.nci.hpc.domain.metadata.HpcMetadataItem"
-					value-ref="hpcMetadataItemCodec" />
+					   value-ref="hpcMetadataItemCodec" />
 				<entry key="gov.nih.nci.hpc.domain.model.HpcProject"
-					value-ref="hpcProjectCodec" />
-				<entry key="gov.nih.nci.hpc.domain.model.HpcProjectMetadata"
-					value-ref="hpcProjectMetadataCodec" />
+                       value-ref="hpcProjectCodec" />
+				<entry key="gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata"
+   					   value-ref="hpcProjectMetadataCodec" />
 				<entry key="gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest"
-					value-ref="hpcDataTransferRequestCodec" />
+					   value-ref="hpcDataTransferRequestCodec" />
 				<entry key="gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport"
-					value-ref="hpcDataTransferReportCodec" />									
+					   value-ref="hpcDataTransferReportCodec" />								
 			</map>
 		</constructor-arg>
 	</bean>
 
 	<!-- HPC MongoDB instance -->
 	<bean id="hpcMongoDB" class="gov.nih.nci.hpc.dao.mongo.driver.HpcMongoDB">
-		<constructor-arg value="${hpc.dao.mongo.dbName}"
-			index="0" />
-		<constructor-arg value="${hpc.dao.mongo.server.host}"
-			index="1" />
+		<constructor-arg value="${hpc.dao.mongo.dbName}" index="0" />
+		<constructor-arg value="${hpc.dao.mongo.server.host}" index="1" />
 		<constructor-arg ref="hpcCodecProvider" index="2" />
 		<constructor-arg index="3">
 			<map>
