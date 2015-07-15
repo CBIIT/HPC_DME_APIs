@@ -77,7 +77,7 @@
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata"/>
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:simpleType[@name='HpcProjectType']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcProjectType"/>
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcProjectType"/>
 		</jxb:bindings>
     </jxb:bindings>
     

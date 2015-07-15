@@ -9,7 +9,7 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:prasad.konka@nih.gov">Prasad Konka</a>
- * @version $Id:  $
+ * @version $Id$
  -->
 <jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1"
 			  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -30,11 +30,6 @@
             printMethod="javax.xml.bind.DatatypeConverter.printTime"/>
 	</jxb:globalBindings>
 	
-	<jxb:bindings schemaLocation="HpcMetadataTypes.xsd">
- 		<jxb:bindings node="//xsd:complexType[@name='HpcProjectMetadata']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata"/>
-		</jxb:bindings>
-    </jxb:bindings>
 	<jxb:bindings schemaLocation="HpcDatasetTypes.xsd">
     	<jxb:bindings node="//xsd:simpleType[@name='HpcFileType']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.dataset.HpcFileType"/>
@@ -78,7 +73,11 @@
         <jxb:bindings node="//xsd:element[@name='HpcDatasetDTO']">
         	<jxb:class ref="gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO"/>
         </jxb:bindings>
+        <jxb:bindings node="//xsd:element[@name='HpcPrimaryMetadataQueryDTO']">
+        	<jxb:class ref="gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO"/>
+        </jxb:bindings>
     </jxb:bindings>    
+    
 	<jxb:bindings schemaLocation="HpcMetadataTypes.xsd">
 		<jxb:bindings node="//xsd:complexType[@name='HpcMetadataItem']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataItem"/>
@@ -89,5 +88,12 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcFileMetadata']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcFileMetadata"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcProjectMetadata']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcProjectType']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcProjectType"/>
+		</jxb:bindings>
     </jxb:bindings>
+    
 </jxb:bindings>
