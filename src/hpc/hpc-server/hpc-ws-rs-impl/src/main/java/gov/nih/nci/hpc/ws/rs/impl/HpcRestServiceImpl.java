@@ -15,7 +15,6 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.net.URI;
 
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
@@ -29,14 +28,14 @@ import javax.ws.rs.core.UriInfo;
  * @version $Id$
  */
 
-public abstract class HpcRestServiceImpl 
+public abstract class HpcRestServiceImpl implements HpcRestServiceContext
 {   
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
     // The URI Info context instance.
-    private @Context UriInfo uriInfo;
+    private UriInfo uriInfo;
     
     // Enable/Disable stack trace print to exception DTO.
     boolean stackTraceEnabled = false;
@@ -92,7 +91,6 @@ public abstract class HpcRestServiceImpl
 		switch(e.getErrorType()) {
 		       case INVALID_REQUEST_INPUT:
 		       case REQUEST_REJECTED:
-		       case INVALID_LOGIN:
 		    	   responseBuilder = 
 		    	           Response.status(Response.Status.BAD_REQUEST);	
 		    	   break;
@@ -101,6 +99,12 @@ public abstract class HpcRestServiceImpl
 		    	    responseBuilder = 
     	                    Response.status(Response.Status.UNAUTHORIZED);
 		    	    break;
+		    	    
+		       case REQUEST_AUTHENTICATION_FAILED:
+		    	    responseBuilder = 
+                            Response.status(Response.Status.FORBIDDEN);
+   	    break;
+		    	   
 		       default:
 		    	   responseBuilder = 
                    Response.status(Response.Status.INTERNAL_SERVER_ERROR);
@@ -143,6 +147,16 @@ public abstract class HpcRestServiceImpl
 		} else {
 			    return Response.ok().build();
 		}
+    }
+    
+    //---------------------------------------------------------------------//
+    // HpcRestServiceContext Interface Implementation
+    //---------------------------------------------------------------------//  
+    
+    @Override
+    public void setUriInfo(UriInfo uriInfo)
+    {
+    	this.uriInfo = uriInfo;
     }
 }
 
