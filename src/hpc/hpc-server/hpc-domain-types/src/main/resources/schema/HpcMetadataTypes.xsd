@@ -37,8 +37,9 @@
 			<xsd:element name="registrarNihUserId" type="xsd:ID" />
 			<xsd:element name="description" type="xsd:string" />
 			<xsd:element name="labBranch" type="xsd:string" />
-			<xsd:element name="metadataItems" type="hpc-domain-metadata:HpcMetadataItem"
-				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="metadataItems" 
+			             type="hpc-domain-metadata:HpcMetadataItem"
+				         minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -48,6 +49,7 @@
 				type="hpc-domain-metadata:HpcFilePrimaryMetadata" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
 	<xsd:complexType name="HpcProjectMetadata">
 		<xsd:sequence>
 			<xsd:element name="name" type="xsd:string" />
@@ -59,8 +61,9 @@
 			<xsd:element name="fundingOrganization" type="xsd:string" />
 			<xsd:element name="internalProjectId" type="xsd:string" />
 			<xsd:element name="experimentId" type="xsd:string" />
-			<xsd:element name="metadataItems" type="hpc-domain-metadata:HpcMetadataItem"
-				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="metadataItems" 
+			             type="hpc-domain-metadata:HpcMetadataItem"
+				         minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 
