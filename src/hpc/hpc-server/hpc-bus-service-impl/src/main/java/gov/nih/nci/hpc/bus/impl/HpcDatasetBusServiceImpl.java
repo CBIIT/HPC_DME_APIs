@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.bus.impl;
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
@@ -216,6 +217,10 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	HpcDatasetDTO datasetDTO = new HpcDatasetDTO();
     	datasetDTO.setId(dataset.getId());
     	datasetDTO.setFileSet(dataset.getFileSet());
+		for(HpcDataTransferRequest uploadRequest : dataset.getUploadRequests())
+		{			
+			datasetDTO.getUploadRequests().add(uploadRequest);
+		}    		
     	
     	return datasetDTO;
     }  
@@ -304,6 +309,15 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	
     	return user;
     }
+
+	public HpcDatasetCollectionDTO getDatasetsByStatus(String transferStatus) throws HpcException{
+    	// Input validation.
+    	if(transferStatus == null) {
+    	   throw new HpcException("Null transferStatus", HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	return toCollectionDTO(datasetService.getDatasetsByStatus(transferStatus));
+	}
 }
 
  

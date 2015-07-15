@@ -87,6 +87,16 @@ public interface HpcDatasetService
      */
     public List<HpcDataset> getDatasets(HpcFilePrimaryMetadata primaryMetadata) 
     		                           throws HpcException;
+    
+    /**
+     * GET Datasets by transfer status.
+     *
+     * @param transferStatus status as string.
+     *  @return HpcDataset collection, or null if no results found.
+     * 
+     * @throws HpcException
+     */
+	public List<HpcDataset> getDatasetsByStatus(String transferStatus) throws HpcException;
 }
 
  

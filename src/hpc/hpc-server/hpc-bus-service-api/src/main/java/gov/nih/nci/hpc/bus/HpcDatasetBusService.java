@@ -84,6 +84,16 @@ public interface HpcDatasetBusService
     public HpcDatasetCollectionDTO getDatasets(
     		         HpcPrimaryMetadataQueryDTO primaryMetadataQueryDTO) 
     		         throws HpcException;
+
+    /**
+     * Get datasets with status string given.
+     *
+     * @param transferStatus String representation of status.
+     * @return Collection of Dataset DTO, or null if not found.
+     * 
+     * @throws HpcException
+     */
+	public HpcDatasetCollectionDTO getDatasetsByStatus(String transferStatus) throws HpcException;
 }
 
  

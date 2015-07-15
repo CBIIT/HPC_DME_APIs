@@ -27,6 +27,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.globusonline.nexus.GoauthClient;
 import org.globusonline.nexus.exception.InvalidCredentialsException;
+import org.globusonline.nexus.exception.NexusClientException;
 import org.globusonline.transfer.APIError;
 import org.globusonline.transfer.BaseTransferAPIClient;
 import org.globusonline.transfer.JSONTransferAPIClient;
@@ -135,7 +136,14 @@ public class HpcDataTransferProxyImpl
         return getTaskStatusReport(taskId);
     }
 
-    public HpcDataTransferReport getTaskStatusReport(String taskId)
+    public HpcDataTransferReport getTaskStatusReport(String taskId,HpcDataTransferAccount dataTransferAccount)
+    	    throws IOException, JSONException, GeneralSecurityException, APIError, HpcException, NexusClientException 
+    {
+		hpcGOTransfer.setTransferCient(dataTransferAccount.getUsername(), dataTransferAccount.getPassword());	        
+		return getTaskStatusReport(taskId);
+    }
+    
+    private HpcDataTransferReport getTaskStatusReport(String taskId)
     throws IOException, JSONException, GeneralSecurityException, APIError {
     	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();
     	HpcDataTransferReport hpcDataTransferReport = new HpcDataTransferReport();
@@ -149,9 +157,9 @@ public class HpcDataTransferProxyImpl
         hpcDataTransferReport.setTaskID(taskId);
 		hpcDataTransferReport.setTaskType(r.document.getString("type"));
         hpcDataTransferReport.setStatus(r.document.getString("status"));
-        //hpcDataTransferReport.setRequestTime(convertToLexicalTime(r.document.getString("request_time")));
-        //hpcDataTransferReport.setDeadline(convertToLexicalTime(r.document.getString("deadline")));
-        //hpcDataTransferReport.setCompletionTime(convertToLexicalTime(r.document.getString("completion_time")));
+        hpcDataTransferReport.setRequestTime(convertToLexicalTime(r.document.getString("request_time")));
+        hpcDataTransferReport.setDeadline(convertToLexicalTime(r.document.getString("deadline")));
+        hpcDataTransferReport.setCompletionTime(convertToLexicalTime(r.document.getString("completion_time")));
         hpcDataTransferReport.setTotalTasks(r.document.getInt("subtasks_total"));
         hpcDataTransferReport.setTasksSuccessful(r.document.getInt("subtasks_succeeded"));
         hpcDataTransferReport.setTasksExpired(r.document.getInt("subtasks_expired"));
