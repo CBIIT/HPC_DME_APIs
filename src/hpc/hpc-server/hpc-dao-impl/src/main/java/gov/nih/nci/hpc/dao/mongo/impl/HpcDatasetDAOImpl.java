@@ -29,7 +29,9 @@ import java.util.List;
 
 import org.bson.conversions.Bson;
 
+import com.mongodb.async.SingleResultCallback;
 import com.mongodb.async.client.MongoCollection;
+import com.mongodb.client.result.UpdateResult;
 
 /**
  * <p>
@@ -182,7 +184,18 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 		// Throw the callback exception (if any).
 		callback.throwException();
     }
-	
+
+	@Override
+	public void updateReplace(HpcDataset dataset) throws HpcException
+    {
+		SingleResultCallback<UpdateResult> callback = 
+				                      new HpcSingleResultCallback<UpdateResult>();
+		getCollection().replaceOne(eq(DATASET_ID_FIELD_NAME, dataset.getId()), dataset, callback);
+       
+		// Throw the callback exception (if any).
+		((HpcSingleResultCallback<UpdateResult>) callback).throwException();
+    }
+		
 	@Override
 	public HpcDataset getDataset(String id) throws HpcException
 	{

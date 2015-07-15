@@ -37,9 +37,21 @@ public interface HpcDataTransferService
      */
     public HpcDataTransferReport 
               transferDataset(HpcDataTransferLocations dataTransferLocations,
-    		                  HpcDataTransferAccount dataTransferAccount) 
+    		                  HpcDataTransferAccount dataTransferAccount,
+    		                  String nihUsername) 
     		                 throws HpcException;
-    
+
+    /**
+     * Request Data (file) Transfer.
+     *
+     * @param taskId The taskId to retrive status
+     * @return A transfer report.
+     * 
+     * @throws HpcException
+     */
+    public HpcDataTransferReport 
+              retriveTransferStatus(String taskId) 
+    		                 throws HpcException;    
     /**
      * Validate a data transfer account.
      *

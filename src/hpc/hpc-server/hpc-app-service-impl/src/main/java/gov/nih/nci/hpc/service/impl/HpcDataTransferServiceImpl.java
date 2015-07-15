@@ -83,7 +83,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     @Override
     public HpcDataTransferReport 
                   transferDataset(HpcDataTransferLocations dataTransferLocations,
-	                              HpcDataTransferAccount dataTransferAccount) 
+	                              HpcDataTransferAccount dataTransferAccount,
+	                              String nihUsername) 
 	                             throws HpcException
     {   
     	// Input validation.
@@ -97,7 +98,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
         	 return dataTransferProxy.transferDataset(
         			                          dataTransferLocations,
         			                          dataTransferAccount.getUsername(), 
-        			                          dataTransferAccount.getPassword());
+        			                          dataTransferAccount.getPassword(),
+        			                          nihUsername);
         	 
     	} catch(Exception ex) {
     		    throw new HpcException("Error while transfer",
@@ -128,5 +130,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		return validator.validateDataTransferAccount(dataTransferAccount);
 	}  
 
+	
+	   @Override
+	    public HpcDataTransferReport 
+	                  retriveTransferStatus(String taskId) 
+		                             throws HpcException
+	    {	
+	    	try {
+	        	 return dataTransferProxy.getTaskStatusReport(taskId);
+	        	 
+	    	} catch(Exception ex) {
+	    		    throw new HpcException("Error while retriving status",
+	    		    		               HpcErrorType.DATA_TRANSFER_ERROR);
+	    	}
+	    }	
 }
  

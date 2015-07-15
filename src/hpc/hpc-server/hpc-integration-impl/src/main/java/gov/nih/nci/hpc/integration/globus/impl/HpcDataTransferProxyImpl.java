@@ -1,5 +1,6 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
+import gov.nih.nci.hpc.domain.dataset.Adapter1;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -11,8 +12,18 @@ import gov.nih.nci.hpc.integration.globus.driver.HpcGOTransfer;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
+
+import javax.xml.bind.DatatypeConverter;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.globusonline.nexus.GoauthClient;
 import org.globusonline.nexus.exception.InvalidCredentialsException;
@@ -52,12 +63,13 @@ public class HpcDataTransferProxyImpl
     }
     
     @Override
-    public HpcDataTransferReport transferDataset(HpcDataTransferLocations transferLocations,String username, String password )
+    public HpcDataTransferReport transferDataset(HpcDataTransferLocations transferLocations,String username, String password, String nihUsername )
     {
     	try
     	{    
-    		hpcGOTransfer = new HpcGOTransfer(username, password);
-    		return transfer(transferLocations);
+    		hpcGOTransfer.setTransferCient(username, password);
+    		
+    		return transfer(transferLocations,nihUsername);
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	        
@@ -92,38 +104,11 @@ public class HpcDataTransferProxyImpl
     	
     	return true;
     }
- 
-    @Override
-    public HpcDataTransferReport getTransferStatus(HpcDataTransferReport hpcDataTransferReport)
-    {
-    	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();
-    	String status = "ACTIVE";
-    	
-    	try
-    	{    	            
-            JSONTransferAPIClient.Result r;
-
-            String resource = "/task/" +  hpcDataTransferReport.getTaskID();
-            Map<String, String> params = new HashMap<String, String>();
-            params.put("fields", "status");
-
-            r = client.getResult(resource, params);
-            status = r.document.getString("status");
-
-            hpcDataTransferReport.setStatus(status);
-            //hpcDataTransferReport.setTaskID(r.document.getString("completed_time"));
-
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
-    	return hpcDataTransferReport;
-    }
-    
       
-    private HpcDataTransferReport transfer(HpcDataTransferLocations transferLocations)
+    private HpcDataTransferReport transfer(HpcDataTransferLocations transferLocations,String nihUsername)
     throws IOException, JSONException, GeneralSecurityException, APIError {
     	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();
-    	HpcDataTransferReport hpcDataTransferReport = new HpcDataTransferReport();
+    	
 
         if (!autoActivate(transferLocations.getSource().getEndpoint(), client) || 
         		!autoActivate(transferLocations.getDestination().getEndpoint(), client)
@@ -139,31 +124,84 @@ public class HpcDataTransferProxyImpl
         JSONObject transfer = new JSONObject();
         transfer.put("DATA_TYPE", "transfer");
         transfer.put("submission_id", submissionId);
-        JSONObject item = setJSONItem(transferLocations, client);
+        JSONObject item = setJSONItem(transferLocations, client, nihUsername);
         transfer.append("DATA", item);
 
         r = client.postResult("/transfer", transfer, null);
         String taskId = r.document.getString("task_id");
         System.out.println("Transfer task id :"+taskId );
-        
-        hpcDataTransferReport.setTaskID(taskId);
+      
 
-        return hpcDataTransferReport;
+        return getTaskStatusReport(taskId);
+    }
+
+    public HpcDataTransferReport getTaskStatusReport(String taskId)
+    throws IOException, JSONException, GeneralSecurityException, APIError {
+    	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();
+    	HpcDataTransferReport hpcDataTransferReport = new HpcDataTransferReport();
+    	
+        JSONTransferAPIClient.Result r;
+        String resource = "/task/" +  taskId;
+       // Map<String, String> params = new HashMap<String, String>();
+    //    params.put("fields", "status");
+        r = client.getResult(resource);
+        r.document.getString("status");
+        hpcDataTransferReport.setTaskID(taskId);
+		hpcDataTransferReport.setTaskType(r.document.getString("type"));
+        hpcDataTransferReport.setStatus(r.document.getString("status"));
+        //hpcDataTransferReport.setRequestTime(convertToLexicalTime(r.document.getString("request_time")));
+        //hpcDataTransferReport.setDeadline(convertToLexicalTime(r.document.getString("deadline")));
+        //hpcDataTransferReport.setCompletionTime(convertToLexicalTime(r.document.getString("completion_time")));
+        hpcDataTransferReport.setTotalTasks(r.document.getInt("subtasks_total"));
+        hpcDataTransferReport.setTasksSuccessful(r.document.getInt("subtasks_succeeded"));
+        hpcDataTransferReport.setTasksExpired(r.document.getInt("subtasks_expired"));
+        hpcDataTransferReport.setTasksCanceled(r.document.getInt("subtasks_canceled"));
+        hpcDataTransferReport.setTasksPending(r.document.getInt("subtasks_pending"));
+        hpcDataTransferReport.setTasksRetrying(r.document.getInt("subtasks_retrying"));
+        hpcDataTransferReport.setCommand(r.document.getString("command"));
+        hpcDataTransferReport.setSourceEndpoint(r.document.getString("source_endpoint"));
+        hpcDataTransferReport.setDestinationEndpoint(r.document.getString("destination_endpoint"));
+        hpcDataTransferReport.setDataEncryption(r.document.getBoolean("encrypt_data"));
+        hpcDataTransferReport.setChecksumVerification(r.document.getBoolean("verify_checksum"));
+        hpcDataTransferReport.setDelete(r.document.getBoolean("delete_destination_extra"));
+        hpcDataTransferReport.setFiles(r.document.getInt("files"));
+        hpcDataTransferReport.setFilesSkipped(r.document.getInt("files_skipped"));
+        hpcDataTransferReport.setDirectories(r.document.getInt("directories"));
+        hpcDataTransferReport.setBytesTransferred(r.document.getLong("bytes_transferred"));
+        hpcDataTransferReport.setBytesChecksummed(r.document.getLong("bytes_checksummed"));
+        hpcDataTransferReport.setEffectiveMbitsPerSec(r.document.getDouble("effective_bytes_per_second"));
+        hpcDataTransferReport.setFaults(r.document.getInt("faults"));
+        
+        
+		return hpcDataTransferReport;
     }
 
     
-    private JSONObject setJSONItem(HpcDataTransferLocations transferLocations,JSONTransferAPIClient client)  throws IOException, JSONException, GeneralSecurityException {
+    private Calendar convertToLexicalTime(String timeStr) {
+    	if (timeStr == null || "null".equalsIgnoreCase(timeStr))    	
+    		return null;     	
+    	else
+    		return DatatypeConverter.parseDateTime(timeStr.trim().replace(' ', 'T'));
+	}
+
+	private JSONObject setJSONItem(HpcDataTransferLocations transferLocations,JSONTransferAPIClient client,String nihUsername)  throws IOException, JSONException, GeneralSecurityException {
     	JSONObject item = new JSONObject();
         item.put("DATA_TYPE", "transfer_item");
         item.put("source_endpoint", transferLocations.getSource().getEndpoint());
         item.put("source_path", transferLocations.getSource().getPath());
         item.put("destination_endpoint", transferLocations.getDestination().getEndpoint());
-        item.put("destination_path", transferLocations.getDestination().getPath());
+        item.put("destination_path", getGODestinationPath(transferLocations.getDestination().getPath(),nihUsername));
         item.put("recursive", checkFileDirectoryAndSetRecursive(transferLocations.getSource().getEndpoint(),transferLocations.getSource().getPath(),client));
         return item;
     }
 
-    public boolean autoActivate(String endpointName, JSONTransferAPIClient client)
+    private String getGODestinationPath(String path,String nihUsername) {
+    	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();
+    	String fileName = path.substring(path.lastIndexOf('/')+1);
+		return hpcGOTransfer.getDestinationBaseLocation()+"/"+nihUsername+"/"+fileName;
+	}
+
+	public boolean autoActivate(String endpointName, JSONTransferAPIClient client)
     throws IOException, JSONException, GeneralSecurityException, APIError {
         String resource = BaseTransferAPIClient.endpointPath(endpointName)
                           + "/autoactivate?if_expires_in=100";

@@ -24,8 +24,7 @@
 	</bean>
 	
 	<bean id="hpcGOTransfer" class="gov.nih.nci.hpc.integration.globus.driver.HpcGOTransfer">
-		<constructor-arg value="mahinarra" index="0" />
-		<constructor-arg value="Tsugua13" index="1" />
+		<constructor-arg value="/mnt/gridftp" index="0" />
 	</bean>
 
 	<!--  HPC Data Transfer Account Validators -->

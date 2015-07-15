@@ -173,25 +173,28 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	        	// Submit data transfer request for this file.
     	    		logger.info("Submiting Data Transfer Request: "+ 
     	        	            uploadRequest.getLocations());
+    	    		
     		HpcDataTransferReport hpcDataTransferReport = 
     				dataTransferService.transferDataset(
     				                    uploadRequest.getLocations(), 
-    				                    dataTransferAccount);
+    				                    dataTransferAccount,
+    				                    uploadRequest.getMetadata().getRegistrarNihUserId());
     		logger.info("Data Transfer Report : " + hpcDataTransferReport);    	    		
     		//Add status 
     		
      		HpcDataTransferRequest hpcDataTransferRequest = new HpcDataTransferRequest(); 
-         	
+     		
      		hpcDataTransferRequest.setReport(hpcDataTransferReport);
      		hpcDataTransferRequest.setFileId(file.getId());
-     		hpcDataTransferRequest.setLocations(uploadRequest.getLocations());
+     		hpcDataTransferRequest.setDataTransferId(hpcDataTransferReport.getTaskID());
+     		//hpcDataTransferRequest.setLocations(uploadRequest.getLocations());
      		dataset.getUploadRequests().add(hpcDataTransferRequest);
-     		transferStatusService.addUpdateStatus(hpcDataTransferRequest);
+     		// add status to dataset 
+     		//transferStatusService.addUpdateStatus(hpcDataTransferRequest);
         	
     	}
     	dataset.setFileSet(fileSet);
     	
-    	// Persist to Mongo.
     	datasetDAO.add(dataset);
     	logger.debug("Dataset added: " + dataset);
     	
@@ -206,8 +209,18 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	   throw new HpcException("Invalid dataset ID: " + id, 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
-    	
-    	return datasetDAO.getDataset(id);
+    	HpcDataset hpcDataset  = datasetDAO.getDataset(id);
+    	if(datasetDAO.getDataset(hpcDataset.getId()) != null)
+    	{
+    		for(HpcDataTransferRequest uploadRequest : hpcDataset.getUploadRequests())
+    		{
+    			HpcDataTransferReport hpcDataTransferReport = dataTransferService.retriveTransferStatus(uploadRequest.getDataTransferId());
+    			uploadRequest.setReport(hpcDataTransferReport);
+    			
+    			datasetDAO.updateReplace(hpcDataset);
+    		}
+    	}
+    	return hpcDataset;
     }
     
     @Override
