@@ -1,9 +1,16 @@
 <?xml version="1.0"?>
-<!-- * features.xml * * Copyright SVG, Inc. * Copyright Leidos Biomedical 
-	Research, Inc * * Distributed under the OSI-approved BSD 3-Clause License. 
-	* See http://ncip.github.com/HPC/LICENSE.txt for details. * * @author <a 
-	href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> * @version $Id: features.xml 
-	272 2015-07-02 01:21:58Z rosenbergea $ -->
+<!--  
+ * HpcFeatures.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
 <features name="HPC-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.0.0">
 
 	<!-- Mongo DB Async Driver -->
@@ -12,16 +19,15 @@
 		<bundle>mvn:org.mongodb/mongodb-driver-core/${mongodb.version}</bundle>
 		<bundle>mvn:org.mongodb/bson/${mongodb.version}</bundle>
 	</feature>
-
-
+	
 	<!-- HPC Server -->
 	<feature name="hpc-server" version="${project.version}">
+		<feature version="${spring-security.version}">spring-security</feature>
 		<feature version="${mongodb.version}">hpc-mongo-async-driver</feature>
 
 		<!-- Config files -->
 		<configfile finalname="/etc/gov.nih.nci.hpc.cfg" override="true">mvn:${project.groupId}/hpc-features/${project.version}/properties/hpc-server</configfile>
-		<configfile finalname="/etc/hpc-server/dynamicfields.json"
-			override="true">mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}/json/dynamicfields</configfile>
+		<configfile finalname="/etc/hpc-server/dynamicfields.json" override="true">mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}/json/dynamicfields</configfile>
 
 		<!-- Server Bundles -->
 		<bundle>mvn:${project.groupId}/hpc-common/${project.version}</bundle>

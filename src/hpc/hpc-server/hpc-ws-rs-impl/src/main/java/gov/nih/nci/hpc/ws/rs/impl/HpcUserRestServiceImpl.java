@@ -17,9 +17,7 @@ import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcUserRestService;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +42,7 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
     private HpcUserBusService userBusService = null;
     
     // The URI Info context instance.
-    private @Context UriInfo uriInfo;
+    //private @Context UriInfo uriInfo;
     
 	// The Logger instance.
 	private final Logger logger = 
@@ -145,7 +143,7 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 			return okResponse(valid, true);
 		else
 		{
-			HpcException ex = new HpcException("Invalid login credentials", HpcErrorType.INVALID_LOGIN);
+			HpcException ex = new HpcException("Invalid login credentials", HpcErrorType.REQUEST_AUTHENTICATION_FAILED);
 			return errorResponse(ex);
 			
 		}
