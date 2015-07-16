@@ -36,12 +36,11 @@ public class HpcUserLoginControllerTest {
     @Value("${local.server.port}")
     private int port;
 
-	private URL base;
+	private final String baseurl = "http://fr-s-hpcdm-gp-d.ncifcrf.gov:8080/hpc-server/user";
 	private RestTemplate template;
 
 	@Before
 	public void setUp() throws Exception {
-		this.base = new URL("http://localhost:7737/hpc-server/user/authentication");
 		template = new TestRestTemplate();
 	}
 
@@ -56,7 +55,7 @@ public class HpcUserLoginControllerTest {
 		  {
 				Client client = ClientBuilder.newClient().register(ClientResponseLoggingFilter.class);
 				Response res = client
-						.target("http://localhost:7737/hpc-server/user/authenticate")
+						.target(baseurl+"/authenticate")
 						.request()
 						.post(Entity.entity(dto, MediaType.APPLICATION_XML));
 				if (res.getStatus() != 201) {
