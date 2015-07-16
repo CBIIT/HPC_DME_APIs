@@ -44,12 +44,14 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
     // Project ID field name.
 	public final static String PROJECT_ID_FIELD_NAME = 
 						       HpcCodec.PROJECT_ID_KEY; 
-	public final static String PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
-                 HpcCodec.PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY;
 	public final static String CREATOR_NIH_USER_ID_FIELD_NAME = 
 	             HpcCodec.CREATOR_NIH_USER_ID_KEY;
 	public final static String REGISTRATOR_NIH_USER_ID_FIELD_NAME = 
-		         HpcCodec.REGISTRATOR_NIH_USER_ID_KEY;
+		     HpcCodec.PROJECT_METADATA_KEY + "." + 
+	         HpcCodec.REGISTRATOR_NIH_USER_ID_KEY;
+	public final static String PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
+		     HpcCodec.PROJECT_METADATA_KEY + "." + 
+	         HpcCodec.PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY;
 	
     //---------------------------------------------------------------------//
     // Instance members
