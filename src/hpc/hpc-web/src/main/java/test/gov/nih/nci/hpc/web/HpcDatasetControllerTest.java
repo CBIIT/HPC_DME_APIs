@@ -6,6 +6,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
@@ -99,6 +100,14 @@ public class HpcDatasetControllerTest {
 			metadata.setCreatorName("PRasad Konka");
 			metadata.setLabBranch("CCR");
 			upload.setMetadata(metadata);
+			HpcMetadataItem metadataItem1 = new HpcMetadataItem();
+			metadataItem1.setKey("key1");
+			metadataItem1.setValue("value1");
+			HpcMetadataItem metadataItem2 = new HpcMetadataItem();
+			metadataItem2.setKey("key2");
+			metadataItem2.setValue("value2");
+			metadata.getMetadataItems().add(metadataItem1);
+			metadata.getMetadataItems().add(metadataItem2);
 			dto.getUploadRequests().add(upload);
 		}
 		try {
@@ -202,13 +211,25 @@ public class HpcDatasetControllerTest {
 		try {
 			Client client = ClientBuilder.newClient().register(
 					ClientResponseLoggingFilter.class);
+/*			
 			HpcDatasetCollectionDTO response = client
 					.target(baseurl+"/query/primaryMetadata")
 					.request()
 					.post(Entity.entity(dto, MediaType.APPLICATION_XML), HpcDatasetCollectionDTO.class);
-			
-			ObjectMapper mapper = new ObjectMapper();
-			System.out.println(mapper.writeValueAsString(response));
+*/
+			Response response = client
+					.target(baseurl+"/query/primaryMetadata")
+					.request()
+					.post(Entity.entity(dto, MediaType.APPLICATION_XML));
+			int status = response.getStatus();
+
+			if (Response.Status.OK.getStatusCode() == status) {
+
+			  // normal case, you receive your User object
+				HpcDatasetCollectionDTO obj = response.readEntity(HpcDatasetCollectionDTO.class);
+				ObjectMapper mapper = new ObjectMapper();
+				System.out.println(mapper.writeValueAsString(obj));
+			} 			
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
