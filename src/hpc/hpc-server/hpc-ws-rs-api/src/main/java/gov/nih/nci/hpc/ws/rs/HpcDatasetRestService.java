@@ -100,7 +100,7 @@ public interface HpcDatasetRestService
      */
     @GET
     @Path("/dataset/query/transferStatus/{type}")
-    @Produces("application/json")
+    @Produces("application/json,application/xml")
     public Response getDatasetsByTransferStatus(@PathParam("type") String transferStatus);
     
    /**

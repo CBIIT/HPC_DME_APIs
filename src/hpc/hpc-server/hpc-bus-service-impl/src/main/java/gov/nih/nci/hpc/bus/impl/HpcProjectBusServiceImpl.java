@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
@@ -214,8 +215,12 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     				throw new HpcException("Invalid associated dataset Id: "+datasetId, e);
     			}
     		}
-    		if(datasets.size() > 0)
-    			dto.getHpcDatasetCollectionDTO().getHpcDatasetDTO().addAll(datasets);
+    		if(datasets != null && datasets.size() > 0)
+    		{
+    			HpcDatasetCollectionDTO collection = new HpcDatasetCollectionDTO();
+    			collection.getHpcDatasetDTO().addAll(datasets);
+    			dto.setHpcDatasetCollectionDTO(collection);
+    		}
     	}
     	
     	return dto;
