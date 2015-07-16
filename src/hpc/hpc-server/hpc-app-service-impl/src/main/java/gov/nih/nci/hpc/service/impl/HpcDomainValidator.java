@@ -147,9 +147,9 @@ class HpcDomainValidator
     {
     	if(metadata == null ||
     	   metadata.getDataContainsPII() == null || 	
-    	   metadata.getDataContainsPHI() == null ||
+    	  // metadata.getDataContainsPHI() == null ||
     	   metadata.getDataEncrypted() == null ||
-    	   metadata.getDataCompressed() == null ||
+    	   //metadata.getDataCompressed() == null ||
     	   metadata.getFundingOrganization() == null || 
     	   metadata.getPrimaryInvestigatorNihUserId() == null ||
     	   metadata.getCreatorName() == null ||
