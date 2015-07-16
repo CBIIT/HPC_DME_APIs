@@ -331,7 +331,8 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
            filters.add(eq(LAB_BRANCH_FIELD_NAME, 
         		          primaryMetadata.getLabBranch()));
        	}
-    	if(primaryMetadata.getMetadataItems() != null) {
+    	if(primaryMetadata.getMetadataItems() != null && 
+    	   primaryMetadata.getMetadataItems().size() >0 ) {
      	   filters.add(all(METADATA_ITEMS_FIELD_NAME, 
      			           primaryMetadata.getMetadataItems()));
     	}
