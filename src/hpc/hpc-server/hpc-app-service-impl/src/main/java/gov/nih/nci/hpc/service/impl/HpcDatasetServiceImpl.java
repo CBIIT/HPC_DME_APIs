@@ -223,7 +223,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     		{
         		HpcDataTransferAccount dataTransferAccount = 
      	    		   userService.get(
-     	    				  hpcDataset.getFileSet().getFiles().get(1).getMetadata().getPrimaryMetadata().getRegistrarNihUserId()).
+     	    				  hpcDataset.getFileSet().getFiles().get(0).getMetadata().getPrimaryMetadata().getRegistrarNihUserId()).
      	    			                               getDataTransferAccount();
         		
     			HpcDataTransferReport hpcDataTransferReport = dataTransferService.retriveTransferStatus(uploadRequest.getDataTransferId(),dataTransferAccount);
