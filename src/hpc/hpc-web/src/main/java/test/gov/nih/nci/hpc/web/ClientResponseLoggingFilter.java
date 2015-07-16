@@ -26,7 +26,7 @@ public class ClientResponseLoggingFilter implements ClientResponseFilter {
 			}
 			System.out.print("\n");
 		}
-		System.out.println("media-type: " + resCtx.getMediaType().getType());
+		//System.out.println("media-type: " + resCtx.getMediaType().getType());
 	}
  
 }

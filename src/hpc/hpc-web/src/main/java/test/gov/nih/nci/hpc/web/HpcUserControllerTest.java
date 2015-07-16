@@ -16,6 +16,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 
@@ -50,13 +51,12 @@ public class HpcUserControllerTest {
 
 	@Value("${local.server.port}")
 	private int port;
+	private final String baseurl = "http://fr-s-hpcdm-gp-d.ncifcrf.gov:8080/hpc-server/user";
 
-	private URL base;
 	private RestTemplate template;
 
 	@Before
 	public void setUp() throws Exception {
-		this.base = new URL("http://localhost:7737/hpc-server/user");
 		template = new TestRestTemplate();
 	}
 
@@ -66,7 +66,7 @@ public class HpcUserControllerTest {
 		HpcNihAccount account = new HpcNihAccount();
 		account.setFirstName("Prasad");
 		account.setLastName("Konka");
-		account.setUserId("pkonka");
+		account.setUserId("pkonka3");
 		dto.setNihAccount(account);
 		HpcDataTransferAccount trAccount = new HpcDataTransferAccount();
 		trAccount.setAccountType(HpcDataTransferAccountType.GLOBUS);
@@ -74,26 +74,33 @@ public class HpcUserControllerTest {
 		trAccount.setPassword("IpgSvg12!@");
 		dto.setDataTransferAccount(trAccount);
 
-		Client client = ClientBuilder.newClient().register(ClientResponseLoggingFilter.class);
-		Response res = client
-				.target("http://localhost:7737/hpc-server/user")
-				.request()
+		Client client = ClientBuilder.newClient().register(
+				ClientResponseLoggingFilter.class);
+		Response res = client.target(baseurl).request()
 				.post(Entity.entity(dto, MediaType.APPLICATION_XML));
 		if (res.getStatus() != 201) {
 			throw new RuntimeException("Failed : HTTP error code : "
 					+ res.getStatus());
-		}						
-		HpcUserRegistrationDTO entity = (HpcUserRegistrationDTO)res.getEntity();
+		}
+		HpcUserRegistrationDTO entity = (HpcUserRegistrationDTO) res
+				.getEntity();
+		ObjectMapper mapper = new ObjectMapper();
+		System.out.println(mapper.writeValueAsString(entity));
+
 	}
 
 	@Test
 	public void getUser() throws Exception {
 
-		Client client = ClientBuilder.newClient().register(ClientResponseLoggingFilter.class);
-		WebTarget resourceTarget = client.target("http://localhost:7737/hpc-server/user/konkapv");
-		Invocation invocation = resourceTarget.request(MediaType.APPLICATION_XML).buildGet();
+		Client client = ClientBuilder.newClient().register(
+				ClientResponseLoggingFilter.class);
+		WebTarget resourceTarget = client.target(baseurl + "/konkapv");
+		Invocation invocation = resourceTarget.request(
+				MediaType.APPLICATION_XML).buildGet();
 		HpcUserDTO response = invocation.invoke(HpcUserDTO.class);
-		System.out.println(response);
+		ObjectMapper mapper = new ObjectMapper();
+		System.out.println(mapper.writeValueAsString(response));
+
 	}
 
 }
