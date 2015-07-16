@@ -26,8 +26,6 @@
 						</Private-Package>
 						<Import-Package>
 							<!--  Spring Security LDAP Implicit Import Packages -->
-							javax.net.ssl,
-							
 							*
 						</Import-Package>
 					</instructions>
