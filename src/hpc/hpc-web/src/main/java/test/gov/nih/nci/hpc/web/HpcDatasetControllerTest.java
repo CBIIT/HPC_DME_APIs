@@ -226,9 +226,10 @@ public class HpcDatasetControllerTest {
 			if (Response.Status.OK.getStatusCode() == status) {
 
 			  // normal case, you receive your User object
-				HpcDatasetCollectionDTO obj = response.readEntity(HpcDatasetCollectionDTO.class);
-				ObjectMapper mapper = new ObjectMapper();
-				System.out.println(mapper.writeValueAsString(obj));
+				//HpcDatasetCollectionDTO obj = response.readEntity(HpcDatasetCollectionDTO.class);
+				//ObjectMapper mapper = new ObjectMapper();
+				//System.out.println(mapper.writeValueAsString(obj));
+				System.out.println(response);
 			} 			
 		} catch (Exception e) {
 			e.printStackTrace();
