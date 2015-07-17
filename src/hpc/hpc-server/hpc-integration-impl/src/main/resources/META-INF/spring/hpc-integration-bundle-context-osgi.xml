@@ -29,6 +29,8 @@
 	<ctx:property-placeholder properties-ref="preProps" />
 
 	<!-- OSGi beans export -->
+	<osgi:service ref="hpcLdapAuthenticationProxy"
+		          interface="gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy" />
 	<osgi:service ref="hpcDataTransferProxy"
 		          interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
 	<osgi:service ref="hpcDataTransferAccountValidatorProvider"
