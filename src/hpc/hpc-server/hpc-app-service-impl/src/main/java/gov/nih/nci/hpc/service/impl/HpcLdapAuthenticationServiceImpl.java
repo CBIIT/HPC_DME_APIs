@@ -11,10 +11,9 @@ package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
 import gov.nih.nci.hpc.service.HpcLdapAuthenticationService;
 
-import org.springframework.security.ldap.authentication.LdapAuthenticationProvider;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 /**
  * <p>
  * HPC LDAP Authentication Service Interface.
@@ -25,7 +24,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
  */
 public class HpcLdapAuthenticationServiceImpl implements HpcLdapAuthenticationService {
 
-	LdapAuthenticationProvider ldapProvider;
+	HpcLdapAuthenticationProxy proxy;
 	
     /**
      * Default Constructor.
@@ -45,18 +44,19 @@ public class HpcLdapAuthenticationServiceImpl implements HpcLdapAuthenticationSe
      * @param dataTransferAccountValidatorProvider 
      *        The data transfer account validator provider instance.
      */
-    private HpcLdapAuthenticationServiceImpl(LdapAuthenticationProvider ldapProvider)
+    private HpcLdapAuthenticationServiceImpl(HpcLdapAuthenticationProxy proxy)
     {
-    	this.ldapProvider = ldapProvider;
+    	this.proxy = proxy;
     }
 	
 	public boolean authenticate(String userName, String password) throws HpcException
 	{
-		UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userName, password);
-		org.springframework.security.core.Authentication authentication = ldapProvider.authenticate(token);
-		if(authentication == null)
-			return false;
-		else
-			return true;
+		if(userName == null || userName.trim().length() == 0)
+			throw new HpcException("User name cannot be null or empty", HpcErrorType.INVALID_REQUEST_INPUT);
+		if(password == null || password.trim().length() == 0)
+			throw new HpcException("Password cannot be null or empty", HpcErrorType.INVALID_REQUEST_INPUT);
+		
+		return proxy.authenticate(userName, password);
+		
 	}
 }
