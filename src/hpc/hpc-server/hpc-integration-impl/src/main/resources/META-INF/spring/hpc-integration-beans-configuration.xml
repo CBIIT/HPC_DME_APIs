@@ -26,6 +26,11 @@
 	<bean id="hpcGOTransfer" class="gov.nih.nci.hpc.integration.globus.driver.HpcGOTransfer">
 		<constructor-arg value="/mnt/gridftp" index="0" />
 	</bean>
+	
+	<bean id="hpcLdapAuthenticationProxy"
+		class="gov.nih.nci.hpc.integration.ldap.authentication.HpcLdapAuthenticationProxyImpl">
+		<constructor-arg ref="ldapAuthProvider" />
+	</bean>
 
 	<!--  HPC Data Transfer Account Validators -->
 	<bean id="hpcDataTransferAccountValidatorProvider" class="gov.nih.nci.hpc.integration.impl.HpcDataTransferAccountValidatorProviderImpl">
@@ -40,4 +45,44 @@
 		class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl">
 		<constructor-arg ref="hpcGOTransfer" />
 	</bean>
+	
+	<bean id="contextSource"
+	        class="org.springframework.security.ldap.DefaultSpringSecurityContextSource">
+	  <constructor-arg value="ldaps://ncids4a.nci.nih.gov:636/ou=nci,o=nih"/>
+	</bean>
+		
+	<bean id="ldapAuthProvider"
+	    class="org.springframework.security.ldap.authentication.LdapAuthenticationProvider">
+		<!-- strategy for handling the actual authentication against the LDAP repository -->
+    	<constructor-arg ref="authenticator" />
+		 <!-- strategy for retrieving a user's set of granted authorities -->
+    	<constructor-arg ref="populator" />
+	</bean>
+	<bean id="authenticator"
+	      class="org.springframework.security.ldap.authentication.BindAuthenticator">
+	    <constructor-arg ref="contextSource" />
+	    <!--  how to find a user in LDAP -->
+	    <property name="userDnPatterns">
+	        <list>
+		    <!-- {0} servers as a pattern argument placeholder for a username -->
+		    <value>uid={0},ou=nci,o=nih</value>
+		</list>
+	    </property>
+	</bean>	
+	<bean id="populator"
+	      class="org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator">
+	    <constructor-arg ref="contextSource" />
+	    <!--  group based DN - we will be searching for groups in "ou=groups,dc=example,dc=com" -->
+	    <constructor-arg value="ou=groups" />
+	    
+	    <!-- the name of the attribute that will contain role information (which
+	         effectively translates to a user's granted authorities. Default is "cn" -->
+	    <property name="groupRoleAttribute" value="ou" />
+	    
+	    <!-- case normalization to upper case. Default is true -->
+	    <property name="convertToUpperCase" value="false" />
+	    
+	    <!-- role prefix to append to the group name. Default is "ROLE_". -->
+	    <property name="rolePrefix" value="" />
+	</bean>		
 </beans>
