@@ -26,6 +26,7 @@
 						</Private-Package>
 						<Import-Package>
 							<!--  Spring Security LDAP Implicit Import Packages -->
+							javax.net.ssl,
 							*
 						</Import-Package>
 					</instructions>
@@ -48,10 +49,6 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>hpc-integration-api</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-ldap</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
