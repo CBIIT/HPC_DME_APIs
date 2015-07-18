@@ -10,8 +10,8 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
-import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.ws.rs.provider.HpcExceptionMapper;
 
 import java.net.URI;
 
@@ -19,6 +19,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -38,78 +40,17 @@ public abstract class HpcRestServiceImpl
     // The URI Info context instance.
 	@Context
     private UriInfo uriInfo;
+	
+	// The exception mapper (Exception to HTTP error code) instance.
+	@Autowired
+	HpcExceptionMapper exceptionMapper;
     
     // Enable/Disable stack trace print to exception DTO.
     boolean stackTraceEnabled = false;
     
     //---------------------------------------------------------------------//
-    // Constructors
-    //---------------------------------------------------------------------//
-     
-    /**
-     * Default Constructor disabled.
-     * 
-     */
-    @SuppressWarnings("unused")
-	private HpcRestServiceImpl()
-    {
-    }  
-    
-    /**
-     * Constructor.
-     * 
-     * @param stackTraceEnabled If set to true, stack trace will be attached to
-     *                          exception DTO.
-     */
-    protected HpcRestServiceImpl(boolean stackTraceEnabled)
-    {
-    	this.stackTraceEnabled = stackTraceEnabled;
-    }  
-    
-    //---------------------------------------------------------------------//
     // Methods
     //---------------------------------------------------------------------//
-    
-    /**
-     * Return an error REST response instance. 
-     * Map HpcException to the appropriate HTTP code.
-     *
-     * @param e The HpcException
-     * @return The REST response object.
-     */
-    protected Response errorResponse(HpcException e)
-    {
-    	// Map the exception to a DTO.
-    	HpcExceptionDTO exceptionDTO = new HpcExceptionDTO();
-    	exceptionDTO.setMessage(e.getMessage());
-    	exceptionDTO.setErrorType(e.getErrorType());
-    	exceptionDTO.setRequestRejectReason(e.getRequestRejectReason());
-    	
-    	if(stackTraceEnabled) {
-    	   exceptionDTO.setStackTrace(e.getStackTraceString());
-    	}
-    	
-    	Response.ResponseBuilder responseBuilder = null;
-		switch(e.getErrorType()) {
-		       case INVALID_REQUEST_INPUT:
-		       case REQUEST_REJECTED:
-		    	   responseBuilder = 
-		    	           Response.status(Response.Status.BAD_REQUEST);	
-		    	   break;
-		    	   
-		       case UNAUTHORIZED_REQUEST:
-		       case REQUEST_AUTHENTICATION_FAILED:
-		    	    responseBuilder = 
-    	                    Response.status(Response.Status.UNAUTHORIZED);
-		    	    break;
-		    	    
-		       default:
-		    	   responseBuilder = 
-                   Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-		}
-		
-    	return responseBuilder.entity(exceptionDTO).build();
-    }
     
     /**
      * Build a created (HTTP 201) REST response instance.
@@ -145,6 +86,18 @@ public abstract class HpcRestServiceImpl
 		} else {
 			    return Response.ok().build();
 		}
+    }
+    
+    /**
+     * Return an error REST response instance. 
+     * Map HpcException to the appropriate HTTP code.
+     *
+     * @param e The HpcException
+     * @return The REST response object.
+     */
+    protected Response errorResponse(HpcException e)
+    {
+    	return exceptionMapper.toResponse(e);
     }
 }
 
