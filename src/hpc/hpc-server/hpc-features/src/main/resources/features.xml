@@ -24,6 +24,7 @@
 	<feature name="hpc-spring-security-ldap" version="${spring-security.version}">
 		<feature version="${spring-security.version}">spring-security</feature>
 		
+		<bundle>mvn:org.springframework.security/spring-security-config/${spring-security.version}</bundle>
 		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-jdbc/3.2.11.RELEASE_2</bundle>
 		<bundle>mvn:org.springframework.data/spring-data-commons-core/1.4.1.RELEASE</bundle>
 		<bundle>mvn:org.springframework.batch/spring-batch-core/2.2.7.RELEASE</bundle>
