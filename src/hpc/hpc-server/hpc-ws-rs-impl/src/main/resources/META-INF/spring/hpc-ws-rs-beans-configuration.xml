@@ -59,22 +59,29 @@
 		<entry key="http://hpc.nci.nih.gov/domain/project" value="gov.nih.nci.hpc.domain.project" />
 	</util:map>
 
+	<!-- Exception Mapper Provider -->
+	<bean id="hpcExceptionMapper" 
+	      class="gov.nih.nci.hpc.ws.rs.provider.HpcExceptionMapper">
+		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
+	</bean>
+	
+	<!-- Authentication Interceptor -->
+	<bean id="hpcAuthenticationInterceptor" 
+	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAuthenticationInterceptor"/>
+	
 	<!-- JAX-RS Service Beans -->
 	<bean id="hpcUserRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcUserRestServiceImpl">
 		<constructor-arg ref="hpcUserBusService" />
-		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
 	</bean>
 	<bean id="hpcDatasetRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDatasetRestServiceImpl">
 		<constructor-arg ref="hpcDatasetBusService" />
-		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
 		<constructor-arg value="${dynamicfields}" />
 	</bean>
 	<bean id="hpcProjectRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcProjectRestServiceImpl">
 		<constructor-arg ref="hpcProjectBusService" />
-		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
-		<constructor-arg value="${dynamicfields}" />
+		<constructor-arg value="${dynamicfields}" />	
 	</bean>
-
+	
 	<!-- CXF JAX-RS Server Config -->
 	<jaxrs:server id="hpc-server" address="${hpc.ws.rs.url}"
 		bus="cxf">
@@ -86,10 +93,10 @@
 		<jaxrs:providers>
 			<ref bean="jaxbProvider" />
 			<ref bean="jsonProvider" />
-			<bean class="gov.nih.nci.hpc.ws.rs.provider.HpcAuthenticationExceptionMapper"/>
+			<ref bean="hpcExceptionMapper" />
 		</jaxrs:providers>
 		<jaxrs:inInterceptors>
-        	<bean class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAuthenticationInterceptor"/>
+			<ref bean="hpcAuthenticationInterceptor" />
       </jaxrs:inInterceptors>
 	</jaxrs:server>
 </beans>

@@ -56,7 +56,6 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
      */
     private HpcUserRestServiceImpl() throws HpcException
     {
-    	super(false);
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }  
@@ -65,17 +64,12 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
      * Constructor for Spring Dependency Injection.
      * 
      * @param userBusService The user business service.
-     * @param stackTraceEnabled If set to true, stack trace will be attached to
-     *                          exception DTO.
      * 
      * @throws HpcException If parameters not provided by Spring.
      */
-    private HpcUserRestServiceImpl(HpcUserBusService userBusService,
-    		                       boolean stackTraceEnabled)
+    private HpcUserRestServiceImpl(HpcUserBusService userBusService)
                                   throws HpcException
     {
-    	super(stackTraceEnabled);
-    	
     	if(userBusService == null) {
     	   throw new HpcException("Null HpcUserBusService instance",
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
