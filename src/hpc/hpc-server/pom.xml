@@ -16,9 +16,9 @@
 		<cxf-xjc.version>3.0.3</cxf-xjc.version>
 		<felix.version>2.5.3</felix.version>
 		<mongodb.version>3.0.1</mongodb.version>
-		<spring.security.version>4.0.1.RELEASE</spring.security.version>
 		<slf4j.version>1.7.12</slf4j.version>
 		<spring-security.version>3.1.4.RELEASE</spring-security.version>
+		<spring-beans.version>3.2.11.RELEASE</spring-beans.version>
 	</properties>
 
 	<modules>
@@ -148,6 +148,11 @@
 				<groupId>org.springframework.security</groupId>
 				<artifactId>spring-security-ldap</artifactId>
 				<version>${spring-security.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-beans</artifactId>
+				<version>${spring-beans.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
