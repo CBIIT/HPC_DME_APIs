@@ -73,7 +73,6 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
      */
     private HpcDatasetRestServiceImpl() throws HpcException
     {
-    	super(false);
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }  
@@ -88,12 +87,9 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
      * @throws HpcException If the bus service is not provided by Spring.
      */
     private HpcDatasetRestServiceImpl(HpcDatasetBusService datasetBusService,
-    		                          boolean stackTraceEnabled,
     		                          String dynamicConfigFile)
                                      throws HpcException
     {
-    	super(stackTraceEnabled);
-    	
     	if(datasetBusService == null || dynamicConfigFile == null) {
     	   throw new HpcException("Null HpcDatasetBusService/confing file",
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
