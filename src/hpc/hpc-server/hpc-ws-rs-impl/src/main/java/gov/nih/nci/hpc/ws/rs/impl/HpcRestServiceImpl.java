@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.net.URI;
 
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
@@ -28,20 +29,21 @@ import javax.ws.rs.core.UriInfo;
  * @version $Id$
  */
 
-public abstract class HpcRestServiceImpl implements HpcRestServiceContext
+public abstract class HpcRestServiceImpl
 {   
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
     // The URI Info context instance.
+	@Context
     private UriInfo uriInfo;
     
     // Enable/Disable stack trace print to exception DTO.
     boolean stackTraceEnabled = false;
     
     //---------------------------------------------------------------------//
-    // constructors
+    // Constructors
     //---------------------------------------------------------------------//
      
     /**
@@ -96,15 +98,11 @@ public abstract class HpcRestServiceImpl implements HpcRestServiceContext
 		    	   break;
 		    	   
 		       case UNAUTHORIZED_REQUEST:
+		       case REQUEST_AUTHENTICATION_FAILED:
 		    	    responseBuilder = 
     	                    Response.status(Response.Status.UNAUTHORIZED);
 		    	    break;
 		    	    
-		       case REQUEST_AUTHENTICATION_FAILED:
-		    	    responseBuilder = 
-                            Response.status(Response.Status.FORBIDDEN);
-   	    break;
-		    	   
 		       default:
 		    	   responseBuilder = 
                    Response.status(Response.Status.INTERNAL_SERVER_ERROR);
@@ -131,32 +129,22 @@ public abstract class HpcRestServiceImpl implements HpcRestServiceContext
      * Build an 'ok' (HTTP 200) REST response instance.
      *
      * @param entity The entity to attach to the response.
-     * @param nullEntityAsNotFound If set to 'true', and entity is null - a 
-     *                             'not found' (HTTP 404) will be returned.
+     * @param nullEntityAsNoContent If set to 'true', and entity is null - a 
+     *                             'not found' (HTTP 204) will be returned.
      * @return The REST response object.
      */
-    protected Response okResponse(Object entity, boolean nullEntityAsNotFound)
+    protected Response okResponse(Object entity, boolean nullEntityAsNoContent)
     {
 		if(entity != null) {
            return Response.ok(entity).
         		           header("Access-Control-Allow-Origin", "*").
         		           header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").
         		           build();
-		} else if (nullEntityAsNotFound) {
-			       return Response.status(Response.Status.NOT_FOUND).build();
+		} else if (nullEntityAsNoContent) {
+			       return Response.status(Response.Status.NO_CONTENT).build();
 		} else {
 			    return Response.ok().build();
 		}
-    }
-    
-    //---------------------------------------------------------------------//
-    // HpcRestServiceContext Interface Implementation
-    //---------------------------------------------------------------------//  
-    
-    @Override
-    public void setUriInfo(UriInfo uriInfo)
-    {
-    	this.uriInfo = uriInfo;
     }
 }
 

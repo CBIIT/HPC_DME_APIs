@@ -86,8 +86,11 @@
 		<jaxrs:providers>
 			<ref bean="jaxbProvider" />
 			<ref bean="jsonProvider" />
-			<bean class="gov.nih.nci.hpc.ws.rs.impl.HpcAccessDeniedExceptionMapper"/>
+			<bean class="gov.nih.nci.hpc.ws.rs.provider.HpcAuthenticationExceptionMapper"/>
 		</jaxrs:providers>
+		<jaxrs:inInterceptors>
+        	<bean class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAuthenticationInterceptor"/>
+      </jaxrs:inInterceptors>
 	</jaxrs:server>
 </beans>
 
