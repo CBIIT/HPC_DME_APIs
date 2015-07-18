@@ -17,6 +17,15 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 
+/**
+ * <p>
+ * HPC Authentication Interceptor.
+ * </p>
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ */
+
 public class HpcAuthenticationInterceptor 
              extends AbstractPhaseInterceptor<Message> {
 
