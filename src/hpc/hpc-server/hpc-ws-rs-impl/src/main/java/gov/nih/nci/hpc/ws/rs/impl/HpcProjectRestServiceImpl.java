@@ -72,7 +72,6 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
      */
     private HpcProjectRestServiceImpl() throws HpcException
     {
-    	super(false);
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }  
@@ -87,12 +86,9 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
      * @throws HpcException If the bus service is not provided by Spring.
      */
     private HpcProjectRestServiceImpl(HpcProjectBusService projectBusService,
-    		                          boolean stackTraceEnabled,
     		                          String dynamicConfigFile)
                                      throws HpcException
     {
-    	super(stackTraceEnabled);
-    	
     	if(projectBusService == null || dynamicConfigFile == null) {
     	   throw new HpcException("Null HpcProjectBusService/confing file",
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
