@@ -49,6 +49,14 @@
 			<xsd:enumeration value="REGISTRAR" />
 		</xsd:restriction>
 	</xsd:simpleType>
+	
+	<xsd:simpleType name="HpcProjectType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="UNKONWN" />
+			<xsd:enumeration value="SEQUENCING" />
+			<xsd:enumeration value="ANALYSIS" />
+		</xsd:restriction>
+	</xsd:simpleType>	
 
 	<xsd:complexType name="HpcDataTransferReport">
 		<xsd:sequence>

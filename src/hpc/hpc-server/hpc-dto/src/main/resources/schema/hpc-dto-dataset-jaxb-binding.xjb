@@ -40,6 +40,9 @@
         <jxb:bindings node="//xsd:simpleType[@name='HpcDatasetUserAssociation']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation"/>
         </jxb:bindings>
+        <jxb:bindings node="//xsd:simpleType[@name='HpcProjectType']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.dataset.HpcProjectType"/>
+		</jxb:bindings>
         <jxb:bindings node="//xsd:complexType[@name='HpcDataTransferReport']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport"/>
 		</jxb:bindings>
@@ -56,7 +59,7 @@
         	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest"/>
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcFile']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcFile"/>	
+        	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcFile"/>
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcFileSet']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcFileSet"/>
@@ -76,9 +79,18 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcProjectMetadata']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata"/>
 		</jxb:bindings>
-		<jxb:bindings node="//xsd:simpleType[@name='HpcProjectType']">
-        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcProjectType"/>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcPIIContent']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcPIIContent"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcPHIContent']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcPHIContent"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcEncryptionStatus']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcEncryptionStatus"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcCompressionStatus']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcCompressionStatus"/>
+        </jxb:bindings>
     </jxb:bindings>
     
 </jxb:bindings>

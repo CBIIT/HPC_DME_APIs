@@ -40,6 +40,9 @@
         <jxb:bindings node="//xsd:simpleType[@name='HpcDatasetUserAssociation']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation"/>
         </jxb:bindings>
+        <jxb:bindings node="//xsd:simpleType[@name='HpcProjectType']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.dataset.HpcProjectType"/>
+		</jxb:bindings>
         <jxb:bindings node="//xsd:complexType[@name='HpcDataTransferReport']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport"/>
 		</jxb:bindings>
@@ -56,27 +59,12 @@
         	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest"/>
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcFile']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcFile"/>	
+        	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcFile"/>
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcFileSet']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcFileSet"/>
 		</jxb:bindings>
     </jxb:bindings>
-    
-	<jxb:bindings schemaLocation="HpcDataset.xsd">
-        <jxb:bindings node="//xsd:element[@name='HpcDatasetCollectionDTO']">
-        	<jxb:class ref="gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO"/>
-		</jxb:bindings>
-		<jxb:bindings node="//xsd:element[@name='HpcDatasetRegistrationDTO']">
-        	<jxb:class ref="gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO"/>
-        </jxb:bindings>
-        <jxb:bindings node="//xsd:element[@name='HpcDatasetDTO']">
-        	<jxb:class ref="gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO"/>
-        </jxb:bindings>
-        <jxb:bindings node="//xsd:element[@name='HpcPrimaryMetadataQueryDTO']">
-        	<jxb:class ref="gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO"/>
-        </jxb:bindings>
-    </jxb:bindings>    
     
 	<jxb:bindings schemaLocation="HpcMetadataTypes.xsd">
 		<jxb:bindings node="//xsd:complexType[@name='HpcMetadataItem']">
@@ -91,8 +79,32 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcProjectMetadata']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata"/>
 		</jxb:bindings>
-		<jxb:bindings node="//xsd:simpleType[@name='HpcProjectType']">
-        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcProjectType"/>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcPIIContent']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcPIIContent"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcPHIContent']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcPHIContent"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcEncryptionStatus']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcEncryptionStatus"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcCompressionStatus']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcCompressionStatus"/>
+        </jxb:bindings>
+    </jxb:bindings>
+    
+    <jxb:bindings schemaLocation="HpcDataset.xsd">
+		<jxb:bindings node="//xsd:element[@name='HpcDatasetRegistrationDTO']">
+        	<jxb:class ref="gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:element[@name='HpcDatasetDTO']">
+        	<jxb:class ref="gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:element[@name='HpcDatasetCollectionDTO']">
+        	<jxb:class ref="gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:element[@name='HpcPrimaryMetadataQueryDTO']">
+        	<jxb:class ref="gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO"/>
 		</jxb:bindings>
     </jxb:bindings>
     
