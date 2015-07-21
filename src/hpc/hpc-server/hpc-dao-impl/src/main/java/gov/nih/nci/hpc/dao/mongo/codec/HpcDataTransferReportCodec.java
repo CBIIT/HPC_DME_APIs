@@ -10,29 +10,16 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
+
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
-
-import javax.xml.bind.annotation.XmlElement;
-
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
-import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
-import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
-import gov.nih.nci.hpc.domain.dataset.HpcFileType;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccountType;
-import gov.nih.nci.hpc.exception.HpcException;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
-import org.bson.types.Binary;
 
 /**
  * <p>

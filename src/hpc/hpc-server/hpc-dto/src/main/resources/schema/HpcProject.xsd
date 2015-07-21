@@ -26,7 +26,7 @@
 		        schemaLocation="HpcDataset.xsd" />
 			
 	<xsd:element name="HpcProjectRegistrationDTO">
-	<xsd:complexType>
+		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="id" type="xsd:ID" />
 				<xsd:element name="metadata" type="hpc-domain-metadata:HpcProjectMetadata" />

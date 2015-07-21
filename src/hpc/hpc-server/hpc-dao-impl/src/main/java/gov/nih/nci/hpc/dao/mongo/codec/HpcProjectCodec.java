@@ -10,9 +10,8 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.domain.model.HpcProject;
-import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
+import gov.nih.nci.hpc.domain.model.HpcProject;
 
 import java.util.List;
 
@@ -112,7 +111,8 @@ public class HpcProjectCodec extends HpcCodec<HpcProject>
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
-	   /**
+	
+	/**
      * Decode HpcProjectMetadata
      *
      * @param doc The HpcProjectMetadata document
