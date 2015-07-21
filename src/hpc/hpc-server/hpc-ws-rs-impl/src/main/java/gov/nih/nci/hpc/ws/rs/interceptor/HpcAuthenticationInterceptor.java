@@ -10,12 +10,15 @@
 
 package gov.nih.nci.hpc.ws.rs.interceptor;
 
+import gov.nih.nci.hpc.bus.HpcUserBusService;
 import gov.nih.nci.hpc.exception.HpcAuthenticationException;
+import gov.nih.nci.hpc.exception.HpcException;
 
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -27,7 +30,19 @@ import org.apache.cxf.phase.Phase;
  */
 
 public class HpcAuthenticationInterceptor 
-             extends AbstractPhaseInterceptor<Message> {
+             extends AbstractPhaseInterceptor<Message> 
+{
+    //---------------------------------------------------------------------//
+    // Instance members
+    //---------------------------------------------------------------------//
+
+    // The User Business Service instance.
+	@Autowired
+    private HpcUserBusService userBusService = null;
+	
+    //---------------------------------------------------------------------//
+    // Constructors
+    //---------------------------------------------------------------------//
 
     /**
      * Default Constructor disabled.
@@ -47,12 +62,19 @@ public class HpcAuthenticationInterceptor
     {
         AuthorizationPolicy policy = message.get(AuthorizationPolicy.class);
 
-    if (policy == null) {
-        throw new HpcAuthenticationException("No user credentials provided");
-    }
-
-    //String user = policy.getUserName();
-
-    }
+        // Check that credentials were set on the request.
+        if (policy == null) {
+        	throw new HpcAuthenticationException("No user credentials provided");
+        }
     
+        // Authenticate the client.
+        try {
+        	 if(userBusService.getUser(policy.getUserName()) == null) {
+    		    throw new HpcAuthenticationException("Invalid user credentials");
+    	     }
+    		
+        } catch(HpcException e) {
+    	        throw new HpcAuthenticationException("Authentication failed", e);  
+        }
+    }
 } 
