@@ -54,6 +54,22 @@ public class HpcAuthenticationException extends RuntimeException implements java
     }
     
     /**
+     * Constructs a new HpcAuthenticationException with a given message, and
+     * a Throwable cause
+     *
+     * @param message The message for the exception.
+     * @param cause The root cause Throwable.
+     */
+    public HpcAuthenticationException(String message, Throwable cause) 
+    {
+        super(message, cause);
+    }
+    
+    //---------------------------------------------------------------------//
+    // Methods
+    //---------------------------------------------------------------------//
+    
+    /**
      * Get the stack trace.
      *
      * @return The stack trace.

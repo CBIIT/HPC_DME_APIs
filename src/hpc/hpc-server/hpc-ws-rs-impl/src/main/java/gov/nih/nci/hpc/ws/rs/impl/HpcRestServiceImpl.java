@@ -39,11 +39,11 @@ public abstract class HpcRestServiceImpl
 
     // The URI Info context instance.
 	@Context
-    private UriInfo uriInfo;
+    private UriInfo uriInfo = null;
 	
 	// The exception mapper (Exception to HTTP error code) instance.
 	@Autowired
-	HpcExceptionMapper exceptionMapper;
+	HpcExceptionMapper exceptionMapper = null;
     
     // Enable/Disable stack trace print to exception DTO.
     boolean stackTraceEnabled = false;
