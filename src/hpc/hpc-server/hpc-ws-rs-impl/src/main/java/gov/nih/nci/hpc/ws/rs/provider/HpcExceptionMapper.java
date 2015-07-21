@@ -124,6 +124,10 @@ public class HpcExceptionMapper
     	exceptionDTO.setMessage("Access Denied: " + exception.getMessage());
     	exceptionDTO.setErrorType(HpcErrorType.REQUEST_AUTHENTICATION_FAILED);
     	
+    	if(stackTraceEnabled) {
+     	   exceptionDTO.setStackTrace(exception.getStackTraceString());
+     	}
+    	
         return Response.status(Response.Status.UNAUTHORIZED).entity(exceptionDTO).
         	   type(getAcceptedMediaType()).build();
     }
