@@ -10,8 +10,12 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
+import gov.nih.nci.hpc.domain.metadata.HpcCompressionStatus;
+import gov.nih.nci.hpc.domain.metadata.HpcEncryptionStatus;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
+import gov.nih.nci.hpc.domain.metadata.HpcPHIContent;
+import gov.nih.nci.hpc.domain.metadata.HpcPIIContent;
 
 import java.util.List;
 
@@ -61,10 +65,10 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 		Document document = new Document();
  
 		// Extract the data from the domain object.
-		Boolean dataContainsPII = filePrimaryMetadata.getDataContainsPII();
-		Boolean dataContainsPHI = filePrimaryMetadata.getDataContainsPHI();
-		Boolean dataEncrypted = filePrimaryMetadata.getDataEncrypted();
-		Boolean dataCompressed = filePrimaryMetadata.getDataCompressed();
+		HpcPIIContent dataContainsPII = filePrimaryMetadata.getDataContainsPII();
+		HpcPHIContent dataContainsPHI = filePrimaryMetadata.getDataContainsPHI();
+		HpcEncryptionStatus dataEncrypted = filePrimaryMetadata.getDataEncrypted();
+		HpcCompressionStatus dataCompressed = filePrimaryMetadata.getDataCompressed();
 		String fundingOrganization = filePrimaryMetadata.getFundingOrganization();
 		String primaryInvestigatorNihUserId = 
 				      filePrimaryMetadata.getPrimaryInvestigatorNihUserId();
@@ -78,19 +82,19 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 		// Set the data on the BSON document.
 		if(dataContainsPII != null) {
 		   document.put(FILE_PRIMARY_METADATA_DATA_CONTAINS_PII_KEY, 
-				        dataContainsPII);
+				        dataContainsPII.value());
 		}
 		if(dataContainsPHI != null) {
 		   document.put(FILE_PRIMARY_METADATA_DATA_CONTAINS_PHI_KEY, 
-				        dataContainsPHI);
+				        dataContainsPHI.value());
 		}
 		if(dataEncrypted != null) {
 		   document.put(FILE_PRIMARY_METADATA_DATA_ENCRYPTED_KEY, 
-				        dataEncrypted);
+				        dataEncrypted.value());
 		}
 		if(dataCompressed != null) {
 		   document.put(FILE_PRIMARY_METADATA_DATA_COMPRESSED_KEY, 
-					    dataCompressed);
+					    dataCompressed.value());
 		}
 		if(fundingOrganization != null) {
 		   document.put(FILE_PRIMARY_METADATA_FUNDING_ORGANIZATION_KEY, 
@@ -136,18 +140,18 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 		
 		// Map the BSON Document to a domain object.
 		HpcFilePrimaryMetadata filePrimaryMetadata = new HpcFilePrimaryMetadata();
-		filePrimaryMetadata.setDataContainsPII(
+		filePrimaryMetadata.setDataContainsPII(HpcPIIContent.valueOf(
 				   document.get(FILE_PRIMARY_METADATA_DATA_CONTAINS_PII_KEY, 
-                                Boolean.class));
-		filePrimaryMetadata.setDataContainsPHI(
+                                String.class)));
+		filePrimaryMetadata.setDataContainsPHI(HpcPHIContent.valueOf(
 				   document.get(FILE_PRIMARY_METADATA_DATA_CONTAINS_PHI_KEY, 
-                                Boolean.class));
-		filePrimaryMetadata.setDataEncrypted(
+                                String.class)));
+		filePrimaryMetadata.setDataEncrypted(HpcEncryptionStatus.valueOf(
 				   document.get(FILE_PRIMARY_METADATA_DATA_ENCRYPTED_KEY, 
-                                Boolean.class));
-		filePrimaryMetadata.setDataCompressed(
+                                String.class)));
+		filePrimaryMetadata.setDataCompressed(HpcCompressionStatus.valueOf(
 				   document.get(FILE_PRIMARY_METADATA_DATA_COMPRESSED_KEY, 
-                                Boolean.class));
+                                String.class)));
 		filePrimaryMetadata.setFundingOrganization(
 				   document.get(FILE_PRIMARY_METADATA_FUNDING_ORGANIZATION_KEY, 
                                 String.class));
