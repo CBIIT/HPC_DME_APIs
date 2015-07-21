@@ -293,19 +293,19 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     	
     	if(primaryMetadata.getDataContainsPII() != null) {
     	   filters.add(eq(DATA_CONTAINS_PII_FIELD_NAME, 
-    			          primaryMetadata.getDataContainsPII()));
+    			          primaryMetadata.getDataContainsPII().value()));
     	}
     	if(primaryMetadata.getDataContainsPHI() != null) {
      	   filters.add(eq(DATA_CONTAINS_PHI_FIELD_NAME, 
-     			          primaryMetadata.getDataContainsPHI()));
+     			          primaryMetadata.getDataContainsPHI().value()));
      	}
     	if(primaryMetadata.getDataEncrypted() != null) {
        	   filters.add(eq(DATA_ENCRYPTED_FIELD_NAME, 
-       			          primaryMetadata.getDataEncrypted()));
+       			          primaryMetadata.getDataEncrypted().value()));
        	}
     	if(primaryMetadata.getDataCompressed() != null) {
       	   filters.add(eq(DATA_COMPRESSED_FIELD_NAME, 
-      			          primaryMetadata.getDataCompressed()));
+      			          primaryMetadata.getDataCompressed().value()));
       	}
     	if(primaryMetadata.getFundingOrganization() != null) {
        	   filters.add(eq(FUNDING_ORGANIZATION_FIELD_NAME, 
