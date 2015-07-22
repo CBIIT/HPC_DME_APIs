@@ -125,6 +125,8 @@
 				type="hpc-domain-dataset:HpcDataTransferLocations" />
 			<xsd:element name="metadata"
 				type="hpc-domain-metadata:HpcFilePrimaryMetadata" />
+			<xsd:element name="projectIds" type="xsd:string" 
+				             minOccurs="0" maxOccurs="unbounded"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -137,6 +139,9 @@
 			<xsd:element name="source" type="hpc-domain-dataset:HpcFileLocation"></xsd:element>
 			<xsd:element name="location" type="hpc-domain-dataset:HpcFileLocation"></xsd:element>
 			<xsd:element name="metadata" type="hpc-domain-metadata:HpcFileMetadata" />
+			<xsd:element name="projectIds" type="xsd:string" 
+				             minOccurs="0" maxOccurs="unbounded"/>
+			
 		</xsd:sequence>
 	</xsd:complexType>
 

@@ -25,7 +25,6 @@
 							gov.nih.nci.hpc.bus.impl
 						</Private-Package>
 						<Import-Package>
-						javax.net.ssl,
 						*
 						</Import-Package>
 					</instructions>

@@ -127,22 +127,6 @@ public class HpcProjectCodec extends HpcCodec<HpcProject>
 		return getRegistry().get(HpcProjectMetadata.class).decode(docReader, 
 		                                                  decoderContext);
 	}
-    
-    /**
-     * Decode HpcProject
-     *
-     * @param doc The HpcProject document
-     * @param decoderContext
-     * @return Decoded HpcProject object.
-     */
-    private HpcProject decodeProject(Document doc, DecoderContext decoderContext)
-    {
-    	BsonDocumentReader docReader = 
-    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
-    				                                  getRegistry()));
-		return getRegistry().get(HpcProject.class).decode(docReader, 
-		                                                  decoderContext);
-	}
-}
+ }
 
  

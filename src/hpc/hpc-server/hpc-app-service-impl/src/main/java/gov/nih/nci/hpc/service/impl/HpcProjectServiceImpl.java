@@ -41,7 +41,7 @@ public class HpcProjectServiceImpl implements HpcProjectService
     //---------------------------------------------------------------------//
 
     // The Managed Project DAO instance.
-    private HpcProjectDAO datasetDAO = null;
+    private HpcProjectDAO projectDAO = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -65,17 +65,17 @@ public class HpcProjectServiceImpl implements HpcProjectService
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param datasetDAO The dataset DAO instance.
+     * @param projectDAO The dataset DAO instance.
      */
-    private HpcProjectServiceImpl(HpcProjectDAO datasetDAO)
+    private HpcProjectServiceImpl(HpcProjectDAO projectDAO)
     		                     throws HpcException
     {
-    	if(datasetDAO == null) {
+    	if(projectDAO == null) {
      	   throw new HpcException("Null ProjectDAO",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
     	
-    	this.datasetDAO = datasetDAO;
+    	this.projectDAO = projectDAO;
     }  
     
     //---------------------------------------------------------------------//
@@ -106,7 +106,7 @@ public class HpcProjectServiceImpl implements HpcProjectService
     		project.getDatasetIds().addAll(datasetIds);
     	
     	// Persist to Mongo.
-    	datasetDAO.add(project);
+    	projectDAO.add(project);
     	logger.debug("Project added: " + project);
     	
     	return project.getId();
@@ -126,14 +126,14 @@ public class HpcProjectServiceImpl implements HpcProjectService
                                        HpcErrorType.INVALID_REQUEST_INPUT, e);
     	}
     	
-    	return datasetDAO.getProject(id);
+    	return projectDAO.getProject(id);
     }
     
     @Override
     public List<HpcProject> getProjects(String userId, HpcDatasetUserAssociation association) 
  	                                   throws HpcException
  	{
-    	return datasetDAO.getProjects(userId, association);
+    	return projectDAO.getProjects(userId, association);
  	}
 }
 
