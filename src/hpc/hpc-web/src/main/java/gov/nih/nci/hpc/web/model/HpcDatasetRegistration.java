@@ -18,8 +18,12 @@ public class HpcDatasetRegistration {
 	private String branchName;
 	@NotEmpty(message="PII is required")
 	private String pii;
+	@NotEmpty(message="PHI is required")
+	private String phi;
 	@NotEmpty(message="Encrypted is required")
 	private String encrypted;
+	@NotEmpty(message="Compressed is required")
+	private String compressed;
 	@NotEmpty(message="Origin Endpoint is required")
 	private String originEndpoint;
 	@NotEmpty(message="Origin Endpoint File with Path is required")
@@ -108,6 +112,16 @@ public class HpcDatasetRegistration {
 	public void setDataCreationFacility(String dataCreationFacility) {
 		this.dataCreationFacility = dataCreationFacility;
 	}
-
-	
+	public String getPhi() {
+		return phi;
+	}
+	public void setPhi(String phi) {
+		this.phi = phi;
+	}
+	public String getCompressed() {
+		return compressed;
+	}
+	public void setCompressed(String compressed) {
+		this.compressed = compressed;
+	}
 }

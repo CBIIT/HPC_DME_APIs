@@ -18,8 +18,12 @@ import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.web.model.HpcDatasetRegistration;
+import gov.nih.nci.hpc.domain.metadata.HpcCompressionStatus;
+import gov.nih.nci.hpc.domain.metadata.HpcEncryptionStatus;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
+import gov.nih.nci.hpc.domain.metadata.HpcPHIContent;
+import gov.nih.nci.hpc.domain.metadata.HpcPIIContent;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -125,8 +129,34 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 
 		  //TODO: Metadata funding organization
 		  HpcFilePrimaryMetadata metadata = new HpcFilePrimaryMetadata();
-		  metadata.setDataEncrypted(registration.getEncrypted().equalsIgnoreCase("Yes"));
-		  metadata.setDataContainsPII(registration.getPii().equalsIgnoreCase("Yes"));
+		  if(registration.getEncrypted().equals("ENCRYPTED"))
+			  metadata.setDataEncrypted(HpcEncryptionStatus.ENCRYPTED);
+		  else if(registration.getEncrypted().equals("NOT_ENCRYPTED"))
+			  metadata.setDataEncrypted(HpcEncryptionStatus.NOT_ENCRYPTED);
+		  else if(registration.getEncrypted().equals("NOT_SPECIFIED"))
+			  metadata.setDataEncrypted(HpcEncryptionStatus.NOT_SPECIFIED);
+		  
+		  if(registration.getPii().equals("PII_NOT_PRESENT"))
+			  metadata.setDataContainsPII(HpcPIIContent.PII_NOT_PRESENT);
+		  else if(registration.getPii().equals("PII_PRESENT"))
+			  metadata.setDataContainsPII(HpcPIIContent.PII_PRESENT);
+		  else if(registration.getPii().equals("NOT_SPECIFIED"))
+			  metadata.setDataContainsPII(HpcPIIContent.NOT_SPECIFIED);
+
+		  if(registration.getCompressed().equals("COMPRESSED"))
+			  metadata.setDataCompressed(HpcCompressionStatus.COMPRESSED);
+		  else if(registration.getCompressed().equals("NOT_COMPRESSED"))
+			  metadata.setDataCompressed(HpcCompressionStatus.NOT_COMPRESSED);
+		  else if(registration.getCompressed().equals("NOT_SPECIFIED"))
+			  metadata.setDataCompressed(HpcCompressionStatus.NOT_SPECIFIED);
+
+		  if(registration.getPhi().equals("PHI_NOT_PRESENT"))
+			  metadata.setDataContainsPHI(HpcPHIContent.PHI_NOT_PRESENT);
+		  else if(registration.getPhi().equals("PHI_PRESENT"))
+			  metadata.setDataContainsPHI(HpcPHIContent.PHI_PRESENT);
+		  else if(registration.getPhi().equals("NOT_SPECIFIED"))
+			  metadata.setDataContainsPHI(HpcPHIContent.NOT_SPECIFIED);
+
 		  metadata.setFundingOrganization(registration.getFundingOrganization());
 		  metadata.setPrimaryInvestigatorNihUserId(registration.getInvestigatorId());
 		  metadata.setRegistrarNihUserId(user.getNihAccount().getUserId());

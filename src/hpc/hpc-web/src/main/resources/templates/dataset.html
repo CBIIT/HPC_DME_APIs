@@ -166,6 +166,9 @@
 										<label for="Name">Description:</label> <label for="${file.metadata.primaryMetadata.description}" th:text="${file.metadata.primaryMetadata.description}"></label>
 									</div>
 									<div class="col-md-6 form-group">
+										<label for="Name">Associated Project Id:</label> <label for="${file.projectIds}" th:text="${file.projectIds}"></label>
+									</div>
+									<div class="col-md-6 form-group">
 										<label for="Name">Type:</label> <label for="${file.type.value()}" th:text="${file.type.value()}"></label>
 									</div>
 									<div class="col-md-6 form-group">
@@ -202,10 +205,10 @@
 										<label for="Name">PII:</label> <label for="${file.metadata.primaryMetadata.primaryInvestigatorNihUserId}" th:text="${file.metadata.primaryMetadata.primaryInvestigatorNihUserId}"></label>
 									</div>
 									<div class="col-md-6 form-group">
-										<label for="Name">Created By:</label> <label for="${file.metadata.primaryMetadata.creatorNihUserId}" th:text="${file.metadata.primaryMetadata.creatorNihUserId}"></label>
+										<label for="Name">Created By:</label> <label for="${file.metadata.primaryMetadata.creatorName}" th:text="${file.metadata.primaryMetadata.creatorName}"></label>
 									</div>
 									<div class="col-md-6 form-group">
-										<label for="Name">Registered by:</label> <label for="${file.metadata.primaryMetadata.registratorNihUserId}" th:text="${file.metadata.primaryMetadata.registratorNihUserId}"></label>
+										<label for="Name">Registered by:</label> <label for="${file.metadata.primaryMetadata.registrarNihUserId}" th:text="${file.metadata.primaryMetadata.registrarNihUserId}"></label>
 									</div>
 									<div class="col-md-6 form-group">
 										<label for="Name">Lab/Branch:</label> <label for="${file.metadata.primaryMetadata.labBranch}" th:text="${file.metadata.primaryMetadata.labBranch}"></label>
