@@ -44,7 +44,7 @@ import org.springframework.web.client.RestTemplate;
 public class HpcLoginController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.login}")
     private String serviceURL;
-	@Value("${gov.nih.nci.hpc.server.dataset.query.creator}")
+	@Value("${gov.nih.nci.hpc.server.dataset.query.registrar}")
 	private String datasetURL;
 
 
