@@ -26,6 +26,7 @@
 		<constructor-arg ref="hpcDatasetService" />
 		<constructor-arg ref="hpcUserService" />
 		<constructor-arg ref="hpcDataTransferService" />
+		<constructor-arg ref="hpcProjectService" />
 		<constructor-arg ref="hpcTransferStatusService" />
 	</bean>
 	

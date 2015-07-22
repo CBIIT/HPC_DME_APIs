@@ -88,6 +88,7 @@ public abstract class HpcCodec<T> implements Codec<T>
     public final static String FILE_SOURCE_KEY = "source";
     public final static String FILE_LOCATION_KEY = "location";
     public final static String FILE_METADATA_KEY = "metadata";
+    public final static String FILE_PROJECTS_KEY = "project_ids";
     
     // HpcFileLocation Document keys.
     public final static String FILE_LOCATION_ENDPOINT_KEY = "endpoint"; 

@@ -15,8 +15,9 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	xmlns:hpc-domain-dataset="http://hpc.nci.nih.gov/domain/dataset"
-	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
 	xmlns:hpc-dto-dataset="http://hpc.nci.nih.gov/dto/dataset"
+	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
+	xmlns:hpc-dto-project="http://hpc.nci.nih.gov/dto/project"
 	targetNamespace="http://hpc.nci.nih.gov/dto/dataset"
 	elementFormDefault="unqualified">
 
@@ -24,6 +25,8 @@
 		        schemaLocation="HpcDatasetTypes.xsd" />
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
 		        schemaLocation="HpcMetadataTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/dto/project"
+		        schemaLocation="HpcProject.xsd" />
 
 	<!-- Dataset Registration DTO -->
 	<xsd:element name="HpcDatasetRegistrationDTO">
@@ -48,6 +51,7 @@
 				<xsd:element name="uploadRequests"
 					         type="hpc-domain-dataset:HpcDataTransferRequest" 
 					         minOccurs="0" maxOccurs="unbounded" />				
+				<xsd:element ref="hpc-dto-project:HpcProjectCollectionDTO"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
