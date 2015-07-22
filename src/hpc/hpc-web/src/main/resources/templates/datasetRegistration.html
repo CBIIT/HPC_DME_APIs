@@ -133,12 +133,8 @@ function addTextbox() {
 	<div class="form-group">
 	  <label class="control-label col-sm-2" for="investigatorName">Created By:</label>
 	  <div class="col-sm-7">
-		<label th:if="${#fields.hasErrors('creatorId')}" th:errors="*{creatorId}">creatorName Error</label>
-		<select th:field="*{creatorId}" class="form-control" th:required="required">
-		    <option value="-1">----Select----</option>
-		    <option th:each="entry : ${creatorList.entrySet()}" th:value="${entry.key}" th:text="${entry.value}">
-			Wireframe</option>
-        </select>
+		<label th:if="${#fields.hasErrors('creatorId')}" th:errors="*{creatorId}">Creator Error</label>
+		<input type="text" class="form-control" th:field="*{creatorId}" th:required="required" placeholder="Enter Creator name"/>
 	  </div>
 	</div>
 	<div class="form-group">
@@ -152,14 +148,28 @@ function addTextbox() {
 	  <label class="control-label col-sm-2" for="pii">PII:</label>
 	  <div class="col-sm-7">
 		<label th:if="${#fields.hasErrors('pii')}" th:errors="*{pii}">PII Error</label>
-		<select th:field="*{pii}" class="form-control" th:required="required"><option value="" selected="selected">- Select -</option><option value="Yes">PII Present</option><option value="No">PII Not Present</option></select>	  
+		<select th:field="*{pii}" class="form-control" th:required="required"><option value="" selected="selected">- Select -</option><option value="PII_PRESENT">PII Present</option><option value="PII_NOT_PRESENT">PII Not Present</option><option value="NOT_SPECIFIED">Not Specified</option></select>	  
+	  </div>
+	</div>
+	<div class="form-group">
+	  <label class="control-label col-sm-2" for="pii">PHI:</label>
+	  <div class="col-sm-7">
+		<label th:if="${#fields.hasErrors('pii')}" th:errors="*{pii}">PHI Error</label>
+		<select th:field="*{phi}" class="form-control" th:required="required"><option value="" selected="selected">- Select -</option><option value="PHI_PRESENT">PHI Present</option><option value="PHI_NOT_PRESENT">PHI Not Present</option><option value="NOT_SPECIFIED">Not Specified</option></select>	  
 	  </div>
 	</div>
 	<div class="form-group">
 	  <label class="control-label col-sm-2" for="encrypted">Encryption:</label>
 	  <div class="col-sm-7">
 		<label th:if="${#fields.hasErrors('encrypted')}" th:errors="*{encrypted}">encrypted Error</label>
-		<select th:field="*{encrypted}" class="form-control" th:required="required"><option value="" selected="selected">- Select -</option><option value="Yes">Data Encrypted</option><option value="No">Data Not Encrypted</option></select>	  
+		<select th:field="*{encrypted}" class="form-control" th:required="required"><option value="" selected="selected">- Select -</option><option value="ENCRYPTED">Data Encrypted</option><option value="NOT_ENCRYPTED">Data Not Encrypted</option><option value="NOT_SPECIFIED">Not Specified</option></select>	  
+	  </div>
+	</div>
+	<div class="form-group">
+	  <label class="control-label col-sm-2" for="encrypted">Compressed:</label>
+	  <div class="col-sm-7">
+		<label th:if="${#fields.hasErrors('compressed')}" th:errors="*{encrypted}">encrypted Error</label>
+		<select th:field="*{compressed}" class="form-control" th:required="required"><option value="" selected="selected">- Select -</option><option value="COMPRESSED">Data Compressed</option><option value="NOT_COMPRESSED">Data Not Compressed</option><option value="NOT_SPECIFIED">Not Specified</option></select>	  
 	  </div>
 	</div>
 	<div class="form-group">

@@ -4,7 +4,11 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
+import gov.nih.nci.hpc.domain.metadata.HpcCompressionStatus;
+import gov.nih.nci.hpc.domain.metadata.HpcEncryptionStatus;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcPHIContent;
+import gov.nih.nci.hpc.domain.metadata.HpcPIIContent;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
@@ -46,8 +50,8 @@ public class HpcProjectControllerTest {
 
 	@Value("${local.server.port}")
 	private int port;
-	//private final String baseurl = "http://fr-s-hpcdm-gp-d.ncifcrf.gov:8080/hpc-server/project";
-	private final String baseurl = "http://localhost:7737/hpc-server/project";
+	private final String baseurl = "http://fr-s-hpcdm-gp-d.ncifcrf.gov:8080/hpc-server/project";
+	//private final String baseurl = "http://localhost:7737/hpc-server/project";
 
 	private RestTemplate template;
 
@@ -61,7 +65,7 @@ public class HpcProjectControllerTest {
 		HpcProjectRegistrationDTO dto = new HpcProjectRegistrationDTO();
 
 		HpcProjectMetadata metadata = new HpcProjectMetadata();
-		metadata.setName("Project");
+		metadata.setName("Project1000");
 		metadata.setDescription("Description");
 		metadata.setDoc("Division");
 		metadata.setExperimentId("Test");
@@ -114,10 +118,10 @@ public class HpcProjectControllerTest {
 
 			// TODO: Metadata funding organization
 			HpcFilePrimaryMetadata metadata = new HpcFilePrimaryMetadata();
-			metadata.setDataEncrypted(false);
-			metadata.setDataContainsPII(false);
-			metadata.setDataCompressed(false);
-			metadata.setDataContainsPHI(false);
+			metadata.setDataEncrypted(HpcEncryptionStatus.NOT_ENCRYPTED);
+			metadata.setDataContainsPII(HpcPIIContent.PII_NOT_PRESENT);
+			metadata.setDataCompressed(HpcCompressionStatus.NOT_COMPRESSED);
+			metadata.setDataContainsPHI(HpcPHIContent.PHI_NOT_PRESENT);
 			metadata.setFundingOrganization("NCI");
 			metadata.setPrimaryInvestigatorNihUserId("konkapv");
 			metadata.setRegistrarNihUserId("konkapv");
@@ -136,7 +140,7 @@ public class HpcProjectControllerTest {
 			Client client = ClientBuilder.newClient().register(
 					ClientResponseLoggingFilter.class);
 			WebTarget resourceTarget = client
-					.target(baseurl+"/35a93600-e569-4f55-a7ad-4da3bdb7712c");
+					.target(baseurl+"/2665eb57-3802-4556-bec2-0135e1f7b2e8");
 			Invocation invocation = resourceTarget.request(
 					MediaType.APPLICATION_XML).buildGet();
 			HpcProjectDTO response = invocation.invoke(HpcProjectDTO.class);

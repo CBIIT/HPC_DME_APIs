@@ -5,8 +5,12 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
+import gov.nih.nci.hpc.domain.metadata.HpcCompressionStatus;
+import gov.nih.nci.hpc.domain.metadata.HpcEncryptionStatus;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
+import gov.nih.nci.hpc.domain.metadata.HpcPHIContent;
+import gov.nih.nci.hpc.domain.metadata.HpcPIIContent;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
@@ -26,6 +30,9 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -48,8 +55,8 @@ public class HpcDatasetControllerTest {
 
 	@Value("${local.server.port}")
 	private int port;
-	//private final String baseurl = "http://fr-s-hpcdm-gp-d.ncifcrf.gov:8080/hpc-server/dataset";
 	private final String baseurl = "http://localhost:7737/hpc-server/dataset";
+	//private final String baseurl = "http://localhost:7737/hpc-server/dataset";
 
 	private RestTemplate template;
 
@@ -62,12 +69,12 @@ public class HpcDatasetControllerTest {
 	public void register() throws Exception {
 
 		HpcDatasetRegistrationDTO dto = new HpcDatasetRegistrationDTO();
-		dto.setName("Set1");
+		dto.setName("Experiment2015");
 		dto.setDescription("Set1 description");
 		dto.setComments("Set1 comments");
 
 		// TODO: Lookup Id
-		String files = "/~/C/globus-data/test2.fastq,/~/C/globus-data/test.fastq.docx";
+		String files = "/~/C/globus-data/SRR062635.filt.fastq,/~/C/globus-data/NGS_1.1_UseCases.doc";
 		StringTokenizer tokens = new StringTokenizer(files, ",");
 		while (tokens.hasMoreTokens()) {
 			HpcFileUploadRequest upload = new HpcFileUploadRequest();
@@ -78,7 +85,7 @@ public class HpcDatasetControllerTest {
 			String filePath = tokens.nextToken();
 			source.setPath(filePath);
 			HpcFileLocation destination = new HpcFileLocation();
-			destination.setEndpoint("nihfnlcr#gridftp1");
+			destination.setEndpoint("nihnci#NIH-NCI-TRANSFER1");
 			destination.setPath(filePath);
 			locations.setDestination(destination);
 			locations.setSource(source);
@@ -88,10 +95,10 @@ public class HpcDatasetControllerTest {
 
 			// TODO: Metadata funding organization
 			HpcFilePrimaryMetadata metadata = new HpcFilePrimaryMetadata();
-			metadata.setDataEncrypted(false);
-			metadata.setDataContainsPII(false);
-			metadata.setDataCompressed(false);
-			metadata.setDataContainsPHI(false);
+			metadata.setDataEncrypted(HpcEncryptionStatus.NOT_ENCRYPTED);
+			metadata.setDataContainsPII(HpcPIIContent.PII_NOT_PRESENT);
+			metadata.setDataCompressed(HpcCompressionStatus.NOT_COMPRESSED);
+			metadata.setDataContainsPHI(HpcPHIContent.PHI_NOT_PRESENT);
 			metadata.setFundingOrganization("NCI");
 			metadata.setPrimaryInvestigatorNihUserId("konkapv");
 			metadata.setRegistrarNihUserId("konkapv");
@@ -108,7 +115,9 @@ public class HpcDatasetControllerTest {
 			metadataItem2.setValue("value2");
 			metadata.getMetadataItems().add(metadataItem1);
 			metadata.getMetadataItems().add(metadataItem2);
+			upload.getProjectIds().add("07464d6b-4da4-4a4c-aafc-f22c26d0a206");
 			dto.getUploadRequests().add(upload);
+			writeXML(dto);
 		}
 		try {
 			Client client = ClientBuilder.newClient().register(
@@ -133,7 +142,7 @@ public class HpcDatasetControllerTest {
 			Client client = ClientBuilder.newClient().register(
 					ClientResponseLoggingFilter.class);
 			WebTarget resourceTarget = client
-					.target(baseurl+"/9be37e99-3736-4d76-b721-7da25958e00f");
+					.target(baseurl+"/b5d46f5f-af8d-453c-ba2e-9a66fb7da68d");
 			Invocation invocation = resourceTarget.request(
 					MediaType.APPLICATION_XML).buildGet();
 			HpcDatasetDTO response = invocation.invoke(HpcDatasetDTO.class);
@@ -169,7 +178,7 @@ public class HpcDatasetControllerTest {
 			Client client = ClientBuilder.newClient().register(
 					ClientResponseLoggingFilter.class);
 			WebTarget resourceTarget = client
-					.target(baseurl+"/query/name/Set1");
+					.target(baseurl+"/query/name/Experiment2015");
 			Invocation invocation = resourceTarget.request(
 					MediaType.APPLICATION_XML).buildGet();
 			HpcDatasetCollectionDTO response = invocation.invoke(HpcDatasetCollectionDTO.class);
@@ -243,7 +252,7 @@ public class HpcDatasetControllerTest {
 			Client client = ClientBuilder.newClient().register(
 					ClientResponseLoggingFilter.class);
 			WebTarget resourceTarget = client
-					.target(baseurl+"/8e687827-4906-45e9-9e3e-2cb682362280");
+					.target(baseurl+"/b5d46f5f-af8d-453c-ba2e-9a66fb7da68d");
 			Invocation invocation = resourceTarget.request(
 					MediaType.APPLICATION_XML).buildGet();
 			HpcDatasetDTO response = invocation.invoke(HpcDatasetDTO.class);
@@ -255,4 +264,22 @@ public class HpcDatasetControllerTest {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	private void writeXML(HpcDatasetRegistrationDTO dto) {
+		try {
+
+			JAXBContext jaxbContext = JAXBContext
+					.newInstance(HpcDatasetRegistrationDTO.class);
+			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+
+			// output pretty printed
+			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+			jaxbMarshaller.marshal(dto, System.out);
+
+		} catch (JAXBException e) {
+			e.printStackTrace();
+		}
+
+	}	
 }

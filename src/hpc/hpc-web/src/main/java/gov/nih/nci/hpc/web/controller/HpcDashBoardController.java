@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public class HpcDashBoardController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.dataset}")
 	private String serviceURL;
-	@Value("${gov.nih.nci.hpc.server.dataset.query.creator}")
+	@Value("${gov.nih.nci.hpc.server.dataset.query.registrar}")
 	private String datasetURL;
 
 	@RequestMapping(method = RequestMethod.GET)
