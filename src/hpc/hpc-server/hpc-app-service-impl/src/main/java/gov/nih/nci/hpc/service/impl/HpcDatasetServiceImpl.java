@@ -24,7 +24,6 @@ import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
-
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcDatasetService;
@@ -61,7 +60,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     
     private HpcUserService userService = null;
     private HpcDataTransferService dataTransferService = null;
-    private HpcTransferStatusService transferStatusService = null;    
+    private HpcTransferStatusService transferStatusService = null;   
 	@SuppressWarnings("rawtypes")
 	private Map<String, String> collections = null;
     
@@ -161,7 +160,8 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     		file.setSize(0);
     		file.setSource(uploadRequest.getLocations().getSource());
     		file.setLocation(uploadRequest.getLocations().getDestination());
-    		
+    		if(uploadRequest.getProjectIds() != null && uploadRequest.getProjectIds().size() > 0)
+    			file.getProjectIds().addAll(uploadRequest.getProjectIds());
     		// Set the metadata.
     		HpcFileMetadata metadata = new HpcFileMetadata();
     		metadata.setPrimaryMetadata(uploadRequest.getMetadata());

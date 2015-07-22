@@ -92,5 +92,16 @@
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcCompressionStatus"/>
         </jxb:bindings>
     </jxb:bindings>
+   <jxb:bindings schemaLocation="HpcProject.xsd">
+		<jxb:bindings node="//xsd:element[@name='HpcProjectRegistrationDTO']">
+        	<jxb:class ref="gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:element[@name='HpcProjectDTO']">
+        	<jxb:class ref="gov.nih.nci.hpc.dto.project.HpcProjectDTO"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:element[@name='HpcProjectCollectionDTO']">
+        	<jxb:class ref="gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO"/>
+		</jxb:bindings>
+    </jxb:bindings>
     
 </jxb:bindings>

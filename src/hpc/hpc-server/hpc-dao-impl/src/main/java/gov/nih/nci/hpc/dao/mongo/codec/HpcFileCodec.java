@@ -10,6 +10,8 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
+import java.util.List;
+
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
@@ -67,6 +69,7 @@ public class HpcFileCodec extends HpcCodec<HpcFile>
 		HpcFileLocation source = file.getSource();
 		HpcFileLocation location = file.getLocation();
 		HpcFileMetadata metadata = file.getMetadata();
+		List<String> projectIds = file.getProjectIds();
 		
 		// Set the data on the BSON document.
 		if(id != null) {
@@ -86,6 +89,9 @@ public class HpcFileCodec extends HpcCodec<HpcFile>
 		}
 		if(source != null) {
 		   document.put(FILE_METADATA_KEY, metadata);
+		}
+		if(projectIds != null && projectIds.size() > 0) {
+			   document.put(FILE_PROJECTS_KEY, projectIds);
 		}
 
 		getRegistry().get(Document.class).encode(writer, document, 
@@ -114,7 +120,12 @@ public class HpcFileCodec extends HpcCodec<HpcFile>
 		file.setMetadata(decodeFileMetadata(document.get(FILE_METADATA_KEY, 
                                                          Document.class),
                                             decoderContext));
-		
+		@SuppressWarnings("unchecked")
+		List<String> projectIds = 
+				(List<String>) document.get(FILE_PROJECTS_KEY);
+		if(projectIds != null && projectIds.size() > 0)
+			file.getProjectIds().addAll(projectIds);
+
 		return file;
 	}
 	

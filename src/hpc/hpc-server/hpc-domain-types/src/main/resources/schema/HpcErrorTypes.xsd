@@ -45,6 +45,7 @@
 
 			<!-- Dataset Service Request Reject Reasons -->
 			<xsd:enumeration value="INVALID_NIH_ACCOUNT" />
+			<xsd:enumeration value="INVALID_PROJECT_ID" />
 			<xsd:enumeration value="INVALID_DATA_TRANSFER_ACCOUNT" />
 
 		</xsd:restriction>

@@ -20,6 +20,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
+import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
@@ -29,6 +30,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcDatasetService;
+import gov.nih.nci.hpc.service.HpcProjectService;
 import gov.nih.nci.hpc.service.HpcTransferStatusService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
@@ -57,6 +59,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     private HpcUserService userService = null;
     private HpcDataTransferService dataTransferService = null;
     private HpcTransferStatusService transferStatusService = null;
+    private HpcProjectService projectService = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -90,6 +93,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		          HpcDatasetService datasetService,
     		          HpcUserService userService,
     		          HpcDataTransferService dataTransferService,
+    		          HpcProjectService projectService,
     		          HpcTransferStatusService transferStatusService)
                       throws HpcException
     {
@@ -103,6 +107,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	this.userService = userService;
     	this.dataTransferService = dataTransferService;
     	this.transferStatusService = transferStatusService;
+    	this.projectService = projectService;
     }  
     
     //---------------------------------------------------------------------//
@@ -130,7 +135,9 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	// account registered with HPC. In addition, validate the registrator
     	// has a valid data transfer account.
     	validateAssociatedUsers(datasetRegistrationDTO.getUploadRequests());
-    	
+
+    	validateAssociatedProjects(datasetRegistrationDTO.getUploadRequests());
+
     	// Add the dataset to the managed collection.
     	String datasetId = 
     		   datasetService.add(
@@ -246,7 +253,35 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
  	    
  	    return datasetCollectionDTO;
     }
-    
+   
+    /**
+     * Validate the projects associated with the upload request are valid.
+     * 
+     * @param uploadRequests The upload requests to validate. 
+     *
+     * @throws HpcException if any validation error found.
+     */
+    private void validateAssociatedProjects(
+    		             List<HpcFileUploadRequest> uploadRequests)
+    		             throws HpcException
+    {
+    	if(uploadRequests == null) {
+    	   return;
+    	}
+    	
+    	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
+    		if(uploadRequest.getProjectIds() == null || uploadRequest.getProjectIds().size() == 0) {
+    		   continue;	
+    		}
+    		
+    		List<String> projectIds = uploadRequest.getProjectIds();
+    		if(projectIds != null && projectIds.size() > 0)
+    		{
+    			for(String projectId : projectIds)
+    				validateProject(projectId);
+    		}
+    	}
+    }    
     /**
      * Validate the users associated with the upload request are valid.
      * The associated users are - creator, registrator and primary investigator.
@@ -284,6 +319,27 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
                             HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);	
          	}
     	}
+    }
+ 
+    /**
+     * Validate a project is registered with HPC
+     * 
+     * @param projectId
+     * 
+     * @return The HpcProject
+     *
+     * @throws HpcException if the user is not registered with HPC.
+     */
+    private HpcProject validateProject(String projectId) 
+    		                    throws HpcException
+    {
+    	HpcProject project = projectService.getProject(projectId);
+    	if(project == null) {
+    	   throw new HpcException("Could not find Project with projectId = " + projectId,
+    		                       HpcRequestRejectReason.INVALID_PROJECT_ID);	
+    	}
+    	
+    	return project;
     }
     
     /**
