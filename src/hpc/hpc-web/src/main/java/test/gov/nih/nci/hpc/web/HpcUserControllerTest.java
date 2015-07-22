@@ -30,6 +30,9 @@ import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -66,14 +69,16 @@ public class HpcUserControllerTest {
 		HpcNihAccount account = new HpcNihAccount();
 		account.setFirstName("Prasad");
 		account.setLastName("Konka");
-		account.setUserId("pkonka3");
+		account.setUserId("konkapv2");
 		dto.setNihAccount(account);
 		HpcDataTransferAccount trAccount = new HpcDataTransferAccount();
 		trAccount.setAccountType(HpcDataTransferAccountType.GLOBUS);
 		trAccount.setUsername("pkonka");
 		trAccount.setPassword("IpgSvg12!@");
 		dto.setDataTransferAccount(trAccount);
-
+		ObjectMapper mapper = new ObjectMapper();
+		System.out.println(mapper.writeValueAsString(dto));
+		writeXML(dto);
 		Client client = ClientBuilder.newClient().register(
 				ClientResponseLoggingFilter.class);
 		Response res = client.target(baseurl).request()
@@ -82,10 +87,10 @@ public class HpcUserControllerTest {
 			throw new RuntimeException("Failed : HTTP error code : "
 					+ res.getStatus());
 		}
-		HpcUserRegistrationDTO entity = (HpcUserRegistrationDTO) res
-				.getEntity();
-		ObjectMapper mapper = new ObjectMapper();
-		System.out.println(mapper.writeValueAsString(entity));
+		// HpcUserRegistrationDTO entity = (HpcUserRegistrationDTO) res
+		// .getEntity();
+		// ObjectMapper mapper = new ObjectMapper();
+		// System.out.println(mapper.writeValueAsString(entity));
 
 	}
 
@@ -94,7 +99,7 @@ public class HpcUserControllerTest {
 
 		Client client = ClientBuilder.newClient().register(
 				ClientResponseLoggingFilter.class);
-		WebTarget resourceTarget = client.target(baseurl + "/konkapv");
+		WebTarget resourceTarget = client.target(baseurl + "/konkapv2");
 		Invocation invocation = resourceTarget.request(
 				MediaType.APPLICATION_XML).buildGet();
 		HpcUserDTO response = invocation.invoke(HpcUserDTO.class);
@@ -103,4 +108,21 @@ public class HpcUserControllerTest {
 
 	}
 
+	private void writeXML(HpcUserRegistrationDTO dto) {
+		try {
+
+			JAXBContext jaxbContext = JAXBContext
+					.newInstance(HpcUserRegistrationDTO.class);
+			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+
+			// output pretty printed
+			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+			jaxbMarshaller.marshal(dto, System.out);
+
+		} catch (JAXBException e) {
+			e.printStackTrace();
+		}
+
+	}
 }
