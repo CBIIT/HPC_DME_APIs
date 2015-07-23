@@ -10,9 +10,10 @@
 
 package gov.nih.nci.hpc.dao.mongo.impl;
 
-import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.all;
+import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.in;
 import static com.mongodb.client.model.Filters.regex;
 import gov.nih.nci.hpc.dao.HpcDatasetDAO;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
@@ -211,7 +212,7 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 	}
 	
 	@Override
-	public List<HpcDataset> getDatasets(String nihUserId, 
+	public List<HpcDataset> getDatasets(List<String> nihUserIds, 
                                         HpcDatasetUserAssociation association) 
                                        throws HpcException
     {
@@ -236,8 +237,7 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
 		HpcSingleResultCallback<List<HpcDataset>> callback = 
                        new HpcSingleResultCallback<List<HpcDataset>>();
-		getCollection().find(
-		                eq(fieldName, nihUserId)).into(datasets, callback); 
+		getCollection().find(in(fieldName, nihUserIds)).into(datasets, callback); 
 		
 		return callback.getResult();
     }

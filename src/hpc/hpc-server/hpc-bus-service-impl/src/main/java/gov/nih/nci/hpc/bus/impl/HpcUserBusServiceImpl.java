@@ -118,7 +118,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	}
     	
     	// Get the managed data domain object.
-    	HpcUser user = userService.get(nihUserId);
+    	HpcUser user = userService.getUser(nihUserId);
     	if(user == null) {
     	   return null;
     	}

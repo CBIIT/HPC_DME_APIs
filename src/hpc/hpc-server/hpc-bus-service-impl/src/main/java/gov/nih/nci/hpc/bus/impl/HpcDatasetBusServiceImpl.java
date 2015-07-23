@@ -11,18 +11,14 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
-import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
@@ -34,6 +30,7 @@ import gov.nih.nci.hpc.service.HpcProjectService;
 import gov.nih.nci.hpc.service.HpcTransferStatusService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -166,18 +163,42 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     }
     
     @Override
-    public HpcDatasetCollectionDTO getDatasets(String userId, 
+    public HpcDatasetCollectionDTO getDatasets(List<String> userIds, 
                                       HpcDatasetUserAssociation association) 
                                       throws HpcException
     {
     	// Input validation.
-    	if(userId == null || association == null) {
-    	   throw new HpcException("Null user-id or association",
+    	if(userIds == null || userIds.size() == 0 || association == null) {
+    	   throw new HpcException("Null user-ids or association",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	return toCollectionDTO(datasetService.getDatasets(userId, association));
+    	return toCollectionDTO(datasetService.getDatasets(userIds, association));
     }
+    
+    public HpcDatasetCollectionDTO getDatasets(String firstName, String lastName, 
+	                                           HpcDatasetUserAssociation association) 
+	                                           throws HpcException
+    {
+    	// Input validation.
+    	if(firstName == null || lastName == null || association == null) {
+           throw new HpcException("Null first/last name or association",
+   			                      HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Search for users that match the first/last name.
+    	List<HpcUser> users = userService.getUsers(firstName, lastName);
+    	if(users == null || users.size() == 0) {
+    	   return null;
+    	}
+    	
+    	List<String> userIds = new ArrayList<String>();
+    	for(HpcUser user : users) {
+    		userIds.add(user.getNihAccount().getUserId());
+    	}
+    		
+    	return toCollectionDTO(datasetService.getDatasets(userIds, association));
+   }
     
     @Override
     public HpcDatasetCollectionDTO getDatasets(String name) throws HpcException
@@ -356,7 +377,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		                     HpcDatasetUserAssociation userAssociation)
     		                    throws HpcException
     {
-    	HpcUser user = userService.get(nihUserId);
+    	HpcUser user = userService.getUser(nihUserId);
     	if(user == null) {
     	   throw new HpcException("Could not find "+ userAssociation +
     				               " user with nihUserID = " + nihUserId,

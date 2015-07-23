@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.bus.HpcProjectBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
@@ -22,12 +23,9 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
-import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcProjectService;
 import gov.nih.nci.hpc.service.HpcUserService;
-import gov.nih.nci.hpc.service.HpcDatasetService;
-import gov.nih.nci.hpc.bus.impl.HpcDatasetBusServiceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * @author <a href="mailto:prasad.konka@nih.gov">Prasad Konka</a>
- * @version $Id:  $
+ * @version $Id$
  */
 
 public class HpcProjectBusServiceImpl implements HpcProjectBusService
@@ -332,7 +330,7 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     		                     HpcDatasetUserAssociation userAssociation)
     		                    throws HpcException
     {
-    	HpcUser user = userService.get(nihUserId);
+    	HpcUser user = userService.getUser(nihUserId);
     	if(user == null) {
     	   throw new HpcException("Could not find "+ userAssociation +
     				               " user with nihUserID = " + nihUserId,

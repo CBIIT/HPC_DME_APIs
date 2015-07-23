@@ -30,6 +30,7 @@ import gov.nih.nci.hpc.service.HpcDatasetService;
 import gov.nih.nci.hpc.service.HpcTransferStatusService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -172,7 +173,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     		
     		//Transfer file 
     		HpcDataTransferAccount dataTransferAccount = 
-    	    		   userService.get(
+    	    		   userService.getUser(
     	    			   uploadRequest.getMetadata().getRegistrarNihUserId()).
     	    			                               getDataTransferAccount();
     	        	
@@ -222,7 +223,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     		for(HpcDataTransferRequest uploadRequest : hpcDataset.getUploadRequests())
     		{
         		HpcDataTransferAccount dataTransferAccount = 
-     	    		   userService.get(
+     	    		   userService.getUser(
      	    				  hpcDataset.getFileSet().getFiles().get(0).getMetadata().getPrimaryMetadata().getRegistrarNihUserId()).
      	    			                               getDataTransferAccount();
         		
@@ -237,10 +238,10 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     }
     
     @Override
-    public List<HpcDataset> getDatasets(String userId, HpcDatasetUserAssociation association) 
+    public List<HpcDataset> getDatasets(List<String> userIds, HpcDatasetUserAssociation association) 
  	                                   throws HpcException
  	{
-    	return datasetDAO.getDatasets(userId, association);
+    	return datasetDAO.getDatasets(userIds, association);
  	}
     
     @Override

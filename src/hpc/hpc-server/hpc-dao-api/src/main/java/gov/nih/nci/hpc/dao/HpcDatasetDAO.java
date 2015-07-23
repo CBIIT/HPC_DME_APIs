@@ -48,15 +48,15 @@ public interface HpcDatasetDAO
     public HpcDataset getDataset(String id) throws HpcException;
     
     /**
-     * Get datasets associated with a specific user.
+     * Get datasets associated with a specific user(s).
      *
-     * @param nihUserId the user id.
+     * @param nihUserIds The user id collection to match.
      * @param association The association between the dataset and the user.
      * @return HpcDataset collection, or null if no results found.
      * 
      * @throws HpcException
      */
-    public List<HpcDataset> getDatasets(String nihUserId, 
+    public List<HpcDataset> getDatasets(List<String> nihUserIds, 
     		                            HpcDatasetUserAssociation association) 
         	                           throws HpcException;
     
@@ -71,7 +71,7 @@ public interface HpcDatasetDAO
     public List<HpcDataset> getDatasets(String name) throws HpcException;
     
     /**
-     * GET Datasets by primary metadata.
+     * GET Datasets by a list of .
      *
      * @param primaryMetadata The meatada to match.
      *  @return HpcDataset collection, or null if no results found.
