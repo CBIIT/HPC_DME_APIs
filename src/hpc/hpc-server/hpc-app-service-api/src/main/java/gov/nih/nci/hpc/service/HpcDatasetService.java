@@ -55,15 +55,15 @@ public interface HpcDatasetService
     public HpcDataset getDataset(String id) throws HpcException;
     
     /**
-     * Get datasets associated with a specific user.
+     * Get datasets associated with a specific user(s).
      *
-     * @param userId the user id.
+     * @param userIds The list of user ids to match.
      * @param association The association between the dataset and the user.
      * @return HpcDataset collection, or null if no results found.
      * 
      * @throws HpcException
      */
-    public List<HpcDataset> getDatasets(String userId, 
+    public List<HpcDataset> getDatasets(List<String> userIds, 
     		                            HpcDatasetUserAssociation association) 
         	                           throws HpcException;
     

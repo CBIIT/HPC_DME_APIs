@@ -10,6 +10,8 @@
 
 package gov.nih.nci.hpc.bus;
 
+import java.util.List;
+
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
@@ -50,7 +52,21 @@ public interface HpcDatasetBusService
     public HpcDatasetDTO getDataset(String id) throws HpcException;
     
     /**
-     * Get datasets associated with a specific user.
+     * Get datasets associated with a specific user(s).
+     *
+     * @param userIds The list of user ids to match.
+     * @param association The association between the dataset and the user.
+     * @return Collection of Dataset DTO, or null if not found.
+     * 
+     * @throws HpcException
+     */
+    public HpcDatasetCollectionDTO 
+              getDatasets(List<String> userIds, 
+    		              HpcDatasetUserAssociation association) 
+    		             throws HpcException;
+    
+    /**
+     * Get datasets associated with a specific user's first and last name.
      *
      * @param nihUserId the user id.
      * @param association The association between the dataset and the user.
@@ -59,7 +75,7 @@ public interface HpcDatasetBusService
      * @throws HpcException
      */
     public HpcDatasetCollectionDTO 
-              getDatasets(String nihUserId, 
+              getDatasets(String firstName, String lastName, 
     		              HpcDatasetUserAssociation association) 
     		             throws HpcException;
     

@@ -23,6 +23,8 @@ import gov.nih.nci.hpc.ws.rs.HpcDatasetRestService;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -148,12 +150,35 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     	
 		HpcDatasetCollectionDTO datasetCollectionDTO = null;
 		try {
+			 List<String> userIds = new ArrayList<String>();
+			 userIds.add(registrarNihUserId);
 			 datasetCollectionDTO = datasetBusService.getDatasets(
-					                       registrarNihUserId, 
+					                       userIds, 
 						                   HpcDatasetUserAssociation.REGISTRAR); 
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /dataset/query/registrar/{id}: failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(datasetCollectionDTO, true);
+    }
+    
+    @Override
+    public Response getDatasetsByPrimaryInvestigatorName(String firstName,
+    		                                             String lastName)
+    {
+    	logger.info("Invoking RS: GET /dataset/query/primary-investigator: " + 
+    			    firstName + " " + lastName);
+    	
+		HpcDatasetCollectionDTO datasetCollectionDTO = null;
+		try {
+			 datasetCollectionDTO = datasetBusService.getDatasets(
+					                       firstName, lastName, 
+						                   HpcDatasetUserAssociation.REGISTRAR); 
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /dataset/query/primary-investigator: failed:", e);
 			    return errorResponse(e);
 		}
 		

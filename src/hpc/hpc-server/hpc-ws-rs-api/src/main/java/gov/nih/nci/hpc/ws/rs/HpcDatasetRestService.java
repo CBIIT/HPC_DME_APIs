@@ -66,6 +66,13 @@ public interface HpcDatasetRestService
     @Produces("application/json,application/xml")
     public Response getDatasetsByRegistrarId(@PathParam("id") String registrarNihUserId); 
     
+    @GET
+    @Path("/dataset/query/primary-investigator")
+    @Produces("application/json,application/xml")
+    public Response getDatasetsByPrimaryInvestigatorName(
+    		                            @QueryParam("firstName") String firstName,
+    		                            @QueryParam("lastName") String lastName); 
+    
     /**
      * GET Datasets by name.
      *
@@ -90,7 +97,7 @@ public interface HpcDatasetRestService
     @Path("/dataset/query/primaryMetadata")
     @Produces("application/json,application/xml")
     public Response getDatasetsByPrimaryMetadata(
-    		            HpcPrimaryMetadataQueryDTO primaryMetadataQueryDTO);
+    		           HpcPrimaryMetadataQueryDTO primaryMetadataQueryDTO);
     
     /**
      * GET Configurable items by ID.
