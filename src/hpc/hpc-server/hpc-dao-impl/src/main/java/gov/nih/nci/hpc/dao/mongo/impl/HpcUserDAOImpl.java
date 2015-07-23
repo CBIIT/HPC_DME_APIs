@@ -10,7 +10,9 @@
 
 package gov.nih.nci.hpc.dao.mongo.impl;
 
+import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.regex;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcMongoDB;
@@ -18,6 +20,9 @@ import gov.nih.nci.hpc.dao.mongo.driver.HpcSingleResultCallback;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.mongodb.async.client.MongoCollection;
 
@@ -37,10 +42,20 @@ public class HpcUserDAOImpl implements HpcUserDAO
     // Constants
     //---------------------------------------------------------------------//    
     
-    // Dataset ID field name.
+    // User ID field name.
 	public final static String NIH_USER_ID_FIELD_NAME = 
 							       HpcCodec.USER_NIH_ACCOUNT_KEY + "." + 
                                    HpcCodec.NIH_ACCOUNT_USER_ID_KEY;
+	
+    // User first name field name.
+	public final static String FIRST_NAME_FIELD_NAME = 
+							         HpcCodec.USER_NIH_ACCOUNT_KEY + "." + 
+                                     HpcCodec.NIH_ACCOUNT_FIRST_NAME_KEY;
+	
+    // User last name field name.
+	public final static String LAST_NAME_FIELD_NAME = 
+							        HpcCodec.USER_NIH_ACCOUNT_KEY + "." + 
+                                    HpcCodec.NIH_ACCOUNT_LAST_NAME_KEY;
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -101,12 +116,25 @@ public class HpcUserDAOImpl implements HpcUserDAO
     }
 	
 	@Override
-	public HpcUser get(String nihUserId) throws HpcException
+	public HpcUser getUser(String nihUserId) throws HpcException
 	{
 		HpcSingleResultCallback<HpcUser> callback = 
                                          new HpcSingleResultCallback<HpcUser>();
 		getCollection().find(
 		   eq(NIH_USER_ID_FIELD_NAME, nihUserId)).first(callback);
+		
+		return callback.getResult();
+	}
+	
+	@Override
+	public List<HpcUser> getUsers(String firstName, String lastName) throws HpcException
+	{
+		List<HpcUser> users = new ArrayList<HpcUser>();
+		HpcSingleResultCallback<List<HpcUser>> callback = 
+                       new HpcSingleResultCallback<List<HpcUser>>();
+		getCollection().find(
+				        and(regex(FIRST_NAME_FIELD_NAME, "^" + firstName + "$", "i"),
+				        	regex(LAST_NAME_FIELD_NAME, "^" + lastName + "$", "i"))).into(users, callback); 
 		
 		return callback.getResult();
 	}

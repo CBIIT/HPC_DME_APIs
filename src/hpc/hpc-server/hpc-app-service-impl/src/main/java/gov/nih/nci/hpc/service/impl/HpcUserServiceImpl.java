@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
 import java.util.Calendar;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,7 +107,7 @@ public class HpcUserServiceImpl implements HpcUserService
     	}
     	
     	// Check if the user already exists.
-    	if(get(nihAccount.getUserId()) != null) {
+    	if(getUser(nihAccount.getUserId()) != null) {
     	   throw new HpcException("User already exists: nihUserId = " + 
     	                          nihAccount.getUserId(), 
     	                          HpcRequestRejectReason.USER_ALREADY_EXISTS);	
@@ -137,7 +138,7 @@ public class HpcUserServiceImpl implements HpcUserService
     }
     
     @Override
-    public HpcUser get(String nihUserId) throws HpcException
+    public HpcUser getUser(String nihUserId) throws HpcException
     {
     	// Input validation.
     	if(nihUserId == null) {
@@ -145,7 +146,19 @@ public class HpcUserServiceImpl implements HpcUserService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
-    	return userDAO.get(nihUserId);
+    	return userDAO.getUser(nihUserId);
+    }
+    
+    @Override
+    public List<HpcUser> getUsers(String firstName, String lastName) throws HpcException
+    {
+    	// Input validation.
+    	if(firstName == null || lastName == null) {
+    	   throw new HpcException("Null user first or last name", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	return userDAO.getUsers(firstName, lastName);
     }
 }
 

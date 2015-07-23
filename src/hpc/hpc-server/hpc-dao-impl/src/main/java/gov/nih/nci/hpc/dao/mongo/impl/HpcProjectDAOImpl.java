@@ -11,7 +11,6 @@
 package gov.nih.nci.hpc.dao.mongo.impl;
 
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.regex;
 import gov.nih.nci.hpc.dao.HpcProjectDAO;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcMongoDB;
@@ -32,7 +31,7 @@ import com.mongodb.async.client.MongoCollection;
  * </p>
  *
  * @author <a href="mailto:prasad.konka@nih.gov">Prasad Konka</a>
- * @version $Id:  $
+ * @version $Id$
  */
 
 public class HpcProjectDAOImpl implements HpcProjectDAO
