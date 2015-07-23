@@ -11,7 +11,6 @@
 package gov.nih.nci.hpc.dao;
 
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
-import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
