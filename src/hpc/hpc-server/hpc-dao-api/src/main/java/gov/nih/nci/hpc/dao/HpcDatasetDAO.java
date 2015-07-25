@@ -100,6 +100,19 @@ public interface HpcDatasetDAO
      */
     public List<HpcDataset> getDatasets(HpcFilePrimaryMetadata primaryMetadata) 
     		                           throws HpcException;
+    
+    /**
+     * Return true if a dataset with a specific name user association exists.
+     *
+     * @param nihUserId The user id to match.
+     * @param association The association between the dataset and the user.
+     * @return true if the dataset exists.
+     * 
+     * @throws HpcException
+     */
+    public boolean exists(String name, String nihUserId, 
+    		              HpcDatasetUserAssociation association) 
+        	             throws HpcException;
 
     /**
      * Get datasets by status.

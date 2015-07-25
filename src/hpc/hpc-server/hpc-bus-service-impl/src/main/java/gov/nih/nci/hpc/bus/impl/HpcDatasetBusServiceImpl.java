@@ -131,11 +131,16 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	}
     	
     	// Validate the associated users with this dataset have valid NIH 
-    	// account registered with HPC. In addition, validate the registrator
+    	// account registered with HPC. In addition, validate the registrar
     	// has a valid data transfer account.
     	validateAssociatedUsers(datasetRegistrationDTO.getUploadRequests());
 
+    	// TODO - document.
     	validateAssociatedProjects(datasetRegistrationDTO.getUploadRequests());
+    	
+    	// Validate this registrar has not already registered a dataset with the same name.
+    	validateDatasetName(datasetRegistrationDTO.getName(),
+    			            datasetRegistrationDTO.getUploadRequests());
 
     	// Add the dataset to the managed collection.
     	String datasetId = 
@@ -312,6 +317,45 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     }
    
     /**
+     * Validate the users associated with the upload request are valid.
+     * The associated users are - creator, registrator and primary investigator.
+     * 
+     * @param uploadRequests The upload requests to validate. 
+     *
+     * @throws HpcException if any validation error found.
+     */
+    private void validateAssociatedUsers(
+    		             List<HpcFileUploadRequest> uploadRequests)
+    		             throws HpcException
+    {
+    	if(uploadRequests == null) {
+    	   return;
+    	}
+    	
+    	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
+    		if(uploadRequest.getMetadata() == null) {
+    		   continue;	
+    		}
+    		
+    		// Verify PI and Registrar are registered with HPC.
+    		validateUser(uploadRequest.getMetadata().getPrimaryInvestigatorNihUserId(),
+    				     HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR);
+    		HpcUser registrar =
+    		validateUser(uploadRequest.getMetadata().getRegistrarNihUserId(),
+			             HpcDatasetUserAssociation.REGISTRAR);
+    		
+    		// Validate the registrator Data Transfer Account.
+        	if(!dataTransferService.validateDataTransferAccount(
+        	   registrar.getDataTransferAccount())) {
+         	   throw new HpcException(
+         			        "Invalid Data Transfer Account: username = " + 
+         			        registrar.getDataTransferAccount().getUsername(), 
+                            HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);	
+         	}
+    	}
+    }
+    
+    /**
      * Validate the projects associated with the upload request are valid.
      * 
      * @param uploadRequests The upload requests to validate. 
@@ -339,41 +383,35 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		}
     	}
     }    
+    
     /**
-     * Validate the users associated with the upload request are valid.
-     * The associated users are - creator, registrator and primary investigator.
+     * Validate this registrar has not already registered a dataset with the same name.
      * 
+     * @param name The dataset name.
      * @param uploadRequests The upload requests to validate. 
      *
      * @throws HpcException if any validation error found.
      */
-    private void validateAssociatedUsers(
-    		             List<HpcFileUploadRequest> uploadRequests)
-    		             throws HpcException
+    private void validateDatasetName(String name, 
+    		                         List<HpcFileUploadRequest> uploadRequests)
+    		                        throws HpcException
     {
-    	if(uploadRequests == null) {
+    	if(uploadRequests == null || name == null) {
     	   return;
     	}
     	
     	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
-    		if(uploadRequest.getMetadata() == null) {
+    		if(uploadRequest.getMetadata() == null || 
+    		   uploadRequest.getMetadata().getRegistrarNihUserId() == null) {
     		   continue;	
     		}
     		
-    		// Verify PI and Registrar are registered with HPC.
-    		validateUser(uploadRequest.getMetadata().getPrimaryInvestigatorNihUserId(),
-    				     HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR);
-    		HpcUser registrator =
-    		validateUser(uploadRequest.getMetadata().getRegistrarNihUserId(),
-			             HpcDatasetUserAssociation.REGISTRAR);
-    		
-    		// Validate the registrator Data Transfer Account.
-        	if(!dataTransferService.validateDataTransferAccount(
-        	   registrator.getDataTransferAccount())) {
+    		if(datasetService.exists(name, uploadRequest.getMetadata().getRegistrarNihUserId(), 
+    				                 HpcDatasetUserAssociation.REGISTRAR)) {
          	   throw new HpcException(
-         			        "Invalid Data Transfer Account: username = " + 
-         			        registrator.getDataTransferAccount().getUsername(), 
-                            HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);	
+         			        "Dataset name <" + name + "> already registered by " + 
+         			        uploadRequest.getMetadata().getRegistrarNihUserId(),
+                            HpcRequestRejectReason.DATASET_NAME_ALREADY_EXISTS);	
          	}
     	}
     }
