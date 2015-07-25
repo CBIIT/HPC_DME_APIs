@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcFileDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDatasetRestService;
@@ -140,6 +141,23 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		return okResponse(datasetDTO, true);
+	}
+    
+    @Override
+    public Response getFile(String id)
+    {
+		logger.info("Invoking RS: GET /file/{id}: " + id);
+		
+		HpcFileDTO fileDTO = null;
+		try {
+			 fileDTO = datasetBusService.getFile(id);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /file/{id}: failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(fileDTO, true);
 	}
     
     @Override

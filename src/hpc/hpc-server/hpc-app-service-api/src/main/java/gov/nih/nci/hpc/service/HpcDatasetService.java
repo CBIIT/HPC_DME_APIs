@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
+import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -53,6 +54,16 @@ public interface HpcDatasetService
      * @throws HpcException
      */
     public HpcDataset getDataset(String id) throws HpcException;
+    
+    /**
+     * Get file.
+     *
+     * @param id The file ID.
+     * @return The file.
+     * 
+     * @throws HpcException
+     */
+    public HpcFile getFile(String id) throws HpcException;
     
     /**
      * Get datasets associated with a specific user(s).

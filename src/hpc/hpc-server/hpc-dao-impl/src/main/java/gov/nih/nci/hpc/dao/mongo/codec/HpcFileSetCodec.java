@@ -106,9 +106,12 @@ public class HpcFileSetCodec extends HpcCodec<HpcFileSet>
 				                            String.class));
 		fileSet.setComments(document.get(FILE_SET_COMMENTS_KEY, String.class));
 		
-		Calendar created = Calendar.getInstance();
-		created.setTime(document.get(FILE_SET_CREATED_KEY, Date.class));
-		fileSet.setCreated(created);
+		Date createdDate = document.get(FILE_SET_CREATED_KEY, Date.class);
+		if(createdDate != null) {
+		   Calendar createdCal = Calendar.getInstance();
+		   createdCal.setTime(document.get(FILE_SET_CREATED_KEY, Date.class));
+		   fileSet.setCreated(createdCal);
+		}
 		
 		List<Document> fileDocuments = 
 				       (List<Document>) document.get(FILE_SET_FILES_KEY);
