@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.bus.impl;
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
+import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -22,6 +23,7 @@ import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcFileDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -158,8 +160,23 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Get the managed dataset domain object and return it as DTO.
+    	// Get the dataset domain object and return it as DTO.
     	return toDTO(datasetService.getDataset(id));
+    }
+    
+    @Override
+    public HpcFileDTO getFile(String id) throws HpcException
+    {
+    	logger.info("Invoking getFile(String id): " + id);
+    	
+    	// Input validation.
+    	if(id == null) {
+    	   throw new HpcException("Null File ID",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Get the file domain object and return it as DTO.
+    	return toDTO(datasetService.getFile(id));
     }
     
     @Override
@@ -251,6 +268,25 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 		}    		
     	
     	return datasetDTO;
+    }  
+    
+    /**
+     * Create a dataset DTO from a domain object.
+     * 
+     * @param dataset the domain object.
+     *
+     * @return The DTO.
+     */
+    private HpcFileDTO toDTO(HpcFile file)
+    {
+    	if(file == null) {
+     	   return null;
+     	}
+    	
+    	HpcFileDTO fileDTO = new HpcFileDTO();
+    	fileDTO.setFile(file);
+    	
+    	return fileDTO;
     }  
     
     /**

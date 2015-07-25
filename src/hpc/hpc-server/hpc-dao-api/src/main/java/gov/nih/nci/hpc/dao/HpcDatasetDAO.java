@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.dao;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
+import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -38,6 +39,15 @@ public interface HpcDatasetDAO
     public void add(HpcDataset dataset) throws HpcException;
     
     /**
+     * Update a dataset in the repository.
+     *
+     * @param dataset The dataset to be updated to the DB.
+     * 
+     * @throws HpcException
+     */
+    public void update(HpcDataset dataset) throws HpcException;
+    
+    /**
      * Get dataset from the repository by ID.
      *
      * @param id The dataset ID.
@@ -46,6 +56,16 @@ public interface HpcDatasetDAO
      * @throws HpcException
      */
     public HpcDataset getDataset(String id) throws HpcException;
+    
+    /**
+     * Get file from the repository by ID.
+     *
+     * @param id The file ID.
+     * @return The file if found, or null otherwise.
+     * 
+     * @throws HpcException
+     */
+    public HpcFile getFile(String id) throws HpcException;
     
     /**
      * Get datasets associated with a specific user(s).
@@ -80,15 +100,6 @@ public interface HpcDatasetDAO
      */
     public List<HpcDataset> getDatasets(HpcFilePrimaryMetadata primaryMetadata) 
     		                           throws HpcException;
-
-    /**
-     * Replaces dataset to the repository.
-     *
-     * @param dataset The dataset to add to the DB.
-     * 
-     * @throws HpcException
-     */
-    public void updateReplace(HpcDataset dataset) throws HpcException;
 
     /**
      * Get datasets by status.

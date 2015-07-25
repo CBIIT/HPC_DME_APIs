@@ -14,11 +14,11 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileUploadR
 import gov.nih.nci.hpc.dao.HpcDatasetDAO;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
@@ -30,7 +30,6 @@ import gov.nih.nci.hpc.service.HpcDatasetService;
 import gov.nih.nci.hpc.service.HpcTransferStatusService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -231,10 +230,22 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     			uploadRequest.setReport(hpcDataTransferReport);
     			uploadRequest.setStatus(HpcDataTransferStatus.valueOf(collections.get(hpcDataTransferReport.getStatus())));
     			
-    			datasetDAO.updateReplace(hpcDataset);
+    			datasetDAO.update(hpcDataset);
     		}
     	}
     	return hpcDataset;
+    }
+    
+    @Override
+    public HpcFile getFile(String id) throws HpcException
+    {
+    	// Input validation.
+    	if(!keyGenerator.validateKey(id)) {
+    	   throw new HpcException("Invalid dataset ID: " + id, 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	return datasetDAO.getFile(id);
     }
     
     @Override

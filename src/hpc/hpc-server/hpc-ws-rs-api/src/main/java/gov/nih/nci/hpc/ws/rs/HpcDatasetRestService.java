@@ -56,6 +56,17 @@ public interface HpcDatasetRestService
     public Response getDataset(@PathParam("id") String id); 
     
     /**
+     * GET file by ID.
+     *
+     * @param id The file ID.
+     * @return gov.nih.nci.hpc.dto.dataset.HpcFileDTO entity.
+     */
+    @GET
+    @Path("/file/{id}")
+    @Produces("application/json,application/xml")
+    public Response getFile(@PathParam("id") String id);
+    
+    /**
      * GET Datasets by creator ID.
      *
      * @param registrarNihUserId Get datasets associated with this registrar.
@@ -66,6 +77,14 @@ public interface HpcDatasetRestService
     @Produces("application/json,application/xml")
     public Response getDatasetsByRegistrarId(@PathParam("id") String registrarNihUserId); 
     
+    
+    /**
+     * GET Datasets by Primary Investigator's first and last name..
+     *
+     * @param firstName The primary investigator first name.
+     * @param lastName The primary investigator last name.
+     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
+     */
     @GET
     @Path("/dataset/query/primary-investigator")
     @Produces("application/json,application/xml")

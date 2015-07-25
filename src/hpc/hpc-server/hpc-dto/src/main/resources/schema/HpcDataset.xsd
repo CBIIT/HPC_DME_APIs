@@ -66,6 +66,17 @@
 		</xsd:complexType>
 	</xsd:element>
 	
+	<!--  File DTO -->
+	<xsd:element name="HpcFileDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="file"
+					         type="hpc-domain-dataset:HpcFile" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<!--  Primary Metadata Query Input DTO -->
 	<xsd:element name="HpcPrimaryMetadataQueryDTO">
 		<xsd:complexType>
 			<xsd:sequence>
@@ -74,5 +85,5 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-
+	
 </xsd:schema>
