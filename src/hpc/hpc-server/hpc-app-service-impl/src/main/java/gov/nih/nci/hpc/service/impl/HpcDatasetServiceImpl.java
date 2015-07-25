@@ -285,9 +285,18 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	
     	return datasetDAO.getDatasets(primaryMetadata);
     }
+    
+    @Override
+    public boolean exists(String name, String nihUserId, HpcDatasetUserAssociation association) 
+                         throws HpcException
+    {
+    	return datasetDAO.exists(name, nihUserId, association);
+    }
 
-	public List<HpcDataset> getDatasetsByStatus(String transferStatus) throws HpcException{
-		return datasetDAO.getDatasetsByStatus(transferStatus);
+    @Override
+	public List<HpcDataset> getDatasetsByStatus(String transferStatus) throws HpcException
+	{
+    	return datasetDAO.getDatasetsByStatus(transferStatus);
 	}
 }
 
