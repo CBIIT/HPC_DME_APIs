@@ -243,28 +243,10 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
                                         HpcDatasetUserAssociation association) 
                                        throws HpcException
     {
-		// Determine the field name needed to query for the requested association.
-		String fieldName = null;
-		switch(association) {
-		       case PRIMARY_INVESTIGATOR:
-		            fieldName = PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME;
-		            break;
-		            
-		       case REGISTRAR:
-		            fieldName = REGISTRAR_NIH_USER_ID_FIELD_NAME;
-		            break;
-		            
-		       default:
-		    	   throw new HpcException("Invalid Association Value: " + 
-		                                  association.value(), 
-		                                  HpcErrorType.UNEXPECTED_ERROR);
-		}
-		
-		// Invoke the query.
 		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
 		HpcSingleResultCallback<List<HpcDataset>> callback = 
                        new HpcSingleResultCallback<List<HpcDataset>>();
-		getCollection().find(in(fieldName, nihUserIds)).into(datasets, callback); 
+		getCollection().find(in(getFieldName(association), nihUserIds)).into(datasets, callback); 
 		
 		return callback.getResult();
     }
@@ -294,6 +276,29 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 		return callback.getResult();
     }
 	
+    public boolean exists(String name, String nihUserId, 
+                          HpcDatasetUserAssociation association) 
+                         throws HpcException
+    {
+		HpcSingleResultCallback<Long> callback = new HpcSingleResultCallback<Long>();
+    	getCollection().count(and(eq(getFieldName(association), nihUserId),
+    			                  regex(DATASET_NAME_FIELD_NAME, 
+	                	                "^" + name + "$", "i")), callback);
+    	return callback.getResult() != null ? callback.getResult() > 0 : false;
+    }
+	
+   	public List<HpcDataset> getDatasetsByStatus(String transferStatus)
+			throws HpcException {
+		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
+		HpcSingleResultCallback<List<HpcDataset>> callback = 
+                       new HpcSingleResultCallback<List<HpcDataset>>();
+		getCollection().find(
+		                regex(DATASET_TRANSFER_STATUS_NAME, 
+		                	  transferStatus, "i")).into(datasets, callback); 
+		
+		return callback.getResult();
+	}  
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -366,18 +371,31 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     	
     	return filters;
     }
-
-	public List<HpcDataset> getDatasetsByStatus(String transferStatus)
-			throws HpcException {
-		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
-		HpcSingleResultCallback<List<HpcDataset>> callback = 
-                       new HpcSingleResultCallback<List<HpcDataset>>();
-		getCollection().find(
-		                regex(DATASET_TRANSFER_STATUS_NAME, 
-		                		transferStatus, "i")).into(datasets, callback); 
-		
-		return callback.getResult();
-	}  
+    
+    /**
+     * Get a query field name from a dataset/user associartion.
+     *
+     * @param association The dataset to user association..
+     * @return A field name to include in a filter.
+     * 
+     * @throws HpcException id the association value is unexpected.
+     */
+    private String getFieldName(HpcDatasetUserAssociation association) 
+                               throws HpcException
+    {
+		switch(association) {
+	           case PRIMARY_INVESTIGATOR:
+	                return PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME;
+	         
+	           case REGISTRAR:
+	                return REGISTRAR_NIH_USER_ID_FIELD_NAME;
+	         
+	           default:
+	 	            throw new HpcException("Invalid Association Value: " + 
+	                                       association.value(), 
+	                                       HpcErrorType.UNEXPECTED_ERROR);
+		}
+    }
 }
 
  
