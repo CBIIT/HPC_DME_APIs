@@ -10,14 +10,15 @@
 
 package gov.nih.nci.hpc.bus;
 
-import java.util.List;
-
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcFileDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.util.List;
 
 /**
  * <p>
@@ -50,6 +51,16 @@ public interface HpcDatasetBusService
      * @throws HpcException
      */
     public HpcDatasetDTO getDataset(String id) throws HpcException;
+    
+    /**
+     * Get a file by its ID.
+     *
+     * @param id The file id.
+     * @return The file DTO or null if not found.
+     * 
+     * @throws HpcException
+     */
+    public HpcFileDTO getFile(String id) throws HpcException;
     
     /**
      * Get datasets associated with a specific user(s).
