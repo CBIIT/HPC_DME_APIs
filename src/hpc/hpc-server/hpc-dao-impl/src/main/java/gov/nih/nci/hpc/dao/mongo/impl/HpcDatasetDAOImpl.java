@@ -20,6 +20,7 @@ import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcMongoDB;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcSingleResultCallback;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
+import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
@@ -28,6 +29,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import com.mongodb.async.SingleResultCallback;
@@ -132,6 +134,17 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 							   HpcCodec.DATASET_UPLOAD_REQUESTS_KEY + "." + 
 	                           HpcCodec.TRANSFER_STATUS_DATA_TRANSFER_STATUS;
 	
+	// Field name to query a file by id.
+	public final static String FILE_ID_FIELD_NAME = 
+							   HpcCodec.DATASET_FILE_SET_KEY + "." + 
+	                           HpcCodec.FILE_SET_FILES_KEY + "." +
+	                           HpcCodec.FILE_ID_KEY;
+	
+	// Field name to query a file by id.
+	public final static String FILE_PROJECTION = 
+							   HpcCodec.DATASET_FILE_SET_KEY + "." + 
+	                           HpcCodec.FILE_SET_FILES_KEY + ".$";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -191,7 +204,7 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     }
 
 	@Override
-	public void updateReplace(HpcDataset dataset) throws HpcException
+	public void update(HpcDataset dataset) throws HpcException
     {
 		SingleResultCallback<UpdateResult> callback = 
 				                      new HpcSingleResultCallback<UpdateResult>();
@@ -209,6 +222,20 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 		getCollection().find(eq(DATASET_ID_FIELD_NAME, id)).first(callback);
 		
 		return callback.getResult();
+	}
+	
+	@Override
+	public HpcFile getFile(String id) throws HpcException
+	{
+		HpcSingleResultCallback<HpcDataset> callback = 
+                       new HpcSingleResultCallback<HpcDataset>();
+		
+		getCollection().find(eq(FILE_ID_FIELD_NAME, id)).projection(new Document(FILE_PROJECTION, "1")).first(callback);
+		if(callback.getResult() != null && callback.getResult().getFileSet() != null) {
+		   return callback.getResult().getFileSet().getFiles().get(0);
+		}
+		
+		return null;
 	}
 	
 	@Override
