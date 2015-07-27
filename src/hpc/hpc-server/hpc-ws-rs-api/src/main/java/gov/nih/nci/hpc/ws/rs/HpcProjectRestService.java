@@ -61,7 +61,7 @@ public interface HpcProjectRestService
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @GET
-    @Path("/project/query/registrator/{id}")
+    @Path("/project/query/registrar/{id}")
     @Produces("application/json,application/xml")
     public Response getProjectsByRegistratorId(@PathParam("id") String registratorId); 
     
@@ -72,7 +72,7 @@ public interface HpcProjectRestService
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @GET
-    @Path("/project/query/investigator/{id}")
+    @Path("/project/query/pi/{id}")
     @Produces("application/json,application/xml")
     public Response getProjectsByInvestigatorId(@PathParam("id") String inverstigatorId); 
 }
