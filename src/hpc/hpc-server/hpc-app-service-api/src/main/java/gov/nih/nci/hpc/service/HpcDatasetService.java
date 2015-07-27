@@ -89,6 +89,16 @@ public interface HpcDatasetService
     public List<HpcDataset> getDatasets(String name) throws HpcException;
     
     /**
+     * Get datasets by Project Id
+     *
+     * @param projectId Get datasets by Project Id
+     * @return HpcDataset collection, or null if no results found.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcDataset> getDatasetsByProjectId(String projectId) throws HpcException;
+    
+    /**
      * GET Datasets by primary metadata.
      *
      * @param primaryMetadata The meatada to match.
