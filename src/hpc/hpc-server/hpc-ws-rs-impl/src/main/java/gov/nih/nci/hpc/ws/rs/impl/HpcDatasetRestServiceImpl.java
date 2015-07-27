@@ -290,9 +290,12 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     			primaryInvestigatorUserId);
 	
 		HpcDatasetCollectionDTO datasetCollectionDTO = null;
+		List<String> ids = new ArrayList<String>();
+		
 		try {
+			ids.add(primaryInvestigatorUserId);
 			 datasetCollectionDTO = datasetBusService.getDatasets(
-					 primaryInvestigatorUserId, 
+					 ids, 
 						                   HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR); 
 			 
 		} catch(HpcException e) {
