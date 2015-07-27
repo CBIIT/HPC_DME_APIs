@@ -36,14 +36,24 @@ public interface HpcDatasetService
      * @param name The dataset name.
      * @param description The dataset description.
      * @param comments The dataset comments.
-     * @param uploadRequests List of files to upload.
-     * @return The registered dataset ID.
+     * @return The registered dataset.
      * 
      * @throws HpcException
      */
-    public String add(String name, String description, String comments,
-    			      List<HpcFileUploadRequest> uploadRequests) 
-    			     throws HpcException;
+    public HpcDataset addDataset(String name, String description, String comments) 
+    			                throws HpcException;
+    
+    /**
+     * Add files to a dataset.
+     *
+     * @param dataset The dataset.
+     * @param uploadRequests List of files to upload.
+     * 
+     * @throws HpcException
+     */
+    public void addFiles(HpcDataset dataset,
+    			         List<HpcFileUploadRequest> uploadRequests) 
+    			        throws HpcException;
     
     /**
      * Get dataset.

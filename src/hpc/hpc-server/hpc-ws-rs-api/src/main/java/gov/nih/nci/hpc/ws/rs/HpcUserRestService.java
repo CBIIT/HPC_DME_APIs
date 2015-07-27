@@ -36,7 +36,7 @@ public interface HpcUserRestService
     /**
      * GET user by ID.
      *
-     * @param userDTO The user DTO to register.
+     * @param userRegistrationDTO The user DTO to register.
      */
     @POST
     @Path("/user")
