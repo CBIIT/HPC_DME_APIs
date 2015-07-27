@@ -86,4 +86,16 @@
 		</xsd:complexType>
 	</xsd:element>
 	
+	<!--  Add files to registered Dataset DTO -->
+	<xsd:element name="HpcDatasetAddFilesDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="datasetId" type="xsd:ID" />
+				<xsd:element name="uploadRequests"
+					         type="hpc-domain-dataset:HpcFileUploadRequest" 
+					         maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
 </xsd:schema>
