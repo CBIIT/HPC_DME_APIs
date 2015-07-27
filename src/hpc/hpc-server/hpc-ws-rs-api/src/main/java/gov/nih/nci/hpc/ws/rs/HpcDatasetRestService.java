@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
 
@@ -37,12 +38,22 @@ public interface HpcDatasetRestService
     /**
      * POST registration request.
      *
-     * @param registrationInput The data registration input DTO.
+     * @param datasetRegistrationDTO The dataset registration request DTO.
      */
     @POST
     @Path("/dataset")
     @Consumes("application/json,application/xml")
     public Response registerDataset(HpcDatasetRegistrationDTO datasetRegistrationDTO);
+    
+    /**
+     * POST add files to a registered dataset.
+     *
+     * @param addFilesDTO The add-files request DTO.
+     */
+    @POST
+    @Path("/dataset/files")
+    @Consumes("application/json,application/xml")
+    public Response addFiles(HpcDatasetAddFilesDTO addFilesDTO);
     
     /**
      * GET Dataset by ID.

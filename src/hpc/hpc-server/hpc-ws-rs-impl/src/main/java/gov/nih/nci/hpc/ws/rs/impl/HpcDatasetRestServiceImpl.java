@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.ws.rs.impl;
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
@@ -124,6 +125,22 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		return createdResponse(datasetId);
+	}
+    
+    @Override
+    public Response addFiles(HpcDatasetAddFilesDTO addFilesDTO)
+    {	
+		logger.info("Invoking RS: POST /dataset/files: " + addFilesDTO);
+		
+		try {
+			 datasetBusService.addFiles(addFilesDTO);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /dataset/files failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(null, false);
 	}
     
     @Override

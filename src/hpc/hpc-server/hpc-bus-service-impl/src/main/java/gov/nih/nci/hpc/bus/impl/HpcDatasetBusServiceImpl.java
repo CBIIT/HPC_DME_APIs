@@ -20,6 +20,7 @@ import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
@@ -121,7 +122,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     public String registerDataset(HpcDatasetRegistrationDTO datasetRegistrationDTO)  
     		                     throws HpcException
     {
-    	logger.info("Invoking registerDataset(HpcDatasetDTO): " + 
+    	logger.info("Invoking registerDataset(HpcDatasetRegistrationDTO): " + 
                     datasetRegistrationDTO);
     	
     	// Input validation.
@@ -129,6 +130,13 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	   throw new HpcException("Null HpcDatasetRegistrationDTO",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
+    	
+    	// Validating there is at least one file attached.
+       	if(datasetRegistrationDTO.getUploadRequests() == null || 
+       	   datasetRegistrationDTO.getUploadRequests().size() == 0) {
+     	   throw new HpcException("No files attached to this registration request", 
+     			                  HpcErrorType.INVALID_REQUEST_INPUT);
+     	}	
     	
     	// Validate the associated users with this dataset have valid NIH 
     	// account registered with HPC. In addition, validate the registrar
@@ -143,15 +151,39 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     			            datasetRegistrationDTO.getUploadRequests());
 
     	// Add the dataset to the managed collection.
-    	String datasetId = 
-    		   datasetService.add(
+    	HpcDataset dataset = 
+    		   datasetService.addDataset(
     				  datasetRegistrationDTO.getName(), 
     				  datasetRegistrationDTO.getDescription(),
-    				  datasetRegistrationDTO.getComments(),
-    				  datasetRegistrationDTO.getUploadRequests());
-    	logger.info("Registered dataset id = " + datasetId);
+    				  datasetRegistrationDTO.getComments());
+    	logger.info("Registered dataset id = " + dataset.getId());
     	
-    	return datasetId;
+    	datasetService.addFiles(dataset, datasetRegistrationDTO.getUploadRequests());
+    	
+    	return dataset.getId();
+    }
+    
+    @Override
+    public void addFiles(HpcDatasetAddFilesDTO addFilesDTO) throws HpcException
+    {
+       	logger.info("Invoking addFiles(HpcDatasetAddFilesDTO): " + addFilesDTO);
+	
+       	// Input validation.
+       	if(addFilesDTO == null) {
+       	   throw new HpcException("Null HpcDatasetRegistrationDTO",
+			                      HpcErrorType.INVALID_REQUEST_INPUT);	
+       	}
+       	
+       	// Locate the dataset.
+       	HpcDataset dataset = datasetService.getDataset(addFilesDTO.getDatasetId());
+       	if(dataset == null) {
+       	   throw new HpcException("Dataset was not found: " + addFilesDTO.getDatasetId(),
+                                   HpcErrorType.INVALID_REQUEST_INPUT);	
+       	}
+       	
+       	// Add the files
+       	datasetService.addFiles(dataset, addFilesDTO.getUploadRequests());
+    	
     }
     
     @Override
@@ -233,6 +265,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	return toCollectionDTO(datasetService.getDatasets(name));
     }
     
+    @Override
     public HpcDatasetCollectionDTO getDatasets(
     		         HpcPrimaryMetadataQueryDTO primaryMetadataQueryDTO) 
                      throws HpcException
@@ -246,6 +279,16 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	return toCollectionDTO(datasetService.getDatasets(
     			                      primaryMetadataQueryDTO.getMetadata()));
     }    
+
+    @Override
+	public HpcDatasetCollectionDTO getDatasetsByStatus(String transferStatus) throws HpcException{
+    	// Input validation.
+    	if(transferStatus == null) {
+    	   throw new HpcException("Null transferStatus", HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	return toCollectionDTO(datasetService.getDatasetsByStatus(transferStatus));
+	}
     
 	@Override
 	public HpcDatasetCollectionDTO getDatasetsByProjectId(String projectId)
@@ -259,6 +302,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 	return toCollectionDTO(datasetService.getDatasetsByProjectId(projectId));	
 	}
     
+
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -472,15 +516,6 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	
     	return user;
     }
-
-	public HpcDatasetCollectionDTO getDatasetsByStatus(String transferStatus) throws HpcException{
-    	// Input validation.
-    	if(transferStatus == null) {
-    	   throw new HpcException("Null transferStatus", HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
-    	
-    	return toCollectionDTO(datasetService.getDatasetsByStatus(transferStatus));
-	}
 
 }
 

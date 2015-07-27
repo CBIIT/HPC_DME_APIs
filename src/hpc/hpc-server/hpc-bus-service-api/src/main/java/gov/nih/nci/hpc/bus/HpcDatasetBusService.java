@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
@@ -41,6 +42,15 @@ public interface HpcDatasetBusService
      */
     public String registerDataset(HpcDatasetRegistrationDTO datasetRegistrationDTO) 
     		                     throws HpcException;
+    
+    /**
+     * Add files to a registered dataset.
+     *
+     * @param addFilesDTO The add-files request DTO.
+     * 
+     * @throws HpcException
+     */
+    public void addFiles(HpcDatasetAddFilesDTO addFilesDTO) throws HpcException;
     
     /**
      * Get a dataset by its ID.
@@ -101,16 +111,6 @@ public interface HpcDatasetBusService
     public HpcDatasetCollectionDTO getDatasets(String name) throws HpcException;
     
     /**
-     * Get datasets associated with given projectId.
-     *
-     * @param projectId Get datasets associated with given projectId.
-     * @return Collection of Dataset DTO, or null if not found.
-     * 
-     * @throws HpcException
-     */
-    public HpcDatasetCollectionDTO getDatasetsByProjectId(String projectId) throws HpcException;    
-    
-    /**
      * GET Datasets by primary metadata.
      *
      * @param primaryMetadataQueryDTO The metadata to query for.
@@ -131,6 +131,16 @@ public interface HpcDatasetBusService
      * @throws HpcException
      */
 	public HpcDatasetCollectionDTO getDatasetsByStatus(String transferStatus) throws HpcException;
+	
+    /**
+     * Get datasets associated with given projectId.
+     *
+     * @param projectId Get datasets associated with given projectId.
+     * @return Collection of Dataset DTO, or null if not found.
+     * 
+     * @throws HpcException
+     */
+    public HpcDatasetCollectionDTO getDatasetsByProjectId(String projectId) throws HpcException;   
 }
 
  
