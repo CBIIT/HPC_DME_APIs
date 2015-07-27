@@ -101,6 +101,16 @@ public interface HpcDatasetBusService
     public HpcDatasetCollectionDTO getDatasets(String name) throws HpcException;
     
     /**
+     * Get datasets associated with given projectId.
+     *
+     * @param projectId Get datasets associated with given projectId.
+     * @return Collection of Dataset DTO, or null if not found.
+     * 
+     * @throws HpcException
+     */
+    public HpcDatasetCollectionDTO getDatasetsByProjectId(String projectId) throws HpcException;    
+    
+    /**
      * GET Datasets by primary metadata.
      *
      * @param primaryMetadataQueryDTO The metadata to query for.

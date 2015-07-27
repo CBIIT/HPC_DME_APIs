@@ -122,6 +122,15 @@ public interface HpcDatasetDAO
      * @throws HpcException
      */
 	public List<HpcDataset> getDatasetsByStatus(String transferStatus) throws HpcException;
+	
+	   /**
+     * Get datasets by Project.
+     *
+     * @param projectId Assoicated project Id.
+     * 
+     * @throws HpcException
+     */
+	public List<HpcDataset> getDatasetsByProjectId(String projectId) throws HpcException;	
 }
 
  
