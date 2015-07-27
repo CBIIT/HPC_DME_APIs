@@ -247,6 +247,18 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     			                      primaryMetadataQueryDTO.getMetadata()));
     }    
     
+	@Override
+	public HpcDatasetCollectionDTO getDatasetsByProjectId(String projectId)
+	 throws HpcException
+	{
+   	// Input validation.
+	if(projectId == null) {
+	   throw new HpcException("Null projectId", HpcErrorType.INVALID_REQUEST_INPUT);	
+	}
+	
+	return toCollectionDTO(datasetService.getDatasetsByProjectId(projectId));	
+	}
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -469,6 +481,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	
     	return toCollectionDTO(datasetService.getDatasetsByStatus(transferStatus));
 	}
+
 }
 
  

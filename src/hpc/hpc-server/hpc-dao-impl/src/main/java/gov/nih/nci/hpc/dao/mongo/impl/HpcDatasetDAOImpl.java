@@ -59,6 +59,12 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 	public final static String DATASET_NAME_FIELD_NAME = 
 							   HpcCodec.DATASET_FILE_SET_KEY + "." + 
 	                           HpcCodec.FILE_SET_NAME_KEY;
+
+	// Field name to query by Project Id.
+	public final static String DATASET_PROJECT_ID_NAME = 
+							   HpcCodec.DATASET_FILE_SET_KEY + "." + 
+							   HpcCodec.FILE_SET_FILES_KEY + "." +
+	                           HpcCodec.FILE_PROJECTS_KEY;
 	
 	// Field names to query by NIH user id.
 	public final static String PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
@@ -371,6 +377,18 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     	
     	return filters;
     }
+	@Override
+	public List<HpcDataset> getDatasetsByProjectId(String projectId)
+			throws HpcException {
+		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
+		HpcSingleResultCallback<List<HpcDataset>> callback = 
+                       new HpcSingleResultCallback<List<HpcDataset>>();
+		getCollection().find(
+		                regex(DATASET_PROJECT_ID_NAME, 
+		                		projectId, "i")).into(datasets, callback); 
+		
+		return callback.getResult();
+	} 
     
     /**
      * Get a query field name from a dataset/user associartion.
