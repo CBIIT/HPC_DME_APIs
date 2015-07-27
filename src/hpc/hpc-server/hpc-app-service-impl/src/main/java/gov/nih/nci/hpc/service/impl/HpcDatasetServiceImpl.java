@@ -217,6 +217,10 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	HpcDataset hpcDataset  = datasetDAO.getDataset(id);
+    	if(hpcDataset == null)
+    		throw new HpcException("Invalid dataset ID: " + id, 
+	                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	
     	if(!hpcDataset.getFileSet().getFiles().isEmpty())
     	{
     		for(HpcDataTransferRequest uploadRequest : hpcDataset.getUploadRequests())
@@ -297,6 +301,12 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
 	public List<HpcDataset> getDatasetsByStatus(String transferStatus) throws HpcException
 	{
     	return datasetDAO.getDatasetsByStatus(transferStatus);
+	}
+
+	@Override
+	public List<HpcDataset> getDatasetsByProjectId(String projectId)
+			throws HpcException {
+		return datasetDAO.getDatasetsByProjectId(projectId);
 	}
 }
 

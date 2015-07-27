@@ -240,6 +240,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 		return okResponse(datasetCollectionDTO, true);
 	}
     
+    
     @Override
     public Response getDatasetsByTransferStatus(String transferStatus)
     {	
@@ -280,7 +281,40 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		return callBackFn +"("+json.toString()+");";
-	} 	
+	}
+
+	@Override
+	public Response getDatasetsByPrimaryInvestigatorId(
+			String primaryInvestigatorUserId) {
+    	logger.info("Invoking RS: GET /dataset/query/pi/{id}: " + 
+    			primaryInvestigatorUserId);
+	
+		HpcDatasetCollectionDTO datasetCollectionDTO = null;
+		try {
+			 datasetCollectionDTO = datasetBusService.getDatasets(
+					 primaryInvestigatorUserId, 
+						                   HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR); 
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /dataset/query/pi/{id}: failed:", e);
+			    return errorResponse(e);
+		}
+		return okResponse(datasetCollectionDTO, true);
+	}
+
+	@Override
+	public Response getDatasetsByProjectId(String projectId) {
+    	logger.info("Invoking RS: GET /dataset/query/project/{id}: " + 
+    			projectId);
+	
+		HpcDatasetCollectionDTO datasetCollectionDTO = null;
+		try {
+			 datasetCollectionDTO = datasetBusService.getDatasetsByProjectId(projectId); 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /dataset/query/pi/{id}: failed:", e);
+			    return errorResponse(e);
+		}
+		return okResponse(datasetCollectionDTO, true);	} 	
 }
 
  
