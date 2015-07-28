@@ -27,50 +27,6 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-install-plugin</artifactId>
-				<version>2.5.1</version>
-				<configuration>
-					<groupId>org.globusonline</groupId>
-					<artifactId>TransferAPIClient</artifactId>
-					<version>1.0</version>
-					<packaging>jar</packaging>
-					<file>${basedir}/lib/TransferAPIClient-1.0.jar</file>
-					<generatePom>true</generatePom>
-				</configuration>
-				<executions>
-					<execution>
-						<id>install-jar-lib</id>
-						<goals>
-							<goal>install-file</goal>
-						</goals>
-						<phase>validate</phase>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-install-plugin</artifactId>
-				<version>2.5.1</version>
-				<configuration>
-					<groupId>org.globusonline</groupId>
-					<artifactId>java_nexus_client</artifactId>
-					<version>0.0.2</version>
-					<packaging>jar</packaging>
-					<file>${basedir}/lib/java_nexus_client-0.0.2.jar</file>
-					<generatePom>true</generatePom>
-				</configuration>
-				<executions>
-					<execution>
-						<id>install-jar-lib</id>
-						<goals>
-							<goal>install-file</goal>
-						</goals>
-						<phase>validate</phase>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
 				<extensions>true</extensions>
