@@ -144,13 +144,18 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response getDataset(String id)
+    public Response getDataset(String id, 
+    		                   Boolean skipDataTransferStatusUpdate)
     {
 		logger.info("Invoking RS: GET /dataset/{id}: " + id);
 		
 		HpcDatasetDTO datasetDTO = null;
 		try {
-			 datasetDTO = datasetBusService.getDataset(id);
+			 datasetDTO = 
+			 datasetBusService.getDataset(
+					              id, 
+					              skipDataTransferStatusUpdate != null ?
+					              skipDataTransferStatusUpdate : false);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /dataset/{id}: failed:", e);

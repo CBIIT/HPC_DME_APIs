@@ -39,6 +39,7 @@
 			<xsd:enumeration value="IN_PROGRESS" />
 			<xsd:enumeration value="COMPLETED" />
 			<xsd:enumeration value="FAILED" />
+			<xsd:enumeration value="ERROR" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -106,7 +107,7 @@
 
 	<xsd:complexType name="HpcDataTransferRequest">
 		<xsd:sequence>
-			<xsd:element name="requesterUserId" type="xsd:ID" />
+			<xsd:element name="requesterNihUserId" type="xsd:string" />
 			<xsd:element name="fileId" type="xsd:ID" />
 			<xsd:element name="dataTransferId" type="xsd:string" />
 			<xsd:element name="locations"

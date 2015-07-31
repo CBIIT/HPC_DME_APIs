@@ -12,6 +12,9 @@ package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
@@ -36,24 +39,87 @@ public interface HpcDatasetService
      * @param name The dataset name.
      * @param description The dataset description.
      * @param comments The dataset comments.
-     * @return The registered dataset.
+     * @param persist If set to true, the dataset will be persisted.
+     * @return The new dataset.
      * 
      * @throws HpcException
      */
-    public HpcDataset addDataset(String name, String description, String comments) 
+    public HpcDataset addDataset(String name, String description, String comments,
+    		                     boolean persist) 
     			                throws HpcException;
     
     /**
-     * Add files to a dataset.
+     * Add a file to a dataset.
      *
      * @param dataset The dataset.
-     * @param uploadRequests List of files to upload.
+     * @param uploadRequest A file upload request.
+     * @param persist If set to true, the dataset will be persisted.
+     * @return The new file.
      * 
      * @throws HpcException
      */
-    public void addFiles(HpcDataset dataset,
-    			         List<HpcFileUploadRequest> uploadRequests) 
-    			        throws HpcException;
+    public HpcFile addFile(HpcDataset dataset, HpcFileUploadRequest uploadRequest,
+                           boolean persist) 
+                          throws HpcException;
+    
+    /**
+     * Add an upload data transfer request to a dataset.
+     *
+     * @param dataset The dataset.
+     * @param requesterNihUserId The user-id initiated the upload.
+     * @param fileId The uploaded file ID.
+     * @param locations The transfer source and destination.
+     * @param report The data transfer report.
+     * @param persist If set to true, the dataset will be persisted.
+     * @return The new data transfer request
+     * 
+     * @throws HpcException
+     */
+    public HpcDataTransferRequest addDataTransferUploadRequest(
+    		              HpcDataset dataset, String requesterNihUserId, 
+    		              String fileId, HpcDataTransferLocations locations,
+                          HpcDataTransferReport report, boolean persist) 
+                          throws HpcException;
+    
+    /**
+     * Add a download data transfer request to a dataset.
+     *
+     * @param dataset The dataset.
+     * @param requesterNihUserId The user-id initiated the upload.
+     * @param fileId The uploaded file ID.
+     * @param locations The transfer source and destination.
+     * @param report The data transfer report.
+     * @param persist If set to true, the dataset will be persisted.
+     * @return The new data transfer request
+     * 
+     * @throws HpcException
+     */
+    public HpcDataTransferRequest addDataTransferDownloadRequest(
+    		              HpcDataset dataset, String requesterNihUserId, 
+    		              String fileId, HpcDataTransferLocations locations,
+                          HpcDataTransferReport report, boolean persist) 
+                          throws HpcException;
+    
+    /**
+     * Persist dataset to the DB.
+     *
+     * @param dataset The dataset to be persisted.
+     * 
+     * @throws HpcException
+     */
+    public void persist(HpcDataset dataset) throws HpcException;
+    
+    /**
+     * Set a data transfer request status based on a provided data transfer report.
+     *
+     * @param dataTransferRequest The data transfer request to update.
+     * @param dataTransferReport The data transfer report.
+     * @return True if the status was updated
+     * 
+     * @throws HpcException
+     */
+    public boolean setDataTransferRequestStatus(HpcDataTransferRequest dataTransferRequest, 
+                                                HpcDataTransferReport dataTransferReport);
     
     /**
      * Get dataset.

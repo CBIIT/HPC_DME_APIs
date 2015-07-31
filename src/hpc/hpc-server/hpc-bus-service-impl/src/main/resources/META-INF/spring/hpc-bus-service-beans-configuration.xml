@@ -27,7 +27,6 @@
 		<constructor-arg ref="hpcUserService" />
 		<constructor-arg ref="hpcDataTransferService" />
 		<constructor-arg ref="hpcProjectService" />
-		<constructor-arg ref="hpcTransferStatusService" />
 	</bean>
 	
 	<bean id="hpcProjectBusService" class="gov.nih.nci.hpc.bus.impl.HpcProjectBusServiceImpl">
