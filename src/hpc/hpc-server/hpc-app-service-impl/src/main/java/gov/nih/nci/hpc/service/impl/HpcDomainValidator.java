@@ -1,5 +1,5 @@
 /**
- * HpcValidator.java
+ * HpcDomainValidator.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
