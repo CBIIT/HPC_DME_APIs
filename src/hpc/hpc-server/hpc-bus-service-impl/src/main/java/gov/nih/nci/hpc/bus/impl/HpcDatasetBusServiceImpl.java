@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
@@ -20,6 +21,7 @@ import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
@@ -58,7 +60,6 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     private HpcDatasetService datasetService = null;
     private HpcUserService userService = null;
     private HpcDataTransferService dataTransferService = null;
-    private HpcTransferStatusService transferStatusService = null;
     private HpcProjectService projectService = null;
     
     // The logger instance.
@@ -93,12 +94,11 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		          HpcDatasetService datasetService,
     		          HpcUserService userService,
     		          HpcDataTransferService dataTransferService,
-    		          HpcProjectService projectService,
-    		          HpcTransferStatusService transferStatusService)
+    		          HpcProjectService projectService)
                       throws HpcException
     {
     	if(datasetService == null || userService == null ||
-    	   dataTransferService == null || transferStatusService == null) {
+    	   dataTransferService == null) {
      	   throw new HpcException("Null App Service(s) instance",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
@@ -106,7 +106,6 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	this.datasetService = datasetService;
     	this.userService = userService;
     	this.dataTransferService = dataTransferService;
-    	this.transferStatusService = transferStatusService;
     	this.projectService = projectService;
     }  
     
@@ -131,12 +130,8 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Validating there is at least one file attached.
-       	if(datasetRegistrationDTO.getUploadRequests() == null || 
-       	   datasetRegistrationDTO.getUploadRequests().size() == 0) {
-     	   throw new HpcException("No files attached to this registration request", 
-     			                  HpcErrorType.INVALID_REQUEST_INPUT);
-     	}	
+    	// Validate there is at least one file attached.
+    	validateUploadRequests(datasetRegistrationDTO.getUploadRequests());
     	
     	// Validate the associated users with this dataset have valid NIH 
     	// account registered with HPC. In addition, validate the registrar
@@ -150,16 +145,18 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	validateDatasetName(datasetRegistrationDTO.getName(),
     			            datasetRegistrationDTO.getUploadRequests());
 
-    	// Add the dataset to the managed collection.
+    	// Add the dataset to the repository.
     	HpcDataset dataset = 
     		   datasetService.addDataset(
     				  datasetRegistrationDTO.getName(), 
     				  datasetRegistrationDTO.getDescription(),
-    				  datasetRegistrationDTO.getComments());
+    				  datasetRegistrationDTO.getComments(),
+    				  false);
+    	
+    	// Process the file upload requests.
+    	uploadFiles(dataset, datasetRegistrationDTO.getUploadRequests(), true);
+    	
     	logger.info("Registered dataset id = " + dataset.getId());
-    	
-    	datasetService.addFiles(dataset, datasetRegistrationDTO.getUploadRequests());
-    	
     	return dataset.getId();
     }
     
@@ -174,6 +171,9 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 			                      HpcErrorType.INVALID_REQUEST_INPUT);	
        	}
        	
+    	// Validate there is at least one file attached.
+    	validateUploadRequests(addFilesDTO.getUploadRequests());
+       	
        	// Locate the dataset.
        	HpcDataset dataset = datasetService.getDataset(addFilesDTO.getDatasetId());
        	if(dataset == null) {
@@ -181,24 +181,34 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
                                    HpcErrorType.INVALID_REQUEST_INPUT);	
        	}
        	
-       	// Add the files
-       	datasetService.addFiles(dataset, addFilesDTO.getUploadRequests());
+       	// Process the file upload requests.
+    	uploadFiles(dataset, addFilesDTO.getUploadRequests(), true);
     	
     }
     
     @Override
-    public HpcDatasetDTO getDataset(String id) throws HpcException
+    public HpcDatasetDTO getDataset(String id, boolean skipDataTransferStatusUpdate) 
+    		                       throws HpcException
     {
-    	logger.info("Invoking getDataset(String id): " + id);
+    	logger.info("Invoking getDataset(String id): " + id + 
+    			    ", skipDataTransferStatusCheck: " + 
+    			    skipDataTransferStatusUpdate);
     	
     	// Input validation.
     	if(id == null) {
     	   throw new HpcException("Null Dataset ID",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
+
+    	// Locate the dataset.
+    	HpcDataset dataset = datasetService.getDataset(id);
+
+    	// Update the data transfer requests status.
+    	if(!skipDataTransferStatusUpdate) {
+    	   updateDataTransferRequestsStatus(dataset);
+    	}
     	
-    	// Get the dataset domain object and return it as DTO.
-    	return toDTO(datasetService.getDataset(id));
+    	return toDTO(dataset);
     }
     
     @Override
@@ -473,7 +483,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     }
  
     /**
-     * Validate a project is registered with HPC
+     * Validate a project is registered with HPC.
      * 
      * @param projectId
      * 
@@ -481,8 +491,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
      *
      * @throws HpcException if the user is not registered with HPC.
      */
-    private HpcProject validateProject(String projectId) 
-    		                    throws HpcException
+    private HpcProject validateProject(String projectId)  throws HpcException
     {
     	HpcProject project = projectService.getProject(projectId);
     	if(project == null) {
@@ -494,7 +503,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     }
     
     /**
-     * Validate a user is registered with HPC
+     * Validate a user is registered with HPC.
      * 
      * @param nihUserId The NIH User ID.
      * @param userAssociation The user's association to the dataset.
@@ -516,7 +525,144 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	
     	return user;
     }
+    
+    /**
+     * Validate upload requests are not empty
+     * 
+     * @param uploadRequests The upload requests.
+     *
+     * @throws HpcException if any validation error found.
+     */
+    private void validateUploadRequests(List<HpcFileUploadRequest> uploadRequests)
+                                       throws HpcException
+    {
+    	// Validating there is at least one file attached.
+    	if(uploadRequests == null || uploadRequests.size() == 0) {
+ 	       throw new HpcException("No files attached to this request", 
+ 			                      HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    }
+    
+    /**
+     * Update a dataset's upload and download data transfer requests with a 
+     * current status polled from data-transfer.
+     * 
+     * @param dataset The dataset to update the transfer requests status
+     *
+     * @throws HpcException 
+     */
+    private void updateDataTransferRequestsStatus(HpcDataset dataset)
+    		                                     throws HpcException
+    {
+    	// Update both upload and download transfer requests.
+    	boolean transferStatusChanged = 
+    			updateDataTransferRequestsStatus(dataset.getUploadRequests());
+    	transferStatusChanged |= 
+    			updateDataTransferRequestsStatus(dataset.getDownloadRequests());
+    	
+    	// Persist if any status has changed.
+    	if(transferStatusChanged) {
+    	   datasetService.persist(dataset);	
+    	}
+    }
+    
+    /**
+     * Update data transfer requests with current status polled from data-transfer.
+     * 
+     * @param dataTransferRequests A collection of transfer requests to update.
+     * @return True if at least one request had a change of status.
+     *
+     * @throws HpcException 
+     */
+    private boolean updateDataTransferRequestsStatus(
+    		              List<HpcDataTransferRequest> dataTransferRequests)
+    		              throws HpcException
+    {
+    	if(dataTransferRequests == null) {
+    		return false;
+    	}
+    	
+    	boolean transferStatusChanged = false;
+		for(HpcDataTransferRequest dataTransferRequest : dataTransferRequests)
+		{
+			switch(dataTransferRequest.getStatus()) {
+				   case IN_PROGRESS:
+			       case FAILED:
+			       case INITIATED:
+				        // Get the data transfer account to use in checking status.
+    		            HpcDataTransferAccount dataTransferAccount = 
+ 	    		               userService.getUser(dataTransferRequest.getRequesterNihUserId()).
+ 	    		                           getDataTransferAccount();
+    		
+    		            // Get updated report from data transfer.
+			            HpcDataTransferReport dataTransferReport = 
+			            	   dataTransferService.getTransferRequestStatus(
+			            			                  dataTransferRequest.getDataTransferId(),
+			            				              dataTransferAccount);
+			            
+			            // Update the upload request.
+			            transferStatusChanged |= 
+			            		datasetService.setDataTransferRequestStatus(dataTransferRequest, 
+			            		                                            dataTransferReport);
+			            
+			            break;
+			
+			       default:
+			    	   break;
+			}
+		}
+		
+		return transferStatusChanged;
+    }
+    
+    /**
+     * Process upload files request.
+     * 
+     * @param uploadRequests The file upload requests.
+     * @param persist If set to true, the dataset will be persisted.
+     *
+     * @throws HpcException 
+     */
+    private void uploadFiles(HpcDataset dataset,
+		                     List<HpcFileUploadRequest> uploadRequests,
+		                     boolean persist) 
+		                     throws HpcException
+    {
+    	// Upload files and attach them to the dataset
+    	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
+    		logger.debug("Handling upload request: "+ uploadRequest);
+    		
+    		// Add a new file to the domain model
+    		HpcFile file = datasetService.addFile(dataset, uploadRequest, false);
+    		logger.debug("New File: " + file);
+			
+			// Transfer the file. 
+    		String registrarNihId = uploadRequest.getMetadata().getRegistrarNihUserId();
+			HpcDataTransferAccount dataTransferAccount = 
+		                   userService.getUser(registrarNihId).getDataTransferAccount();
+    		
+			logger.debug("Submitting data transfer request: " + 
+			             uploadRequest.getLocations());
+			HpcDataTransferReport dataTransferReport = 
+				   dataTransferService.transferDataset(uploadRequest.getLocations(), 
+					                                   dataTransferAccount,
+					                                   registrarNihId);
 
+			// Attach an upload data transfer request to the dataset.
+			HpcDataTransferRequest transferRequest = 
+			   datasetService.addDataTransferUploadRequest(
+					          dataset, registrarNihId, file.getId(), 
+					          uploadRequest.getLocations(), dataTransferReport, 
+					          false);
+			logger.debug("Data Transfer Request: " + transferRequest);
+    	}
+    	
+    	// Persist if requested.
+    	if(persist) {
+    	   datasetService.persist(dataset);
+    	}
+	}
+    
 }
 
  

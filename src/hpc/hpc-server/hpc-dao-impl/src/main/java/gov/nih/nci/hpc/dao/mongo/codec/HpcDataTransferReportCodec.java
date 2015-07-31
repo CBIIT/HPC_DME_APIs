@@ -1,5 +1,5 @@
 /**
- * HpcDataTransferAccountCodec.java
+ * HpcDataTransferReportCodec.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -23,7 +23,7 @@ import org.bson.codecs.EncoderContext;
 
 /**
  * <p>
- * HPC File Location Codec. 
+ * HPC Data Transfer Report Codec. 
  * </p>
  *
  * @author <a href="mailto:mahidhar.narra@nih.gov">Mahidhar Narra</a>

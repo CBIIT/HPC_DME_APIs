@@ -10,8 +10,10 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidDataTransferLocations;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileUploadRequest;
 import gov.nih.nci.hpc.dao.HpcDatasetDAO;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
@@ -23,7 +25,6 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcDatasetService;
@@ -62,7 +63,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     private HpcDataTransferService dataTransferService = null;
     private HpcTransferStatusService transferStatusService = null;   
 	@SuppressWarnings("rawtypes")
-	private Map<String, String> collections = null;
+	Map<String, HpcDataTransferStatus> dataTransferStatusMap = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -94,7 +95,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     		    		          HpcUserService userService,
     		    		          HpcDataTransferService dataTransferService,
     		    		          HpcTransferStatusService transferStatusService,
-    		    		          Map<String, String> collections)
+    		    		          Map<String, HpcDataTransferStatus> dataTransferStatusMap)
     		                     throws HpcException
     {
     	if(datasetDAO == null || keyGenerator == null) {
@@ -107,7 +108,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	this.userService = userService;
     	this.dataTransferService = dataTransferService;
     	this.transferStatusService = transferStatusService;
-    	this.collections = collections;
+    	this.dataTransferStatusMap = dataTransferStatusMap;
     }  
     
     //---------------------------------------------------------------------//
@@ -120,7 +121,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     
     @Override
     public HpcDataset addDataset(String name, String description, 
-    		                     String comments) 
+    		                     String comments, boolean persist) 
 		                        throws HpcException
     {
     	// Input validation.
@@ -145,88 +146,110 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	fileSet.setCreated(Calendar.getInstance());
     	dataset.setFileSet(fileSet);
     	
-    	datasetDAO.add(dataset);
-    	logger.debug("Dataset added: " + dataset);
+    	// Persist if requested.
+    	if(persist) {
+    	   datasetDAO.upsert(dataset);
+    	}
     	
+    	logger.debug("Dataset added: " + dataset);
     	return dataset;
     }
     
     @Override
-    public void addFiles(HpcDataset dataset,
-		                 List<HpcFileUploadRequest> uploadRequests) 
-		                throws HpcException
+    public HpcFile addFile(HpcDataset dataset,
+                           HpcFileUploadRequest uploadRequest,
+                           boolean persist) 
+                          throws HpcException
     {
-    	// Input validation.
-    	if(dataset == null || uploadRequests == null || uploadRequests.size() == 0) {
-    	   throw new HpcException("Invalid add dataset input", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}	
-    
-    	// Attach the files to this dataset.
-    	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
-    		// Validate the upload file request.
-    		if(!isValidFileUploadRequest(uploadRequest)) {
-    		   throw new HpcException("Invalid file upload request: " + 
-		                              uploadRequest, 
-	                                 HpcErrorType.INVALID_REQUEST_INPUT);
-    		}
+       	// Input validation.
+       	if(dataset == null || uploadRequest == null || 
+       	   !isValidFileUploadRequest(uploadRequest)) {
+       	   throw new HpcException("Invalid add file input", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       
+		// Map the upload request to a managed file instance.
+		HpcFile file = new HpcFile();
+		file.setId(keyGenerator.generateKey());
+		file.setType(uploadRequest.getType());
+		file.setSize(0);
+		file.setSource(uploadRequest.getLocations().getSource());
+		file.setLocation(uploadRequest.getLocations().getDestination());
+		if(uploadRequest.getProjectIds() != null && uploadRequest.getProjectIds().size() > 0) {
+		   file.getProjectIds().addAll(uploadRequest.getProjectIds());
+		}
 		
-			// Map the upload request to a managed file instance.
-			HpcFile file = new HpcFile();
-			file.setId(keyGenerator.generateKey());
-			file.setType(uploadRequest.getType());
-			file.setSize(0);
-			file.setSource(uploadRequest.getLocations().getSource());
-			file.setLocation(uploadRequest.getLocations().getDestination());
-			if(uploadRequest.getProjectIds() != null && uploadRequest.getProjectIds().size() > 0)
-				file.getProjectIds().addAll(uploadRequest.getProjectIds());
-			// Set the metadata.
-			HpcFileMetadata metadata = new HpcFileMetadata();
-			metadata.setPrimaryMetadata(uploadRequest.getMetadata());
-			file.setMetadata(metadata);
-			
-			// Add the managed file to the dataset.
-			dataset.getFileSet().getFiles().add(file);
-			
-			//Transfer file 
-			HpcDataTransferAccount dataTransferAccount = 
-		    		   userService.getUser(
-		    			   uploadRequest.getMetadata().getRegistrarNihUserId()).
-		    			                               getDataTransferAccount();
-		        	
-		        	// Submit data transfer request for this file.
-		    		logger.info("Submiting Data Transfer Request: "+ 
-		        	            uploadRequest.getLocations());
-		    		
-			HpcDataTransferReport hpcDataTransferReport = 
-					dataTransferService.transferDataset(
-					                    uploadRequest.getLocations(), 
-					                    dataTransferAccount,
-					                    uploadRequest.getMetadata().getRegistrarNihUserId());
-			logger.info("Data Transfer Report : " + hpcDataTransferReport);    	    		
-			//Add status 
-			
-			if(hpcDataTransferReport != null) {
-	 		HpcDataTransferRequest hpcDataTransferRequest = new HpcDataTransferRequest(); 
-	 		
-	 		hpcDataTransferRequest.setReport(hpcDataTransferReport);
-	 		hpcDataTransferRequest.setFileId(file.getId());
-	 		
-	 		hpcDataTransferRequest.setStatus(HpcDataTransferStatus.valueOf(collections.get(hpcDataTransferReport.getStatus())));
-	 		
-	 		hpcDataTransferRequest.setDataTransferId(hpcDataTransferReport.getTaskID());
-	 		//hpcDataTransferRequest.setLocations(uploadRequest.getLocations());
-	 		dataset.getUploadRequests().add(hpcDataTransferRequest);
-	 		// add status to dataset 
-	 		//transferStatusService.addUpdateStatus(hpcDataTransferRequest);
-			}
+		// Set the metadata.
+		HpcFileMetadata metadata = new HpcFileMetadata();
+		metadata.setPrimaryMetadata(uploadRequest.getMetadata());
+		file.setMetadata(metadata);
+		
+		// Add the managed file to the dataset.
+		dataset.getFileSet().getFiles().add(file);
+		
+		// Persist if requested.
+    	if(persist) {
+     	   datasetDAO.upsert(dataset);
+     	}
+     	
+     	logger.debug("File added: " + file);
+     	return file;
+    }
+    
+    @Override
+    public HpcDataTransferRequest addDataTransferUploadRequest(
+                                  HpcDataset dataset, String requesterNihUserId, 
+                                  String fileId, HpcDataTransferLocations locations,
+                                  HpcDataTransferReport report, boolean persist) 
+                                  throws HpcException
+    {
+    	HpcDataTransferRequest dataTransferRequest = 
+    	   newDataTransferRequest(requesterNihUserId, fileId, locations, report);
+    	   dataset.getUploadRequests().add(dataTransferRequest);
+    	   return dataTransferRequest;
+    }
+    
+    @Override
+    public HpcDataTransferRequest addDataTransferDownloadRequest(
+                                  HpcDataset dataset, String requesterNihUserId, 
+                                  String fileId, HpcDataTransferLocations locations,
+                                  HpcDataTransferReport report, boolean persist) 
+                                  throws HpcException
+    {
+    	HpcDataTransferRequest dataTransferRequest = 
+    	   newDataTransferRequest(requesterNihUserId, fileId, locations, report);
+    	   dataset.getDownloadRequests().add(dataTransferRequest);
+    	   return dataTransferRequest;
+    }
+           
+    @Override
+    public void persist(HpcDataset dataset) throws HpcException
+    {
+    	if(dataset != null) {
+    	   datasetDAO.upsert(dataset);
     	}
+    }
+    
+    @Override
+    public boolean setDataTransferRequestStatus(HpcDataTransferRequest dataTransferRequest, 
+    		                                    HpcDataTransferReport dataTransferReport)
+    {
+    	// Attach the new report to the transfer request.
+    	dataTransferRequest.setReport(dataTransferReport);
+    
+    	// Calculate and set the data transfer status.
+    	HpcDataTransferStatus currentTransferStatus = dataTransferRequest.getStatus();
+    	HpcDataTransferStatus newTransferStatus = HpcDataTransferStatus.ERROR;
+    	if(dataTransferReport != null) {
+    	   newTransferStatus = dataTransferReport.getStatus() != null ?
+    			               dataTransferStatusMap.get(dataTransferReport.getStatus()) :
+    			               HpcDataTransferStatus.UNKONWN; 	 
+    	} 
+    	dataTransferRequest.setStatus(newTransferStatus);
     	
-    	datasetDAO.update(dataset);
-    	logger.debug("Dataset updated: " + dataset);
-    	
-    	
-	}
+    	// Return true if the transfer status has changed.
+    	return (newTransferStatus != currentTransferStatus); 
+    }
     
     @Override
     public HpcDataset getDataset(String id) throws HpcException
@@ -238,22 +261,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	}
 
     	HpcDataset hpcDataset = datasetDAO.getDataset(id);
-    	if(hpcDataset != null && !hpcDataset.getFileSet().getFiles().isEmpty())
-    	{
-    		for(HpcDataTransferRequest uploadRequest : hpcDataset.getUploadRequests())
-    		{
-        		HpcDataTransferAccount dataTransferAccount = 
-     	    		   userService.getUser(
-     	    				  hpcDataset.getFileSet().getFiles().get(0).getMetadata().getPrimaryMetadata().getRegistrarNihUserId()).
-     	    			                               getDataTransferAccount();
-        		
-    			HpcDataTransferReport hpcDataTransferReport = dataTransferService.retriveTransferStatus(uploadRequest.getDataTransferId(),dataTransferAccount);
-    			uploadRequest.setReport(hpcDataTransferReport);
-    			uploadRequest.setStatus(HpcDataTransferStatus.valueOf(collections.get(hpcDataTransferReport.getStatus())));
-    			
-    			datasetDAO.update(hpcDataset);
-    		}
-    	}
+
     	return hpcDataset;
     }
     
@@ -324,6 +332,46 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
 	public List<HpcDataset> getDatasetsByProjectId(String projectId)
 			throws HpcException {
 		return datasetDAO.getDatasetsByProjectId(projectId);
+	}
+	
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//  
+	
+    /**
+     * Instantiate a data transfer request object.
+     *
+     * @param requesterNihUserId The user-id initiated the upload.
+     * @param fileId The uploaded file ID.
+     * @param locations The transfer source and destination.
+     * @param report The data transfer report.
+     * @param persist If set to true, the dataset will be persisted.
+     * @return The new data transfer request
+     * 
+     * @throws HpcException
+     */
+    private HpcDataTransferRequest newDataTransferRequest(
+                           String requesterNihUserId, String fileId, 
+                           HpcDataTransferLocations locations,
+                           HpcDataTransferReport report) throws HpcException
+	{
+       	// Input validation.
+       	if(requesterNihUserId == null || fileId == null ||
+       	   !isValidDataTransferLocations(locations)) {
+       	   throw new HpcException("Invalid add data transfer request", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+		HpcDataTransferRequest dataTransferRequest = new HpcDataTransferRequest(); 
+		dataTransferRequest.setReport(report);
+		dataTransferRequest.setFileId(fileId);
+		dataTransferRequest.setRequesterNihUserId(requesterNihUserId);
+		dataTransferRequest.setLocations(locations);
+		dataTransferRequest.setDataTransferId(report != null && report.getTaskID() != null ?
+				                              report.getTaskID() : "UNKNOWN");
+		setDataTransferRequestStatus(dataTransferRequest, report);
+		
+		return dataTransferRequest;
 	}
 }
 
