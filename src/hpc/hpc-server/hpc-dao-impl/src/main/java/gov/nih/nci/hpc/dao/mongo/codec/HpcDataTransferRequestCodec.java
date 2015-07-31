@@ -1,5 +1,5 @@
 /**
- * HpcDataTransferAccountCodec.java
+ * HpcDataTransferRequestCodec.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
@@ -23,7 +24,7 @@ import org.bson.codecs.EncoderContext;
 
 /**
  * <p>
- * HPC File Location Codec. 
+ * HPC Data Transfer Request Codec. 
  * </p>
  *
  * @author <a href="mailto:mahidhar.narra@nih.gov">Mahidhar Narra</a>
@@ -58,33 +59,38 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
     
 	@Override
 	public void encode(BsonWriter writer, 
-						HpcDataTransferRequest hpcDataTransferRequest,
+			           HpcDataTransferRequest dataTransferRequest,
 					   EncoderContext encoderContext) 
 	{
 		Document document = new Document();
+		
 		// Extract the data from the domain object.
-		String id = hpcDataTransferRequest.getReport().getTaskID();
-		HpcDataTransferReport hpcDataTransferReport = hpcDataTransferRequest.getReport();
-		HpcDataTransferStatus hpcDataTransferStatus = hpcDataTransferRequest.getStatus();
-
+		String requesterNihUserId = dataTransferRequest.getRequesterNihUserId();
+		String fileId = dataTransferRequest.getFileId();
+		String dataTransferId = dataTransferRequest.getDataTransferId();
+		HpcDataTransferLocations locations = dataTransferRequest.getLocations();
+		HpcDataTransferStatus status = dataTransferRequest.getStatus();
+		HpcDataTransferReport report = dataTransferRequest.getReport();
  
 		// Set the data on the BSON document.
-		if(id != null) {
-		   document.put(TRANSFER_STATUS_REQUEST_KEY, id);
+		if(requesterNihUserId != null) {
+		   document.put(DATA_TRANSFER_REQUEST_REQUESTER_NIH_USER_ID_KEY, requesterNihUserId);
 		}
-		if(hpcDataTransferRequest.getFileId() != null) {
-		   document.put(TRANSFER_STATUS_FILE_ID, hpcDataTransferRequest.getFileId());
+		if(fileId != null) {
+		   document.put(DATA_TRANSFER_REQUEST_FILE_ID_KEY, fileId);
 		}
-		if(hpcDataTransferRequest.getDataTransferId() != null) {
-			   document.put(TRANSFER_STATUS_DATA_TRANSFER_ID, hpcDataTransferRequest.getDataTransferId());
+		if(dataTransferId != null) {
+		   document.put(DATA_TRANSFER_REQUEST_DATA_TRANSFER_ID_KEY, dataTransferId);
 		}
-		if(hpcDataTransferStatus != null) {
-			   document.put(TRANSFER_STATUS_DATA_TRANSFER_STATUS, hpcDataTransferStatus.value());
+		if(locations != null) {
+		   document.put(DATA_TRANSFER_REQUEST_LOCATIONS_KEY, locations);
 		}		
-		if(hpcDataTransferReport != null) {
-		   document.put(TRANSFER_STATUS_REQUEST, hpcDataTransferReport);
+		if(status != null) {
+		   document.put(DATA_TRANSFER_REQUEST_STATUS_KEY, status.value());
 		}
-
+		if(report != null) {
+		   document.put(DATA_TRANSFER_REQUEST_REPORT_KEY, report);
+		}
 		
 		getRegistry().get(Document.class).encode(writer, document, 
 				                                 encoderContext);
@@ -100,15 +106,26 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
 	            		                                  decoderContext);
 		
 		// Map the document to HpcDataTransferAccount instance.
-		HpcDataTransferRequest hpcDataTransferRequest = new HpcDataTransferRequest();
-		hpcDataTransferRequest.setDataTransferId(document.get(TRANSFER_STATUS_DATA_TRANSFER_ID, String.class));
-		hpcDataTransferRequest.setFileId(document.get(TRANSFER_STATUS_FILE_ID, String.class));
-		hpcDataTransferRequest.setStatus(HpcDataTransferStatus.valueOf(
-		        document.get(TRANSFER_STATUS_DATA_TRANSFER_STATUS, String.class)));
-		hpcDataTransferRequest.setReport(decodeTransferReport(document.get(TRANSFER_STATUS_REQUEST, 
-                				Document.class),decoderContext));		
+		HpcDataTransferRequest dataTransferRequest = new HpcDataTransferRequest();
+		dataTransferRequest.setRequesterNihUserId(
+			document.getString(DATA_TRANSFER_REQUEST_REQUESTER_NIH_USER_ID_KEY));
+		dataTransferRequest.setFileId(
+			document.getString(DATA_TRANSFER_REQUEST_FILE_ID_KEY));
+		dataTransferRequest.setDataTransferId(
+			document.getString(DATA_TRANSFER_REQUEST_DATA_TRANSFER_ID_KEY));
+		dataTransferRequest.setLocations(
+		    decodeDataTransferLocations(
+		    	  document.get(DATA_TRANSFER_REQUEST_LOCATIONS_KEY, Document.class), 
+		    	  decoderContext));
+		dataTransferRequest.setStatus(
+			HpcDataTransferStatus.valueOf(
+		           document.getString(DATA_TRANSFER_REQUEST_STATUS_KEY)));
+		dataTransferRequest.setReport(
+			decodeDataTransferReport(
+			    	  document.get(DATA_TRANSFER_REQUEST_REPORT_KEY, Document.class), 
+			    	  decoderContext));		
 		
-		return hpcDataTransferRequest;
+		return dataTransferRequest;
 	}
 	
 	@Override
@@ -122,19 +139,47 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
     //---------------------------------------------------------------------//  
 	
     /**
+     * Decode HpcDataTransferLocations
+     *
+     * @param doc The HpcDataTransferLocations document
+     * @param decoderContext
+     * @return Decoded HpcDataTransferLocations object.
+     */
+    private HpcDataTransferLocations decodeDataTransferLocations(
+    		                                   Document doc, 
+    		                                   DecoderContext decoderContext)
+    {
+    	if(doc == null) {
+    	   return null;
+    	}
+    	
+    	BsonDocumentReader docReader = 
+    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
+    				                                  getRegistry()));
+		return getRegistry().get(HpcDataTransferLocations.class).decode(docReader, 
+		                                                                decoderContext);
+	}	
+	
+    /**
      * Decode HpcDataTransferReport
      *
      * @param doc The HpcDataTransferReport document
      * @param decoderContext
      * @return Decoded HpcDataTransferReport object.
      */
-    private HpcDataTransferReport decodeTransferReport(Document doc, DecoderContext decoderContext)
+    private HpcDataTransferReport decodeDataTransferReport(
+    		                                Document doc, 
+    		                                DecoderContext decoderContext)
     {
+    	if(doc == null) {
+     	   return null;
+     	}
+    	
     	BsonDocumentReader docReader = 
     		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
     				                                  getRegistry()));
 		return getRegistry().get(HpcDataTransferReport.class).decode(docReader, 
-		                                                  decoderContext);
+		                                                             decoderContext);
 	}	
 }
 

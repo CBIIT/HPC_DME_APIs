@@ -32,8 +32,8 @@ import java.util.List;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import com.mongodb.async.SingleResultCallback;
 import com.mongodb.async.client.MongoCollection;
+import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.UpdateResult;
 
 /**
@@ -136,9 +136,10 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
             HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
             HpcCodec.FILE_PRIMARY_METADATA_METADATA_ITEMS_KEY;
 	
+	// Field name to query by data transfer status.
 	public final static String DATASET_TRANSFER_STATUS_NAME =
 							   HpcCodec.DATASET_UPLOAD_REQUESTS_KEY + "." + 
-	                           HpcCodec.TRANSFER_STATUS_DATA_TRANSFER_STATUS;
+	                           HpcCodec.DATA_TRANSFER_REQUEST_STATUS_KEY;
 	
 	// Field name to query a file by id.
 	public final static String FILE_ID_FIELD_NAME = 
@@ -146,7 +147,7 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 	                           HpcCodec.FILE_SET_FILES_KEY + "." +
 	                           HpcCodec.FILE_ID_KEY;
 	
-	// Field name to query a file by id.
+	// Projection for query a file by id.
 	public final static String FILE_PROJECTION = 
 							   HpcCodec.DATASET_FILE_SET_KEY + "." + 
 	                           HpcCodec.FILE_SET_FILES_KEY + ".$";
@@ -199,25 +200,16 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void add(HpcDataset dataset) throws HpcException
+	public void upsert(HpcDataset dataset) throws HpcException
     {
-		HpcSingleResultCallback<Void> callback = 
-				                      new HpcSingleResultCallback<Void>();
-		getCollection().insertOne(dataset, callback);
+		HpcSingleResultCallback<UpdateResult> callback = 
+				                new HpcSingleResultCallback<UpdateResult>();
+		getCollection().replaceOne(eq(DATASET_ID_FIELD_NAME, dataset.getId()), 
+				                   dataset, new UpdateOptions().upsert(true), 
+				                   callback);
        
 		// Throw the callback exception (if any).
 		callback.throwException();
-    }
-
-	@Override
-	public void update(HpcDataset dataset) throws HpcException
-    {
-		SingleResultCallback<UpdateResult> callback = 
-				                      new HpcSingleResultCallback<UpdateResult>();
-		getCollection().replaceOne(eq(DATASET_ID_FIELD_NAME, dataset.getId()), dataset, callback);
-       
-		// Throw the callback exception (if any).
-		((HpcSingleResultCallback<UpdateResult>) callback).throwException();
     }
 		
 	@Override
