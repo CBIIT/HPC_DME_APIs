@@ -23,7 +23,9 @@
 
 	<!-- HPC Application Services OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
-
+		<prop key="hpc.service.dataTransferStatusMap.IN_PROGRESS">ACTIVE</prop>
+		<prop key="hpc.service.dataTransferStatusMap.COMPLETED">SUCCEEDED</prop>
+		<prop key="hpc.service.dataTransferStatusMap.FAILED">FAILED</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

@@ -59,12 +59,17 @@ public interface HpcDatasetRestService
      * GET Dataset by ID.
      *
      * @param id The dataset ID.
+     * @param skipDataTransferStatusUpdate If set to true, the service will not poll
+     *                                     Data Transfer for an updated status on transfer
+     *                                     requests in-flight. 
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO entity.
      */
     @GET
     @Path("/dataset/{id}")
     @Produces("application/json,application/xml")
-    public Response getDataset(@PathParam("id") String id); 
+    public Response getDataset(@PathParam("id") String id,
+    		                   @QueryParam("skipDataTransferStatusUpdate") 
+                               Boolean skipDataTransferStatusUpdate); 
     
     /**
      * GET file by ID.

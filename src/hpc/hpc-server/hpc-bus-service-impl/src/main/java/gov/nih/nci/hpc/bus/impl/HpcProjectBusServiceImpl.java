@@ -204,7 +204,7 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     		{
     			try
     			{
-    				HpcDatasetDTO dataset = datasetService.getDataset(datasetId);
+    				HpcDatasetDTO dataset = datasetService.getDataset(datasetId, true);
     				if(dataset != null)
     					datasets.add(dataset);
     			}

@@ -127,22 +127,26 @@ public abstract class HpcCodec<T> implements Codec<T>
     public final static String METADATA_ITEM_KEY_KEY = "key";
     public final static String METADATA_ITEM_VALUE_KEY = "value";
 
-    public final static String TRANSFER_STATUS_REQUEST_KEY = 
-            "transfer_status_request_id";
-	
-    public final static String TRANSFER_STATUS_FILE_ID = "file_id";
-    public final static String TRANSFER_STATUS_DATA_TRANSFER_ID = "transfer_id";
-    public final static String TRANSFER_STATUS_DATA_TRANSFER_STATUS = "transfer_status";
+    // HpcDataTransferRequest Document keys.
+    public final static String DATA_TRANSFER_REQUEST_REQUESTER_NIH_USER_ID_KEY = 
+                               "requester_nih_user_id";
+    public final static String DATA_TRANSFER_REQUEST_FILE_ID_KEY = 
+                               "file_id";
+    public final static String DATA_TRANSFER_REQUEST_DATA_TRANSFER_ID_KEY = 
+                               "data_transfer_id";
+    public final static String DATA_TRANSFER_REQUEST_LOCATIONS_KEY = "locations";
+    public final static String DATA_TRANSFER_REQUEST_STATUS_KEY = "status";
+    public final static String DATA_TRANSFER_REQUEST_REPORT_KEY = "report";
     
-    public final static String TRANSFER_STATUS_REQUEST = 
-            "transfer_status_request"; 
-    public final static String TRANSFER_STATUS_REQUEST_STATUS = 
-            "transfer_status_request_status";
+    // HpcDataTransferLocations Document keys.
+    public final static String DATA_TRANSFER_LOCATIONS_SOURCE_KEY = "source";
+    public final static String DATA_TRANSFER_LOCATIONS_DESTINATION_KEY = "destination";
+    
+    // HpcDataTransferReport Document Keys.
     public final static String TRANSFER_STATUS_REPORT_COMMAND = 
             "transfer_status_report_command";
     public final static String TRANSFER_STATUS_REPORT_DEST_ENDPOINT = 
             "transfer_status_report_dest_endpoint";
-  
     public final static String TRANSFER_STATUS_REPORT_SOURCE_ENDPOINT = 
             "transfer_status_report_source_endpoint";
     public final static String TRANSFER_STATUS_REPORT_STATUS = 

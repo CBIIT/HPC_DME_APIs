@@ -56,11 +56,16 @@ public interface HpcDatasetBusService
      * Get a dataset by its ID.
      *
      * @param id The dataset id.
+     * @param skipDataTransferStatusUpdate If set to true, the service will not poll
+     *                                     Data Transfer for an updated status on transfer
+     *                                     requests in-flight. 
      * @return The dataset DTO or null if not found.
      * 
      * @throws HpcException
      */
-    public HpcDatasetDTO getDataset(String id) throws HpcException;
+    public HpcDatasetDTO getDataset(String id, 
+    		                        boolean skipDataTransferStatusUpdate) 
+    		                       throws HpcException;
     
     /**
      * Get a file by its ID.

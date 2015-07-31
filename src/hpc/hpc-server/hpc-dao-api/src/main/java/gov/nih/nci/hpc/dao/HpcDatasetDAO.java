@@ -30,22 +30,13 @@ import java.util.List;
 public interface HpcDatasetDAO 
 {         
     /**
-     * Add dataset to the repository.
+     * Store a new dataset to the repository or update it if it exists.
      *
-     * @param dataset The dataset to add to the DB.
+     * @param dataset The dataset to be added/updated.
      * 
      * @throws HpcException
      */
-    public void add(HpcDataset dataset) throws HpcException;
-    
-    /**
-     * Update a dataset in the repository.
-     *
-     * @param dataset The dataset to be updated to the DB.
-     * 
-     * @throws HpcException
-     */
-    public void update(HpcDataset dataset) throws HpcException;
+    public void upsert(HpcDataset dataset) throws HpcException;
     
     /**
      * Get dataset from the repository by ID.

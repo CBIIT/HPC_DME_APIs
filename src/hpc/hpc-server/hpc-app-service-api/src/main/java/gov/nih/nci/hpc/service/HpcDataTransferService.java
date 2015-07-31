@@ -42,17 +42,19 @@ public interface HpcDataTransferService
     		                 throws HpcException;
 
     /**
-     * Request Data (file) Transfer.
+     * Get data transfer request updated status.
      *
-     * @param taskId The taskId to retrive status
-     * @param dataTransferAccount 
+     * @param dataTransferId The data transfer request ID.
+     * @param dataTransferAccount The account used to transfer the request.
      * @return A transfer report.
      * 
      * @throws HpcException
      */
     public HpcDataTransferReport 
-              retriveTransferStatus(String taskId, HpcDataTransferAccount dataTransferAccount) 
-    		                 throws HpcException;    
+              getTransferRequestStatus(String dataTransferId, 
+            	                       HpcDataTransferAccount dataTransferAccount) 
+    		                          throws HpcException; 
+    
     /**
      * Validate a data transfer account.
      *

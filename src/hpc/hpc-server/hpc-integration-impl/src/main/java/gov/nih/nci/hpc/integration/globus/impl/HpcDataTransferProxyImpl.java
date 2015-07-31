@@ -1,6 +1,5 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
-import gov.nih.nci.hpc.domain.dataset.Adapter1;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -12,18 +11,11 @@ import gov.nih.nci.hpc.integration.globus.driver.HpcGOTransfer;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.bind.DatatypeConverter;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.globusonline.nexus.GoauthClient;
 import org.globusonline.nexus.exception.InvalidCredentialsException;
