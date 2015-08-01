@@ -10,12 +10,13 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
+import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeDataTransferLocations;
+import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 
-import org.bson.BsonDocumentReader;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
@@ -28,7 +29,7 @@ import org.bson.codecs.EncoderContext;
  * </p>
  *
  * @author <a href="mailto:mahidhar.narra@nih.gov">Mahidhar Narra</a>
- * @version $Id: HpcDataTransferRequestCodec.java 300 2015-07-07 17:18:19Z narram $
+ * @version $Id$
  */
 
 public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest>
@@ -38,7 +39,6 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
     // Constructors
     //---------------------------------------------------------------------//
 
-
 	/**
      * Default Constructor.
      * 
@@ -47,7 +47,6 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
     private HpcDataTransferRequestCodec()
     {
     }   
-
     
     //---------------------------------------------------------------------//
     // Methods
@@ -114,16 +113,16 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
 		dataTransferRequest.setDataTransferId(
 			document.getString(DATA_TRANSFER_REQUEST_DATA_TRANSFER_ID_KEY));
 		dataTransferRequest.setLocations(
-		    decodeDataTransferLocations(
+			decodeDataTransferLocations(
 		    	  document.get(DATA_TRANSFER_REQUEST_LOCATIONS_KEY, Document.class), 
-		    	  decoderContext));
+		    	  decoderContext, getRegistry()));
 		dataTransferRequest.setStatus(
 			HpcDataTransferStatus.valueOf(
 		           document.getString(DATA_TRANSFER_REQUEST_STATUS_KEY)));
 		dataTransferRequest.setReport(
 			decodeDataTransferReport(
 			    	  document.get(DATA_TRANSFER_REQUEST_REPORT_KEY, Document.class), 
-			    	  decoderContext));		
+			    	  decoderContext, getRegistry()));		
 		
 		return dataTransferRequest;
 	}
@@ -133,54 +132,6 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
 	{
 		return HpcDataTransferRequest.class;
 	}
-	
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-	
-    /**
-     * Decode HpcDataTransferLocations
-     *
-     * @param doc The HpcDataTransferLocations document
-     * @param decoderContext
-     * @return Decoded HpcDataTransferLocations object.
-     */
-    private HpcDataTransferLocations decodeDataTransferLocations(
-    		                                   Document doc, 
-    		                                   DecoderContext decoderContext)
-    {
-    	if(doc == null) {
-    	   return null;
-    	}
-    	
-    	BsonDocumentReader docReader = 
-    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
-    				                                  getRegistry()));
-		return getRegistry().get(HpcDataTransferLocations.class).decode(docReader, 
-		                                                                decoderContext);
-	}	
-	
-    /**
-     * Decode HpcDataTransferReport
-     *
-     * @param doc The HpcDataTransferReport document
-     * @param decoderContext
-     * @return Decoded HpcDataTransferReport object.
-     */
-    private HpcDataTransferReport decodeDataTransferReport(
-    		                                Document doc, 
-    		                                DecoderContext decoderContext)
-    {
-    	if(doc == null) {
-     	   return null;
-     	}
-    	
-    	BsonDocumentReader docReader = 
-    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
-    				                                  getRegistry()));
-		return getRegistry().get(HpcDataTransferReport.class).decode(docReader, 
-		                                                             decoderContext);
-	}	
 }
 
  

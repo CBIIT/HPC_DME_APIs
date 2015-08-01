@@ -81,10 +81,8 @@ public class HpcFileLocationCodec extends HpcCodec<HpcFileLocation>
 		
 		// Map the document to HpcDataset instance.
 		HpcFileLocation location = new HpcFileLocation();
-		location.setEndpoint(document.get(FILE_LOCATION_ENDPOINT_KEY, 
-				                          String.class));
-		location.setPath(document.get(FILE_LOCATION_PATH_KEY, 
-                                      String.class));
+		location.setEndpoint(document.getString(FILE_LOCATION_ENDPOINT_KEY));
+		location.setPath(document.getString(FILE_LOCATION_PATH_KEY));
 		
 		return location;
 	}

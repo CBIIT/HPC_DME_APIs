@@ -10,12 +10,12 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
+import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeMetadataItem;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
+import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
+
 import java.util.List;
 
-import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
-
-import org.bson.BsonDocumentReader;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
@@ -28,7 +28,7 @@ import org.bson.codecs.EncoderContext;
  * </p>
  *
  * @author <a href="mailto:prasad.konka@nih.gov">Prasad Konka</a>
- * @version $Id:  $
+ * @version $Id$
  */
 
 public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
@@ -130,33 +130,20 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		
 		// Map the BSON Document to a domain object.
 		HpcProjectMetadata projectMetadata = new HpcProjectMetadata();
-		projectMetadata.setName(
-				   document.get(NAME_KEY, 
-                                String.class));
-		projectMetadata.setDescription(
-				document.get(DESCRIPTION_KEY, 
-					         String.class));
+		projectMetadata.setName(document.getString(NAME_KEY));
+		projectMetadata.setDescription(document.getString(DESCRIPTION_KEY));
 		projectMetadata.setPrimaryInvestigatorNihUserId(
-		    document.get(PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY, 
-			             String.class));
+		                document.getString(PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY));
 		projectMetadata.setRegistratorNihUserId(
-		    document.get(REGISTRATOR_NIH_USER_ID_KEY, 
-				    	 String.class));
-		projectMetadata.setLabBranch(
-			document.get(LAB_BRANCH_KEY, 
-		                 String.class));
-		projectMetadata.setDoc(
-				document.get(DOC_KEY, 
-			                 String.class));
+		                document.getString(REGISTRATOR_NIH_USER_ID_KEY));
+		projectMetadata.setLabBranch(document.getString(LAB_BRANCH_KEY));
+		projectMetadata.setDoc(document.getString(DOC_KEY));
 		projectMetadata.setFundingOrganization(
-				document.get(FUNDING_ORGANIZATION_KEY, 
-			                 String.class));
+				        document.getString(FUNDING_ORGANIZATION_KEY));
 		projectMetadata.setInternalProjectId(
-				document.get(PROJECT_INTERNAL_PROJECT_ID_KEY, 
-			                 String.class));
+				        document.getString(PROJECT_INTERNAL_PROJECT_ID_KEY));
 		projectMetadata.setExperimentId(
-				document.get(PROJECT_EXPERIMENT_ID_KEY, 
-			                 String.class));
+				        document.getString(PROJECT_EXPERIMENT_ID_KEY));
 		
 		// Map the collections.
 		List<Document> metadataItemDocuments = 
@@ -164,8 +151,8 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		if(metadataItemDocuments != null) {
 		   for(Document metadataItemDocument : metadataItemDocuments) {
 			   projectMetadata.getMetadataItems().add(
-					                  decodeMetadataItem(metadataItemDocument, 	
-					                                     decoderContext));
+					  decodeMetadataItem(metadataItemDocument, 	
+					                     decoderContext, getRegistry()));
 		   }
 		}
 		
@@ -176,27 +163,6 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 	public Class<HpcProjectMetadata> getEncoderClass() 
 	{
 		return HpcProjectMetadata.class;
-	}
-	
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-	
-    /**
-     * Decode HpcMetadataItem
-     *
-     * @param doc The HpcMetadataItem document
-     * @param decoderContext
-     * @return Decoded HpcMetadataItem object.
-     */
-    private HpcMetadataItem decodeMetadataItem(Document doc, 
-    		                                   DecoderContext decoderContext)
-    {
-    	BsonDocumentReader docReader = 
-    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
-    				                                  getRegistry()));
-		return getRegistry().get(HpcMetadataItem.class).decode(docReader, 
-		                                                       decoderContext);
 	}
 }
 
