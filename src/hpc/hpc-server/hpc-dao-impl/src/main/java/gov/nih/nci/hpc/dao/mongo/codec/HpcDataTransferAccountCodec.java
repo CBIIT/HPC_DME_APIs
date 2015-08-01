@@ -128,8 +128,7 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
                                            Binary.class)));
 		dataTransferAccount.setAccountType(
 		    HpcDataTransferAccountType.valueOf(
-		    	   document.get(DATA_TRANSFER_ACCOUNT_ACCOUNT_TYPE_KEY, 
-                                String.class)));
+		    	   document.getString(DATA_TRANSFER_ACCOUNT_ACCOUNT_TYPE_KEY)));
 		
 		return dataTransferAccount;
 	}

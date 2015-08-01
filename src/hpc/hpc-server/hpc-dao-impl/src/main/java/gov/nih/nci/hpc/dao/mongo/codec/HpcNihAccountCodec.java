@@ -85,12 +85,9 @@ public class HpcNihAccountCodec extends HpcCodec<HpcNihAccount>
 		
 		// Map the document to HpcNihAccount instance.
 		HpcNihAccount nihAccount = new HpcNihAccount();
-		nihAccount.setUserId(document.get(NIH_ACCOUNT_USER_ID_KEY, 
-				                          String.class));
-		nihAccount.setFirstName(document.get(NIH_ACCOUNT_FIRST_NAME_KEY, 
-				                             String.class));
-		nihAccount.setLastName(document.get(NIH_ACCOUNT_LAST_NAME_KEY, 
-				                            String.class));
+		nihAccount.setUserId(document.getString(NIH_ACCOUNT_USER_ID_KEY));
+		nihAccount.setFirstName(document.getString(NIH_ACCOUNT_FIRST_NAME_KEY));
+		nihAccount.setLastName(document.getString(NIH_ACCOUNT_LAST_NAME_KEY));
 
 		return nihAccount;
 	}

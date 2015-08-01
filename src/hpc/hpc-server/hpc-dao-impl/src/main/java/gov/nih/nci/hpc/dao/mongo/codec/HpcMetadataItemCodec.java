@@ -81,8 +81,8 @@ public class HpcMetadataItemCodec extends HpcCodec<HpcMetadataItem>
 		
 		// Map the document to HpcDataset instance.
 		HpcMetadataItem item = new HpcMetadataItem();
-		item.setKey(document.get(METADATA_ITEM_KEY_KEY, String.class));
-		item.setValue(document.get(METADATA_ITEM_VALUE_KEY, String.class));
+		item.setKey(document.getString(METADATA_ITEM_KEY_KEY));
+		item.setValue(document.getString(METADATA_ITEM_VALUE_KEY));
 		
 		return item;
 	}

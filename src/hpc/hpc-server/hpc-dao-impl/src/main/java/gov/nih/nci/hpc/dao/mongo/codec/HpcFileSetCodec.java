@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
+import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 
@@ -17,7 +18,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.bson.BsonDocumentReader;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
@@ -101,15 +101,14 @@ public class HpcFileSetCodec extends HpcCodec<HpcFileSet>
 		
 		// Map the BSON Document to a domain object.
 		HpcFileSet fileSet = new HpcFileSet();
-		fileSet.setName(document.get(FILE_SET_NAME_KEY, String.class));
-		fileSet.setDescription(document.get(FILE_SET_DESCRIPTION_KEY, 
-				                            String.class));
-		fileSet.setComments(document.get(FILE_SET_COMMENTS_KEY, String.class));
+		fileSet.setName(document.getString(FILE_SET_NAME_KEY));
+		fileSet.setDescription(document.getString(FILE_SET_DESCRIPTION_KEY));
+		fileSet.setComments(document.getString(FILE_SET_COMMENTS_KEY));
 		
-		Date createdDate = document.get(FILE_SET_CREATED_KEY, Date.class);
+		Date createdDate = document.getDate(FILE_SET_CREATED_KEY);
 		if(createdDate != null) {
 		   Calendar createdCal = Calendar.getInstance();
-		   createdCal.setTime(document.get(FILE_SET_CREATED_KEY, Date.class));
+		   createdCal.setTime(document.getDate(FILE_SET_CREATED_KEY));
 		   fileSet.setCreated(createdCal);
 		}
 		
@@ -117,7 +116,8 @@ public class HpcFileSetCodec extends HpcCodec<HpcFileSet>
 				       (List<Document>) document.get(FILE_SET_FILES_KEY);
 		if(fileDocuments != null) {
 		   for(Document fileDocument : fileDocuments) {
-			   fileSet.getFiles().add(decodeFile(fileDocument, decoderContext));
+			   fileSet.getFiles().add(decodeFile(fileDocument, decoderContext, 
+					                             getRegistry()));
 		   }
 		}
 		
@@ -128,26 +128,6 @@ public class HpcFileSetCodec extends HpcCodec<HpcFileSet>
 	public Class<HpcFileSet> getEncoderClass() 
 	{
 		return HpcFileSet.class;
-	}
-	
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-	
-    /**
-     * Decode HpcFile
-     *
-     * @param doc The HpcFile document
-     * @param decoderContext
-     * @return Decoded HpcFile object.
-     */
-    private HpcFile decodeFile(Document doc, DecoderContext decoderContext)
-    {
-    	BsonDocumentReader docReader = 
-    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
-    				                                  getRegistry()));
-		return getRegistry().get(HpcFile.class).decode(docReader, 
-		                                               decoderContext);
 	}
 }
 
