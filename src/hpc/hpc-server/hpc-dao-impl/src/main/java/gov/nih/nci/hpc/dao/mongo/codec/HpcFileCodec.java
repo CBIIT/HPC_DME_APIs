@@ -9,15 +9,15 @@
  */
 
 package gov.nih.nci.hpc.dao.mongo.codec;
-
-import java.util.List;
-
+import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeFileLocation;
+import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeFileMetadata;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 
-import org.bson.BsonDocumentReader;
+import java.util.List;
+
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
@@ -107,24 +107,25 @@ public class HpcFileCodec extends HpcCodec<HpcFile>
 		
 		// Map the document to HpcDataset instance.
 		HpcFile file = new HpcFile();
-		file.setId(document.get(FILE_ID_KEY, String.class));
+		file.setId(document.getString(FILE_ID_KEY));
 		file.setType(HpcFileType.valueOf(
-				        document.get(FILE_TYPE_KEY, String.class)));
-		file.setSize(document.get(FILE_SIZE_KEY, Double.class));
+				        document.getString(FILE_TYPE_KEY)));
+		file.setSize(document.getDouble(FILE_SIZE_KEY));
 		file.setSource(decodeFileLocation(document.get(FILE_SOURCE_KEY, 
                                                        Document.class),
-                                          decoderContext));
+                                          decoderContext, getRegistry()));
 		file.setLocation(decodeFileLocation(document.get(FILE_LOCATION_KEY, 
                                                          Document.class),
-                                            decoderContext));
+                                            decoderContext, getRegistry()));
 		file.setMetadata(decodeFileMetadata(document.get(FILE_METADATA_KEY, 
                                                          Document.class),
-                                            decoderContext));
+                                            decoderContext, getRegistry()));
 		@SuppressWarnings("unchecked")
 		List<String> projectIds = 
 				(List<String>) document.get(FILE_PROJECTS_KEY);
-		if(projectIds != null && projectIds.size() > 0)
-			file.getProjectIds().addAll(projectIds);
+		if(projectIds != null && projectIds.size() > 0) {
+		   file.getProjectIds().addAll(projectIds);
+		}
 
 		return file;
 	}
@@ -133,42 +134,6 @@ public class HpcFileCodec extends HpcCodec<HpcFile>
 	public Class<HpcFile> getEncoderClass() 
 	{
 		return HpcFile.class;
-	}
-	
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-	
-    /**
-     * Decode HpcFileLocation
-     *
-     * @param doc The HpcFileLocation document
-     * @param decoderContext
-     * @return Decoded HpcDatasetLocation object.
-     */
-    private HpcFileLocation decodeFileLocation(Document doc, DecoderContext decoderContext)
-    {
-    	BsonDocumentReader docReader = 
-    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
-    				                                  getRegistry()));
-		return getRegistry().get(HpcFileLocation.class).decode(docReader, 
-		                                                       decoderContext);
-	}
-    
-    /**
-     * Decode HpcFileMetadata
-     *
-     * @param doc The HpcFileMetadata document
-     * @param decoderContext
-     * @return Decoded HpcDatasetLocation object.
-     */
-    private HpcFileMetadata decodeFileMetadata(Document doc, DecoderContext decoderContext)
-    {
-    	BsonDocumentReader docReader = 
-    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
-    				                                  getRegistry()));
-		return getRegistry().get(HpcFileMetadata.class).decode(docReader, 
-		                                                       decoderContext);
 	}
 }
 

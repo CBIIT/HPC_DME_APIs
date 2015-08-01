@@ -10,10 +10,10 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
+import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 
-import org.bson.BsonDocumentReader;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
@@ -84,7 +84,7 @@ public class HpcFileMetadataCodec extends HpcCodec<HpcFileMetadata>
 		fileMetadata.setPrimaryMetadata(
 			decodeFilePrimaryMetadata(document.get(FILE_METADATA_PRIMARY_METADATA_KEY, 
                                                    Document.class),
-                                      decoderContext));
+                                      decoderContext, getRegistry()));
 		
 		return fileMetadata;
 	}
@@ -93,28 +93,6 @@ public class HpcFileMetadataCodec extends HpcCodec<HpcFileMetadata>
 	public Class<HpcFileMetadata> getEncoderClass() 
 	{
 		return HpcFileMetadata.class;
-	}
-	
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-	
-    /**
-     * Decode HpcFilePrimaryMetadata
-     *
-     * @param doc The HpcFilePrimaryMetadata document
-     * @param decoderContext
-     * @return Decoded HpcFilePrimaryMetadata object.
-     */
-    private HpcFilePrimaryMetadata decodeFilePrimaryMetadata(
-    		                                 Document doc, 
-    		                                 DecoderContext decoderContext)
-    {
-    	BsonDocumentReader docReader = 
-    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
-    				                                  getRegistry()));
-		return getRegistry().get(HpcFilePrimaryMetadata.class).decode(docReader, 
-		                                                              decoderContext);
 	}
 }
 

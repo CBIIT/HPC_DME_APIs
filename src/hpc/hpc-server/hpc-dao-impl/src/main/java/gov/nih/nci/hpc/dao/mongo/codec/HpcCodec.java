@@ -143,57 +143,49 @@ public abstract class HpcCodec<T> implements Codec<T>
     public final static String DATA_TRANSFER_LOCATIONS_DESTINATION_KEY = "destination";
     
     // HpcDataTransferReport Document Keys.
-    public final static String TRANSFER_STATUS_REPORT_COMMAND = 
-            "transfer_status_report_command";
-    public final static String TRANSFER_STATUS_REPORT_DEST_ENDPOINT = 
-            "transfer_status_report_dest_endpoint";
-    public final static String TRANSFER_STATUS_REPORT_SOURCE_ENDPOINT = 
-            "transfer_status_report_source_endpoint";
-    public final static String TRANSFER_STATUS_REPORT_STATUS = 
-            "transfer_status_report_status"; 
-    public final static String TRANSFER_STATUS_REPORT_TASKID = 
-            "transfer_status_report_taskid"; 
-    public final static String TRANSFER_STATUS_REPORT_BYTESCHECKSUMMED = 
-            "transfer_status_report_byteschecksummed";
-    public final static String TRANSFER_STATUS_REPORT_BYTESTRANSFERRED = 
-            "transfer_status_report_bytestransferred";
-    public final static String TRANSFER_STATUS_REPORT_COMPLETIONTIME = 
-            "transfer_status_report_completiontime";
-    public final static String TRANSFER_STATUS_REPORT_REQUESTTIME = 
-            "transfer_status_report_requesttime";    
-    public final static String TRANSFER_STATUS_REPORT_DATAENCRIPTION = 
-            "transfer_status_report_dataencription";
-    public final static String TRANSFER_STATUS_REPORT_DEADLINE = 
-            "transfer_status_report_deadline";
-    public final static String TRANSFER_STATUS_REPORT_DELETE = 
-            "transfer_status_report_delete";
-    public final static String TRANSFER_STATUS_REPORT_DIRECTORIES = 
-            "transfer_status_report_directories";
-    public final static String TRANSFER_STATUS_REPORT_FILES = 
-            "transfer_status_report_files";
-    public final static String TRANSFER_STATUS_REPORT_EXPANSIONS = 
-            "transfer_status_report_expansions";
-    public final static String TRANSFER_STATUS_REPORT_EFFECTIVEMBITS = 
-            "transfer_status_report_effective_bits";
-    public final static String TRANSFER_STATUS_REPORT_FAULTS = 
-            "transfer_status_report_faults";
-    public final static String TRANSFER_STATUS_REPORT_FILESSKIPPED = 
-            "transfer_status_report_filesskipped";
-    public final static String TRANSFER_STATUS_REPORT_TOTALTASKS = 
-            "transfer_status_report_totaltasks";
-    public final static String TRANSFER_STATUS_REPORT_TASKSSUCCESSFUL = 
-            "transfer_status_report_taskssuccessful";
-    public final static String TRANSFER_STATUS_REPORT_TASKSEXPIRED = 
-            "transfer_status_report_tasksexpired";    
-    public final static String TRANSFER_STATUS_REPORT_TASKSCANCELLED = 
-            "transfer_status_report_taskscancelled"; 
-    public final static String TRANSFER_STATUS_REPORT_TASKSFAILED = 
-            "transfer_status_report_tasksfailed"; 
-    public final static String TRANSFER_STATUS_REPORT_TASKSPENDING = 
-            "transfer_status_report_taskspending"; 
-    public final static String TRANSFER_STATUS_REPORT_TASKSRETRYING = 
-            "transfer_status_report_tasksretrying"; 
-  
+    public final static String DATA_TRANSFER_REPORT_TASK_ID_KEY = "task_id"; 
+    public final static String DATA_TRANSFER_REPORT_TASK_TYPE_KEY = "task_type"; 
+    public final static String DATA_TRANSFER_REPORT_STATUS_KEY = "status";
+    public final static String DATA_TRANSFER_REPORT_REQUEST_TIME_KEY = 
+                               "request_time"; 
+    public final static String DATA_TRANSFER_REPORT_DEADLINE_KEY = "deadline"; 
+    public final static String DATA_TRANSFER_REPORT_COMPLETION_TIME_KEY = 
+                               "completion_time"; 
+    public final static String DATA_TRANSFER_REPORT_TOTAL_TASKS_KEY = "total_tasks"; 
+    public final static String DATA_TRANSFER_REPORT_TASKS_SUCCESSFUL_KEY = 
+    		                   "tasks_successful"; 
+    public final static String DATA_TRANSFER_REPORT_TASKS_EXPIRED_KEY = 
+                               "tasks_expired"; 
+    public final static String DATA_TRANSFER_REPORT_TASKS_CANCELED_KEY = 
+                               "tasks_canceled"; 
+    public final static String DATA_TRANSFER_REPORT_TASKS_FAILED_KEY = 
+                               "tasks_failed"; 
+    public final static String DATA_TRANSFER_REPORT_TASKS_PENDING_KEY = 
+                               "tasks_pending"; 
+    public final static String DATA_TRANSFER_REPORT_TASKS_RETRYING_KEY = 
+                               "tasks_retrying"; 
+    public final static String DATA_TRANSFER_REPORT_COMMAND_KEY = "command"; 
+    public final static String DATA_TRANSFER_REPORT_SOURCE_ENDPOINT_KEY = 
+    		                   "source_endpoint"; 
+    public final static String DATA_TRANSFER_REPORT_DESTINATION_ENDPOINT_KEY = 
+                               "destination_endpoint"; 
+    public final static String DATA_TRANSFER_REPORT_DATA_ENCRYPTION_KEY = 
+                               "data_encryption"; 
+    public final static String DATA_TRANSFER_REPORT_CHECKSUM_VERIFICATION_KEY = 
+                               "checksum_verification"; 
+    public final static String DATA_TRANSFER_REPORT_DELETE_KEY = "delete"; 
+    public final static String DATA_TRANSFER_REPORT_FILES_KEY = "files"; 
+    public final static String DATA_TRANSFER_REPORT_FILES_SKIPPED_KEY = 
+    		                   "files_skipped";
+    public final static String DATA_TRANSFER_REPORT_DIRECTORIES_KEY = "directories"; 
+    public final static String DATA_TRANSFER_REPORT_EXPANSIONS_KEY = "expansions"; 
+    public final static String DATA_TRANSFER_REPORT_BYTES_TRANSFERRED_KEY = 
+    		                   "bytes_transferred";
+    public final static String DATA_TRANSFER_REPORT_BYTES_CHECKSUMMED_KEY = 
+                               "bytes_checksummed";
+    public final static String DATA_TRANSFER_REPORT_EFFECTIVE_MBITS_PER_SEC_KEY = 
+                               "effective_mbits_per_sec";
+    public final static String DATA_TRANSFER_REPORT_FAULTS_KEY = "faults"; 
     
     //---------------------------------------------------------------------//
     // Instance members

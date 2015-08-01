@@ -13,7 +13,6 @@ package gov.nih.nci.hpc.dao.mongo.codec;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 
 import java.util.Calendar;
-import java.util.Date;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
@@ -27,7 +26,7 @@ import org.bson.codecs.EncoderContext;
  * </p>
  *
  * @author <a href="mailto:mahidhar.narra@nih.gov">Mahidhar Narra</a>
- * @version $Id: HpcDataTransferReportCodec.java 300 2015-07-07 17:18:19Z narram $
+ * @version $Id$
  */
 
 public class HpcDataTransferReportCodec extends HpcCodec<HpcDataTransferReport>
@@ -57,121 +56,90 @@ public class HpcDataTransferReportCodec extends HpcCodec<HpcDataTransferReport>
     
 	@Override
 	public void encode(BsonWriter writer, 
-						HpcDataTransferReport hpcDataTransferReport,
+					   HpcDataTransferReport dataTransferReport,
 					   EncoderContext encoderContext) 
 	{
 		Document document = new Document();
 
 		// Extract the data from the POJO.
-		
-		String command = hpcDataTransferReport.getCommand();
-		String destEndpoint = hpcDataTransferReport.getDestinationEndpoint();
-		String sourceEndpoint = hpcDataTransferReport.getSourceEndpoint();
-		String status = hpcDataTransferReport.getStatus();
-		String taskId = hpcDataTransferReport.getTaskID();
-		String taskName = hpcDataTransferReport.getTaskType();
-		long bytesChecksummed = hpcDataTransferReport.getBytesChecksummed();
-		long bytestransferred = hpcDataTransferReport.getBytesTransferred();
-		boolean checksumVerification = hpcDataTransferReport.getChecksumVerification();
-		Calendar completionTime = hpcDataTransferReport.getCompletionTime();
-		Calendar requestTime = hpcDataTransferReport.getRequestTime();
-		boolean dataEncrip = hpcDataTransferReport.getDataEncryption();
-		Calendar deadLine = hpcDataTransferReport.getDeadline();
-		boolean delete = hpcDataTransferReport.getDelete();
-		int directories = hpcDataTransferReport.getDirectories();
-		int files = hpcDataTransferReport.getFiles();
-		int expansions = hpcDataTransferReport.getExpansions();
-		double effectiveMbits = hpcDataTransferReport.getEffectiveMbitsPerSec();
-		int faults = hpcDataTransferReport.getFaults();
-		int filesSkipped = hpcDataTransferReport.getFilesSkipped();
-		int totalTasks = hpcDataTransferReport.getTotalTasks();
-		int tasksSuccessful = hpcDataTransferReport.getTasksSuccessful();
-		int tasksExpired = hpcDataTransferReport.getTasksExpired();
-		int tasksCancelled = hpcDataTransferReport.getTasksCanceled();
-		int tasksFailed = hpcDataTransferReport.getTasksFailed();
-		int tasksPending = hpcDataTransferReport.getTasksPending();
-		int tasksRetrying = hpcDataTransferReport.getTasksRetrying();
-
+		String taskId = dataTransferReport.getTaskID();
+		String taskType = dataTransferReport.getTaskType();
+		String status = dataTransferReport.getStatus();
+		Calendar requestTime = dataTransferReport.getRequestTime();
+		Calendar deadline = dataTransferReport.getDeadline();
+		Calendar completionTime = dataTransferReport.getCompletionTime();
+		int totalTasks = dataTransferReport.getTotalTasks();
+		int tasksSuccessful = dataTransferReport.getTasksSuccessful();
+		int tasksExpired = dataTransferReport.getTasksExpired();
+		int tasksCanceled = dataTransferReport.getTasksCanceled();
+		int tasksFailed = dataTransferReport.getTasksFailed();
+		int tasksPending = dataTransferReport.getTasksPending();
+		int tasksRetrying = dataTransferReport.getTasksRetrying();
+		String command = dataTransferReport.getCommand();
+		String sourceEndpoint = dataTransferReport.getSourceEndpoint();
+		String destinationEndpoint = dataTransferReport.getDestinationEndpoint();
+		boolean dataEncryption = dataTransferReport.getDataEncryption();
+		boolean checksumVerification = dataTransferReport.getChecksumVerification();
+		boolean delete = dataTransferReport.getDelete();
+		int files = dataTransferReport.getFiles();
+		int filesSkipped = dataTransferReport.getFilesSkipped();
+        int directories = dataTransferReport.getDirectories();
+		int expansions = dataTransferReport.getExpansions();
+		long bytesTransferred = dataTransferReport.getBytesTransferred();
+		long bytesChecksummed = dataTransferReport.getBytesChecksummed();
+		double effectiveMbitsPerSec = dataTransferReport.getEffectiveMbitsPerSec();
+		int faults = dataTransferReport.getFaults();
 		
 		// Set the data on the BSON document.
-		if(command != null) {
-		   document.put(TRANSFER_STATUS_REPORT_COMMAND, command);
+		if(taskId != null) {
+		   document.put(DATA_TRANSFER_REPORT_TASK_ID_KEY, taskId);
 		}
-		if(destEndpoint != null) {
-		   document.put(TRANSFER_STATUS_REPORT_DEST_ENDPOINT, destEndpoint);
-		}
-		if(sourceEndpoint != null) {
-		   document.put(TRANSFER_STATUS_REPORT_SOURCE_ENDPOINT, sourceEndpoint);
+		if(taskType != null) {
+		   document.put(DATA_TRANSFER_REPORT_TASK_TYPE_KEY, taskType);
 		}
 		if(status != null) {
-		   document.put(TRANSFER_STATUS_REPORT_STATUS, status);
-		}
-		if(taskId != null) {
-		   document.put(TRANSFER_STATUS_REPORT_TASKID, taskId);
-		}
-		//if(bytesChecksummed != null) {
-		   document.put(TRANSFER_STATUS_REPORT_BYTESCHECKSUMMED, bytesChecksummed);
-		//}
-		//if(bytestransferred != null) {
-			   document.put(TRANSFER_STATUS_REPORT_BYTESTRANSFERRED, bytestransferred);
-		//}
-		if(completionTime != null) {
-			   document.put(TRANSFER_STATUS_REPORT_COMPLETIONTIME, completionTime.getTime());
+		   document.put(DATA_TRANSFER_REPORT_STATUS_KEY, status);
 		}
 		if(requestTime != null) {
-			   document.put(TRANSFER_STATUS_REPORT_REQUESTTIME, requestTime.getTime());
-		}		
+		   document.put(DATA_TRANSFER_REPORT_REQUEST_TIME_KEY, 
+				        requestTime.getTime());
+		}	
+		if(deadline != null) {
+		   document.put(DATA_TRANSFER_REPORT_DEADLINE_KEY, 
+					    deadline.getTime());
+		}
+		if(completionTime != null) {
+		   document.put(DATA_TRANSFER_REPORT_COMPLETION_TIME_KEY, 
+					    completionTime.getTime());
+		}	
+		document.put(DATA_TRANSFER_REPORT_TOTAL_TASKS_KEY, totalTasks);
+		document.put(DATA_TRANSFER_REPORT_TASKS_SUCCESSFUL_KEY, tasksSuccessful);
+		document.put(DATA_TRANSFER_REPORT_TASKS_EXPIRED_KEY, tasksExpired);
+		document.put(DATA_TRANSFER_REPORT_TASKS_CANCELED_KEY, tasksCanceled);
+		document.put(DATA_TRANSFER_REPORT_TASKS_FAILED_KEY, tasksFailed);
+		document.put(DATA_TRANSFER_REPORT_TASKS_PENDING_KEY, tasksPending);
+		document.put(DATA_TRANSFER_REPORT_TASKS_RETRYING_KEY, tasksRetrying);
+		if(command != null) {
+		   document.put(DATA_TRANSFER_REPORT_COMMAND_KEY, command);
+		}
+		if(sourceEndpoint != null) {
+		   document.put(DATA_TRANSFER_REPORT_SOURCE_ENDPOINT_KEY, sourceEndpoint);
+		}
+		if(destinationEndpoint != null) {
+		   document.put(DATA_TRANSFER_REPORT_DESTINATION_ENDPOINT_KEY, destinationEndpoint);
+		}
+		document.put(DATA_TRANSFER_REPORT_DATA_ENCRYPTION_KEY, dataEncryption);
+		document.put(DATA_TRANSFER_REPORT_CHECKSUM_VERIFICATION_KEY, checksumVerification);
+		document.put(DATA_TRANSFER_REPORT_DELETE_KEY, delete);
+		document.put(DATA_TRANSFER_REPORT_FILES_KEY, files);
+		document.put(DATA_TRANSFER_REPORT_FILES_SKIPPED_KEY, filesSkipped);
+		document.put(DATA_TRANSFER_REPORT_DIRECTORIES_KEY, directories);
+		document.put(DATA_TRANSFER_REPORT_EXPANSIONS_KEY, expansions);
+		document.put(DATA_TRANSFER_REPORT_BYTES_TRANSFERRED_KEY, bytesTransferred);
+		document.put(DATA_TRANSFER_REPORT_BYTES_CHECKSUMMED_KEY, bytesChecksummed);
+		document.put(DATA_TRANSFER_REPORT_EFFECTIVE_MBITS_PER_SEC_KEY, effectiveMbitsPerSec);
+		document.put(DATA_TRANSFER_REPORT_FAULTS_KEY, faults);
 		
-		//if(dataEncrip != null) {
-			   document.put(TRANSFER_STATUS_REPORT_DATAENCRIPTION, dataEncrip);
-		//}
-		if(deadLine != null) {
-			   document.put(TRANSFER_STATUS_REPORT_DEADLINE, deadLine.getTime());
-		}		
-		//if(delete != null) {
-			   document.put(TRANSFER_STATUS_REPORT_DELETE, delete);
-		//}		
-		//if(directories != null) {
-			   document.put(TRANSFER_STATUS_REPORT_DIRECTORIES, directories);
-		//}		
-		//if(files != null) {
-			   document.put(TRANSFER_STATUS_REPORT_FILES, files);
-		//}		
-		//if(expansions != null) {
-			   document.put(TRANSFER_STATUS_REPORT_EXPANSIONS, expansions);
-		//}
-		//if(effectiveMbits != null) {
-			   document.put(TRANSFER_STATUS_REPORT_EFFECTIVEMBITS, effectiveMbits);
-		//}
-		//if(faults != null) {
-			   document.put(TRANSFER_STATUS_REPORT_FAULTS, faults);
-		//}
-		//if(filesSkipped != null) {
-			   document.put(TRANSFER_STATUS_REPORT_FILESSKIPPED, filesSkipped);
-		//}		
-		//if(totalTasks != null) {
-			   document.put(TRANSFER_STATUS_REPORT_TOTALTASKS, totalTasks);
-		//}
-		//if(tasksSuccessful != null) {
-			   document.put(TRANSFER_STATUS_REPORT_TASKSSUCCESSFUL, tasksSuccessful);
-		//}
-		//if(tasksExpired != null) {
-			   document.put(TRANSFER_STATUS_REPORT_TASKSEXPIRED, tasksExpired);
-		//}				
-		//if(tasksCancelled != null) {
-			   document.put(TRANSFER_STATUS_REPORT_TASKSCANCELLED, tasksCancelled);
-		//}
-		//if(tasksFailed != null) {
-			   document.put(TRANSFER_STATUS_REPORT_TASKSFAILED, tasksFailed);
-		//}	
-		//if(tasksPending != null) {
-			   document.put(TRANSFER_STATUS_REPORT_TASKSPENDING, tasksPending);
-		//}
-		//if(tasksRetrying != null) {
-			   document.put(TRANSFER_STATUS_REPORT_TASKSRETRYING, tasksRetrying);
-		//}			
-
-	
 		getRegistry().get(Document.class).encode(writer, document, 
 				                                 encoderContext);
 	}
@@ -186,50 +154,67 @@ public class HpcDataTransferReportCodec extends HpcCodec<HpcDataTransferReport>
 	            		                                  decoderContext);
 		
 		// Map the document to HpcDataTransferReport instance.
-		HpcDataTransferReport hpcDataTransferReport = new HpcDataTransferReport();
-		hpcDataTransferReport.setCommand(document.get(TRANSFER_STATUS_REPORT_COMMAND, String.class));
-		hpcDataTransferReport.setDestinationEndpoint(document.get(TRANSFER_STATUS_REPORT_DEST_ENDPOINT, String.class));
-		hpcDataTransferReport.setSourceEndpoint(document.get(TRANSFER_STATUS_REPORT_SOURCE_ENDPOINT, String.class));
-		hpcDataTransferReport.setStatus(document.get(TRANSFER_STATUS_REPORT_STATUS, String.class));
-		hpcDataTransferReport.setTaskID(document.get(TRANSFER_STATUS_REPORT_TASKID, String.class));
-		hpcDataTransferReport.setBytesChecksummed(document.get(TRANSFER_STATUS_REPORT_BYTESCHECKSUMMED, Long.class));
-		hpcDataTransferReport.setBytesTransferred(document.get(TRANSFER_STATUS_REPORT_BYTESTRANSFERRED, Long.class));
-		
-		if(document.get(TRANSFER_STATUS_REPORT_COMPLETIONTIME, Date.class) != null)
-		{
-			Calendar completionTime = Calendar.getInstance();
-			completionTime.setTime(document.get(TRANSFER_STATUS_REPORT_COMPLETIONTIME, Date.class));
-			hpcDataTransferReport.setCompletionTime(completionTime);
+		HpcDataTransferReport dataTransferReport = new HpcDataTransferReport();
+		dataTransferReport.setTaskID(document.getString(DATA_TRANSFER_REPORT_TASK_ID_KEY));
+		dataTransferReport.setTaskType(document.getString(DATA_TRANSFER_REPORT_TASK_TYPE_KEY));
+		dataTransferReport.setStatus(document.getString(DATA_TRANSFER_REPORT_STATUS_KEY));
+		if(document.getDate(DATA_TRANSFER_REPORT_REQUEST_TIME_KEY) != null) {
+		   Calendar requestTime = Calendar.getInstance();
+		   requestTime.setTime(document.getDate(DATA_TRANSFER_REPORT_REQUEST_TIME_KEY));
+		   dataTransferReport.setRequestTime(requestTime);
 		}
-		if(document.get(TRANSFER_STATUS_REPORT_REQUESTTIME, Date.class) != null)
-		{
-			Calendar requestTime = Calendar.getInstance();
-			requestTime.setTime(document.get(TRANSFER_STATUS_REPORT_REQUESTTIME, Date.class));
-			hpcDataTransferReport.setRequestTime(requestTime);
+		if(document.getDate(DATA_TRANSFER_REPORT_DEADLINE_KEY) != null) {
+		   Calendar deadline = Calendar.getInstance();
+		   deadline.setTime(document.getDate(DATA_TRANSFER_REPORT_DEADLINE_KEY));
+		   dataTransferReport.setDeadline(deadline);
 		}
-		if(document.get(TRANSFER_STATUS_REPORT_DEADLINE, Date.class) != null)
-		{	
-			Calendar deadLine = Calendar.getInstance();
-			deadLine.setTime(document.get(TRANSFER_STATUS_REPORT_DEADLINE, Date.class));
-			hpcDataTransferReport.setDeadline(deadLine);		
+		if(document.getDate(DATA_TRANSFER_REPORT_COMPLETION_TIME_KEY) != null) {
+		   Calendar completionTime = Calendar.getInstance();
+		   completionTime.setTime(document.getDate(DATA_TRANSFER_REPORT_COMPLETION_TIME_KEY));
+		   dataTransferReport.setCompletionTime(completionTime);
 		}
-		hpcDataTransferReport.setDataEncryption(document.get(TRANSFER_STATUS_REPORT_DATAENCRIPTION, Boolean.class));
-		hpcDataTransferReport.setDelete(document.get(TRANSFER_STATUS_REPORT_DELETE, Boolean.class));
-		hpcDataTransferReport.setDirectories(document.get(TRANSFER_STATUS_REPORT_DIRECTORIES, Integer.class));
-		hpcDataTransferReport.setFiles(document.get(TRANSFER_STATUS_REPORT_FILES, Integer.class));
-		hpcDataTransferReport.setExpansions(document.get(TRANSFER_STATUS_REPORT_EXPANSIONS, Integer.class));
-		hpcDataTransferReport.setEffectiveMbitsPerSec(document.get(TRANSFER_STATUS_REPORT_EFFECTIVEMBITS, Double.class));
-		hpcDataTransferReport.setFaults(document.get(TRANSFER_STATUS_REPORT_FAULTS, Integer.class));
-		hpcDataTransferReport.setFilesSkipped(document.get(TRANSFER_STATUS_REPORT_FILESSKIPPED, Integer.class));
-		hpcDataTransferReport.setTotalTasks(document.get(TRANSFER_STATUS_REPORT_TOTALTASKS, Integer.class));
-		hpcDataTransferReport.setTasksSuccessful(document.get(TRANSFER_STATUS_REPORT_TASKSSUCCESSFUL, Integer.class));
-		hpcDataTransferReport.setTasksCanceled(document.get(TRANSFER_STATUS_REPORT_TASKSCANCELLED, Integer.class));
-		hpcDataTransferReport.setTasksFailed(document.get(TRANSFER_STATUS_REPORT_TASKSFAILED, Integer.class));
-		hpcDataTransferReport.setTasksPending(document.get(TRANSFER_STATUS_REPORT_TASKSPENDING, Integer.class));
-		hpcDataTransferReport.setTasksRetrying(document.get(TRANSFER_STATUS_REPORT_TASKSRETRYING, Integer.class));
+		dataTransferReport.setTotalTasks(document.getInteger(
+				                         DATA_TRANSFER_REPORT_TOTAL_TASKS_KEY));
+		dataTransferReport.setTasksSuccessful(document.getInteger(
+                                              DATA_TRANSFER_REPORT_TASKS_SUCCESSFUL_KEY));
+		dataTransferReport.setTasksExpired(document.getInteger(
+                                           DATA_TRANSFER_REPORT_TASKS_EXPIRED_KEY));
+		dataTransferReport.setTasksCanceled(document.getInteger(
+                                            DATA_TRANSFER_REPORT_TASKS_CANCELED_KEY));
+		dataTransferReport.setTasksFailed(document.getInteger(
+                                          DATA_TRANSFER_REPORT_TASKS_FAILED_KEY));
+		dataTransferReport.setTasksPending(document.getInteger(
+                                           DATA_TRANSFER_REPORT_TASKS_PENDING_KEY));
+		dataTransferReport.setTasksRetrying(document.getInteger(
+                                            DATA_TRANSFER_REPORT_TASKS_RETRYING_KEY));
+		dataTransferReport.setCommand(document.getString(DATA_TRANSFER_REPORT_COMMAND_KEY));
+		dataTransferReport.setSourceEndpoint(document.getString(
+				                             DATA_TRANSFER_REPORT_SOURCE_ENDPOINT_KEY));
+		dataTransferReport.setDestinationEndpoint(document.getString(
+                                         DATA_TRANSFER_REPORT_DESTINATION_ENDPOINT_KEY));
+		dataTransferReport.setDataEncryption(document.getBoolean(
+                                             DATA_TRANSFER_REPORT_DATA_ENCRYPTION_KEY));
+		dataTransferReport.setChecksumVerification(document.getBoolean(
+                                      DATA_TRANSFER_REPORT_CHECKSUM_VERIFICATION_KEY));
+		dataTransferReport.setDelete(document.getBoolean(
+                                     DATA_TRANSFER_REPORT_DELETE_KEY));
+		dataTransferReport.setFiles(document.getInteger(DATA_TRANSFER_REPORT_FILES_KEY));
+		dataTransferReport.setFilesSkipped(document.getInteger(
+				                           DATA_TRANSFER_REPORT_FILES_SKIPPED_KEY));
+		dataTransferReport.setDirectories(document.getInteger(
+				                          DATA_TRANSFER_REPORT_DIRECTORIES_KEY));
+		dataTransferReport.setExpansions(document.getInteger(
+				                         DATA_TRANSFER_REPORT_EXPANSIONS_KEY));
+		dataTransferReport.setBytesTransferred(document.getLong(
+                                   DATA_TRANSFER_REPORT_BYTES_TRANSFERRED_KEY));
+		dataTransferReport.setBytesChecksummed(document.getLong(
+                                   DATA_TRANSFER_REPORT_BYTES_CHECKSUMMED_KEY));
+		dataTransferReport.setEffectiveMbitsPerSec(document.getDouble(
+				              DATA_TRANSFER_REPORT_EFFECTIVE_MBITS_PER_SEC_KEY));
+		dataTransferReport.setFaults(document.getInteger(
+				                     DATA_TRANSFER_REPORT_FAULTS_KEY));
 		
-		
-		return hpcDataTransferReport;
+		return dataTransferReport;
 	}
 	
 	@Override
