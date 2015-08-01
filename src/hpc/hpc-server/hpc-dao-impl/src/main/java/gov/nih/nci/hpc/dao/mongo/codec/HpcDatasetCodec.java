@@ -10,13 +10,14 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
+import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeDataTransferRequest;
+import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeFileSet;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 
 import java.util.List;
 
-import org.bson.BsonDocumentReader;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
@@ -100,17 +101,19 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 		
 		// Map the attributes
 		HpcDataset dataset = new HpcDataset();
-		dataset.setId(document.get(DATASET_ID_KEY, String.class));
+		dataset.setId(document.getString(DATASET_ID_KEY));
 		dataset.setFileSet(decodeFileSet(document.get(DATASET_FILE_SET_KEY, 
                                                       Document.class),
-                                         decoderContext));
+                                         decoderContext,
+                                         getRegistry()));
 		List<Document> uploadRequestDocuments = 
 			(List<Document>) document.get(DATASET_UPLOAD_REQUESTS_KEY);
 		if(uploadRequestDocuments != null) {
 		   for(Document uploadRequestDocument : uploadRequestDocuments) {
 		       dataset.getUploadRequests().add(
 		    		      decodeDataTransferRequest(uploadRequestDocument, 
-		    				                        decoderContext));
+		    				                        decoderContext,
+		    				                        getRegistry()));
 		   }
 		}
 		List<Document> downloadRequestDocuments = 
@@ -119,7 +122,8 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 			   for(Document downloadRequestDocument : downloadRequestDocuments) {
 			       dataset.getDownloadRequests().add(
 			    		      decodeDataTransferRequest(downloadRequestDocument, 
-			    			     	                    decoderContext));
+			    			     	                    decoderContext,
+			    			     	                    getRegistry()));
 			   }
 		}
 		
@@ -130,43 +134,6 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 	public Class<HpcDataset> getEncoderClass() 
 	{
 		return HpcDataset.class;
-	}
-	
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-	
-    /**
-     * Decode HpcFileSet
-     *
-     * @param doc The HpcFile document
-     * @param decoderContext
-     * @return Decoded HpcFileSet object.
-     */
-    private HpcFileSet decodeFileSet(Document doc, DecoderContext decoderContext)
-    {
-    	BsonDocumentReader docReader = 
-    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
-    				                                  getRegistry()));
-		return getRegistry().get(HpcFileSet.class).decode(docReader, 
-		                                                  decoderContext);
-	}
-    
-    /**
-     * Decode HpcDataTransferRequest
-     *
-     * @param doc The HpcDataTransferRequest document
-     * @param decoderContext
-     * @return Decoded HpcFile object.
-     */
-    private HpcDataTransferRequest 
-            decodeDataTransferRequest(Document doc, DecoderContext decoderContext)
-    {
-    	BsonDocumentReader docReader = 
-    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
-    				                                  getRegistry()));
-		return getRegistry().get(HpcDataTransferRequest.class).decode(docReader, 
-		                                                              decoderContext);
 	}
 }
 

@@ -10,10 +10,10 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
+import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 
-import org.bson.BsonDocumentReader;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
@@ -35,7 +35,6 @@ public class HpcDataTransferLocationsCodec extends HpcCodec<HpcDataTransferLocat
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
-
 
 	/**
      * Default Constructor.
@@ -92,11 +91,11 @@ public class HpcDataTransferLocationsCodec extends HpcCodec<HpcDataTransferLocat
 		dataTransferLocations.setSource(
 			decodeFileLocation(
 			    	  document.get(DATA_TRANSFER_LOCATIONS_SOURCE_KEY, Document.class), 
-			    	  decoderContext));	
+			    	  decoderContext, getRegistry()));	
 		dataTransferLocations.setDestination(
 				decodeFileLocation(
 				    	  document.get(DATA_TRANSFER_LOCATIONS_DESTINATION_KEY, Document.class), 
-				    	  decoderContext));	
+				    	  decoderContext, getRegistry()));	
 		
 		return dataTransferLocations;
 	}
@@ -106,26 +105,6 @@ public class HpcDataTransferLocationsCodec extends HpcCodec<HpcDataTransferLocat
 	{
 		return HpcDataTransferLocations.class;
 	}
-	
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-    /**
-     * Decode HpcFileLocation
-     *
-     * @param doc The HpcFileLocation document
-     * @param decoderContext
-     * @return Decoded HpcFileLocation object.
-     */
-    private HpcFileLocation decodeFileLocation(Document doc, 
-    		                                   DecoderContext decoderContext)
-    {
-    	BsonDocumentReader docReader = 
-    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
-    				                                  getRegistry()));
-		return getRegistry().get(HpcFileLocation.class).decode(docReader, 
-		                                                       decoderContext);
-	}	
 }
 
  

@@ -10,14 +10,14 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
+import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeDataTransferAccount;
+import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeNihAccount;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.user.HpcNihAccount;
 
 import java.util.Calendar;
-import java.util.Date;
 
-import org.bson.BsonDocumentReader;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
@@ -99,19 +99,19 @@ public class HpcUserCodec extends HpcCodec<HpcUser>
 		HpcUser user = new HpcUser();
 		user.setNihAccount(decodeNihAccount(document.get(USER_NIH_ACCOUNT_KEY, 
                                                          Document.class),
-                                            decoderContext));
+                                            decoderContext, getRegistry()));
 
 		user.setDataTransferAccount(decodeDataTransferAccount(
 				                    document.get(USER_DATA_TRANSFER_ACCOUNT_KEY, 
                                                  Document.class),
-                                    decoderContext));
+                                    decoderContext, getRegistry()));
 		
 		Calendar created = Calendar.getInstance();
-		created.setTime(document.get(USER_CREATED_KEY, Date.class));
+		created.setTime(document.getDate(USER_CREATED_KEY));
 		user.setCreated(created);
 		
 		Calendar lastUpdated = Calendar.getInstance();
-		lastUpdated.setTime(document.get(USER_LAST_UPDATED_KEY, Date.class));
+		lastUpdated.setTime(document.getDate(USER_LAST_UPDATED_KEY));
 		user.setLastUpdated(lastUpdated);
 		
 		return user;
@@ -121,44 +121,6 @@ public class HpcUserCodec extends HpcCodec<HpcUser>
 	public Class<HpcUser> getEncoderClass() 
 	{
 		return HpcUser.class;
-	}
-	
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-	
-    /**
-     * Decode HpcNihAccount
-     *
-     * @param doc The HpcNihAccount document.
-     * @param decoderContext.
-     * @return Decoded HpcNihAccount object.
-     */
-    private HpcNihAccount decodeNihAccount(Document doc, 
-    		                               DecoderContext decoderContext)
-    {
-    	BsonDocumentReader docReader = 
-    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
-    				                                  getRegistry()));
-		return getRegistry().get(HpcNihAccount.class).decode(docReader, 
-				                                             decoderContext);
-	}
-    
-    /**
-     * Decode HpcDataTransferAccount
-     *
-     * @param doc The HpcDataTransferAccount document.
-     * @param decoderContext.
-     * @return Decoded HpcDataTransferAcccount object.
-     */
-    private HpcDataTransferAccount decodeDataTransferAccount(
-    		                       Document doc, DecoderContext decoderContext)
-    {
-    	BsonDocumentReader docReader = 
-    		new BsonDocumentReader(doc.toBsonDocument(Document.class, 
-    				                                  getRegistry()));
-		return getRegistry().get(HpcDataTransferAccount.class).decode(docReader, 
-		                                                              decoderContext);
 	}
 }
 
