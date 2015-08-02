@@ -17,10 +17,12 @@ import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcUserRestService;
+
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -39,6 +41,7 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//
 
     // The User Business Service instance.
+	@Autowired
     private HpcUserBusService userBusService = null;
     
 	// The Logger instance.
@@ -50,31 +53,12 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//
      
     /**
-     * Default Constructor.
+     * Constructor for Spring Dependency Injection.
      * 
      * @throws HpcException Constructor is disabled.
      */
     private HpcUserRestServiceImpl() throws HpcException
     {
-    	throw new HpcException("Constructor Disabled",
-                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
-    }  
-    
-    /**
-     * Constructor for Spring Dependency Injection.
-     * 
-     * @param userBusService The user business service.
-     * 
-     * @throws HpcException If parameters not provided by Spring.
-     */
-    private HpcUserRestServiceImpl(HpcUserBusService userBusService)
-                                  throws HpcException
-    {
-    	if(userBusService == null) {
-    	   throw new HpcException("Null HpcUserBusService instance",
-    			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
-    	}
-    	this.userBusService = userBusService;
     }  
     
     //---------------------------------------------------------------------//
