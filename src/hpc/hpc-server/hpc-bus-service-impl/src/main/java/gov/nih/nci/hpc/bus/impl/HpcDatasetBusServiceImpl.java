@@ -32,7 +32,6 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcDatasetService;
 import gov.nih.nci.hpc.service.HpcProjectService;
-import gov.nih.nci.hpc.service.HpcTransferStatusService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
 import java.util.ArrayList;
@@ -40,6 +39,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -57,9 +57,17 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     //---------------------------------------------------------------------//
 
     // Application service instances.
+	
+	@Autowired
     private HpcDatasetService datasetService = null;
+	
+	@Autowired
     private HpcUserService userService = null;
+	
+	@Autowired
     private HpcDataTransferService dataTransferService = null;
+	
+	@Autowired
     private HpcProjectService projectService = null;
     
     // The logger instance.
@@ -71,43 +79,13 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     //---------------------------------------------------------------------//
 	
     /**
-     * Default Constructor.
+     * Constructor for Spring Dependency Injection.
      * 
      * @throws HpcException Constructor is disabled.
      */
     private HpcDatasetBusServiceImpl() throws HpcException
     {
-    	throw new HpcException("Constructor Disabled",
-                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }   
-    
-    /**
-     * Constructor for Spring Dependency Injection.
-     * 
-     * @param dataService The dataset application service.
-     * @param userService The user application service.
-     * @param dataTransferService The data transfer application service.
-     * 
-     * @throws HpcException If any application service provided is null.
-     */
-    private HpcDatasetBusServiceImpl(
-    		          HpcDatasetService datasetService,
-    		          HpcUserService userService,
-    		          HpcDataTransferService dataTransferService,
-    		          HpcProjectService projectService)
-                      throws HpcException
-    {
-    	if(datasetService == null || userService == null ||
-    	   dataTransferService == null) {
-     	   throw new HpcException("Null App Service(s) instance",
-     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
-     	}
-    	
-    	this.datasetService = datasetService;
-    	this.userService = userService;
-    	this.dataTransferService = dataTransferService;
-    	this.projectService = projectService;
-    }  
     
     //---------------------------------------------------------------------//
     // Methods
