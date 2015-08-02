@@ -19,8 +19,10 @@ import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcLdapAuthenticationService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -38,8 +40,13 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     //---------------------------------------------------------------------//
 
     // Application service instances.
+	
+	@Autowired
     private HpcUserService userService = null;
+	
+	@Autowired
     private HpcLdapAuthenticationService authService = null;
+    
     // The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -49,36 +56,13 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     //---------------------------------------------------------------------//
 	
     /**
-     * Default Constructor.
+     * Constructor for Spring Dependency Injection.
      * 
      * @throws HpcException Constructor is disabled.
      */
     private HpcUserBusServiceImpl() throws HpcException
     {
-    	throw new HpcException("Constructor Disabled",
-                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }   
-    
-    /**
-     * Constructor for Spring Dependency Injection.
-     * 
-     * @param userService The user application service.
-     * 
-     * @throws HpcException If userService is null.
-     */
-    private HpcUserBusServiceImpl(HpcUserService userService,
-    							  HpcLdapAuthenticationService authService)
-                                 throws HpcException
-    {
-    	if(userService == null) {
-     	   throw new HpcException("Null App Service(s) instance",
-     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
-     	}
-    	
-    	this.userService = userService;
-    	this.authService = authService;
-    	
-    } 
     
     //---------------------------------------------------------------------//
     // Methods
