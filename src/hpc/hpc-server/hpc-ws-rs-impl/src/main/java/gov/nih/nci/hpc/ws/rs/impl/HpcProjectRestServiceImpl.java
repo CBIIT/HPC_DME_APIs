@@ -1,5 +1,5 @@
 /**
- * HpcDatasetRestServiceImpl.java
+ * HpcProjectRestServiceImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -12,26 +12,19 @@ package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcProjectBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcProjectRestService;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -39,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * @author <a href="mailto:prasad.konka@nih.gov">Prasad Konka</a>
- * @version $Id: $
+ * @version $Id$
  */
 
 public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
@@ -50,12 +43,11 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//
 
     // The Project Registration Business Service instance.
+	@Autowired
     private HpcProjectBusService projectBusService = null;
     
     // The URI Info context instance.
     private @Context UriInfo uriInfo;
-    
-    private String dynamicConfigFile = null;
     
 	// The Logger instance.
 	private final Logger logger = 
@@ -66,37 +58,14 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//
      
     /**
-     * Default Constructor.
+     * Constructor for Spring Dependency Injection.
      * 
      * @throws HpcException Constructor is disabled.
      */
     private HpcProjectRestServiceImpl() throws HpcException
     {
-    	throw new HpcException("Constructor Disabled",
-                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }  
     
-   /**
-     * Constructor for Spring Dependency Injection.
-     * 
-     * @param registrationBusService The registration business service.
-     * @param stackTraceEnabled If set to true, stack trace will be attached to
-     *                          exception DTO.
-     * 
-     * @throws HpcException If the bus service is not provided by Spring.
-     */
-    private HpcProjectRestServiceImpl(HpcProjectBusService projectBusService,
-    		                          String dynamicConfigFile)
-                                     throws HpcException
-    {
-    	if(projectBusService == null || dynamicConfigFile == null) {
-    	   throw new HpcException("Null HpcProjectBusService/confing file",
-    			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
-    	}
-    	
-    	this.projectBusService = projectBusService;
-		this.dynamicConfigFile = dynamicConfigFile;
-    }	
     //---------------------------------------------------------------------//
     // Methods
     //---------------------------------------------------------------------//
