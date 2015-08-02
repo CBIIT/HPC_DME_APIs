@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
+import gov.nih.nci.hpc.bus.HpcDatasetBusService;
 import gov.nih.nci.hpc.bus.HpcProjectBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -32,6 +33,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -49,9 +51,16 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     //---------------------------------------------------------------------//
 
     // Application service instances.
+	
+	@Autowired
     private HpcProjectService projectService = null;
+	
+	@Autowired
     private HpcUserService userService = null;
-    private HpcDatasetBusServiceImpl datasetService = null;
+	
+	// Dataset business service instance.
+	@Autowired
+    private HpcDatasetBusService datasetService = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -62,41 +71,13 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     //---------------------------------------------------------------------//
 	
     /**
-     * Default Constructor.
+     * Constructor for Spring Dependency Injection.
      * 
      * @throws HpcException Constructor is disabled.
      */
     private HpcProjectBusServiceImpl() throws HpcException
     {
-    	throw new HpcException("Constructor Disabled",
-                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }   
-    
-    /**
-     * Constructor for Spring Dependency Injection.
-     * 
-     * @param dataService The project application service.
-     * @param userService The user application service.
-     * @param datasetService The dataset application service.
-     * 
-     * @throws HpcException If any application service provided is null.
-     */
-    private HpcProjectBusServiceImpl(
-    		          HpcProjectService projectService,
-    		          HpcUserService userService,
-    		          HpcDatasetBusServiceImpl datasetService)
-                      throws HpcException
-    {
-    	if(projectService == null || userService == null ||
-    			datasetService == null) {
-     	   throw new HpcException("Null App Service(s) instance",
-     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
-     	}
-    	
-    	this.projectService = projectService;
-    	this.userService = userService;
-    	this.datasetService = datasetService;
-    }  
     
     //---------------------------------------------------------------------//
     // Methods
@@ -307,13 +288,11 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     	   return;
     	}
     	
-    		// Verify PI, Creator and Registrator are registered with HPC.
-    		validateUser(projectDTO.getMetadata().getPrimaryInvestigatorNihUserId(),
-    				     HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR);
-    		HpcUser registrator =
-    		validateUser(projectDTO.getMetadata().getRegistratorNihUserId(),
-			             HpcDatasetUserAssociation.REGISTRAR);
-    		
+		// Verify PI, Creator and Registrator are registered with HPC.
+		validateUser(projectDTO.getMetadata().getPrimaryInvestigatorNihUserId(),
+				     HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR);
+		validateUser(projectDTO.getMetadata().getRegistratorNihUserId(),
+		             HpcDatasetUserAssociation.REGISTRAR);
     }
     
     /**
