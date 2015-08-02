@@ -37,6 +37,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -55,6 +56,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//
 
     // The Dataset Registration Business Service instance.
+	@Autowired
     private HpcDatasetBusService datasetBusService = null;
     
     // The URI Info context instance.
@@ -90,18 +92,17 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
      * 
      * @throws HpcException If the bus service is not provided by Spring.
      */
-    private HpcDatasetRestServiceImpl(HpcDatasetBusService datasetBusService,
-    		                          String dynamicConfigFile)
+    private HpcDatasetRestServiceImpl(String dynamicConfigFile)
                                      throws HpcException
     {
-    	if(datasetBusService == null || dynamicConfigFile == null) {
-    	   throw new HpcException("Null HpcDatasetBusService/confing file",
+    	if(dynamicConfigFile == null) {
+    	   throw new HpcException("Null confing file",
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
     	
-    	this.datasetBusService = datasetBusService;
 		this.dynamicConfigFile = dynamicConfigFile;
     }	
+    
     //---------------------------------------------------------------------//
     // Methods
     //---------------------------------------------------------------------//
