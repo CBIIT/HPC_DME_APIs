@@ -12,6 +12,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcPIIContent;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
@@ -28,6 +29,8 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -50,8 +53,8 @@ public class HpcProjectControllerTest {
 
 	@Value("${local.server.port}")
 	private int port;
-	private final String baseurl = "http://fr-s-hpcdm-gp-d.ncifcrf.gov:8080/hpc-server/project";
-	//private final String baseurl = "http://localhost:7737/hpc-server/project";
+	//private final String baseurl = "http://fr-s-hpcdm-gp-d.ncifcrf.gov:8080/hpc-server/project";
+	private final String baseurl = "http://localhost:7737/hpc-server/project";
 
 	private RestTemplate template;
 
@@ -65,7 +68,7 @@ public class HpcProjectControllerTest {
 		HpcProjectRegistrationDTO dto = new HpcProjectRegistrationDTO();
 
 		HpcProjectMetadata metadata = new HpcProjectMetadata();
-		metadata.setName("Project1000");
+		metadata.setName("Project1002");
 		metadata.setDescription("Description");
 		metadata.setDoc("Division");
 		metadata.setExperimentId("Test");
@@ -87,12 +90,20 @@ public class HpcProjectControllerTest {
 			throw new RuntimeException("Failed : HTTP error code : "
 					+ res.getStatus());
 		}
+		JAXBContext jaxbContext = JAXBContext
+				.newInstance(HpcProjectRegistrationDTO.class);
+		Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+
+		// output pretty printed
+		jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+		jaxbMarshaller.marshal(dto, System.out);		
 	}
 
 	private HpcDatasetRegistrationDTO getDataset()
 	{
 		HpcDatasetRegistrationDTO dto = new HpcDatasetRegistrationDTO();
-		dto.setName("Set1");
+		dto.setName("Project1002-Set1");
 		dto.setDescription("Set1 description");
 		dto.setComments("Set1 comments");
 
@@ -127,7 +138,7 @@ public class HpcProjectControllerTest {
 			metadata.setRegistrarNihUserId("konkapv");
 			metadata.setDescription("Description");
 			// TODO: ID Lookup
-			metadata.setCreatorName("PRasad Konka");
+			metadata.setCreatorName("Prasad Konka");
 			metadata.setLabBranch("CCR");
 			upload.setMetadata(metadata);
 			dto.getUploadRequests().add(upload);
@@ -140,7 +151,7 @@ public class HpcProjectControllerTest {
 			Client client = ClientBuilder.newClient().register(
 					ClientResponseLoggingFilter.class);
 			WebTarget resourceTarget = client
-					.target(baseurl+"/2665eb57-3802-4556-bec2-0135e1f7b2e8");
+					.target(baseurl+"/1815ee84-cfc9-4681-bc7e-bfafac05057d");
 			Invocation invocation = resourceTarget.request(
 					MediaType.APPLICATION_XML).buildGet();
 			HpcProjectDTO response = invocation.invoke(HpcProjectDTO.class);
@@ -154,12 +165,12 @@ public class HpcProjectControllerTest {
 	}
 
 	@Test
-	public void getProjectsByRegistrator() throws Exception {
+	public void getProjectsByRegistrar() throws Exception {
 		try {
 			Client client = ClientBuilder.newClient().register(
 					ClientResponseLoggingFilter.class);
 			WebTarget resourceTarget = client
-					.target(baseurl+"/query/registrator/konkapv");
+					.target(baseurl+"/query/registrar/konkapv");
 			Invocation invocation = resourceTarget.request(
 					MediaType.APPLICATION_XML).buildGet();
 			HpcProjectCollectionDTO response = invocation.invoke(HpcProjectCollectionDTO.class);
@@ -177,7 +188,7 @@ public class HpcProjectControllerTest {
 			Client client = ClientBuilder.newClient().register(
 					ClientResponseLoggingFilter.class);
 			WebTarget resourceTarget = client
-					.target(baseurl+"/query/investigator/konkapv");
+					.target(baseurl+"/query/pi/konkapv");
 			Invocation invocation = resourceTarget.request(
 					MediaType.APPLICATION_XML).buildGet();
 			HpcProjectCollectionDTO response = invocation.invoke(HpcProjectCollectionDTO.class);

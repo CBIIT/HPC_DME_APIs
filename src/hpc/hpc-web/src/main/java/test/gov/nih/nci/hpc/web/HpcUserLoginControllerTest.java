@@ -38,6 +38,7 @@ public class HpcUserLoginControllerTest {
 
 	//private final String baseurl = "http://fr-s-hpcdm-gp-d.ncifcrf.gov:8080/hpc-server/user";
     private final String baseurl = "http://localhost:7737/hpc-server/user";
+    
 	private RestTemplate template;
 
 	@Before
@@ -49,7 +50,7 @@ public class HpcUserLoginControllerTest {
 	public void login() throws Exception {
 		  HpcUserCredentialsDTO dto = new HpcUserCredentialsDTO();
 		  dto.setUserName("konkapv");
-		  dto.setPassword("xyz*(");
+		  dto.setPassword("xyz");
 
 		  
 		  try
@@ -59,7 +60,7 @@ public class HpcUserLoginControllerTest {
 						.target(baseurl+"/authenticate")
 						.request()
 						.post(Entity.entity(dto, MediaType.APPLICATION_XML));
-				if (res.getStatus() != 201) {
+				if (res.getStatus() != 200) {
 					throw new RuntimeException("Failed : HTTP error code : "
 							+ res.getStatus());
 				}						
