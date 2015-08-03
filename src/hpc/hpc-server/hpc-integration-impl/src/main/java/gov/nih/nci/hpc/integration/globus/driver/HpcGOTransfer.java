@@ -26,6 +26,8 @@ import org.globusonline.transfer.GoauthAuthenticator;
 import org.globusonline.transfer.JSONTransferAPIClient;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -45,6 +47,10 @@ public class HpcGOTransfer
 	// The JSONTransferAPIClient client instance.
 	private JSONTransferAPIClient transferClient = null;
 	private String destinationBaseLocation = null;
+	
+	// The Logger instance.
+	private final Logger logger = 
+			             LoggerFactory.getLogger(this.getClass().getName());
 	
 	/**
      * Default Constructor.
@@ -86,7 +92,7 @@ public class HpcGOTransfer
         GoauthClient cli = new GoauthClient("nexus.api.globusonline.org", "www.globusonline.org", username, password);
 		JSONObject accessTokenJSON = cli.getClientOnlyAccessToken();
 		String accessToken = accessTokenJSON.getString("access_token");
-		System.out.println("Client only access token: " + accessToken);
+		logger.debug("Client only access token: " + accessToken);
 		cli.validateAccessToken(accessToken);        
 
         Authenticator authenticator = new GoauthAuthenticator(accessToken);
