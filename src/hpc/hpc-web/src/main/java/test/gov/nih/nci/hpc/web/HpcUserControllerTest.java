@@ -5,34 +5,28 @@ import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccountType;
 import gov.nih.nci.hpc.domain.user.HpcNihAccount;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.web.Application;
-
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
+import gov.nih.nci.hpc.web.HpcExceptionMessageReader;
+import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-
-import javax.ws.rs.client.ClientBuilder;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -41,6 +35,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -54,7 +52,8 @@ public class HpcUserControllerTest {
 
 	@Value("${local.server.port}")
 	private int port;
-	private final String baseurl = "http://fr-s-hpcdm-gp-d.ncifcrf.gov:8080/hpc-server/user";
+	//private final String baseurl = "http://fr-s-hpcdm-gp-d.ncifcrf.gov:8080/hpc-server/user";
+	private final String baseurl = "http://localhost:7737/hpc-server/user";
 
 	private RestTemplate template;
 
@@ -69,7 +68,7 @@ public class HpcUserControllerTest {
 		HpcNihAccount account = new HpcNihAccount();
 		account.setFirstName("Prasad");
 		account.setLastName("Konka");
-		account.setUserId("konkapv2");
+		account.setUserId("konkapv3");
 		dto.setNihAccount(account);
 		HpcDataTransferAccount trAccount = new HpcDataTransferAccount();
 		trAccount.setAccountType(HpcDataTransferAccountType.GLOBUS);
@@ -79,14 +78,63 @@ public class HpcUserControllerTest {
 		ObjectMapper mapper = new ObjectMapper();
 		System.out.println(mapper.writeValueAsString(dto));
 		writeXML(dto);
+		
+		 RestTemplate restTemplate = new RestTemplate();
+	     restTemplate.setErrorHandler(new HpcResponseErrorHandler());
+	    HttpHeaders headers = new HttpHeaders();
+	    headers.setAccept(Arrays.asList(MediaType.APPLICATION_XML));
+	    try{
+	    	HttpEntity<String> entity = restTemplate.postForEntity(baseurl, dto, String.class);
+		     
+		    System.out.println(entity);
+	    }
+	    catch(org.springframework.web.client.HttpServerErrorException e)
+	    {
+	    	
+	    }
+	    catch(Exception e)
+	    {
+	    	e.printStackTrace();
+	    }
+		/*		
 		Client client = ClientBuilder.newClient().register(
 				ClientResponseLoggingFilter.class);
 		Response res = client.target(baseurl).request()
 				.post(Entity.entity(dto, MediaType.APPLICATION_XML));
-		if (res.getStatus() != 201) {
+		if (res.getStatus() != 201){
+			HpcExceptionDTO errorDTO = res.readEntity(HpcExceptionDTO.class);
 			throw new RuntimeException("Failed : HTTP error code : "
 					+ res.getStatus());
 		}
+
+		
+		Client client = ClientBuilder.newClient();
+		WebTarget target = client.target(baseurl);
+		 
+		Response response =
+		target.request(MediaType.APPLICATION_XML_TYPE)
+		    .post(Entity.entity(dto,MediaType.APPLICATION_XML_TYPE));
+		
+		//Client client = Client.create();
+		//javax.ws.rs.client.Client client = ClientBuilder.newBuilder().register(HpcExceptionMessageReader.class).build();
+		//WebResource webResource = client
+		//   .resource(baseurl);
+		
+		//ClientResponse response = webResource.type(MediaType.APPLICATION_XML)
+		//		   .post(ClientResponse.class, dto);
+		
+		if (response.getStatus() != 200) {
+			//HpcExceptionDTO output = response.getEntity(HpcExceptionDTO.class);
+			System.out.println("Output from Server .... \n");
+			//System.out.println(output);
+			
+		   throw new RuntimeException("Failed : HTTP error code : "
+			+ response.getStatus());
+		}
+ 
+		
+ 
+		
 		// HpcUserRegistrationDTO entity = (HpcUserRegistrationDTO) res
 		// .getEntity();
 		// ObjectMapper mapper = new ObjectMapper();
@@ -96,7 +144,7 @@ public class HpcUserControllerTest {
 
 	@Test
 	public void getUser() throws Exception {
-
+/*
 		Client client = ClientBuilder.newClient().register(
 				ClientResponseLoggingFilter.class);
 		WebTarget resourceTarget = client.target(baseurl + "/konkapv2");
@@ -105,7 +153,7 @@ public class HpcUserControllerTest {
 		HpcUserDTO response = invocation.invoke(HpcUserDTO.class);
 		ObjectMapper mapper = new ObjectMapper();
 		System.out.println(mapper.writeValueAsString(response));
-
+*/
 	}
 
 	private void writeXML(HpcUserRegistrationDTO dto) {
