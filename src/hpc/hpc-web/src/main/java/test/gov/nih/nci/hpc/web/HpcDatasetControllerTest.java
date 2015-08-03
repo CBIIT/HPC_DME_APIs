@@ -68,32 +68,36 @@ public class HpcDatasetControllerTest {
 	@Test
 	public void register() throws Exception {
 
+		//Dataset registration object
 		HpcDatasetRegistrationDTO dto = new HpcDatasetRegistrationDTO();
-		dto.setName("Experiment2015");
+		dto.setName("Experiment2015-5");
 		dto.setDescription("Set1 description");
 		dto.setComments("Set1 comments");
 
-		// TODO: Lookup Id
-		String files = "/~/C/globus-data/SRR062635.filt.fastq,/~/C/globus-data/NGS_1.1_UseCases.doc";
+		// Registering two files
+		String files = "/~/C/globus-data/SRR062635.filt.fastq,/~/C/globus-data/test2.fastq";
 		StringTokenizer tokens = new StringTokenizer(files, ",");
 		while (tokens.hasMoreTokens()) {
+			//Create upload request
 			HpcFileUploadRequest upload = new HpcFileUploadRequest();
 			HpcFileType fileType;
 			HpcDataTransferLocations locations = new HpcDataTransferLocations();
+			//Set file origin end point
 			HpcFileLocation source = new HpcFileLocation();
 			source.setEndpoint("pkonka#hpc1234");
 			String filePath = tokens.nextToken();
 			source.setPath(filePath);
+			//Set file destination end point
 			HpcFileLocation destination = new HpcFileLocation();
 			destination.setEndpoint("nihnci#NIH-NCI-TRANSFER1");
+			//destination.setEndpoint("nihfnlcr#gridftp1");
 			destination.setPath(filePath);
 			locations.setDestination(destination);
 			locations.setSource(source);
 			upload.setLocations(locations);
-			// TODO: Identify file type
 			upload.setType(HpcFileType.UNKONWN);
 
-			// TODO: Metadata funding organization
+			//Set file metadata
 			HpcFilePrimaryMetadata metadata = new HpcFilePrimaryMetadata();
 			metadata.setDataEncrypted(HpcEncryptionStatus.NOT_ENCRYPTED);
 			metadata.setDataContainsPII(HpcPIIContent.PII_NOT_PRESENT);
@@ -102,20 +106,21 @@ public class HpcDatasetControllerTest {
 			metadata.setFundingOrganization("NCI");
 			metadata.setPrimaryInvestigatorNihUserId("konkapv");
 			metadata.setRegistrarNihUserId("konkapv");
-			metadata.setDescription("Description");
-			// TODO: ID Lookup
+			metadata.setDescription("Description");			// TODO: ID Lookup
 			metadata.setCreatorName("PRasad Konka");
 			metadata.setLabBranch("CCR");
 			upload.setMetadata(metadata);
+			
+			//Set file custom metadata
 			HpcMetadataItem metadataItem1 = new HpcMetadataItem();
-			metadataItem1.setKey("key1");
+			metadataItem1.setKey("CCBR Name");
 			metadataItem1.setValue("value1");
 			HpcMetadataItem metadataItem2 = new HpcMetadataItem();
 			metadataItem2.setKey("key2");
 			metadataItem2.setValue("value2");
 			metadata.getMetadataItems().add(metadataItem1);
 			metadata.getMetadataItems().add(metadataItem2);
-			upload.getProjectIds().add("07464d6b-4da4-4a4c-aafc-f22c26d0a206");
+			upload.getProjectIds().add("1815ee84-cfc9-4681-bc7e-bfafac05057d");
 			dto.getUploadRequests().add(upload);
 			writeXML(dto);
 		}
@@ -142,7 +147,7 @@ public class HpcDatasetControllerTest {
 			Client client = ClientBuilder.newClient().register(
 					ClientResponseLoggingFilter.class);
 			WebTarget resourceTarget = client
-					.target(baseurl+"/b5d46f5f-af8d-453c-ba2e-9a66fb7da68d");
+					.target(baseurl+"/e133f045-f874-44d0-bd8b-794fedca464d");
 			Invocation invocation = resourceTarget.request(
 					MediaType.APPLICATION_XML).buildGet();
 			HpcDatasetDTO response = invocation.invoke(HpcDatasetDTO.class);
@@ -153,9 +158,44 @@ public class HpcDatasetControllerTest {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	@Test
+	public void getDatasetByProjectId() throws Exception {
+		try {
+			Client client = ClientBuilder.newClient().register(
+					ClientResponseLoggingFilter.class);
+			WebTarget resourceTarget = client
+					.target(baseurl+"/query/project/07464d6b-4da4-4a4c-aafc-f22c26d0a206");
+			Invocation invocation = resourceTarget.request(
+					MediaType.APPLICATION_XML).buildGet();
+			HpcDatasetCollectionDTO response = invocation.invoke(HpcDatasetCollectionDTO.class);
+			ObjectMapper mapper = new ObjectMapper();
+			System.out.println(mapper.writeValueAsString(response));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}	
 
 	@Test
-	public void getDatasetsByRegistrator() throws Exception {
+	public void getDatasetsByPI() throws Exception {
+		try {
+			Client client = ClientBuilder.newClient().register(
+					ClientResponseLoggingFilter.class);
+			WebTarget resourceTarget = client
+					.target(baseurl+"/query/pi/konkapv");
+			Invocation invocation = resourceTarget.request(
+					MediaType.APPLICATION_XML).buildGet();
+			HpcDatasetCollectionDTO response = invocation.invoke(HpcDatasetCollectionDTO.class);
+			ObjectMapper mapper = new ObjectMapper();
+			System.out.println(mapper.writeValueAsString(response));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}	
+	@Test
+	public void getDatasetsByRegistrar() throws Exception {
 		try {
 			Client client = ClientBuilder.newClient().register(
 					ClientResponseLoggingFilter.class);
@@ -213,19 +253,15 @@ public class HpcDatasetControllerTest {
 	public void getDatasetsByPrimaryMetadata() throws Exception {
 		HpcPrimaryMetadataQueryDTO dto = new HpcPrimaryMetadataQueryDTO();
 		HpcFilePrimaryMetadata metadata = new HpcFilePrimaryMetadata();
+		metadata.setDataContainsPII(HpcPIIContent.PII_NOT_PRESENT);
 		metadata.setFundingOrganization("NCI");
 		metadata.setPrimaryInvestigatorNihUserId("konkapv");
 		metadata.setLabBranch("CCR");
+
 		dto.setMetadata(metadata);
 		try {
 			Client client = ClientBuilder.newClient().register(
 					ClientResponseLoggingFilter.class);
-/*			
-			HpcDatasetCollectionDTO response = client
-					.target(baseurl+"/query/primaryMetadata")
-					.request()
-					.post(Entity.entity(dto, MediaType.APPLICATION_XML), HpcDatasetCollectionDTO.class);
-*/
 			Response response = client
 					.target(baseurl+"/query/primaryMetadata")
 					.request()
@@ -233,13 +269,22 @@ public class HpcDatasetControllerTest {
 			int status = response.getStatus();
 
 			if (Response.Status.OK.getStatusCode() == status) {
+				System.out.println("Got respomse: "+response);
+/*
+				HpcDatasetCollectionDTO obj = response.readEntity(HpcDatasetCollectionDTO.class);
+				ObjectMapper mapper = new ObjectMapper();
+				System.out.println(mapper.writeValueAsString(obj));
+*/
+			} 
+			JAXBContext jaxbContext = JAXBContext
+					.newInstance(HpcPrimaryMetadataQueryDTO.class);
+			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 
-			  // normal case, you receive your User object
-				//HpcDatasetCollectionDTO obj = response.readEntity(HpcDatasetCollectionDTO.class);
-				//ObjectMapper mapper = new ObjectMapper();
-				//System.out.println(mapper.writeValueAsString(obj));
-				System.out.println(response);
-			} 			
+			// output pretty printed
+			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+			jaxbMarshaller.marshal(dto, System.out);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
