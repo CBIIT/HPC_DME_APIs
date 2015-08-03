@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -34,7 +35,7 @@ public class HpcDataManagementController extends AbstractHpcController {
 
   @RequestMapping(method = RequestMethod.GET)
   public String index(Model model){
-	  HpcLogin hpcLogin = new HpcLogin();
+	  HpcUserCredentialsDTO hpcLogin = new HpcUserCredentialsDTO();
 	  model.addAttribute("hpcLogin", hpcLogin);
       return "index";
   }
