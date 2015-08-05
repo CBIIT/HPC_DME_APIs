@@ -87,7 +87,7 @@ function enroll() {
 			  <label th:if="${#fields.hasErrors('userName')}" th:errors="*{userId}">Login Error</label>
 		      <input type="text" class="form-control" th:field="*{userName}" placeholder="Enter NCI User Id"/>
             </div>
-            <div class="input-group">
+            <div class="input-group" th:if="${ldap} == 'true'">
             <span class="input-group-addon"><i class="icon_lock"></i></span>
 		       <input type="password" class="form-control" th:field="*{password}" placeholder="Enter NCI User password"/>
             </div>

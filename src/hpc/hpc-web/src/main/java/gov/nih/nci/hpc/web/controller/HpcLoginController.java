@@ -52,12 +52,16 @@ import test.gov.nih.nci.hpc.web.ClientResponseLoggingFilter;
 @EnableAutoConfiguration
 @RequestMapping("/login")
 public class HpcLoginController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.login}")
+	@Value("${gov.nih.nci.hpc.server.user}")
     private String serviceUserURL;
 	@Value("${gov.nih.nci.hpc.server.dataset.query.registrar}")
 	private String datasetURL;
-	@Value("${gov.nih.nci.hpc.server.user.authenticate}")
-	private String authenticateURL;
+	@Value("${gov.nih.nci.hpc.server.user.authenticate.hpc}")
+	private String authenticateHpcURL;
+	@Value("${gov.nih.nci.hpc.server.user.authenticate.ldap}")
+	private String authenticateLdapURL;
+	@Value("${gov.nih.nci.hpc.login.module}")
+	private String loginModule;
 	
 
 
@@ -65,6 +69,7 @@ public class HpcLoginController extends AbstractHpcController {
   public String home(Model model){
 	  HpcUserCredentialsDTO hpcLogin = new HpcUserCredentialsDTO();
 	  model.addAttribute("hpcLogin", hpcLogin);
+	  model.addAttribute("ldap", loginModule.equals("ldap")?"true":"false");
       return "index";
   }
 
@@ -74,34 +79,40 @@ public class HpcLoginController extends AbstractHpcController {
       if (bindingResult.hasErrors()) {
           return "index";
       }
-	  
-	  try
+   	  HpcUserDTO userDTO = null;
+   	  try
 	  {
-			Client client = ClientBuilder.newClient().register(ClientResponseLoggingFilter.class);
-			Response res = client
-					.target(authenticateURL)
-					.request()
-					.post(Entity.entity(hpcLogin, MediaType.APPLICATION_XML));
-			if (res.getStatus() != 200) {
-				throw new RuntimeException("Failed : HTTP error code : "
-						+ res.getStatus());
-			}						
+		  Client client = ClientBuilder.newClient().register(ClientResponseLoggingFilter.class);
+    	  String authURL = authenticateHpcURL;
+    	  if(loginModule == null || !loginModule.equals("ldap"))
+    	  {
+    	   	  URI uri = new URI(serviceUserURL+"/"+hpcLogin.getUserName());
+    		  ResponseEntity<HpcUserDTO> userEntity = restTemplate.getForEntity(uri, HpcUserDTO.class);
+    		  
+    		  userDTO = userEntity.getBody();
+    		  if(userDTO == null){
+    			  model.addAttribute("loginStatus", false);
+    			  model.addAttribute("loginOutput", "Invalid login");
+    			  ObjectError error = new ObjectError("hpcLogin", "Invalid login!");
+    			  bindingResult.addError(error);
+    			  model.addAttribute("hpcLogin", hpcLogin);
+    			  model.addAttribute("ldap", loginModule.equals("ldap")?"true":"false");
+    			  return "index";
+    		  }
 
-/*			
-      try
-	  {
-    	  URI uri = new URI(authenticateURL);
-    	  ResponseEntity<Boolean> response = restTemplate.postForEntity(
-				authenticateURL, hpcLogin, Boolean.class);
-			
-    	  HttpStatus status = response.getStatusCode();
-		  if(status != HttpStatus.ACCEPTED)
-		  {
-			  ObjectError error = new ObjectError("hpcLogin", "Invalid login!");
-			  bindingResult.addError(error);
-			  model.addAttribute("hpcLogin", hpcLogin);
-			  return "index";
-		  }*/
+    	  }
+    	  else
+    	  {
+    		  authURL = authenticateLdapURL;
+			  Response res = client
+  					.target(authURL)
+  					.request()
+  					.post(Entity.entity(hpcLogin, MediaType.APPLICATION_XML));
+  			if (res.getStatus() != 200) {
+  				throw new RuntimeException("Failed : HTTP error code : "
+  						+ res.getStatus());
+  			}
+    	  }
 	  }
 	  catch(Exception e)
 	  {
@@ -110,13 +121,18 @@ public class HpcLoginController extends AbstractHpcController {
 		  ObjectError error = new ObjectError("hpcLogin", "Invalid login!");
 		  bindingResult.addError(error);
 		  model.addAttribute("hpcLogin", hpcLogin);
+		  model.addAttribute("ldap", loginModule.equals("ldap")?"true":"false");
 		  return "index";
-	  }		  
+	  }		
+      
       try{
-    	  URI uri = new URI(serviceUserURL+"/"+hpcLogin.getUserName());
-		  ResponseEntity<HpcUserDTO> userEntity = restTemplate.getForEntity(uri, HpcUserDTO.class);
-
-		  HpcUserDTO userDTO = userEntity.getBody();
+    	  if(userDTO == null)
+    	  {
+	    	  URI uri = new URI(serviceUserURL+"/"+hpcLogin.getUserName());
+			  ResponseEntity<HpcUserDTO> userEntity = restTemplate.getForEntity(uri, HpcUserDTO.class);
+	
+			  userDTO = userEntity.getBody();
+    	  }
 		  model.addAttribute("loginStatus", true);
 		  session.setAttribute("hpcUser", userDTO);
 	  }
@@ -127,6 +143,7 @@ public class HpcLoginController extends AbstractHpcController {
 		  ObjectError error = new ObjectError("hpcLogin", "UserId is not found!");
 		  bindingResult.addError(error);
 		  model.addAttribute("hpcLogin", hpcLogin);
+		  model.addAttribute("ldap", loginModule.equals("ldap")?"true":"false");
 		  return "index";
 	  }
 	  model.addAttribute("datasetURL", datasetURL);
