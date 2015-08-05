@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:prasad.konka@nih.gov">Prasad Konka</a>
- * @version $Id: $
+ * @version $Id$
  */
 
 public class HpcProjectServiceImpl implements HpcProjectService
