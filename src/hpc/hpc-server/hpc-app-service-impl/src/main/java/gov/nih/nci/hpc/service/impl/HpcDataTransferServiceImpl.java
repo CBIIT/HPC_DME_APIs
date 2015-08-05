@@ -10,6 +10,8 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -32,9 +34,11 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 public class HpcDataTransferServiceImpl implements HpcDataTransferService
 {            
     // The Data Transfer Proxy.
+	@Autowired
     private HpcDataTransferProxy dataTransferProxy = null;
     
     // The Data Transfer Account Validator Provider.
+	@Autowired
     private HpcDataTransferAccountValidatorProvider 
                                   dataTransferAccountValidatorProvider = null;
     
@@ -43,39 +47,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     //---------------------------------------------------------------------//
 	
     /**
-     * Default Constructor.
+     * Constructor for Spring Dependency Injection.
      * 
      * @throws HpcException Constructor is disabled.
      */
     private HpcDataTransferServiceImpl() throws HpcException
     {
-    	throw new HpcException("Constructor Disabled",
-                HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }   
     
-    /**
-     * Constructor for Spring Dependency Injection.
-     * 
-     * @param dataTransferProxy The data transfer proxy instance.
-     * @param dataTransferAccountValidatorProvider 
-     *        The data transfer account validator provider instance.
-     */
-    private HpcDataTransferServiceImpl(
-    		   HpcDataTransferProxy dataTransferProxy,
-    		   HpcDataTransferAccountValidatorProvider dataTransferAccountValidatorProvider) 
-    		   throws HpcException
-    {
-    	if(dataTransferProxy == null || 
-    	   dataTransferAccountValidatorProvider == null) {
-     	   throw new HpcException("Null Integration beans",
-     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
-     	}
-    	
-    	this.dataTransferProxy = dataTransferProxy;
-    	this.dataTransferAccountValidatorProvider = 
-    			                         dataTransferAccountValidatorProvider;
-    }      
-     
     //---------------------------------------------------------------------//
     // HpcDataTransferService Interface Implementation
     //---------------------------------------------------------------------//  

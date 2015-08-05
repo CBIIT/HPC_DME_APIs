@@ -26,10 +26,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcDatasetService;
-import gov.nih.nci.hpc.service.HpcTransferStatusService;
-import gov.nih.nci.hpc.service.HpcUserService;
 
 import java.util.Calendar;
 import java.util.List;
@@ -37,6 +34,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -54,17 +52,16 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     //---------------------------------------------------------------------//
 
     // The Managed Dataset DAO instance.
+	@Autowired
     private HpcDatasetDAO datasetDAO = null;
     
     // Key Generator.
+	@Autowired
     private HpcKeyGenerator keyGenerator = null;
     
-    private HpcUserService userService = null;
-    private HpcDataTransferService dataTransferService = null;
-    private HpcTransferStatusService transferStatusService = null;   
-	@SuppressWarnings("rawtypes")
-	Map<String, HpcDataTransferStatus> dataTransferStatusMap = null;
-    
+	// Map data transfer status strings to enum values.
+	private Map<String, HpcDataTransferStatus> dataTransferStatusMap = null;
+	
     // The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -81,7 +78,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     private HpcDatasetServiceImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
-                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
+                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }   
     
     /**
@@ -90,24 +87,9 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
      * @param datasetDAO The dataset DAO instance.
      * @param keyGenerator The key generator.
      */
-    private HpcDatasetServiceImpl(HpcDatasetDAO datasetDAO, 
-    		                      HpcKeyGenerator keyGenerator,
-    		    		          HpcUserService userService,
-    		    		          HpcDataTransferService dataTransferService,
-    		    		          HpcTransferStatusService transferStatusService,
-    		    		          Map<String, HpcDataTransferStatus> dataTransferStatusMap)
-    		                     throws HpcException
+    private HpcDatasetServiceImpl(Map<String, HpcDataTransferStatus> dataTransferStatusMap)
+    	                         throws HpcException
     {
-    	if(datasetDAO == null || keyGenerator == null) {
-     	   throw new HpcException("Null DatasetDAO / HpcKeyGenerator",
-     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
-     	}
-    	
-    	this.datasetDAO = datasetDAO;
-    	this.keyGenerator = keyGenerator;
-    	this.userService = userService;
-    	this.dataTransferService = dataTransferService;
-    	this.transferStatusService = transferStatusService;
     	this.dataTransferStatusMap = dataTransferStatusMap;
     }  
     
