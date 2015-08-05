@@ -13,17 +13,17 @@ package gov.nih.nci.hpc.service.impl;
 import gov.nih.nci.hpc.dao.HpcProjectDAO;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
+import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcProjectService;
 
-import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -41,6 +41,7 @@ public class HpcProjectServiceImpl implements HpcProjectService
     //---------------------------------------------------------------------//
 
     // The Managed Project DAO instance.
+	@Autowired
     private HpcProjectDAO projectDAO = null;
     
     // The logger instance.
@@ -52,31 +53,13 @@ public class HpcProjectServiceImpl implements HpcProjectService
     //---------------------------------------------------------------------//
 	
     /**
-     * Default Constructor.
+     * Constructor for Spring Dependency Injection.
      * 
      * @throws HpcException Constructor is disabled.
      */
     private HpcProjectServiceImpl() throws HpcException
     {
-    	throw new HpcException("Constructor Disabled",
-                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }   
-    
-    /**
-     * Constructor for Spring Dependency Injection.
-     * 
-     * @param projectDAO The dataset DAO instance.
-     */
-    private HpcProjectServiceImpl(HpcProjectDAO projectDAO)
-    		                     throws HpcException
-    {
-    	if(projectDAO == null) {
-     	   throw new HpcException("Null ProjectDAO",
-     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
-     	}
-    	
-    	this.projectDAO = projectDAO;
-    }  
     
     //---------------------------------------------------------------------//
     // Methods
