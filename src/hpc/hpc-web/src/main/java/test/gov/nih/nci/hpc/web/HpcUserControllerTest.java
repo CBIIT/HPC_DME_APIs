@@ -11,7 +11,6 @@ import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.web.Application;
-import gov.nih.nci.hpc.web.HpcExceptionMessageReader;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -78,25 +77,25 @@ public class HpcUserControllerTest {
 		ObjectMapper mapper = new ObjectMapper();
 		System.out.println(mapper.writeValueAsString(dto));
 		writeXML(dto);
-		
+
 		 RestTemplate restTemplate = new RestTemplate();
 	     restTemplate.setErrorHandler(new HpcResponseErrorHandler());
 	    HttpHeaders headers = new HttpHeaders();
 	    headers.setAccept(Arrays.asList(MediaType.APPLICATION_XML));
 	    try{
 	    	HttpEntity<String> entity = restTemplate.postForEntity(baseurl, dto, String.class);
-		     
+
 		    System.out.println(entity);
 	    }
 	    catch(org.springframework.web.client.HttpServerErrorException e)
 	    {
-	    	
+
 	    }
 	    catch(Exception e)
 	    {
 	    	e.printStackTrace();
 	    }
-		/*		
+		/*
 		Client client = ClientBuilder.newClient().register(
 				ClientResponseLoggingFilter.class);
 		Response res = client.target(baseurl).request()
@@ -107,34 +106,34 @@ public class HpcUserControllerTest {
 					+ res.getStatus());
 		}
 
-		
+
 		Client client = ClientBuilder.newClient();
 		WebTarget target = client.target(baseurl);
-		 
+
 		Response response =
 		target.request(MediaType.APPLICATION_XML_TYPE)
 		    .post(Entity.entity(dto,MediaType.APPLICATION_XML_TYPE));
-		
+
 		//Client client = Client.create();
 		//javax.ws.rs.client.Client client = ClientBuilder.newBuilder().register(HpcExceptionMessageReader.class).build();
 		//WebResource webResource = client
 		//   .resource(baseurl);
-		
+
 		//ClientResponse response = webResource.type(MediaType.APPLICATION_XML)
 		//		   .post(ClientResponse.class, dto);
-		
+
 		if (response.getStatus() != 200) {
 			//HpcExceptionDTO output = response.getEntity(HpcExceptionDTO.class);
 			System.out.println("Output from Server .... \n");
 			//System.out.println(output);
-			
+
 		   throw new RuntimeException("Failed : HTTP error code : "
 			+ response.getStatus());
 		}
- 
-		
- 
-		
+
+
+
+
 		// HpcUserRegistrationDTO entity = (HpcUserRegistrationDTO) res
 		// .getEntity();
 		// ObjectMapper mapper = new ObjectMapper();
