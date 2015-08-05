@@ -68,7 +68,7 @@ public class HpcProjectControllerTest {
 		HpcProjectRegistrationDTO dto = new HpcProjectRegistrationDTO();
 
 		HpcProjectMetadata metadata = new HpcProjectMetadata();
-		metadata.setName("Project1002");
+		metadata.setName("Project1004");
 		metadata.setDescription("Description");
 		metadata.setDoc("Division");
 		metadata.setExperimentId("Test");
@@ -103,7 +103,7 @@ public class HpcProjectControllerTest {
 	private HpcDatasetRegistrationDTO getDataset()
 	{
 		HpcDatasetRegistrationDTO dto = new HpcDatasetRegistrationDTO();
-		dto.setName("Project1002-Set1");
+		dto.setName("Data1002-Set2");
 		dto.setDescription("Set1 description");
 		dto.setComments("Set1 comments");
 
