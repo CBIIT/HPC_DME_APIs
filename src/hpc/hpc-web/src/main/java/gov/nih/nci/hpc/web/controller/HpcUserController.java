@@ -44,11 +44,9 @@ import org.springframework.web.client.RestTemplate;
 @EnableAutoConfiguration
 @RequestMapping("/registerUser")
 public class HpcUserController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.userRegistration}")
-    private String serviceURL;
 	@Value("${gov.nih.nci.hpc.server}")
     private String serverURL;
-	@Value("${gov.nih.nci.hpc.server.login}")
+	@Value("${gov.nih.nci.hpc.server.user}")
     private String serviceUserURL;
 	@Value("${gov.nih.nci.hpc.server.globuslogin.validate}")
     private String serviceGlobusUserURL;
@@ -107,7 +105,7 @@ public class HpcUserController extends AbstractHpcController {
 		  }
 	*/	  
 		  
-		  HttpEntity<String> response = restTemplate.postForEntity(serviceURL,  userDTO, String.class);
+		  HttpEntity<String> response = restTemplate.postForEntity(serviceUserURL,  userDTO, String.class);
 		  String resultString = response.getBody();
 		  HttpHeaders headers = response.getHeaders();
 		  String location = headers.getLocation().toString();
