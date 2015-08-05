@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 /**
  * <p>
  * HPC User Application Service Implementation.
@@ -43,9 +44,11 @@ public class HpcUserServiceImpl implements HpcUserService
     //---------------------------------------------------------------------//
 
     // The User DAO instance.
+	@Autowired
     private HpcUserDAO userDAO = null;
     
     // The Data Transfer Service instance.
+	@Autowired
     private HpcDataTransferService dataTransferService = null;
     
     // The logger instance.
@@ -57,34 +60,13 @@ public class HpcUserServiceImpl implements HpcUserService
     //---------------------------------------------------------------------//
 	
     /**
-     * Default Constructor.
+     * Constructor for Spring Dependency Injection.
      * 
      * @throws HpcException Constructor is disabled.
      */
     private HpcUserServiceImpl() throws HpcException
     {
-    	throw new HpcException("Constructor Disabled",
-                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }   
-    
-    /**
-     * Constructor for Spring Dependency Injection.
-     * 
-     * @param userDAO The user DAO instance.
-     * @param dataTransferService The data transfer service instance.
-     */
-    private HpcUserServiceImpl(HpcUserDAO userDAO,
-    		                   HpcDataTransferService dataTransferService) 
-    		                  throws HpcException
-    {
-    	if(userDAO == null || dataTransferService == null) {
-     	   throw new HpcException("Null UserDAO or DataTransferService instance",
-     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
-     	}
-    	
-    	this.userDAO = userDAO;
-    	this.dataTransferService = dataTransferService;
-    }  
     
     //---------------------------------------------------------------------//
     // Methods
