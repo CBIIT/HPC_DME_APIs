@@ -70,7 +70,7 @@ public class HpcDatasetControllerTest {
 
 		//Dataset registration object
 		HpcDatasetRegistrationDTO dto = new HpcDatasetRegistrationDTO();
-		dto.setName("Experiment2015-5");
+		dto.setName("Dataset2015-7");
 		dto.setDescription("Set1 description");
 		dto.setComments("Set1 comments");
 
@@ -89,8 +89,8 @@ public class HpcDatasetControllerTest {
 			source.setPath(filePath);
 			//Set file destination end point
 			HpcFileLocation destination = new HpcFileLocation();
-			destination.setEndpoint("nihnci#NIH-NCI-TRANSFER1");
-			//destination.setEndpoint("nihfnlcr#gridftp1");
+			//destination.setEndpoint("nihnci#NIH-NCI-TRANSFER1");
+			destination.setEndpoint("nihfnlcr#gridftp1");
 			destination.setPath(filePath);
 			locations.setDestination(destination);
 			locations.setSource(source);
@@ -120,6 +120,7 @@ public class HpcDatasetControllerTest {
 			metadataItem2.setValue("value2");
 			metadata.getMetadataItems().add(metadataItem1);
 			metadata.getMetadataItems().add(metadataItem2);
+			upload.getProjectIds().add("aa94bc29-f414-48a4-85ec-97a26bc3b35d");
 			upload.getProjectIds().add("1815ee84-cfc9-4681-bc7e-bfafac05057d");
 			dto.getUploadRequests().add(upload);
 			writeXML(dto);
@@ -165,7 +166,7 @@ public class HpcDatasetControllerTest {
 			Client client = ClientBuilder.newClient().register(
 					ClientResponseLoggingFilter.class);
 			WebTarget resourceTarget = client
-					.target(baseurl+"/query/project/07464d6b-4da4-4a4c-aafc-f22c26d0a206");
+					.target(baseurl+"/query/project/aa94bc29-f414-48a4-85ec-97a26bc3b35d");
 			Invocation invocation = resourceTarget.request(
 					MediaType.APPLICATION_XML).buildGet();
 			HpcDatasetCollectionDTO response = invocation.invoke(HpcDatasetCollectionDTO.class);
