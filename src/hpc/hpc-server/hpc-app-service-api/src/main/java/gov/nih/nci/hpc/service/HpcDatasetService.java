@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
@@ -178,7 +179,7 @@ public interface HpcDatasetService
      * GET Datasets by primary metadata.
      *
      * @param primaryMetadata The meatada to match.
-     *  @return HpcDataset collection, or null if no results found.
+     * @return HpcDataset collection, or null if no results found.
      * 
      * @throws HpcException
      */
@@ -199,14 +200,18 @@ public interface HpcDatasetService
         	             throws HpcException;
     
     /**
-     * GET Datasets by transfer status.
+     * Get datasets with specific data transfer status.
      *
-     * @param transferStatus status as string.
-     *  @return HpcDataset collection, or null if no results found.
+     * @param dataTransferStatus The data transfer status to query for.
+     * @param uploadRequests Search the upload data transfer requests.
+     * @param downloadRequests Search the download data transfer requests.
+     * @return HpcDataset collection, or null if no results found.
      * 
      * @throws HpcException
      */
-	public List<HpcDataset> getDatasetsByStatus(String transferStatus) throws HpcException;
+	public List<HpcDataset> getDatasets(HpcDataTransferStatus dataTransferStatus,
+			                            Boolean uploadRequests, 
+                                        Boolean downloadRequests) throws HpcException;
 }
 
  
