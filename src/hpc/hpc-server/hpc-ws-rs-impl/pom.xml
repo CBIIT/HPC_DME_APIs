@@ -54,13 +54,110 @@
 									<type>json</type>
 									<classifier>dynamicfields</classifier>
 								</artifact>
+								<artifact>
+									<file>src/main/resources/keystore.jks</file>
+									<type>jks</type>
+									<classifier>keystore</classifier>
+								</artifact>
 							</artifacts>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 		</plugins>
-	</build>
+	</build>	
+	
+	<profiles>
+		<profile>
+			<id>keystore</id>
+			<build>
+				<plugins>	
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-clean-plugin</artifactId>
+						<configuration>
+							<filesets>
+								<fileset>
+									<directory>src/main/resources</directory>
+									<includes>
+										<include>hpc-client.cer</include>
+										<inlucde>hpc-client-keystore.jks</inlucde>
+										<inlucde>keystore.jks</inlucde>
+									</includes>
+								</fileset>
+							</filesets>
+						</configuration>
+					</plugin>	
+					<plugin>
+        				<groupId>org.codehaus.mojo</groupId>
+        				<artifactId>keytool-maven-plugin</artifactId>
+        				<executions>
+        					<execution>
+          						<id>generateServerKeystore</id>
+            					<goals>
+              						<goal>generateKeyPair</goal>
+            					</goals>
+            					<phase>generate-resources</phase>
+            					<configuration>
+          							<keystore>src/main/resources/keystore.jks</keystore>
+          							<storepass>hpc-server-store-pwd</storepass>
+          							<keypass>hpc-server-store-pwd</keypass>
+          							<alias>hpc-server-key</alias>
+          							<dname>CN=HPC Server, OU=NIH, O=NCI, L=Frederick, ST=MD, C=US</dname>
+          							<validity>365</validity>
+        						</configuration>
+          					</execution>
+          					<execution>
+          						<id>generateClientCertificate</id>
+            					<goals>
+              						<goal>generateKeyPair</goal>
+            					</goals>
+            					<phase>generate-resources</phase>
+            					<configuration>
+          							<keystore>src/main/resources/hpc-client-keystore.jks</keystore>
+          							<storepass>hpc-client-pwd</storepass>
+          							<keypass>hpc-client-pwd</keypass>
+          							<alias>hpc-client-key</alias>
+          							<dname>CN=HPC Client, OU=NIH, O=NCI, L=Frederick, ST=MD, C=US</dname>
+          							<validity>365</validity>
+        						</configuration>
+          					</execution>
+          					<execution>
+          						<id>exportClientCertificate</id>
+            					<goals>
+              						<goal>exportCertificate</goal>
+            					</goals>
+            					<phase>generate-resources</phase>
+            					<configuration>
+          							<keystore>src/main/resources/hpc-client-keystore.jks</keystore>
+          							<file>src/main/resources/hpc-client.cer</file>
+          							<rfc>true</rfc>
+          							<storepass>hpc-client-pwd</storepass>
+          							<alias>hpc-client-key</alias>
+        						</configuration>
+          					</execution>
+          					<execution>
+          						<id>importClientCertificate</id>
+            					<goals>
+            						<goal>importCertificate</goal>
+            					</goals>
+            					<phase>generate-resources</phase>
+            					<configuration>
+            						<keystore>src/main/resources/keystore.jks</keystore>
+            						<file>src/main/resources/hpc-client.cer</file>
+          							<storepass>hpc-server-store-pwd</storepass>
+          							<alias>hpc-client-key</alias>
+          							<trustcacerts>true</trustcacerts>
+          							<noprompt>true</noprompt>
+        						</configuration>
+          					</execution>     					
+        				</executions>
+      				</plugin>
+      			</plugins>
+      		</build>
+      	</profile>
+	</profiles>
+	
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>

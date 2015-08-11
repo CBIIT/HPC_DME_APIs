@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.bus;
 
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
@@ -128,14 +129,19 @@ public interface HpcDatasetBusService
     		         throws HpcException;
 
     /**
-     * Get datasets with status string given.
+     * Get datasets with specific data transfer status.
      *
-     * @param transferStatus String representation of status.
+     * @param dataTransferStatus The data transfer status to query for.
+     * @param uploadRequests Search the upload data transfer requests.
+     * @param downloadRequests Search the download data transfer requests.
      * @return Collection of Dataset DTO, or null if not found.
      * 
      * @throws HpcException
      */
-	public HpcDatasetCollectionDTO getDatasetsByStatus(String transferStatus) throws HpcException;
+	public HpcDatasetCollectionDTO getDatasets(HpcDataTransferStatus dataTransferStatus,
+			                                   Boolean uploadRequests, 
+			                                   Boolean downloadRequests) 
+			                                  throws HpcException;
 	
     /**
      * Get datasets associated with given projectId.

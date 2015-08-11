@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.dao;
 
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -85,7 +86,7 @@ public interface HpcDatasetDAO
      * GET Datasets by a list of .
      *
      * @param primaryMetadata The meatada to match.
-     *  @return HpcDataset collection, or null if no results found.
+     * @return HpcDataset collection, or null if no results found.
      * 
      * @throws HpcException
      */
@@ -106,18 +107,24 @@ public interface HpcDatasetDAO
         	             throws HpcException;
 
     /**
-     * Get datasets by status.
+     * Get datasets with specific data transfer status.
      *
-     * @param transferStatus status as string.
+     * @param dataTransferStatus The data transfer status to query for.
+     * @param uploadDownloadRequests search the upload requests id set to 'true'. 
+     *                               Otherwise, search the download requests. 
+     * @return HpcDataset collection, or null if no results found.
      * 
      * @throws HpcException
      */
-	public List<HpcDataset> getDatasetsByStatus(String transferStatus) throws HpcException;
+	public List<HpcDataset> getDatasets(HpcDataTransferStatus dataTransferStatus,
+                                        boolean uploadDownloadRequests) 
+                                       throws HpcException;
 	
 	   /**
      * Get datasets by Project.
      *
      * @param projectId Assoicated project Id.
+     * @return HpcDataset collection, or null if no results found.
      * 
      * @throws HpcException
      */
