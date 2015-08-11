@@ -35,6 +35,29 @@
 	<context:annotation-config />
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 
+	<!--  HTTP-JETTY SSL Configuration -->
+	<bean id="sslContextFactory" class="org.eclipse.jetty.http.ssl.SslContextFactory">
+		<property name="keyStore" value="${hpc.ws.rs.ssl.keystore.path}" />
+		<property name="keyStoreType" value="${hpc.ws.rs.ssl.keystore.type}" />
+		<property name="keyStorePassword" value="${hpc.ws.rs.ssl.keystore.password}" />
+		<property name="trustStore" value="${hpc.ws.rs.ssl.keystore.path}" />
+		<property name="trustStoreType" value="${hpc.ws.rs.ssl.keystore.type}" />
+		<property name="trustStorePassword" value="${hpc.ws.rs.ssl.keystore.password}" />
+		<property name="wantClientAuth" value="${hpc.ws.rs.ssl.wantClientAuth}" />
+		<property name="needClientAuth" value="${hpc.ws.rs.ssl.needClientAuth}" />
+	</bean>
+    <httpj:engine-factory bus="cxf">
+    	<httpj:engine port="${hpc.ws.rs.port}">
+    		<httpj:tlsServerParameters/>
+            <httpj:connector>
+            	<bean class="org.eclipse.jetty.server.ssl.SslSocketConnector">
+            		<constructor-arg ref="sslContextFactory"/>
+                    <property name="port" value="${hpc.ws.rs.port}" />
+                </bean>
+           	</httpj:connector>
+        </httpj:engine>
+	</httpj:engine-factory>
+        
 	<!-- JAXB Provider -->
 	<bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JAXBElementProvider">
 		<property name="marshallerProperties" ref="jaxbProviderMarshallerProperties" />
@@ -72,13 +95,12 @@
 	<!-- JAX-RS Service Beans -->
 	<bean id="hpcUserRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcUserRestServiceImpl" />
 	<bean id="hpcDatasetRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDatasetRestServiceImpl">
-		<constructor-arg value="${dynamicfields}" />
+		<constructor-arg value="${hpc.ws.rs.dynamicfields}" />
 	</bean>
 	<bean id="hpcProjectRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcProjectRestServiceImpl" />
 	
 	<!-- CXF JAX-RS Server Config -->
-	<jaxrs:server id="hpc-server" address="${hpc.ws.rs.url}"
-		bus="cxf">
+	<jaxrs:server id="hpc-server" address="${hpc.ws.rs.url}" bus="cxf">
 		<jaxrs:serviceBeans>
 			<ref bean="hpcUserRestService" />
 			<ref bean="hpcDatasetRestService" />

@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.dao.HpcDatasetDAO;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcMongoDB;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcSingleResultCallback;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -136,9 +137,14 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
             HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
             HpcCodec.FILE_PRIMARY_METADATA_METADATA_ITEMS_KEY;
 	
-	// Field name to query by data transfer status.
-	public final static String DATASET_TRANSFER_STATUS_NAME =
+	// Field name to query by upload requests data transfer status.
+	public final static String DATASET_UPLOAD_TRANSFER_STATUS_NAME =
 							   HpcCodec.DATASET_UPLOAD_REQUESTS_KEY + "." + 
+	                           HpcCodec.DATA_TRANSFER_REQUEST_STATUS_KEY;
+	
+	// Field name to query by download requests data transfer status.
+	public final static String DATASET_DOWNLOAD_TRANSFER_STATUS_NAME =
+							   HpcCodec.DATASET_DOWNLOAD_REQUESTS_KEY + "." + 
 	                           HpcCodec.DATA_TRANSFER_REQUEST_STATUS_KEY;
 	
 	// Field name to query a file by id.
@@ -262,6 +268,7 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 		return callback.getResult();
 	}
 	
+	@Override
 	public List<HpcDataset> getDatasets(HpcFilePrimaryMetadata primaryMetadata) 
                                        throws HpcException
     {
@@ -274,6 +281,7 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 		return callback.getResult();
     }
 	
+	@Override
     public boolean exists(String name, String nihUserId, 
                           HpcDatasetUserAssociation association) 
                          throws HpcException
@@ -285,14 +293,22 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     	return callback.getResult() != null ? callback.getResult() > 0 : false;
     }
 	
-   	public List<HpcDataset> getDatasetsByStatus(String transferStatus)
-			throws HpcException {
+	@Override
+   	public List<HpcDataset> getDatasets(HpcDataTransferStatus dataTransferStatus,
+                                                boolean uploadDownloadRequests)
+			                                   throws HpcException
+	{
+   		// Determine the search in the upload or download requests. 
+   		String fieldName = uploadDownloadRequests ?
+   				           DATASET_UPLOAD_TRANSFER_STATUS_NAME : 
+   				           DATASET_DOWNLOAD_TRANSFER_STATUS_NAME;
+   		
 		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
 		HpcSingleResultCallback<List<HpcDataset>> callback = 
                        new HpcSingleResultCallback<List<HpcDataset>>();
-		getCollection().find(
-		                regex(DATASET_TRANSFER_STATUS_NAME, 
-		                	  transferStatus, "i")).into(datasets, callback); 
+		getCollection().find(eq(fieldName, 
+				                dataTransferStatus.value())).into(datasets, 
+				                		                          callback); 
 		
 		return callback.getResult();
 	}  

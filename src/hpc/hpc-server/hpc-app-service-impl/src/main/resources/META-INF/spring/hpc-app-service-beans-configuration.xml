@@ -24,8 +24,8 @@
 	<!--  Map data transfer status string to enum -->
 	<util:map id="hpcDataTransferStatusMap" value-type="gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus">
 		<entry key="${hpc.service.dataTransferStatusMap.IN_PROGRESS}" value="IN_PROGRESS" />
-			<entry key="${hpc.service.dataTransferStatusMap.COMPLETED}" value="COMPLETED" />
-				<entry key="${hpc.service.dataTransferStatusMap.FAILED}" value="FAILED" />
+		<entry key="${hpc.service.dataTransferStatusMap.COMPLETED}" value="COMPLETED" />
+		<entry key="${hpc.service.dataTransferStatusMap.FAILED}" value="FAILED" />
 	</util:map>
 	
 	<!--  HPC Keys generator -->
@@ -38,7 +38,6 @@
 	<bean id="hpcDatasetService" class="gov.nih.nci.hpc.service.impl.HpcDatasetServiceImpl">
 		<constructor-arg ref="hpcDataTransferStatusMap" />
 	</bean>
-	
 
 	<bean id="hpcTransferStatusService" class="gov.nih.nci.hpc.service.impl.HpcTransferStatusServiceImpl">
 		<constructor-arg ref="transferStatusDAO" />

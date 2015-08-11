@@ -28,6 +28,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDatasetService;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -305,9 +306,30 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     }
 
     @Override
-	public List<HpcDataset> getDatasetsByStatus(String transferStatus) throws HpcException
+	public List<HpcDataset> getDatasets(HpcDataTransferStatus dataTransferStatus,
+                                        Boolean uploadRequests, 
+                                        Boolean downloadRequests) throws HpcException
 	{
-    	return datasetDAO.getDatasetsByStatus(transferStatus);
+    	// Input Validation. Both upload/download requests can't be null
+    	if((uploadRequests == null || uploadRequests == false) &&
+    	   (downloadRequests == null || downloadRequests == false)) {
+    	   throw new HpcException("Both upload/download Requests can't be null", 
+                     HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	List<HpcDataset> datasets = new ArrayList<HpcDataset>();
+    	
+    	// Search the upload requests.
+    	if(uploadRequests != null && uploadRequests) {
+    	   datasets.addAll(datasetDAO.getDatasets(dataTransferStatus, true));
+    	}
+    	
+    	// Search the download requests.
+    	if(downloadRequests != null && downloadRequests) {
+    	   datasets.addAll(datasetDAO.getDatasets(dataTransferStatus, false));
+    	}
+    	
+    	return datasets;
 	}
 
 	@Override
