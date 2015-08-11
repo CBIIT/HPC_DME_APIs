@@ -116,9 +116,10 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
 			decodeDataTransferLocations(
 		    	  document.get(DATA_TRANSFER_REQUEST_LOCATIONS_KEY, Document.class), 
 		    	  decoderContext, getRegistry()));
-		dataTransferRequest.setStatus(
-			HpcDataTransferStatus.valueOf(
-		           document.getString(DATA_TRANSFER_REQUEST_STATUS_KEY)));
+		String dataTransferStatusStr = document.getString(DATA_TRANSFER_REQUEST_STATUS_KEY);
+		dataTransferRequest.setStatus(dataTransferStatusStr != null ?
+				                      HpcDataTransferStatus.valueOf(dataTransferStatusStr) :
+				                      null);
 		dataTransferRequest.setReport(
 			decodeDataTransferReport(
 			    	  document.get(DATA_TRANSFER_REQUEST_REPORT_KEY, Document.class), 

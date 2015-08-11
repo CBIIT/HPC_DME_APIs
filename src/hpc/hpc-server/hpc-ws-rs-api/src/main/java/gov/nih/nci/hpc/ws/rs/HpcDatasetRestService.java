@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
@@ -83,7 +84,7 @@ public interface HpcDatasetRestService
     public Response getFile(@PathParam("id") String id);
     
     /**
-     * GET Datasets by creator ID.
+     * GET Datasets by Registrar ID.
      *
      * @param registrarNihUserId Get datasets associated with this registrar.
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
@@ -91,18 +92,34 @@ public interface HpcDatasetRestService
     @GET
     @Path("/dataset/query/registrar/{id}")
     @Produces("application/json,application/xml")
-    public Response getDatasetsByRegistrarId(@PathParam("id") String registrarNihUserId); 
+    public Response getDatasetsByRegistrarId(
+    		           @PathParam("id") String registrarNihUserId); 
     
    /** 
    * GET Datasets by Primary Investigator ID.
      *
-     * @param primaryInvestigatorUserId Get datasets associated with this primary investigator.
+     * @param primaryInvestigatorNihUserId Get datasets associated with this primary investigator.
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @GET
-    @Path("/dataset/query/pi/{id}")
+    @Path("/dataset/query/primaryInvestigator/{id}")
     @Produces("application/json,application/xml")
-    public Response getDatasetsByPrimaryInvestigatorId(@PathParam("id") String primaryInvestigatorUserId); 
+    public Response getDatasetsByPrimaryInvestigatorId(
+    		           @PathParam("id") String primaryInvestigatorNihUserId); 
+    
+    /**
+     * GET Datasets by Primary Investigator's first and last name.
+     *
+     * @param firstName The primary investigator first name.
+     * @param lastName The primary investigator last name.
+     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
+     */
+    @GET
+    @Path("/dataset/query/primaryInvestigator")
+    @Produces("application/json,application/xml")
+    public Response getDatasetsByPrimaryInvestigatorName(
+    		                            @QueryParam("firstName") String firstName,
+    		                            @QueryParam("lastName") String lastName); 
  
     /**
      * GET Datasets by Project ID.
@@ -114,20 +131,6 @@ public interface HpcDatasetRestService
     @Path("/dataset/query/project/{id}")
     @Produces("application/json,application/xml")
     public Response getDatasetsByProjectId(@PathParam("id") String projectId); 
-     
-    /**
-     * GET Datasets by Primary Investigator's first and last name..
-     *
-     * @param firstName The primary investigator first name.
-     * @param lastName The primary investigator last name.
-     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
-     */
-    @GET
-    @Path("/dataset/query/primary-investigator")
-    @Produces("application/json,application/xml")
-    public Response getDatasetsByPrimaryInvestigatorName(
-    		                            @QueryParam("firstName") String firstName,
-    		                            @QueryParam("lastName") String lastName); 
     
     /**
      * GET Datasets by name.
@@ -156,15 +159,20 @@ public interface HpcDatasetRestService
     		           HpcPrimaryMetadataQueryDTO primaryMetadataQueryDTO);
     
     /**
-     * GET Configurable items by ID.
+     * GET Datasets by data transfer status.
      *
-     * @param id The Configurable items ID.
-     * @return The registered data.
+     * @param dataTransferStatus The data transfer status to query for.
+     * @param uploadRequests Search the upload data transfer requests.
+     * @param downloadRequests Search the download data transfer requests.
+     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @GET
-    @Path("/dataset/query/transferStatus/{type}")
+    @Path("/dataset/query/dataTransferStatus/{status}")
     @Produces("application/json,application/xml")
-    public Response getDatasetsByTransferStatus(@PathParam("type") String transferStatus);
+    public Response getDatasetsByDataTransferStatus(
+    		           @PathParam("status") HpcDataTransferStatus dataTransferStatus,
+    		           @QueryParam("uploadRequests") Boolean uploadRequests, 
+    		           @QueryParam("downloadRequests") Boolean downloadRequests);
     
    /**
      * GET Configurable items by ID.

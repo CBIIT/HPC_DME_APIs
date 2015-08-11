@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.bus.impl;
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
@@ -269,13 +270,19 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     }    
 
     @Override
-	public HpcDatasetCollectionDTO getDatasetsByStatus(String transferStatus) throws HpcException{
+	public HpcDatasetCollectionDTO getDatasets(HpcDataTransferStatus dataTransferStatus,
+			                                   Boolean uploadRequests, 
+                                               Boolean downloadRequests) 
+                                              throws HpcException{
     	// Input validation.
-    	if(transferStatus == null) {
-    	   throw new HpcException("Null transferStatus", HpcErrorType.INVALID_REQUEST_INPUT);	
+    	if(dataTransferStatus == null || 
+    	   (uploadRequests == null && downloadRequests == null)) {
+    	   throw new HpcException("Null transfer status / upload requests / download requests", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	return toCollectionDTO(datasetService.getDatasetsByStatus(transferStatus));
+    	return toCollectionDTO(datasetService.getDatasets(dataTransferStatus, uploadRequests, 
+    			                                          downloadRequests));
 	}
     
 	@Override
