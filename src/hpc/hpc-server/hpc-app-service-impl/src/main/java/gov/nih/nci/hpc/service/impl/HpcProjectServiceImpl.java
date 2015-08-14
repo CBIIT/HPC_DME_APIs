@@ -10,16 +10,17 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidProjectMetadata;
 import gov.nih.nci.hpc.dao.HpcProjectDAO;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcProjectService;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,10 @@ public class HpcProjectServiceImpl implements HpcProjectService
     // The Managed Project DAO instance.
 	@Autowired
     private HpcProjectDAO projectDAO = null;
+	
+    // Key Generator.
+	@Autowired
+    private HpcKeyGenerator keyGenerator = null;
     
     // The logger instance.
 	private final Logger logger = 
@@ -70,43 +75,60 @@ public class HpcProjectServiceImpl implements HpcProjectService
     //---------------------------------------------------------------------//  
     
     @Override
-    public String add(HpcProjectMetadata metadata,
-		              List<String> datasetIds) 
-		             throws HpcException
+    public String addProject(HpcProjectMetadata metadata,
+		                     boolean persist) 
+		                    throws HpcException
     {
-    	// Input validation.
-    	if(metadata == null) {
-    	   throw new HpcException("Required metadata is missing for the project", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-    	// Create the Project domain object.
+       	// Input validation.
+       	if(!isValidProjectMetadata(metadata)) {
+       	   throw new HpcException("Invalid Project Metadata", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+
+       	// Create the Project domain object.
     	HpcProject project = new HpcProject();
     	
     	// Generate and set its ID.
-    	project.setId(UUID.randomUUID().toString());
+    	project.setId(keyGenerator.generateKey());
     	project.setMetadata(metadata);
-    	if(datasetIds != null && datasetIds.size() > 0)
-    		project.getDatasetIds().addAll(datasetIds);
     	
     	// Persist to Mongo.
-    	projectDAO.add(project);
+    	if(persist) {
+    	   projectDAO.upsert(project);
+    	}
     	logger.debug("Project added: " + project);
     	
     	return project.getId();
     }
     
     @Override
+    public void associateDataset(String projectId, String datasetId,
+                                   boolean persist) throws HpcException
+    {
+    	HpcProject project = getProject(projectId);
+    	if(project == null) {
+    	   throw new HpcException("Project not found: " + projectId, 
+    			                  HpcRequestRejectReason.PROJECT_NOT_FOUND);
+    	}
+    	
+    	// Associate dataset if not already associated.
+    	if(!project.getDatasetIds().contains(datasetId)) {
+    		project.getDatasetIds().add(datasetId);
+    		
+    		// Persist to Mongo.
+        	if(persist) {
+        	   projectDAO.upsert(project);
+        	}
+    	}
+    }
+    
+    @Override
     public HpcProject getProject(String id) throws HpcException
     {
     	// Input validation.
-    	try {
-    	     if(id == null || UUID.fromString(id) == null) {
-    	        throw new HpcException("Invalid dataset ID: " + id, 
-    			                       HpcErrorType.INVALID_REQUEST_INPUT);
-    	     }
-    	} catch(IllegalArgumentException e) {
-    		    throw new HpcException("Invalid UUID: " + id, 
-                                       HpcErrorType.INVALID_REQUEST_INPUT, e);
+    	if(!keyGenerator.validateKey(id)) {
+    	   throw new HpcException("Invalid Project ID: " + id, 
+    	                          HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
     	return projectDAO.getProject(id);

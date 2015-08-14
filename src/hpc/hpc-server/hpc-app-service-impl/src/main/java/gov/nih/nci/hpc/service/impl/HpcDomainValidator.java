@@ -14,8 +14,11 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
+import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.user.HpcNihAccount;
+import gov.nih.nci.hpc.exception.HpcException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +46,23 @@ class HpcDomainValidator
     // User Domain Object Types Validators
     //---------------------------------------------------------------------//
 	
+    /**
+     * Validate User object.
+     *
+     * @param user The object to be validated.
+     * @return true if valid, false otherwise.
+     */
+    public static boolean isValidUser(HpcUser user) 
+    {
+    	if(user == null || 
+    	   !isValidNihAccount(user.getNihAccount()) ||
+    	   !isValidDataTransferAccount(user.getDataTransferAccount())) {
+    	   logger.info("Invalid User: " + user);
+    	   return false;
+    	}
+    	return true;
+    }  
+    
     /**
      * Validate NIH Account object.
      *
@@ -161,6 +181,29 @@ class HpcDomainValidator
     	}
     	return true;
     }  
+    
+    /**
+     * Validate a project metadata object
+     *
+     * @param metadata the object to be validated.
+     * @return true if valid, false otherwise.
+     */
+    public static boolean isValidProjectMetadata(HpcProjectMetadata metadata) throws HpcException
+    {
+    	if(metadata == null ||
+    	   metadata.getName() == null ||
+    	   metadata.getPrimaryInvestigatorNihUserId() == null ||
+    	   metadata.getRegistrarNihUserId() == null ||
+    	   metadata.getLabBranch() == null ||
+    	   metadata.getDoc() == null ||
+    	   metadata.getInternalProjectId() == null ||
+   	   	   metadata.getFundingOrganization() == null ||
+   	   	   metadata.getExperimentId() == null) { 
+    	   logger.info("Invalid Project Metadata");
+      	   return false;
+     	}
+     	return true;
+    }
 }
 
  
