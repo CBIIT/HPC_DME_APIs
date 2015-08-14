@@ -33,9 +33,9 @@ import javax.ws.rs.core.Response;
 public interface HpcProjectRestService
 {   
     /**
-     * POST registration request.
+     * POST Project registration request.
      *
-     * @param registrationInput The data registration input DTO.
+     * @param projectRegistrationDTOt The project registration input DTO.
      */
     @POST
     @Path("/project")
