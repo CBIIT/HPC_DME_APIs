@@ -20,7 +20,6 @@ import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
-import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
@@ -109,7 +108,8 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Validate there is at least one file attached.
+    	// Validate there is at least one file attached. 
+    	// Also validate the associated projects included in the upload requests.
     	validateUploadRequests(datasetRegistrationDTO.getUploadRequests());
     	
     	// Validate the associated users with this dataset have valid NIH 
@@ -117,20 +117,17 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	// has a valid data transfer account.
     	validateAssociatedUsers(datasetRegistrationDTO.getUploadRequests());
 
-    	// TODO - document.
-    	validateAssociatedProjects(datasetRegistrationDTO.getUploadRequests());
-    	
     	// Validate this registrar has not already registered a dataset with the same name.
     	validateDatasetName(datasetRegistrationDTO.getName(),
     			            datasetRegistrationDTO.getUploadRequests());
 
     	// Add the dataset to the repository.
     	HpcDataset dataset = 
-    		   datasetService.addDataset(
-    				  datasetRegistrationDTO.getName(), 
-    				  datasetRegistrationDTO.getDescription(),
-    				  datasetRegistrationDTO.getComments(),
-    				  false);
+    	   datasetService.addDataset(
+    		  		         datasetRegistrationDTO.getName(), 
+    				         datasetRegistrationDTO.getDescription(),
+    				         datasetRegistrationDTO.getComments(),
+    				         false);
     	
     	// Process the file upload requests.
     	uploadFiles(dataset, datasetRegistrationDTO.getUploadRequests(), true);
@@ -150,7 +147,8 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 			                      HpcErrorType.INVALID_REQUEST_INPUT);	
        	}
        	
-    	// Validate there is at least one file attached.
+       	// Validate there is at least one file attached. 
+    	// Also validate the associated projects included in the upload requests.
     	validateUploadRequests(addFilesDTO.getUploadRequests());
        	
        	// Locate the dataset.
@@ -183,7 +181,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	HpcDataset dataset = datasetService.getDataset(id);
 
     	// Update the data transfer requests status.
-    	if(!skipDataTransferStatusUpdate) {
+    	if(dataset != null && !skipDataTransferStatusUpdate) {
     	   updateDataTransferRequestsStatus(dataset);
     	}
     	
@@ -407,35 +405,6 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     }
     
     /**
-     * Validate the projects associated with the upload request are valid.
-     * 
-     * @param uploadRequests The upload requests to validate. 
-     *
-     * @throws HpcException if any validation error found.
-     */
-    private void validateAssociatedProjects(
-    		             List<HpcFileUploadRequest> uploadRequests)
-    		             throws HpcException
-    {
-    	if(uploadRequests == null) {
-    	   return;
-    	}
-    	
-    	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
-    		if(uploadRequest.getProjectIds() == null || uploadRequest.getProjectIds().size() == 0) {
-    		   continue;	
-    		}
-    		
-    		List<String> projectIds = uploadRequest.getProjectIds();
-    		if(projectIds != null && projectIds.size() > 0)
-    		{
-    			for(String projectId : projectIds)
-    				validateProject(projectId);
-    		}
-    	}
-    }    
-    
-    /**
      * Validate this registrar has not already registered a dataset with the same name.
      * 
      * @param name The dataset name.
@@ -468,26 +437,6 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     }
  
     /**
-     * Validate a project is registered with HPC.
-     * 
-     * @param projectId
-     * 
-     * @return The HpcProject
-     *
-     * @throws HpcException if the user is not registered with HPC.
-     */
-    private HpcProject validateProject(String projectId)  throws HpcException
-    {
-    	HpcProject project = projectService.getProject(projectId);
-    	if(project == null) {
-    	   throw new HpcException("Could not find Project with projectId = " + projectId,
-    		                       HpcRequestRejectReason.INVALID_PROJECT_ID);	
-    	}
-    	
-    	return project;
-    }
-    
-    /**
      * Validate a user is registered with HPC.
      * 
      * @param nihUserId The NIH User ID.
@@ -512,7 +461,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     }
     
     /**
-     * Validate upload requests are not empty
+     * Validate upload requests are not empty.
      * 
      * @param uploadRequests The upload requests.
      *
@@ -525,6 +474,21 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	if(uploadRequests == null || uploadRequests.size() == 0) {
  	       throw new HpcException("No files attached to this request", 
  			                      HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	// Validate the associated projects exist.
+       	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
+    		if(uploadRequest.getProjectIds() == null || 
+    		   uploadRequest.getProjectIds().size() == 0) {
+    		   continue;	
+    		}
+
+    		for(String projectId : uploadRequest.getProjectIds()) {
+    	        if(projectService.getProject(projectId) == null) {
+    	    	   throw new HpcException("Project not found: " + projectId,
+    	    		                      HpcRequestRejectReason.PROJECT_NOT_FOUND);	
+    	    	}
+    		}
     	}
     }
     
@@ -619,19 +583,31 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		
     		// Add a new file to the domain model
     		HpcFile file = datasetService.addFile(dataset, uploadRequest, false);
+    		
+    		// Associate this dataset with the projects.
+    		if(file.getProjectIds() != null) {
+    		   for(String projectId : file.getProjectIds()) {
+    		       projectService.associateDataset(projectId, dataset.getId(), true);
+    		   }
+    		}
     		logger.debug("New File: " + file);
 			
 			// Transfer the file. 
     		String registrarNihId = uploadRequest.getMetadata().getRegistrarNihUserId();
-			HpcDataTransferAccount dataTransferAccount = 
-		                   userService.getUser(registrarNihId).getDataTransferAccount();
+			HpcUser user = userService.getUser(registrarNihId);
     		
 			logger.debug("Submitting data transfer request: " + 
 			             uploadRequest.getLocations());
-			HpcDataTransferReport dataTransferReport = 
-				   dataTransferService.transferDataset(uploadRequest.getLocations(), 
-					                                   dataTransferAccount,
-					                                   registrarNihId);
+			HpcDataTransferReport dataTransferReport = null;
+			try {
+				 dataTransferReport =
+                 dataTransferService.transferDataset(uploadRequest.getLocations(), 
+				                                     user);
+				 
+			} catch(HpcException e) {
+				    // Failed to upload file. Log and continue.
+					logger.info("Failed to upload file: " + uploadRequest, e);
+			}
 
 			// Attach an upload data transfer request to the dataset.
 			HpcDataTransferRequest transferRequest = 
