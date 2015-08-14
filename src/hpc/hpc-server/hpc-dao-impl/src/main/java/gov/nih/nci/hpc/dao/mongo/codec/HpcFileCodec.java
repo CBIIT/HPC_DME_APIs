@@ -91,7 +91,7 @@ public class HpcFileCodec extends HpcCodec<HpcFile>
 		   document.put(FILE_METADATA_KEY, metadata);
 		}
 		if(projectIds != null && projectIds.size() > 0) {
-			   document.put(FILE_PROJECTS_KEY, projectIds);
+		   document.put(FILE_PROJECT_IDS_KEY, projectIds);
 		}
 
 		getRegistry().get(Document.class).encode(writer, document, 
@@ -122,7 +122,7 @@ public class HpcFileCodec extends HpcCodec<HpcFile>
                                             decoderContext, getRegistry()));
 		@SuppressWarnings("unchecked")
 		List<String> projectIds = 
-				(List<String>) document.get(FILE_PROJECTS_KEY);
+				(List<String>) document.get(FILE_PROJECT_IDS_KEY);
 		if(projectIds != null && projectIds.size() > 0) {
 		   file.getProjectIds().addAll(projectIds);
 		}
