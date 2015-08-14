@@ -72,7 +72,7 @@ public class HpcProjectCodec extends HpcCodec<HpcProject>
 			   document.put(PROJECT_METADATA_KEY, metadata);
 		}
 		if(datasetIds != null) {
-		   document.put(PROJECT_DATASET_KEY, datasetIds);
+		   document.put(PROJECT_DATASET_IDS_KEY, datasetIds);
 		}
 
 		getRegistry().get(Document.class).encode(writer, document, 
@@ -98,7 +98,7 @@ public class HpcProjectCodec extends HpcCodec<HpcProject>
 				   document.get(PROJECT_METADATA_KEY, Document.class), 
 				   decoderContext, getRegistry()));
 		List<String> datasetIds = 
-			(List<String>) document.get(PROJECT_DATASET_KEY);
+			(List<String>) document.get(PROJECT_DATASET_IDS_KEY);
 		project.getDatasetIds().addAll(datasetIds);
 		
 		return project;
