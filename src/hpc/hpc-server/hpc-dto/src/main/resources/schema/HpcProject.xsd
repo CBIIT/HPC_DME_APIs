@@ -28,10 +28,9 @@
 	<xsd:element name="HpcProjectRegistrationDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="id" type="xsd:ID" />
 				<xsd:element name="metadata" type="hpc-domain-metadata:HpcProjectMetadata" />
-				<xsd:element ref="hpc-dto-dataset:HpcDatasetRegistrationDTO" minOccurs="0"
-					maxOccurs="unbounded"/>
+				<xsd:element ref="hpc-dto-dataset:HpcDatasetRegistrationDTO" 
+				             minOccurs="0" maxOccurs="unbounded"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -49,7 +48,7 @@
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element ref="hpc-dto-project:HpcProjectDTO"
-					minOccurs="0" maxOccurs="unbounded" />
+					         minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
