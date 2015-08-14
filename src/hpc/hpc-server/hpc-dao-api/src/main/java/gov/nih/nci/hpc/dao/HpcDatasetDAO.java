@@ -121,14 +121,16 @@ public interface HpcDatasetDAO
                                        throws HpcException;
 	
 	   /**
-     * Get datasets by Project.
+     * Get datasets by Project ID.
      *
-     * @param projectId Assoicated project Id.
+     * @param projectId Associated project Id.
+     * @return HpcDataset collection, or null if no results found.
      * @return HpcDataset collection, or null if no results found.
      * 
      * @throws HpcException
      */
-	public List<HpcDataset> getDatasetsByProjectId(String projectId) throws HpcException;	
+	public List<HpcDataset> getDatasetsByProjectId(String projectId) 
+			                                      throws HpcException;	
 }
 
  
