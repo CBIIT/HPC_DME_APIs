@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProvider;
@@ -32,7 +33,11 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
  */
 
 public class HpcDataTransferServiceImpl implements HpcDataTransferService
-{            
+{     
+    //---------------------------------------------------------------------//
+    // Instance members
+    //---------------------------------------------------------------------//
+	
     // The Data Transfer Proxy.
 	@Autowired
     private HpcDataTransferProxy dataTransferProxy = null;
@@ -62,28 +67,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     @Override
     public HpcDataTransferReport 
                   transferDataset(HpcDataTransferLocations dataTransferLocations,
-	                              HpcDataTransferAccount dataTransferAccount,
-	                              String nihUsername) 
+                		          HpcUser user) 
 	                             throws HpcException
     {   
     	// Input validation.
     	if(!HpcDomainValidator.isValidDataTransferLocations(dataTransferLocations) ||
-    	   !HpcDomainValidator.isValidDataTransferAccount(dataTransferAccount)) {	
+    	   !HpcDomainValidator.isValidUser(user)) {	
     	   throw new HpcException("Invalid data transfer request input", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
-    	try {
-        	 return dataTransferProxy.transferDataset(
-        			                          dataTransferLocations,
-        			                          dataTransferAccount.getUsername(), 
-        			                          dataTransferAccount.getPassword(),
-        			                          nihUsername);
-        	 
-    	} catch(Exception ex) {
-    		    throw new HpcException("Error while transfer",
-    		    		               HpcErrorType.DATA_TRANSFER_ERROR);
-    	}
+  	    return dataTransferProxy.transferDataset(dataTransferLocations, user);
     }
     
 	@Override
