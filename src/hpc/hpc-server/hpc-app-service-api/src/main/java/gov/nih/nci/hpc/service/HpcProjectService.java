@@ -31,17 +31,27 @@ public interface HpcProjectService
     /**
      * Add project.
      *
-     * @param name The project name.
-     * @param description The project description.
-     * @param comments The project comments.
-     * @param uploadRequests List of files to upload.
+     * @param metadata The project metadata.
+     * @param persist If set to true, the project will be persisted.
      * @return The registered project ID.
      * 
      * @throws HpcException
      */
-    public String add(HpcProjectMetadata metadata,
-    			      List<String> datasetIds) 
-    			     throws HpcException;
+    public String addProject(HpcProjectMetadata metadata,
+    		                 boolean persist) throws HpcException;
+    
+    /**
+     * Associate a dataset with a project.
+     *
+     * @param projectId The project ID.
+     * @param datasetId The dataset ID.
+     * @param persist If set to true, the project will be persisted.
+     * 
+     * @throws HpcException
+     */
+    public void associateDataset(String projectId, String datasetId,
+    		                     boolean persist)
+    		                    throws HpcException;
     
     /**
      * Get project.
