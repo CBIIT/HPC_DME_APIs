@@ -183,7 +183,8 @@ public interface HpcDatasetRestService
     @GET
     @Path("/getPrimaryConfigurableDataFields/{type}")
     @Produces("application/json")
-    public String getPrimaryConfigurableDataFields(@PathParam("type") String id, @QueryParam("callback") String callback);   	
+    public String getPrimaryConfigurableDataFields(@PathParam("type") String id, 
+    		                                       @QueryParam("callback") String callback);   	
 }
 
  
