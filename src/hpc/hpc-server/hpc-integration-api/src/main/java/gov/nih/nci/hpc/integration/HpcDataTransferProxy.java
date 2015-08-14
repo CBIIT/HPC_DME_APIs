@@ -12,7 +12,9 @@ package gov.nih.nci.hpc.integration;
 
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
@@ -26,18 +28,17 @@ import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 public interface HpcDataTransferProxy 
 {         
     /**
-     * transfer data.
+     * Transfer a dataset.
      *
-     * @param type The managed data type.
-     * @param datasets The datasets to start manage.
-     * @return HpcDataTransferReport the data transfer report
+     * @param dataTransferLocations The file source/destination
+     * @param user The HPC user that submitted the transfer request.
+     * @return A transfer report.
      * 
-     * @throws HpcTransferException
+     * @throws HpcException
      */
     public HpcDataTransferReport transferDataset(HpcDataTransferLocations transferLocations, 
-    		                       String username, 
-    		                       String password,
-    		                       String nihUsername) throws Exception;
+    		                                     HpcUser user) 
+    		                                    throws HpcException;
 
     /**
      * Retrive task status.
