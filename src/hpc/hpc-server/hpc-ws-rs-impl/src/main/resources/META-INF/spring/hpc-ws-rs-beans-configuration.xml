@@ -47,12 +47,12 @@
 		<property name="needClientAuth" value="${hpc.ws.rs.ssl.needClientAuth}" />
 	</bean>
     <httpj:engine-factory bus="cxf">
-    	<httpj:engine port="${hpc.ws.rs.port}">
+    	<httpj:engine port="${hpc.ws.rs.secured-port}">
     		<httpj:tlsServerParameters/>
             <httpj:connector>
             	<bean class="org.eclipse.jetty.server.ssl.SslSocketConnector">
             		<constructor-arg ref="sslContextFactory"/>
-                    <property name="port" value="${hpc.ws.rs.port}" />
+                    <property name="port" value="${hpc.ws.rs.secured-port}" />
                 </bean>
            	</httpj:connector>
         </httpj:engine>
@@ -76,6 +76,7 @@
 		<entry key="http://hpc.nci.nih.gov/dto/error" value="gov.nih.nci.hpc.dto.error" />
 		<entry key="http://hpc.nci.nih.gov/dto/dataset" value="gov.nih.nci.hpc.dto.dataset" />
 		<entry key="http://hpc.nci.nih.gov/dto/user" value="gov.nih.nci.hpc.dto.user" />
+		<entry key="http://hpc.nci.nih.gov/dto/project" value="gov.nih.nci.hpc.dto.project" />
 		<entry key="http://hpc.nci.nih.gov/domain/dataset" value="gov.nih.nci.hpc.domain.dataset" />
 		<entry key="http://hpc.nci.nih.gov/domain/metadata" value="gov.nih.nci.hpc.domain.metadata" />
 		<entry key="http://hpc.nci.nih.gov/domain/user" value="gov.nih.nci.hpc.domain.user" />
@@ -101,6 +102,23 @@
 	
 	<!-- CXF JAX-RS Server Config -->
 	<jaxrs:server id="hpc-server" address="${hpc.ws.rs.url}" bus="cxf">
+		<jaxrs:serviceBeans>
+			<ref bean="hpcUserRestService" />
+			<ref bean="hpcDatasetRestService" />
+			<ref bean="hpcProjectRestService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+			<ref bean="jaxbProvider" />
+			<ref bean="jsonProvider" />
+			<ref bean="hpcExceptionMapper" />
+		</jaxrs:providers>
+		<jaxrs:inInterceptors>
+			<ref bean="hpcAuthenticationInterceptor" />
+      </jaxrs:inInterceptors>
+	</jaxrs:server>
+	
+	<!-- CXF JAX-RS Secured Server Config -->
+	<jaxrs:server id="hpc-secured-server" address="${hpc.ws.rs.secured-url}" bus="cxf">
 		<jaxrs:serviceBeans>
 			<ref bean="hpcUserRestService" />
 			<ref bean="hpcDatasetRestService" />
