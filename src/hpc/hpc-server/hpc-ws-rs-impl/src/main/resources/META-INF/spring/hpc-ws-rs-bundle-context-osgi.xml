@@ -25,8 +25,10 @@
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		<prop key="hpc.ws.rs.host">localhost</prop>
 		<prop key="hpc.ws.rs.port">7737</prop>
+		<prop key="hpc.ws.rs.secured-port">7738</prop>
 		<prop key="hpc.ws.rs.path">hpc-server</prop>
 		<prop key="hpc.ws.rs.url">https://${hpc.ws.rs.host}:${hpc.ws.rs.port}/${hpc.ws.rs.path}</prop>
+		<prop key="hpc.ws.rs.secured-url">https://${hpc.ws.rs.host}:${hpc.ws.rs.secured-port}/${hpc.ws.rs.path}</prop>
 		<prop key="hpc.ws.rs.stackTraceEnabled">true</prop>
 		<prop key="hpc.ws.rs.ssl.keystore.path">${karaf.base}/etc/hpc-server/keystore.jks</prop>
 		<prop key="hpc.ws.rs.ssl.keystore.type">JKS</prop>

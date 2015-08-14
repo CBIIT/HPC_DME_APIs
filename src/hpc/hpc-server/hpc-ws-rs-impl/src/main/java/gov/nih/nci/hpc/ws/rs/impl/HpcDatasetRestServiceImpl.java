@@ -70,7 +70,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 			             LoggerFactory.getLogger(this.getClass().getName());
     
     //---------------------------------------------------------------------//
-    // constructors
+    // Constructors
     //---------------------------------------------------------------------//
      
     /**
