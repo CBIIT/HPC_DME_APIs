@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -30,15 +31,14 @@ public interface HpcDataTransferService
      * Request Data (file) Transfer.
      *
      * @param dataTransferLocations The file source/destination
-     * @param dataTransferAccount The account to use for the transfer.
+     * @param user The HPC user that submitted the transfer request.
      * @return A transfer report.
      * 
      * @throws HpcException
      */
     public HpcDataTransferReport 
               transferDataset(HpcDataTransferLocations dataTransferLocations,
-    		                  HpcDataTransferAccount dataTransferAccount,
-    		                  String nihUsername) 
+    		                  HpcUser user) 
     		                 throws HpcException;
 
     /**
