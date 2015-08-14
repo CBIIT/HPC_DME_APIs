@@ -82,13 +82,9 @@ public class HpcGOTransfer
     //---------------------------------------------------------------------//
     
     public void setTransferCient(String username, String password)
-			throws HpcException, NexusClientException, JSONException,
-			KeyManagementException, NoSuchAlgorithmException {
-		if(username == null || password == null ) {
-    	   throw new HpcException("Null HpcGOTransfer username/password",
-    			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
-    	}
-    
+			                    throws NexusClientException, JSONException,
+			                           KeyManagementException, NoSuchAlgorithmException 
+    {
         GoauthClient cli = new GoauthClient("nexus.api.globusonline.org", "www.globusonline.org", username, password);
 		JSONObject accessTokenJSON = cli.getClientOnlyAccessToken();
 		String accessToken = accessTokenJSON.getString("access_token");

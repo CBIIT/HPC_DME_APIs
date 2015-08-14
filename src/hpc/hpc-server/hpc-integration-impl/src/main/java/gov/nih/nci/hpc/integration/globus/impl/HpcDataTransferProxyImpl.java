@@ -3,6 +3,7 @@ package gov.nih.nci.hpc.integration.globus.impl;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy;
@@ -25,14 +26,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HpcDataTransferProxyImpl 
-       implements HpcDataTransferProxy, HpcDataTransferAccountValidatorProxy {
+       implements HpcDataTransferProxy, HpcDataTransferAccountValidatorProxy 
+{
+    //---------------------------------------------------------------------//
+    // Instance members
+    //---------------------------------------------------------------------//
 	
+	// The Globus Online transfer instance.
     private HpcGOTransfer hpcGOTransfer = null;
     
 	// The Logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
 
+    //---------------------------------------------------------------------//
+    // Constructors
+    //---------------------------------------------------------------------//
+	
     public HpcDataTransferProxyImpl() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
@@ -57,20 +67,30 @@ public class HpcDataTransferProxyImpl
     	this.hpcGOTransfer = hpcGOTransfer;
     }
     
+    //---------------------------------------------------------------------//
+    // Methods
+    //---------------------------------------------------------------------//
+    
+    //---------------------------------------------------------------------//
+    // HpcDataTransferProxy Interface Implementation
+    //---------------------------------------------------------------------//  
+    
     @Override
-    public HpcDataTransferReport transferDataset(HpcDataTransferLocations transferLocations,String username, String password, String nihUsername )
+    public HpcDataTransferReport transferDataset(
+    		                             HpcDataTransferLocations transferLocations,
+    		                             HpcUser user)
+    		                             throws HpcException
     {
-    	try
-    	{    
-    		hpcGOTransfer.setTransferCient(username, password);
-    		
-    		return transfer(transferLocations,nihUsername);
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        
-	    	//Return transfer exception
-	    	return null;
-	    }
+    	try {
+    	     hpcGOTransfer.setTransferCient(user.getDataTransferAccount().getUsername(), 
+    		       	                        user.getDataTransferAccount().getPassword());
+    	     
+    	} catch(Exception e) {
+    		    throw new HpcException("Failed to create Globus transfer client",
+		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
+    	}
+    	
+    	return transfer(transferLocations, user.getNihAccount().getUserId());
     }
     
     @Override
@@ -102,7 +122,8 @@ public class HpcDataTransferProxyImpl
       
     private HpcDataTransferReport transfer(HpcDataTransferLocations transferLocations,
     		                               String nihUsername)
-                                          throws HpcException {
+                                          throws HpcException 
+    {
     	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();
     	
         if (!autoActivate(transferLocations.getSource().getEndpoint(), client) || 
