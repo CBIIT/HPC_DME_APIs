@@ -76,7 +76,7 @@ public class HpcProjectControllerTest {
 		metadata.setLabBranch("CCR");
 		metadata.setFundingOrganization("Org");
 		metadata.setPrimaryInvestigatorNihUserId("konkapv");
-		metadata.setRegistratorNihUserId("konkapv");
+		metadata.setRegistrarNihUserId("konkapv");
 		dto.setMetadata(metadata);
 		dto.getHpcDatasetRegistrationDTO().add(getDataset());
 		ObjectMapper mapper = new ObjectMapper();
