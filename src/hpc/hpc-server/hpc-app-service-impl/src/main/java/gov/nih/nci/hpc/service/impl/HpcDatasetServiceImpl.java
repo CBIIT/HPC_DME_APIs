@@ -85,8 +85,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param datasetDAO The dataset DAO instance.
-     * @param keyGenerator The key generator.
+     * @param dataTransferStatusMap The data transfer status string-<enum map.
      */
     private HpcDatasetServiceImpl(Map<String, HpcDataTransferStatus> dataTransferStatusMap)
     	                         throws HpcException
@@ -158,8 +157,13 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
 		file.setSize(0);
 		file.setSource(uploadRequest.getLocations().getSource());
 		file.setLocation(uploadRequest.getLocations().getDestination());
-		if(uploadRequest.getProjectIds() != null && uploadRequest.getProjectIds().size() > 0) {
-		   file.getProjectIds().addAll(uploadRequest.getProjectIds());
+		if(uploadRequest.getProjectIds() != null) {
+		   // Add the associated projects if not already associated.
+		   for(String projectId : uploadRequest.getProjectIds()) {
+			   if(!file.getProjectIds().contains(projectId)) {
+				  file.getProjectIds().add(projectId);
+			   }
+		   }
 		}
 		
 		// Set the metadata.
