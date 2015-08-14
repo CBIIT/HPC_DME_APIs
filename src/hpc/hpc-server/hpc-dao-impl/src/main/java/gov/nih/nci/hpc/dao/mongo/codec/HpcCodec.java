@@ -47,25 +47,26 @@ public abstract class HpcCodec<T> implements Codec<T>
 			                   "account_type";
 	// HpcProject Document keys.
 	public final static String PROJECT_ID_KEY = "id"; 
-	public final static String PROJECT_DATASET_KEY = "dataset_id";
+	public final static String PROJECT_DATASET_IDS_KEY = "dataset_ids";
 	public final static String PROJECT_METADATA_KEY = "metadata";
 	public final static String PROJECT_NAME_KEY = "name";
 	public final static String PROJECT_DESCRIPTION_KEY = "description";
-	public final static String PROJECT_INTERNAL_PROJECT_ID_KEY = "internal_project_id";
-	public final static String PROJECT_EXPERIMENT_ID_KEY = "experiment_id";
-	public final static String NAME_KEY = "name"; 
-	public final static String DESCRIPTION_KEY = "description";
-    public final static String PRIMARY_METADATA_KEY = 
-            "primary_metadata";
-    public final static String FUNDING_ORGANIZATION_KEY = 
-            "funding_organization";
-	public final static String DOC_KEY = "doc";
-	public final static String PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY = "primary_investigator_nih_user_id";
-	public final static String CREATOR_NIH_USER_ID_KEY = "creator_nih_user_id";
-	public final static String REGISTRATOR_NIH_USER_ID_KEY = "registrator_nih_user_id";
-	public final static String LAB_BRANCH_KEY = "lab_branch";
-	public final static String METADATA_ITEMS_KEY = "metadata_items";
-
+	
+	// HpcProjectMetadata Document Keys.
+	public final static String PROJECT_METADATA_NAME_KEY = "name"; 
+	public final static String PROJECT_METADATA_DESCRIPTION_KEY = "description";
+	public final static String PROJECT_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY = 
+			                   "primary_investigator_nih_user_id";
+	public final static String PROJECT_METADATA_REGISTRAR_NIH_USER_ID_KEY = 
+			                   "registrar_nih_user_id";
+	public final static String PROJECT_METADATA_LAB_BRANCH_KEY = "lab_branch";
+	public final static String PROJECT_METADATA_DOC_KEY = "doc";
+	public final static String PROJECT_METADATA_FUNDING_ORGANIZATION_KEY = 
+                               "funding_organization";
+	public final static String PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY = "internal_project_id";
+	public final static String PROJECT_METADATA_EXPERIMENT_ID_KEY = "experiment_id";
+	public final static String PROJECT_METADATA_ITEMS_KEY = "metadata_items";
+	
 	// HpcDataset Document keys.
 	public final static String DATASET_ID_KEY = "id"; 
 	public final static String DATASET_FILE_SET_KEY = "file_set";
@@ -88,7 +89,7 @@ public abstract class HpcCodec<T> implements Codec<T>
     public final static String FILE_SOURCE_KEY = "source";
     public final static String FILE_LOCATION_KEY = "location";
     public final static String FILE_METADATA_KEY = "metadata";
-    public final static String FILE_PROJECTS_KEY = "project_ids";
+    public final static String FILE_PROJECT_IDS_KEY = "project_ids";
     
     // HpcFileLocation Document keys.
     public final static String FILE_LOCATION_ENDPOINT_KEY = "endpoint"; 
