@@ -78,7 +78,7 @@
 	<xsd:complexType name="HpcFileMetadata">
 		<xsd:sequence>
 			<xsd:element name="primaryMetadata"
-				type="hpc-domain-metadata:HpcFilePrimaryMetadata" />
+				         type="hpc-domain-metadata:HpcFilePrimaryMetadata" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -87,7 +87,7 @@
 			<xsd:element name="name" type="xsd:string" />
 			<xsd:element name="description" type="xsd:string" />
 			<xsd:element name="primaryInvestigatorNihUserId" type="xsd:ID" />
-			<xsd:element name="registratorNihUserId" type="xsd:ID" />
+			<xsd:element name="registrarNihUserId" type="xsd:ID" />
 			<xsd:element name="doc" type="xsd:string" />
 			<xsd:element name="labBranch" type="xsd:string" />
 			<xsd:element name="fundingOrganization" type="xsd:string" />
