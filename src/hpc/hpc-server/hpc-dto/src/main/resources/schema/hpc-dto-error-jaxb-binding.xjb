@@ -28,6 +28,11 @@
         <jxb:javaType name="java.util.Calendar" xmlType="xsd:time"
             parseMethod="javax.xml.bind.DatatypeConverter.parseTime"
             printMethod="javax.xml.bind.DatatypeConverter.printTime"/>
+            
+		<jxb:javaType name="java.lang.String" xmlType="xsd:ID" 
+			parseMethod="javax.xml.bind.DatatypeConverter.parseString"
+            printMethod="javax.xml.bind.DatatypeConverter.printString"/>
+            
 		</jxb:globalBindings>
 	
 	<jxb:bindings schemaLocation="HpcErrorTypes.xsd">
