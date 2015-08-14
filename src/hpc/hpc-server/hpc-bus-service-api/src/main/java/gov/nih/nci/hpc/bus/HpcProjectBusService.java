@@ -22,27 +22,27 @@ import gov.nih.nci.hpc.exception.HpcException;
  * </p>
  *
  * @author <a href="mailto:prasad.konka@nih.gov">Prasad Konka</a>
- * @version $Id:  $
+ * @version $Id$
  */
 
 public interface HpcProjectBusService 
 {         
     /**
-     * Register Project.
+     * Register a Project.
      *
-     * @param projectDTO The project  DTO.
+     * @param projectRegistrationDTO The project  DTO.
      * @return The registered project ID.
      * 
      * @throws HpcException
      */
-    public String registerProject(HpcProjectRegistrationDTO projectDTO) 
+    public String registerProject(HpcProjectRegistrationDTO projectRegistrationDTO) 
     		                     throws HpcException;
     
     /**
      * Get a Project by its ID.
      *
      * @param id The project id.
-     * @return The dataset DTO or null if not found.
+     * @return The project DTO or null if not found.
      * 
      * @throws HpcException
      */
