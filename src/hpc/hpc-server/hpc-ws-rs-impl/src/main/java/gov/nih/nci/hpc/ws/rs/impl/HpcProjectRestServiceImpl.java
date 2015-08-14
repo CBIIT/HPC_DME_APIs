@@ -77,14 +77,14 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response registerProject(HpcProjectRegistrationDTO projectRegistrationDTO)
     {	
-		logger.info("Invoking RS: POST /dataset: " + projectRegistrationDTO);
+		logger.info("Invoking RS: POST /project: " + projectRegistrationDTO);
 		
 		String projectId = null;
 		try {
-			projectId = projectBusService.registerProject(projectRegistrationDTO);
+			 projectId = projectBusService.registerProject(projectRegistrationDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /dataset failed:", e);
+			    logger.error("RS: POST /project failed:", e);
 			    return errorResponse(e);
 		}
 		
