@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mongodb.async.client.MongoCollection;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.result.UpdateResult;
 
 /**
  * <p>
@@ -41,16 +43,13 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
     //---------------------------------------------------------------------//    
     
     // Project ID field name.
-	public final static String PROJECT_ID_FIELD_NAME = 
-						       HpcCodec.PROJECT_ID_KEY; 
-	public final static String CREATOR_NIH_USER_ID_FIELD_NAME = 
-	             HpcCodec.CREATOR_NIH_USER_ID_KEY;
-	public final static String REGISTRATOR_NIH_USER_ID_FIELD_NAME = 
-		     HpcCodec.PROJECT_METADATA_KEY + "." + 
-	         HpcCodec.REGISTRATOR_NIH_USER_ID_KEY;
+	public final static String PROJECT_ID_FIELD_NAME = HpcCodec.PROJECT_ID_KEY; 
+	public final static String REGISTRAR_NIH_USER_ID_FIELD_NAME = 
+		                       HpcCodec.PROJECT_METADATA_KEY + "." + 
+	                           HpcCodec.PROJECT_METADATA_REGISTRAR_NIH_USER_ID_KEY;
 	public final static String PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
-		     HpcCodec.PROJECT_METADATA_KEY + "." + 
-	         HpcCodec.PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY;
+		                HpcCodec.PROJECT_METADATA_KEY + "." + 
+	                    HpcCodec.PROJECT_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY;
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -100,12 +99,14 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void add(HpcProject project) throws HpcException
+	public void upsert(HpcProject project) throws HpcException
     {
-		HpcSingleResultCallback<Void> callback = 
-				                      new HpcSingleResultCallback<Void>();
-		getCollection().insertOne(project, callback);
-       
+		HpcSingleResultCallback<UpdateResult> callback = 
+                new HpcSingleResultCallback<UpdateResult>();
+		getCollection().replaceOne(eq(PROJECT_ID_FIELD_NAME, project.getId()), 
+                                   project, new UpdateOptions().upsert(true), 
+                                   callback);
+
 		// Throw the callback exception (if any).
 		callback.throwException();
     }
@@ -128,18 +129,15 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
 		// Determine the field name needed to query for the requested association.
 		String fieldName = null;
 		switch(association) {
-		       case CREATOR:
-		            fieldName = CREATOR_NIH_USER_ID_FIELD_NAME;
-		            break;
-		            
 		       case PRIMARY_INVESTIGATOR:
 		            fieldName = PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME;
 		            break;
 		            
 		       case REGISTRAR:
-		            fieldName = REGISTRATOR_NIH_USER_ID_FIELD_NAME;
+		            fieldName = REGISTRAR_NIH_USER_ID_FIELD_NAME;
 		            break;
 		            
+		       case CREATOR:
 		       default:
 		    	   throw new HpcException("Invalid Association Value: " + 
 		                                  association.value(), 

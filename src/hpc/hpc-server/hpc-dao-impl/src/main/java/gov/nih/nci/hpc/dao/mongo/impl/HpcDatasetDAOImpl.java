@@ -62,10 +62,10 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 	                           HpcCodec.FILE_SET_NAME_KEY;
 
 	// Field name to query by Project Id.
-	public final static String DATASET_PROJECT_ID_NAME = 
+	public final static String DATASET_PROJECT_IDS_NAME = 
 							   HpcCodec.DATASET_FILE_SET_KEY + "." + 
 							   HpcCodec.FILE_SET_FILES_KEY + "." +
-	                           HpcCodec.FILE_PROJECTS_KEY;
+	                           HpcCodec.FILE_PROJECT_IDS_KEY;
 	
 	// Field names to query by NIH user id.
 	public final static String PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
@@ -295,8 +295,8 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 	
 	@Override
    	public List<HpcDataset> getDatasets(HpcDataTransferStatus dataTransferStatus,
-                                                boolean uploadDownloadRequests)
-			                                   throws HpcException
+                                        boolean uploadDownloadRequests)
+			                           throws HpcException
 	{
    		// Determine the search in the upload or download requests. 
    		String fieldName = uploadDownloadRequests ?
@@ -312,6 +312,18 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 		
 		return callback.getResult();
 	}  
+	
+	@Override
+	public List<HpcDataset> getDatasetsByProjectId(String projectId)
+			                                      throws HpcException 
+	{
+		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
+		HpcSingleResultCallback<List<HpcDataset>> callback = 
+                       new HpcSingleResultCallback<List<HpcDataset>>();
+		getCollection().find(in(DATASET_PROJECT_IDS_NAME, projectId)).into(datasets, callback); 
+		
+		return callback.getResult();
+	} 
     
     //---------------------------------------------------------------------//
     // Helper Methods
@@ -385,18 +397,6 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     	
     	return filters;
     }
-	@Override
-	public List<HpcDataset> getDatasetsByProjectId(String projectId)
-			throws HpcException {
-		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
-		HpcSingleResultCallback<List<HpcDataset>> callback = 
-                       new HpcSingleResultCallback<List<HpcDataset>>();
-		getCollection().find(
-		                regex(DATASET_PROJECT_ID_NAME, 
-		                		projectId, "i")).into(datasets, callback); 
-		
-		return callback.getResult();
-	} 
     
     /**
      * Get a query field name from a dataset/user associartion.
