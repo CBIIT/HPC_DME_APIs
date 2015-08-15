@@ -10,11 +10,13 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataItems;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidProjectMetadata;
 import gov.nih.nci.hpc.dao.HpcProjectDAO;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -120,6 +122,31 @@ public class HpcProjectServiceImpl implements HpcProjectService
         	   projectDAO.upsert(project);
         	}
     	}
+    }
+    
+    @Override
+    public List<HpcMetadataItem>  
+           addMetadataItems(HpcProject project, 
+                            List<HpcMetadataItem> metadataItems,
+                            boolean persist) 
+                           throws HpcException
+    {
+       	// Input validation.
+       	if(project == null || 
+       	   !isValidMetadataItems(metadataItems)) {
+       	   throw new HpcException("Invalid add metadata items input", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+       	// Add the metadata items.
+       	project.getMetadata().getMetadataItems().addAll(metadataItems);
+       	
+		// Persist if requested.
+    	if(persist) {
+     	   projectDAO.upsert(project);
+     	}
+    	
+    	return project.getMetadata().getMetadataItems();
     }
     
     @Override
