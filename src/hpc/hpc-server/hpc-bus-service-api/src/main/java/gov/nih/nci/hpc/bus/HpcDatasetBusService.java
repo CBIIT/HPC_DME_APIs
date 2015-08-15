@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.bus;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
@@ -52,6 +53,16 @@ public interface HpcDatasetBusService
      * @throws HpcException
      */
     public void addFiles(HpcDatasetAddFilesDTO addFilesDTO) throws HpcException;
+    
+    /**
+     * Add metadata items to a registered dataset.
+     *
+     * @param addMetadataItemsDTO The add-metadata-items request DTO.
+     * 
+     * @throws HpcException
+     */
+    public void addMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO) 
+    		                    throws HpcException;
     
     /**
      * Get a dataset by its ID.
