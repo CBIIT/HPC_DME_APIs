@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
@@ -144,6 +145,22 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 		
 		return okResponse(null, false);
 	}
+    
+    @Override
+    public Response addMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO)
+    {
+		logger.info("Invoking RS: POST /dataset/metadata: " + addMetadataItemsDTO);
+		
+		try {
+			 datasetBusService.addMetadataItems(addMetadataItemsDTO);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /dataset/metadata failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(null, false);    	
+    }
     
     @Override
     public Response getDataset(String id, 

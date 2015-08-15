@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
@@ -100,6 +101,23 @@ public interface HpcDatasetService
     		              String fileId, HpcDataTransferLocations locations,
                           HpcDataTransferReport report, boolean persist) 
                           throws HpcException;
+    
+    /**
+     * Add metadata items to a dataset.
+     *
+     * @param dataset The dataset.
+     * @param fileId The file ID to add the metadata items to.
+     * @param metadataItems The metadata items to add.
+     * @param persist If set to true, the dataset will be persisted.
+     * @return The new list of metadata items
+     * 
+     * @throws HpcException
+     */
+    public List<HpcMetadataItem> 
+           addMetadataItems(HpcDataset dataset, String fileId,
+        	                List<HpcMetadataItem> metadataItems,
+                            boolean persist) 
+                           throws HpcException;
     
     /**
      * Persist dataset to the DB.
