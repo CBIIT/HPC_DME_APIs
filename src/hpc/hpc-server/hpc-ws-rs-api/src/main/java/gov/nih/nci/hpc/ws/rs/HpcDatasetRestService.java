@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
 
@@ -55,6 +56,16 @@ public interface HpcDatasetRestService
     @Path("/dataset/files")
     @Consumes("application/json,application/xml")
     public Response addFiles(HpcDatasetAddFilesDTO addFilesDTO);
+    
+    /**
+     * POST add metadata items to a registered dataset.
+     *
+     * @param addMetadataItemsDTO The add-metadata-items request DTO.
+     */
+    @POST
+    @Path("/dataset/metadata/primary")
+    @Consumes("application/json,application/xml")
+    public Response addMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO);
     
     /**
      * GET Dataset by ID.

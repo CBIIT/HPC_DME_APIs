@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
@@ -155,12 +156,37 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
        	HpcDataset dataset = datasetService.getDataset(addFilesDTO.getDatasetId());
        	if(dataset == null) {
        	   throw new HpcException("Dataset was not found: " + addFilesDTO.getDatasetId(),
-                                   HpcErrorType.INVALID_REQUEST_INPUT);	
+       			                  HpcRequestRejectReason.DATASET_NOT_FOUND);	
        	}
        	
        	// Process the file upload requests.
     	uploadFiles(dataset, addFilesDTO.getUploadRequests(), true);
+    }
+    
+    @Override
+    public void addMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO) 
+                                throws HpcException
+    {
+       	logger.info("Invoking addMetadataItems(HpcDatasetAddMetadataItemsDTO): " + 
+                                               addMetadataItemsDTO);
     	
+       	// Input validation.
+       	if(addMetadataItemsDTO == null) {
+       	   throw new HpcException("Null HpcDatasetAddMetadataItemsDTO",
+			                      HpcErrorType.INVALID_REQUEST_INPUT);	
+       	}
+       	
+       	// Locate the dataset.
+       	HpcDataset dataset = datasetService.getDataset(addMetadataItemsDTO.getDatasetId());
+       	if(dataset == null) {
+       	   throw new HpcException("Dataset was not found: " + addMetadataItemsDTO.getDatasetId(),
+       			                  HpcRequestRejectReason.DATASET_NOT_FOUND);	
+       	}
+       	
+       	// Add metadata items.
+    	datasetService.addMetadataItems(dataset, addMetadataItemsDTO.getFileId(),
+    			                        addMetadataItemsDTO.getMetadataItems(), 
+    			                        true);    	
     }
     
     @Override

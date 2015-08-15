@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidDataTransferLocations;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileUploadRequest;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataItems;
 import gov.nih.nci.hpc.dao.HpcDatasetDAO;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
@@ -22,8 +23,10 @@ import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDatasetService;
@@ -208,6 +211,38 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	   dataset.getDownloadRequests().add(dataTransferRequest);
     	   return dataTransferRequest;
     }
+    
+    @Override
+    public List<HpcMetadataItem>  
+           addMetadataItems(HpcDataset dataset, String fileId,
+                            List<HpcMetadataItem> metadataItems,
+                            boolean persist) 
+                           throws HpcException
+    {
+       	// Input validation.
+       	if(dataset == null || !keyGenerator.validateKey(fileId) || 
+       	   !isValidMetadataItems(metadataItems)) {
+       	   throw new HpcException("Invalid add metadata items input", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+       	// Locate the file to attach the metadata items.
+       	HpcFile file = getFile(dataset, fileId);
+       	if(file == null) {
+       	   throw new HpcException("File not found: " + fileId, 
+       			                  HpcRequestRejectReason.FILE_NOT_FOUND);
+       	}
+       	
+       	// Add the metadata items.
+       	file.getMetadata().getPrimaryMetadata().getMetadataItems().addAll(metadataItems);
+       	
+		// Persist if requested.
+    	if(persist) {
+     	   datasetDAO.upsert(dataset);
+     	}
+    	
+    	return file.getMetadata().getPrimaryMetadata().getMetadataItems();
+    }
            
     @Override
     public void persist(HpcDataset dataset) throws HpcException
@@ -380,6 +415,25 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
 		setDataTransferRequestStatus(dataTransferRequest, report);
 		
 		return dataTransferRequest;
+	}
+    
+    /**
+     * Find a file in dataset.
+     *
+     * @param dataset The dataset.
+     * @param fileId The file ID to search for.
+     * @param fileId The uploaded file ID.
+     * @return The file object, or null if not found.
+     */
+    private HpcFile getFile(HpcDataset dataset, String fileId)
+	{
+    	for(HpcFile file : dataset.getFileSet().getFiles()) {
+    		if(file.getId().equals(fileId)) {
+    		   return file;
+    		}
+    	}
+    	
+    	return null;
 	}
 }
 

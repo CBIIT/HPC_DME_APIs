@@ -98,4 +98,17 @@
 		</xsd:complexType>
 	</xsd:element>
 	
+	<!--  Add metadata items to registered Dataset DTO -->
+	<xsd:element name="HpcDatasetAddMetadataItemsDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="datasetId" type="xsd:ID" />
+				<xsd:element name="fileId" type="xsd:ID" />
+				<xsd:element name="metadataItems" 
+			                 type="hpc-domain-metadata:HpcMetadataItem"
+				             maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
 </xsd:schema>

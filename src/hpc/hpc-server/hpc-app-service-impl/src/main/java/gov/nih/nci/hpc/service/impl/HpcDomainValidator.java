@@ -14,11 +14,13 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.user.HpcNihAccount;
-import gov.nih.nci.hpc.exception.HpcException;
+
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -175,7 +177,9 @@ class HpcDomainValidator
     	   metadata.getCreatorName() == null ||
     	   metadata.getRegistrarNihUserId() == null ||
     	   metadata.getDescription() == null ||
-    	   metadata.getLabBranch() == null) {
+    	   metadata.getLabBranch() == null ||
+    	   (metadata.getMetadataItems() != null && 
+  	   	    !isValidMetadataItems(metadata.getMetadataItems()))) {
     	   logger.info("Invalid Dataset Primary Metadata");
      	   return false;
     	}
@@ -188,7 +192,7 @@ class HpcDomainValidator
      * @param metadata the object to be validated.
      * @return true if valid, false otherwise.
      */
-    public static boolean isValidProjectMetadata(HpcProjectMetadata metadata) throws HpcException
+    public static boolean isValidProjectMetadata(HpcProjectMetadata metadata) 
     {
     	if(metadata == null ||
     	   metadata.getName() == null ||
@@ -198,10 +202,32 @@ class HpcDomainValidator
     	   metadata.getDoc() == null ||
     	   metadata.getInternalProjectId() == null ||
    	   	   metadata.getFundingOrganization() == null ||
-   	   	   metadata.getExperimentId() == null) { 
+   	   	   metadata.getExperimentId() == null ||
+   	   	   (metadata.getMetadataItems() != null && 
+   	   	    !isValidMetadataItems(metadata.getMetadataItems()))) { 
     	   logger.info("Invalid Project Metadata");
       	   return false;
      	}
+     	return true;
+    }
+    
+    /**
+     * Validate metadata items collection
+     *
+     * @param metadataItems Metadata items collection
+     * @return true if valid, false otherwise.
+     */
+    public static boolean isValidMetadataItems(List<HpcMetadataItem> metadataItems) 
+    {
+    	if(metadataItems == null) {
+    	   return false;
+     	}
+    	for(HpcMetadataItem metadataItem : metadataItems) {
+    		if(metadataItem.getKey() == null ||
+    		   metadataItem.getValue() == null) {
+    		   return false;
+    		}
+    	}
      	return true;
     }
 }
