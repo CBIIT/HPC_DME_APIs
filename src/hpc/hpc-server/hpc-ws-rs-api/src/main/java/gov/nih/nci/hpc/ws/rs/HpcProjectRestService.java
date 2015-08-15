@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
+import gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
 
 import javax.ws.rs.Consumes;
@@ -41,6 +42,16 @@ public interface HpcProjectRestService
     @Path("/project")
     @Consumes("application/json,application/xml")
     public Response registerProject(HpcProjectRegistrationDTO projectRegistrationDTO);
+    
+    /**
+     * POST add metadata items to a registered project.
+     *
+     * @param addMetadataItemsDTO The add-metadata-items request DTO.
+     */
+    @POST
+    @Path("/project/metadata")
+    @Consumes("application/json,application/xml")
+    public Response addMetadataItems(HpcProjectAddMetadataItemsDTO addMetadataItemsDTO);
     
     /**
      * GET project by ID.

@@ -10,10 +10,11 @@
 
 package gov.nih.nci.hpc.bus;
 
+import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
+import gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
-import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -37,6 +38,16 @@ public interface HpcProjectBusService
      */
     public String registerProject(HpcProjectRegistrationDTO projectRegistrationDTO) 
     		                     throws HpcException;
+    
+    /**
+     * Add metadata items to a registered project.
+     *
+     * @param addMetadataItemsDTO The add-metadata-items request DTO.
+     * 
+     * @throws HpcException
+     */
+    public void addMetadataItems(HpcProjectAddMetadataItemsDTO addMetadataItemsDTO) 
+    		                    throws HpcException;
     
     /**
      * Get a Project by its ID.
