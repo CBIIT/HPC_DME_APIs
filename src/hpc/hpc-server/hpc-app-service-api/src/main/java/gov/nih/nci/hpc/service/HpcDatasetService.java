@@ -114,10 +114,10 @@ public interface HpcDatasetService
      * @throws HpcException
      */
     public List<HpcMetadataItem> 
-           addMetadataItems(HpcDataset dataset, String fileId,
-        	                List<HpcMetadataItem> metadataItems,
-                            boolean persist) 
-                           throws HpcException;
+           addPrimaryMetadataItems(HpcDataset dataset, String fileId,
+        	                       List<HpcMetadataItem> metadataItems,
+                                   boolean persist) 
+                                  throws HpcException;
     
     /**
      * Persist dataset to the DB.

@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcProjectBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
+import gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
@@ -90,6 +91,22 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
 		
 		return createdResponse(projectId);
 	}
+    
+    @Override
+    public Response addMetadataItems(HpcProjectAddMetadataItemsDTO addMetadataItemsDTO)
+    {
+		logger.info("Invoking RS: POST /project/metadata: " + addMetadataItemsDTO);
+		
+		try {
+			 projectBusService.addMetadataItems(addMetadataItemsDTO);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /project/metadata failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(null, false);     	
+    }
     
     @Override
     public Response getProject(String id)

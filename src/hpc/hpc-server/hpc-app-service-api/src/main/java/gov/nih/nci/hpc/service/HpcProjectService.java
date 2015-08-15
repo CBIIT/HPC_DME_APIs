@@ -10,9 +10,10 @@
 
 package gov.nih.nci.hpc.service;
 
-import gov.nih.nci.hpc.domain.model.HpcProject;
-import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
+import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
+import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -52,6 +53,22 @@ public interface HpcProjectService
     public void associateDataset(String projectId, String datasetId,
     		                     boolean persist)
     		                    throws HpcException;
+    
+    /**
+     * Add metadata items to a project.
+     *
+     * @param project The project.
+     * @param metadataItems The metadata items to add.
+     * @param persist If set to true, the dataset will be persisted.
+     * @return The new list of metadata items
+     * 
+     * @throws HpcException
+     */
+    public List<HpcMetadataItem> 
+           addMetadataItems(HpcProject project, 
+        	                List<HpcMetadataItem> metadataItems,
+                            boolean persist) 
+                           throws HpcException;
     
     /**
      * Get project.

@@ -149,13 +149,13 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response addMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO)
     {
-		logger.info("Invoking RS: POST /dataset/metadata: " + addMetadataItemsDTO);
+		logger.info("Invoking RS: POST /dataset/metadata/primary: " + addMetadataItemsDTO);
 		
 		try {
-			 datasetBusService.addMetadataItems(addMetadataItemsDTO);
+			 datasetBusService.addPrimaryMetadataItems(addMetadataItemsDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /dataset/metadata failed:", e);
+			    logger.error("RS: POST /dataset/metadata/primary failed:", e);
 			    return errorResponse(e);
 		}
 		
