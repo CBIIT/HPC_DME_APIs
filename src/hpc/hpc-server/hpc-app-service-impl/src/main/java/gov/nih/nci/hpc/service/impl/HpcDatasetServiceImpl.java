@@ -214,10 +214,10 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     
     @Override
     public List<HpcMetadataItem>  
-           addMetadataItems(HpcDataset dataset, String fileId,
-                            List<HpcMetadataItem> metadataItems,
-                            boolean persist) 
-                           throws HpcException
+           addPrimaryMetadataItems(HpcDataset dataset, String fileId,
+                                   List<HpcMetadataItem> metadataItems,
+                                   boolean persist) 
+                                  throws HpcException
     {
        	// Input validation.
        	if(dataset == null || !keyGenerator.validateKey(fileId) || 

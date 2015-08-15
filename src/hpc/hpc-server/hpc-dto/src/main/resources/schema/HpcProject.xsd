@@ -25,6 +25,7 @@
 	<xsd:import namespace="http://hpc.nci.nih.gov/dto/dataset"
 		        schemaLocation="HpcDataset.xsd" />
 			
+	<!--  Project Registration DTO -->
 	<xsd:element name="HpcProjectRegistrationDTO">
 		<xsd:complexType>
 			<xsd:sequence>
@@ -35,7 +36,8 @@
 		</xsd:complexType>
 	</xsd:element>
 	
-	 <xsd:element name="HpcProjectDTO">
+	<!--  Project DTO -->
+	<xsd:element name="HpcProjectDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="id" type="xsd:ID" />
@@ -44,6 +46,8 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
+	
+	<!--  Project Colelction DTO -->
 	<xsd:element name="HpcProjectCollectionDTO">
 		<xsd:complexType>
 			<xsd:sequence>
@@ -52,4 +56,16 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
+	
+	<!--  Add metadata items to registered Project DTO -->
+	<xsd:element name="HpcProjectAddMetadataItemsDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="projectId" type="xsd:ID" />
+				<xsd:element name="metadataItems" 
+			                 type="hpc-domain-metadata:HpcMetadataItem"
+				             maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 </xsd:schema>

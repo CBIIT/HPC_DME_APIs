@@ -21,6 +21,7 @@ import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
@@ -122,6 +123,31 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     	}
     	
     	return projectId;
+    }
+    
+    @Override
+    public void addMetadataItems(HpcProjectAddMetadataItemsDTO addMetadataItemsDTO) 
+                                throws HpcException
+    {
+       	logger.info("Invoking addMetadataItems(HpcDatasetAddMetadataItemsDTO): " + 
+                                               addMetadataItemsDTO);
+    	
+       	// Input validation.
+       	if(addMetadataItemsDTO == null) {
+       	   throw new HpcException("Null HpcProjectAddMetadataItemsDTO",
+			                      HpcErrorType.INVALID_REQUEST_INPUT);	
+       	}
+       	
+       	// Locate the dataset.
+       	HpcProject project = projectService.getProject(addMetadataItemsDTO.getProjectId());
+       	if(project == null) {
+       	   throw new HpcException("Project was not found: " + addMetadataItemsDTO.getProjectId(),
+       			                  HpcRequestRejectReason.PROJECT_NOT_FOUND);	
+       	}
+       	
+       	// Add metadata items.
+    	projectService.addMetadataItems(project, addMetadataItemsDTO.getMetadataItems(), 
+    			                        true);    	
     }
     
     @Override

@@ -61,8 +61,8 @@ public interface HpcDatasetBusService
      * 
      * @throws HpcException
      */
-    public void addMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO) 
-    		                    throws HpcException;
+    public void addPrimaryMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO) 
+    		                           throws HpcException;
     
     /**
      * Get a dataset by its ID.

@@ -164,11 +164,11 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     }
     
     @Override
-    public void addMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO) 
-                                throws HpcException
+    public void addPrimaryMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO) 
+                                       throws HpcException
     {
-       	logger.info("Invoking addMetadataItems(HpcDatasetAddMetadataItemsDTO): " + 
-                                               addMetadataItemsDTO);
+       	logger.info("Invoking addPrimaryMetadataItems(HpcDatasetAddMetadataItemsDTO): " + 
+                                                      addMetadataItemsDTO);
     	
        	// Input validation.
        	if(addMetadataItemsDTO == null) {
@@ -184,9 +184,9 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
        	}
        	
        	// Add metadata items.
-    	datasetService.addMetadataItems(dataset, addMetadataItemsDTO.getFileId(),
-    			                        addMetadataItemsDTO.getMetadataItems(), 
-    			                        true);    	
+    	datasetService.addPrimaryMetadataItems(dataset, addMetadataItemsDTO.getFileId(),
+    			                               addMetadataItemsDTO.getMetadataItems(), 
+    			                               true);    	
     }
     
     @Override
