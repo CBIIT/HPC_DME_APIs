@@ -14,7 +14,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataQueryDTO;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -147,7 +147,6 @@ public interface HpcDatasetRestService
      * GET Datasets by name.
      *
      * @param name Get datasets which 'name' is contained in their name.
-     * 
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @GET
@@ -158,16 +157,15 @@ public interface HpcDatasetRestService
     /**
      * POST Datasets by primary metadata.
      *
-     * @param primaryMetadataQueryDTO Get datasets that matches the primary 
+     * @param primaryMetadataQueryDTO Get datasets that match the primary 
      *                                metadata search criteria.
-     * 
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @POST
     @Path("/dataset/query/primaryMetadata")
     @Produces("application/json,application/xml")
     public Response getDatasetsByPrimaryMetadata(
-    		           HpcPrimaryMetadataQueryDTO primaryMetadataQueryDTO);
+    		           HpcFilePrimaryMetadataQueryDTO primaryMetadataQueryDTO);
     
     /**
      * GET Datasets by data transfer status.

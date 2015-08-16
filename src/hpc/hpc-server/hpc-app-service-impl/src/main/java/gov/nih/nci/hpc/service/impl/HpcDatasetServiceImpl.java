@@ -329,9 +329,17 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     		primaryMetadata.getRegistrarNihUserId() == null &&
     		primaryMetadata.getDescription() == null &&
     		primaryMetadata.getLabBranch() == null &&
-    		primaryMetadata.getMetadataItems() == null)) {
+    		(primaryMetadata.getMetadataItems() == null ||
+    		 primaryMetadata.getMetadataItems().size() ==0))) {
     		throw new HpcException("Invalid primary metadata", 
                                    HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	// Validate metada items if not null.
+    	if(primaryMetadata.getMetadataItems() != null &&
+    	   !isValidMetadataItems(primaryMetadata.getMetadataItems())) {
+    	   throw new HpcException("Invalid metadata items", 
+                                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
     	return datasetDAO.getDatasets(primaryMetadata);

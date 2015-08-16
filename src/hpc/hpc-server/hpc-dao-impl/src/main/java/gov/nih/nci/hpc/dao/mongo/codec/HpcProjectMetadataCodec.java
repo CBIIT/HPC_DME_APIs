@@ -105,7 +105,7 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		   document.put(PROJECT_METADATA_EXPERIMENT_ID_KEY, experimentId);
 		}
 		if(metadataItems != null && metadataItems.size() > 0) {
-		   document.put(PROJECT_METADATA_ITEMS_KEY, 
+		   document.put(PROJECT_METADATA_METADATA_ITEMS_KEY, 
 				        metadataItems);
 		}
 
@@ -144,7 +144,7 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		// Map the collections.
 		@SuppressWarnings("unchecked")
 		List<Document> metadataItemDocuments = 
-		    (List<Document>) document.get(PROJECT_METADATA_ITEMS_KEY);
+		    (List<Document>) document.get(PROJECT_METADATA_METADATA_ITEMS_KEY);
 		if(metadataItemDocuments != null) {
 		   for(Document metadataItemDocument : metadataItemDocuments) {
 			   projectMetadata.getMetadataItems().add(

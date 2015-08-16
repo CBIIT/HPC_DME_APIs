@@ -76,8 +76,8 @@
 		</xsd:complexType>
 	</xsd:element>
 	
-	<!--  Primary Metadata Query Input DTO -->
-	<xsd:element name="HpcPrimaryMetadataQueryDTO">
+	<!--  File Primary Metadata Query Input DTO -->
+	<xsd:element name="HpcFilePrimaryMetadataQueryDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="metadata"

@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcProjectRestService;
@@ -126,18 +127,18 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response getProjectsByRegistratorId(String registratorId)
+    public Response getProjectsByRegistrarId(String registrarId)
     {
-    	logger.info("Invoking RS: GET /project/query/registrator/{id}: " + registratorId);
+    	logger.info("Invoking RS: GET /project/query/registrar/{id}: " + registrarId);
     	
 		HpcProjectCollectionDTO projectCollectionDTO = null;
 		try {
 			projectCollectionDTO = projectBusService.getProjects(
-										   registratorId, 
+										   registrarId, 
 						                   HpcDatasetUserAssociation.REGISTRAR); 
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/registrator/{id}: failed:", e);
+			    logger.error("RS: GET /dataset/query/registrar/{id}: failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -147,21 +148,41 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getProjectsByInvestigatorId(String investigatorId)
     {
-    	logger.info("Invoking RS: GET /project/query/registrator/{id}: " + investigatorId);
+    	logger.info("Invoking RS: GET /project/query/pi/{id}: " + investigatorId);
     	
 		HpcProjectCollectionDTO projectCollectionDTO = null;
 		try {
-			projectCollectionDTO = projectBusService.getProjects(
-											investigatorId, 
+			 projectCollectionDTO = projectBusService.getProjects(
+			  							   investigatorId, 
 						                   HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR); 
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/creator/{id}: failed:", e);
+			    logger.error("RS: GET /project/query/pi/{id}: failed:", e);
 			    return errorResponse(e);
 		}
 		
 		return okResponse(projectCollectionDTO, true);
     }
+    
+    @Override
+    public Response getProjectsByMetadata(
+    		           HpcProjectMetadataQueryDTO metadataQueryDTO)
+	{
+    	logger.info("Invoking RS: POST /project/query/metadata: " + 
+    			    metadataQueryDTO);
+    	
+		HpcProjectCollectionDTO projectCollectionDTO = null;
+		try {
+			 projectCollectionDTO = 
+					projectBusService.getProjects(metadataQueryDTO); 
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /project/query/metadata: failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(projectCollectionDTO, true);
+	}
 }
 
  

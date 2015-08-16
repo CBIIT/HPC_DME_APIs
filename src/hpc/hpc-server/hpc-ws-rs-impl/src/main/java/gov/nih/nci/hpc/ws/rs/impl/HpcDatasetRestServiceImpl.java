@@ -20,7 +20,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFileDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDatasetRestService;
 
@@ -303,7 +303,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     
     @Override
     public Response getDatasetsByPrimaryMetadata(
-    		           HpcPrimaryMetadataQueryDTO primaryMetadataQueryDTO)
+    		           HpcFilePrimaryMetadataQueryDTO primaryMetadataQueryDTO)
 	{
     	logger.info("Invoking RS: POST /dataset/query/primaryMetadata: " + 
     			    primaryMetadataQueryDTO);

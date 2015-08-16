@@ -10,18 +10,24 @@
 
 package gov.nih.nci.hpc.dao.mongo.impl;
 
+import static com.mongodb.client.model.Filters.all;
+import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.regex;
 import gov.nih.nci.hpc.dao.HpcProjectDAO;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcMongoDB;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcSingleResultCallback;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.bson.conversions.Bson;
 
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.client.model.UpdateOptions;
@@ -50,6 +56,30 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
 	public final static String PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
 		                HpcCodec.PROJECT_METADATA_KEY + "." + 
 	                    HpcCodec.PROJECT_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY;
+	public final static String EXPERIMENT_ID_FIELD_NAME = 
+					           HpcCodec.PROJECT_METADATA_KEY + "." + 
+                               HpcCodec.PROJECT_METADATA_EXPERIMENT_ID_KEY;
+	public final static String NAME_FIELD_NAME = 
+	                           HpcCodec.PROJECT_METADATA_KEY + "." + 
+                               HpcCodec.PROJECT_METADATA_NAME_KEY;
+	public final static String INTERNAL_PROJECT_ID_FIELD_NAME = 
+                               HpcCodec.PROJECT_METADATA_KEY + "." + 
+                               HpcCodec.PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY;
+	public final static String FUNDING_ORGANIZATION_FIELD_NAME = 
+                               HpcCodec.PROJECT_METADATA_KEY + "." + 
+                               HpcCodec.PROJECT_METADATA_FUNDING_ORGANIZATION_KEY;
+	public final static String DESCRIPTION_FIELD_NAME = 
+                               HpcCodec.PROJECT_METADATA_KEY + "." + 
+                               HpcCodec.PROJECT_METADATA_DESCRIPTION_KEY;
+	public final static String LAB_BRANCH_FIELD_NAME = 
+                               HpcCodec.PROJECT_METADATA_KEY + "." + 
+                               HpcCodec.PROJECT_METADATA_LAB_BRANCH_KEY;
+	public final static String DOC_FIELD_NAME = 
+                               HpcCodec.PROJECT_METADATA_KEY + "." + 
+                               HpcCodec.PROJECT_METADATA_DOC_KEY;
+	public final static String METADATA_ITEMS_FIELD_NAME = 
+                               HpcCodec.PROJECT_METADATA_KEY + "." + 
+                               HpcCodec.PROJECT_METADATA_METADATA_ITEMS_KEY;
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -154,6 +184,19 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
 		return callback.getResult();
     }
 	
+	@Override
+	public List<HpcProject> getProjects(HpcProjectMetadata metadata) 
+                                       throws HpcException
+    {
+		List<HpcProject> projects = new ArrayList<HpcProject>();
+		HpcSingleResultCallback<List<HpcProject>> callback = 
+                       new HpcSingleResultCallback<List<HpcProject>>();
+		getCollection().find(
+				        and(getFilters(metadata))).into(projects, callback); 
+		
+		return callback.getResult();
+    }
+	
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -167,6 +210,61 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
     {
     	return mongoDB.getCollection(HpcProject.class);
     }  
+    
+    /**
+     * Get a collection of filters to query by metadata.
+     *
+     * @param metadata The metadata to query.
+     * @return A collection of filters.
+     */
+    private List<Bson> getFilters(HpcProjectMetadata metadata) 
+    {
+    	List<Bson> filters = new ArrayList<Bson>();
+    	
+    	if(metadata.getExperimentId() != null) {
+    	   filters.add(eq(EXPERIMENT_ID_FIELD_NAME, 
+    			          metadata.getExperimentId()));
+    	}
+    	if(metadata.getName() != null) {
+     	   filters.add(eq(NAME_FIELD_NAME, 
+     			          metadata.getName()));
+     	}
+    	if(metadata.getInternalProjectId() != null) {
+       	   filters.add(eq(INTERNAL_PROJECT_ID_FIELD_NAME, 
+       			          metadata.getInternalProjectId()));
+       	}
+    	if(metadata.getFundingOrganization() != null) {
+           filters.add(eq(FUNDING_ORGANIZATION_FIELD_NAME, 
+        			      metadata.getFundingOrganization()));
+        }
+    	if(metadata.getPrimaryInvestigatorNihUserId() != null) {
+           filters.add(eq(PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME, 
+         		          metadata.getPrimaryInvestigatorNihUserId()));
+        }
+    	if(metadata.getRegistrarNihUserId() != null) {
+       	   filters.add(eq(REGISTRAR_NIH_USER_ID_FIELD_NAME, 
+       			          metadata.getRegistrarNihUserId()));
+      	}
+    	if(metadata.getDescription() != null) {
+        	   filters.add(regex(DESCRIPTION_FIELD_NAME, 
+        			             metadata.getDescription(), "i"));
+       	}
+    	if(metadata.getLabBranch() != null) {
+           filters.add(eq(LAB_BRANCH_FIELD_NAME, 
+         		          metadata.getLabBranch()));
+        }
+    	if(metadata.getDoc() != null) {
+      	   filters.add(eq(DOC_FIELD_NAME, 
+      			          metadata.getDoc()));
+      	}
+    	if(metadata.getMetadataItems() != null && 
+    	   metadata.getMetadataItems().size() > 0 ) {
+     	   filters.add(all(METADATA_ITEMS_FIELD_NAME, 
+     			           metadata.getMetadataItems()));
+    	}
+    	
+    	return filters;
+    }
 }
 
  
