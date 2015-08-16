@@ -10,16 +10,12 @@ import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcPHIContent;
 import gov.nih.nci.hpc.domain.metadata.HpcPIIContent;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
 import gov.nih.nci.hpc.web.Application;
 
-import java.net.URL;
-import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.ws.rs.client.Client;
