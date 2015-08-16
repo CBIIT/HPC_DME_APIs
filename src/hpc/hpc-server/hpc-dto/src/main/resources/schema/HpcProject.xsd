@@ -47,7 +47,7 @@
 		</xsd:complexType>
 	</xsd:element>
 	
-	<!--  Project Colelction DTO -->
+	<!--  Project Collection DTO -->
 	<xsd:element name="HpcProjectCollectionDTO">
 		<xsd:complexType>
 			<xsd:sequence>
@@ -65,6 +65,16 @@
 				<xsd:element name="metadataItems" 
 			                 type="hpc-domain-metadata:HpcMetadataItem"
 				             maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<!--  Project Metadata Query Input DTO -->
+	<xsd:element name="HpcProjectMetadataQueryDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="metadata"
+					         type="hpc-domain-metadata:HpcProjectMetadata" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

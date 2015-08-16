@@ -18,7 +18,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFileDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -128,7 +128,7 @@ public interface HpcDatasetBusService
     public HpcDatasetCollectionDTO getDatasets(String name) throws HpcException;
     
     /**
-     * GET Datasets by primary metadata.
+     * Get Datasets by file primary metadata.
      *
      * @param primaryMetadataQueryDTO The metadata to query for.
      * @return Collection of Dataset DTO, or null if not found.
@@ -136,7 +136,7 @@ public interface HpcDatasetBusService
      * @throws HpcException
      */
     public HpcDatasetCollectionDTO getDatasets(
-    		         HpcPrimaryMetadataQueryDTO primaryMetadataQueryDTO) 
+    		         HpcFilePrimaryMetadataQueryDTO primaryMetadataQueryDTO) 
     		         throws HpcException;
 
     /**

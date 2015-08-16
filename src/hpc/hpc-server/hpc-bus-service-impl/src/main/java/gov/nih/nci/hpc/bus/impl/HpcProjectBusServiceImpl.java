@@ -24,6 +24,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcProjectService;
@@ -180,6 +181,21 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     	return toCollectionDTO(projectService.getProjects(userId, association));
     }
     
+    @Override
+    public HpcProjectCollectionDTO getProjects(
+    		                          HpcProjectMetadataQueryDTO metadataQueryDTO) 
+                                      throws HpcException
+    {
+    	// Input validation.
+    	if(metadataQueryDTO == null) {
+    	   throw new HpcException("Null metadata query DTO", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	return toCollectionDTO(projectService.getProjects(
+    			                              metadataQueryDTO.getMetadata()));
+    }    
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -254,7 +270,7 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     
     /**
      * Validate the users associated with the upload request are valid.
-     * The associated users are - creator, registrator and primary investigator.
+     * The associated users are - creator, registrar and primary investigator.
      * 
      * @param uploadRequests The upload requests to validate. 
      *
@@ -267,7 +283,7 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     	   return;
     	}
     	
-		// Verify PI, Creator and Registrator are registered with HPC.
+		// Verify PI, Creator and Registrar are registered with HPC.
 		validateUser(projectDTO.getMetadata().getPrimaryInvestigatorNihUserId(),
 				     HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR);
 		validateUser(projectDTO.getMetadata().getRegistrarNihUserId(),

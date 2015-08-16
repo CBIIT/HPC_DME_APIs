@@ -28,7 +28,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFileDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcPrimaryMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcDatasetService;
@@ -280,7 +280,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     
     @Override
     public HpcDatasetCollectionDTO getDatasets(
-    		         HpcPrimaryMetadataQueryDTO primaryMetadataQueryDTO) 
+    		         HpcFilePrimaryMetadataQueryDTO primaryMetadataQueryDTO) 
                      throws HpcException
     {
     	// Input validation.
@@ -393,7 +393,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
    
     /**
      * Validate the users associated with the upload request are valid.
-     * The associated users are - creator, registrator and primary investigator.
+     * The associated users are - creator, registrar and primary investigator.
      * 
      * @param uploadRequests The upload requests to validate. 
      *
@@ -419,7 +419,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		validateUser(uploadRequest.getMetadata().getRegistrarNihUserId(),
 			             HpcDatasetUserAssociation.REGISTRAR);
     		
-    		// Validate the registrator Data Transfer Account.
+    		// Validate the registrar Data Transfer Account.
         	if(!dataTransferService.validateDataTransferAccount(
         	   registrar.getDataTransferAccount())) {
          	   throw new HpcException(
