@@ -167,6 +167,38 @@ public class HpcProjectServiceImpl implements HpcProjectService
  	{
     	return projectDAO.getProjects(userId, association);
  	}
+    
+    @Override
+    public List<HpcProject> getProjects(HpcProjectMetadata metadata) 
+                                       throws HpcException
+    {
+    	// Input Validation. At least one metadata element needs to be provided
+    	// to query for.
+    	if(metadata == null ||
+    	   (metadata.getExperimentId() == null && 	
+    		metadata.getInternalProjectId() == null &&
+    		metadata.getName() == null &&
+    		metadata.getFundingOrganization() == null && 
+    		metadata.getPrimaryInvestigatorNihUserId() == null &&
+    		metadata.getRegistrarNihUserId() == null &&
+    		metadata.getDescription() == null &&
+    		metadata.getLabBranch() == null &&
+    		metadata.getDoc() == null &&
+    		(metadata.getMetadataItems() == null || 
+    		 metadata.getMetadataItems().size() == 0))) {
+    		throw new HpcException("Invalid project metadata", 
+                                   HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	// Validate metada items if not null.
+    	if(metadata.getMetadataItems() != null &&
+    	   !isValidMetadataItems(metadata.getMetadataItems())) {
+    	   throw new HpcException("Invalid metadata items", 
+                                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	return projectDAO.getProjects(metadata);
+    }
 }
 
  

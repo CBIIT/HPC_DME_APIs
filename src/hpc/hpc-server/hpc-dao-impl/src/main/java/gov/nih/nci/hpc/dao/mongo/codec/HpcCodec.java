@@ -65,7 +65,7 @@ public abstract class HpcCodec<T> implements Codec<T>
                                "funding_organization";
 	public final static String PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY = "internal_project_id";
 	public final static String PROJECT_METADATA_EXPERIMENT_ID_KEY = "experiment_id";
-	public final static String PROJECT_METADATA_ITEMS_KEY = "metadata_items";
+	public final static String PROJECT_METADATA_METADATA_ITEMS_KEY = "metadata_items";
 	
 	// HpcDataset Document keys.
 	public final static String DATASET_ID_KEY = "id"; 

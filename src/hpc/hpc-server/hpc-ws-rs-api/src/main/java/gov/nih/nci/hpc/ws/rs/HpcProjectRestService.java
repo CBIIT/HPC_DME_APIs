@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
 
 import javax.ws.rs.Consumes;
@@ -65,26 +66,37 @@ public interface HpcProjectRestService
     public Response getProject(@PathParam("id") String id); 
     
     /**
-     * GET Projects by Registrator ID.
+     * GET Projects by Registrar ID.
      *
-     * @param creatorId Get projects associated with this Registrator ID.
-     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
+     * @param creatorId Get projects associated with this Registrar ID.
+     * @return gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO entity.
      */
     @GET
     @Path("/project/query/registrar/{id}")
     @Produces("application/json,application/xml")
-    public Response getProjectsByRegistratorId(@PathParam("id") String registratorId); 
+    public Response getProjectsByRegistrarId(@PathParam("id") String registrarId); 
     
     /**
-     * GET Projects by PI ID.
+     * GET Projects by Primary Investigator ID.
      *
-     * @param creatorId Get projects associated with this Registrator ID.
-     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
+     * @param inverstigatorId Get projects associated with this primary investigator ID.
+     * @return gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO entity.
      */
     @GET
     @Path("/project/query/pi/{id}")
     @Produces("application/json,application/xml")
     public Response getProjectsByInvestigatorId(@PathParam("id") String inverstigatorId); 
+    
+    /**
+     * POST Projects by primary metadata.
+     *
+     * @param metadataQueryDTO Get projects that match the metadata search criteria.
+     * @return gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO entity.
+     */
+    @POST
+    @Path("/project/query/metadata")
+    @Produces("application/json,application/xml")
+    public Response getProjectsByMetadata(HpcProjectMetadataQueryDTO metadataQueryDTO);
 }
 
  

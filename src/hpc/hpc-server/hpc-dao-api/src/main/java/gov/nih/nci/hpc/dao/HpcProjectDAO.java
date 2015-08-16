@@ -10,8 +10,9 @@
 
 package gov.nih.nci.hpc.dao;
 
-import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
+import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
+import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -59,6 +60,16 @@ public interface HpcProjectDAO
     		                            HpcDatasetUserAssociation association) 
         	                           throws HpcException;
  
+    /**
+     * Get projects that match a provided metadata. 
+     *
+     * @param metadata The meatada to match.
+     * @return HpcProject collection, or null if no results found.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcProject> getProjects(HpcProjectMetadata metadata) 
+    		                           throws HpcException;
 }
 
  
