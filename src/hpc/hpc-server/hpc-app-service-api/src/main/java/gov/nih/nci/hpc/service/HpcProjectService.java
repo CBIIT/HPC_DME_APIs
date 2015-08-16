@@ -93,6 +93,16 @@ public interface HpcProjectService
     		                            HpcDatasetUserAssociation association) 
         	                           throws HpcException;
     
+    /**
+     * Get projects by metadata.
+     *
+     * @param metadata The meatada to match.
+     * @return HpcProject collection, or null if no results found.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcProject> getProjects(HpcProjectMetadata metadata) 
+    		                           throws HpcException;
 }
 
  

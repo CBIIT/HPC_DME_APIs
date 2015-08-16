@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -60,7 +61,7 @@ public interface HpcProjectBusService
     public HpcProjectDTO getProject(String id) throws HpcException;
     
     /**
-     * Get datasets associated with a specific user.
+     * Get projects associated with a specific user.
      *
      * @param nihUserId the user id.
      * @param association The association between the project and the user.
@@ -69,9 +70,21 @@ public interface HpcProjectBusService
      * @throws HpcException
      */
     public HpcProjectCollectionDTO 
-              getProjects(String nihUserId, 
-    		              HpcDatasetUserAssociation association) 
-    		             throws HpcException;
+           getProjects(String nihUserId, 
+    		           HpcDatasetUserAssociation association) 
+    		          throws HpcException;
+    
+    /**
+     * Get projects by project metadata.
+     *
+     * @param metadataQueryDTO The metadata to query for.
+     * @return Collection of Project DTO, or null if not found.
+     * 
+     * @throws HpcException
+     */
+    public HpcProjectCollectionDTO 
+           getProjects(HpcProjectMetadataQueryDTO metadataQueryDTO) 
+        		      throws HpcException;
     
 }
 

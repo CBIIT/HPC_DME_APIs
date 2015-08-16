@@ -83,7 +83,7 @@ public interface HpcDatasetDAO
     public List<HpcDataset> getDatasets(String name) throws HpcException;
     
     /**
-     * GET Datasets by a list of .
+     * Get datasets that match a provided metadata. 
      *
      * @param primaryMetadata The meatada to match.
      * @return HpcDataset collection, or null if no results found.

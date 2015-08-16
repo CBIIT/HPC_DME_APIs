@@ -62,7 +62,7 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 	                           HpcCodec.FILE_SET_NAME_KEY;
 
 	// Field name to query by Project Id.
-	public final static String DATASET_PROJECT_IDS_NAME = 
+	public final static String DATASET_PROJECT_IDS_FIELD_NAME = 
 							   HpcCodec.DATASET_FILE_SET_KEY + "." + 
 							   HpcCodec.FILE_SET_FILES_KEY + "." +
 	                           HpcCodec.FILE_PROJECT_IDS_KEY;
@@ -320,7 +320,8 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
 		HpcSingleResultCallback<List<HpcDataset>> callback = 
                        new HpcSingleResultCallback<List<HpcDataset>>();
-		getCollection().find(in(DATASET_PROJECT_IDS_NAME, projectId)).into(datasets, callback); 
+		getCollection().find(in(DATASET_PROJECT_IDS_FIELD_NAME, projectId)).
+		                into(datasets, callback); 
 		
 		return callback.getResult();
 	} 
@@ -390,7 +391,7 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
         		          primaryMetadata.getLabBranch()));
        	}
     	if(primaryMetadata.getMetadataItems() != null && 
-    	   primaryMetadata.getMetadataItems().size() >0 ) {
+    	   primaryMetadata.getMetadataItems().size() > 0) {
      	   filters.add(all(METADATA_ITEMS_FIELD_NAME, 
      			           primaryMetadata.getMetadataItems()));
     	}
