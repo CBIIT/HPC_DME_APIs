@@ -78,7 +78,11 @@ public class HpcDatasetController extends AbstractHpcController {
 			// TODO Auto-generated catch block
 			model.addAttribute("error", "Failed to get Dataset: "+e.getMessage());
 			e.printStackTrace();
-		}
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		model.addAttribute("error", "Failed to get Dataset: "+e.getMessage());
+		e.printStackTrace();
+	}
 
 		return "dataset";
 	}
