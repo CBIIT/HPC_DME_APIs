@@ -93,7 +93,13 @@ public class HpcProjectServiceImpl implements HpcProjectService
     	
     	// Generate and set its ID.
     	project.setId(keyGenerator.generateKey());
-    	project.setCreated(Calendar.getInstance());
+
+    	// Set created time.
+    	Calendar now = Calendar.getInstance();
+    	project.setCreated(now);
+    	metadata.setCreated(now);
+    	
+    	// Attach the metadata.
     	project.setMetadata(metadata);
     	
     	// Persist to Mongo.
@@ -177,15 +183,16 @@ public class HpcProjectServiceImpl implements HpcProjectService
     	// Input Validation. At least one metadata element needs to be provided
     	// to query for.
     	if(metadata == null ||
-    	   (metadata.getExperimentId() == null && 	
+    	   (metadata.getName() == null &&
+    	    metadata.getType() == null &&
     		metadata.getInternalProjectId() == null &&
-    		metadata.getName() == null &&
-    		metadata.getFundingOrganization() == null && 
     		metadata.getPrimaryInvestigatorNihUserId() == null &&
-    		metadata.getRegistrarNihUserId() == null &&
+    	    metadata.getRegistrarNihUserId() == null &&
+    	    metadata.getLabBranch() == null &&
+    	    metadata.getDoc() == null &&
+    	    metadata.getCreated() == null &&
+    	    metadata.getOrganizationalStructure() == null && 
     		metadata.getDescription() == null &&
-    		metadata.getLabBranch() == null &&
-    		metadata.getDoc() == null &&
     		(metadata.getMetadataItems() == null || 
     		 metadata.getMetadataItems().size() == 0))) {
     		throw new HpcException("Invalid project metadata", 

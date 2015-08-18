@@ -13,7 +13,9 @@ package gov.nih.nci.hpc.dao.mongo.codec;
 import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeMetadataItem;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcProjectType;
 
+import java.util.Calendar;
 import java.util.List;
 
 import org.bson.BsonReader;
@@ -62,23 +64,27 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
  
 		// Extract the data from the domain object.
 		String name = projectMetadata.getName();
-		String description = projectMetadata.getDescription();
+		HpcProjectType type = projectMetadata.getType();
+		String internalProjectId = projectMetadata.getInternalProjectId();
 		String primaryInvestigatorNihUserId = 
-				      projectMetadata.getPrimaryInvestigatorNihUserId();
+			          projectMetadata.getPrimaryInvestigatorNihUserId();
 		String registrarNihUserId = projectMetadata.getRegistrarNihUserId();
 		String labBranch = projectMetadata.getLabBranch();
 		String doc = projectMetadata.getDoc();
-		String fundingOrganization = projectMetadata.getFundingOrganization();
-		String internalProjectId = projectMetadata.getInternalProjectId();
-		String experimentId = projectMetadata.getExperimentId();
+		Calendar created = projectMetadata.getCreated();
+		String organizationalStructure = projectMetadata.getOrganizationalStructure();
+		String description = projectMetadata.getDescription();
 		List<HpcMetadataItem> metadataItems = projectMetadata.getMetadataItems();
 		
 		// Set the data on the BSON document.
 		if(name != null) {
 		   document.put(PROJECT_METADATA_NAME_KEY, name);
 		}
-		if(description != null) {
-		   document.put(PROJECT_METADATA_DESCRIPTION_KEY, description);
+		if(type != null) {
+		   document.put(PROJECT_METADATA_TYPE_KEY, type.value());
+		}
+		if(internalProjectId != null) {
+		   document.put(PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY, internalProjectId);
 		}
 		if(primaryInvestigatorNihUserId != null) {
 		   document.put(PROJECT_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY, 
@@ -90,19 +96,19 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		}
 		if(labBranch != null) {
 		   document.put(PROJECT_METADATA_LAB_BRANCH_KEY, labBranch);
-		}
+		}		
 		if(doc != null) {
 		   document.put(PROJECT_METADATA_DOC_KEY, doc);
 		}
-		if(fundingOrganization != null) {
-		   document.put(PROJECT_METADATA_FUNDING_ORGANIZATION_KEY, 
-				        fundingOrganization);
+		if(created != null) {
+		   document.put(PROJECT_METADATA_CREATED_KEY, created.getTime());
 		}
-		if(internalProjectId != null) {
-		   document.put(PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY, internalProjectId);
+		if(organizationalStructure != null) {
+		   document.put(PROJECT_METADATA_ORGANIZATIONAL_STRUCTURE_KEY, 
+				        organizationalStructure);
 		}
-		if(experimentId != null) {
-		   document.put(PROJECT_METADATA_EXPERIMENT_ID_KEY, experimentId);
+		if(description != null) {
+		   document.put(PROJECT_METADATA_DESCRIPTION_KEY, description);
 		}
 		if(metadataItems != null && metadataItems.size() > 0) {
 		   document.put(PROJECT_METADATA_METADATA_ITEMS_KEY, 
@@ -125,21 +131,28 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		// Map the BSON Document to a domain object.
 		HpcProjectMetadata projectMetadata = new HpcProjectMetadata();
 		projectMetadata.setName(document.getString(PROJECT_METADATA_NAME_KEY));
-		projectMetadata.setDescription(document.getString(
-				                       PROJECT_METADATA_DESCRIPTION_KEY));
+		String typeStr = document.getString(PROJECT_METADATA_TYPE_KEY);
+		projectMetadata.setType(typeStr != null ?
+                                HpcProjectType.valueOf(typeStr) : null);
+		projectMetadata.setInternalProjectId(
+		                document.getString(PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY));
 		projectMetadata.setPrimaryInvestigatorNihUserId(
-		                document.getString(
-		                PROJECT_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY));
+                        document.getString(
+                        PROJECT_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY));
 		projectMetadata.setRegistrarNihUserId(
-		                document.getString(PROJECT_METADATA_REGISTRAR_NIH_USER_ID_KEY));
+                        document.getString(PROJECT_METADATA_REGISTRAR_NIH_USER_ID_KEY));
 		projectMetadata.setLabBranch(document.getString(PROJECT_METADATA_LAB_BRANCH_KEY));
 		projectMetadata.setDoc(document.getString(PROJECT_METADATA_DOC_KEY));
-		projectMetadata.setFundingOrganization(
-				        document.getString(PROJECT_METADATA_FUNDING_ORGANIZATION_KEY));
-		projectMetadata.setInternalProjectId(
-				        document.getString(PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY));
-		projectMetadata.setExperimentId(
-				        document.getString(PROJECT_METADATA_EXPERIMENT_ID_KEY));
+		
+		Calendar created = Calendar.getInstance();
+		if(document.getDate(PROJECT_METADATA_CREATED_KEY) != null) {
+		   created.setTime(document.getDate(PROJECT_METADATA_CREATED_KEY));
+		   projectMetadata.setCreated(created);
+		}
+		projectMetadata.setOrganizationalStructure(
+		       document.getString(PROJECT_METADATA_ORGANIZATIONAL_STRUCTURE_KEY));
+		projectMetadata.setDescription(document.getString(
+                                                PROJECT_METADATA_DESCRIPTION_KEY));
 		
 		// Map the collections.
 		@SuppressWarnings("unchecked")
