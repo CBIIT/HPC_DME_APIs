@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" ng-app="data.registration">
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -37,9 +37,75 @@
       <script src="js/html5shiv.js"></script>
       <script src="js/respond.min.js"></script>
       <script src="js/lte-ie7.js"></script>
-    <![endif]-->
-    
+    <![endif]-->  
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-animate.js"></script>      
 <script>
+
+angular.module('data.registration', ['ngAnimate', 'ui.bootstrap']);
+angular.module('data.registration').controller('TypeaheadCtrl', function($scope, $http) {
+	
+	 // $scope.selected = undefined;
+	  $scope.getLocation = function(val) {
+	    return $http.get('/getEndpoint', {
+	      params: {
+	        userGO: $scope.userNameGO,
+	        passGO: $scope.passwordGO,
+	      }
+	    }).then(function(response){
+	      return response.data.DATA.map(function(item){
+	        return item.canonical_name;
+	      });
+	    });
+	  };
+	  $scope.documents = [];
+	  $scope.onChange = function () {
+		  //$("#fileList").empty();
+	  };
+	  $scope.onSelect = function ($item, $model, $label) {
+		    $scope.$item = $item;
+		    $scope.$model = $model;
+		    $scope.$label = $label;	
+		    var selEPName = $item;
+			//alert('1111::' + selEPName);
+		    $http.get('/getEndpointContents', {
+			      params: {
+			    	  endpointName: selEPName,
+				      userGO: $scope.userNameGO,
+				      passGO: $scope.passwordGO,
+			      }
+			    }).then(function(response){
+			    	
+			      return response.data.DATA.map(function(item,i){
+
+			    	  $scope.documents[i] = item.name;
+			      });
+			    });			
+
+		};
+		
+    // selected files
+    $scope.filesChecked = [];
+    
+    // toggle selection for a given fruit by name
+    $scope.toggleSelection = function toggleSelection(fileName) {
+      var idx = $scope.filesChecked.indexOf(fileName);
+      
+      // is currently selected
+      if (idx > -1) {
+    	  //alert("idx:"+idx);
+        $scope.filesChecked.splice(idx, 1);
+      }
+      else {
+    	  //alert("fileName"+fileName);
+        $scope.filesChecked.push(fileName);
+        
+      }
+    };		
+	});
+	
+
+	
 function cancel() {
 	window.location.replace("/dashboard");
 	return false;
@@ -72,6 +138,7 @@ function addTextbox() {
 	//foo.appendChild(label);
 	foo.appendChild(element);
 	}
+	 
 </script>      
   </head>
 
@@ -193,24 +260,39 @@ function addTextbox() {
 		<textarea rows="4" col="100" class="form-control" th:field="*{comments}" placeholder="Enter Comments"/>
 	  </div>
 	</div>	
-	<div class="form-group">
+	<div class="form-group" ng-controller="TypeaheadCtrl" th:attr="ng-init='userNameGO=\'' + ${session.hpcUser.dataTransferAccount.username} + '\'; passwordGO=\'' + ${session.hpcUser.dataTransferAccount.password} +'\'; datasetURL=\'' + ${datasetURL} +'\''">
 	<label class="control-label col-sm-2" for="datasetName">Orgin Endpoint:</label>
-	  <div class="col-sm-7">
-		<label th:if="${#fields.hasErrors('originEndpoint')}" th:errors="*{originEndpoint}">originEndpoint Error</label>
-		<input type="text" class="form-control" th:field="*{originEndpoint}" th:required="required" placeholder="Enter Origin Endpoint name"/>
-	  </div>
+		<div class="col-sm-7">
+			<label th:if="${#fields.hasErrors('originEndpoint')}" th:errors="*{originEndpoint}">originEndpoint Error</label>
+		
+			<input type="text" ng-change ="onChange()" ng-model="asyncSelected" th:field="*{originEndpoint}"  placeholder="Enter Origin Endpoint name" typeahead="address for address in getLocation($viewValue)" typeahead-loading="loadingLocations" typeahead-on-select='onSelect($item, $model, $label)'  typeahead-no-results="noResults" class="form-control"/>
+
+			<label >Select Files</label>
+			<div  class="col-lg-12 col-md-12 col-sm-12 pre-scrollable" style="background:white;height:30%;overflow-y:auto;">
+				<ul id="fileList">
+					<li ng-repeat="document in documents" ng-class="IsFiltered(document.Filtered)">
+						<span><input type="checkbox" name="filesChecked" value="{{document}}" ng-checked="selection.indexOf(document) > -1" ng-click="toggleSelection(document)"/></span>
+	
+						<span>{{document}}</span>
+					</li>
+				</ul>
+			</div>	
+		</div>	 	
 	</div>
+	<!-- 
 	<div class="form-group">
 	<label class="control-label col-sm-2" for="datasetName">Origin Endpoint file path:</label>
 	  <div class="col-sm-7">
 		<label th:if="${#fields.hasErrors('originEndpointFilePath')}" th:errors="*{originEndpointFilePath}">originEndpointFilePath Error</label>
-		<input type="text" class="form-control" th:field="*{originEndpointFilePath}" th:required="required" placeholder="Enter  Origin Endpoint file path"/>
+		<input type="text" class="form-control" th:field="*{originEndpointFilePath}" th:required="required" placeholder="Enter  Origin Endpoint file path" />
+
         <label class="control-label">Add more files..</label>
               <button type="button" class="btn btn-default btn-number pull-right" data-type="plus" onClick="addTextbox()">
                   <span class="glyphicon glyphicon-plus"></span>
               </button>
 	  </div>
 	 </div>
+	  -->
 	<div class="form-group">
 	<label class="control-label col-sm-2" for="datasetName">&nbsp;</label>
 	  <div id="addText" class="col-sm-7">
@@ -235,6 +317,7 @@ function addTextbox() {
   <!-- container section start -->
 
     <!-- javascripts -->
+    <script src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.13.3.js"></script>
 	<script src="js/metawidget/core/metawidget-core.min.js" type="text/javascript"></script>	
 	<script src="js/metawidget/metawidget-bootstrap.min.js" type="text/javascript"></script>	
     <script src="js/jquery.js"></script>
