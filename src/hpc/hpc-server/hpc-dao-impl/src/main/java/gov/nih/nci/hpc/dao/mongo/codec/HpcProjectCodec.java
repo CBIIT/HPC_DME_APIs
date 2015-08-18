@@ -14,6 +14,7 @@ import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeProjectMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.domain.model.HpcProject;
 
+import java.util.Calendar;
 import java.util.List;
 
 import org.bson.BsonReader;
@@ -63,6 +64,8 @@ public class HpcProjectCodec extends HpcCodec<HpcProject>
 		String id = project.getId();
 		List<String> datasetIds = project.getDatasetIds();
 		HpcProjectMetadata metadata = project.getMetadata();
+		Calendar created = project.getCreated();
+		Calendar lastUpdated = project.getLastUpdated();
  
 		// Set the data on the BSON document.
 		if(id != null) {
@@ -73,6 +76,12 @@ public class HpcProjectCodec extends HpcCodec<HpcProject>
 		}
 		if(datasetIds != null) {
 		   document.put(PROJECT_DATASET_IDS_KEY, datasetIds);
+		}
+		if(created != null) {
+		   document.put(PROJECT_CREATED_KEY, created.getTime());
+		}
+		if(lastUpdated != null) {
+		   document.put(PROJECT_LAST_UPDATED_KEY, lastUpdated.getTime());
 		}
 
 		getRegistry().get(Document.class).encode(writer, document, 
@@ -100,6 +109,14 @@ public class HpcProjectCodec extends HpcCodec<HpcProject>
 		List<String> datasetIds = 
 			(List<String>) document.get(PROJECT_DATASET_IDS_KEY);
 		project.getDatasetIds().addAll(datasetIds);
+		
+		Calendar created = Calendar.getInstance();
+		created.setTime(document.getDate(PROJECT_CREATED_KEY));
+		project.setCreated(created);
+		
+		Calendar lastUpdated = Calendar.getInstance();
+		lastUpdated.setTime(document.getDate(PROJECT_LAST_UPDATED_KEY));
+		project.setLastUpdated(lastUpdated);
 		
 		return project;
 	}

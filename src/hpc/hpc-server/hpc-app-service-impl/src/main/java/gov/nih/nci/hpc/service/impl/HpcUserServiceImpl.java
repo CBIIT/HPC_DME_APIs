@@ -108,13 +108,10 @@ public class HpcUserServiceImpl implements HpcUserService
 
     	user.setNihAccount(nihAccount);
     	user.setDataTransferAccount(dataTransferAccount);
-    	
-    	Calendar now = Calendar.getInstance();
-    	user.setCreated(now);
-    	user.setLastUpdated(now);
+    	user.setCreated(Calendar.getInstance());
     	
     	// Persist to Mongo.
-    	userDAO.add(user);
+    	persist(user);
     	
     	logger.debug("User Created: " + user);
     }
@@ -141,6 +138,15 @@ public class HpcUserServiceImpl implements HpcUserService
     	}
     	
     	return userDAO.getUsers(firstName, lastName);
+    }
+    
+    @Override
+    public void persist(HpcUser user) throws HpcException
+    {
+    	if(user != null) {
+    	   user.setLastUpdated(Calendar.getInstance());
+    	   userDAO.upsert(user);
+    	}
     }
 }
 
