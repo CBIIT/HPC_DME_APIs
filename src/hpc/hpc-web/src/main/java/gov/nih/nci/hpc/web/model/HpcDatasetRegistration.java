@@ -26,13 +26,16 @@ public class HpcDatasetRegistration {
 	private String compressed;
 	@NotEmpty(message="Origin Endpoint is required")
 	private String originEndpoint;
-	@NotEmpty(message="Origin Endpoint File with Path is required")
-	private String originEndpointFilePath;
+	//@NotEmpty(message="Origin Endpoint File with Path is required")
+	//private String originEndpointFilePath;
 	@NotEmpty(message="Funding organization is required")
 	private String fundingOrganization;
 	
 	@NotEmpty(message="Data creation facility is required")
 	private String dataCreationFacility;
+	
+	@NotEmpty(message="Atleast one file must be selected")
+	private String[] filesChecked;	
 	
 	public String getId() {
 		return id;
@@ -76,12 +79,12 @@ public class HpcDatasetRegistration {
 	public void setOriginEndpoint(String originEndpoint) {
 		this.originEndpoint = originEndpoint;
 	}
-	public String getOriginEndpointFilePath() {
-		return originEndpointFilePath;
-	}
-	public void setOriginEndpointFilePath(String originEndpointFilePath) {
-		this.originEndpointFilePath = originEndpointFilePath;
-	}
+//	public String getOriginEndpointFilePath() {
+//		return originEndpointFilePath;
+//	}
+//	public void setOriginEndpointFilePath(String originEndpointFilePath) {
+//		this.originEndpointFilePath = originEndpointFilePath;
+//	}
 	public String getDescription() {
 		return description;
 	}
@@ -124,4 +127,10 @@ public class HpcDatasetRegistration {
 	public void setCompressed(String compressed) {
 		this.compressed = compressed;
 	}
+	public String[] getFilesChecked() {
+		return filesChecked;
+	}
+	public void setFilesChecked(String[] filesChecked) {
+		this.filesChecked = filesChecked;
+	}	
 }

@@ -83,7 +83,7 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 		getPIs(model);
 		return "datasetRegistration";
 	}
-
+	
 	/*
 	 * Action for Dataset registration
 	 */
@@ -106,15 +106,18 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 		dto.setComments(registration.getComments());
 
 		// TODO: Lookup Id
-		String files = registration.getOriginEndpointFilePath();
-		StringTokenizer tokens = new StringTokenizer(files, ",");
-		while (tokens.hasMoreTokens()) {
+		String filesSel[] =  registration.getFilesChecked();
+		//String files = registration.getOriginEndpointFilePath();
+		//StringTokenizer tokens = new StringTokenizer(files, ",");
+		//while (tokens.hasMoreTokens()) {
+		for (String file: filesSel) {           
+
 			HpcFileUploadRequest upload = new HpcFileUploadRequest();
 			HpcFileType fileType;
 			HpcDataTransferLocations locations = new HpcDataTransferLocations();
 			HpcFileLocation source = new HpcFileLocation();
 			source.setEndpoint(registration.getOriginEndpoint());
-			String filePath = tokens.nextToken();
+			String filePath = "~/"+file;
 			source.setPath(filePath);
 			HpcFileLocation destination = new HpcFileLocation();
 			destination.setEndpoint(destinationEndpoint);
