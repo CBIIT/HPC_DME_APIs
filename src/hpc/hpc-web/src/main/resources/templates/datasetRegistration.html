@@ -49,8 +49,9 @@ angular.module('data.registration').controller('TypeaheadCtrl', function($scope,
 	  $scope.getLocation = function(val) {
 	    return $http.get('/getEndpoint', {
 	      params: {
+	    	searchTerm:val,
 	        userGO: $scope.userNameGO,
-	        passGO: $scope.passwordGO,
+	        passGO: $scope.passwordGO
 	      }
 	    }).then(function(response){
 	      return response.data.DATA.map(function(item){
