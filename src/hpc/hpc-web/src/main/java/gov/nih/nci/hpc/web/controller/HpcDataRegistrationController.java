@@ -14,10 +14,12 @@ import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.web.model.HpcDatasetRegistration;
+import gov.nih.nci.hpc.web.util.Util;
 import gov.nih.nci.hpc.domain.metadata.HpcCompressionStatus;
 import gov.nih.nci.hpc.domain.metadata.HpcEncryptionStatus;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
@@ -44,6 +46,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -80,7 +84,10 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 	public String home(Model model) {
 		HpcDatasetRegistration hpcRegistration = new HpcDatasetRegistration();
 		model.addAttribute("hpcRegistration", hpcRegistration);
-		getPIs(model);
+		Map<String, String> users = Util.getPIs();
+		model.addAttribute("piList", users);
+		model.addAttribute("creatorList", users);
+		model.addAttribute("userAttrs", Util.getUserDefinedPrimaryMedataAttrs());
 		return "datasetRegistration";
 	}
 	
@@ -173,9 +180,20 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 		}
 
 		try {
-			HttpEntity<String> response = restTemplate.postForEntity(
-					serviceURL, dto, String.class);
-			String resultString = response.getBody();
+			ResponseEntity<HpcExceptionDTO> response = restTemplate.postForEntity(
+					serviceURL, dto, HpcExceptionDTO.class);
+			if(!response.getStatusCode().equals(HttpStatus.CREATED))
+			{
+				ObjectError error = new ObjectError("hpcRegistration",
+						"Failed to register dataset");
+				bindingResult.addError(error);
+				model.addAttribute("registrationStatus", false);
+				model.addAttribute("error",
+						"Failed to register your request due to: " +response.getBody());
+				return "datasetRegistration";
+				
+			}
+
 			HttpHeaders headers = response.getHeaders();
 			String location = headers.getLocation().toString();
 			String id = location.substring(location.lastIndexOf("/") + 1);
@@ -184,7 +202,7 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 			model.addAttribute("registration", registration);
 		} catch (HttpStatusCodeException e) {
 			String errorpayload = e.getResponseBodyAsString();
-			ObjectError error = new ObjectError("hpcLogin",
+			ObjectError error = new ObjectError("hpcRegistration",
 					"Failed to register: " + errorpayload);
 			bindingResult.addError(error);
 			model.addAttribute("registrationStatus", false);
@@ -192,7 +210,7 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 					"Failed to register your request due to: " + errorpayload);
 			return "datasetRegistration";
 		} catch (RestClientException e) {
-			ObjectError error = new ObjectError("hpcLogin",
+			ObjectError error = new ObjectError("hpcRegistration",
 					"Failed to register: " + e.getMessage());
 			bindingResult.addError(error);
 			model.addAttribute("registrationStatus", false);
@@ -200,7 +218,7 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 					"Failed to register your request due to: " + e.getMessage());
 			return "datasetRegistration";
 		} catch (Exception e) {
-			ObjectError error = new ObjectError("hpcLogin",
+			ObjectError error = new ObjectError("hpcRegistration",
 					"Failed to register: " + e.getMessage());
 			bindingResult.addError(error);
 			model.addAttribute("registrationStatus", false);
@@ -208,7 +226,10 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 					"Failed to register your request due to: " + e.getMessage());
 			return "datasetRegistration";
 		} finally {
-			getPIs(model);
+			Map<String, String> users = Util.getPIs();
+			model.addAttribute("piList", users);
+			model.addAttribute("creatorList", users);
+			model.addAttribute("userAttrs", Util.getUserDefinedPrimaryMedataAttrs());
 		}
 		return "datasetRegisterResult";
 	}
@@ -216,35 +237,18 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 	private List<HpcMetadataItem> getMetadataitems(HttpServletRequest request) {
 		List<HpcMetadataItem> items = new ArrayList<HpcMetadataItem>();
 		Enumeration<String> names = request.getParameterNames();
-		Field[] fields = HpcDatasetRegistration.class.getDeclaredFields();
-		List<String> fieldNames = new ArrayList<String>();
-		for (int i = 0; i < fields.length; i++)
-			fieldNames.add(fields[i].getName());
 		while (names.hasMoreElements()) {
 			String attr = names.nextElement();
-			if (!fieldNames.contains(attr)) {
-				HpcMetadataItem item = new HpcMetadataItem();
-				item.setKey(attr);
-				item.setValue(request.getParameter(attr));
-				items.add(item);
-			}
+			if(!attr.startsWith("customAttrName"))
+				continue;
+			
+			String index = attr.substring(attr.indexOf("customAttrName")+14);
+			
+			HpcMetadataItem item = new HpcMetadataItem();
+			item.setKey(request.getParameter(attr));
+			item.setValue(request.getParameter("customAttrValue"+index));
+			items.add(item);
 		}
 		return items;
-	}
-
-	private void getPIs(Model model) {
-		Map<String, String> users = new HashMap<String, String>();
-		users.put("konkapv", "Prasad Konka");
-		users.put("narram", "Mahidhar Narra");
-		users.put("rosenbergea", "Eran Rosenberg");
-		users.put("luz6", "Zhengwu Lu");
-		users.put("stahlbergea", "Eric A Stahlberg");
-		users.put("sdavis2", "Sean R Davis");
-		users.put("maggiec", "Margaret C Cam");
-		users.put("fitzgepe", "Peter C Fitzgerald");
-		users.put("zhaoyong", "Yongmei Zhao");
-		users.put("addepald", "Durga Addepalli");
-		model.addAttribute("piList", users);
-		model.addAttribute("creatorList", users);
 	}
 }
