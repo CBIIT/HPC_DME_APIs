@@ -196,13 +196,14 @@ class HpcDomainValidator
     {
     	if(metadata == null ||
     	   metadata.getName() == null ||
+    	   metadata.getType() == null ||
+    	   metadata.getInternalProjectId() == null ||
     	   metadata.getPrimaryInvestigatorNihUserId() == null ||
     	   metadata.getRegistrarNihUserId() == null ||
     	   metadata.getLabBranch() == null ||
     	   metadata.getDoc() == null ||
-    	   metadata.getInternalProjectId() == null ||
-   	   	   metadata.getFundingOrganization() == null ||
-   	   	   metadata.getExperimentId() == null ||
+   	   	   metadata.getOrganizationalStructure() == null ||
+   	   	   metadata.getDescription() == null ||
    	   	   (metadata.getMetadataItems() != null && 
    	   	    !isValidMetadataItems(metadata.getMetadataItems()))) { 
     	   logger.info("Invalid Project Metadata");
