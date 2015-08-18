@@ -4,7 +4,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 public class HpcLogin {
 
-	@NotEmpty(message="NIH User Id is required")
+	@NotEmpty(message="HPC User Id is required")
 	String userId;
 	String passwd;
 

@@ -1,6 +1,6 @@
 package gov.nih.nci.hpc.web;
 
-public class HpcWebException extends Exception {
+public class HpcWebException extends RuntimeException {
 
 	public HpcWebException()
 	{

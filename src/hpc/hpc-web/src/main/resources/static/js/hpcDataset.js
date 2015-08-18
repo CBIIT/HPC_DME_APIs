@@ -5,14 +5,15 @@ var linkCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
 app.controller('MyCtrl', function($scope, $http, $q, $attrs) {
 	var deferred = $q.defer();
 	$scope.$watch('userId', function () {
-	console.log('userId', $scope.userId);
-	console.log('datasetURL', $scope.datasetURL);
+	console.log('$scope.userId', $scope.userId);
+
 	$http.get($scope.datasetURL + '/' + $scope.userId).
 	//$http.get('/js/hpcDatasets.json').
 	  success(function(data, status, headers, config) {
 		        var collection = data["gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO"];
-		        var datasets = collection["gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO"];
-				console.log('Success', datasets["fileSet"]);
+		    	console.log('collection', collection);
+	        var datasets = collection["gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO"];
+	    	console.log('datasets', datasets);
 				$scope.hpcData = datasets;
 				deferred.resolve($scope.hpcData);
 	  }).
