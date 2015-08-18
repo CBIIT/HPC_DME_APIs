@@ -31,9 +31,6 @@ public class HpcDatasetRegistration {
 	@NotEmpty(message="Funding organization is required")
 	private String fundingOrganization;
 	
-	@NotEmpty(message="Data creation facility is required")
-	private String dataCreationFacility;
-	
 	@NotEmpty(message="Atleast one file must be selected")
 	private String[] filesChecked;	
 	
@@ -108,12 +105,6 @@ public class HpcDatasetRegistration {
 	}
 	public void setFundingOrganization(String fundingOrganization) {
 		this.fundingOrganization = fundingOrganization;
-	}
-	public String getDataCreationFacility() {
-		return dataCreationFacility;
-	}
-	public void setDataCreationFacility(String dataCreationFacility) {
-		this.dataCreationFacility = dataCreationFacility;
 	}
 	public String getPhi() {
 		return phi;

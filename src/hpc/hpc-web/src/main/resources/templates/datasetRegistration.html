@@ -163,6 +163,7 @@ function addTextbox() {
 				</div>
 			<!--Title End-->
 			<!--Row start-->
+<form class="form-horizontal" action="#" role="form" th:action="@{/registerDataset}" th:object="${hpcRegistration}" method="post" enctype="multipart/form-data">
   <div class="row">
 	<h3><UL>HPC FileSet Registration</UL></h3><br/><br/>
 	<div th:if="${error != null}">
@@ -171,7 +172,6 @@ function addTextbox() {
 			   <label for="${error}" th:text="${error}"></label>
 		</div>  
 	</div>
-	<form class="form-horizontal" action="#" role="form" th:action="@{/registerDataset}" th:object="${hpcRegistration}" method="post" enctype="multipart/form-data">
 	<div class="form-group">
 	<label class="control-label col-sm-2" for="datasetName">Name:</label>
 	  <div class="col-sm-7">
@@ -247,13 +247,6 @@ function addTextbox() {
 	  </div>
 	</div>
 	<div class="form-group">
-	  <label class="control-label col-sm-2" for="dataCreationFacility">Data Creation Facility:</label>
-	  <div class="col-sm-7">
-		<label th:if="${#fields.hasErrors('dataCreationFacility')}" th:errors="*{dataCreationFacility}">dataCreationFacility Error</label>
-		<input type="text" class="form-control" th:field="*{dataCreationFacility}" th:required="required" placeholder="Enter Data creation facility"/>
-	  </div>
-	</div>	
-	<div class="form-group">
 	  <label class="control-label col-sm-2" for="comments">Comments:</label>
 	  <div class="col-sm-7">
 		<label th:if="${#fields.hasErrors('comments')}" th:errors="*{comments}">NIH UserId Error</label>
@@ -298,18 +291,54 @@ function addTextbox() {
 	  <div id="addText" class="col-sm-7">
 	  </div>
 	</div>
-<!-- 	
-	<metawidget id="metawidget">
-	</metawidget>
--->
+</div>
+  <div class="row">
+    <label class="control-label col-sm-2" for="datasetName">Custom Attributes</label>
+</div>
+<div class="container">
+    <div class="row clearfix">
+		<div class="col-md-12 column">
+			<table class="table table-bordered table-hover" id="tab_logic">
+				<thead>
+					<tr >
+						<th class="text-center">
+							Attribute Name
+						</th>
+						<th class="text-center">
+							Attribute Value
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr id='attr0'>
+						<td>
+						<select name="customAttrName0" class="form-control" th:required="required">
+						    <option value="-1">----Select----</option>
+						    <option th:each="entry : ${userAttrs.entrySet()}" th:value="${entry.key}" th:text="${entry.value}">
+							Wireframe</option>
+				        </select>
+						</td>
+						<td>
+						<input type="text" name='customAttrValue0' placeholder='Value' class="form-control"/>
+						</td>
+					</tr>
+                    <tr id='attr1'></tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<a id="add_row" class="btn btn-default pull-left">Add Attribute</a><a id='delete_row' class="pull-right btn btn-default">Delete Attribute</a>
+</div>
+
+  <div class="row">
 	<div class="form-group">
 	  <div class="col-sm-offset-2 col-sm-7">
 		<button type="submit" class="btn btn-lg btn-success">Register</button>
 		<button type="submit" class="btn btn-lg btn-success" onClick="return cancel()">Cancel</button>
 	  </div>
-	</div>
+	</div>  
+  </div>
   </form>
-</div>
           </section>
       </section>
       <!--main content end-->
@@ -406,35 +435,24 @@ function addTextbox() {
 	    }
 	  });
 	});
-
-
-	var person = {
-		name: "Mahidhar Narra"
-	};
-
-	var dFields;
-	
-	var mw = new metawidget.Metawidget( document.getElementById( 'metawidget' ),
-		{
-        addWidgetProcessors: [ new metawidget.bootstrap.widgetprocessor.BootstrapWidgetProcessor() ], 
-        layout: new metawidget.bootstrap.layout.BootstrapDivLayout() 
-		}
-	);
-
-	console.log("111111");
-	var json = jQuery.getJSON("http://localhost:7737/hpc-server/getPrimaryConfigurableDataFields/primary?callback=?", {}).
-	done(function(data) {
-		var obj = data;
-		mw.toInspect = obj;
-		mw.buildWidgets();
-	})
-	 .fail(function( jqxhr, textStatus, error ) {
-var err = textStatus + ", " + error;
-console.log( "Request Failed: " + err );
-});
-
-		
   </script>
+	<script type="text/javascript">
+	     $(document).ready(function(){
+      var i=1;
+     $("#add_row").click(function(){
+      $('#attr'+i).html('<td><select name="customAttrName'+i+'" class="form-control" th:required="required"> <option value="-1">----Select----</option> <option th:each="entry : ${userAttrs.entrySet()}" th:value="${entry.key}" th:text="${entry.value}"> Wireframe</option> </select></td><td> <input type="text" name="customAttrValue'+i+'" placeholder="Value" class="form-control"/> </td>');
 
+      $('#tab_logic').append('<tr id="attr'+(i+1)+'"></tr>');
+      i++; 
+  });
+     $("#delete_row").click(function(){
+    	 if(i>1){
+		 $("#attr"+(i-1)).html('');
+		 i--;
+		 }
+	 });
+
+});
+	</script>
   </body>
 </html>
