@@ -20,7 +20,7 @@
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/user"
 		schemaLocation="HpcUserTypes.xsd" />
 
-	<!-- User DTO -->
+	<!-- User Registration DTO -->
 	<xsd:element name="HpcUserRegistrationDTO">
 		<xsd:complexType>
 			<xsd:sequence>
@@ -37,9 +37,7 @@
 			<xsd:sequence>
 				<xsd:element name="nihAccount" type="hpc-domain-user:HpcNihAccount" />
 				<xsd:element name="dataTransferAccount"
-					type="hpc-domain-user:HpcDataTransferAccount" />
-				<xsd:element name="created" type="xsd:dateTime" />
-				<xsd:element name="lastUpdated" type="xsd:dateTime" />
+					         type="hpc-domain-user:HpcDataTransferAccount" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

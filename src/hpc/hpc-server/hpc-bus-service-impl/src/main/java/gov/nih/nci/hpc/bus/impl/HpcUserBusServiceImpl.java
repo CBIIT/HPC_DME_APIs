@@ -11,14 +11,14 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcUserBusService;
-import gov.nih.nci.hpc.service.HpcUserService;
-import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
-import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
-import gov.nih.nci.hpc.dto.user.HpcUserDTO;
-import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcLdapAuthenticationService;
+import gov.nih.nci.hpc.service.HpcUserService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,8 +111,6 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	HpcUserDTO userDTO = new HpcUserDTO();
     	userDTO.setNihAccount(user.getNihAccount());
     	userDTO.setDataTransferAccount(user.getDataTransferAccount());
-    	userDTO.setCreated(user.getCreated());
-    	userDTO.setLastUpdated(user.getLastUpdated());
     	
     	return userDTO;
     }

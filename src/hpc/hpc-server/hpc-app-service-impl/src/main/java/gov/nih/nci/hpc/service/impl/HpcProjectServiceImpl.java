@@ -22,6 +22,7 @@ import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcProjectService;
 
+import java.util.Calendar;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -92,11 +93,12 @@ public class HpcProjectServiceImpl implements HpcProjectService
     	
     	// Generate and set its ID.
     	project.setId(keyGenerator.generateKey());
+    	project.setCreated(Calendar.getInstance());
     	project.setMetadata(metadata);
     	
     	// Persist to Mongo.
     	if(persist) {
-    	   projectDAO.upsert(project);
+    	   persist(project);
     	}
     	logger.debug("Project added: " + project);
     	
@@ -119,7 +121,7 @@ public class HpcProjectServiceImpl implements HpcProjectService
     		
     		// Persist to Mongo.
         	if(persist) {
-        	   projectDAO.upsert(project);
+        	   persist(project);
         	}
     	}
     }
@@ -143,7 +145,7 @@ public class HpcProjectServiceImpl implements HpcProjectService
        	
 		// Persist if requested.
     	if(persist) {
-     	   projectDAO.upsert(project);
+     	   persist(project);
      	}
     	
     	return project.getMetadata().getMetadataItems();
@@ -198,6 +200,15 @@ public class HpcProjectServiceImpl implements HpcProjectService
     	}
     	
     	return projectDAO.getProjects(metadata);
+    }
+    
+    @Override
+    public void persist(HpcProject project) throws HpcException
+    {
+    	if(project != null) {
+    	   project.setLastUpdated(Calendar.getInstance());
+    	   projectDAO.upsert(project);
+    	}
     }
 }
 

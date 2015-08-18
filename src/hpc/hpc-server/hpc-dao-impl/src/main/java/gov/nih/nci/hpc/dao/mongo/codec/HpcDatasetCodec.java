@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 
+import java.util.Calendar;
 import java.util.List;
 
 import org.bson.BsonReader;
@@ -68,6 +69,8 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 				                           dataset.getUploadRequests();
 		List<HpcDataTransferRequest> downloadRequests = 
 				                             dataset.getDownloadRequests();
+		Calendar created = dataset.getCreated();
+		Calendar lastUpdated = dataset.getLastUpdated();
  
 		// Set the data on the BSON document.
 		if(id != null) {
@@ -81,6 +84,12 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 		}
 		if(downloadRequests != null && downloadRequests.size() > 0) {
 		   document.put(DATASET_DOWNLOAD_REQUESTS_KEY, downloadRequests);
+		}
+		if(created != null) {
+		   document.put(DATASET_CREATED_KEY, created.getTime());
+		}
+		if(lastUpdated != null) {
+		   document.put(DATASET_LAST_UPDATED_KEY, lastUpdated.getTime());
 		}
 
 		getRegistry().get(Document.class).encode(writer, document, 
@@ -126,6 +135,14 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 			    			     	                    getRegistry()));
 			   }
 		}
+		
+		Calendar created = Calendar.getInstance();
+		created.setTime(document.getDate(DATASET_CREATED_KEY));
+		dataset.setCreated(created);
+		
+		Calendar lastUpdated = Calendar.getInstance();
+		lastUpdated.setTime(document.getDate(DATASET_LAST_UPDATED_KEY));
+		dataset.setLastUpdated(lastUpdated);
 		
 		return dataset;
 	}

@@ -120,15 +120,6 @@ public interface HpcDatasetService
                                   throws HpcException;
     
     /**
-     * Persist dataset to the DB.
-     *
-     * @param dataset The dataset to be persisted.
-     * 
-     * @throws HpcException
-     */
-    public void persist(HpcDataset dataset) throws HpcException;
-    
-    /**
      * Set a data transfer request status based on a provided data transfer report.
      *
      * @param dataTransferRequest The data transfer request to update.
@@ -230,6 +221,15 @@ public interface HpcDatasetService
 	public List<HpcDataset> getDatasets(HpcDataTransferStatus dataTransferStatus,
 			                            Boolean uploadRequests, 
                                         Boolean downloadRequests) throws HpcException;
+	
+    /**
+     * Persist dataset to the DB.
+     *
+     * @param dataset The dataset to be persisted.
+     * 
+     * @throws HpcException
+     */
+    public void persist(HpcDataset dataset) throws HpcException;
 }
 
  

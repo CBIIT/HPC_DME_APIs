@@ -10,10 +10,10 @@
 
 package gov.nih.nci.hpc.dao;
 
-import java.util.List;
-
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.util.List;
 
 /**
  * <p>
@@ -25,15 +25,15 @@ import gov.nih.nci.hpc.exception.HpcException;
  */
 
 public interface HpcUserDAO 
-{         
+{    
     /**
-     * Add user to the repository.
+     * Store a new user to the repository or update it if it exists.
      *
-     * @param user The user to add to the DB.
+     * @param user The user to be added/updated.
      * 
      * @throws HpcException
      */
-    public void add(HpcUser user) throws HpcException;
+    public void upsert(HpcUser user) throws HpcException;
     
     /**
      * Get user from the repository by ID.
