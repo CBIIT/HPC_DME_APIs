@@ -27,7 +27,6 @@
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="id" type="xsd:ID" />
-				<xsd:element name="type" type="hpc-domain-dataset:HpcProjectType" />
 				<xsd:element name="metadata" type="hpc-domain-metadata:HpcProjectMetadata" />
 				<xsd:element name="datasetIds" type="xsd:ID" 
 				             minOccurs="0" maxOccurs="unbounded"/>
