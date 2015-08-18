@@ -56,6 +56,14 @@
 			<xsd:element name="value" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:simpleType name="HpcProjectType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="UNKONWN" />
+			<xsd:enumeration value="SEQUENCING" />
+			<xsd:enumeration value="ANALYSIS" />
+		</xsd:restriction>
+	</xsd:simpleType>	
 
 	<xsd:complexType name="HpcFilePrimaryMetadata">
 		<xsd:sequence>
@@ -85,6 +93,7 @@
 	<xsd:complexType name="HpcProjectMetadata">
 		<xsd:sequence>
 			<xsd:element name="name" type="xsd:string" />
+			<xsd:element name="type" type="hpc-domain-metadata:HpcProjectType" />
 			<xsd:element name="description" type="xsd:string" />
 			<xsd:element name="primaryInvestigatorNihUserId" type="xsd:ID" />
 			<xsd:element name="registrarNihUserId" type="xsd:ID" />

@@ -45,9 +45,6 @@
         <jxb:bindings node="//xsd:simpleType[@name='HpcDatasetUserAssociation']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation"/>
         </jxb:bindings>
-        <jxb:bindings node="//xsd:simpleType[@name='HpcProjectType']">
-        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.dataset.HpcProjectType"/>
-		</jxb:bindings>
         <jxb:bindings node="//xsd:complexType[@name='HpcDataTransferReport']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport"/>
 		</jxb:bindings>
@@ -95,6 +92,9 @@
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:simpleType[@name='HpcCompressionStatus']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcCompressionStatus"/>
+        </jxb:bindings>
+        <jxb:bindings node="//xsd:simpleType[@name='HpcProjectType']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcProjectType"/>
         </jxb:bindings>
     </jxb:bindings>
    <jxb:bindings schemaLocation="HpcProject.xsd">
