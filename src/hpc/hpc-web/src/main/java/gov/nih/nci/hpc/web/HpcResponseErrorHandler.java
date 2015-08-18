@@ -5,6 +5,8 @@ import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -31,7 +33,6 @@ public class HpcResponseErrorHandler implements ResponseErrorHandler {
 
 	    @Override
 	    public void handleError(ClientHttpResponse response) throws IOException {
-	    	log.error("Response error: {} {}", response.getStatusCode(), response.getStatusText());
 	    	InputStream stream = response.getBody();
 			try {
 
@@ -39,9 +40,9 @@ public class HpcResponseErrorHandler implements ResponseErrorHandler {
 				 
 				Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 				HpcExceptionDTO dto = (HpcExceptionDTO) jaxbUnmarshaller.unmarshal(stream);
-				System.out.println(dto);
+				HpcWebException exception = new HpcWebException("Error Code: "+dto.getErrorType() + " Reason: "+dto.getMessage());
+		         throw exception;
 			} catch (JAXBException e) {
-				e.printStackTrace();
 			}
 	    	
 	    }

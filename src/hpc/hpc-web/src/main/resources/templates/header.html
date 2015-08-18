@@ -237,12 +237,17 @@
                           <li><a class="" th:href="@{/register/project}">Project/Experiment</a></li>
                      </ul>
                   </li>
-                  <li>
-                      <a class="" th:href="@{/search}">
+				  <li class="sub-menu">
+                      <a href="javascript:;" class="">
                           <i class="icon_search"></i>
                           <span>Search</span>
+                          <span class="menu-arrow arrow_carrot-right"></span>
                       </a>
-                  </li>
+                      <ul class="sub">
+                          <li><a class="" th:href="@{/searchdataset}">Dataset</a></li>
+                          <li><a class="" th:href="@{/searchproject}">Project/Experiment</a></li>
+                     </ul>
+                  </li>                  
                   <li class="sub-menu">
                       <a th:href="@{/manage}" class="">
                           <i class="social_share"></i>

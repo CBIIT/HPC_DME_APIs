@@ -13,6 +13,7 @@ import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
+import gov.nih.nci.hpc.web.util.RestClient;
 
 import java.net.URI;
 
@@ -27,6 +28,7 @@ import javax.ws.rs.core.Response;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -75,13 +77,15 @@ public class HpcLoginController extends AbstractHpcController {
 
   @RequestMapping(method = RequestMethod.POST)
   public String login(@Valid @ModelAttribute("hpcLogin") HpcUserCredentialsDTO hpcLogin, BindingResult bindingResult, Model model, HttpSession session) {
-	  RestTemplate restTemplate = new RestTemplate();
       if (bindingResult.hasErrors()) {
           return "index";
       }
+//      RestTemplate restTemplate = new RestTemplate(RestClient.getSSLRequestFactory());
+      RestTemplate restTemplate = new RestTemplate();
    	  HpcUserDTO userDTO = null;
    	  try
 	  {
+
 		  Client client = ClientBuilder.newClient().register(ClientResponseLoggingFilter.class);
     	  String authURL = authenticateHpcURL;
     	  if(loginModule == null || !loginModule.equals("ldap"))
