@@ -553,17 +553,18 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		              List<HpcDataTransferRequest> dataTransferRequests)
     		              throws HpcException
     {
-    	if(dataTransferRequests == null) {
+    	if(dataTransferRequests == null || dataTransferRequests.size() == 0) {
     		return false;
     	}
     	
     	boolean transferStatusChanged = false;
 		for(HpcDataTransferRequest dataTransferRequest : dataTransferRequests)
 		{
-			switch(dataTransferRequest.getStatus()) {
-				   case IN_PROGRESS:
-			       case FAILED:
-			       case INITIATED:
+			if(dataTransferRequest.getStatus() == null || 
+					dataTransferRequest.getStatus() == HpcDataTransferStatus.IN_PROGRESS ||
+							dataTransferRequest.getStatus() == HpcDataTransferStatus.FAILED ||
+									dataTransferRequest.getStatus() == HpcDataTransferStatus.INITIATED)
+			{
 				        // Get the data transfer account to use in checking status.
     		            HpcDataTransferAccount dataTransferAccount = 
  	    		               userService.getUser(dataTransferRequest.getRequesterNihUserId()).
@@ -580,10 +581,6 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 			            		datasetService.setDataTransferRequestStatus(dataTransferRequest, 
 			            		                                            dataTransferReport);
 			            
-			            break;
-			
-			       default:
-			    	   break;
 			}
 		}
 		
