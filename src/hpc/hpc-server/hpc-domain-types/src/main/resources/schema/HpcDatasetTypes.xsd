@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--  
- * HpcDatasetType.xsd
+ * HpcDatasetTypes.xsd
  *
  * Copyright SVG,  Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -51,14 +51,6 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 	
-	<xsd:simpleType name="HpcProjectType">
-		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="UNKONWN" />
-			<xsd:enumeration value="SEQUENCING" />
-			<xsd:enumeration value="ANALYSIS" />
-		</xsd:restriction>
-	</xsd:simpleType>	
-
 	<xsd:complexType name="HpcDataTransferReport">
 		<xsd:sequence>
 			<xsd:element name="taskID" type="xsd:string" />
