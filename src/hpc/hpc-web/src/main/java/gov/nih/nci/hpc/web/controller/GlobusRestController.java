@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class GlobusRestController {
 
 	@RequestMapping(value = "/getEndpoint", method = RequestMethod.GET)
-	public String getUserEndpoint(@RequestParam("userGO") String userGO,
+	public String getUserEndpoint(@RequestParam("searchTerm") String searchTerm, @RequestParam("userGO") String userGO,
 			@RequestParam("passGO") String passGO) {
 		JSONTransferAPIClient transferClient = null;
 		Result endPointList = null;
@@ -37,7 +37,7 @@ public class GlobusRestController {
 		try {
 			transferClient = getGOTransferClient(userGO, cli);
 			Map<String, String> params = new HashMap<String, String>();
-			// params.put("filter", "username:mahinarra");
+			params.put("filter", "canonical_name:~"+searchTerm+"*");
 			endPointList = transferClient.getResult("endpoint_list", params);
 		} catch (NexusClientException e) {
 			// TODO Auto-generated catch block
