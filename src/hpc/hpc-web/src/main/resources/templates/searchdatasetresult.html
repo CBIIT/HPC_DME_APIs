@@ -29,7 +29,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
     paginationPageSize: 25,
     treeRowHeaderAlwaysVisible: false,
     columnDefs: [
-      { field: 'id', width:250, displayName: 'Dataset Id', grouping: { groupPriority: 0 }, sort: { priority: 1, direction: 'asc' }, cellTemplate: '<div><div ng-if="!col.grouping || col.grouping.groupPriority === undefined || col.grouping.groupPriority === null || ( row.groupHeader &amp;&amp; col.grouping.groupPriority === row.treeLevel )" class="ui-grid-cell-contents" title="TOOLTIP"><a href="../dataset?id={{grid.appScope.getId(grid, row)}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div></div>'  },
+      { field: 'id', width:250, displayName: 'Dataset Id', grouping: { groupPriority: 0 }, cellTemplate: '<div><div ng-if="!col.grouping || col.grouping.groupPriority === undefined || col.grouping.groupPriority === null || ( row.groupHeader &amp;&amp; col.grouping.groupPriority === row.treeLevel )" class="ui-grid-cell-contents" title="TOOLTIP"><a href="../dataset?id={{grid.appScope.getId(grid, row)}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div></div>'  },
       { field: 'datasetName', width:100, displayName : 'Dataset Name' },
       { field: 'investigatorId', width:100, displayName : 'Investigator' },
       { field: 'createdOn', width:100, displayName : 'Created On'},
