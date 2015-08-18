@@ -24,7 +24,7 @@ import java.util.List;
  * </p>
  *
  * @author <a href="mailto:prasad.konka@nih.gov">Prasad Konka</a>
- * @version $Id:  $
+ * @version $Id$
  */
 
 public interface HpcProjectService 
@@ -103,6 +103,15 @@ public interface HpcProjectService
      */
     public List<HpcProject> getProjects(HpcProjectMetadata metadata) 
     		                           throws HpcException;
+    
+    /**
+     * Persist project to the DB.
+     *
+     * @param project The project to be persisted.
+     * 
+     * @throws HpcException
+     */
+    public void persist(HpcProject project) throws HpcException;
 }
 
  

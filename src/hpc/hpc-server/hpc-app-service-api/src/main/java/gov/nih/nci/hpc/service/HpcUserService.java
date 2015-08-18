@@ -10,12 +10,12 @@
 
 package gov.nih.nci.hpc.service;
 
-import java.util.List;
-
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcNihAccount;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.domain.user.HpcNihAccount;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.util.List;
 
 /**
  * <p>
@@ -60,6 +60,15 @@ public interface HpcUserService
      * @throws HpcException
      */
     public List<HpcUser> getUsers(String firstName, String lastName) throws HpcException;
+    
+    /**
+     * Persist user to the DB.
+     *
+     * @param user The user to be persisted.
+     * 
+     * @throws HpcException
+     */
+    public void persist(HpcUser user) throws HpcException;
 }
 
  

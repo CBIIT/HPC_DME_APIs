@@ -46,6 +46,8 @@ public abstract class HpcCodec<T> implements Codec<T>
 	public final static String DATA_TRANSFER_ACCOUNT_ACCOUNT_TYPE_KEY = 
 			                   "account_type";
 	// HpcProject Document keys.
+	public final static String PROJECT_CREATED_KEY = "created"; 
+	public final static String PROJECT_LAST_UPDATED_KEY = "last_updated"; 
 	public final static String PROJECT_ID_KEY = "id"; 
 	public final static String PROJECT_DATASET_IDS_KEY = "dataset_ids";
 	public final static String PROJECT_METADATA_KEY = "metadata";
@@ -68,6 +70,8 @@ public abstract class HpcCodec<T> implements Codec<T>
 	public final static String PROJECT_METADATA_METADATA_ITEMS_KEY = "metadata_items";
 	
 	// HpcDataset Document keys.
+	public final static String DATASET_CREATED_KEY = "created"; 
+	public final static String DATASET_LAST_UPDATED_KEY = "last_updated"; 
 	public final static String DATASET_ID_KEY = "id"; 
 	public final static String DATASET_FILE_SET_KEY = "file_set";
 	public final static String DATASET_UPLOAD_REQUESTS_KEY = 

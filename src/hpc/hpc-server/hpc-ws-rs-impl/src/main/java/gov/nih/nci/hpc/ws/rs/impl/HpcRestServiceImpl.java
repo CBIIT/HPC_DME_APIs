@@ -79,8 +79,7 @@ public abstract class HpcRestServiceImpl
 		if(entity != null) {
            return Response.ok(entity).
         		           header("Access-Control-Allow-Origin", "*").
-        		           header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").
-        		           build();
+        		           header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 		} else if(nullEntityAsNoContent) {
 			      return Response.status(Response.Status.NO_CONTENT).build();
 		} else {
