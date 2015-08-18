@@ -133,7 +133,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	
     	// Persist if requested.
     	if(persist) {
-    	   datasetDAO.upsert(dataset);
+    	   persist(dataset);
     	}
     	
     	logger.debug("Dataset added: " + dataset);
@@ -179,7 +179,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
 		
 		// Persist if requested.
     	if(persist) {
-     	   datasetDAO.upsert(dataset);
+     	   persist(dataset);
      	}
      	
      	logger.debug("File added: " + file);
@@ -238,20 +238,12 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
        	
 		// Persist if requested.
     	if(persist) {
-     	   datasetDAO.upsert(dataset);
+     	   persist(dataset);
      	}
     	
     	return file.getMetadata().getPrimaryMetadata().getMetadataItems();
     }
            
-    @Override
-    public void persist(HpcDataset dataset) throws HpcException
-    {
-    	if(dataset != null) {
-    	   datasetDAO.upsert(dataset);
-    	}
-    }
-    
     @Override
     public boolean setDataTransferRequestStatus(HpcDataTransferRequest dataTransferRequest, 
     		                                    HpcDataTransferReport dataTransferReport)
@@ -384,6 +376,15 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
 			throws HpcException {
 		return datasetDAO.getDatasetsByProjectId(projectId);
 	}
+	
+    @Override
+    public void persist(HpcDataset dataset) throws HpcException
+    {
+    	if(dataset != null) {
+    	   dataset.setLastUpdated(Calendar.getInstance());
+    	   datasetDAO.upsert(dataset);
+    	}
+    }
 	
     //---------------------------------------------------------------------//
     // Helper Methods

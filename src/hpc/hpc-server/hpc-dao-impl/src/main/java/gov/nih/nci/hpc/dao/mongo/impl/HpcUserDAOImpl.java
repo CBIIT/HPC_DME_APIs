@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mongodb.async.client.MongoCollection;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.result.UpdateResult;
 
 
 /**
@@ -105,11 +107,12 @@ public class HpcUserDAOImpl implements HpcUserDAO
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void add(HpcUser user) throws HpcException
+	public void upsert(HpcUser user) throws HpcException
     {
-		HpcSingleResultCallback<Void> callback = 
-				                      new HpcSingleResultCallback<Void>();
-		getCollection().insertOne(user, callback);
+		HpcSingleResultCallback<UpdateResult> callback = 
+				                      new HpcSingleResultCallback<UpdateResult>();
+		getCollection().replaceOne(eq(NIH_USER_ID_FIELD_NAME, user.getNihAccount().getUserId()), 
+				                   user, new UpdateOptions().upsert(true), callback);
        
 		// Throw the callback exception (if any).
 		callback.throwException();
