@@ -50,36 +50,39 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
     
     // Project ID field name.
 	public final static String PROJECT_ID_FIELD_NAME = HpcCodec.PROJECT_ID_KEY; 
-	public final static String REGISTRAR_NIH_USER_ID_FIELD_NAME = 
-		                       HpcCodec.PROJECT_METADATA_KEY + "." + 
-	                           HpcCodec.PROJECT_METADATA_REGISTRAR_NIH_USER_ID_KEY;
-	public final static String PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
-		                HpcCodec.PROJECT_METADATA_KEY + "." + 
-	                    HpcCodec.PROJECT_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY;
-	public final static String EXPERIMENT_ID_FIELD_NAME = 
-					           HpcCodec.PROJECT_METADATA_KEY + "." + 
-                               HpcCodec.PROJECT_METADATA_EXPERIMENT_ID_KEY;
 	public final static String NAME_FIELD_NAME = 
-	                           HpcCodec.PROJECT_METADATA_KEY + "." + 
-                               HpcCodec.PROJECT_METADATA_NAME_KEY;
+            HpcCodec.PROJECT_METADATA_KEY + "." + 
+            HpcCodec.PROJECT_METADATA_NAME_KEY;
+	public final static String TYPE_FIELD_NAME = 
+            HpcCodec.PROJECT_METADATA_KEY + "." + 
+            HpcCodec.PROJECT_METADATA_TYPE_KEY;
 	public final static String INTERNAL_PROJECT_ID_FIELD_NAME = 
-                               HpcCodec.PROJECT_METADATA_KEY + "." + 
-                               HpcCodec.PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY;
-	public final static String FUNDING_ORGANIZATION_FIELD_NAME = 
-                               HpcCodec.PROJECT_METADATA_KEY + "." + 
-                               HpcCodec.PROJECT_METADATA_FUNDING_ORGANIZATION_KEY;
-	public final static String DESCRIPTION_FIELD_NAME = 
-                               HpcCodec.PROJECT_METADATA_KEY + "." + 
-                               HpcCodec.PROJECT_METADATA_DESCRIPTION_KEY;
+            HpcCodec.PROJECT_METADATA_KEY + "." + 
+            HpcCodec.PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY;
+	public final static String PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
+            HpcCodec.PROJECT_METADATA_KEY + "." + 
+            HpcCodec.PROJECT_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY;
+	public final static String REGISTRAR_NIH_USER_ID_FIELD_NAME = 
+            HpcCodec.PROJECT_METADATA_KEY + "." + 
+            HpcCodec.PROJECT_METADATA_REGISTRAR_NIH_USER_ID_KEY;
 	public final static String LAB_BRANCH_FIELD_NAME = 
-                               HpcCodec.PROJECT_METADATA_KEY + "." + 
-                               HpcCodec.PROJECT_METADATA_LAB_BRANCH_KEY;
+            HpcCodec.PROJECT_METADATA_KEY + "." + 
+            HpcCodec.PROJECT_METADATA_LAB_BRANCH_KEY;
 	public final static String DOC_FIELD_NAME = 
-                               HpcCodec.PROJECT_METADATA_KEY + "." + 
-                               HpcCodec.PROJECT_METADATA_DOC_KEY;
+            HpcCodec.PROJECT_METADATA_KEY + "." + 
+            HpcCodec.PROJECT_METADATA_DOC_KEY;
+	public final static String CREATED_FIELD_NAME = 
+            HpcCodec.PROJECT_METADATA_KEY + "." + 
+            HpcCodec.PROJECT_METADATA_CREATED_KEY;
+	public final static String ORGANIZATIONAL_STRUCTURE_FIELD_NAME = 
+            HpcCodec.PROJECT_METADATA_KEY + "." + 
+            HpcCodec.PROJECT_METADATA_ORGANIZATIONAL_STRUCTURE_KEY;
+	public final static String DESCRIPTION_FIELD_NAME = 
+            HpcCodec.PROJECT_METADATA_KEY + "." + 
+            HpcCodec.PROJECT_METADATA_DESCRIPTION_KEY;
 	public final static String METADATA_ITEMS_FIELD_NAME = 
-                               HpcCodec.PROJECT_METADATA_KEY + "." + 
-                               HpcCodec.PROJECT_METADATA_METADATA_ITEMS_KEY;
+            HpcCodec.PROJECT_METADATA_KEY + "." + 
+            HpcCodec.PROJECT_METADATA_METADATA_ITEMS_KEY;
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -221,42 +224,46 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
     {
     	List<Bson> filters = new ArrayList<Bson>();
     	
-    	if(metadata.getExperimentId() != null) {
-    	   filters.add(eq(EXPERIMENT_ID_FIELD_NAME, 
-    			          metadata.getExperimentId()));
-    	}
     	if(metadata.getName() != null) {
-     	   filters.add(eq(NAME_FIELD_NAME, 
-     			          metadata.getName()));
-     	}
+      	   filters.add(eq(NAME_FIELD_NAME, 
+      			          metadata.getName()));
+      	}
+    	if(metadata.getType() != null) {
+      	   filters.add(eq(TYPE_FIELD_NAME, 
+      			          metadata.getType().value()));
+      	}
     	if(metadata.getInternalProjectId() != null) {
-       	   filters.add(eq(INTERNAL_PROJECT_ID_FIELD_NAME, 
-       			          metadata.getInternalProjectId()));
-       	}
-    	if(metadata.getFundingOrganization() != null) {
-           filters.add(eq(FUNDING_ORGANIZATION_FIELD_NAME, 
-        			      metadata.getFundingOrganization()));
+           filters.add(eq(INTERNAL_PROJECT_ID_FIELD_NAME, 
+        		          metadata.getInternalProjectId()));
         }
     	if(metadata.getPrimaryInvestigatorNihUserId() != null) {
            filters.add(eq(PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME, 
-         		          metadata.getPrimaryInvestigatorNihUserId()));
+          		          metadata.getPrimaryInvestigatorNihUserId()));
         }
-    	if(metadata.getRegistrarNihUserId() != null) {
-       	   filters.add(eq(REGISTRAR_NIH_USER_ID_FIELD_NAME, 
-       			          metadata.getRegistrarNihUserId()));
-      	}
-    	if(metadata.getDescription() != null) {
-        	   filters.add(regex(DESCRIPTION_FIELD_NAME, 
-        			             metadata.getDescription(), "i"));
+     	if(metadata.getRegistrarNihUserId() != null) {
+           filters.add(eq(REGISTRAR_NIH_USER_ID_FIELD_NAME, 
+        		          metadata.getRegistrarNihUserId()));
        	}
     	if(metadata.getLabBranch() != null) {
            filters.add(eq(LAB_BRANCH_FIELD_NAME, 
-         		          metadata.getLabBranch()));
+          		          metadata.getLabBranch()));
         }
     	if(metadata.getDoc() != null) {
-      	   filters.add(eq(DOC_FIELD_NAME, 
-      			          metadata.getDoc()));
-      	}
+       	   filters.add(eq(DOC_FIELD_NAME, 
+       			          metadata.getDoc()));
+       	}
+    	if(metadata.getCreated() != null) {
+           filters.add(eq(CREATED_FIELD_NAME, 
+        		          metadata.getCreated().getTime()));
+        }
+    	if(metadata.getOrganizationalStructure() != null) {
+           filters.add(eq(ORGANIZATIONAL_STRUCTURE_FIELD_NAME, 
+         			      metadata.getOrganizationalStructure()));
+        }
+    	if(metadata.getDescription() != null) {
+           filters.add(regex(DESCRIPTION_FIELD_NAME, 
+        		             metadata.getDescription(), "i"));
+       	}
     	if(metadata.getMetadataItems() != null && 
     	   metadata.getMetadataItems().size() > 0 ) {
      	   filters.add(all(METADATA_ITEMS_FIELD_NAME, 
