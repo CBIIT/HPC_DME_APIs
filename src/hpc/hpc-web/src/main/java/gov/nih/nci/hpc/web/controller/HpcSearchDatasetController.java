@@ -263,7 +263,7 @@ public class HpcSearchDatasetController extends AbstractHpcController {
 		if (search.getInvestigatorId() != null
 				&& search.getInvestigatorId().trim().length() > 0
 				&& !search.getInvestigatorId().equals("-1"))
-			metadata.setPrimaryInvestigatorNihUserId(search.getInvestigatorId());
+			metadata.setPrincipalInvestigatorNihUserId(search.getInvestigatorId());
 		if (search.getRegistarId() != null
 				&& search.getRegistarId().trim().length() > 0)
 			metadata.setRegistrarNihUserId(search.getRegistarId());
@@ -338,7 +338,7 @@ public class HpcSearchDatasetController extends AbstractHpcController {
 				searchResult.setFileId(file.getId());
 				searchResult.setFileType(file.getType().value());
 				searchResult.setFundingOrganization(file.getMetadata().getPrimaryMetadata().getFundingOrganization());
-				searchResult.setInvestigatorId(file.getMetadata().getPrimaryMetadata().getPrimaryInvestigatorNihUserId());
+				searchResult.setInvestigatorId(file.getMetadata().getPrimaryMetadata().getPrincipalInvestigatorNihUserId());
 				searchResult.setLabBranch(file.getMetadata().getPrimaryMetadata().getLabBranch());
 				searchResult.setRegistarId(file.getMetadata().getPrimaryMetadata().getRegistrarNihUserId());
 				searchResult.setProjectIds(file.getProjectIds());

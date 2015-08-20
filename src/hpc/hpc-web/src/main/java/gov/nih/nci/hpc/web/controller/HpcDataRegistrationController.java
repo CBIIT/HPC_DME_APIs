@@ -13,30 +13,23 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
-import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
-import gov.nih.nci.hpc.dto.user.HpcUserDTO;
-import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
-import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
-import gov.nih.nci.hpc.web.model.HpcDatasetRegistration;
-import gov.nih.nci.hpc.web.util.Util;
 import gov.nih.nci.hpc.domain.metadata.HpcCompressionStatus;
 import gov.nih.nci.hpc.domain.metadata.HpcEncryptionStatus;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.domain.metadata.HpcPHIContent;
 import gov.nih.nci.hpc.domain.metadata.HpcPIIContent;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserDTO;
+import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
+import gov.nih.nci.hpc.web.model.HpcDatasetRegistration;
+import gov.nih.nci.hpc.web.util.Util;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -44,7 +37,6 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -167,7 +159,7 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 
 			metadata.setFundingOrganization(registration
 					.getFundingOrganization());
-			metadata.setPrimaryInvestigatorNihUserId(registration
+			metadata.setPrincipalInvestigatorNihUserId(registration
 					.getInvestigatorId());
 			metadata.setRegistrarNihUserId(user.getNihAccount().getUserId());
 			metadata.setDescription(registration.getDescription());
