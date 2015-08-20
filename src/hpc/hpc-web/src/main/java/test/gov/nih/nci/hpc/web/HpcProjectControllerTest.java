@@ -72,7 +72,7 @@ public class HpcProjectControllerTest {
 		metadata.setInternalProjectId("Iproject");
 		metadata.setLabBranch("CCR");
 		metadata.setOrganizationalStructure("Org");
-		metadata.setPrimaryInvestigatorNihUserId("konkapv");
+		metadata.setPrincipalInvestigatorNihUserId("konkapv");
 		metadata.setRegistrarNihUserId("konkapv");
 		dto.setMetadata(metadata);
 		dto.getHpcDatasetRegistrationDTO().add(getDataset());
@@ -131,7 +131,7 @@ public class HpcProjectControllerTest {
 			metadata.setDataCompressed(HpcCompressionStatus.NOT_COMPRESSED);
 			metadata.setDataContainsPHI(HpcPHIContent.PHI_NOT_PRESENT);
 			metadata.setFundingOrganization("NCI");
-			metadata.setPrimaryInvestigatorNihUserId("konkapv");
+			metadata.setPrincipalInvestigatorNihUserId("konkapv");
 			metadata.setRegistrarNihUserId("konkapv");
 			metadata.setDescription("Description");
 			// TODO: ID Lookup
