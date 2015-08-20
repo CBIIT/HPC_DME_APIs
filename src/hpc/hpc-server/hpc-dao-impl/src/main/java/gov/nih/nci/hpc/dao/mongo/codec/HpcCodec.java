@@ -59,8 +59,8 @@ public abstract class HpcCodec<T> implements Codec<T>
 	public final static String PROJECT_METADATA_TYPE_KEY = "type";
 	public final static String PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY = 
 			                   "internal_project_id";
-	public final static String PROJECT_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY = 
-                               "primary_investigator_nih_user_id";
+	public final static String PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY = 
+                               "principal_investigator_nih_user_id";
 	public final static String PROJECT_METADATA_REGISTRAR_NIH_USER_ID_KEY = 
                                "registrar_nih_user_id";
 	public final static String PROJECT_METADATA_LAB_BRANCH_KEY = "lab_branch";
@@ -117,8 +117,8 @@ public abstract class HpcCodec<T> implements Codec<T>
     public final static String FILE_PRIMARY_METADATA_FUNDING_ORGANIZATION_KEY = 
                                "funding_organization";
     public final static String 
-                 FILE_PRIMARY_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY = 
-            				   "primary_investigator_nih_user_id"; 
+                 FILE_PRIMARY_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY = 
+            				   "principal_investigator_nih_user_id"; 
     public final static String FILE_PRIMARY_METADATA_CREATOR_NAME_KEY = 
     		                   "creator_name"; 
     public final static String FILE_PRIMARY_METADATA_REGISTRAR_NIH_USER_ID_KEY = 

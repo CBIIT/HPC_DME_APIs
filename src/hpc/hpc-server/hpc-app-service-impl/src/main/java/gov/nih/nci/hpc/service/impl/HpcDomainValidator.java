@@ -173,7 +173,7 @@ class HpcDomainValidator
     	   metadata.getDataEncrypted() == null ||
     	   //metadata.getDataCompressed() == null ||
     	   metadata.getFundingOrganization() == null || 
-    	   metadata.getPrimaryInvestigatorNihUserId() == null ||
+    	   metadata.getPrincipalInvestigatorNihUserId() == null ||
     	   metadata.getCreatorName() == null ||
     	   metadata.getRegistrarNihUserId() == null ||
     	   metadata.getDescription() == null ||
@@ -198,7 +198,7 @@ class HpcDomainValidator
     	   metadata.getName() == null ||
     	   metadata.getType() == null ||
     	   metadata.getInternalProjectId() == null ||
-    	   metadata.getPrimaryInvestigatorNihUserId() == null ||
+    	   metadata.getPrincipalInvestigatorNihUserId() == null ||
     	   metadata.getRegistrarNihUserId() == null ||
     	   metadata.getLabBranch() == null ||
     	   metadata.getDoc() == null ||

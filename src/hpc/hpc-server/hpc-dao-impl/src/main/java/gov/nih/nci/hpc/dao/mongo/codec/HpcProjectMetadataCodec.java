@@ -66,8 +66,8 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		String name = projectMetadata.getName();
 		HpcProjectType type = projectMetadata.getType();
 		String internalProjectId = projectMetadata.getInternalProjectId();
-		String primaryInvestigatorNihUserId = 
-			          projectMetadata.getPrimaryInvestigatorNihUserId();
+		String principalInvestigatorNihUserId = 
+			          projectMetadata.getPrincipalInvestigatorNihUserId();
 		String registrarNihUserId = projectMetadata.getRegistrarNihUserId();
 		String labBranch = projectMetadata.getLabBranch();
 		String doc = projectMetadata.getDoc();
@@ -86,9 +86,9 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		if(internalProjectId != null) {
 		   document.put(PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY, internalProjectId);
 		}
-		if(primaryInvestigatorNihUserId != null) {
-		   document.put(PROJECT_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY, 
-			            primaryInvestigatorNihUserId);
+		if(principalInvestigatorNihUserId != null) {
+		   document.put(PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY, 
+			            principalInvestigatorNihUserId);
 		}
 		if(registrarNihUserId != null) {
 		   document.put(PROJECT_METADATA_REGISTRAR_NIH_USER_ID_KEY, 
@@ -136,9 +136,9 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
                                 HpcProjectType.valueOf(typeStr) : null);
 		projectMetadata.setInternalProjectId(
 		                document.getString(PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY));
-		projectMetadata.setPrimaryInvestigatorNihUserId(
+		projectMetadata.setPrincipalInvestigatorNihUserId(
                         document.getString(
-                        PROJECT_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY));
+                        PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY));
 		projectMetadata.setRegistrarNihUserId(
                         document.getString(PROJECT_METADATA_REGISTRAR_NIH_USER_ID_KEY));
 		projectMetadata.setLabBranch(document.getString(PROJECT_METADATA_LAB_BRANCH_KEY));

@@ -224,22 +224,22 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     }
     
 	@Override
-	public Response getDatasetsByPrimaryInvestigatorId(
-			                     String primaryInvestigatorNihUserId) {
-    	logger.info("Invoking RS: GET /dataset/query/primaryInvestigator/{id}: " + 
-    			    primaryInvestigatorNihUserId);
+	public Response getDatasetsByPrincipalInvestigatorId(
+			                     String principalInvestigatorNihUserId) {
+    	logger.info("Invoking RS: GET /dataset/query/principalInvestigator/{id}: " + 
+    			    principalInvestigatorNihUserId);
 	
 		HpcDatasetCollectionDTO datasetCollectionDTO = null;
 		List<String> userIds = new ArrayList<String>();
 		
 		try {
-			 userIds.add(primaryInvestigatorNihUserId);
+			 userIds.add(principalInvestigatorNihUserId);
 			 datasetCollectionDTO = datasetBusService.getDatasets(
-					                       userIds, 
-						                   HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR); 
+					                userIds, 
+						            HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR); 
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/primaryInvestigator/{id}: failed:", e);
+			    logger.error("RS: GET /dataset/query/principalInvestigator/{id}: failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -247,8 +247,8 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response getDatasetsByPrimaryInvestigatorName(String firstName,
-    		                                             String lastName)
+    public Response getDatasetsByPrincipalInvestigatorName(String firstName,
+    		                                               String lastName)
     {
     	logger.info("Invoking RS: GET /dataset/query/primaryInvestigator: " + 
     			    firstName + " " + lastName);
@@ -257,7 +257,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 		try {
 			 datasetCollectionDTO = datasetBusService.getDatasets(
 					                       firstName, lastName, 
-						                   HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR); 
+						                   HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR); 
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /dataset/query/primaryInvestigator: failed:", e);

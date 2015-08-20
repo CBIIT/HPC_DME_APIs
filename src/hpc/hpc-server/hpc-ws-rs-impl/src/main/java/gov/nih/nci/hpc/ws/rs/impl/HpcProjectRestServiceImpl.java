@@ -146,18 +146,19 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
     }
 
     @Override
-    public Response getProjectsByInvestigatorId(String investigatorId)
+    public Response getProjectsByPrincipalInvestigatorId(String principalInvestigatorNihUserId)
     {
-    	logger.info("Invoking RS: GET /project/query/pi/{id}: " + investigatorId);
+    	logger.info("Invoking RS: GET /project/query/principalInvestigator/{id}: " + 
+                    principalInvestigatorNihUserId);
     	
 		HpcProjectCollectionDTO projectCollectionDTO = null;
 		try {
 			 projectCollectionDTO = projectBusService.getProjects(
-			  							   investigatorId, 
-						                   HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR); 
+					                       principalInvestigatorNihUserId, 
+						                   HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR); 
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /project/query/pi/{id}: failed:", e);
+			    logger.error("RS: GET /project/query/principalInvestigator/{id}: failed:", e);
 			    return errorResponse(e);
 		}
 		

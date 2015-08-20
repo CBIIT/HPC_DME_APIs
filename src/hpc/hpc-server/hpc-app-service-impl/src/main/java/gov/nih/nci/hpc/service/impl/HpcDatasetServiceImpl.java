@@ -316,7 +316,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     		primaryMetadata.getDataEncrypted() == null &&
     		primaryMetadata.getDataCompressed() == null &&
     		primaryMetadata.getFundingOrganization() == null && 
-    		primaryMetadata.getPrimaryInvestigatorNihUserId() == null &&
+    		primaryMetadata.getPrincipalInvestigatorNihUserId() == null &&
     		primaryMetadata.getCreatorName() == null &&
     		primaryMetadata.getRegistrarNihUserId() == null &&
     		primaryMetadata.getDescription() == null &&
