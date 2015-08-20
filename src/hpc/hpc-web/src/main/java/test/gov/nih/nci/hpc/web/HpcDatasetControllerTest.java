@@ -101,7 +101,7 @@ public class HpcDatasetControllerTest {
 			metadata.setDataCompressed(HpcCompressionStatus.NOT_COMPRESSED);
 			metadata.setDataContainsPHI(HpcPHIContent.PHI_NOT_PRESENT);
 			metadata.setFundingOrganization("NCI");
-			metadata.setPrimaryInvestigatorNihUserId("konkapv");
+			metadata.setPrincipalInvestigatorNihUserId("konkapv");
 			metadata.setRegistrarNihUserId("konkapv");
 			metadata.setDescription("Description");			// TODO: ID Lookup
 			metadata.setCreatorName("PRasad Konka");
@@ -253,7 +253,7 @@ public class HpcDatasetControllerTest {
 		HpcFilePrimaryMetadata metadata = new HpcFilePrimaryMetadata();
 		metadata.setDataContainsPII(HpcPIIContent.PII_NOT_PRESENT);
 		metadata.setFundingOrganization("NCI");
-		metadata.setPrimaryInvestigatorNihUserId("konkapv");
+		metadata.setPrincipalInvestigatorNihUserId("konkapv");
 		metadata.setLabBranch("CCR");
 
 		dto.setMetadata(metadata);
