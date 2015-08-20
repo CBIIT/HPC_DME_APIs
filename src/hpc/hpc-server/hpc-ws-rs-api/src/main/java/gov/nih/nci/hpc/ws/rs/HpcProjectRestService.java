@@ -83,9 +83,10 @@ public interface HpcProjectRestService
      * @return gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO entity.
      */
     @GET
-    @Path("/project/query/pi/{id}")
+    @Path("/project/query/principalInvestigator/{id}")
     @Produces("application/json,application/xml")
-    public Response getProjectsByInvestigatorId(@PathParam("id") String inverstigatorId); 
+    public Response getProjectsByPrincipalInvestigatorId(
+    		           @PathParam("id") String principalInvestigatorNihUserId); 
     
     /**
      * POST Projects by primary metadata.

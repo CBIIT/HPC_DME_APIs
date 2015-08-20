@@ -70,8 +70,8 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 		HpcEncryptionStatus dataEncrypted = filePrimaryMetadata.getDataEncrypted();
 		HpcCompressionStatus dataCompressed = filePrimaryMetadata.getDataCompressed();
 		String fundingOrganization = filePrimaryMetadata.getFundingOrganization();
-		String primaryInvestigatorNihUserId = 
-				      filePrimaryMetadata.getPrimaryInvestigatorNihUserId();
+		String principalInvestigatorNihUserId = 
+				        filePrimaryMetadata.getPrincipalInvestigatorNihUserId();
 		String creatorName = filePrimaryMetadata.getCreatorName();
 		String registrarNihUserId = 
 				        filePrimaryMetadata.getRegistrarNihUserId();
@@ -100,10 +100,10 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 		   document.put(FILE_PRIMARY_METADATA_FUNDING_ORGANIZATION_KEY, 
 					    fundingOrganization);
 		}
-		if(primaryInvestigatorNihUserId != null) {
-			   document.put(
-			   FILE_PRIMARY_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY, 
-			   primaryInvestigatorNihUserId);
+		if(principalInvestigatorNihUserId != null) {
+		   document.put(
+		   FILE_PRIMARY_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY, 
+		   principalInvestigatorNihUserId);
 		}
 		if(creatorName != null) {
 		   document.put(FILE_PRIMARY_METADATA_CREATOR_NAME_KEY, 
@@ -150,8 +150,8 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 				   document.getString(FILE_PRIMARY_METADATA_DATA_COMPRESSED_KEY)));
 		filePrimaryMetadata.setFundingOrganization(
 				   document.getString(FILE_PRIMARY_METADATA_FUNDING_ORGANIZATION_KEY));
-		filePrimaryMetadata.setPrimaryInvestigatorNihUserId(
-		    document.getString(FILE_PRIMARY_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY));
+		filePrimaryMetadata.setPrincipalInvestigatorNihUserId(
+		    document.getString(FILE_PRIMARY_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY));
 		filePrimaryMetadata.setCreatorName(
 		    document.getString(FILE_PRIMARY_METADATA_CREATOR_NAME_KEY));
 		filePrimaryMetadata.setRegistrarNihUserId(
