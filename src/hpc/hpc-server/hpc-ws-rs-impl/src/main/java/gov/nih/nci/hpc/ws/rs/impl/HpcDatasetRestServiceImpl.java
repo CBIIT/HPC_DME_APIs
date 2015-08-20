@@ -250,7 +250,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     public Response getDatasetsByPrincipalInvestigatorName(String firstName,
     		                                               String lastName)
     {
-    	logger.info("Invoking RS: GET /dataset/query/primaryInvestigator: " + 
+    	logger.info("Invoking RS: GET /dataset/query/principalInvestigator: " + 
     			    firstName + " " + lastName);
     	
 		HpcDatasetCollectionDTO datasetCollectionDTO = null;
@@ -260,7 +260,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 						                   HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR); 
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/primaryInvestigator: failed:", e);
+			    logger.error("RS: GET /dataset/query/principalInvestigator: failed:", e);
 			    return errorResponse(e);
 		}
 		
