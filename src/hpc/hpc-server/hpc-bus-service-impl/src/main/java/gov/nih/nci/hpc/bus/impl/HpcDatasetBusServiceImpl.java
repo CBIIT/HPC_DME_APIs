@@ -413,8 +413,8 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		}
     		
     		// Verify PI and Registrar are registered with HPC.
-    		validateUser(uploadRequest.getMetadata().getPrimaryInvestigatorNihUserId(),
-    				     HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR);
+    		validateUser(uploadRequest.getMetadata().getPrincipalInvestigatorNihUserId(),
+    				     HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR);
     		HpcUser registrar =
     		validateUser(uploadRequest.getMetadata().getRegistrarNihUserId(),
 			             HpcDatasetUserAssociation.REGISTRAR);

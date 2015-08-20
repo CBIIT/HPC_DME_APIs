@@ -59,9 +59,9 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
 	public final static String INTERNAL_PROJECT_ID_FIELD_NAME = 
             HpcCodec.PROJECT_METADATA_KEY + "." + 
             HpcCodec.PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY;
-	public final static String PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
+	public final static String PRINCIPAL_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
             HpcCodec.PROJECT_METADATA_KEY + "." + 
-            HpcCodec.PROJECT_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY;
+            HpcCodec.PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY;
 	public final static String REGISTRAR_NIH_USER_ID_FIELD_NAME = 
             HpcCodec.PROJECT_METADATA_KEY + "." + 
             HpcCodec.PROJECT_METADATA_REGISTRAR_NIH_USER_ID_KEY;
@@ -162,8 +162,8 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
 		// Determine the field name needed to query for the requested association.
 		String fieldName = null;
 		switch(association) {
-		       case PRIMARY_INVESTIGATOR:
-		            fieldName = PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME;
+		       case PRINCIPAL_INVESTIGATOR:
+		            fieldName = PRINCIPAL_INVESTIGATOR_NIH_USER_ID_FIELD_NAME;
 		            break;
 		            
 		       case REGISTRAR:
@@ -236,9 +236,9 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
            filters.add(eq(INTERNAL_PROJECT_ID_FIELD_NAME, 
         		          metadata.getInternalProjectId()));
         }
-    	if(metadata.getPrimaryInvestigatorNihUserId() != null) {
-           filters.add(eq(PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME, 
-          		          metadata.getPrimaryInvestigatorNihUserId()));
+    	if(metadata.getPrincipalInvestigatorNihUserId() != null) {
+           filters.add(eq(PRINCIPAL_INVESTIGATOR_NIH_USER_ID_FIELD_NAME, 
+          		          metadata.getPrincipalInvestigatorNihUserId()));
         }
      	if(metadata.getRegistrarNihUserId() != null) {
            filters.add(eq(REGISTRAR_NIH_USER_ID_FIELD_NAME, 

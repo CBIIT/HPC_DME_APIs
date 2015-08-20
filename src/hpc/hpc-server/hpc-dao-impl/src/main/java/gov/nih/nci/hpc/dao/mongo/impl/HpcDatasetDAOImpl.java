@@ -68,12 +68,12 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 	                           HpcCodec.FILE_PROJECT_IDS_KEY;
 	
 	// Field names to query by NIH user id.
-	public final static String PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
+	public final static String PRINCIPAL_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
                  HpcCodec.DATASET_FILE_SET_KEY + "." + 
                  HpcCodec.FILE_SET_FILES_KEY + "." + 
                  HpcCodec.FILE_METADATA_KEY + "." + 
                  HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
-                 HpcCodec.FILE_PRIMARY_METADATA_PRIMARY_INVESTIGATOR_NIH_USER_ID_KEY;
+                 HpcCodec.FILE_PRIMARY_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY;
 	public final static String CREATOR_NAME_FIELD_NAME = 
 			     HpcCodec.DATASET_FILE_SET_KEY + "." + 
 	             HpcCodec.FILE_SET_FILES_KEY + "." + 
@@ -370,9 +370,9 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
        	   filters.add(eq(FUNDING_ORGANIZATION_FIELD_NAME, 
        			          primaryMetadata.getFundingOrganization()));
        	}
-    	if(primaryMetadata.getPrimaryInvestigatorNihUserId() != null) {
-           filters.add(eq(PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME, 
-        		          primaryMetadata.getPrimaryInvestigatorNihUserId()));
+    	if(primaryMetadata.getPrincipalInvestigatorNihUserId() != null) {
+           filters.add(eq(PRINCIPAL_INVESTIGATOR_NIH_USER_ID_FIELD_NAME, 
+        		          primaryMetadata.getPrincipalInvestigatorNihUserId()));
         }
     	if(primaryMetadata.getCreatorName() != null) {
      	   filters.add(eq(CREATOR_NAME_FIELD_NAME, 
@@ -411,8 +411,8 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
                                throws HpcException
     {
 		switch(association) {
-	           case PRIMARY_INVESTIGATOR:
-	                return PRIMARY_INVESTIGATOR_NIH_USER_ID_FIELD_NAME;
+	           case PRINCIPAL_INVESTIGATOR:
+	                return PRINCIPAL_INVESTIGATOR_NIH_USER_ID_FIELD_NAME;
 	         
 	           case REGISTRAR:
 	                return REGISTRAR_NIH_USER_ID_FIELD_NAME;

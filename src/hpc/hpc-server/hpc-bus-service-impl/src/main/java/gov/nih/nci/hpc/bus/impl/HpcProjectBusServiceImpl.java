@@ -284,8 +284,8 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     	}
     	
 		// Verify PI, Creator and Registrar are registered with HPC.
-		validateUser(projectDTO.getMetadata().getPrimaryInvestigatorNihUserId(),
-				     HpcDatasetUserAssociation.PRIMARY_INVESTIGATOR);
+		validateUser(projectDTO.getMetadata().getPrincipalInvestigatorNihUserId(),
+				     HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR);
 		validateUser(projectDTO.getMetadata().getRegistrarNihUserId(),
 		             HpcDatasetUserAssociation.REGISTRAR);
     }
