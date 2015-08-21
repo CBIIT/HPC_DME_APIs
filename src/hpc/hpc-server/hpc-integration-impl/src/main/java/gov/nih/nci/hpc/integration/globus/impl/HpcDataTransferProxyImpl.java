@@ -187,9 +187,18 @@ public class HpcDataTransferProxyImpl
 	        hpcDataTransferReport.setTaskID(taskId);
 			hpcDataTransferReport.setTaskType(r.document.getString("type"));
 	        hpcDataTransferReport.setStatus(r.document.getString("status"));
-	        hpcDataTransferReport.setRequestTime(convertToLexicalTime(r.document.getString("request_time")));
-	        hpcDataTransferReport.setDeadline(convertToLexicalTime(r.document.getString("deadline")));
-	        hpcDataTransferReport.setCompletionTime(convertToLexicalTime(r.document.getString("completion_time")));
+	        if (r.document.has("request_time") && !r.document.isNull("request_time"))
+	        	hpcDataTransferReport.setRequestTime(convertToLexicalTime(r.document.getString("request_time")));
+	        else
+	        	hpcDataTransferReport.setRequestTime(null);  
+	        if (r.document.has("deadline") && !r.document.isNull("deadline"))
+	        	hpcDataTransferReport.setDeadline(convertToLexicalTime(r.document.getString("deadline")));
+	        else
+	        	hpcDataTransferReport.setDeadline(null);     
+	        if (r.document.has("completion_time") && !r.document.isNull("completion_time"))
+	        	hpcDataTransferReport.setCompletionTime(convertToLexicalTime(r.document.getString("completion_time")));
+	        else
+	        	hpcDataTransferReport.setCompletionTime(null);
 	        hpcDataTransferReport.setTotalTasks(r.document.getInt("subtasks_total"));
 	        hpcDataTransferReport.setTasksSuccessful(r.document.getInt("subtasks_succeeded"));
 	        hpcDataTransferReport.setTasksExpired(r.document.getInt("subtasks_expired"));
@@ -226,6 +235,7 @@ public class HpcDataTransferProxyImpl
     		return DatatypeConverter.parseDateTime(timeStr.trim().replace(' ', 'T'));
 	}
 
+    
 	private JSONObject setJSONItem(HpcDataTransferLocations transferLocations,JSONTransferAPIClient client,String nihUsername)  throws HpcException {
     	JSONObject item = new JSONObject();
     	try {
