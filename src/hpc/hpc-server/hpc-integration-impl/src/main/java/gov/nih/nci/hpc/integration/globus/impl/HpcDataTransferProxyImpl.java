@@ -233,7 +233,10 @@ public class HpcDataTransferProxyImpl
 	        item.put("source_endpoint", transferLocations.getSource().getEndpoint());
 	        item.put("source_path", transferLocations.getSource().getPath());
 	        item.put("destination_endpoint", transferLocations.getDestination().getEndpoint());
-	        item.put("destination_path", getGODestinationPath(transferLocations.getDestination().getPath(),nihUsername));
+	        if(transferLocations.getDestination() != null && transferLocations.getDestination().getPath() != null && !transferLocations.getDestination().getPath().isEmpty())
+	        	item.put("destination_path", getGODestinationPath(transferLocations.getDestination().getPath(),nihUsername));
+	        else
+	        	item.put("destination_path", getGODestinationPath(transferLocations.getSource().getPath(),nihUsername));
 	        item.put("recursive", checkFileDirectoryAndSetRecursive(transferLocations.getSource().getEndpoint(),transferLocations.getSource().getPath(),client));
 	        return item;
 	        
