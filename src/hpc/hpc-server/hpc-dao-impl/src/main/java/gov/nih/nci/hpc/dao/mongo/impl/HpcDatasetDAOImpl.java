@@ -130,6 +130,24 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
             HpcCodec.FILE_METADATA_KEY + "." + 
             HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
             HpcCodec.FILE_PRIMARY_METADATA_LAB_BRANCH_KEY;
+	public final static String PRINCIPAL_INVESTIGATOR_DOC_FIELD_NAME = 
+            HpcCodec.DATASET_FILE_SET_KEY + "." + 
+            HpcCodec.FILE_SET_FILES_KEY + "." + 
+            HpcCodec.FILE_METADATA_KEY + "." + 
+            HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
+            HpcCodec.FILE_PRIMARY_METADATA_PRINCIPAL_INVESTIGATOR_DOC_KEY;
+	public final static String REGISTRAR_DOC_FIELD_NAME = 
+            HpcCodec.DATASET_FILE_SET_KEY + "." + 
+            HpcCodec.FILE_SET_FILES_KEY + "." + 
+            HpcCodec.FILE_METADATA_KEY + "." + 
+            HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
+            HpcCodec.FILE_PRIMARY_METADATA_REGISTRAR_DOC_KEY;
+	public final static String ORIGINALLY_CREATED_FIELD_NAME = 
+            HpcCodec.DATASET_FILE_SET_KEY + "." + 
+            HpcCodec.FILE_SET_FILES_KEY + "." + 
+            HpcCodec.FILE_METADATA_KEY + "." + 
+            HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
+            HpcCodec.FILE_PRIMARY_METADATA_ORIGINALLY_CREATED_KEY;
 	public final static String METADATA_ITEMS_FIELD_NAME = 
             HpcCodec.DATASET_FILE_SET_KEY + "." + 
             HpcCodec.FILE_SET_FILES_KEY + "." + 
@@ -390,6 +408,18 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
            filters.add(eq(LAB_BRANCH_FIELD_NAME, 
         		          primaryMetadata.getLabBranch()));
        	}
+    	if(primaryMetadata.getPrincipalInvestigatorDOC() != null) {
+            filters.add(eq(PRINCIPAL_INVESTIGATOR_DOC_FIELD_NAME, 
+         		           primaryMetadata.getPrincipalInvestigatorDOC()));
+        }
+    	if(primaryMetadata.getRegistrarDOC() != null) {
+            filters.add(eq(REGISTRAR_DOC_FIELD_NAME, 
+         		           primaryMetadata.getRegistrarDOC()));
+        }
+    	if(primaryMetadata.getOriginallyCreated() != null) {
+            filters.add(eq(ORIGINALLY_CREATED_FIELD_NAME, 
+            		primaryMetadata.getOriginallyCreated().getTime()));
+        }
     	if(primaryMetadata.getMetadataItems() != null && 
     	   primaryMetadata.getMetadataItems().size() > 0) {
      	   filters.add(all(METADATA_ITEMS_FIELD_NAME, 

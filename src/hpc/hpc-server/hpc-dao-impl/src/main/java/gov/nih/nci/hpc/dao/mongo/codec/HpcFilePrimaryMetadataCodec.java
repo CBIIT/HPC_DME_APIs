@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.domain.metadata.HpcPHIContent;
 import gov.nih.nci.hpc.domain.metadata.HpcPIIContent;
 
+import java.util.Calendar;
 import java.util.List;
 
 import org.bson.BsonReader;
@@ -77,6 +78,9 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 				        filePrimaryMetadata.getRegistrarNihUserId();
 		String labBranch = filePrimaryMetadata.getLabBranch();
 		String description = filePrimaryMetadata.getDescription();
+		String principalInvestigatorDOC = filePrimaryMetadata.getPrincipalInvestigatorDOC();
+		String registrarDOC = filePrimaryMetadata.getRegistrarDOC();
+		Calendar originallyCreated = filePrimaryMetadata.getOriginallyCreated();
 		List<HpcMetadataItem> metadataItems = filePrimaryMetadata.getMetadataItems();
 		
 		// Set the data on the BSON document.
@@ -119,6 +123,18 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 		if(description != null) {
 		   document.put(FILE_PRIMARY_METADATA_DESCRIPTION_KEY, description);
 		}
+		
+		if(principalInvestigatorDOC != null) {
+		   document.put(FILE_PRIMARY_METADATA_PRINCIPAL_INVESTIGATOR_DOC_KEY, 
+				        principalInvestigatorDOC);
+		}	
+		if(registrarDOC != null) {
+		   document.put(FILE_PRIMARY_METADATA_REGISTRAR_DOC_KEY, registrarDOC);
+		}	
+		if(originallyCreated != null) {
+		   document.put(FILE_PRIMARY_METADATA_ORIGINALLY_CREATED_KEY, 
+				        originallyCreated.getTime());
+		}	
 		if(metadataItems != null && metadataItems.size() > 0) {
 		   document.put(FILE_PRIMARY_METADATA_METADATA_ITEMS_KEY, 
 				        metadataItems);
@@ -160,6 +176,17 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 			document.getString(FILE_PRIMARY_METADATA_LAB_BRANCH_KEY));
 		filePrimaryMetadata.setDescription(
 			document.getString(FILE_PRIMARY_METADATA_DESCRIPTION_KEY));
+		
+		filePrimaryMetadata.setPrincipalInvestigatorDOC(
+			document.getString(FILE_PRIMARY_METADATA_PRINCIPAL_INVESTIGATOR_DOC_KEY));
+		filePrimaryMetadata.setRegistrarDOC(
+			document.getString(FILE_PRIMARY_METADATA_REGISTRAR_DOC_KEY));
+		if(document.getDate(FILE_PRIMARY_METADATA_ORIGINALLY_CREATED_KEY) != null) {
+			Calendar originallyCreated = Calendar.getInstance();
+			originallyCreated.setTime(document.getDate(
+					  FILE_PRIMARY_METADATA_ORIGINALLY_CREATED_KEY));
+			filePrimaryMetadata.setOriginallyCreated(originallyCreated);
+		}
 		
 		// Map the collections.
 		List<Document> metadataItemDocuments = 

@@ -14,8 +14,6 @@ import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import org.bson.BsonReader;
@@ -65,7 +63,6 @@ public class HpcFileSetCodec extends HpcCodec<HpcFileSet>
 		String name = fileSet.getName();
 		String description = fileSet.getDescription();
 		String comments = fileSet.getComments();
-		Calendar created = fileSet.getCreated();
 		List<HpcFile> files = fileSet.getFiles();
  
 		// Set the data on the BSON document.
@@ -77,9 +74,6 @@ public class HpcFileSetCodec extends HpcCodec<HpcFileSet>
 		}
 		if(comments != null) {
 		   document.put(FILE_SET_COMMENTS_KEY, comments);
-		}
-		if(created != null) {
-		   document.put(FILE_SET_CREATED_KEY, created.getTime());
 		}
 		if(files != null && files.size() > 0) {
 		   document.put(FILE_SET_FILES_KEY, files);
@@ -104,13 +98,6 @@ public class HpcFileSetCodec extends HpcCodec<HpcFileSet>
 		fileSet.setName(document.getString(FILE_SET_NAME_KEY));
 		fileSet.setDescription(document.getString(FILE_SET_DESCRIPTION_KEY));
 		fileSet.setComments(document.getString(FILE_SET_COMMENTS_KEY));
-		
-		Date createdDate = document.getDate(FILE_SET_CREATED_KEY);
-		if(createdDate != null) {
-		   Calendar createdCal = Calendar.getInstance();
-		   createdCal.setTime(document.getDate(FILE_SET_CREATED_KEY));
-		   fileSet.setCreated(createdCal);
-		}
 		
 		List<Document> fileDocuments = 
 				       (List<Document>) document.get(FILE_SET_FILES_KEY);
