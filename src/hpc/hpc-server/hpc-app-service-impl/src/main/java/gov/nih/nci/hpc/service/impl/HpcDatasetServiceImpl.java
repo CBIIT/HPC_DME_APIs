@@ -121,6 +121,9 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	// Generate and set its ID.
     	dataset.setId(keyGenerator.generateKey());
     	
+    	// Set created date.
+    	dataset.setCreated(Calendar.getInstance());
+    	
     	// Associate the FileSet.
     	HpcFileSet fileSet = new HpcFileSet();
 
@@ -128,7 +131,6 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	fileSet.setName(name);
     	fileSet.setDescription(description);
     	fileSet.setComments(comments);
-    	fileSet.setCreated(Calendar.getInstance());
     	dataset.setFileSet(fileSet);
     	
     	// Persist if requested.
@@ -321,6 +323,9 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     		primaryMetadata.getRegistrarNihUserId() == null &&
     		primaryMetadata.getDescription() == null &&
     		primaryMetadata.getLabBranch() == null &&
+    	    primaryMetadata.getPrincipalInvestigatorDOC() == null &&
+    	    primaryMetadata.getRegistrarDOC() == null &&
+    	    primaryMetadata.getOriginallyCreated() == null &&
     		(primaryMetadata.getMetadataItems() == null ||
     		 primaryMetadata.getMetadataItems().size() ==0))) {
     		throw new HpcException("Invalid primary metadata", 
