@@ -73,10 +73,13 @@
 			<xsd:element name="dataCompressed" type="hpc-domain-metadata:HpcCompressionStatus" />
 			<xsd:element name="fundingOrganization" type="xsd:string" />
 			<xsd:element name="principalInvestigatorNihUserId" type="xsd:string" />
+			<xsd:element name="principalInvestigatorDOC" type="xsd:string" />
 			<xsd:element name="creatorName" type="xsd:string" />
-			<xsd:element name="registrarNihUserId" type="xsd:ID" />
+			<xsd:element name="registrarNihUserId" type="xsd:string" />
+			<xsd:element name="registrarDOC" type="xsd:string" />
 			<xsd:element name="description" type="xsd:string" />
 			<xsd:element name="labBranch" type="xsd:string" />
+			<xsd:element name="originallyCreated" type="xsd:date" />
 			<xsd:element name="metadataItems" 
 			             type="hpc-domain-metadata:HpcMetadataItem"
 				         minOccurs="0" maxOccurs="unbounded" />

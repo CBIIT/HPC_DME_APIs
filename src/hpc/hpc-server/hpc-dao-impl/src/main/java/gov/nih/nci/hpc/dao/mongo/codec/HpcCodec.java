@@ -85,7 +85,6 @@ public abstract class HpcCodec<T> implements Codec<T>
 	public final static String FILE_SET_NAME_KEY = "name"; 
 	public final static String FILE_SET_DESCRIPTION_KEY = "description";
 	public final static String FILE_SET_COMMENTS_KEY = "comments";
-	public final static String FILE_SET_CREATED_KEY = "created"; 
 	public final static String FILE_SET_FILES_KEY = "files";
     
     // HpcFile Document keys.
@@ -127,6 +126,12 @@ public abstract class HpcCodec<T> implements Codec<T>
     		                   "lab_branch"; 
     public final static String FILE_PRIMARY_METADATA_DESCRIPTION_KEY = 
     		                   "description";
+    public final static String FILE_PRIMARY_METADATA_PRINCIPAL_INVESTIGATOR_DOC_KEY = 
+                               "principal_investigator_doc";
+    public final static String FILE_PRIMARY_METADATA_REGISTRAR_DOC_KEY = 
+                               "registrar_doc";
+    public final static String FILE_PRIMARY_METADATA_ORIGINALLY_CREATED_KEY = 
+                               "originally_created";
     public final static String FILE_PRIMARY_METADATA_METADATA_ITEMS_KEY = 
                                "metadata_items";
     
