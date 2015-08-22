@@ -106,13 +106,17 @@ public class HpcUserCodec extends HpcCodec<HpcUser>
                                                  Document.class),
                                     decoderContext, getRegistry()));
 		
-		Calendar created = Calendar.getInstance();
-		created.setTime(document.getDate(USER_CREATED_KEY));
-		user.setCreated(created);
+		if(document.getDate(USER_CREATED_KEY) != null) {
+		   Calendar created = Calendar.getInstance();
+		   created.setTime(document.getDate(USER_CREATED_KEY));
+		   user.setCreated(created);
+		}
 		
-		Calendar lastUpdated = Calendar.getInstance();
-		lastUpdated.setTime(document.getDate(USER_LAST_UPDATED_KEY));
-		user.setLastUpdated(lastUpdated);
+		if(document.getDate(USER_LAST_UPDATED_KEY) != null) {
+		   Calendar lastUpdated = Calendar.getInstance();
+		   lastUpdated.setTime(document.getDate(USER_LAST_UPDATED_KEY));
+		   user.setLastUpdated(lastUpdated);
+		}
 		
 		return user;
 	}

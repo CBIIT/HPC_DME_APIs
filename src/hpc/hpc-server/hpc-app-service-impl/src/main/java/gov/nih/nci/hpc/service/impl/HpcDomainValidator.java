@@ -115,7 +115,7 @@ class HpcDomainValidator
     	if(request.getType() == null || request.getLocations() == null ||
     	   !isValidFileLocation(request.getLocations().getSource()) ||
     	   !isValidFileLocation(request.getLocations().getDestination()) ||
-    	   !isValidDatasetPrimaryMetadata(request.getMetadata())) {
+    	   !isValidFilePrimaryMetadata(request.getMetadata())) {
     	   logger.info("Invalid File Upload Request: " + request);
     	   return false;
     	}
@@ -160,16 +160,16 @@ class HpcDomainValidator
     //---------------------------------------------------------------------//
     
     /**
-     * Validate a dataset primary metadata object.
+     * Validate a file primary metadata object.
      *
      * @param metadata the object to be validated.
      * @return true if valid, false otherwise.
      */
-    public static boolean isValidDatasetPrimaryMetadata(HpcFilePrimaryMetadata metadata) 
+    public static boolean isValidFilePrimaryMetadata(HpcFilePrimaryMetadata metadata) 
     {
     	if(metadata == null ||
     	   metadata.getDataContainsPII() == null || 	
-    	  // metadata.getDataContainsPHI() == null ||
+    	   // metadata.getDataContainsPHI() == null ||
     	   metadata.getDataEncrypted() == null ||
     	   //metadata.getDataCompressed() == null ||
     	   metadata.getFundingOrganization() == null || 
@@ -178,6 +178,9 @@ class HpcDomainValidator
     	   metadata.getRegistrarNihUserId() == null ||
     	   metadata.getDescription() == null ||
     	   metadata.getLabBranch() == null ||
+    	   metadata.getPrincipalInvestigatorDOC() == null ||
+    	   metadata.getRegistrarDOC() == null ||
+    	   metadata.getOriginallyCreated() == null ||
     	   (metadata.getMetadataItems() != null && 
   	   	    !isValidMetadataItems(metadata.getMetadataItems()))) {
     	   logger.info("Invalid Dataset Primary Metadata");

@@ -135,23 +135,17 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 			    			     	                    getRegistry()));
 			   }
 		}
-		
-		if(document != null)
-		{
-			if(document.getDate(DATASET_CREATED_KEY) != null)
-			{
-				Calendar created = Calendar.getInstance();
-				created.setTime(document.getDate(DATASET_CREATED_KEY));
-				dataset.setCreated(created);
-			}
-			
-			if(document.getDate(DATASET_LAST_UPDATED_KEY) != null)
-			{
-				Calendar lastUpdated = Calendar.getInstance();
-				lastUpdated.setTime(document.getDate(DATASET_LAST_UPDATED_KEY));
-				dataset.setLastUpdated(lastUpdated);
-			}
+		if(document.getDate(DATASET_CREATED_KEY) != null) {
+		   Calendar created = Calendar.getInstance();
+		   created.setTime(document.getDate(DATASET_CREATED_KEY));
+		   dataset.setCreated(created);
 		}
+		if(document.getDate(DATASET_LAST_UPDATED_KEY) != null) {
+			Calendar lastUpdated = Calendar.getInstance();
+			lastUpdated.setTime(document.getDate(DATASET_LAST_UPDATED_KEY));
+			dataset.setLastUpdated(lastUpdated);
+		}
+		
 		return dataset;
 	}
 	

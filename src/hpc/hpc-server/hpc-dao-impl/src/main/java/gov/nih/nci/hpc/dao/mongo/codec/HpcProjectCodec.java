@@ -110,13 +110,17 @@ public class HpcProjectCodec extends HpcCodec<HpcProject>
 			(List<String>) document.get(PROJECT_DATASET_IDS_KEY);
 		project.getDatasetIds().addAll(datasetIds);
 		
-		Calendar created = Calendar.getInstance();
-		created.setTime(document.getDate(PROJECT_CREATED_KEY));
-		project.setCreated(created);
+		if(document.getDate(PROJECT_CREATED_KEY) != null) {
+		   Calendar created = Calendar.getInstance();
+		   created.setTime(document.getDate(PROJECT_CREATED_KEY));
+		   project.setCreated(created);
+		}
 		
-		Calendar lastUpdated = Calendar.getInstance();
-		lastUpdated.setTime(document.getDate(PROJECT_LAST_UPDATED_KEY));
-		project.setLastUpdated(lastUpdated);
+		if(document.getDate(PROJECT_LAST_UPDATED_KEY) != null) {
+		   Calendar lastUpdated = Calendar.getInstance();
+		   lastUpdated.setTime(document.getDate(PROJECT_LAST_UPDATED_KEY));
+		   project.setLastUpdated(lastUpdated);
+		}
 		
 		return project;
 	}
