@@ -26,6 +26,7 @@ import gov.nih.nci.hpc.web.util.Util;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
@@ -343,8 +344,9 @@ public class HpcSearchDatasetController extends AbstractHpcController {
 				searchResult.setRegistarId(file.getMetadata().getPrimaryMetadata().getRegistrarNihUserId());
 				searchResult.setProjectIds(file.getProjectIds());
 				DateFormat dateFormat = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
-				if(dto.getFileSet().getCreated() != null)
-					searchResult.setCreatedOn(dateFormat.format(dto.getFileSet().getCreated().getTime()));
+				Calendar created = file.getMetadata().getPrimaryMetadata().getOriginallyCreated();
+				if(created != null)
+				   searchResult.setCreatedOn(dateFormat.format(created.getTime()));
 				searchResults.add(searchResult);
 			}
 			
