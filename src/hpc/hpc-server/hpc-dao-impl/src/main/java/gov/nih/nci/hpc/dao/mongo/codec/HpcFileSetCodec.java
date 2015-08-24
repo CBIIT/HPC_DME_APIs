@@ -75,7 +75,7 @@ public class HpcFileSetCodec extends HpcCodec<HpcFileSet>
 		if(comments != null) {
 		   document.put(FILE_SET_COMMENTS_KEY, comments);
 		}
-		if(files != null && files.size() > 0) {
+		if(files != null && !files.isEmpty()) {
 		   document.put(FILE_SET_FILES_KEY, files);
 		}
 

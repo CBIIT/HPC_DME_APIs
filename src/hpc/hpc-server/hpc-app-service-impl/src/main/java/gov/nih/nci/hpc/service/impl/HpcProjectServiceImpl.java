@@ -194,7 +194,7 @@ public class HpcProjectServiceImpl implements HpcProjectService
     	    metadata.getOrganizationalStructure() == null && 
     		metadata.getDescription() == null &&
     		(metadata.getMetadataItems() == null || 
-    		 metadata.getMetadataItems().size() == 0))) {
+    		 metadata.getMetadataItems().isEmpty()))) {
     		throw new HpcException("Invalid project metadata", 
                                    HpcErrorType.INVALID_REQUEST_INPUT);
     	}

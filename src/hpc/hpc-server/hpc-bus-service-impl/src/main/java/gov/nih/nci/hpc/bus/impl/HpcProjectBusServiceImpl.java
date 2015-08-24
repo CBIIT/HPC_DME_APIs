@@ -218,7 +218,7 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     	dto.setId(project.getId());
     	dto.setMetadata(project.getMetadata());
     	List<String> datasetIds = project.getDatasetIds();
-    	if(datasetIds != null && datasetIds.size() > 0) {
+    	if(datasetIds != null && !datasetIds.isEmpty()) {
     		List<HpcDatasetDTO> datasets = new ArrayList<HpcDatasetDTO>();
     		for(String datasetId : datasetIds) {
     			try {
@@ -233,7 +233,7 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     			                             datasetId, e);
     			}
     		}
-    		if(datasets != null && datasets.size() > 0) {
+    		if(datasets != null && !datasets.isEmpty()) {
     		   HpcDatasetCollectionDTO collection = new HpcDatasetCollectionDTO();
     		   collection.getHpcDatasetDTO().addAll(datasets);
     		   dto.setHpcDatasetCollectionDTO(collection);
@@ -253,7 +253,7 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     private HpcProjectCollectionDTO toCollectionDTO(List<HpcProject> projects) 
     		                                       throws HpcException 
     {
-    	if(projects == null || projects.size() == 0) {
+    	if(projects == null || projects.isEmpty()) {
     	   return null;
     	}
  	
