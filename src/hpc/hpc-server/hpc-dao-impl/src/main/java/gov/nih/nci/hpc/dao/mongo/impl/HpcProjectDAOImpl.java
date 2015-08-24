@@ -265,7 +265,7 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
         		             metadata.getDescription(), "i"));
        	}
     	if(metadata.getMetadataItems() != null && 
-    	   metadata.getMetadataItems().size() > 0 ) {
+    	   !metadata.getMetadataItems().isEmpty()) {
      	   filters.add(all(METADATA_ITEMS_FIELD_NAME, 
      			           metadata.getMetadataItems()));
     	}

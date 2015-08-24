@@ -110,7 +110,7 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		if(description != null) {
 		   document.put(PROJECT_METADATA_DESCRIPTION_KEY, description);
 		}
-		if(metadataItems != null && metadataItems.size() > 0) {
+		if(metadataItems != null && !metadataItems.isEmpty()) {
 		   document.put(PROJECT_METADATA_METADATA_ITEMS_KEY, 
 				        metadataItems);
 		}

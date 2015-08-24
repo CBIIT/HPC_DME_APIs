@@ -66,7 +66,7 @@ public class HpcDataTransferAccountValidatorProviderImpl
     		           HpcDataTransferAccountValidatorProxy> accountValidators) 
     		       throws HpcException
     {
-    	if(accountValidators == null || accountValidators.size() == 0) {
+    	if(accountValidators == null || accountValidators.isEmpty()) {
      	   throw new HpcException("Null or empty account providers map instance",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}
