@@ -19,7 +19,9 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFileDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDatasetRestService;
@@ -147,19 +149,37 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response addMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO)
+    public Response addPrimaryMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO)
     {
-		logger.info("Invoking RS: POST /dataset/metadata/primary: " + addMetadataItemsDTO);
+		logger.info("Invoking RS: POST /dataset/metadata/primary/items: " + addMetadataItemsDTO);
 		
+		HpcFilePrimaryMetadataDTO primaryMetadataDTO = null;
 		try {
-			 datasetBusService.addPrimaryMetadataItems(addMetadataItemsDTO);
+			primaryMetadataDTO = datasetBusService.addPrimaryMetadataItems(addMetadataItemsDTO);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /dataset/metadata/primary/items failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(primaryMetadataDTO, false);    	
+    }
+    
+    @Override
+    public Response updatePrimaryMetadata(HpcDatasetUpdateFilePrimaryMetadataDTO updateMetadataDTO)
+    {
+		logger.info("Invoking RS: POST /dataset/metadata/primary: " + updateMetadataDTO);
+		
+		HpcFilePrimaryMetadataDTO primaryMetadataDTO = null;
+		try {
+			 primaryMetadataDTO = datasetBusService.updatePrimaryMetadata(updateMetadataDTO);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /dataset/metadata/primary failed:", e);
 			    return errorResponse(e);
 		}
 		
-		return okResponse(null, false);    	
+		return okResponse(primaryMetadataDTO, false);      	
     }
     
     @Override

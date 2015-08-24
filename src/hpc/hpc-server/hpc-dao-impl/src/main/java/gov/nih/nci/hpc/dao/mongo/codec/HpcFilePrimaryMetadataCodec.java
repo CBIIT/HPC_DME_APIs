@@ -135,7 +135,7 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 		   document.put(FILE_PRIMARY_METADATA_ORIGINALLY_CREATED_KEY, 
 				        originallyCreated.getTime());
 		}	
-		if(metadataItems != null && metadataItems.size() > 0) {
+		if(metadataItems != null && !metadataItems.isEmpty()) {
 		   document.put(FILE_PRIMARY_METADATA_METADATA_ITEMS_KEY, 
 				        metadataItems);
 		}

@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isEmptyFilePrimaryMetadata;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidDataTransferLocations;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileUploadRequest;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataItems;
@@ -215,7 +216,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     }
     
     @Override
-    public List<HpcMetadataItem>  
+    public HpcFilePrimaryMetadata   
            addPrimaryMetadataItems(HpcDataset dataset, String fileId,
                                    List<HpcMetadataItem> metadataItems,
                                    boolean persist) 
@@ -243,7 +244,41 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
      	   persist(dataset);
      	}
     	
-    	return file.getMetadata().getPrimaryMetadata().getMetadataItems();
+    	return file.getMetadata().getPrimaryMetadata();
+    }
+    @Override
+    public HpcFilePrimaryMetadata 
+           updatePrimaryMetadata(HpcDataset dataset, String fileId,
+ 		                         HpcFilePrimaryMetadata primaryMetadata, 
+ 		                         boolean persist) 
+                                throws HpcException
+    {
+       	// Input validation.
+       	if(dataset == null || !keyGenerator.validateKey(fileId) || 
+       	   primaryMetadata == null ||
+       	   isEmptyFilePrimaryMetadata(primaryMetadata) ||
+       	   (primaryMetadata.getMetadataItems() != null &&
+ 	        !isValidMetadataItems(primaryMetadata.getMetadataItems()))) {
+       	   throw new HpcException("Invalid update primary metadata input", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+    	
+       	// Locate the file to attach the metadata items.
+       	HpcFile file = getFile(dataset, fileId);
+       	if(file == null) {
+       	   throw new HpcException("File not found: " + fileId, 
+       			                  HpcRequestRejectReason.FILE_NOT_FOUND);
+       	}
+    	
+    	// Update the metadata domain object.
+    	updatePrimaryMetadata(file, primaryMetadata);
+       	
+		// Persist if requested.
+    	if(persist) {
+     	   persist(dataset);
+     	}
+    	
+    	return file.getMetadata().getPrimaryMetadata();    	
     }
            
     @Override
@@ -312,24 +347,9 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     {
     	// Input Validation. At least one metadata element needs to be provided
     	// to query for.
-    	if(primaryMetadata == null ||
-    	   (primaryMetadata.getDataContainsPII() == null && 	
-    		primaryMetadata.getDataContainsPHI() == null &&
-    		primaryMetadata.getDataEncrypted() == null &&
-    		primaryMetadata.getDataCompressed() == null &&
-    		primaryMetadata.getFundingOrganization() == null && 
-    		primaryMetadata.getPrincipalInvestigatorNihUserId() == null &&
-    		primaryMetadata.getCreatorName() == null &&
-    		primaryMetadata.getRegistrarNihUserId() == null &&
-    		primaryMetadata.getDescription() == null &&
-    		primaryMetadata.getLabBranch() == null &&
-    	    primaryMetadata.getPrincipalInvestigatorDOC() == null &&
-    	    primaryMetadata.getRegistrarDOC() == null &&
-    	    primaryMetadata.getOriginallyCreated() == null &&
-    		(primaryMetadata.getMetadataItems() == null ||
-    		 primaryMetadata.getMetadataItems().size() ==0))) {
-    		throw new HpcException("Invalid primary metadata", 
-                                   HpcErrorType.INVALID_REQUEST_INPUT);
+    	if(isEmptyFilePrimaryMetadata(primaryMetadata)) { 
+    	   throw new HpcException("Invalid primary metadata", 
+                                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
     	// Validate metada items if not null.
@@ -449,6 +469,60 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	
     	return null;
 	}
+  
+    /**
+     * Update a primary metadata object of a file.
+     *
+     * @param file The file to apply the update.
+     * @param update The updated metadata.
+     */
+    void updatePrimaryMetadata(HpcFile file, HpcFilePrimaryMetadata update)
+    {
+    	HpcFilePrimaryMetadata metadata = file.getMetadata().getPrimaryMetadata();
+    	if(update.getCreatorName() != null) {
+    	   metadata.setCreatorName(update.getCreatorName());	
+    	}
+    	if(update.getDataCompressed() != null) {
+     	   metadata.setDataCompressed(update.getDataCompressed());	
+     	}
+    	if(update.getDataContainsPHI() != null) {
+      	   metadata.setDataContainsPHI(update.getDataContainsPHI());	
+      	}
+    	if(update.getDataContainsPII() != null) {
+       	   metadata.setDataContainsPII(update.getDataContainsPII());	
+       	}
+    	if(update.getDataEncrypted() != null) {
+           metadata.setDataEncrypted(update.getDataEncrypted());	
+        }
+    	if(update.getDescription() != null) {
+           metadata.setDescription(update.getDescription());	
+        }
+    	if(update.getFundingOrganization() != null) {
+           metadata.setFundingOrganization(update.getFundingOrganization());	
+        }
+    	if(update.getLabBranch() != null) {
+           metadata.setLabBranch(update.getLabBranch());	
+        }
+    	if(update.getOriginallyCreated() != null) {
+           metadata.setOriginallyCreated(update.getOriginallyCreated());	
+        }
+    	if(update.getPrincipalInvestigatorDOC() != null) {
+           metadata.setPrincipalInvestigatorDOC(update.getPrincipalInvestigatorDOC());	
+        }
+    	if(update.getPrincipalInvestigatorNihUserId() != null) {
+           metadata.setPrincipalInvestigatorNihUserId(update.getPrincipalInvestigatorNihUserId());	
+        }
+    	if(update.getRegistrarDOC() != null) {
+           metadata.setRegistrarDOC(update.getRegistrarDOC());	
+        }
+    	if(update.getRegistrarNihUserId() != null) {
+           metadata.setRegistrarNihUserId(update.getRegistrarNihUserId());	
+        }
+    	if(update.getMetadataItems() != null && !update.getMetadataItems().isEmpty()) {
+           metadata.getMetadataItems().clear();
+           metadata.getMetadataItems().addAll(update.getMetadataItems());
+        }
+    }
 }
 
  

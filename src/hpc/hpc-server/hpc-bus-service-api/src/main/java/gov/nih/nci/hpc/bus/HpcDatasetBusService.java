@@ -17,7 +17,9 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFileDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -55,14 +57,26 @@ public interface HpcDatasetBusService
     public void addFiles(HpcDatasetAddFilesDTO addFilesDTO) throws HpcException;
     
     /**
-     * Add metadata items to a registered dataset.
+     * Add metadata items to a file primary metadata in a registered dataset.
      *
      * @param addMetadataItemsDTO The add-metadata-items request DTO.
-     * 
+     * @return The updated primary metadata DTO.
      * @throws HpcException
      */
-    public void addPrimaryMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO) 
-    		                           throws HpcException;
+    public HpcFilePrimaryMetadataDTO addPrimaryMetadataItems(
+    		             HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO) 
+    		             throws HpcException;
+    
+    /**
+     * Update file primary metadata in a registered dataset.
+     *
+     * @param updateMetadataDTO The update-metadata request DTO.
+     * @return The updated primary metadata DTO.
+     * @throws HpcException
+     */
+    public HpcFilePrimaryMetadataDTO updatePrimaryMetadata(
+    		             HpcDatasetUpdateFilePrimaryMetadataDTO updateMetadataDTO) 
+    		             throws HpcException;
     
     /**
      * Get a dataset by its ID.

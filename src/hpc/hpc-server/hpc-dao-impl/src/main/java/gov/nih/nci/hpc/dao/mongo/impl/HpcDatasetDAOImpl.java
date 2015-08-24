@@ -421,7 +421,7 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
             		primaryMetadata.getOriginallyCreated().getTime()));
         }
     	if(primaryMetadata.getMetadataItems() != null && 
-    	   primaryMetadata.getMetadataItems().size() > 0) {
+    	   !primaryMetadata.getMetadataItems().isEmpty()) {
      	   filters.add(all(METADATA_ITEMS_FIELD_NAME, 
      			           primaryMetadata.getMetadataItems()));
     	}

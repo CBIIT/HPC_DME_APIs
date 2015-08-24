@@ -79,10 +79,10 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 		if(fileSet != null) {
 		   document.put(DATASET_FILE_SET_KEY, fileSet);
 		}
-		if(uploadRequests != null && uploadRequests.size() > 0) {
+		if(uploadRequests != null && !uploadRequests.isEmpty()) {
 		   document.put(DATASET_UPLOAD_REQUESTS_KEY, uploadRequests);
 		}
-		if(downloadRequests != null && downloadRequests.size() > 0) {
+		if(downloadRequests != null && !downloadRequests.isEmpty()) {
 		   document.put(DATASET_DOWNLOAD_REQUESTS_KEY, downloadRequests);
 		}
 		if(created != null) {
