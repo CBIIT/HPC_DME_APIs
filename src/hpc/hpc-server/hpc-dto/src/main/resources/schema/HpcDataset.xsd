@@ -98,7 +98,7 @@
 		</xsd:complexType>
 	</xsd:element>
 	
-	<!--  Add metadata items to registered Dataset DTO -->
+	<!--  Add metadata items to a file in a dataset DTO -->
 	<xsd:element name="HpcDatasetAddMetadataItemsDTO">
 		<xsd:complexType>
 			<xsd:sequence>
@@ -107,6 +107,28 @@
 				<xsd:element name="metadataItems" 
 			                 type="hpc-domain-metadata:HpcMetadataItem"
 				             maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<!--  Update metadata of a file in a dataset DTO -->
+	<xsd:element name="HpcDatasetUpdateFilePrimaryMetadataDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="datasetId" type="xsd:ID" />
+				<xsd:element name="fileId" type="xsd:ID" />
+				<xsd:element name="metadata" 
+				             type="hpc-domain-metadata:HpcFilePrimaryMetadata" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<!--  File Primary Metadata DTO -->
+	<xsd:element name="HpcFilePrimaryMetadataDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="metadata" 
+				             type="hpc-domain-metadata:HpcFilePrimaryMetadata" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

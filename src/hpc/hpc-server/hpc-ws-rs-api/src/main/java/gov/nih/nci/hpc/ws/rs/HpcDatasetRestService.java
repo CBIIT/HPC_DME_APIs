@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataQueryDTO;
 
 import javax.ws.rs.Consumes;
@@ -58,14 +59,24 @@ public interface HpcDatasetRestService
     public Response addFiles(HpcDatasetAddFilesDTO addFilesDTO);
     
     /**
-     * POST add metadata items to a registered dataset.
+     * POST add metadata items to a file primary metadata in a registered dataset.
+     *
+     * @param addMetadataItemsDTO The add-metadata-items request DTO.
+     */
+    @POST
+    @Path("/dataset/metadata/primary/items")
+    @Consumes("application/json,application/xml")
+    public Response addPrimaryMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO);
+    
+    /**
+     * POST update primary metadata of a file in a registered dataset.
      *
      * @param addMetadataItemsDTO The add-metadata-items request DTO.
      */
     @POST
     @Path("/dataset/metadata/primary")
     @Consumes("application/json,application/xml")
-    public Response addMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO);
+    public Response updatePrimaryMetadata(HpcDatasetUpdateFilePrimaryMetadataDTO updateMetadataDTO);
     
     /**
      * GET Dataset by ID.

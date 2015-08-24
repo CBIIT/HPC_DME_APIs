@@ -10,16 +10,16 @@
 
 package gov.nih.nci.hpc.service;
 
-import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
-import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
+import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
-import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
+import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
+import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -103,21 +103,38 @@ public interface HpcDatasetService
                           throws HpcException;
     
     /**
-     * Add metadata items to a dataset.
+     * Add metadata items to a file primary metadata in a dataset.
      *
      * @param dataset The dataset.
      * @param fileId The file ID to add the metadata items to.
      * @param metadataItems The metadata items to add.
      * @param persist If set to true, the dataset will be persisted.
-     * @return The new list of metadata items
+     * @return The updated file primary metadata domain object.
      * 
      * @throws HpcException
      */
-    public List<HpcMetadataItem> 
+    public HpcFilePrimaryMetadata 
            addPrimaryMetadataItems(HpcDataset dataset, String fileId,
         	                       List<HpcMetadataItem> metadataItems,
                                    boolean persist) 
                                   throws HpcException;
+    
+    /**
+     * Update file primary metadata in a dataset.
+     *
+     * @param dataset The dataset.
+     * @param fileId The file ID to update the metadata for.
+     * @param primaryMetadata The metadata update request.
+     * @param persist If set to true, the dataset will be persisted.
+     * @return The updated file primary metadata domain object.
+     * 
+     * @throws HpcException
+     */
+    public HpcFilePrimaryMetadata 
+           updatePrimaryMetadata(HpcDataset dataset, String fileId,
+        		                 HpcFilePrimaryMetadata primaryMetadata, 
+        		                 boolean persist) 
+                                throws HpcException;
     
     /**
      * Set a data transfer request status based on a provided data transfer report.

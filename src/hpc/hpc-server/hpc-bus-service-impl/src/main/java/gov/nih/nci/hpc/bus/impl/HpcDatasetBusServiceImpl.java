@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
@@ -27,7 +28,9 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFileDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -164,8 +167,10 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     }
     
     @Override
-    public void addPrimaryMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO) 
-                                       throws HpcException
+    public HpcFilePrimaryMetadataDTO 
+           addPrimaryMetadataItems(
+    		         HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO) 
+                     throws HpcException
     {
        	logger.info("Invoking addPrimaryMetadataItems(HpcDatasetAddMetadataItemsDTO): " + 
                                                       addMetadataItemsDTO);
@@ -184,10 +189,40 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
        	}
        	
        	// Add metadata items.
-    	datasetService.addPrimaryMetadataItems(dataset, addMetadataItemsDTO.getFileId(),
-    			                               addMetadataItemsDTO.getMetadataItems(), 
-    			                               true);    	
+       	return toDTO(datasetService.addPrimaryMetadataItems(dataset, 
+       			                                            addMetadataItemsDTO.getFileId(),
+    			                                            addMetadataItemsDTO.getMetadataItems(), 
+    			                                            true));    	
     }
+    
+    @Override
+    public HpcFilePrimaryMetadataDTO 
+           updatePrimaryMetadata(
+    		            HpcDatasetUpdateFilePrimaryMetadataDTO updateMetadataDTO) 
+                        throws HpcException
+    {
+       	logger.info("Invoking updatePrimaryMetadata(HpcDatasetUpdateFilePrimaryMetadataDTO): " + 
+       			    updateMetadataDTO);
+
+		// Input validation.
+		if(updateMetadataDTO == null) {
+		   throw new HpcException("Null HpcDatasetUpdateFilePrimaryMetadataDTO",
+		                          HpcErrorType.INVALID_REQUEST_INPUT);	
+		}
+		
+		// Locate the dataset.
+		HpcDataset dataset = datasetService.getDataset(updateMetadataDTO.getDatasetId());
+		if(dataset == null) {
+		   throw new HpcException("Dataset was not found: " + updateMetadataDTO.getDatasetId(),
+		                          HpcRequestRejectReason.DATASET_NOT_FOUND);	
+		}
+
+		// Update the primary metadata.
+		return toDTO(datasetService.updatePrimaryMetadata(dataset, 
+				                                          updateMetadataDTO.getFileId(),
+				                                          updateMetadataDTO.getMetadata(), 
+				                                          true));                                  
+	}
     
     @Override
     public HpcDatasetDTO getDataset(String id, boolean skipDataTransferStatusUpdate) 
@@ -235,12 +270,12 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
                                       throws HpcException
     {
     	// Input validation.
-    	if(userIds == null || userIds.size() == 0 || association == null) {
+    	if(userIds == null || userIds.isEmpty() || association == null) {
     	   throw new HpcException("Null user-ids or association",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	return toCollectionDTO(datasetService.getDatasets(userIds, association));
+    	return toDTO(datasetService.getDatasets(userIds, association));
     }
     
     public HpcDatasetCollectionDTO getDatasets(String firstName, String lastName, 
@@ -255,7 +290,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	
     	// Search for users that match the first/last name.
     	List<HpcUser> users = userService.getUsers(firstName, lastName);
-    	if(users == null || users.size() == 0) {
+    	if(users == null || users.isEmpty()) {
     	   return null;
     	}
     	
@@ -264,7 +299,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		userIds.add(user.getNihAccount().getUserId());
     	}
     		
-    	return toCollectionDTO(datasetService.getDatasets(userIds, association));
+    	return toDTO(datasetService.getDatasets(userIds, association));
    }
     
     @Override
@@ -275,7 +310,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	   throw new HpcException("Null name", HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	return toCollectionDTO(datasetService.getDatasets(name));
+    	return toDTO(datasetService.getDatasets(name));
     }
     
     @Override
@@ -289,7 +324,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	return toCollectionDTO(datasetService.getDatasets(
+    	return toDTO(datasetService.getDatasets(
     			                      primaryMetadataQueryDTO.getMetadata()));
     }    
 
@@ -297,7 +332,8 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 	public HpcDatasetCollectionDTO getDatasets(HpcDataTransferStatus dataTransferStatus,
 			                                   Boolean uploadRequests, 
                                                Boolean downloadRequests) 
-                                              throws HpcException{
+                                              throws HpcException
+    {
     	// Input validation.
     	if(dataTransferStatus == null || 
     	   (uploadRequests == null && downloadRequests == null)) {
@@ -305,22 +341,21 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	return toCollectionDTO(datasetService.getDatasets(dataTransferStatus, uploadRequests, 
+    	return toDTO(datasetService.getDatasets(dataTransferStatus, uploadRequests, 
     			                                          downloadRequests));
 	}
     
 	@Override
 	public HpcDatasetCollectionDTO getDatasetsByProjectId(String projectId)
-	 throws HpcException
+	                                                     throws HpcException
 	{
-   	// Input validation.
-	if(projectId == null) {
-	   throw new HpcException("Null projectId", HpcErrorType.INVALID_REQUEST_INPUT);	
+	   	// Input validation.
+		if(projectId == null) {
+		   throw new HpcException("Null projectId", HpcErrorType.INVALID_REQUEST_INPUT);	
+		}
+		
+		return toDTO(datasetService.getDatasetsByProjectId(projectId));	
 	}
-	
-	return toCollectionDTO(datasetService.getDatasetsByProjectId(projectId));	
-	}
-    
 
     //---------------------------------------------------------------------//
     // Helper Methods
@@ -351,7 +386,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     }  
     
     /**
-     * Create a dataset DTO from a domain object.
+     * Create a file DTO from a domain object.
      * 
      * @param dataset the domain object.
      *
@@ -376,9 +411,9 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
      *
      * @return The collection DTO.
      */
-    private HpcDatasetCollectionDTO toCollectionDTO(List<HpcDataset> datasets)
+    private HpcDatasetCollectionDTO toDTO(List<HpcDataset> datasets)
     {
-    	if(datasets == null || datasets.size() == 0) {
+    	if(datasets == null || datasets.isEmpty()) {
     	   return null;
     	}
  	
@@ -390,6 +425,25 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
  	    
  	    return datasetCollectionDTO;
     }
+    
+    /**
+     * Create a primary metadata DTO from a domain object.
+     * 
+     * @param dataset the domain object.
+     *
+     * @return The DTO.
+     */
+    private HpcFilePrimaryMetadataDTO toDTO(HpcFilePrimaryMetadata primaryMetadata)
+    {
+    	if(primaryMetadata == null) {
+     	   return null;
+     	}
+    	
+    	HpcFilePrimaryMetadataDTO primaryMetadataDTO = new HpcFilePrimaryMetadataDTO();
+    	primaryMetadataDTO.setMetadata(primaryMetadata);
+    	
+    	return primaryMetadataDTO;
+    }  
    
     /**
      * Validate the users associated with the upload request are valid.
@@ -497,7 +551,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
                                        throws HpcException
     {
     	// Validating there is at least one file attached.
-    	if(uploadRequests == null || uploadRequests.size() == 0) {
+    	if(uploadRequests == null || uploadRequests.isEmpty()) {
  	       throw new HpcException("No files attached to this request", 
  			                      HpcErrorType.INVALID_REQUEST_INPUT);
     	}
@@ -505,7 +559,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	// Validate the associated projects exist.
        	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
     		if(uploadRequest.getProjectIds() == null || 
-    		   uploadRequest.getProjectIds().size() == 0) {
+    		   uploadRequest.getProjectIds().isEmpty()) {
     		   continue;	
     		}
 
@@ -553,7 +607,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		              List<HpcDataTransferRequest> dataTransferRequests)
     		              throws HpcException
     {
-    	if(dataTransferRequests == null || dataTransferRequests.size() == 0) {
+    	if(dataTransferRequests == null || dataTransferRequests.isEmpty()) {
     		return false;
     	}
     	

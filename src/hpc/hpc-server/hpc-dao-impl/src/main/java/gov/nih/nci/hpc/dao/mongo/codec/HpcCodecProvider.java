@@ -70,7 +70,7 @@ public class HpcCodecProvider implements CodecProvider
     private HpcCodecProvider(Map<Class, HpcCodec> codecs) 
     		                throws HpcException
     {
-    	if(codecs == null || codecs.size() == 0) {
+    	if(codecs == null || codecs.isEmpty()) {
      	   throw new HpcException("Null or empty HpcCodecProvider instance",
      			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
      	}

@@ -144,7 +144,7 @@ public class HpcExceptionMapper
     private MediaType getAcceptedMediaType()
     {
     	return headers != null && headers.getAcceptableMediaTypes() != null &&
-  			   headers.getAcceptableMediaTypes().size() > 0 &&
+  			   !headers.getAcceptableMediaTypes().isEmpty() &&
   			   headers.getAcceptableMediaTypes().get(0).equals(MediaType.APPLICATION_XML_TYPE) ?
   			   MediaType.APPLICATION_XML_TYPE : MediaType.APPLICATION_JSON_TYPE;
     }

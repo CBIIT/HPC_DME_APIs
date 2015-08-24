@@ -190,6 +190,36 @@ class HpcDomainValidator
     }  
     
     /**
+     * Check if a file primary metadata object is 'empty'.
+     *
+     * @param metadata the object to be checked.
+     * @return true if empty, false otherwise.
+     */
+    public static boolean isEmptyFilePrimaryMetadata(HpcFilePrimaryMetadata metadata) 
+    {    
+    	if(metadata == null ||
+	       (metadata.getDataContainsPII() == null && 	
+	    	metadata.getDataContainsPHI() == null &&
+	    	metadata.getDataEncrypted() == null &&
+	    	metadata.getDataCompressed() == null &&
+	    	metadata.getFundingOrganization() == null && 
+	    	metadata.getPrincipalInvestigatorNihUserId() == null &&
+	    	metadata.getCreatorName() == null &&
+	    	metadata.getRegistrarNihUserId() == null &&
+	    	metadata.getDescription() == null &&
+	    	metadata.getLabBranch() == null &&
+	    	metadata.getPrincipalInvestigatorDOC() == null &&
+	    	metadata.getRegistrarDOC() == null &&
+	    	metadata.getOriginallyCreated() == null &&
+	    	(metadata.getMetadataItems() == null ||
+	    	 metadata.getMetadataItems().isEmpty()))) {
+	    	 return true;
+	    	}
+    		
+    		return false;
+    }
+    
+    /**
      * Validate a project metadata object
      *
      * @param metadata the object to be validated.
