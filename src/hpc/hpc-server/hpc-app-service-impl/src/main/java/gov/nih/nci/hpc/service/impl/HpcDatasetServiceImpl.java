@@ -15,6 +15,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidDataTransfe
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileUploadRequest;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataItems;
 import gov.nih.nci.hpc.dao.HpcDatasetDAO;
+import gov.nih.nci.hpc.dao.HpcFileMetadataHistoryDAO;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
@@ -26,6 +27,8 @@ import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcFileMetadataHistory;
+import gov.nih.nci.hpc.domain.metadata.HpcFileMetadataVersion;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
@@ -59,6 +62,10 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     // The Managed Dataset DAO instance.
 	@Autowired
     private HpcDatasetDAO datasetDAO = null;
+	
+    // The Managed Dataset DAO instance.
+	@Autowired
+    private HpcFileMetadataHistoryDAO fileMetadataHistoryDAO = null;
     
     // Key Generator.
 	@Autowired
@@ -280,6 +287,40 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	
     	return file.getMetadata().getPrimaryMetadata();    	
     }
+    
+    @Override
+    public void addFileMetadataVersion(String fileId, 
+    		                            HpcFileMetadata metadata,
+    		                            boolean persist)
+    		                           throws HpcException
+	{
+    	// Get the file metadata history from DB. If not found, create a new one.
+    	HpcFileMetadataHistory metadataHistory = 
+    			               fileMetadataHistoryDAO.getFileMetadataHistory(fileId);
+    	if(metadataHistory == null) {
+    	   metadataHistory = new HpcFileMetadataHistory();
+    	   metadataHistory.setFileId(fileId);
+    	   metadataHistory.setMaxVersion(0);
+    	}
+    	
+    	// Calculate the new version.
+    	int newVersion = metadataHistory.getMaxVersion() + 1;
+    	
+    	// Create a new metadata version.
+    	HpcFileMetadataVersion metadataVersion = new HpcFileMetadataVersion();
+    	metadataVersion.setMetadata(metadata);
+    	metadataVersion.setVersion(newVersion);
+    	metadataVersion.setCreated(Calendar.getInstance());
+    	
+    	// Attach the new version and update the max version.
+    	metadataHistory.getVersions().add(metadataVersion);
+    	metadataHistory.setMaxVersion(newVersion);
+    	
+    	// Persist.
+    	if(persist) {
+    	   persist(metadataHistory);
+    	}
+	}
            
     @Override
     public boolean setDataTransferRequestStatus(HpcDataTransferRequest dataTransferRequest, 
@@ -363,13 +404,6 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     }
     
     @Override
-    public boolean exists(String name, String nihUserId, HpcDatasetUserAssociation association) 
-                         throws HpcException
-    {
-    	return datasetDAO.exists(name, nihUserId, association);
-    }
-
-    @Override
 	public List<HpcDataset> getDatasets(HpcDataTransferStatus dataTransferStatus,
                                         Boolean uploadRequests, 
                                         Boolean downloadRequests) throws HpcException
@@ -402,12 +436,39 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
 		return datasetDAO.getDatasetsByProjectId(projectId);
 	}
 	
+	@Override
+    public HpcFile getFile(HpcDataset dataset, String fileId)
+	{
+    	for(HpcFile file : dataset.getFileSet().getFiles()) {
+    		if(file.getId().equals(fileId)) {
+    		   return file;
+    		}
+    	}
+    	
+    	return null;
+	}
+	
+    @Override
+    public boolean exists(String name, String nihUserId, HpcDatasetUserAssociation association) 
+                         throws HpcException
+    {
+    	return datasetDAO.exists(name, nihUserId, association);
+    }
+    
     @Override
     public void persist(HpcDataset dataset) throws HpcException
     {
     	if(dataset != null) {
     	   dataset.setLastUpdated(Calendar.getInstance());
     	   datasetDAO.upsert(dataset);
+    	}
+    }
+    
+    @Override
+    public void persist(HpcFileMetadataHistory metadataHistory) throws HpcException
+    {
+    	if(metadataHistory != null) {
+    	   fileMetadataHistoryDAO.upsert(metadataHistory);
     	}
     }
 	
@@ -449,25 +510,6 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
 		setDataTransferRequestStatus(dataTransferRequest, report);
 		
 		return dataTransferRequest;
-	}
-    
-    /**
-     * Find a file in dataset.
-     *
-     * @param dataset The dataset.
-     * @param fileId The file ID to search for.
-     * @param fileId The uploaded file ID.
-     * @return The file object, or null if not found.
-     */
-    private HpcFile getFile(HpcDataset dataset, String fileId)
-	{
-    	for(HpcFile file : dataset.getFileSet().getFiles()) {
-    		if(file.getId().equals(fileId)) {
-    		   return file;
-    		}
-    	}
-    	
-    	return null;
 	}
   
     /**

@@ -107,8 +107,6 @@ public class HpcDatasetCodec extends HpcCodec<HpcDataset>
 						                                  decoderContext);
 		
 		// Map the BSON Document to a domain object.
-		
-		// Map the attributes
 		HpcDataset dataset = new HpcDataset();
 		dataset.setId(document.getString(DATASET_ID_KEY));
 		dataset.setFileSet(decodeFileSet(document.get(DATASET_FILE_SET_KEY, 

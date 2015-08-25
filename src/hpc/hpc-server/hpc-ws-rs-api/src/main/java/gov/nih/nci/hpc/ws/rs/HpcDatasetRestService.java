@@ -42,6 +42,7 @@ public interface HpcDatasetRestService
      * POST registration request.
      *
      * @param datasetRegistrationDTO The dataset registration request DTO.
+     * @return The new datset URI.
      */
     @POST
     @Path("/dataset")
@@ -62,6 +63,7 @@ public interface HpcDatasetRestService
      * POST add metadata items to a file primary metadata in a registered dataset.
      *
      * @param addMetadataItemsDTO The add-metadata-items request DTO.
+     * @return gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO entity.
      */
     @POST
     @Path("/dataset/metadata/primary/items")
@@ -72,6 +74,7 @@ public interface HpcDatasetRestService
      * POST update primary metadata of a file in a registered dataset.
      *
      * @param addMetadataItemsDTO The add-metadata-items request DTO.
+     * @return gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO entity.
      */
     @POST
     @Path("/dataset/metadata/primary")
