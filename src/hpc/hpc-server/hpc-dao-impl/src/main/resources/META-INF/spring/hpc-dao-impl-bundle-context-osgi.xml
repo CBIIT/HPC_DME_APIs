@@ -35,5 +35,6 @@
 	<osgi:service ref="hpcDatasetDAO" interface="gov.nih.nci.hpc.dao.HpcDatasetDAO" />
 	<osgi:service ref="transferStatusDAO" interface="gov.nih.nci.hpc.dao.HpcTransferStatusDAO" />	
 	<osgi:service ref="hpcProjectDAO" interface="gov.nih.nci.hpc.dao.HpcProjectDAO" />
+	<osgi:service ref="hpcFileMetadataHistoryDAO" interface="gov.nih.nci.hpc.dao.HpcFileMetadataHistoryDAO" />
 
 </beans>

@@ -58,5 +58,7 @@
 	<osgi:reference id="transferStatusDAO" 
 					interface="gov.nih.nci.hpc.dao.HpcTransferStatusDAO" />
 	<osgi:reference id="hpcProjectDAO" 
-					interface="gov.nih.nci.hpc.dao.HpcProjectDAO" />					
+					interface="gov.nih.nci.hpc.dao.HpcProjectDAO" />	
+	<osgi:reference id="hpcFileMetadataHistoryDAO" 
+					interface="gov.nih.nci.hpc.dao.HpcFileMetadataHistoryDAO" />					
 </beans>

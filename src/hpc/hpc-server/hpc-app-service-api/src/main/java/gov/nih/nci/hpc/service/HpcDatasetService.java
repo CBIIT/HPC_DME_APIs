@@ -17,6 +17,8 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
+import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcFileMetadataHistory;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
@@ -137,6 +139,18 @@ public interface HpcDatasetService
                                 throws HpcException;
     
     /**
+     * Create a new version of the file metadata.
+     *
+     * @param fileId The file ID the metadata is associated with.
+     * @param metadata The file metadata.
+     * @param persist If set to true, the dataset will be persisted.
+     */
+    public void addFileMetadataVersion(String fileId, 
+    		                            HpcFileMetadata metadata,
+    		                            boolean persist)
+    		                           throws HpcException;
+    
+    /**
      * Set a data transfer request status based on a provided data transfer report.
      *
      * @param dataTransferRequest The data transfer request to update.
@@ -213,19 +227,6 @@ public interface HpcDatasetService
     		                           throws HpcException;
     
     /**
-     * Return true if a dataset with a specific name user association exists.
-     *
-     * @param nihUserId The user id to match.
-     * @param association The association between the dataset and the user.
-     * @return true if the dataset exists.
-     * 
-     * @throws HpcException
-     */
-    public boolean exists(String name, String nihUserId, 
-    		              HpcDatasetUserAssociation association) 
-        	             throws HpcException;
-    
-    /**
      * Get datasets with specific data transfer status.
      *
      * @param dataTransferStatus The data transfer status to query for.
@@ -240,6 +241,28 @@ public interface HpcDatasetService
                                         Boolean downloadRequests) throws HpcException;
 	
     /**
+     * Find a file in dataset.
+     *
+     * @param dataset The dataset.
+     * @param fileId The file ID to search for.
+     * @return The file object, or null if not found.
+     */
+    public HpcFile getFile(HpcDataset dataset, String fileId);
+	
+    /**
+     * Return true if a dataset with a specific name user association exists.
+     *
+     * @param nihUserId The user id to match.
+     * @param association The association between the dataset and the user.
+     * @return true if the dataset exists.
+     * 
+     * @throws HpcException
+     */
+    public boolean exists(String name, String nihUserId, 
+    		              HpcDatasetUserAssociation association) 
+        	             throws HpcException;
+    
+    /**
      * Persist dataset to the DB.
      *
      * @param dataset The dataset to be persisted.
@@ -247,6 +270,15 @@ public interface HpcDatasetService
      * @throws HpcException
      */
     public void persist(HpcDataset dataset) throws HpcException;
+    
+    /**
+     * Persist file metadata history to the DB.
+     *
+     * @param metadataHistory The file metadata history to be persisted.
+     * 
+     * @throws HpcException
+     */
+    public void persist(HpcFileMetadataHistory metadataHistory) throws HpcException;
 }
 
  

@@ -46,6 +46,12 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcFileMetadata']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcFileMetadata"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcFileMetadataVersion']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcFileMetadataVersion"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcFileMetadataHistory']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcFileMetadataHistory"/>
+		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcProjectMetadata']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata"/>
 		</jxb:bindings>

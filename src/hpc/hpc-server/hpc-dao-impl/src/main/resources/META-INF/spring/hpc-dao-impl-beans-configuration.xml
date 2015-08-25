@@ -37,6 +37,8 @@
 	<bean id="hpcFileCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileCodec" />
 	<bean id="hpcFileLocationCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileLocationCodec" />
 	<bean id="hpcFileMetadataCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileMetadataCodec" />
+	<bean id="hpcFileMetadataVersionCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileMetadataVersionCodec" />
+	<bean id="hpcFileMetadataHistoryCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileMetadataHistoryCodec" />
 	<bean id="hpcFilePrimaryMetadataCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFilePrimaryMetadataCodec" />
 	<bean id="hpcMetadataItemCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcMetadataItemCodec" />
 	<bean id="hpcDataTransferRequestCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcDataTransferRequestCodec" />
@@ -63,6 +65,10 @@
 					   value-ref="hpcFileLocationCodec" />
 				<entry key="gov.nih.nci.hpc.domain.metadata.HpcFileMetadata"
 					   value-ref="hpcFileMetadataCodec" />
+				<entry key="gov.nih.nci.hpc.domain.metadata.HpcFileMetadataVersion"
+					   value-ref="hpcFileMetadataVersionCodec" />	
+				<entry key="gov.nih.nci.hpc.domain.metadata.HpcFileMetadataHistory"
+					   value-ref="hpcFileMetadataHistoryCodec" />
 				<entry key="gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata"
 					   value-ref="hpcFilePrimaryMetadataCodec" />
 				<entry key="gov.nih.nci.hpc.domain.metadata.HpcMetadataItem"
@@ -76,7 +82,7 @@
 				<entry key="gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport"
 					   value-ref="hpcDataTransferReportCodec" />	
 				<entry key="gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations"
-					   value-ref="hpcDataTransferLocationsCodec" />							
+					   value-ref="hpcDataTransferLocationsCodec" />	
 			</map>
 		</constructor-arg>
 	</bean>
@@ -91,6 +97,7 @@
 				<entry key="gov.nih.nci.hpc.domain.model.HpcUser" value="user" />
 				<entry key="gov.nih.nci.hpc.domain.model.HpcDataset" value="dataset" />
 				<entry key="gov.nih.nci.hpc.domain.model.HpcProject" value="project" />
+				<entry key="gov.nih.nci.hpc.domain.metadata.HpcFileMetadataHistory" value="file_metadata_history" />
 			</map>
 		</constructor-arg>
 	</bean>
@@ -106,6 +113,9 @@
 		<constructor-arg ref="hpcMongoDB" />
 	</bean>	
 	<bean id="hpcProjectDAO" class="gov.nih.nci.hpc.dao.mongo.impl.HpcProjectDAOImpl">
+		<constructor-arg ref="hpcMongoDB" />
+	</bean>
+	<bean id="hpcFileMetadataHistoryDAO" class="gov.nih.nci.hpc.dao.mongo.impl.HpcFileMetadataHistoryDAOImpl">
 		<constructor-arg ref="hpcMongoDB" />
 	</bean>
 
