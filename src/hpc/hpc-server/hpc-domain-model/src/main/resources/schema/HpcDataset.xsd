@@ -23,6 +23,7 @@
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
 		        schemaLocation="HpcMetadataTypes.xsd" />
 
+	<!-- Dataset Domain Object -->
 	<xsd:element name="HpcDataset">
 		<xsd:complexType>
 			<xsd:sequence>

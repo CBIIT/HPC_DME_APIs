@@ -199,6 +199,16 @@ public abstract class HpcCodec<T> implements Codec<T>
                                "effective_mbits_per_sec";
     public final static String DATA_TRANSFER_REPORT_FAULTS_KEY = "faults"; 
     
+    // HpcFileMetadataVersion Document Keys.
+    public final static String FILE_METADATA_VERSION_METADATA_KEY = "metadata"; 
+    public final static String FILE_METADATA_VERSION_CREATED_KEY = "created"; 
+    public final static String FILE_METADATA_VERSION_VERSION_KEY = "version"; 
+    
+    // HpcFileMetadataHistory Document Keys.
+    public final static String FILE_METADATA_HISTORY_FILE_ID_KEY = "file_id"; 
+    public final static String FILE_METADATA_HISTORY_MAX_VERSION_KEY = "max_version"; 
+    public final static String FILE_METADATA_HISTORY_VERSIONS_KEY = "versions"; 
+    
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//

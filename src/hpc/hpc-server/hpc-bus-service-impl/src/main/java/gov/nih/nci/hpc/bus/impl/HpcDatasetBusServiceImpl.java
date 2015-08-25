@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
+import static gov.nih.nci.hpc.bus.impl.HpcJAXBUtil.cloneJAXB;
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
@@ -20,6 +21,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.model.HpcUser;
@@ -189,11 +191,20 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
        			                  HpcRequestRejectReason.DATASET_NOT_FOUND);	
        	}
        	
+       	// Clone the current metadata object.
+       	String fileId = addMetadataItemsDTO.getFileId();
+       	HpcFileMetadata currentMetadata = cloneFileMetadata(dataset, fileId);
+       	
        	// Add metadata items.
-       	return toDTO(datasetService.addPrimaryMetadataItems(dataset, 
-       			                                            addMetadataItemsDTO.getFileId(),
-    			                                            addMetadataItemsDTO.getMetadataItems(), 
-    			                                            true));    	
+       	HpcFilePrimaryMetadata updatedPrimaryMetadata = 
+           datasetService.addPrimaryMetadataItems(dataset, fileId,
+    		                                      addMetadataItemsDTO.getMetadataItems(), 
+    		                                      true);
+       	
+       	// Add a metadata version to the history collection.
+       	datasetService.addFileMetadataVersion(fileId, currentMetadata, true);
+       	
+       	return toDTO(updatedPrimaryMetadata);
     }
     
     @Override
@@ -217,12 +228,21 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 		   throw new HpcException("Dataset was not found: " + updateMetadataDTO.getDatasetId(),
 		                          HpcRequestRejectReason.DATASET_NOT_FOUND);	
 		}
+		
+       	// Clone the current metadata object.
+       	String fileId = updateMetadataDTO.getFileId();
+       	HpcFileMetadata currentMetadata = cloneFileMetadata(dataset, fileId);
 
 		// Update the primary metadata.
-		return toDTO(datasetService.updatePrimaryMetadata(dataset, 
-				                                          updateMetadataDTO.getFileId(),
-				                                          updateMetadataDTO.getMetadata(), 
-				                                          true));                                  
+       	HpcFilePrimaryMetadata updatedPrimaryMetadata =  
+       	   datasetService.updatePrimaryMetadata(dataset, fileId,
+				                                updateMetadataDTO.getMetadata(), 
+				                                true);  
+       	
+       	// Add a metadata version to the history collection.
+       	datasetService.addFileMetadataVersion(fileId, currentMetadata, true);
+       	
+       	return toDTO(updatedPrimaryMetadata);
 	}
     
     @Override
@@ -701,6 +721,27 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	}
 	}
     
+    /**
+     * Clone (deep copy) a file metadata object .
+     * 
+     * @param dataset The dataset.
+     * @param fileId The file to clone its metadata object.
+     *
+     * @throws HpcException 
+     */
+    private HpcFileMetadata cloneFileMetadata(HpcDataset dataset, String fileId) 
+		                                     throws HpcException
+	{
+	   	// Locate the file to attach the metadata items.
+	   	HpcFile file = datasetService.getFile(dataset, fileId);
+	   	if(file == null) {
+	   	   throw new HpcException("File not found: " + fileId, 
+	   			                  HpcRequestRejectReason.FILE_NOT_FOUND);
+	   	}
+	   	
+	   	// Get a copy of the current metadata object.
+	   	return cloneJAXB(file.getMetadata());
+	}
 }
 
  

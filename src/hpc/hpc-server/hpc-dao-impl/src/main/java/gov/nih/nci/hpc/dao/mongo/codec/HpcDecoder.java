@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcFileMetadataVersion;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
@@ -44,7 +45,7 @@ class HpcDecoder
     //---------------------------------------------------------------------//
 	
     /**
-     * Decode HpcNihAccount
+     * Decode HpcNihAccount.
      *
      * @param doc The HpcNihAccount document.
      * @param decoderContext The decoder context.
@@ -65,7 +66,7 @@ class HpcDecoder
 	}
     
     /**
-     * Decode HpcDataTransferAccount
+     * Decode HpcDataTransferAccount.
      *
      * @param doc The HpcDataTransferAccount document.
      * @param decoderContext The decoder context.
@@ -91,7 +92,7 @@ class HpcDecoder
     //---------------------------------------------------------------------//
     
     /**
-     * Decode HpcFileSet
+     * Decode HpcFileSet.
      *
      * @param doc The HpcFileSet document.
      * @param decoderContext The decoder context.
@@ -112,7 +113,7 @@ class HpcDecoder
 	}
     
     /**
-     * Decode HpcDataTransferRequest
+     * Decode HpcDataTransferRequest.
      *
      * @param doc The HpcDataTransferRequest document.
      * @param decoderContext The decoder context.
@@ -133,7 +134,7 @@ class HpcDecoder
 	}
     
     /**
-     * Decode HpcFileLocation
+     * Decode HpcFileLocation.
      *
      * @param doc The HpcFileLocation document.
      * @param decoderContext The decoder context.
@@ -154,7 +155,7 @@ class HpcDecoder
 	}	
     
     /**
-     * Decode HpcDataTransferLocations
+     * Decode HpcDataTransferLocations.
      *
      * @param doc The HpcDataTransferLocations document.
      * @param decoderContext The decoder context.
@@ -176,7 +177,7 @@ class HpcDecoder
 	}	
 	
     /**
-     * Decode HpcDataTransferReport
+     * Decode HpcDataTransferReport.
      *
      * @param doc The HpcDataTransferReport document.
      * @param decoderContext The decoder context.
@@ -198,7 +199,7 @@ class HpcDecoder
 	}	
     
     /**
-     * Decode HpcFileMetadata
+     * Decode HpcFileMetadata.
      *
      * @param doc The HpcFileMetadata document.
      * @param decoderContext The decoder context.
@@ -217,9 +218,31 @@ class HpcDecoder
     		new BsonDocumentReader(doc.toBsonDocument(Document.class, registry));
 		return registry.get(HpcFileMetadata.class).decode(docReader, decoderContext);
 	}
+    
+    /**
+     * Decode HpcFileMetadataVersion.
+     *
+     * @param doc The HpcFileMetadataVersion document.
+     * @param decoderContext The decoder context.
+     * @param registry Codec registry.
+     * @return Decoded HpcFileMetadataVersion object.
+     */
+    public static HpcFileMetadataVersion 
+                  decodeFileMetadataVersion(Document doc, 
+    		                                DecoderContext decoderContext,
+    		                                CodecRegistry registry)
+    {
+    	if(doc == null || registry == null) {
+        	   return null;
+        }
+    	
+    	BsonDocumentReader docReader = 
+    		new BsonDocumentReader(doc.toBsonDocument(Document.class, registry));
+		return registry.get(HpcFileMetadataVersion.class).decode(docReader, decoderContext);
+	}
 	
     /**
-     * Decode HpcFilePrimaryMetadata
+     * Decode HpcFilePrimaryMetadata.
      *
      * @param doc The HpcFilePrimaryMetadata document.
      * @param decoderContext The decoder context.
@@ -241,7 +264,7 @@ class HpcDecoder
 	}
     
     /**
-     * Decode HpcMetadataItem
+     * Decode HpcMetadataItem.
      *
      * @param doc The HpcMetadataItem document.
      * @param decoderContext The decoder context.
@@ -262,7 +285,7 @@ class HpcDecoder
 	}
     
     /**
-     * Decode HpcFile
+     * Decode HpcFile.
      *
      * @param doc The HpcFile document.
      * @param decoderContext The decoder context.
@@ -286,7 +309,7 @@ class HpcDecoder
     //---------------------------------------------------------------------//
     
 	/**
-     * Decode HpcProjectMetadata
+     * Decode HpcProjectMetadata.
      *
      * @param doc The HpcProjectMetadata document.
      * @param decoderContext The decoder context.
