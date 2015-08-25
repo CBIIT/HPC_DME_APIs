@@ -12,7 +12,6 @@ package gov.nih.nci.hpc.bus.impl;
 
 import static gov.nih.nci.hpc.bus.impl.HpcJAXBUtil.cloneJAXB;
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
