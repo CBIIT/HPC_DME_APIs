@@ -220,7 +220,7 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcManagedDatasetDAO Interface Implementation
+    // HpcDatasetDAO Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
