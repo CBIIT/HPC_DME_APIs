@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
@@ -676,11 +677,10 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 			logger.debug("Submitting data transfer request: " + 
 			             uploadRequest.getLocations());
 			HpcDataTransferReport dataTransferReport = null;
-			try {
+			try {				
 				 dataTransferReport =
                  dataTransferService.transferDataset(uploadRequest.getLocations(), 
-				                                     user);
-				 
+				                                     user,dataset.getId());				 
 			} catch(HpcException e) {
 				    // Failed to upload file. Log and continue.
 					logger.info("Failed to upload file: " + uploadRequest, e);

@@ -67,7 +67,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     @Override
     public HpcDataTransferReport 
                   transferDataset(HpcDataTransferLocations dataTransferLocations,
-                		          HpcUser user) 
+                		          HpcUser user, String datasetId) 
 	                             throws HpcException
     {   
     	// Input validation.
@@ -76,7 +76,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	   throw new HpcException("Invalid data transfer request input", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
-    	
+    	dataTransferLocations.getDestination().setPath("/"+datasetId);
+        	
   	    return dataTransferProxy.transferDataset(dataTransferLocations, user);
     }
     
