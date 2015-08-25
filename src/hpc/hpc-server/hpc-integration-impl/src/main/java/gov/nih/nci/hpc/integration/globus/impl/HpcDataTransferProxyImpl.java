@@ -143,7 +143,7 @@ public class HpcDataTransferProxyImpl
 	        transfer.put("submission_id", submissionId);
 	        JSONObject item = setJSONItem(transferLocations, client, nihUsername);
 	        transfer.append("DATA", item);
-	
+
 	        r = client.postResult("/transfer", transfer, null);
 	        String taskId = r.document.getString("task_id");
 	        logger.debug("Transfer task id :"+ taskId );
@@ -158,6 +158,35 @@ public class HpcDataTransferProxyImpl
         }
     }
 
+    
+    private boolean createDestinationDirectory(String destinationEndpoint, String destinationPath)
+           throws HpcException 
+    {
+    	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();
+		try 
+		{
+			logger.info("Creating a directory at endpoint :" + destinationEndpoint);
+			JSONTransferAPIClient.Result r;
+			JSONObject mkDirectory = new JSONObject();			
+			mkDirectory.put("path", destinationPath);
+			mkDirectory.put("DATA_TYPE", "mkdir");
+			logger.info("Submitting create directory request :" + mkDirectory.toString());
+			r = client.postResult(client.endpointPath(destinationEndpoint) + "/mkdir", mkDirectory);
+            String code = r.document.getString("code");
+            if (code.startsWith("DirectoryCreated")) 
+           	 	return true;
+           	 else
+           		return false;					
+		} 
+		catch(Exception e) 
+		{
+			throw new HpcException(
+			 "Failed to create directory: " + destinationPath, 
+			 HpcErrorType.DATA_TRANSFER_ERROR, e);
+		}
+    }
+    
+    
     public HpcDataTransferReport getTaskStatusReport(String taskId,
     		                                         HpcDataTransferAccount dataTransferAccount)
     	                                            throws HpcException 
@@ -243,10 +272,10 @@ public class HpcDataTransferProxyImpl
 	        item.put("source_endpoint", transferLocations.getSource().getEndpoint());
 	        item.put("source_path", transferLocations.getSource().getPath());
 	        item.put("destination_endpoint", transferLocations.getDestination().getEndpoint());
-	        if(transferLocations.getDestination() != null && transferLocations.getDestination().getPath() != null && !transferLocations.getDestination().getPath().isEmpty())
-	        	item.put("destination_path", getGODestinationPath(transferLocations.getDestination().getPath(),nihUsername));
-	        else
-	        	item.put("destination_path", getGODestinationPath(transferLocations.getSource().getPath(),nihUsername));
+	        //if(transferLocations.getDestination() != null && transferLocations.getDestination().getPath() != null && !transferLocations.getDestination().getPath().isEmpty())
+	        	//item.put("destination_path", getGODestinationPath(transferLocations.getDestination().getPath(),nihUsername));
+	        //else
+	        item.put("destination_path", getGODestinationPath(transferLocations.getDestination().getPath(),transferLocations.getSource().getPath(),nihUsername,transferLocations.getDestination().getEndpoint()));
 	        item.put("recursive", checkFileDirectoryAndSetRecursive(transferLocations.getSource().getEndpoint(),transferLocations.getSource().getPath(),client));
 	        return item;
 	        
@@ -257,9 +286,12 @@ public class HpcDataTransferProxyImpl
 		}    
     }
 
-    private String getGODestinationPath(String path,String nihUsername) {
-    	String fileName = path.substring(path.lastIndexOf('/')+1);
-		return hpcGOTransfer.getDestinationBaseLocation()+"/"+nihUsername+"/"+fileName;
+    private String getGODestinationPath(String destinationPath, String path,String nihUsername,String desEndpoint) throws HpcException {
+    	String sourceFileName = path.substring(path.lastIndexOf('/')+1);
+    	String destinationFileName = destinationPath.substring(path.lastIndexOf('/')+1);
+    	StringBuilder createPath = new  StringBuilder(hpcGOTransfer.getDestinationBaseLocation()+"/"+nihUsername+"/"+destinationFileName);
+        createDestinationDirectory(desEndpoint,createPath.toString());
+		return hpcGOTransfer.getDestinationBaseLocation()+"/"+nihUsername+"/"+destinationFileName+"/"+sourceFileName;
 	}
 
 	public boolean autoActivate(String endpointName, JSONTransferAPIClient client)

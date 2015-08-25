@@ -38,7 +38,7 @@ public interface HpcDataTransferService
      */
     public HpcDataTransferReport 
               transferDataset(HpcDataTransferLocations dataTransferLocations,
-    		                  HpcUser user) 
+    		                  HpcUser user,String datasetId) 
     		                 throws HpcException;
 
     /**
