@@ -157,8 +157,12 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 			else if (registration.getPhi().equals("NOT_SPECIFIED"))
 				metadata.setDataContainsPHI(HpcPHIContent.NOT_SPECIFIED);
 
-			metadata.setFundingOrganization(registration
-					.getFundingOrganization());
+			String fundingOrg = registration.getFundingOrganization();
+			if(fundingOrg != null && fundingOrg.trim().length() > 0)
+				metadata.setFundingOrganization("Not_Specified");
+			else
+				metadata.setFundingOrganization(registration
+						.getFundingOrganization());
 			metadata.setPrincipalInvestigatorNihUserId(registration
 					.getInvestigatorId());
 			metadata.setRegistrarNihUserId(user.getNihAccount().getUserId());

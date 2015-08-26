@@ -49,9 +49,8 @@ angular.module('data.registration').controller('TypeaheadCtrl', function($scope,
 	  $scope.getLocation = function(val) {
 	    return $http.get('/getEndpoint', {
 	      params: {
-	    	searchTerm:val,
 	        userGO: $scope.userNameGO,
-	        passGO: $scope.passwordGO
+	        passGO: $scope.passwordGO,
 	      }
 	    }).then(function(response){
 	      return response.data.DATA.map(function(item){
@@ -244,7 +243,7 @@ function addTextbox() {
 	  <label class="control-label col-sm-2" for="fundingOrganization">Funding Organization:</label>
 	  <div class="col-sm-7">
 		<label th:if="${#fields.hasErrors('fundingOrganization')}" th:errors="*{fundingOrganization}">fundingOrganization Error</label>
-		<input type="text" class="form-control" th:field="*{fundingOrganization}" th:required="required" placeholder="Enter funding organization"/>
+		<input type="text" class="form-control" th:field="*{fundingOrganization}" th:value="Not_Specified" placeholder="Enter funding organization"/>
 	  </div>
 	</div>
 	<div class="form-group">

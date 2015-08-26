@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.web.Application;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -52,7 +53,7 @@ public class HpcDatasetControllerTest {
 
 	@Value("${local.server.port}")
 	private int port;
-	private final String baseurl = "http://localhost:7737/hpc-server/dataset";
+	private final String baseurl = "http://fr-s-hpcdm-gp-d.ncifcrf.gov:7737/hpc-server/dataset";
 	//private final String baseurl = "http://localhost:7737/hpc-server/dataset";
 
 	private RestTemplate template;
@@ -102,10 +103,14 @@ public class HpcDatasetControllerTest {
 			metadata.setDataContainsPHI(HpcPHIContent.PHI_NOT_PRESENT);
 			metadata.setFundingOrganization("NCI");
 			metadata.setPrincipalInvestigatorNihUserId("konkapv");
+			metadata.setPrincipalInvestigatorDOC("test");
 			metadata.setRegistrarNihUserId("konkapv");
 			metadata.setDescription("Description");			// TODO: ID Lookup
 			metadata.setCreatorName("PRasad Konka");
 			metadata.setLabBranch("CCR");
+			metadata.setOriginallyCreated(Calendar.getInstance());
+			metadata.setRegistrarDOC("test");
+			
 			upload.setMetadata(metadata);
 			
 			//Set file custom metadata
@@ -117,8 +122,6 @@ public class HpcDatasetControllerTest {
 			metadataItem2.setValue("value2");
 			metadata.getMetadataItems().add(metadataItem1);
 			metadata.getMetadataItems().add(metadataItem2);
-			upload.getProjectIds().add("aa94bc29-f414-48a4-85ec-97a26bc3b35d");
-			upload.getProjectIds().add("1815ee84-cfc9-4681-bc7e-bfafac05057d");
 			dto.getUploadRequests().add(upload);
 			writeXML(dto);
 		}
