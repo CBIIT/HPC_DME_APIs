@@ -234,8 +234,8 @@ class HpcDomainValidator
     	   metadata.getPrincipalInvestigatorNihUserId() == null ||
     	   metadata.getRegistrarNihUserId() == null ||
     	   metadata.getLabBranch() == null ||
-    	   metadata.getDoc() == null ||
-   	   	   metadata.getOrganizationalStructure() == null ||
+    	   metadata.getPrincipalInvestigatorDOC() == null ||
+   	   	   metadata.getRegistrarDOC() == null ||
    	   	   metadata.getDescription() == null ||
    	   	   (metadata.getMetadataItems() != null && 
    	   	    !isValidMetadataItems(metadata.getMetadataItems()))) { 
