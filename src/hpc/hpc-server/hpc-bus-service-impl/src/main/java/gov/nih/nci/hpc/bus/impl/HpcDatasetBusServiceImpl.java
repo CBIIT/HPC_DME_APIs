@@ -519,7 +519,11 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	if(uploadRequests == null || name == null) {
     	   return;
     	}
-    	
+    	if(name.length() > 255) {
+    		 throw new HpcException(
+  			        "Dataset name <" + name + "> exceeds the dataset name size limitation(255) ",
+                     HpcRequestRejectReason.DATASET_NAME_SIZE_LIMITATION);
+      	}     	
     	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
     		if(uploadRequest.getMetadata() == null || 
     		   uploadRequest.getMetadata().getRegistrarNihUserId() == null) {
@@ -699,7 +703,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 			try {				
 				 dataTransferReport =
                  dataTransferService.transferDataset(uploadRequest.getLocations(), 
-				                                     user,dataset.getId());				 
+				                                     user,dataset.getFileSet().getName());				 
 			} catch(HpcException e) {
 				    // Failed to upload file. Log and continue.
 					logger.info("Failed to upload file: " + uploadRequest, e);
