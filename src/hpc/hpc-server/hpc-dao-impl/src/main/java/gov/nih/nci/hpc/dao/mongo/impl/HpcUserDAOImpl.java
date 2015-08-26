@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.dao.mongo.impl;
 
-import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.or;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.regex;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
@@ -137,7 +137,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		HpcSingleResultCallback<List<HpcUser>> callback = 
                        new HpcSingleResultCallback<List<HpcUser>>();
 		getCollection().find(
-				        and(regex(FIRST_NAME_FIELD_NAME, 
+				        or(regex(FIRST_NAME_FIELD_NAME, 
 				        		  "^" + Pattern.quote(firstName) + "$", "i"),
 				        	regex(LAST_NAME_FIELD_NAME, 
 				        		  "^" + Pattern.quote(lastName) + "$", "i"))).

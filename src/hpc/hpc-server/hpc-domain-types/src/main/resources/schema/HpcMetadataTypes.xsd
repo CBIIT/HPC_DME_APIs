@@ -72,7 +72,7 @@
 			<xsd:element name="dataContainsPHI" type="hpc-domain-metadata:HpcPHIContent" />
 			<xsd:element name="dataEncrypted" type="hpc-domain-metadata:HpcEncryptionStatus" />
 			<xsd:element name="dataCompressed" type="hpc-domain-metadata:HpcCompressionStatus" />
-			<xsd:element name="fundingOrganization" type="xsd:string" />
+			<xsd:element name="fundingOrganization" type="xsd:string" default="Not_Specified" />
 			<xsd:element name="principalInvestigatorNihUserId" type="xsd:string" />
 			<xsd:element name="principalInvestigatorDOC" type="xsd:string" />
 			<xsd:element name="creatorName" type="xsd:string" />
