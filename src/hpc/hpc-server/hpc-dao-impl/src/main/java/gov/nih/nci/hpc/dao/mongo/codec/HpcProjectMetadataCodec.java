@@ -70,9 +70,9 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 			          projectMetadata.getPrincipalInvestigatorNihUserId();
 		String registrarNihUserId = projectMetadata.getRegistrarNihUserId();
 		String labBranch = projectMetadata.getLabBranch();
-		String doc = projectMetadata.getDoc();
+		String principalInvestigatorDOC = projectMetadata.getPrincipalInvestigatorDOC();
 		Calendar created = projectMetadata.getCreated();
-		String organizationalStructure = projectMetadata.getOrganizationalStructure();
+		String registrarDOC = projectMetadata.getRegistrarDOC();
 		String description = projectMetadata.getDescription();
 		List<HpcMetadataItem> metadataItems = projectMetadata.getMetadataItems();
 		
@@ -84,7 +84,8 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		   document.put(PROJECT_METADATA_TYPE_KEY, type.value());
 		}
 		if(internalProjectId != null) {
-		   document.put(PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY, internalProjectId);
+		   document.put(PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY, 
+				        internalProjectId);
 		}
 		if(principalInvestigatorNihUserId != null) {
 		   document.put(PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY, 
@@ -97,15 +98,16 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		if(labBranch != null) {
 		   document.put(PROJECT_METADATA_LAB_BRANCH_KEY, labBranch);
 		}		
-		if(doc != null) {
-		   document.put(PROJECT_METADATA_DOC_KEY, doc);
+		if(principalInvestigatorDOC != null) {
+		   document.put(PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_DOC_KEY, 
+				        principalInvestigatorDOC);
 		}
 		if(created != null) {
 		   document.put(PROJECT_METADATA_CREATED_KEY, created.getTime());
 		}
-		if(organizationalStructure != null) {
-		   document.put(PROJECT_METADATA_ORGANIZATIONAL_STRUCTURE_KEY, 
-				        organizationalStructure);
+		if(registrarDOC != null) {
+		   document.put(PROJECT_METADATA_REGISTRAR_DOC_KEY, 
+				        registrarDOC);
 		}
 		if(description != null) {
 		   document.put(PROJECT_METADATA_DESCRIPTION_KEY, description);
@@ -142,15 +144,16 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		projectMetadata.setRegistrarNihUserId(
                         document.getString(PROJECT_METADATA_REGISTRAR_NIH_USER_ID_KEY));
 		projectMetadata.setLabBranch(document.getString(PROJECT_METADATA_LAB_BRANCH_KEY));
-		projectMetadata.setDoc(document.getString(PROJECT_METADATA_DOC_KEY));
+		projectMetadata.setPrincipalInvestigatorDOC(
+				        document.getString(PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_DOC_KEY));
 		
 		Calendar created = Calendar.getInstance();
 		if(document.getDate(PROJECT_METADATA_CREATED_KEY) != null) {
 		   created.setTime(document.getDate(PROJECT_METADATA_CREATED_KEY));
 		   projectMetadata.setCreated(created);
 		}
-		projectMetadata.setOrganizationalStructure(
-		       document.getString(PROJECT_METADATA_ORGANIZATIONAL_STRUCTURE_KEY));
+		projectMetadata.setRegistrarDOC(
+		       document.getString(PROJECT_METADATA_REGISTRAR_DOC_KEY));
 		projectMetadata.setDescription(document.getString(
                                                 PROJECT_METADATA_DESCRIPTION_KEY));
 		

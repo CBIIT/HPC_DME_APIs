@@ -69,15 +69,15 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
 	public final static String LAB_BRANCH_FIELD_NAME = 
             HpcCodec.PROJECT_METADATA_KEY + "." + 
             HpcCodec.PROJECT_METADATA_LAB_BRANCH_KEY;
-	public final static String DOC_FIELD_NAME = 
+	public final static String PRINCIPAL_INVESTIGATOR_DOC_FIELD_NAME = 
             HpcCodec.PROJECT_METADATA_KEY + "." + 
-            HpcCodec.PROJECT_METADATA_DOC_KEY;
+            HpcCodec.PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_DOC_KEY;
 	public final static String CREATED_FIELD_NAME = 
             HpcCodec.PROJECT_METADATA_KEY + "." + 
             HpcCodec.PROJECT_METADATA_CREATED_KEY;
-	public final static String ORGANIZATIONAL_STRUCTURE_FIELD_NAME = 
+	public final static String REGISTRAR_DOC_FIELD_NAME = 
             HpcCodec.PROJECT_METADATA_KEY + "." + 
-            HpcCodec.PROJECT_METADATA_ORGANIZATIONAL_STRUCTURE_KEY;
+            HpcCodec.PROJECT_METADATA_REGISTRAR_DOC_KEY;
 	public final static String DESCRIPTION_FIELD_NAME = 
             HpcCodec.PROJECT_METADATA_KEY + "." + 
             HpcCodec.PROJECT_METADATA_DESCRIPTION_KEY;
@@ -249,17 +249,17 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
            filters.add(eq(LAB_BRANCH_FIELD_NAME, 
           		          metadata.getLabBranch()));
         }
-    	if(metadata.getDoc() != null) {
-       	   filters.add(eq(DOC_FIELD_NAME, 
-       			          metadata.getDoc()));
+    	if(metadata.getPrincipalInvestigatorDOC() != null) {
+       	   filters.add(eq(PRINCIPAL_INVESTIGATOR_DOC_FIELD_NAME, 
+       			          metadata.getPrincipalInvestigatorDOC()));
        	}
     	if(metadata.getCreated() != null) {
            filters.add(eq(CREATED_FIELD_NAME, 
         		          metadata.getCreated().getTime()));
         }
-    	if(metadata.getOrganizationalStructure() != null) {
-           filters.add(eq(ORGANIZATIONAL_STRUCTURE_FIELD_NAME, 
-         			      metadata.getOrganizationalStructure()));
+    	if(metadata.getRegistrarDOC() != null) {
+           filters.add(eq(REGISTRAR_DOC_FIELD_NAME, 
+         			      metadata.getRegistrarDOC()));
         }
     	if(metadata.getDescription() != null) {
            filters.add(regex(DESCRIPTION_FIELD_NAME, 
