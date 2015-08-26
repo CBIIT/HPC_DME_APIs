@@ -26,6 +26,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.bson.conversions.Bson;
 
@@ -262,7 +263,7 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
         }
     	if(metadata.getDescription() != null) {
            filters.add(regex(DESCRIPTION_FIELD_NAME, 
-        		             metadata.getDescription(), "i"));
+        		             Pattern.quote(metadata.getDescription()), "i"));
        	}
     	if(metadata.getMetadataItems() != null && 
     	   !metadata.getMetadataItems().isEmpty()) {
