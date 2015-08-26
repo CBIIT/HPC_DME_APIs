@@ -287,6 +287,27 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 		return okResponse(datasetCollectionDTO, true);
     }
     
+    @Override
+    public Response getDatasetsByRegistrarName(String firstName,
+    		                                   String lastName)
+    {
+    	logger.info("Invoking RS: GET /dataset/query/registrar: " + 
+    			    firstName + " " + lastName);
+    	
+		HpcDatasetCollectionDTO datasetCollectionDTO = null;
+		try {
+			 datasetCollectionDTO = datasetBusService.getDatasets(
+					                       firstName, lastName, 
+						                   HpcDatasetUserAssociation.REGISTRAR); 
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /dataset/query/registrar: failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(datasetCollectionDTO, true);
+    }
+    
 	@Override
 	public Response getDatasetsByProjectId(String projectId) 
 	{

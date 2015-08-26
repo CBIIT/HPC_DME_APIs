@@ -143,8 +143,22 @@ public interface HpcDatasetRestService
     @Path("/dataset/query/principalInvestigator")
     @Produces("application/json,application/xml")
     public Response getDatasetsByPrincipalInvestigatorName(
-    		                            @QueryParam("firstName") String firstName,
-    		                            @QueryParam("lastName") String lastName); 
+    		                   @QueryParam("firstName") String firstName,
+    		                   @QueryParam("lastName") String lastName); 
+    
+    /**
+     * GET Datasets by Registrar's first and last name.
+     *
+     * @param firstName The registrar first name.
+     * @param lastName The registrar last name.
+     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
+     */
+    @GET
+    @Path("/dataset/query/registrar")
+    @Produces("application/json,application/xml")
+    public Response getDatasetsByRegistrarName(
+    		                   @QueryParam("firstName") String firstName,
+    		                   @QueryParam("lastName") String lastName); 
  
     /**
      * GET Datasets by Project ID.
