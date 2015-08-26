@@ -132,7 +132,7 @@ public class HpcUserServiceImpl implements HpcUserService
     public List<HpcUser> getUsers(String firstName, String lastName) throws HpcException
     {
     	// Input validation.
-    	if(firstName == null || lastName == null) {
+    	if(firstName == null && lastName == null) {
     	   throw new HpcException("Null user first or last name", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}

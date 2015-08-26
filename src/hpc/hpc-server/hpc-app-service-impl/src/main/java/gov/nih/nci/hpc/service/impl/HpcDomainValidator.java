@@ -167,6 +167,9 @@ class HpcDomainValidator
      */
     public static boolean isValidFilePrimaryMetadata(HpcFilePrimaryMetadata metadata) 
     {
+    	if(metadata.getFundingOrganization() == null)
+    		metadata.setFundingOrganization("Not_Specified");
+    	
     	if(metadata == null ||
     	   metadata.getDataContainsPII() == null || 	
     	   // metadata.getDataContainsPHI() == null ||
@@ -197,6 +200,8 @@ class HpcDomainValidator
      */
     public static boolean isEmptyFilePrimaryMetadata(HpcFilePrimaryMetadata metadata) 
     {    
+    	if(metadata.getFundingOrganization() == null)
+    		metadata.setFundingOrganization("Not_Specified");
     	if(metadata == null ||
 	       (metadata.getDataContainsPII() == null && 	
 	    	metadata.getDataContainsPHI() == null &&
