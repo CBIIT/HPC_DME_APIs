@@ -63,13 +63,15 @@ public abstract class HpcCodec<T> implements Codec<T>
                                "principal_investigator_nih_user_id";
 	public final static String PROJECT_METADATA_REGISTRAR_NIH_USER_ID_KEY = 
                                "registrar_nih_user_id";
+    public final static String PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_DOC_KEY = 
+                               "principal_investigator_doc";
+    public final static String PROJECT_METADATA_REGISTRAR_DOC_KEY = 
+                               "registrar_doc";
 	public final static String PROJECT_METADATA_LAB_BRANCH_KEY = "lab_branch";
-	public final static String PROJECT_METADATA_DOC_KEY = "doc";
 	public final static String PROJECT_METADATA_CREATED_KEY = "created";
-	public final static String PROJECT_METADATA_ORGANIZATIONAL_STRUCTURE_KEY = 
-			                   "organizational_structure";
 	public final static String PROJECT_METADATA_DESCRIPTION_KEY = "description";
 	public final static String PROJECT_METADATA_METADATA_ITEMS_KEY = "metadata_items";
+
 	
 	// HpcDataset Document keys.
 	public final static String DATASET_CREATED_KEY = "created"; 

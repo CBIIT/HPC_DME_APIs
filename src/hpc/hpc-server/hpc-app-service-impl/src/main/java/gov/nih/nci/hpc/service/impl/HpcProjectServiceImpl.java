@@ -189,9 +189,9 @@ public class HpcProjectServiceImpl implements HpcProjectService
     		metadata.getPrincipalInvestigatorNihUserId() == null &&
     	    metadata.getRegistrarNihUserId() == null &&
     	    metadata.getLabBranch() == null &&
-    	    metadata.getDoc() == null &&
+    	    metadata.getPrincipalInvestigatorDOC() == null &&
     	    metadata.getCreated() == null &&
-    	    metadata.getOrganizationalStructure() == null && 
+    	    metadata.getRegistrarDOC() == null && 
     		metadata.getDescription() == null &&
     		(metadata.getMetadataItems() == null || 
     		 metadata.getMetadataItems().isEmpty()))) {
