@@ -288,7 +288,7 @@ public class HpcDataTransferProxyImpl
 
     private String getGODestinationPath(String destinationPath, String path,String nihUsername,String desEndpoint) throws HpcException {
     	String sourceFileName = path.substring(path.lastIndexOf('/')+1);
-    	String destinationFileName = destinationPath.substring(path.lastIndexOf('/')+1);
+    	String destinationFileName = destinationPath.substring(destinationPath.lastIndexOf('/')+1);
     	StringBuilder createPath = new  StringBuilder(hpcGOTransfer.getDestinationBaseLocation()+"/"+nihUsername+"/"+destinationFileName);
         createDestinationDirectory(desEndpoint,createPath.toString());
 		return hpcGOTransfer.getDestinationBaseLocation()+"/"+nihUsername+"/"+destinationFileName+"/"+sourceFileName;
