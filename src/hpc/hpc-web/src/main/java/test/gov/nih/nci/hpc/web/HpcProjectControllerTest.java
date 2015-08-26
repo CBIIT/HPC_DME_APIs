@@ -67,11 +67,11 @@ public class HpcProjectControllerTest {
 		HpcProjectMetadata metadata = new HpcProjectMetadata();
 		metadata.setName("Project1004");
 		metadata.setDescription("Description");
-		metadata.setDoc("Division");
+		metadata.setPrincipalInvestigatorDOC("Division");
 		metadata.setType(HpcProjectType.SEQUENCING);
 		metadata.setInternalProjectId("Iproject");
 		metadata.setLabBranch("CCR");
-		metadata.setOrganizationalStructure("Org");
+		metadata.setRegistrarDOC("Org");
 		metadata.setPrincipalInvestigatorNihUserId("konkapv");
 		metadata.setRegistrarNihUserId("konkapv");
 		dto.setMetadata(metadata);
