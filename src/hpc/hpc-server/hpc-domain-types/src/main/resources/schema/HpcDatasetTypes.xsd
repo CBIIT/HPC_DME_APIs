@@ -29,6 +29,8 @@
 			<xsd:enumeration value="FASTQ" />
 			<xsd:enumeration value="BAM" />
 			<xsd:enumeration value="MD5SUM" />
+			<xsd:enumeration value="BAI" />
+			<xsd:enumeration value="PDF" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
