@@ -62,6 +62,7 @@
 			<xsd:enumeration value="UNKNOWN" />
 			<xsd:enumeration value="SEQUENCING" />
 			<xsd:enumeration value="ANALYSIS" />
+			<xsd:enumeration value="UMBRELLA" />
 		</xsd:restriction>
 	</xsd:simpleType>	
 
