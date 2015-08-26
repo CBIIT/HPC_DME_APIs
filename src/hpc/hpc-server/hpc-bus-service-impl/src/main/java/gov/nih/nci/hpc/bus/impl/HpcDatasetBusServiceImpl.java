@@ -303,7 +303,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 	                                           throws HpcException
     {
     	// Input validation.
-    	if(firstName == null || lastName == null || association == null) {
+    	if((firstName == null && lastName == null) || association == null) {
            throw new HpcException("Null first/last name or association",
    			                      HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
