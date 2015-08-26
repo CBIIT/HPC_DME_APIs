@@ -29,6 +29,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -281,7 +282,7 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
                        new HpcSingleResultCallback<List<HpcDataset>>();
 		getCollection().find(
 		                regex(DATASET_NAME_FIELD_NAME, 
-		                	  name, "i")).into(datasets, callback); 
+		                	  Pattern.quote(name), "i")).into(datasets, callback); 
 		
 		return callback.getResult();
 	}
@@ -307,7 +308,7 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 		HpcSingleResultCallback<Long> callback = new HpcSingleResultCallback<Long>();
     	getCollection().count(and(eq(getFieldName(association), nihUserId),
     			                  regex(DATASET_NAME_FIELD_NAME, 
-	                	                "^" + name + "$", "i")), callback);
+	                	                "^" + Pattern.quote(name) + "$", "i")), callback);
     	return callback.getResult() != null ? callback.getResult() > 0 : false;
     }
 	
@@ -402,7 +403,7 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
      	}
     	if(primaryMetadata.getDescription() != null) {
        	   filters.add(regex(DESCRIPTION_FIELD_NAME, 
-       			             primaryMetadata.getDescription(), "i"));
+       			             Pattern.quote(primaryMetadata.getDescription()), "i"));
       	}
     	if(primaryMetadata.getLabBranch() != null) {
            filters.add(eq(LAB_BRANCH_FIELD_NAME, 

@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.client.model.UpdateOptions;
@@ -136,8 +137,11 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		HpcSingleResultCallback<List<HpcUser>> callback = 
                        new HpcSingleResultCallback<List<HpcUser>>();
 		getCollection().find(
-				        and(regex(FIRST_NAME_FIELD_NAME, "^" + firstName + "$", "i"),
-				        	regex(LAST_NAME_FIELD_NAME, "^" + lastName + "$", "i"))).into(users, callback); 
+				        and(regex(FIRST_NAME_FIELD_NAME, 
+				        		  "^" + Pattern.quote(firstName) + "$", "i"),
+				        	regex(LAST_NAME_FIELD_NAME, 
+				        		  "^" + Pattern.quote(lastName) + "$", "i"))).
+				        into(users, callback); 
 		
 		return callback.getResult();
 	}
