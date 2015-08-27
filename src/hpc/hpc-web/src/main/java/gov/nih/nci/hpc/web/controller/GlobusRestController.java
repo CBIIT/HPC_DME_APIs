@@ -21,21 +21,30 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseBody; 
+import javax.servlet.http.HttpSession;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 
-@RestController
+@Controller
+@EnableAutoConfiguration
 public class GlobusRestController {
 
-	@RequestMapping(value = "/getEndpoint", method = RequestMethod.GET)
-	public String getUserEndpoint(@RequestParam("searchTerm") String searchTerm, @RequestParam("userGO") String userGO,
-			@RequestParam("passGO") String passGO) {
+	@RequestMapping(value = "/getEndpoint", method = RequestMethod.GET)	
+	public @ResponseBody String getUserEndpoint(@RequestParam("searchTerm") String searchTerm, HttpSession session) {
 		JSONTransferAPIClient transferClient = null;
 		Result endPointList = null;
-
+		
+		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		
 		GoauthClient cli = new GoauthClient("nexus.api.globusonline.org",
-				"www.globusonline.org", userGO, passGO);
+				"www.globusonline.org", user.getDataTransferAccount().getUsername(), user.getDataTransferAccount().getPassword());
 
+				
 		try {
-			transferClient = getGOTransferClient(userGO, cli);
+			transferClient = getGOTransferClient(user.getDataTransferAccount().getUsername(), cli);
 			Map<String, String> params = new HashMap<String, String>();
 			params.put("filter", "canonical_name:~"+searchTerm+"*");
 			endPointList = transferClient.getResult("endpoint_list", params);
@@ -69,18 +78,20 @@ public class GlobusRestController {
 	}
 
 	@RequestMapping(value = "/getEndpointContents", method = RequestMethod.GET)
-	public String getUserEndpointContentList(
+	public @ResponseBody String getUserEndpointContentList(
 			@RequestParam("endpointName") String endpointName,
-			@RequestParam("userGO") String userGO,
-			@RequestParam("passGO") String passGO) {
+			HttpSession session) {
 
 		JSONTransferAPIClient transferClient = null;
 		Result endPointList = null;
+		
+		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		
 		GoauthClient cli = new GoauthClient("nexus.api.globusonline.org",
-				"www.globusonline.org", userGO, passGO);
+				"www.globusonline.org", user.getDataTransferAccount().getUsername(), user.getDataTransferAccount().getPassword());
 
 		try {
-			transferClient = getGOTransferClient(userGO, cli);
+			transferClient = getGOTransferClient(user.getDataTransferAccount().getUsername(), cli);
 			Map<String, String> params = new HashMap<String, String>();
 
 			transferClient.endpointAutoactivate(endpointName, params);
@@ -110,7 +121,7 @@ public class GlobusRestController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		System.out.println(endPointList.document.toString());
 		return endPointList == null ? "" : endPointList.document.toString();
 	}
 
