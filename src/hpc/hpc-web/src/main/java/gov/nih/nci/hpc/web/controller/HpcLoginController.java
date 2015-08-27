@@ -64,8 +64,8 @@ public class HpcLoginController extends AbstractHpcController {
 	private String authenticateLdapURL;
 	@Value("${gov.nih.nci.hpc.login.module}")
 	private String loginModule;
-	
-
+	@Value("${gov.nih.nci.hpc.server.project.query.registrar}")
+	private String projectURL;
 
   @RequestMapping(method = RequestMethod.GET)
   public String home(Model model){
@@ -151,6 +151,7 @@ public class HpcLoginController extends AbstractHpcController {
 		  return "index";
 	  }
 	  model.addAttribute("datasetURL", datasetURL);
+	  model.addAttribute("projectURL", projectURL);
 	  return "dashboard";
   }
 }

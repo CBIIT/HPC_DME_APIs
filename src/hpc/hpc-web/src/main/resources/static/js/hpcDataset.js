@@ -11,20 +11,35 @@ app.controller('MyCtrl', function($scope, $http, $q, $attrs) {
 	//$http.get('/js/hpcDatasets.json').
 	  success(function(data, status, headers, config) {
 		        var collection = data["gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO"];
-		    	console.log('collection', collection);
+		    	console.log('dataset collection', collection);
 	        var datasets = collection["gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO"];
 	    	console.log('datasets', datasets);
-				$scope.hpcData = datasets;
+				$scope.hpcDataset = datasets;
 				deferred.resolve($scope.hpcData);
 	  }).
 	  error(function(data, status, headers, config) {
 		console.log('Failure', status);
 	  });
+	
+	$http.get($scope.projectURL + '/' + $scope.userId).
+	//$http.get('/js/hpcDatasets.json').
+	  success(function(data, status, headers, config) {
+		        var collection = data["gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO"];
+		    	console.log('project collection', collection);
+	        var projects = collection["gov.nih.nci.hpc.dto.project.HpcProjectDTO"];
+	        console.log('projects', projects);
+				$scope.hpcProject = projects;
+				deferred.resolve($scope.hpcData);
+	  }).
+	  error(function(data, status, headers, config) {
+		console.log('Failure', status);
+	  });	
 	});
 
-$scope.gridOptions = {
-        data: 'hpcData',
+$scope.gridOptions1 = {
+        data: 'hpcDataset',
         enableRowSelection: false,
+        enableColumnResize: true,
         enableCellEditOnFocus: false,
         showSelectionCheckbox: false,
         selectedItems:$scope.selectedRows,
@@ -38,9 +53,57 @@ $scope.gridOptions = {
              displayName: 'Dataset Name',
              enableCellEdit: false
          }, {
-            field: 'fileSet.created',
-            displayName: 'Created Date',
+            field: 'fileSet.description',
+            displayName: 'Description',
             enableCellEdit: false
-         }]
+         }],
+         sortInfo: {
+   	      fields: ['fileSet.name'],
+   	      directions: ['asc']
+   	    }    
+       };
+
+$scope.gridOptions2 = {
+        data: 'hpcProject',
+        enableRowSelection: false,
+        enableCellEditOnFocus: false,
+        enableColumnResize: true,
+        showSelectionCheckbox: false,
+        selectedItems:$scope.selectedRows,
+        columnDefs: [{
+            field: 'id',
+            displayName: 'Id',
+            enableCellEdit: false
+         }, {
+             field: 'metadata.name',
+             displayName: 'Project Name',
+             enableCellEdit: false
+         }, {
+             field: 'metadata.internalProjectId',
+             displayName: 'Internal Project Id',
+             enableCellEdit: false
+         },{
+            field: 'metadata.principalInvestigatorNihUserId',
+            displayName: 'Investigator',
+            enableCellEdit: false
+         }, {
+             field: 'metadata.description',
+             displayName: 'Description',
+             enableCellEdit: false
+          }, {
+              field: 'metadata.labBranch',
+              displayName: 'Lab/Branch',
+              enableCellEdit: false
+           },{
+              field: 'metadata.created',
+              displayName: 'Created',
+              enableCellEdit: false,
+              cellFilter: 'date:\'yyyy-MM-dd\''
+           }],
+           sortInfo: {
+        	      fields: ['metadata.name'],
+        	      directions: ['asc']
+        	    }           
        };
 });
+
