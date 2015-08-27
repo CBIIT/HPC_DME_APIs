@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -132,6 +133,15 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 			// TODO: Identify file type
 			upload.setType(HpcFileType.UNKONWN);
 
+			if(registration.getProjectIds() != null && registration.getProjectIds().indexOf(",") != -1)
+			{
+				StringTokenizer tokens = new StringTokenizer(registration.getProjectIds(), ",");
+				while(tokens.hasMoreTokens())
+					upload.getProjectIds().add(tokens.nextToken());
+			}
+			else if(registration.getProjectIds() != null)
+				upload.getProjectIds().add(registration.getProjectIds());
+				
 			// TODO: Metadata funding organization
 			HpcFilePrimaryMetadata metadata = new HpcFilePrimaryMetadata();
 			if (registration.getEncrypted().equals("ENCRYPTED"))

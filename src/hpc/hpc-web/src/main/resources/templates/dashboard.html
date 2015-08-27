@@ -45,12 +45,11 @@
 	/*style.css*/
 .gridStyle {
     border: 1px solid rgb(212,212,212);
-    width: 800px; 
     height: 300px
 }
 	</style>
 </head>
-  <body ng-controller="MyCtrl" th:attr="ng-init='userId=\'' + ${session.hpcUser.nihAccount.userId} + '\'; datasetURL=\'' + ${datasetURL} +'\''">
+  <body ng-controller="MyCtrl" th:attr="ng-init='userId=\'' + ${session.hpcUser.nihAccount.userId} + '\'; projectURL=\'' + ${projectURL} +'\'; datasetURL=\'' + ${datasetURL} +'\''">
   
   <!-- container section start -->
   <section id="container" class="">
@@ -73,12 +72,12 @@
 				<div class="col-lg-9 col-md-12">
 					<div class="panel panel-default">
 						<div class="panel-heading">
-							<h2><i class="fa fa-list-alt red"></i><strong>My Datasets</strong></h2>
+							<h2><i class="fa fa-list-alt red"></i><strong>My Projects</strong></h2>
 						</div>
 						<!--panel-body start-->
 						<div class="panel-body">
 
-							<div class="gridStyle" ng-grid="gridOptions">
+							<div class="gridStyle" ng-grid="gridOptions2">
 							</div>
 						</div>
 
@@ -87,6 +86,25 @@
 				</div><!--/col-->
 
               </div>
+              <div class="row">
+				<div class="col-lg-9 col-md-12">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h2><i class="fa fa-list-alt red"></i><strong>My Datasets</strong></h2>
+						</div>
+						<!--panel-body start-->
+						<div class="panel-body">
+
+							<div class="gridStyle" ng-grid="gridOptions1">
+							</div>
+						</div>
+
+					</div>
+
+				</div><!--/col-->
+
+              </div>
+
           </section>
       </section>
       <!--main content end-->
