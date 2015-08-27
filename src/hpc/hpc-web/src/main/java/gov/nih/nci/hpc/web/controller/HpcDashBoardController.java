@@ -37,10 +37,13 @@ public class HpcDashBoardController extends AbstractHpcController {
 	private String serviceURL;
 	@Value("${gov.nih.nci.hpc.server.dataset.query.registrar}")
 	private String datasetURL;
+	@Value("${gov.nih.nci.hpc.server.project.query.registrar}")
+	private String projectURL;
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(Model model, HttpSession session) {
 		model.addAttribute("datasetURL", datasetURL);
+		model.addAttribute("projectURL", projectURL);
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
 			return "redirect:/";
