@@ -39,16 +39,24 @@
       <script src="js/lte-ie7.js"></script>
     <![endif]-->  
     <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.js"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-animate.js"></script>      
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-touch.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-animate.js"></script> 
+    <script src="../js/ui-grid/csv.js"></script>
+    <script src="../js/ui-grid/pdfmake.js"></script>
+    <script src="../js/ui-grid/vfs_fonts.js"></script>
+    <script src="../js/ui-grid/ui-grid.js"></script>
+   	<link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css" type="text/css"/>        
 <script>
 
-angular.module('data.registration', ['ngAnimate', 'ui.bootstrap']);
-angular.module('data.registration').controller('TypeaheadCtrl', function($scope, $http) {
-	
+var app = angular.module('data.registration', ['ngAnimate','ui.bootstrap', 'ngTouch', 'ui.grid', 'ui.grid.treeView' ]);
+
+app.controller('TypeaheadCtrl', function($scope, $http) {
+	  
 	 // $scope.selected = undefined;
 	  $scope.getLocation = function(val) {
 	    return $http.get('/getEndpoint', {
 	      params: {
+			searchTerm:val,
 	        userGO: $scope.userNameGO,
 	        passGO: $scope.passwordGO,
 	      }
@@ -75,7 +83,7 @@ angular.module('data.registration').controller('TypeaheadCtrl', function($scope,
 				      passGO: $scope.passwordGO,
 			      }
 			    }).then(function(response){
-			    	
+
 			      return response.data.DATA.map(function(item,i){
 
 			    	  $scope.documents[i] = item.name;
@@ -104,6 +112,47 @@ angular.module('data.registration').controller('TypeaheadCtrl', function($scope,
     };		
 	});
 	
+
+
+
+
+
+app.controller('GridFolderCtrl', ['$scope', '$http', '$interval', 'uiGridTreeViewConstants', function ($scope, $http, $interval, uiGridTreeViewConstants ) {
+	  $scope.gridOptions = {
+			    enableSorting: true,
+			    enableFiltering: true,
+			    showTreeExpandNoChildren: true,
+			    columnDefs: [
+			      { name: 'name', width: '30%' },
+
+			    ]			  
+			  };
+
+	    $http.get('/getEndpointContents', {
+		      params: {
+		    	  endpointName: 'mahinarra#mahinarraEP2',
+			      userGO: $scope.userNameGO,
+			      passGO: $scope.passwordGO,
+		      }
+		    })
+			 .success(function(data) {
+alert('data::'+data.DATA);
+					   $scope.gridOptions.data = data.DATA;
+			 });
+
+			  $scope.expandAll = function(){
+			    $scope.gridApi.treeBase.expandAllRows();
+			  };
+
+			  $scope.toggleRow = function( rowNum ){
+			    $scope.gridApi.treeBase.toggleRowTreeState($scope.gridApi.grid.renderContainers.body.visibleRowCache[rowNum]);
+			  };
+
+			  $scope.toggleExpandNoChildren = function(){
+			    $scope.gridOptions.showTreeExpandNoChildren = !$scope.gridOptions.showTreeExpandNoChildren;
+			    $scope.gridApi.grid.refresh();
+			  };
+			}]);
 
 	
 function cancel() {
@@ -270,6 +319,14 @@ function addTextbox() {
 					</li>
 				</ul>
 			</div>	
+			
+		    <div ng-controller="GridFolderCtrl">
+		      <button id="expandAll" type="button" class="btn btn-success" ng-click="expandAll()">Expand All</button>
+		      <button id="toggleFirstRow" type="button" class="btn btn-success" ng-click="toggleRow(0)">Toggle First Row</button>
+		      <button id="toggleSecondRow" type="button" class="btn btn-success" ng-click="toggleRow(1)">Toggle Second Row</button>
+		      <button id="toggleExpandNoChildren" type="button" class="btn btn-success" ng-click="toggleExpandNoChildren()">Toggle Expand No Children</button>
+		      <div id="grid1" ui-grid="gridOptions" ui-grid-tree-view="true" class="grid"></div>
+		    </div>			
 		</div>	 	
 	</div>
 	<!-- 
