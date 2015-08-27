@@ -33,6 +33,7 @@ public class HpcDatasetRegistration {
 	
 	@NotEmpty(message="Atleast one file must be selected")
 	private String[] filesChecked;	
+	private String createdOn;
 	
 	public String getId() {
 		return id;
@@ -123,5 +124,11 @@ public class HpcDatasetRegistration {
 	}
 	public void setFilesChecked(String[] filesChecked) {
 		this.filesChecked = filesChecked;
+	}
+	public String getCreatedOn() {
+		return createdOn;
+	}
+	public void setCreatedOn(String createdOn) {
+		this.createdOn = createdOn;
 	}	
 }

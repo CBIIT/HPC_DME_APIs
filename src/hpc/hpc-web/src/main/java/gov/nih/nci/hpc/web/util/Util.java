@@ -1,5 +1,7 @@
 package gov.nih.nci.hpc.web.util;
 
+import gov.nih.nci.hpc.domain.metadata.HpcProjectType;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,4 +40,13 @@ public class Util {
 		return attrs;
 	}
 
+	public static Map<String, String> getProjectTypes() {
+		Map<String, String> attrs = new HashMap<String, String>();
+		attrs.put("UMBRELLA", "UMBRELLA");
+		attrs.put("ANALYSIS", "ANALYSIS");
+		attrs.put("SEQUENCING", "SEQUENCING");
+		attrs.put("UNKNOWN", "UNKNOWN");
+		return attrs;
+	}
+	
 }
