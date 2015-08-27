@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.bson.conversions.Bson;
+
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.UpdateResult;
@@ -136,12 +138,18 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		List<HpcUser> users = new ArrayList<HpcUser>();
 		HpcSingleResultCallback<List<HpcUser>> callback = 
                        new HpcSingleResultCallback<List<HpcUser>>();
-		getCollection().find(
-				        or(regex(FIRST_NAME_FIELD_NAME, 
-				        		  "^" + Pattern.quote(firstName) + "$", "i"),
-				        	regex(LAST_NAME_FIELD_NAME, 
-				        		  "^" + Pattern.quote(lastName) + "$", "i"))).
-				        into(users, callback); 
+		
+		List<Bson> filters = new ArrayList<Bson>();
+    	if(firstName != null && !firstName.isEmpty()) {
+    	   filters.add(regex(FIRST_NAME_FIELD_NAME, 
+	        		         "^" + Pattern.quote(firstName) + "$", "i"));
+    	}
+    	if(lastName != null && !lastName.isEmpty()) {
+     	   filters.add(regex(LAST_NAME_FIELD_NAME, 
+ 	        		         "^" + Pattern.quote(lastName) + "$", "i"));
+     	}
+    	
+		getCollection().find(or(filters)).into(users, callback); 
 		
 		return callback.getResult();
 	}
