@@ -43,6 +43,8 @@
 				<xsd:element name="id" type="xsd:ID" />
 				<xsd:element name="metadata" type="hpc-domain-metadata:HpcProjectMetadata" />
 				<xsd:element ref="hpc-dto-dataset:HpcDatasetCollectionDTO"/>
+				<xsd:element name="created" type="xsd:dateTime" />
+				<xsd:element name="lastUpdated" type="xsd:dateTime" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

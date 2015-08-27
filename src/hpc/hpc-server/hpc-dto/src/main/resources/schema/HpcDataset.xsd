@@ -52,6 +52,8 @@
 					         type="hpc-domain-dataset:HpcDataTransferRequest" 
 					         minOccurs="0" maxOccurs="unbounded" />				
 				<xsd:element ref="hpc-dto-project:HpcProjectCollectionDTO"/>
+				<xsd:element name="created" type="xsd:dateTime" />
+				<xsd:element name="lastUpdated" type="xsd:dateTime" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
