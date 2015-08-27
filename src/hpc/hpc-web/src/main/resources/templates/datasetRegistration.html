@@ -13,6 +13,7 @@
     <link href="css/bootstrap.min.css" rel="stylesheet"/>
     <!-- bootstrap theme -->
     <link href="css/bootstrap-theme.css" rel="stylesheet"/>
+    <link href="css/datepicker.css" rel="stylesheet"/>
     <!--external css-->
     <!-- font icon -->
     <link href="css/elegant-icons-style.css" rel="stylesheet" />
@@ -45,7 +46,7 @@
     <script src="../js/ui-grid/pdfmake.js"></script>
     <script src="../js/ui-grid/vfs_fonts.js"></script>
     <script src="../js/ui-grid/ui-grid.js"></script>
-   	<link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css" type="text/css"/>        
+   	<link rel="stylesheet" href="css/ui-grid.css" type="text/css"/>        
 <script>
 
 var app = angular.module('data.registration', ['ngAnimate','ui.bootstrap', 'ngTouch', 'ui.grid', 'ui.grid.treeView' ]);
@@ -254,6 +255,18 @@ function addTextbox() {
 	  </div>
 	</div>
 	<div class="form-group">
+	  <label class="control-label col-sm-2" for="investigatorName">Originally Created On:</label>
+
+
+	  <div class="col-sm-7">
+		<label th:if="${#fields.hasErrors('createdOn')}" th:errors="*{createdOn}">Creator Error</label>
+		<div class="input-append date" id="createdDate" data-date="08-27-2015" data-date-format="mm-dd-yyyy">
+			<input type="text" class="form-control" value="08-27-2015" th:field="*{createdOn}" th:required="required" placeholder="Enter Originally created on"/>
+	    <span class="add-on"><i class="icon-th"></i></span>
+		</div>
+	  </div>
+	</div>	
+	<div class="form-group">
 	  <label class="control-label col-sm-2" for="branchName">Lab/Branch:</label>
 	  <div class="col-sm-7">
 		<label th:if="${#fields.hasErrors('branchName')}" th:errors="*{branchName}">branchName Error</label>
@@ -446,9 +459,10 @@ function addTextbox() {
 	<script src="js/charts.js"></script>
 	<script src="js/jquery.slimscroll.min.js"></script>
 	<script src="js/dynamicfields.json"></script>
+	<script src="js/bootstrap-datepicker.js"></script>
 	
   <script>
-
+  $('#createdDate').datepicker();
       //knob
       $(function() {
         $(".knob").knob({

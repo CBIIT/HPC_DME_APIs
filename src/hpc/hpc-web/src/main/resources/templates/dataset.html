@@ -138,9 +138,11 @@
 									<div class="col-md-6 form-group">
 										<label for="textbox1">Comments:</label> <label for="${dataset.fileSet.comments}" th:text="${dataset.fileSet.comments}"></label>
 									</div>
+									<!-- 
 									<div class="col-md-6 form-group">
-										<label for="textbox1">Created on:</label> <label for="${dataset.fileSet.created}" th:text="${#calendars.format(dataset.fileSet.created,'dd MMMM yyyy')}"></label>
+										<label for="textbox1">Created on:</label> <label for="${dataset.created}" th:text="${#calendars.format(dataset.created,'dd MMMM yyyy')}"></label>
 									</div>
+									-->
 								</div>
 								</div>
 
@@ -202,7 +204,7 @@
 										<label for="Name">Funding Organization:</label> <label for="${file.metadata.primaryMetadata.fundingOrganization}" th:text="${file.metadata.primaryMetadata.fundingOrganization}"></label>
 									</div>
 									<div class="col-md-6 form-group">
-										<label for="Name">PII:</label> <label for="${file.metadata.primaryMetadata.primaryInvestigatorNihUserId}" th:text="${file.metadata.primaryMetadata.primaryInvestigatorNihUserId}"></label>
+										<label for="Name">PII:</label> <label for="${file.metadata.primaryMetadata.principalInvestigatorNihUserId}" th:text="${file.metadata.primaryMetadata.principalInvestigatorNihUserId}"></label>
 									</div>
 									<div class="col-md-6 form-group">
 										<label for="Name">Created By:</label> <label for="${file.metadata.primaryMetadata.creatorName}" th:text="${file.metadata.primaryMetadata.creatorName}"></label>
