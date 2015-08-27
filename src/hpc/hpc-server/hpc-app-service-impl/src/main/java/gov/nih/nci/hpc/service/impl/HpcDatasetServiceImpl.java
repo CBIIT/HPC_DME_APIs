@@ -14,6 +14,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isEmptyFilePrimary
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidDataTransferLocations;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileUploadRequest;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataItems;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isOverlapping;
 import gov.nih.nci.hpc.dao.HpcDatasetDAO;
 import gov.nih.nci.hpc.dao.HpcFileMetadataHistoryDAO;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
@@ -241,6 +242,13 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
        	if(file == null) {
        	   throw new HpcException("File not found: " + fileId, 
        			                  HpcRequestRejectReason.FILE_NOT_FOUND);
+       	}
+       	
+       	// Validate the request doesn't include an existing metadata item.
+       	if(isOverlapping(file.getMetadata().getPrimaryMetadata().getMetadataItems(),
+       			         metadataItems)) {
+           throw new HpcException("At least one metadata item already exists", 
+		                          HpcRequestRejectReason.METADATA_ITEM_ALREADY_EXISTS);
        	}
        	
        	// Add the metadata items.
@@ -517,8 +525,11 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
      *
      * @param file The file to apply the update.
      * @param update The updated metadata.
+     * 
+     * @throws HpcException If the metadata to update was not found.
      */
     private void updatePrimaryMetadata(HpcFile file, HpcFilePrimaryMetadata update)
+                                      throws HpcException
     {
     	HpcFilePrimaryMetadata metadata = file.getMetadata().getPrimaryMetadata();
     	if(update.getCreatorName() != null) {
@@ -562,7 +573,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
         }
     	if(update.getMetadataItems() != null && !update.getMetadataItems().isEmpty()) {
     	   for(HpcMetadataItem metadataItem : update.getMetadataItems()) {
-    		   upsert(metadata.getMetadataItems(), metadataItem);
+    		   updateMetadataItem(metadata.getMetadataItems(), metadataItem);
     	   }
         }
     }
@@ -570,10 +581,14 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     /**
      * Upsert a metadata item.
      *
-     * @param metadataItems The metadata items to upsert into.
-     * @param metadataItem The item to upsert
+     * @param metadataItems The metadata items to update.
+     * @param metadataItem The item to update.
+     * 
+     * @throws HpcException If the metadata to update was not found.
      */
-    void upsert(List<HpcMetadataItem> metadataItems, HpcMetadataItem metadataItem)
+    private void updateMetadataItem(List<HpcMetadataItem> metadataItems, 
+    		                        HpcMetadataItem metadataItem)
+    		                       throws HpcException
     {
     	for(HpcMetadataItem item : metadataItems) {
     		if(item.getKey().equals(metadataItem.getKey())) {
@@ -582,7 +597,8 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     		}
     	}
     	
-    	metadataItems.add(metadataItem);
+    	throw new HpcException("Metadata item not found: " + metadataItem.getKey(), 
+	                           HpcRequestRejectReason.METADATA_ITEM_NOT_FOUND);
     }
 }
 
