@@ -72,7 +72,41 @@ function addTextbox() {
 	//foo.appendChild(label);
 	foo.appendChild(element);
 	}
-</script>      
+
+function handleButtons()
+{
+    if(document.getElementById("datasetName").value!="")
+        document.getElementById("nameButton").disabled=false;
+    else
+    	document.getElementById("nameButton").disabled=true;
+    
+    if(document.getElementById("id").value!="")
+        document.getElementById("idButton").disabled=false;
+    else
+    	document.getElementById("idButton").disabled=true;
+
+    if(document.getElementById("projectId").value!="")
+        document.getElementById("projectButton").disabled=false;
+    else
+    	document.getElementById("projectButton").disabled=true;
+
+    if(document.getElementById("description").value!="" ||
+    		document.getElementById("investigatorId").value!="-1" ||
+    		document.getElementById("registarId").value!="" ||
+    		document.getElementById("creatorId").value!="" ||
+    		document.getElementById("branchName").value!="" ||
+    		document.getElementById("pii").value!="" ||
+    		document.getElementById("phi").value!="" ||
+    		document.getElementById("encrypted").value!="" ||
+    		document.getElementById("compressed").value!="" ||
+    		document.getElementById("fundingOrganization").value!="" ||
+    		document.getElementById("comments").value!="")
+        document.getElementById("primaryButton").disabled=false;
+    else
+    	document.getElementById("primaryButton").disabled=true;
+}
+
+</script>
   </head>
 
   <body>
@@ -108,10 +142,10 @@ function addTextbox() {
 	<div class="control-group">
 	<label class="col-md-2 control-label" for="datasetName">Name:</label>
 	  <div class="col-md-7">
-		<input type="text" class="form-control" th:field="*{datasetName}" th:required="required" placeholder="Enter Dataset name"/>
+		<input type="text" class="form-control" th:field="*{datasetName}" th:required="required" onchange="handleButtons()" placeholder="Enter Dataset name"/>
 	  </div>
 	  <div class="col-md-3">
-		<button type="submit" class="btn btn-sm btn-success">Search</button>
+		<button type="submit" id="nameButton" class="btn btn-sm btn-success" disabled="true">Search</button>
 	  </div>
 	</div>
 	</form>
@@ -122,10 +156,10 @@ function addTextbox() {
 	<div class="control-group">
 	<label class="col-md-2 control-label" for="datasetName">ID:</label>
 	  <div class="col-md-7">
-		<input type="text" class="form-control" th:field="*{id}" th:required="required" placeholder="Enter Dataset ID"/>
+		<input type="text" class="form-control" th:field="*{id}" th:required="required" onchange="handleButtons()" placeholder="Enter Dataset ID"/>
 	  </div>
 	  <div class="col-md-3">
-		<button type="submit" class="btn btn-sm btn-success">Search</button>
+		<button type="submit" id="idButton"  class="btn btn-sm btn-success" disabled="true">Search</button>
 	  </div>
 	</div>
 	</form>
@@ -136,10 +170,10 @@ function addTextbox() {
 	<div class="control-group">
 	<label class="col-md-2 control-label" for="projectId">Project Id:</label>
 	  <div class="col-md-7">
-		<input type="text" class="form-control" th:field="*{projectId}"  th:required="required" placeholder="Enter Project Id"/>
+		<input type="text" class="form-control" th:field="*{projectId}"  th:required="required" onchange="handleButtons()" placeholder="Enter Project Id"/>
 	  </div>
 	  <div class="col-md-3">
-		<button type="submit" class="btn btn-sm btn-success">Search</button>
+		<button type="submit" class="btn btn-sm btn-success" id="projectButton"  disabled="true">Search</button>
 	  </div>
 	</div>
 	</form>
@@ -147,16 +181,16 @@ function addTextbox() {
 	<label class="col-md-12 control-label" for="OR">OR</label>
 	</div>
 	<form class="form-horizontal" action="#" role="form" th:action="@{/searchdataset/primary}" th:object="${hpcDatasetSearch}" method="post" enctype="multipart/form-data">	<div class="control-group">
-	<label class="col-md-2 control-label" for="datasetName">Description:</label>
+	<label class="col-md-2 control-label" for="description}">Description:</label>
 	  <div class="col-md-10">
-		<input type="text"  class="form-control" th:field="*{description}"  placeholder="Enter Dataset description"/>
+		<input type="text"  class="form-control" th:field="*{description}" onchange="handleButtons()" placeholder="Enter Dataset description"/>
 	  </div>
 	</div>
 	
 	<div class="control-group">
 	  <label class="col-md-2 control-label" for="investigatorName">Investigator Name:</label>
 	  <div class="col-md-10">
-		<select th:field="*{investigatorId}" class="form-control" >
+		<select th:field="*{investigatorId}" class="form-control" onchange="handleButtons()" >
 		    <option value="-1">----Select----</option>
 		    <option th:each="entry : ${piList.entrySet()}" th:value="${entry.key}" th:text="${entry.value}">
 			Wireframe</option>
@@ -164,64 +198,64 @@ function addTextbox() {
 	  </div>
 	</div>
 	<div class="control-group">
-	  <label class="col-md-2 control-label" for="fundingOrganization">Registered by:</label>
+	  <label class="col-md-2 control-label" for="registarId">Registered by:</label>
 	  <div class="col-md-10">
-		<input type="text" class="form-control" th:field="*{registarId}"  placeholder="Enter Registar NCI UserId"/>
+		<input type="text" class="form-control" th:field="*{registarId}" onchange="handleButtons()" placeholder="Enter Registar NCI UserId"/>
 	  </div>
 	</div>
 	<div class="control-group">
-	  <label class="col-md-2 control-label" for="investigatorName">Created By:</label>
+	  <label class="col-md-2 control-label" for="creatorId">Created By:</label>
 	  <div class="col-md-10">
-		<input type="text" class="form-control" th:field="*{creatorId}"  placeholder="Enter Creator name"/>
+		<input type="text" class="form-control" th:field="*{creatorId}" onchange="handleButtons()" placeholder="Enter Creator name"/>
 	  </div>
 	</div>
 	<div class="control-group">
 	  <label class="col-md-2 control-label" for="branchName">Lab/Branch:</label>
 	  <div class="col-md-10">
-		<select th:field="*{branchName}" class="form-control" ><option value="" selected="selected">- Select -</option><option value="ccr">Center for Cancer Research</option><option value="dermatology_branch">Dermatology Branch</option><option value="developmental_therapeutics_branch">Developmental Therapeutics Branch</option><option value="endocrine_oncology_branch">Endocrine Oncology Branch</option><option value="experimental_immunology_branch">Experimental Immunology Branch</option><option value="experimental_transplantation_and_immunology_branch">Experimental Transplantation and Immunology Branch</option><option value="genetics_branch">Genetics Branch</option><option value="genitourinary_malignancies_branch">Genitourinary Malignancies Branch</option><option value="hiv_and_aids_malignancy_branch">HIV and AIDS Malignancy Branch</option><option value="hiv_drp_host-virus_interaction_branch">HIV DRP Host-Virus Interaction Branch</option><option value="lymphoid_malignancies_branch">Lymphoid Malignancies Branch</option><option value="neuro-oncology_branch">Neuro-Oncology Branch</option><option value="pediatric_oncology_branch">Pediatric Oncology Branch</option><option value="radiation_biology_branch">Radiation Biology Branch</option><option value="radiation_oncology_branch">Radiation Oncology Branch</option><option value="surgery_branch">Surgery Branch</option><option value="thoracic_and_gastrointestinal_oncology_branch">Thoracic and Gastrointestinal Oncology Branch</option><option value="urologic_oncology_branch">Urologic Oncology Branch</option><option value="vaccine_branch">Vaccine Branch</option><option value="women&#039;s_malignancies_branch">Women&#039;s Malignancies Branch</option><option value="basic_research_laboratory">Basic Research Laboratory</option><option value="cancer_and_developmental_biology_laboratory">Cancer and Developmental Biology Laboratory</option><option value="chemical_biology_laboratory">Chemical Biology Laboratory</option><option value="gene_regulation_and_chromosome_biology_laboratory">Gene Regulation and Chromosome Biology Laboratory</option><option value="hiv_drp_retroviral_replication_laboratory">HIV DRP Retroviral Replication Laboratory</option><option value="laboratory_of_biochemistry_and_molecular_biology">Laboratory of Biochemistry and Molecular Biology</option><option value="laboratory_of_cancer_biology_and_genetics">Laboratory of Cancer Biology and Genetics</option><option value="laboratory_of_cell_and_developmental_signaling">Laboratory of Cell and Developmental Signaling</option><option value="laboratory_of_cell_biology">Laboratory of Cell Biology</option><option value="laboratory_of_cellular_and_molecular_biology">Laboratory of Cellular and Molecular Biology</option><option value="laboratory_of_cellular_oncology">Laboratory of Cellular Oncology</option><option value="laboratory_of_experimental_carcinogenesis">Laboratory of Experimental Carcinogenesis</option><option value="laboratory_of_experimental_immunology">Laboratory of Experimental Immunology</option><option value="laboratory_of_genitourinary_cancer_pathogenesis">Laboratory of Genitourinary Cancer Pathogenesis</option><option value="laboratory_of_genome_integrity">Laboratory of Genome Integrity</option><option value="laboratory_of_human_carcinogenesis">Laboratory of Human Carcinogenesis</option><option value="laboratory_of_immune_cell_biology">Laboratory of Immune Cell Biology</option><option value="laboratory_of_metabolism">Laboratory of Metabolism</option><option value="laboratory_of_molecular_biology">Laboratory of Molecular Biology</option><option value="laboratory_of_molecular_immunoregulation">Laboratory of Molecular Immunoregulation</option><option value="laboratory_of_pathology">Laboratory of Pathology</option><option value="laboratory_of_protein_dynamics_and_signaling">Laboratory of Protein Dynamics and Signaling</option><option value="laboratory_of_receptor_biology_and_gene_expression">Laboratory of Receptor Biology and Gene Expression</option><option value="laboratory_of_tumor_immunology_and_biology">Laboratory of Tumor Immunology and Biology</option><option value="macromolecular_crystallography_laboratory">Macromolecular Crystallography Laboratory</option><option value="molecular_targets_laboratory">Molecular Targets Laboratory</option><option value="structural_biophysics_laboratory">Structural Biophysics Laboratory</option><option value="cancer_and_inflammation_program">Cancer and Inflammation Program</option><option value="hiv_drug_resistance_program">HIV Drug Resistance Program</option><option value="molecular_imaging_program">Molecular Imaging Program</option><option value="mouse_cancer_genetics_program">Mouse Cancer Genetics Program</option></select>	  
+		<select th:field="*{branchName}" class="form-control" onchange="handleButtons()"><option value="" selected="selected">- Select -</option><option value="ccr">Center for Cancer Research</option><option value="dermatology_branch">Dermatology Branch</option><option value="developmental_therapeutics_branch">Developmental Therapeutics Branch</option><option value="endocrine_oncology_branch">Endocrine Oncology Branch</option><option value="experimental_immunology_branch">Experimental Immunology Branch</option><option value="experimental_transplantation_and_immunology_branch">Experimental Transplantation and Immunology Branch</option><option value="genetics_branch">Genetics Branch</option><option value="genitourinary_malignancies_branch">Genitourinary Malignancies Branch</option><option value="hiv_and_aids_malignancy_branch">HIV and AIDS Malignancy Branch</option><option value="hiv_drp_host-virus_interaction_branch">HIV DRP Host-Virus Interaction Branch</option><option value="lymphoid_malignancies_branch">Lymphoid Malignancies Branch</option><option value="neuro-oncology_branch">Neuro-Oncology Branch</option><option value="pediatric_oncology_branch">Pediatric Oncology Branch</option><option value="radiation_biology_branch">Radiation Biology Branch</option><option value="radiation_oncology_branch">Radiation Oncology Branch</option><option value="surgery_branch">Surgery Branch</option><option value="thoracic_and_gastrointestinal_oncology_branch">Thoracic and Gastrointestinal Oncology Branch</option><option value="urologic_oncology_branch">Urologic Oncology Branch</option><option value="vaccine_branch">Vaccine Branch</option><option value="women&#039;s_malignancies_branch">Women&#039;s Malignancies Branch</option><option value="basic_research_laboratory">Basic Research Laboratory</option><option value="cancer_and_developmental_biology_laboratory">Cancer and Developmental Biology Laboratory</option><option value="chemical_biology_laboratory">Chemical Biology Laboratory</option><option value="gene_regulation_and_chromosome_biology_laboratory">Gene Regulation and Chromosome Biology Laboratory</option><option value="hiv_drp_retroviral_replication_laboratory">HIV DRP Retroviral Replication Laboratory</option><option value="laboratory_of_biochemistry_and_molecular_biology">Laboratory of Biochemistry and Molecular Biology</option><option value="laboratory_of_cancer_biology_and_genetics">Laboratory of Cancer Biology and Genetics</option><option value="laboratory_of_cell_and_developmental_signaling">Laboratory of Cell and Developmental Signaling</option><option value="laboratory_of_cell_biology">Laboratory of Cell Biology</option><option value="laboratory_of_cellular_and_molecular_biology">Laboratory of Cellular and Molecular Biology</option><option value="laboratory_of_cellular_oncology">Laboratory of Cellular Oncology</option><option value="laboratory_of_experimental_carcinogenesis">Laboratory of Experimental Carcinogenesis</option><option value="laboratory_of_experimental_immunology">Laboratory of Experimental Immunology</option><option value="laboratory_of_genitourinary_cancer_pathogenesis">Laboratory of Genitourinary Cancer Pathogenesis</option><option value="laboratory_of_genome_integrity">Laboratory of Genome Integrity</option><option value="laboratory_of_human_carcinogenesis">Laboratory of Human Carcinogenesis</option><option value="laboratory_of_immune_cell_biology">Laboratory of Immune Cell Biology</option><option value="laboratory_of_metabolism">Laboratory of Metabolism</option><option value="laboratory_of_molecular_biology">Laboratory of Molecular Biology</option><option value="laboratory_of_molecular_immunoregulation">Laboratory of Molecular Immunoregulation</option><option value="laboratory_of_pathology">Laboratory of Pathology</option><option value="laboratory_of_protein_dynamics_and_signaling">Laboratory of Protein Dynamics and Signaling</option><option value="laboratory_of_receptor_biology_and_gene_expression">Laboratory of Receptor Biology and Gene Expression</option><option value="laboratory_of_tumor_immunology_and_biology">Laboratory of Tumor Immunology and Biology</option><option value="macromolecular_crystallography_laboratory">Macromolecular Crystallography Laboratory</option><option value="molecular_targets_laboratory">Molecular Targets Laboratory</option><option value="structural_biophysics_laboratory">Structural Biophysics Laboratory</option><option value="cancer_and_inflammation_program">Cancer and Inflammation Program</option><option value="hiv_drug_resistance_program">HIV Drug Resistance Program</option><option value="molecular_imaging_program">Molecular Imaging Program</option><option value="mouse_cancer_genetics_program">Mouse Cancer Genetics Program</option></select>	  
 	  </div>
 	</div>
 	<div class="control-group">
 	  <label class="col-md-2 control-label" for="pii">PII:</label>
 	  <div class="col-md-10">
-		<select th:field="*{pii}" class="form-control" ><option value="" selected="selected">- Select -</option><option value="PII_PRESENT">PII Present</option><option value="PII_NOT_PRESENT">PII Not Present</option><option value="NOT_SPECIFIED">Not Specified</option></select>	  
+		<select th:field="*{pii}" class="form-control" onchange="handleButtons()"><option value="" selected="selected">- Select -</option><option value="PII_PRESENT">PII Present</option><option value="PII_NOT_PRESENT">PII Not Present</option><option value="NOT_SPECIFIED">Not Specified</option></select>	  
 	  </div>
 	</div>
 	<div class="control-group">
 	  <label class="col-md-2 control-label" for="pii">PHI:</label>
 	  <div class="col-md-10">
-		<select th:field="*{phi}" class="form-control" ><option value="" selected="selected">- Select -</option><option value="PHI_PRESENT">PHI Present</option><option value="PHI_NOT_PRESENT">PHI Not Present</option><option value="NOT_SPECIFIED">Not Specified</option></select>	  
+		<select th:field="*{phi}" class="form-control" onchange="handleButtons()"><option value="" selected="selected">- Select -</option><option value="PHI_PRESENT">PHI Present</option><option value="PHI_NOT_PRESENT">PHI Not Present</option><option value="NOT_SPECIFIED">Not Specified</option></select>	  
 	  </div>
 	</div>
 	<div class="control-group">
 	  <label class="col-md-2 control-label" for="encrypted">Encryption:</label>
 	  <div class="col-md-10">
-		<select th:field="*{encrypted}" class="form-control" ><option value="" selected="selected">- Select -</option><option value="ENCRYPTED">Data Encrypted</option><option value="NOT_ENCRYPTED">Data Not Encrypted</option><option value="NOT_SPECIFIED">Not Specified</option></select>	  
+		<select th:field="*{encrypted}" class="form-control" onchange="handleButtons()"><option value="" selected="selected">- Select -</option><option value="ENCRYPTED">Data Encrypted</option><option value="NOT_ENCRYPTED">Data Not Encrypted</option><option value="NOT_SPECIFIED">Not Specified</option></select>	  
 	  </div>
 	</div>
 	<div class="control-group">
 	  <label class="col-md-2 control-label" for="encrypted">Compressed:</label>
 	  <div class="col-md-10">
-		<select th:field="*{compressed}" class="form-control" ><option value="" selected="selected">- Select -</option><option value="COMPRESSED">Data Compressed</option><option value="NOT_COMPRESSED">Data Not Compressed</option><option value="NOT_SPECIFIED">Not Specified</option></select>	  
+		<select th:field="*{compressed}" class="form-control" onchange="handleButtons()"><option value="" selected="selected">- Select -</option><option value="COMPRESSED">Data Compressed</option><option value="NOT_COMPRESSED">Data Not Compressed</option><option value="NOT_SPECIFIED">Not Specified</option></select>	  
 	  </div>
 	</div>
 	<div class="control-group">
 	  <label class="col-md-2 control-label" for="fundingOrganization">Funding Organization:</label>
 	  <div class="col-md-10">
-		<input type="text" class="form-control" th:field="*{fundingOrganization}"  placeholder="Enter funding organization"/>
+		<input type="text" class="form-control" th:field="*{fundingOrganization}" onchange="handleButtons()" placeholder="Enter funding organization"/>
 	  </div>
 	</div>
 	<div class="control-group">
 	  <label class="col-md-2 control-label" for="comments">Comments:</label>
 	  <div class="col-md-10">
-		<input type="text" class="form-control" th:field="*{comments}" placeholder="Enter Comments"/>
+		<input type="text" class="form-control" th:field="*{comments}" onchange="handleButtons()" placeholder="Enter Comments"/>
 	  </div>
 	</div>	
 	
 	<div class="control-group">
 	  <div class="col-sm-offset-2 col-md-10">
 	  <br/>
-		<button type="submit" class="btn btn-md btn-success">Search</button>
+		<button type="submit" class="btn btn-md btn-success" id="primaryButton" disabled="true">Search</button>
 		<button type="submit" class="btn btn-md btn-success" onClick="return cancel()">Cancel</button>
 	  </div>
 	</div>
