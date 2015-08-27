@@ -14,6 +14,7 @@
     <!-- bootstrap theme -->
     <link href="css/bootstrap-theme.css" rel="stylesheet"/>
     <link href="css/datepicker.css" rel="stylesheet"/>
+    <link href="css/prettify.css" rel="stylesheet"/>
     <!--external css-->
     <!-- font icon -->
     <link href="css/elegant-icons-style.css" rel="stylesheet" />
@@ -308,6 +309,13 @@ function addTextbox() {
 		<input type="text" class="form-control" th:field="*{fundingOrganization}" th:value="Not_Specified" placeholder="Enter funding organization"/>
 	  </div>
 	</div>
+	<div class="form-group">
+	  <label class="control-label col-sm-2" for="fundingOrganization">Associated Project Id(s):</label>
+	  <div class="col-sm-7">
+		<label th:if="${#fields.hasErrors('projectIds')}" th:errors="*{projectIds}">projectIds Error</label>
+		<input type="text" class="form-control" th:field="*{projectIds}" placeholder="Enter Project Ids (comma seperated)"/>
+	  </div>
+	</div>	
 	<div class="form-group">
 	  <label class="control-label col-sm-2" for="comments">Comments:</label>
 	  <div class="col-sm-7">
