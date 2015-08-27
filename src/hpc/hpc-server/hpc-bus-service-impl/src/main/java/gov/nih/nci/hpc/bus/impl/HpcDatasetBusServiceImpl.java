@@ -397,6 +397,8 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	HpcDatasetDTO datasetDTO = new HpcDatasetDTO();
     	datasetDTO.setId(dataset.getId());
     	datasetDTO.setFileSet(dataset.getFileSet());
+    	datasetDTO.setCreated(dataset.getCreated());
+    	datasetDTO.setLastUpdated(dataset.getLastUpdated());
 		for(HpcDataTransferRequest uploadRequest : dataset.getUploadRequests())
 		{			
 			datasetDTO.getUploadRequests().add(uploadRequest);
