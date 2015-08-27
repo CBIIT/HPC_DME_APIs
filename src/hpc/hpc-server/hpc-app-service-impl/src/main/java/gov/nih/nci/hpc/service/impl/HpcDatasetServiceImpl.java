@@ -518,7 +518,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
      * @param file The file to apply the update.
      * @param update The updated metadata.
      */
-    void updatePrimaryMetadata(HpcFile file, HpcFilePrimaryMetadata update)
+    private void updatePrimaryMetadata(HpcFile file, HpcFilePrimaryMetadata update)
     {
     	HpcFilePrimaryMetadata metadata = file.getMetadata().getPrimaryMetadata();
     	if(update.getCreatorName() != null) {
@@ -561,9 +561,28 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
            metadata.setRegistrarNihUserId(update.getRegistrarNihUserId());	
         }
     	if(update.getMetadataItems() != null && !update.getMetadataItems().isEmpty()) {
-           metadata.getMetadataItems().clear();
-           metadata.getMetadataItems().addAll(update.getMetadataItems());
+    	   for(HpcMetadataItem metadataItem : update.getMetadataItems()) {
+    		   upsert(metadata.getMetadataItems(), metadataItem);
+    	   }
         }
+    }
+    
+    /**
+     * Upsert a metadata item.
+     *
+     * @param metadataItems The metadata items to upsert into.
+     * @param metadataItem The item to upsert
+     */
+    void upsert(List<HpcMetadataItem> metadataItems, HpcMetadataItem metadataItem)
+    {
+    	for(HpcMetadataItem item : metadataItems) {
+    		if(item.getKey().equals(metadataItem.getKey())) {
+    		   item.setValue(metadataItem.getValue());	
+    		   return;
+    		}
+    	}
+    	
+    	metadataItems.add(metadataItem);
     }
 }
 
