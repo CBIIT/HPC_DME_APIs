@@ -217,6 +217,8 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
        	HpcProjectDTO dto = new HpcProjectDTO();
     	dto.setId(project.getId());
     	dto.setMetadata(project.getMetadata());
+    	dto.setCreated(project.getCreated());
+    	dto.setLastUpdated(project.getLastUpdated());
     	List<String> datasetIds = project.getDatasetIds();
     	if(datasetIds != null && !datasetIds.isEmpty()) {
     		List<HpcDatasetDTO> datasets = new ArrayList<HpcDatasetDTO>();
