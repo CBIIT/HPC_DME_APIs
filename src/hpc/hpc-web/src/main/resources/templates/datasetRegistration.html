@@ -56,9 +56,9 @@ app.controller('TypeaheadCtrl', function($scope, $http) {
 	  $scope.getLocation = function(val) {
 	    return $http.get('/getEndpoint', {
 	      params: {
-			searchTerm:val,
-	        userGO: $scope.userNameGO,
-	        passGO: $scope.passwordGO,
+			searchTerm:val
+	        //userGO: $scope.userNameGO,
+	        //passGO: $scope.passwordGO,
 	      }
 	    }).then(function(response){
 	      return response.data.DATA.map(function(item){
@@ -78,9 +78,9 @@ app.controller('TypeaheadCtrl', function($scope, $http) {
 			//alert('1111::' + selEPName);
 		    $http.get('/getEndpointContents', {
 			      params: {
-			    	  endpointName: selEPName,
-				      userGO: $scope.userNameGO,
-				      passGO: $scope.passwordGO,
+			    	  endpointName: selEPName
+				      //userGO: $scope.userNameGO,
+				      //passGO: $scope.passwordGO,
 			      }
 			    }).then(function(response){
 
@@ -130,9 +130,9 @@ app.controller('GridFolderCtrl', ['$scope', '$http', '$interval', 'uiGridTreeVie
 
 	    $http.get('/getEndpointContents', {
 		      params: {
-		    	  endpointName: 'mahinarra#mahinarraEP2',
-			      userGO: $scope.userNameGO,
-			      passGO: $scope.passwordGO,
+		    	  endpointName: 'mahinarra#mahinarraEP2'
+			      //userGO: $scope.userNameGO,
+			      //passGO: $scope.passwordGO
 		      }
 		    })
 			 .success(function(data) {
