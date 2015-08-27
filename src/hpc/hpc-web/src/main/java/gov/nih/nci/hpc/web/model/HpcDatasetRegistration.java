@@ -30,6 +30,7 @@ public class HpcDatasetRegistration {
 	//private String originEndpointFilePath;
 	@NotEmpty(message="Funding organization is required")
 	private String fundingOrganization;
+	private String projectIds;
 	
 	@NotEmpty(message="Atleast one file must be selected")
 	private String[] filesChecked;	
@@ -130,5 +131,11 @@ public class HpcDatasetRegistration {
 	}
 	public void setCreatedOn(String createdOn) {
 		this.createdOn = createdOn;
+	}
+	public String getProjectIds() {
+		return projectIds;
+	}
+	public void setProjectIds(String projectIds) {
+		this.projectIds = projectIds;
 	}	
 }
