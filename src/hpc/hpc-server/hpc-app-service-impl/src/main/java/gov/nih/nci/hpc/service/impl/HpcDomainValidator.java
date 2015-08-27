@@ -269,6 +269,27 @@ class HpcDomainValidator
     	}
      	return true;
     }
+    
+    /**
+     * Check if 2 lists of metadata items overlaps
+     *
+     * @param listA List of metadata items.
+     * @param listB List of metadata items.
+     * @return true if the list overlaps (i.e. has at least one common key).
+     */
+    public static boolean isOverlapping(List<HpcMetadataItem> listA, 
+    		                            List<HpcMetadataItem> listB)
+    {
+    	for(HpcMetadataItem itemA : listA) {
+    		for(HpcMetadataItem itemB : listB) {
+    			if(itemB.getKey().equals(itemA.getKey())) {
+    			   return true;
+    			}
+    		}
+    	}
+    	
+    	return false;
+    }  
 }
 
  
