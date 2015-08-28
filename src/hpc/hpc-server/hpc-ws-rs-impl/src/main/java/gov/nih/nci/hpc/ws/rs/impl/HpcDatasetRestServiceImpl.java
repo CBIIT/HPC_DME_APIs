@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetAssociateFileProjectsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
@@ -142,6 +143,23 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /dataset/files failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(null, false);
+	}
+    
+    @Override
+    public Response associateProjects(
+	                HpcDatasetAssociateFileProjectsDTO associateFileProjectsDTO)
+    {	
+		logger.info("Invoking RS: POST /dataset/projects: " + associateFileProjectsDTO);
+		
+		try {
+			 datasetBusService.associateProjects(associateFileProjectsDTO);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /dataset/projects failed:", e);
 			    return errorResponse(e);
 		}
 		

@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetAssociateFileProjectsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
@@ -55,6 +56,17 @@ public interface HpcDatasetBusService
      * @throws HpcException
      */
     public void addFiles(HpcDatasetAddFilesDTO addFilesDTO) throws HpcException;
+    
+    /**
+     * Associate projects with file in a registered dataset.
+     *
+     * @param associateFileProjectsDTO The projects to file association request DTO.
+     * 
+     * @throws HpcException
+     */
+    public void associateProjects(
+    		             HpcDatasetAssociateFileProjectsDTO associateFileProjectsDTO) 
+    		             throws HpcException;
     
     /**
      * Add metadata items to a file primary metadata in a registered dataset.
