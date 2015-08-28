@@ -105,7 +105,7 @@ app.controller('TypeaheadCtrl', function($scope, $http) {
 	      });
 	    });
 	  };
-	  $scope.documents = [];
+	 
 	  $scope.onChange = function () {
 		  //$("#fileList").empty();
 	  };
@@ -114,6 +114,7 @@ app.controller('TypeaheadCtrl', function($scope, $http) {
 		    $scope.$model = $model;
 		    $scope.$label = $label;	
 		    var selEPName = $item;
+		    $scope.documents = [];
 			//alert('1111::' + selEPName);
 		    $http.get('/getEndpointContents', {
 			      params: {
@@ -382,7 +383,8 @@ function addTextbox() {
 						
 						<span><input type="checkbox" name="filesChecked" value="{{document.path}}" ng-checked="selection.indexOf(document) > -1" ng-click="toggleSelection(document.name)"/></span>
 						 
-						<i class="selectednames{{document.level}}"><span>{{document.name}}</span></i>						
+						<i class="selectednames{{document.level}}"><span>{{document.name}}</span></i>
+												
 						<!--
 						<i ng-if="document.level > 0">
 							<ul>
@@ -394,12 +396,10 @@ function addTextbox() {
 						 -->
 						
 					</li>
-					
+					 <li ng-show="!documents.length">No files at the endpoint</li>
 				</ul>
 			</div>	
 		    <div ng-controller="GridFolderCtrl">
-		      <button id="expandAll" type="button" class="btn btn-success" ng-click="expandAll()">Expand All</button>
-		      <button id="toggleExpandNoChildren" type="button" class="btn btn-success" ng-click="toggleExpandNoChildren()">Toggle Expand No Children</button>
 		      <div id="grid1" ui-grid="gridOptions" ui-grid-tree-view="true" ui-grid-selection="true" class="grid"></div>
 		    </div>				
 			
