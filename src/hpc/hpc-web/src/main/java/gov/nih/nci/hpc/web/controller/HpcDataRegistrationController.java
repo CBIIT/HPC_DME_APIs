@@ -139,7 +139,7 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 				while(tokens.hasMoreTokens())
 					upload.getProjectIds().add(tokens.nextToken());
 			}
-			else if(registration.getProjectIds() != null)
+			else if(registration.getProjectIds() != null && registration.getProjectIds().trim().length() > 0)
 				upload.getProjectIds().add(registration.getProjectIds());
 				
 			// TODO: Metadata funding organization
