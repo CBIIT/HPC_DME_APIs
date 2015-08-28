@@ -139,6 +139,21 @@ public interface HpcDatasetService
                                 throws HpcException;
     
     /**
+     * Associate projects with file in a registered dataset.
+     *
+     * @param dataset The dataset.
+     * @param fileId The file ID to associate the projects with.
+     * @param projectIds The projects to associate.
+     * @param persist If set to true, the dataset will be persisted.
+     * 
+     * @throws HpcException
+     */
+    public void associateProjects(HpcDataset dataset, String fileId,
+        		                  List<String> projectIds, 
+        		                  boolean persist) 
+                                 throws HpcException;    
+    
+    /**
      * Create a new version of the file metadata.
      *
      * @param fileId The file ID the metadata is associated with.
