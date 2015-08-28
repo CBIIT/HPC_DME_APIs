@@ -47,7 +47,44 @@
     <script src="../js/ui-grid/pdfmake.js"></script>
     <script src="../js/ui-grid/vfs_fonts.js"></script>
     <script src="../js/ui-grid/ui-grid.js"></script>
-   	<link rel="stylesheet" href="css/ui-grid.css" type="text/css"/>        
+   	<link rel="stylesheet" href="css/ui-grid.css" type="text/css"/>
+   	<style>
+   	
+	   	.selectednames0 
+	   	{ 
+	    	text-allign: left;
+	    	margin-left: 1em;
+		}
+		.selectednames1 
+	   	{ 
+	    	text-allign: left;
+	    	margin-left: 4em;
+		}
+		.selectednames2 
+	   	{ 
+	    	text-allign: left;
+	    	margin-left: 7em;		}
+		.selectednames3 
+	   	{ 
+	    	text-allign: left;
+	    	margin-left: 10em;
+		}
+		.selectednames4 
+	   	{ 
+	    	text-allign: left;
+	    	margin-left: 13em;
+		}
+		.selectednames5 
+	   	{ 
+	    	text-allign: left;
+	    	margin-left: 16em;
+		}
+		.selectednames6 
+	   	{ 
+	    	text-allign: left;
+	    	margin-left: 19em;
+		}		
+   	</style>        
 <script>
 
 var app = angular.module('data.registration', ['ngAnimate','ui.bootstrap', 'ngTouch', 'ui.grid', 'ui.grid.treeView' ]);
@@ -86,9 +123,9 @@ app.controller('TypeaheadCtrl', function($scope, $http) {
 			      }
 			    }).then(function(response){
 
-			      return response.data.DATA.map(function(item,i){
+			      return response.data.map(function(item,i){
 
-			    	  $scope.documents[i] = item.name;
+			    	  $scope.documents[i] = item;
 			      });
 			    });			
 
@@ -121,12 +158,11 @@ app.controller('TypeaheadCtrl', function($scope, $http) {
 
 app.controller('GridFolderCtrl', ['$scope', '$http', '$interval', 'uiGridTreeViewConstants', function ($scope, $http, $interval, uiGridTreeViewConstants ) {
 	  $scope.gridOptions = {
-			    enableSorting: true,
-			    enableFiltering: true,
+			    enableRowSelection: true,
 			    showTreeExpandNoChildren: true,
 			    columnDefs: [
 			      { name: 'name', width: '30%' },
-
+			      { name: 'path', width: '30%' },
 			    ]			  
 			  };
 
@@ -138,22 +174,30 @@ app.controller('GridFolderCtrl', ['$scope', '$http', '$interval', 'uiGridTreeVie
 		      }
 		    })
 			 .success(function(data) {
-alert('data::'+data.DATA);
-					   $scope.gridOptions.data = data.DATA;
+//alert('data::'+data);
+//data[0].$$treeLevel = 0;
+//data[1].$$treeLevel = 1;
+
+			        /*<![CDATA[*/
+						for (var i = 0; i < data.length; i++ ){
+							data[i].$$treeLevel = data[i].level;
+						 }
+				     /*]]>*/
+  
+					
+					 $scope.gridOptions.data = data;
 			 });
 
-			  $scope.expandAll = function(){
+			  $scope.expandAll = function(gridApi){
 			    $scope.gridApi.treeBase.expandAllRows();
-			  };
-
-			  $scope.toggleRow = function( rowNum ){
-			    $scope.gridApi.treeBase.toggleRowTreeState($scope.gridApi.grid.renderContainers.body.visibleRowCache[rowNum]);
 			  };
 
 			  $scope.toggleExpandNoChildren = function(){
 			    $scope.gridOptions.showTreeExpandNoChildren = !$scope.gridOptions.showTreeExpandNoChildren;
 			    $scope.gridApi.grid.refresh();
 			  };
+			  
+			  
 			}]);
 
 	
@@ -333,14 +377,31 @@ function addTextbox() {
 			<label >Select Files</label>
 			<div  class="col-lg-12 col-md-12 col-sm-12 pre-scrollable" style="background:white;height:30%;overflow-y:auto;">
 				<ul id="fileList">
+				
 					<li ng-repeat="document in documents" ng-class="IsFiltered(document.Filtered)">
-						<span><input type="checkbox" name="filesChecked" value="{{document}}" ng-checked="selection.indexOf(document) > -1" ng-click="toggleSelection(document)"/></span>
-	
-						<span>{{document}}</span>
+						
+						<span><input type="checkbox" name="filesChecked" value="{{document.path}}" ng-checked="selection.indexOf(document) > -1" ng-click="toggleSelection(document.name)"/></span>
+						 
+						<i class="selectednames{{document.level}}"><span>{{document.name}}</span></i>						
+						<!--
+						<i ng-if="document.level > 0">
+							<ul>
+								<li>
+									<span>{{document.name}}</span>
+								</li>
+							<ul>	
+						 </i>
+						 -->
+						
 					</li>
+					
 				</ul>
 			</div>	
-			
+		    <div ng-controller="GridFolderCtrl">
+		      <button id="expandAll" type="button" class="btn btn-success" ng-click="expandAll()">Expand All</button>
+		      <button id="toggleExpandNoChildren" type="button" class="btn btn-success" ng-click="toggleExpandNoChildren()">Toggle Expand No Children</button>
+		      <div id="grid1" ui-grid="gridOptions" ui-grid-tree-view="true" ui-grid-selection="true" class="grid"></div>
+		    </div>				
 			
 		</div>	 	
 	</div>
