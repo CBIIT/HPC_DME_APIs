@@ -376,7 +376,7 @@ function addTextbox() {
 			<input type="text" ng-change ="onChange()" ng-model="asyncSelected" th:field="*{originEndpoint}"  placeholder="Enter Origin Endpoint name" typeahead="address for address in getLocation($viewValue)" typeahead-loading="loadingLocations" typeahead-on-select='onSelect($item, $model, $label)'  typeahead-no-results="noResults" class="form-control"/>
 
 			<label >Select Files</label>
-			<div  class="col-lg-12 col-md-12 col-sm-12 pre-scrollable" style="background:white;height:30%;overflow-y:auto;">
+			<div  class="col-lg-12 col-md-12 col-sm-12 pre-scrollable" style="background:white;height:30%;overflow-y:auto;border-style: solid;border-width: 1px;border-color: grey;">
 				<ul id="fileList">
 				
 					<li ng-repeat="document in documents" ng-class="IsFiltered(document.Filtered)">
@@ -385,24 +385,16 @@ function addTextbox() {
 						 
 						<i class="selectednames{{document.level}}"><span>{{document.name}}</span></i>
 												
-						<!--
-						<i ng-if="document.level > 0">
-							<ul>
-								<li>
-									<span>{{document.name}}</span>
-								</li>
-							<ul>	
-						 </i>
-						 -->
 						
 					</li>
 					 <li ng-show="!documents.length">No files at the endpoint</li>
 				</ul>
 			</div>	
+			<!--
 		    <div ng-controller="GridFolderCtrl">
 		      <div id="grid1" ui-grid="gridOptions" ui-grid-tree-view="true" ui-grid-selection="true" class="grid"></div>
 		    </div>				
-			
+			 -->
 		</div>	 	
 	</div>
 	<!-- 
