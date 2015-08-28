@@ -27,6 +27,7 @@ import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetAssociateFileProjectsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
@@ -167,6 +168,41 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
        	// Process the file upload requests.
     	uploadFiles(dataset, addFilesDTO.getUploadRequests(), true);
     }
+    
+    public void associateProjects(
+                         HpcDatasetAssociateFileProjectsDTO associateFileProjectsDTO) 
+                         throws HpcException
+    {
+	   	logger.info("Invoking associateProjects(HpcDatasetAssociateFileProjectsDTO): " + 
+                    associateFileProjectsDTO);
+	
+	   	// Input validation.
+	   	if(associateFileProjectsDTO == null) {
+	   	   throw new HpcException("Null HpcDatasetAssociateFileProjectsDTO",
+			                      HpcErrorType.INVALID_REQUEST_INPUT);	
+	   	}
+	   	
+		// Validate the associated projects included in the upload requests.
+	   	List<String> projectIds = associateFileProjectsDTO.getProjectIds();
+		validateProjects(projectIds);
+	   	
+	   	// Locate the dataset.
+	   	HpcDataset dataset = datasetService.getDataset(
+	   			                    associateFileProjectsDTO.getDatasetId());
+	   	if(dataset == null) {
+	   	   throw new HpcException("Dataset was not found: " + 
+	   	                          associateFileProjectsDTO.getDatasetId(),
+	   			                  HpcRequestRejectReason.DATASET_NOT_FOUND);	
+	   	}
+	   	
+	   	// Associate the projects to the dataset. This is a bi-directional association.
+		datasetService.associateProjects(dataset, 
+				                         associateFileProjectsDTO.getFileId(),
+				                         projectIds, true);
+		for(String projectId : projectIds) {
+		    projectService.associateDataset(projectId, dataset.getId(), true);
+		}
+   }
     
     @Override
     public HpcFilePrimaryMetadataDTO 
@@ -588,15 +624,31 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		   uploadRequest.getProjectIds().isEmpty()) {
     		   continue;	
     		}
-
-    		for(String projectId : uploadRequest.getProjectIds()) {
-    	        if(projectService.getProject(projectId) == null) {
-    	    	   throw new HpcException("Project not found: " + projectId,
-    	    		                      HpcRequestRejectReason.PROJECT_NOT_FOUND);	
-    	    	}
-    		}
+    		validateProjects(uploadRequest.getProjectIds());
     	}
     }
+    
+    /**
+     * Validate projects exist.
+     * 
+     * @param projectIds The list of project-id to validate.
+     *
+     * @throws HpcException if any project on the list was not found.
+     */
+    private void validateProjects(List<String> projectIds) throws HpcException
+    {
+    	if(projectIds == null || projectIds.isEmpty()) {
+    	   throw new HpcException("No project IDs attached to this request", 
+                                  HpcErrorType.INVALID_REQUEST_INPUT);	
+     	}
+    	
+    	for(String projectId : projectIds) {
+    		if(projectService.getProject(projectId) == null) {
+    		   throw new HpcException("Project not found: " + projectId,
+    		                          HpcRequestRejectReason.PROJECT_NOT_FOUND);	
+    		}
+    	}
+	}
     
     /**
      * Update a dataset's upload and download data transfer requests with a 

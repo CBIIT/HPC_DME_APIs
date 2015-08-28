@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.ws.rs;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetAssociateFileProjectsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataQueryDTO;
@@ -58,6 +59,17 @@ public interface HpcDatasetRestService
     @Path("/dataset/files")
     @Consumes("application/json,application/xml")
     public Response addFiles(HpcDatasetAddFilesDTO addFilesDTO);
+    
+    /**
+     * POST Associate projects with file in a registered dataset.
+     *
+     * @param associateFileProjectsDTO The projects to file association request DTO.
+     */
+    @POST
+    @Path("/dataset/projects")
+    @Consumes("application/json,application/xml")
+    public Response associateProjects(
+    		        HpcDatasetAssociateFileProjectsDTO associateFileProjectsDTO);
     
     /**
      * POST add metadata items to a file primary metadata in a registered dataset.

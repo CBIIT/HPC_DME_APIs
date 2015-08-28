@@ -171,6 +171,8 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
 		file.setSize(0);
 		file.setSource(uploadRequest.getLocations().getSource());
 		file.setLocation(uploadRequest.getLocations().getDestination());
+		associateProjects(file, uploadRequest.getProjectIds());
+		
 		if(uploadRequest.getProjectIds() != null) {
 		   // Add the associated projects if not already associated.
 		   for(String projectId : uploadRequest.getProjectIds()) {
@@ -294,6 +296,35 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
      	}
     	
     	return file.getMetadata().getPrimaryMetadata();    	
+    }
+    
+    @Override
+    public void associateProjects(HpcDataset dataset, String fileId,
+                                  List<String> projectIds, 
+                                  boolean persist) 
+                                 throws HpcException
+    {
+       	// Input validation.
+       	if(dataset == null || !keyGenerator.validateKey(fileId) || 
+       	   projectIds == null || projectIds.isEmpty()) {
+       	   throw new HpcException("Invalid projects association input", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+    	
+       	// Locate the file to attach the metadata items.
+       	HpcFile file = getFile(dataset, fileId);
+       	if(file == null) {
+       	   throw new HpcException("File not found: " + fileId, 
+       			                  HpcRequestRejectReason.FILE_NOT_FOUND);
+       	}
+       	
+       	// Associate the projects to this file.
+       	associateProjects(file, projectIds);
+       	
+		// Persist if requested.
+    	if(persist) {
+     	   persist(dataset);
+     	}
     }
     
     @Override
@@ -599,6 +630,26 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	
     	throw new HpcException("Metadata item not found: " + metadataItem.getKey(), 
 	                           HpcRequestRejectReason.METADATA_ITEM_NOT_FOUND);
+    }
+    
+    /**
+     * Associate projects with a file
+     *
+     * @param metadataItems The metadata items to update.
+     * @param metadataItem The item to update.
+     * 
+     * @throws HpcException If the metadata to update was not found.
+     */
+    private void associateProjects(HpcFile file, List<String> projectIds)
+    {
+    	if(file != null && projectIds != null) {
+		   // Add the associated projects if not already associated.
+		   for(String projectId : projectIds) {
+			   if(!file.getProjectIds().contains(projectId)) {
+				  file.getProjectIds().add(projectId);
+			   }
+		   }
+		}
     }
 }
 
