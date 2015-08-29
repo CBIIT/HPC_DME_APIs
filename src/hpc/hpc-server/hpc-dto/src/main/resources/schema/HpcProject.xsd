@@ -71,12 +71,23 @@
 		</xsd:complexType>
 	</xsd:element>
 	
-	<!--  Project Metadata Query Input DTO -->
-	<xsd:element name="HpcProjectMetadataQueryDTO">
+	<!--  Project Metadata DTO -->
+	<xsd:element name="HpcProjectMetadataDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="metadata"
 					         type="hpc-domain-metadata:HpcProjectMetadata" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<!--  Associate datasets DTO -->
+	<xsd:element name="HpcProjectAssociateDatasetsDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="projectId" type="xsd:ID" />
+				<xsd:element name="datasetIds" type="xsd:ID" 
+				             minOccurs="0" maxOccurs="unbounded"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

@@ -11,7 +11,8 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO;
-import gov.nih.nci.hpc.dto.project.HpcProjectMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectAssociateDatasetsDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectMetadataDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
 
 import javax.ws.rs.Consumes;
@@ -55,6 +56,17 @@ public interface HpcProjectRestService
     public Response addMetadataItems(HpcProjectAddMetadataItemsDTO addMetadataItemsDTO);
     
     /**
+     * POST Associate datastes with a project.
+     *
+     * @param associateDatasetsDTO The datasets association request DTO.
+     */
+    @POST
+    @Path("/project/datasets")
+    @Consumes("application/json,application/xml")
+    public Response associateDatasets(
+    		        HpcProjectAssociateDatasetsDTO associateDatasetsDTO);
+    
+    /**
      * GET project by ID.
      *
      * @param id The Project ID.
@@ -91,13 +103,13 @@ public interface HpcProjectRestService
     /**
      * POST Projects by primary metadata.
      *
-     * @param metadataQueryDTO Get projects that match the metadata search criteria.
+     * @param metadataDTO Get projects that match the metadata search criteria.
      * @return gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO entity.
      */
     @POST
     @Path("/project/query/metadata")
     @Produces("application/json,application/xml")
-    public Response getProjectsByMetadata(HpcProjectMetadataQueryDTO metadataQueryDTO);
+    public Response getProjectsByMetadata(HpcProjectMetadataDTO metadataDTO);
 }
 
  
