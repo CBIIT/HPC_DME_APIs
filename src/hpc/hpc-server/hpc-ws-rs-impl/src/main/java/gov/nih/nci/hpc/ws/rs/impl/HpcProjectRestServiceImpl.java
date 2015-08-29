@@ -13,9 +13,10 @@ package gov.nih.nci.hpc.ws.rs.impl;
 import gov.nih.nci.hpc.bus.HpcProjectBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectAssociateDatasetsDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
-import gov.nih.nci.hpc.dto.project.HpcProjectMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectMetadataDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcProjectRestService;
@@ -98,16 +99,23 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
     {
 		logger.info("Invoking RS: POST /project/metadata: " + addMetadataItemsDTO);
 		
+		HpcProjectMetadataDTO projectMetadataDTO = null;
 		try {
-			 projectBusService.addMetadataItems(addMetadataItemsDTO);
+			 projectMetadataDTO = projectBusService.addMetadataItems(addMetadataItemsDTO);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /project/metadata failed:", e);
 			    return errorResponse(e);
 		}
 		
-		return okResponse(null, false);     	
+		return okResponse(projectMetadataDTO, false);     	
     }
+    
+    public Response associateDatasets(
+	                HpcProjectAssociateDatasetsDTO associateDatasetsDTO)
+	{
+    	return null;
+	}
     
     @Override
     public Response getProject(String id)
@@ -166,16 +174,14 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getProjectsByMetadata(
-    		           HpcProjectMetadataQueryDTO metadataQueryDTO)
+    public Response getProjectsByMetadata(HpcProjectMetadataDTO metadataDTO)
 	{
-    	logger.info("Invoking RS: POST /project/query/metadata: " + 
-    			    metadataQueryDTO);
+    	logger.info("Invoking RS: POST /project/query/metadata: " + metadataDTO);
     	
 		HpcProjectCollectionDTO projectCollectionDTO = null;
 		try {
 			 projectCollectionDTO = 
-					projectBusService.getProjects(metadataQueryDTO); 
+					projectBusService.getProjects(metadataDTO); 
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /project/query/metadata: failed:", e);

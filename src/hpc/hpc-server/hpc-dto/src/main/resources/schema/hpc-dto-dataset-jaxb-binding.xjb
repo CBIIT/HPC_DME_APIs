@@ -116,8 +116,11 @@
 		<jxb:bindings node="//xsd:element[@name='HpcProjectAddMetadataItemsDTO']">
         	<jxb:class ref="gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO"/>
 		</jxb:bindings>
-		<jxb:bindings node="//xsd:element[@name='HpcProjectMetadataQueryDTO']">
-        	<jxb:class ref="gov.nih.nci.hpc.dto.project.HpcProjectMetadataQueryDTO"/>
+		<jxb:bindings node="//xsd:element[@name='HpcProjectMetadataDTO']">
+        	<jxb:class ref="gov.nih.nci.hpc.dto.project.HpcProjectMetadataDTO"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:element[@name='HpcProjectAssociateDatasetsDTO']">
+        	<jxb:class ref="gov.nih.nci.hpc.dto.project.HpcProjectAssociateDatasetsDTO"/>
 		</jxb:bindings>
     </jxb:bindings>
     

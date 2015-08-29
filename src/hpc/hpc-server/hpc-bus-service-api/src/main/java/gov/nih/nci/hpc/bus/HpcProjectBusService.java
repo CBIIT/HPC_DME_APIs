@@ -14,7 +14,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
-import gov.nih.nci.hpc.dto.project.HpcProjectMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectMetadataDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -44,11 +44,13 @@ public interface HpcProjectBusService
      * Add metadata items to a registered project.
      *
      * @param addMetadataItemsDTO The add-metadata-items request DTO.
+     * @return The updated project metadata DTO.
      * 
      * @throws HpcException
      */
-    public void addMetadataItems(HpcProjectAddMetadataItemsDTO addMetadataItemsDTO) 
-    		                    throws HpcException;
+    public HpcProjectMetadataDTO 
+           addMetadataItems(HpcProjectAddMetadataItemsDTO addMetadataItemsDTO) 
+    		               throws HpcException;
     
     /**
      * Get a Project by its ID.
@@ -77,13 +79,13 @@ public interface HpcProjectBusService
     /**
      * Get projects by project metadata.
      *
-     * @param metadataQueryDTO The metadata to query for.
+     * @param metadataDTO The metadata to query for.
      * @return Collection of Project DTO, or null if not found.
      * 
      * @throws HpcException
      */
     public HpcProjectCollectionDTO 
-           getProjects(HpcProjectMetadataQueryDTO metadataQueryDTO) 
+           getProjects(HpcProjectMetadataDTO metadataDTO) 
         		      throws HpcException;
     
 }

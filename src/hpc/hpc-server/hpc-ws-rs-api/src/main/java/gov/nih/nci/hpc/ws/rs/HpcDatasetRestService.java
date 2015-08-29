@@ -16,7 +16,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAssociateFileProjectsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -205,7 +205,7 @@ public interface HpcDatasetRestService
     @Path("/dataset/query/primaryMetadata")
     @Produces("application/json,application/xml")
     public Response getDatasetsByPrimaryMetadata(
-    		           HpcFilePrimaryMetadataQueryDTO primaryMetadataQueryDTO);
+    		           HpcFilePrimaryMetadataDTO primaryMetadataDTO);
     
     /**
      * GET Datasets by data transfer status.
