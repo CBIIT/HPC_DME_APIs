@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
@@ -24,7 +25,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
-import gov.nih.nci.hpc.dto.project.HpcProjectMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectMetadataDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcProjectService;
@@ -127,8 +128,9 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     }
     
     @Override
-    public void addMetadataItems(HpcProjectAddMetadataItemsDTO addMetadataItemsDTO) 
-                                throws HpcException
+    public HpcProjectMetadataDTO 
+           addMetadataItems(HpcProjectAddMetadataItemsDTO addMetadataItemsDTO) 
+                           throws HpcException
     {
        	logger.info("Invoking addMetadataItems(HpcDatasetAddMetadataItemsDTO): " + 
                                                addMetadataItemsDTO);
@@ -148,7 +150,9 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
        	
        	// Add metadata items.
     	projectService.addMetadataItems(project, addMetadataItemsDTO.getMetadataItems(), 
-    			                        true);    	
+    			                        true); 
+    	
+    	return toDTO(project.getMetadata());
     }
     
     @Override
@@ -178,22 +182,21 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	return toCollectionDTO(projectService.getProjects(userId, association));
+    	return toDTO(projectService.getProjects(userId, association));
     }
     
     @Override
     public HpcProjectCollectionDTO getProjects(
-    		                          HpcProjectMetadataQueryDTO metadataQueryDTO) 
+    		                          HpcProjectMetadataDTO metadataDTO) 
                                       throws HpcException
     {
     	// Input validation.
-    	if(metadataQueryDTO == null) {
+    	if(metadataDTO == null) {
     	   throw new HpcException("Null metadata query DTO", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	return toCollectionDTO(projectService.getProjects(
-    			                              metadataQueryDTO.getMetadata()));
+    	return toDTO(projectService.getProjects(metadataDTO.getMetadata()));
     }    
     
     //---------------------------------------------------------------------//
@@ -252,8 +255,8 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
      *
      * @return The collection DTO.
      */
-    private HpcProjectCollectionDTO toCollectionDTO(List<HpcProject> projects) 
-    		                                       throws HpcException 
+    private HpcProjectCollectionDTO toDTO(List<HpcProject> projects) 
+    		                             throws HpcException 
     {
     	if(projects == null || projects.isEmpty()) {
     	   return null;
@@ -268,7 +271,24 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
  	    return projectCollectionDTO;
     }
     
-
+    /**
+     * Create a project metadata DTO from a domain object.
+     * 
+     * @param projectMetadata the domain object.
+     *
+     * @return The DTO.
+     */
+    private HpcProjectMetadataDTO toDTO(HpcProjectMetadata projectMetadata)
+    {
+    	if(projectMetadata == null) {
+     	   return null;
+     	}
+    	
+    	HpcProjectMetadataDTO projectMetadataDTO = new HpcProjectMetadataDTO();
+    	projectMetadataDTO.setMetadata(projectMetadata);
+    	
+    	return projectMetadataDTO;
+    }  
     
     /**
      * Validate the users associated with the upload request are valid.

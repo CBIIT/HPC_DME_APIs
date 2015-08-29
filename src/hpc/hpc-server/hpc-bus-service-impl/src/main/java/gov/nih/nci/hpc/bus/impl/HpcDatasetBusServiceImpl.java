@@ -34,7 +34,6 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFileDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcDatasetService;
@@ -371,17 +370,16 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     
     @Override
     public HpcDatasetCollectionDTO getDatasets(
-    		         HpcFilePrimaryMetadataQueryDTO primaryMetadataQueryDTO) 
-                     throws HpcException
+    		                   HpcFilePrimaryMetadataDTO primaryMetadataDTO) 
+                               throws HpcException
     {
     	// Input validation.
-    	if(primaryMetadataQueryDTO == null) {
+    	if(primaryMetadataDTO == null) {
     	   throw new HpcException("Null primary metadata query DTO", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	return toDTO(datasetService.getDatasets(
-    			                      primaryMetadataQueryDTO.getMetadata()));
+    	return toDTO(datasetService.getDatasets(primaryMetadataDTO.getMetadata()));
     }    
 
     @Override
@@ -446,7 +444,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     /**
      * Create a file DTO from a domain object.
      * 
-     * @param dataset the domain object.
+     * @param file the domain object.
      *
      * @return The DTO.
      */
@@ -487,7 +485,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     /**
      * Create a primary metadata DTO from a domain object.
      * 
-     * @param dataset the domain object.
+     * @param primaryMetadata the domain object.
      *
      * @return The DTO.
      */
