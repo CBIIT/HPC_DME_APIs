@@ -14,7 +14,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcPIIContent;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.web.Application;
 
 import java.util.Calendar;
@@ -252,7 +252,7 @@ public class HpcDatasetControllerTest {
 
 	@Test
 	public void getDatasetsByPrimaryMetadata() throws Exception {
-		HpcFilePrimaryMetadataQueryDTO dto = new HpcFilePrimaryMetadataQueryDTO();
+		HpcFilePrimaryMetadataDTO dto = new HpcFilePrimaryMetadataDTO();
 		HpcFilePrimaryMetadata metadata = new HpcFilePrimaryMetadata();
 		metadata.setDataContainsPII(HpcPIIContent.PII_NOT_PRESENT);
 		metadata.setFundingOrganization("NCI");
@@ -278,7 +278,7 @@ public class HpcDatasetControllerTest {
 */
 			} 
 			JAXBContext jaxbContext = JAXBContext
-					.newInstance(HpcFilePrimaryMetadataQueryDTO.class);
+					.newInstance(HpcFilePrimaryMetadataDTO.class);
 			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 
 			// output pretty printed

@@ -17,7 +17,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcPHIContent;
 import gov.nih.nci.hpc.domain.metadata.HpcPIIContent;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.web.model.HpcDatasetSearch;
 import gov.nih.nci.hpc.web.model.HpcDatasetSearchResult;
@@ -228,7 +228,7 @@ public class HpcSearchDatasetController extends AbstractHpcController {
 			HttpServletRequest request) {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.setErrorHandler(new HpcResponseErrorHandler());
-		HpcFilePrimaryMetadataQueryDTO queryDTO = new HpcFilePrimaryMetadataQueryDTO();
+		HpcFilePrimaryMetadataDTO queryDTO = new HpcFilePrimaryMetadataDTO();
 		HpcFilePrimaryMetadata metadata = new HpcFilePrimaryMetadata();
 		if (search.getEncrypted().equals("ENCRYPTED"))
 			metadata.setDataEncrypted(HpcEncryptionStatus.ENCRYPTED);
