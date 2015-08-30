@@ -111,10 +111,21 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
 		return okResponse(projectMetadataDTO, false);     	
     }
     
+    @Override
     public Response associateDatasets(
 	                HpcProjectAssociateDatasetsDTO associateDatasetsDTO)
 	{
-    	return null;
+		logger.info("Invoking RS: POST /project/datasets: " + associateDatasetsDTO);
+		
+		try {
+			 projectBusService.associateDatasets(associateDatasetsDTO);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /project/datasets failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(null, false);
 	}
     
     @Override

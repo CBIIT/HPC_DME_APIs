@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectAssociateDatasetsDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectMetadataDTO;
@@ -51,6 +52,17 @@ public interface HpcProjectBusService
     public HpcProjectMetadataDTO 
            addMetadataItems(HpcProjectAddMetadataItemsDTO addMetadataItemsDTO) 
     		               throws HpcException;
+    
+    /**
+     * Associate datastes with a project.
+     *
+     * @param associateDatasetsDTO The datasets association request DTO.
+     * 
+     * @throws HpcException
+     */
+    public void associateDatasets(
+    		             HpcProjectAssociateDatasetsDTO associateDatasetsDTO)
+    		             throws HpcException;
     
     /**
      * Get a Project by its ID.
