@@ -13,21 +13,25 @@ package gov.nih.nci.hpc.bus.impl;
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
 import gov.nih.nci.hpc.bus.HpcProjectBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
+import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
+import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectAssociateDatasetsDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectMetadataDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcDatasetService;
 import gov.nih.nci.hpc.service.HpcProjectService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
@@ -61,7 +65,10 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
 	@Autowired
     private HpcUserService userService = null;
 	
-	// Dataset business service instance.
+	@Autowired
+    private HpcDatasetService datasetService = null;
+	
+	// Business service instances.
 	@Autowired
     private HpcDatasetBusService datasetBusService = null;
     
@@ -153,6 +160,44 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     			                        true); 
     	
     	return toDTO(project.getMetadata());
+    }
+    
+    @Override
+    public void associateDatasets(
+                         HpcProjectAssociateDatasetsDTO associateDatasetsDTO)
+                         throws HpcException
+    {
+	   	logger.info("Invoking associateDatasets(HpcProjectAssociateDatasetsDTO): " + 
+	   			    associateDatasetsDTO);
+
+	   	// Input validation.
+	   	if(associateDatasetsDTO == null) {
+	   	   throw new HpcException("Null HpcProjectAssociateDatasetsDTO",
+			                      HpcErrorType.INVALID_REQUEST_INPUT);	
+	   	}
+	   	
+		// Validate the associated datasets included in the association requests.
+	   	List<String> datasetIds = associateDatasetsDTO.getDatasetIds();
+		validateDatasets(datasetIds);
+	   	
+	   	// Locate the project.
+	   	HpcProject project = 
+	   			   projectService.getProject(associateDatasetsDTO.getProjectId());
+	   	if(project == null) {
+	   	   throw new HpcException("Project was not found: " + 
+	   			                  associateDatasetsDTO.getProjectId(),
+	   			                  HpcRequestRejectReason.PROJECT_NOT_FOUND);	
+	   	}
+	   	
+	   	// Associate the datasets to the project. This is a bi-directional association.
+		for(String datasetId : datasetIds) {
+		    projectService.associateDataset(project.getId(), datasetId, true);
+		    HpcDataset dataset = datasetService.getDataset(datasetId);
+		    for(HpcFile file : dataset.getFileSet().getFiles()) {
+		    	datasetService.associateProject(dataset, file.getId(), 
+		    			                        project.getId(), true);
+		    }
+		}
     }
     
     @Override
@@ -342,8 +387,8 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
      * @param uploadRequests The upload requests.
      * @param projectId The project ID.
      */
-    void associateProject(List<HpcFileUploadRequest> uploadRequests, 
-    		              String projectId)
+    private void associateProject(List<HpcFileUploadRequest> uploadRequests, 
+    		                      String projectId)
     {
     	if(uploadRequests != null) {
     	   for(HpcFileUploadRequest uploadRequest : uploadRequests) {
@@ -351,6 +396,28 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     	   }
     	}
     }
+    
+    /**
+     * Validate datasets exist.
+     * 
+     * @param datasetIds The list of dataset-id to validate.
+     *
+     * @throws HpcException if any dataset on the list was not found.
+     */
+    private void validateDatasets(List<String> datasetIds) throws HpcException
+    {
+    	if(datasetIds == null || datasetIds.isEmpty()) {
+    	   throw new HpcException("No dataset IDs attached to this request", 
+                                  HpcErrorType.INVALID_REQUEST_INPUT);	
+     	}
+    	
+    	for(String datasetId : datasetIds) {
+    		if(datasetService.getDataset(datasetId) == null) {
+    		   throw new HpcException("Dataset not found: " + datasetId,
+    		                          HpcRequestRejectReason.DATASET_NOT_FOUND);	
+    		}
+    	}
+	}
     		              
 }
 
