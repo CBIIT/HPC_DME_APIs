@@ -181,7 +181,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 			                      HpcErrorType.INVALID_REQUEST_INPUT);	
 	   	}
 	   	
-		// Validate the associated projects included in the upload requests.
+		// Validate the associated projects included in the association request.
 	   	List<String> projectIds = associateFileProjectsDTO.getProjectIds();
 		validateProjects(projectIds);
 	   	
@@ -195,10 +195,10 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 	   	}
 	   	
 	   	// Associate the projects to the dataset. This is a bi-directional association.
-		datasetService.associateProjects(dataset, 
-				                         associateFileProjectsDTO.getFileId(),
-				                         projectIds, true);
-		for(String projectId : projectIds) {
+	   	for(String projectId : projectIds) {
+		    datasetService.associateProject(dataset, 
+				                            associateFileProjectsDTO.getFileId(),
+				                            projectId, true);
 		    projectService.associateDataset(projectId, dataset.getId(), true);
 		}
    }
