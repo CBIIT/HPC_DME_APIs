@@ -171,14 +171,10 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
 		file.setSize(0);
 		file.setSource(uploadRequest.getLocations().getSource());
 		file.setLocation(uploadRequest.getLocations().getDestination());
-		associateProjects(file, uploadRequest.getProjectIds());
-		
 		if(uploadRequest.getProjectIds() != null) {
 		   // Add the associated projects if not already associated.
 		   for(String projectId : uploadRequest.getProjectIds()) {
-			   if(!file.getProjectIds().contains(projectId)) {
-				  file.getProjectIds().add(projectId);
-			   }
+			   associateProject(file, projectId);
 		   }
 		}
 		
@@ -299,15 +295,14 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     }
     
     @Override
-    public void associateProjects(HpcDataset dataset, String fileId,
-                                  List<String> projectIds, 
-                                  boolean persist) 
-                                 throws HpcException
+    public void associateProject(HpcDataset dataset, String fileId,
+                                 String projectId, boolean persist) 
+                                throws HpcException
     {
        	// Input validation.
        	if(dataset == null || !keyGenerator.validateKey(fileId) || 
-       	   projectIds == null || projectIds.isEmpty()) {
-       	   throw new HpcException("Invalid projects association input", 
+       	   !keyGenerator.validateKey(projectId)) {
+       	   throw new HpcException("Invalid project association input", 
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
     	
@@ -318,8 +313,8 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
        			                  HpcRequestRejectReason.FILE_NOT_FOUND);
        	}
        	
-       	// Associate the projects to this file.
-       	associateProjects(file, projectIds);
+       	// Associate the project to this file. 
+       	associateProject(file, projectId);
        	
 		// Persist if requested.
     	if(persist) {
@@ -633,21 +628,17 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     }
     
     /**
-     * Associate projects with a file
+     * Associate project with a file
      *
-     * @param metadataItems The metadata items to update.
-     * @param metadataItem The item to update.
-     * 
-     * @throws HpcException If the metadata to update was not found.
+     * @param file The file to associate the project with.
+     * @param projectId The project ID
      */
-    private void associateProjects(HpcFile file, List<String> projectIds)
+    private void associateProject(HpcFile file, String projectId)
     {
-    	if(file != null && projectIds != null) {
-		   // Add the associated projects if not already associated.
-		   for(String projectId : projectIds) {
-			   if(!file.getProjectIds().contains(projectId)) {
-				  file.getProjectIds().add(projectId);
-			   }
+    	if(file != null && projectId != null) {
+		   // Associate the project to the file. No dups allowed.
+		   if(!file.getProjectIds().contains(projectId)) {
+			  file.getProjectIds().add(projectId);
 		   }
 		}
     }
