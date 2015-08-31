@@ -10,7 +10,9 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
-import static gov.nih.nci.hpc.bus.impl.HpcJAXBUtil.cloneJAXB;
+import static gov.nih.nci.hpc.bus.impl.HpcBusServiceUtil.associateProjectMetadataLock;
+import static gov.nih.nci.hpc.bus.impl.HpcBusServiceUtil.cloneJAXB;
+import static gov.nih.nci.hpc.bus.impl.HpcBusServiceUtil.updateMetadataLock;
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
@@ -196,10 +198,14 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 	   	
 	   	// Associate the projects to the dataset. This is a bi-directional association.
 	   	for(String projectId : projectIds) {
-		    datasetService.associateProject(dataset, 
-				                            associateFileProjectsDTO.getFileId(),
-				                            projectId, true);
-		    projectService.associateDataset(projectId, dataset.getId(), true);
+	   		synchronized(associateProjectMetadataLock(projectId)) {
+	   			synchronized(associateProjectMetadataLock(dataset.getId())) {
+		   			datasetService.associateProject(dataset, 
+						                            associateFileProjectsDTO.getFileId(),
+						                            projectId, true);
+				    projectService.associateDataset(projectId, dataset.getId(), true);
+	   			}
+	   		}
 		}
    }
     
@@ -225,18 +231,27 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
        			                  HpcRequestRejectReason.DATASET_NOT_FOUND);	
        	}
        	
-       	// Clone the current metadata object.
        	String fileId = addMetadataItemsDTO.getFileId();
-       	HpcFileMetadata currentMetadata = cloneFileMetadata(dataset, fileId);
+       	HpcFilePrimaryMetadata updatedPrimaryMetadata = null;
        	
-       	// Add metadata items.
-       	HpcFilePrimaryMetadata updatedPrimaryMetadata = 
-           datasetService.addPrimaryMetadataItems(dataset, fileId,
-    		                                      addMetadataItemsDTO.getMetadataItems(), 
-    		                                      true);
-       	
-       	// Add a metadata version to the history collection.
-       	datasetService.addFileMetadataVersion(fileId, currentMetadata, true);
+       	// Update and Version Metadata in an atomic operation.
+       	synchronized(updateMetadataLock(fileId)) {
+			 // Clone the current metadata object.
+		     HpcFileMetadata currentMetadata = 
+		    		         cloneFileMetadata(dataset, fileId);
+		
+			 // Add metadata items.
+		     updatedPrimaryMetadata = 
+		     datasetService.addPrimaryMetadataItems(
+		    		           dataset, fileId,
+		                       addMetadataItemsDTO.getMetadataItems(), 
+		                       true);
+		
+		     // Add a metadata version to the history collection.
+		     datasetService.addFileMetadataVersion(
+		    		                       fileId, 
+		    		                       currentMetadata, true);
+       	}
        	
        	return toDTO(updatedPrimaryMetadata);
     }
@@ -262,19 +277,28 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 		   throw new HpcException("Dataset was not found: " + updateMetadataDTO.getDatasetId(),
 		                          HpcRequestRejectReason.DATASET_NOT_FOUND);	
 		}
-		
-       	// Clone the current metadata object.
-       	String fileId = updateMetadataDTO.getFileId();
-       	HpcFileMetadata currentMetadata = cloneFileMetadata(dataset, fileId);
-
-		// Update the primary metadata.
-       	HpcFilePrimaryMetadata updatedPrimaryMetadata =  
-       	   datasetService.updatePrimaryMetadata(dataset, fileId,
-				                                updateMetadataDTO.getMetadata(), 
-				                                true);  
        	
-       	// Add a metadata version to the history collection.
-       	datasetService.addFileMetadataVersion(fileId, currentMetadata, true);
+       	String fileId = updateMetadataDTO.getFileId();
+       	HpcFilePrimaryMetadata updatedPrimaryMetadata = null;
+
+       	// Update and Version Metadata in an atomic operation.
+       	synchronized(updateMetadataLock(fileId)) {
+		     // Clone the current metadata object.
+		     HpcFileMetadata currentMetadata = 
+		    		         cloneFileMetadata(dataset, fileId);
+		     
+		     // Update the primary metadata.
+		     updatedPrimaryMetadata = 
+		     datasetService.updatePrimaryMetadata(
+		    		              dataset, fileId,
+		                          updateMetadataDTO.getMetadata(), 
+		                          true);  
+		
+		     // Add a metadata version to the history collection.
+		     datasetService.addFileMetadataVersion(fileId, 
+		    		                               currentMetadata, 
+		    		                               true);
+       	}
        	
        	return toDTO(updatedPrimaryMetadata);
 	}
