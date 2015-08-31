@@ -156,13 +156,13 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 		
 		// Map the BSON Document to a domain object.
 		HpcFilePrimaryMetadata filePrimaryMetadata = new HpcFilePrimaryMetadata();
-		filePrimaryMetadata.setDataContainsPII(HpcPIIContent.valueOf(
+		filePrimaryMetadata.setDataContainsPII(HpcPIIContent.fromValue(
 				   document.getString(FILE_PRIMARY_METADATA_DATA_CONTAINS_PII_KEY)));
-		filePrimaryMetadata.setDataContainsPHI(HpcPHIContent.valueOf(
+		filePrimaryMetadata.setDataContainsPHI(HpcPHIContent.fromValue(
 				   document.getString(FILE_PRIMARY_METADATA_DATA_CONTAINS_PHI_KEY)));
-		filePrimaryMetadata.setDataEncrypted(HpcEncryptionStatus.valueOf(
+		filePrimaryMetadata.setDataEncrypted(HpcEncryptionStatus.fromValue(
 				   document.getString(FILE_PRIMARY_METADATA_DATA_ENCRYPTED_KEY)));
-		filePrimaryMetadata.setDataCompressed(HpcCompressionStatus.valueOf(
+		filePrimaryMetadata.setDataCompressed(HpcCompressionStatus.fromValue(
 				   document.getString(FILE_PRIMARY_METADATA_DATA_COMPRESSED_KEY)));
 		filePrimaryMetadata.setFundingOrganization(
 				   document.getString(FILE_PRIMARY_METADATA_FUNDING_ORGANIZATION_KEY));

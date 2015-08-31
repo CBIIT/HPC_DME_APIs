@@ -108,7 +108,7 @@ public class HpcFileCodec extends HpcCodec<HpcFile>
 		// Map the document to HpcDataset instance.
 		HpcFile file = new HpcFile();
 		file.setId(document.getString(FILE_ID_KEY));
-		file.setType(HpcFileType.valueOf(
+		file.setType(HpcFileType.fromValue(
 				        document.getString(FILE_TYPE_KEY)));
 		file.setSize(document.getDouble(FILE_SIZE_KEY));
 		file.setSource(decodeFileLocation(document.get(FILE_SOURCE_KEY, 
