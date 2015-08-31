@@ -84,10 +84,10 @@ public class HpcFileCodec extends HpcCodec<HpcFile>
 		if(source != null) {
 		   document.put(FILE_SOURCE_KEY, source);
 		}
-		if(source != null) {
+		if(location != null) {
 		   document.put(FILE_LOCATION_KEY, location);
 		}
-		if(source != null) {
+		if(metadata != null) {
 		   document.put(FILE_METADATA_KEY, metadata);
 		}
 		if(projectIds != null && !projectIds.isEmpty()) {
