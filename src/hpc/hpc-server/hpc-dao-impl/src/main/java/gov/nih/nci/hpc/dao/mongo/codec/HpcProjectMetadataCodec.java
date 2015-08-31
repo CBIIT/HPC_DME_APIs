@@ -135,7 +135,7 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		projectMetadata.setName(document.getString(PROJECT_METADATA_NAME_KEY));
 		String typeStr = document.getString(PROJECT_METADATA_TYPE_KEY);
 		projectMetadata.setType(typeStr != null ?
-                                HpcProjectType.valueOf(typeStr) : null);
+                                HpcProjectType.fromValue(typeStr) : null);
 		projectMetadata.setInternalProjectId(
 		                document.getString(PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY));
 		projectMetadata.setPrincipalInvestigatorNihUserId(
