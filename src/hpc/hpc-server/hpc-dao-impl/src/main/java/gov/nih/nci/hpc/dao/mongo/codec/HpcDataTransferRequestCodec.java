@@ -118,7 +118,7 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
 		    	  decoderContext, getRegistry()));
 		String dataTransferStatusStr = document.getString(DATA_TRANSFER_REQUEST_STATUS_KEY);
 		dataTransferRequest.setStatus(dataTransferStatusStr != null ?
-				                      HpcDataTransferStatus.valueOf(dataTransferStatusStr) :
+				                      HpcDataTransferStatus.fromValue(dataTransferStatusStr) :
 				                      null);
 		dataTransferRequest.setReport(
 			decodeDataTransferReport(
