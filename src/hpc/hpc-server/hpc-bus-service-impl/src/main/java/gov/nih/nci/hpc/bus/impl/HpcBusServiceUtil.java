@@ -1,5 +1,5 @@
 /**
- * HpcJAXBUtil.java
+ * HpcBusServiceUtil.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -21,15 +21,24 @@ import javax.xml.namespace.QName;
 
 /**
  * <p>
- * JAXB utility.
+ * Utility class.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-class HpcJAXBUtil 
-{   
+public class HpcBusServiceUtil 
+{  
+    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//  
+	
+	// Lock keys.
+	private final static String UPDATE_METADATA_LOCK = "updateMatadata"; 
+	private final static String ASSOCIATE_PROJECT_METADATA_LOCK = 
+			                    "associateProjectMetadata";
+	
     //---------------------------------------------------------------------//
     // Methods
     //---------------------------------------------------------------------//
@@ -51,6 +60,28 @@ class HpcJAXBUtil
   		
   		return null;
   	}
+  	
+    /**
+     * Get a key to lock a file metadata update critical section.
+     *
+     * @param fileId The file ID being updated.
+     * @return A key to lock the critical section.
+     */
+	public static String updateMetadataLock(String fileId)
+	{
+		return UPDATE_METADATA_LOCK + ":" + fileId;
+	}
+	
+    /**
+     * Get a key to lock a project<-> dataset association critical section.
+     *
+     * @param id The project or dataset ID being associated.
+     * @return A key to lock the critical section.
+     */
+	public static String associateProjectMetadataLock(String id)
+	{
+		return  ASSOCIATE_PROJECT_METADATA_LOCK + ":" + id;
+	}
   	
     //---------------------------------------------------------------------//
     // Helper Methods

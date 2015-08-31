@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
+import static gov.nih.nci.hpc.bus.impl.HpcBusServiceUtil.associateProjectMetadataLock;
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
 import gov.nih.nci.hpc.bus.HpcProjectBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
@@ -190,12 +191,16 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
 	   	}
 	   	
 	   	// Associate the datasets to the project. This is a bi-directional association.
-		for(String datasetId : datasetIds) {
-		    projectService.associateDataset(project.getId(), datasetId, true);
-		    HpcDataset dataset = datasetService.getDataset(datasetId);
-		    for(HpcFile file : dataset.getFileSet().getFiles()) {
-		    	datasetService.associateProject(dataset, file.getId(), 
-		    			                        project.getId(), true);
+	   	synchronized(associateProjectMetadataLock(project.getId())) {
+	   		for(String datasetId : datasetIds) {
+	   			synchronized(associateProjectMetadataLock(datasetId)) {
+	   				projectService.associateDataset(project.getId(), datasetId, true);
+	   				HpcDataset dataset = datasetService.getDataset(datasetId);
+	   				for(HpcFile file : dataset.getFileSet().getFiles()) {
+	   					datasetService.associateProject(dataset, file.getId(), 
+		    			                                project.getId(), true);
+	   				}
+	   			}
 		    }
 		}
     }
