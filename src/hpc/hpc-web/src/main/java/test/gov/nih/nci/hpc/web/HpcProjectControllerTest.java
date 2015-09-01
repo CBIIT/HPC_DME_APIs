@@ -16,7 +16,6 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
-import gov.nih.nci.hpc.dto.project.HpcProjectMetadataDTO;
 import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
 import gov.nih.nci.hpc.web.Application;
 
@@ -259,7 +258,7 @@ public class HpcProjectControllerTest {
 				System.out.println("Got respomse: "+response);
 			} 
 			JAXBContext jaxbContext = JAXBContext
-					.newInstance(HpcProjectMetadataDTO.class);
+					.newInstance(HpcProjectDTO.class);
 			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 
 			// output pretty printed
