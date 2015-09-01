@@ -32,7 +32,6 @@ public class HpcDatasetRegistration {
 	private String fundingOrganization;
 	private String projectIds;
 	
-	@NotEmpty(message="Atleast one file must be selected")
 	private String[] filesChecked;	
 	private String createdOn;
 	

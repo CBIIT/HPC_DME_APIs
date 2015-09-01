@@ -102,6 +102,19 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 		if (user == null) {
 			return "index";
 		}
+		
+		if(registration.getFilesChecked() == null || registration.getFilesChecked().length == 0)
+		{
+			ObjectError error = new ObjectError("hpcRegistration",
+					"Failed to register dataset. Dataset file(s) missing. Please add file(s) to dataset.");
+			bindingResult.addError(error);
+			model.addAttribute("registrationStatus", false);
+			model.addAttribute("error",
+					"Failed to register your request due to missing file(s)");
+			model.addAttribute("piList", Util.getPIs());
+			model.addAttribute("userAttrs", Util.getUserDefinedPrimaryMedataAttrs());
+			return "datasetRegistration";
+		}
 		List<HpcMetadataItem> eItems = getMetadataitems(request);
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.setErrorHandler(new HpcResponseErrorHandler());
@@ -266,7 +279,6 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 		} finally {
 			Map<String, String> users = Util.getPIs();
 			model.addAttribute("piList", users);
-			model.addAttribute("creatorList", users);
 			model.addAttribute("userAttrs", Util.getUserDefinedPrimaryMedataAttrs());
 		}
 		return "datasetRegisterResult";
