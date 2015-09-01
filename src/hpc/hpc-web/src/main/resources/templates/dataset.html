@@ -149,7 +149,7 @@
 									<h4>Associated Projects</h4>
 									<div th:each="project : ${dataset.hpcProjectCollectionDTO.getHpcProjectDTO()}" class="panel panel-default">
 									<div class="col-md-12 form-group">
-										<a th:href="@{project(id=${project.getId()})}"><label th:text="${project.getId()}"></label></a>
+										<a th:href="@{project(id=${project.getId()})}"><label th:text="${project.getId()}"></label> : <label th:text="${project.metadata.getName()}"></label></a>
 									</div>
 									</div>
 								</div>
