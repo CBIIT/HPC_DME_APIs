@@ -1,6 +1,9 @@
 var app = angular.module('myApp', ['ngGrid']);
-var linkCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
+var linkDatasetCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
 '  <a href="dataset?id={{row.getProperty(\'id\')}}">{{row.getProperty(col.field)}}</a>' +
+'</div>';
+var linkProjectCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
+'  <a href="project?id={{row.getProperty(\'id\')}}">{{row.getProperty(col.field)}}</a>' +
 '</div>';
 app.controller('MyCtrl', function($scope, $http, $q, $attrs) {
 	var deferred = $q.defer();
@@ -47,7 +50,7 @@ $scope.gridOptions1 = {
             field: 'id',
             displayName: 'Id',
             enableCellEdit: false,
-            cellTemplate: linkCellTemplate
+            cellTemplate: linkDatasetCellTemplate
          }, {
              field: 'fileSet.name',
              displayName: 'Dataset Name',
@@ -73,7 +76,8 @@ $scope.gridOptions2 = {
         columnDefs: [{
             field: 'id',
             displayName: 'Id',
-            enableCellEdit: false
+            enableCellEdit: false,
+            cellTemplate: linkProjectCellTemplate
          }, {
              field: 'metadata.name',
              displayName: 'Project Name',
