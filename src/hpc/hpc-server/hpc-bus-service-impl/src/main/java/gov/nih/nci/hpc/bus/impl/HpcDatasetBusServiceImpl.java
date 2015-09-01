@@ -25,6 +25,7 @@ import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
+import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
@@ -36,6 +37,8 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFileDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcDatasetService;
@@ -446,21 +449,45 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
      *
      * @return The DTO.
      */
-    private HpcDatasetDTO toDTO(HpcDataset dataset)
+    private HpcDatasetDTO toDTO(HpcDataset dataset) throws HpcException
     {
-    	if(dataset == null) {
-     	   return null;
-     	}
-    	
-    	HpcDatasetDTO datasetDTO = new HpcDatasetDTO();
-    	datasetDTO.setId(dataset.getId());
-    	datasetDTO.setFileSet(dataset.getFileSet());
-    	datasetDTO.setCreated(dataset.getCreated());
-    	datasetDTO.setLastUpdated(dataset.getLastUpdated());
-		for(HpcDataTransferRequest uploadRequest : dataset.getUploadRequests())
-		{			
+		if (dataset == null) {
+			return null;
+		}
+
+		HpcDatasetDTO datasetDTO = new HpcDatasetDTO();
+		datasetDTO.setId(dataset.getId());
+		datasetDTO.setFileSet(dataset.getFileSet());
+		datasetDTO.setCreated(dataset.getCreated());
+		datasetDTO.setLastUpdated(dataset.getLastUpdated());
+		for (HpcDataTransferRequest uploadRequest : dataset.getUploadRequests()) {
 			datasetDTO.getUploadRequests().add(uploadRequest);
-		}    		
+		}
+
+		List<HpcFile> files = dataset.getFileSet().getFiles();
+		if (files != null && !files.isEmpty()) {
+			HpcProjectCollectionDTO projectCollection = new HpcProjectCollectionDTO();
+			for (HpcFile file : files) {
+				List<String> projectIds = file.getProjectIds();
+				if (projectIds != null && !projectIds.isEmpty()) {
+					List<HpcProject> projects = new ArrayList<HpcProject>();
+					for (String projectId : projectIds) {
+						try {
+							HpcProject project = projectService
+									.getProject(projectId);
+							if (project != null) {
+								projectCollection.getHpcProjectDTO().add(toDTO(project));
+							}
+						} catch (HpcException e) {
+							throw new HpcException(
+									"Failed to retrieve Project "
+											+ projectId, e);
+						}
+					}
+				}
+			}
+			datasetDTO.setHpcProjectCollectionDTO(projectCollection);
+		}
     	
     	return datasetDTO;
     }  
@@ -491,7 +518,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
      *
      * @return The collection DTO.
      */
-    private HpcDatasetCollectionDTO toDTO(List<HpcDataset> datasets)
+    private HpcDatasetCollectionDTO toDTO(List<HpcDataset> datasets) throws HpcException
     {
     	if(datasets == null || datasets.isEmpty()) {
     	   return null;
@@ -525,6 +552,28 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	return primaryMetadataDTO;
     }  
    
+    /**
+     * Create a project DTO from a domain object.
+     * 
+     * @param project the domain object.
+     *
+     * @return The DTO.
+     */
+    private HpcProjectDTO toDTO(HpcProject project) 
+    		                   throws HpcException 
+    {
+    	if(project == null) {
+     	   return null;
+     	}
+    	
+       	HpcProjectDTO dto = new HpcProjectDTO();
+    	dto.setId(project.getId());
+    	dto.setMetadata(project.getMetadata());
+    	dto.setCreated(project.getCreated());
+    	dto.setLastUpdated(project.getLastUpdated());    	
+    	return dto;
+    }  
+    
     /**
      * Validate the users associated with the upload request are valid.
      * The associated users are - creator, registrar and primary investigator.
