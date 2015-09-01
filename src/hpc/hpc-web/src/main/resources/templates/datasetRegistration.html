@@ -47,50 +47,62 @@
     <script src="../js/ui-grid/pdfmake.js"></script>
     <script src="../js/ui-grid/vfs_fonts.js"></script>
     <script src="../js/ui-grid/ui-grid.js"></script>
-   	<link rel="stylesheet" href="css/ui-grid.css" type="text/css"/>
+    <script src="../js/angular.treeview.js"></script>
+   <link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css" type="text/css"/>
+   	<link rel="stylesheet" href="css/angular.treeview.css" type="text/css"/>
    	<style>
    	
 	   	.selectednames0 
 	   	{ 
 	    	text-allign: left;
 	    	margin-left: 1em;
+	    	glyphicon glyphicon-file
 		}
 		.selectednames1 
 	   	{ 
 	    	text-allign: left;
-	    	margin-left: 4em;
+	    	margin-left: 3em;
+	    	glyphicon glyphicon-folder-open
 		}
 		.selectednames2 
 	   	{ 
 	    	text-allign: left;
-	    	margin-left: 7em;		}
+	    	margin-left: 5em;
+	    	glyphicon glyphicon-folder-open		
+	    }
 		.selectednames3 
 	   	{ 
 	    	text-allign: left;
-	    	margin-left: 10em;
+	    	margin-left: 7em;
+	    	glyphicon glyphicon-folder-open
 		}
 		.selectednames4 
 	   	{ 
 	    	text-allign: left;
-	    	margin-left: 13em;
+	    	margin-left: 9em;
+	    	glyphicon glyphicon-folder-open
 		}
 		.selectednames5 
 	   	{ 
 	    	text-allign: left;
-	    	margin-left: 16em;
+	    	margin-left: 11em;
+	    	glyphicon glyphicon-folder-open
 		}
 		.selectednames6 
 	   	{ 
 	    	text-allign: left;
-	    	margin-left: 19em;
-		}		
+	    	margin-left: 13em;
+	    	glyphicon glyphicon-folder-open
+		}
+			
    	</style>        
 <script>
 
-var app = angular.module('data.registration', ['ngAnimate','ui.bootstrap', 'ngTouch', 'ui.grid', 'ui.grid.treeView' ]);
+var app = angular.module('data.registration', ['ngAnimate','ui.bootstrap', 'ngTouch', 'ui.grid', 'ui.grid.treeView','ui.grid.selection','angularTreeview' ]);
+
 
 app.controller('TypeaheadCtrl', function($scope, $http) {
-	  
+		  
 	 // $scope.selected = undefined;
 	  $scope.getLocation = function(val) {
 	    return $http.get('/getEndpoint', {
@@ -114,8 +126,12 @@ app.controller('TypeaheadCtrl', function($scope, $http) {
 		    $scope.$model = $model;
 		    $scope.$label = $label;	
 		    var selEPName = $item;
+		    $scope.$broadcast('endPointNameB', { message: $item });
+		    
+		    /*
 		    $scope.documents = [];
-			//alert('1111::' + selEPName);
+			
+			
 		    $http.get('/getEndpointContents', {
 			      params: {
 			    	  endpointName: selEPName
@@ -128,13 +144,15 @@ app.controller('TypeaheadCtrl', function($scope, $http) {
 
 			    	  $scope.documents[i] = item;
 			      });
-			    });			
+			    });	
+		    */
 
 		};
 		
     // selected files
-    $scope.filesChecked = [];
+    //$scope.filesChecked = [];
     
+    /*
     // toggle selection for a given fruit by name
     $scope.toggleSelection = function toggleSelection(fileName) {
       var idx = $scope.filesChecked.indexOf(fileName);
@@ -149,59 +167,89 @@ app.controller('TypeaheadCtrl', function($scope, $http) {
         $scope.filesChecked.push(fileName);
         
       }
-    };		
+    };
+    */
 	});
 	
 
-
-
-
-
 app.controller('GridFolderCtrl', ['$scope', '$http', '$interval', 'uiGridTreeViewConstants', function ($scope, $http, $interval, uiGridTreeViewConstants ) {
-	  $scope.gridOptions = {
-			    enableRowSelection: true,
-			    showTreeExpandNoChildren: true,
-			    columnDefs: [
-			      { name: 'name', width: '30%' },
-			      { name: 'path', width: '30%' },
-			    ]			  
-			  };
-
-	    $http.get('/getEndpointContents', {
-		      params: {
-		    	  endpointName: 'mahinarra#mahinarraEP2'
-			      //userGO: $scope.userNameGO,
-			      //passGO: $scope.passwordGO
-		      }
-		    })
-			 .success(function(data) {
-//alert('data::'+data);
-//data[0].$$treeLevel = 0;
-//data[1].$$treeLevel = 1;
-
-			        /*<![CDATA[*/
-						for (var i = 0; i < data.length; i++ ){
-							data[i].$$treeLevel = data[i].level;
-						 }
-				     /*]]>*/
-  
-					
-					 $scope.gridOptions.data = data;
-			 });
-
-			  $scope.expandAll = function(gridApi){
-			    $scope.gridApi.treeBase.expandAllRows();
-			  };
-
-			  $scope.toggleExpandNoChildren = function(){
-			    $scope.gridOptions.showTreeExpandNoChildren = !$scope.gridOptions.showTreeExpandNoChildren;
-			    $scope.gridApi.grid.refresh();
-			  };
-			  
-			  
-			}]);
-
+	 $scope.$on('endPointNameB', function (event, args) {
+		 $scope.message = args.message;
+		 console.log($scope.message);
+		    $http.get('/getEndpointContents', {
+			      params: {
+			    	  endpointName:  $scope.message
+				      //userGO: $scope.userNameGO,
+				      //passGO: $scope.passwordGO
+			      }
+			    })
+				 .success(function(data) {
+				        /*<![CDATA[*/
+							for (var i = 0; i < data.length; i++ ){
+								data[i].$$treeLevel = data[i].level;
+							 }
+					     /*]]>*/
+	  
+						
+						 $scope.gridOptions.data = data;
+				 });		 
+		 });
 	
+		$scope.gridOptions = {
+		    enableRowSelection: true,
+		    showTreeExpandNoChildren: true,
+		    columnDefs: [
+		      { name: 'name', width: '30%' }
+		    ]			  
+		  };
+
+		$scope.expandAll = function(gridApi){
+		  $scope.gridApi.treeBase.expandAllRows();
+		};
+		
+		$scope.toggleExpandNoChildren = function(){
+		  $scope.gridOptions.showTreeExpandNoChildren = !$scope.gridOptions.showTreeExpandNoChildren;
+		  $scope.gridApi.grid.refresh();
+		};
+		
+		$scope.getSelectedRows = function() {
+		   $scope.mySelectedRows = $scope.gridApi.selection.getSelectedRows();
+		};			  
+			  
+
+		$scope.filesSelected = [];
+
+		$scope.gridOptions.onRegisterApi = function(gridApi){
+	    //set gridApi on scope
+	    $scope.gridApi = gridApi;
+	    gridApi.selection.on.rowSelectionChanged($scope,function(row){
+	      var msg = 'row in selected ' + row.entity.path;
+	      
+	      if(row.isSelected){
+	    	  $scope.filesSelected.push(row.entity.path);
+	    	  console.log(msg);
+	        }else
+	        {
+	        	var index = $scope.filesSelected.indexOf(row.entity.path);
+	        	if (index > -1) {
+	        		$scope.filesSelected.splice(index, 1);
+	        	}
+	        }
+	      
+	     
+	    });
+	
+		gridApi.selection.on.rowSelectionChangedBatch($scope,function(rows){
+		  var msg = 'rows in changed ' + rows.length;
+		  console.log(msg);
+		});
+  };			  
+		  
+}]);
+			
+
+  
+
 function cancel() {
 	window.location.replace("/dashboard");
 	return false;
@@ -374,27 +422,32 @@ function addTextbox() {
 			<label th:if="${#fields.hasErrors('originEndpoint')}" th:errors="*{originEndpoint}">originEndpoint Error</label>
 		
 			<input type="text" ng-change ="onChange()" ng-model="asyncSelected" th:field="*{originEndpoint}"  placeholder="Enter Origin Endpoint name" typeahead="address for address in getLocation($viewValue)" typeahead-loading="loadingLocations" typeahead-on-select='onSelect($item, $model, $label)'  typeahead-no-results="noResults" class="form-control"/>
-
+			<!--
 			<label >Select Files</label>
-			<div  class="col-lg-12 col-md-12 col-sm-12 pre-scrollable" style="background:white;height:30%;overflow-y:auto;border-style: solid;border-width: 1px;border-color: grey;">
+			<div  class="col-lg-12 col-md-12 col-sm-12 pre-scrollable acidjs-css3-treeview" style="background:white;height:30%;overflow-y:auto;border-style: solid;border-width: 1px;">
 				<ul id="fileList">
 				
 					<li ng-repeat="document in documents" ng-class="IsFiltered(document.Filtered)">
-						
-						<span><input type="checkbox" name="filesChecked" value="{{document.path}}" ng-checked="selection.indexOf(document) > -1" ng-click="toggleSelection(document.name)"/></span>
-						 
-						<i class="selectednames{{document.level}}"><span>{{document.name}}</span></i>
-												
-						
+							
+						 <input type="checkbox" id="node-{{$index}}-{{document.level}}" /><label><input type="checkbox" name="filesChecked" value="{{document.path}}" ng-checked="selection.indexOf(document) > -1" ng-click="toggleSelection(document.name)"/><span></span></label><label for="node-{{$index}}-{{document.level}}">
+						{{document.name}}-{{$index}}-{{document.level}}															
+						</label>
+					
 					</li>
 					 <li ng-show="!documents.length">No files at the endpoint</li>
 				</ul>
 			</div>	
-			<!--
+			-->
 		    <div ng-controller="GridFolderCtrl">
 		      <div id="grid1" ui-grid="gridOptions" ui-grid-tree-view="true" ui-grid-selection="true" class="grid"></div>
+
+		      <div ng-repeat="file in filesSelected">
+			      <input type="hidden" name="filesChecked[{{$index}}]" value="{{file}}"/>
+			  </div>
 		    </div>				
-			 -->
+
+
+			
 		</div>	 	
 	</div>
 	<!-- 
