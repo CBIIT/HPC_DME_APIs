@@ -144,6 +144,17 @@ public interface HpcDatasetRestService
     public Response getDatasetsByPrincipalInvestigatorId(
     		           @PathParam("id") String principalInvestigatorNihUserId); 
     
+    /** 
+     * GET all Datasets a user is authorized to view.
+       *
+       * @param nihUserId Get all datasets this user is authorized to view.
+       * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
+       */
+      @GET
+      @Path("/dataset/query/authorized/{id}")
+      @Produces("application/json,application/xml")
+      public Response getDatasetsByAuthorizedUserId(@PathParam("id") String nihUserId); 
+    
     /**
      * GET Datasets by Principal Investigator's first and last name.
      *

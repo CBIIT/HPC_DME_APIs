@@ -404,6 +404,12 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     }
     
     @Override
+    public List<HpcDataset> getDatasets() throws HpcException
+ 	{
+    	return datasetDAO.getDatasets();
+ 	}
+    
+    @Override
     public List<HpcDataset> getDatasets(List<String> userIds, HpcDatasetUserAssociation association) 
  	                                   throws HpcException
  	{
