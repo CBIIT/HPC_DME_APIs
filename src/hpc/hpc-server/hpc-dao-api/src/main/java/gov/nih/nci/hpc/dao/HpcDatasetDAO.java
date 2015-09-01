@@ -60,6 +60,15 @@ public interface HpcDatasetDAO
     public HpcFile getFile(String id) throws HpcException;
     
     /**
+     * Get all datasets in the repository.
+     *
+     * @return HpcDataset collection, or null if no results found.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcDataset> getDatasets() throws HpcException;
+    
+    /**
      * Get datasets associated with a specific user(s).
      *
      * @param nihUserIds The user id collection to match.
