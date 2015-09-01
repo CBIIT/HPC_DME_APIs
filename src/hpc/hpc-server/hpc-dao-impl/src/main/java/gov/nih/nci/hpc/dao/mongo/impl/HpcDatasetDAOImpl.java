@@ -262,6 +262,17 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 	}
 	
 	@Override
+	public List<HpcDataset> getDatasets() throws HpcException
+    {
+		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
+		HpcSingleResultCallback<List<HpcDataset>> callback = 
+                       new HpcSingleResultCallback<List<HpcDataset>>();
+		getCollection().find().into(datasets, callback); 
+		
+		return callback.getResult();
+    }
+	
+	@Override
 	public List<HpcDataset> getDatasets(List<String> nihUserIds, 
                                         HpcDatasetUserAssociation association) 
                                        throws HpcException
