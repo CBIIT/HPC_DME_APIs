@@ -169,7 +169,7 @@
 								<div class="form-group">
 									<div th:each="dataset : ${project.hpcDatasetCollectionDTO.getHpcDatasetDTO()}" class="panel panel-default">
 									<div class="col-md-12 form-group">
-										<a th:href="@{dataset(id=${dataset.getId()})}"><label th:text="${dataset.getId()}"></label></a>
+										<a th:href="@{dataset(id=${dataset.getId()})}"><label th:text="${dataset.getId()}"></label> : <label th:text="${dataset.fileSet.getName()}"></label></a>
 									</div>
 									</div>
 								</div>
