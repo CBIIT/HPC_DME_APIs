@@ -7,6 +7,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -104,7 +105,7 @@ public class GlobusRestController {
 			transferClient.endpointAutoactivate(endpointName, params);
 			
 			
-			listContents(endpointName,"", transferClient,
+			listContents(endpointName,"","", transferClient,
 					contentList);			
 		} catch (NexusClientException e) {
 			// TODO Auto-generated catch block
@@ -136,18 +137,43 @@ public class GlobusRestController {
 	}
 
 	private void listContents(String endpointName,
+			String basedir,
 			String directory,
 			JSONTransferAPIClient transferClient,
 			List<GlobusEndpointFile> contentList) throws IOException,
-			MalformedURLException, GeneralSecurityException, JSONException,
-			APIError {
+			MalformedURLException, JSONException,
+			APIError, GeneralSecurityException {
 		Result endPointList;
-		endPointList = transferClient.endpointLs(endpointName, directory);
+		JSONArray fileArray = new JSONArray();
+		String endPointBasePath = "";
+		boolean addFlag = true;
+
+		try {
+			System.out.println("Rescusive Path:"+directory);
+			endPointList = transferClient.endpointLs(endpointName, basedir+directory);
+			fileArray = endPointList.document.getJSONArray("DATA");
+			endPointBasePath = endPointList.document.getString("path");
+			System.out.println("Base Path:"+endPointList.document.getString("path"));
+			System.out.println("length Path:"+endPointList.document.getString("length"));
+			System.out.println("total Path:"+endPointList.document.getString("total"));
+			
+		} catch (APIError e) {
+			addFlag = false;
+			if("ExternalError.DirListingFailed.PermissionDenied".equalsIgnoreCase(e.code))
+					removeItemFromList(directory,contentList);
+		}
 		
-		JSONArray fileArray = endPointList.document.getJSONArray("DATA");
+		if (basedir != null &&  basedir.length() != 0 )
+			endPointBasePath = basedir;			
+		else		
+			endPointBasePath = endPointBasePath;
+		
+		System.out.println("Base Path:"+endPointBasePath);
 		for (int i=0; i < fileArray.length(); i++) {
 		    JSONObject fileObject = fileArray.getJSONObject(i);
 		    GlobusEndpointFile endpointFile = new GlobusEndpointFile();
+		    if (addFlag)
+		    {
 		    endpointFile.setName(fileObject.getString("name"));		    
 		    endpointFile.setPath(directory+fileObject.getString("name"));
 		    endpointFile.setLevel(endpointFile.getPath().split("/").length -1 );
@@ -155,10 +181,11 @@ public class GlobusRestController {
 		    System.out.println("Level:"+endpointFile.getLevel());
 		    System.out.println("Path:"+endpointFile.getPath());
 		    contentList.add(endpointFile);
+		    }
 		    if (fileObject.getString("type").equals("dir"))
 		    {
-		    	String path = endpointFile.getPath().startsWith("/")?endpointFile.getPath().substring(1) : endpointFile.getPath();
-		        listContents(endpointName, path+"/", transferClient,
+		    	String path = endpointFile.getPath().startsWith("/")?endpointFile.getPath().substring(1) : endpointFile.getPath();		    	
+		        listContents(endpointName, endPointBasePath, endpointFile.getPath()+"/", transferClient,
 						contentList);
 		    }
 		   
@@ -179,4 +206,15 @@ public class GlobusRestController {
 		transferClient.setAuthenticator(authenticator);
 		return transferClient;
 	}
+	
+	private void removeItemFromList(String inputPath,
+			List<GlobusEndpointFile> contentList){
+		for (Iterator<GlobusEndpointFile> iter = contentList.listIterator(); iter.hasNext(); ) {
+		    GlobusEndpointFile epFile = iter.next();
+		    if (epFile.getPath().equalsIgnoreCase(inputPath.substring(0, inputPath.length() -1))) {
+		        iter.remove();
+		    }
+		}
+	}	
+
 }
