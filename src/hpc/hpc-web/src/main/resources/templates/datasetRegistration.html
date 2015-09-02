@@ -47,58 +47,11 @@
     <script src="../js/ui-grid/pdfmake.js"></script>
     <script src="../js/ui-grid/vfs_fonts.js"></script>
     <script src="../js/ui-grid/ui-grid.js"></script>
-    <script src="../js/angular.treeview.js"></script>
    <link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css" type="text/css"/>
-   	<link rel="stylesheet" href="css/angular.treeview.css" type="text/css"/>
-   	<style>
-   	
-	   	.selectednames0 
-	   	{ 
-	    	text-allign: left;
-	    	margin-left: 1em;
-	    	glyphicon glyphicon-file
-		}
-		.selectednames1 
-	   	{ 
-	    	text-allign: left;
-	    	margin-left: 3em;
-	    	glyphicon glyphicon-folder-open
-		}
-		.selectednames2 
-	   	{ 
-	    	text-allign: left;
-	    	margin-left: 5em;
-	    	glyphicon glyphicon-folder-open		
-	    }
-		.selectednames3 
-	   	{ 
-	    	text-allign: left;
-	    	margin-left: 7em;
-	    	glyphicon glyphicon-folder-open
-		}
-		.selectednames4 
-	   	{ 
-	    	text-allign: left;
-	    	margin-left: 9em;
-	    	glyphicon glyphicon-folder-open
-		}
-		.selectednames5 
-	   	{ 
-	    	text-allign: left;
-	    	margin-left: 11em;
-	    	glyphicon glyphicon-folder-open
-		}
-		.selectednames6 
-	   	{ 
-	    	text-allign: left;
-	    	margin-left: 13em;
-	    	glyphicon glyphicon-folder-open
-		}
-			
-   	</style>        
+   	        
 <script>
 
-var app = angular.module('data.registration', ['ngAnimate','ui.bootstrap', 'ngTouch', 'ui.grid', 'ui.grid.treeView','ui.grid.selection','angularTreeview' ]);
+var app = angular.module('data.registration', ['ngAnimate','ui.bootstrap', 'ngTouch', 'ui.grid', 'ui.grid.treeView','ui.grid.selection' ]);
 
 
 app.controller('TypeaheadCtrl', function($scope, $http) {
