@@ -246,6 +246,33 @@ class HpcDomainValidator
     }
     
     /**
+     * Check if a roject metadata object is 'empty'.
+     *
+     * @param metadata the object to be checked.
+     * @return true if empty, false otherwise.
+     */
+    public static boolean isEmptyProjectMetadata(HpcProjectMetadata metadata) 
+    {    
+    	if(metadata == null ||
+    	   (metadata.getName() == null &&
+    	    metadata.getType() == null &&
+    		metadata.getInternalProjectId() == null &&
+    		metadata.getPrincipalInvestigatorNihUserId() == null &&
+    	    metadata.getRegistrarNihUserId() == null &&
+    	    metadata.getLabBranch() == null &&
+    	    metadata.getPrincipalInvestigatorDOC() == null &&
+    	    metadata.getCreated() == null &&
+    	    metadata.getRegistrarDOC() == null && 
+    		metadata.getDescription() == null &&
+    		(metadata.getMetadataItems() == null || 
+    		 metadata.getMetadataItems().isEmpty()))) {
+    		return true;
+	    }
+    	
+    	return false;
+    }
+    
+    /**
      * Validate metadata items collection
      *
      * @param metadataItems Metadata items collection

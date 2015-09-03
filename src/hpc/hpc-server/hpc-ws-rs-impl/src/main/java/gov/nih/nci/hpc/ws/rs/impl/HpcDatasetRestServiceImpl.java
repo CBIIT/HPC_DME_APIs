@@ -283,26 +283,6 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 		return okResponse(datasetCollectionDTO, true);
 	}
 	
-	@Override
-	public Response getDatasetsByAuthorizedUserId(String nihUserId)
-	{
-    	logger.info("Invoking RS: GET /dataset/query/authorized/{id}: " + nihUserId);
-	
-		// We don't have an authorization policy/model implemented yet. 
-    	// For now this method just return all datasets in the repository.
-		
-    	HpcDatasetCollectionDTO datasetCollectionDTO = null;
-		try {
-			 datasetCollectionDTO = datasetBusService.getDatasets(); 
-			 
-		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/authorized/{id}: failed:", e);
-			    return errorResponse(e);
-		}
-		
-		return okResponse(datasetCollectionDTO, true);
-	}
-	
     @Override
     public Response getDatasetsByPrincipalInvestigatorName(String firstName,
     		                                               String lastName)

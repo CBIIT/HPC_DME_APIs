@@ -156,6 +156,18 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
 	}
 	
 	@Override
+	public List<HpcProject> getProjects() throws HpcException
+    {
+		// Invoke the query.
+		List<HpcProject> projects = new ArrayList<HpcProject>();
+		HpcSingleResultCallback<List<HpcProject>> callback = 
+                       new HpcSingleResultCallback<List<HpcProject>>();
+		getCollection().find().into(projects, callback); 
+		
+		return callback.getResult();
+    }
+	
+	@Override
 	public List<HpcProject> getProjects(String nihUserId, 
                                         HpcDatasetUserAssociation association) 
                                        throws HpcException

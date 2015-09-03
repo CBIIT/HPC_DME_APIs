@@ -81,6 +81,15 @@ public interface HpcProjectService
     public HpcProject getProject(String id) throws HpcException;
     
     /**
+     * Get all projects
+     *
+     * @return HpcProject collection, or null if no results found.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcProject> getProjects() throws HpcException;
+    
+    /**
      * Get projects associated with a specific user.
      *
      * @param userId the user id.
