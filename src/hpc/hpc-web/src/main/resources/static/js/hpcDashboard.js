@@ -59,7 +59,17 @@ $scope.gridOptions1 = {
             field: 'fileSet.description',
             displayName: 'Description',
             enableCellEdit: false
-         }],
+         },{
+             field: 'created',
+             displayName: 'Created',
+             enableCellEdit: false,
+             cellFilter: 'date:\'yyyy-MM-dd\''
+          },{
+              field: 'lastUpdated',
+              displayName: 'Last Updated',
+              enableCellEdit: false,
+              cellFilter: 'date:\'yyyy-MM-dd\''
+           }],
          sortInfo: {
    	      fields: ['fileSet.name'],
    	      directions: ['asc']
