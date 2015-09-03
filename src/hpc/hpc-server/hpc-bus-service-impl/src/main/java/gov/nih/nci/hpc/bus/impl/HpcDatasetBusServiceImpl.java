@@ -347,12 +347,6 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     }
     
     @Override
-    public HpcDatasetCollectionDTO getDatasets() throws HpcException
-    {
-    	return toDTO(datasetService.getDatasets());
-    }
-    
-    @Override
     public HpcDatasetCollectionDTO getDatasets(List<String> userIds, 
                                       HpcDatasetUserAssociation association) 
                                       throws HpcException
