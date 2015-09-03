@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataItems;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isEmptyProjectMetadata;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidProjectMetadata;
 import gov.nih.nci.hpc.dao.HpcProjectDAO;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
@@ -170,6 +171,12 @@ public class HpcProjectServiceImpl implements HpcProjectService
     }
     
     @Override
+    public List<HpcProject> getProjects() throws HpcException
+ 	{
+    	return projectDAO.getProjects();
+ 	}
+    
+    @Override
     public List<HpcProject> getProjects(String userId, HpcDatasetUserAssociation association) 
  	                                   throws HpcException
  	{
@@ -180,26 +187,12 @@ public class HpcProjectServiceImpl implements HpcProjectService
     public List<HpcProject> getProjects(HpcProjectMetadata metadata) 
                                        throws HpcException
     {
-    	// Input Validation. At least one metadata element needs to be provided
-    	// to query for.
-    	if(metadata == null ||
-    	   (metadata.getName() == null &&
-    	    metadata.getType() == null &&
-    		metadata.getInternalProjectId() == null &&
-    		metadata.getPrincipalInvestigatorNihUserId() == null &&
-    	    metadata.getRegistrarNihUserId() == null &&
-    	    metadata.getLabBranch() == null &&
-    	    metadata.getPrincipalInvestigatorDOC() == null &&
-    	    metadata.getCreated() == null &&
-    	    metadata.getRegistrarDOC() == null && 
-    		metadata.getDescription() == null &&
-    		(metadata.getMetadataItems() == null || 
-    		 metadata.getMetadataItems().isEmpty()))) {
-    		throw new HpcException("Invalid project metadata", 
-                                   HpcErrorType.INVALID_REQUEST_INPUT);
+    	// Return all projects if the metadata is empty.
+    	if(isEmptyProjectMetadata(metadata)) {
+    	   return getProjects();
     	}
     	
-    	// Validate metada items if not null.
+    	// Validate metadata items.
     	if(metadata.getMetadataItems() != null &&
     	   !isValidMetadataItems(metadata.getMetadataItems())) {
     	   throw new HpcException("Invalid metadata items", 
