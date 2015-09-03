@@ -28,7 +28,6 @@ public class HpcDatasetRegistration {
 	private String originEndpoint;
 	//@NotEmpty(message="Origin Endpoint File with Path is required")
 	//private String originEndpointFilePath;
-	@NotEmpty(message="Funding organization is required")
 	private String fundingOrganization;
 	private String projectIds;
 	
