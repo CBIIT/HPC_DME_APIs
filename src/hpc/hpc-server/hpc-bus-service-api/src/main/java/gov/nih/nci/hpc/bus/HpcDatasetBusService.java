@@ -164,7 +164,8 @@ public interface HpcDatasetBusService
     /**
      * Get Datasets by file primary metadata.
      *
-     * @param primaryMetadataDTO The metadata to query for.
+     * @param primaryMetadataDTO The metadata to query for. All datasets will be 
+     *        returned if empty metadata is provided.
      * @return Collection of Dataset DTO, or null if not found.
      * 
      * @throws HpcException

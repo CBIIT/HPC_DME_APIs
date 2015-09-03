@@ -206,10 +206,11 @@ public interface HpcDatasetRestService
     public Response getDatasetsByName(@PathParam("name") String name); 
     
     /**
-     * POST Datasets by primary metadata.
+     * POST Datasets by primary metadata. 
      *
      * @param primaryMetadataQueryDTO Get datasets that match the primary 
-     *                                metadata search criteria.
+     *        metadata search criteria. All datasets will be returned if empty
+     *        metadata is provided.
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @POST
