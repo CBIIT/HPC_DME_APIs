@@ -241,7 +241,8 @@ public interface HpcDatasetService
     /**
      * Get datasets by primary metadata.
      *
-     * @param primaryMetadata The meatada to match.
+     * @param primaryMetadata The meatada to match. All datasets will be 
+     *        returned if empty metadata is provided.
      * @return HpcDataset collection, or null if no results found.
      * 
      * @throws HpcException
