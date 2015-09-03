@@ -406,7 +406,9 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     @Override
     public List<HpcDataset> getDatasets() throws HpcException
  	{
-    	return datasetDAO.getDatasets();
+    	List<HpcDataset> l = datasetDAO.getDatasets();
+    	int n = l.size();
+    	return l;
  	}
     
     @Override
@@ -426,11 +428,9 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     public List<HpcDataset> getDatasets(HpcFilePrimaryMetadata primaryMetadata) 
                                        throws HpcException
     {
-    	// Input Validation. At least one metadata element needs to be provided
-    	// to query for.
+    	// Return all datasets if the query metadata is empty
     	if(isEmptyFilePrimaryMetadata(primaryMetadata)) { 
-    	   throw new HpcException("Invalid primary metadata", 
-                                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	   return getDatasets();
     	}
     	
     	// Validate metada items if not null.
@@ -472,7 +472,8 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
 
 	@Override
 	public List<HpcDataset> getDatasetsByProjectId(String projectId)
-			throws HpcException {
+			                                      throws HpcException
+	{
 		return datasetDAO.getDatasetsByProjectId(projectId);
 	}
 	
