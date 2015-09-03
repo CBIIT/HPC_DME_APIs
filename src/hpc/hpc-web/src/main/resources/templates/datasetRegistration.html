@@ -374,7 +374,7 @@ function addTextbox() {
 		<div class="col-sm-7">
 			<label th:if="${#fields.hasErrors('originEndpoint')}" th:errors="*{originEndpoint}">originEndpoint Error</label>
 		
-			<input type="text" ng-change ="onChange()" ng-model="asyncSelected" th:field="*{originEndpoint}"  placeholder="Enter Origin Endpoint name" typeahead="address for address in getLocation($viewValue)" typeahead-loading="loadingLocations" typeahead-on-select='onSelect($item, $model, $label)'  typeahead-no-results="noResults" class="form-control"/>
+			<input type="text" ng-change ="onChange()" th:required="required" ng-model="asyncSelected" th:field="*{originEndpoint}"  placeholder="Enter Origin Endpoint name" typeahead="address for address in getLocation($viewValue)" typeahead-loading="loadingLocations" typeahead-on-select='onSelect($item, $model, $label)'  typeahead-no-results="noResults" class="form-control"/>
 			<!--
 			<label >Select Files</label>
 			<div  class="col-lg-12 col-md-12 col-sm-12 pre-scrollable acidjs-css3-treeview" style="background:white;height:30%;overflow-y:auto;border-style: solid;border-width: 1px;">
