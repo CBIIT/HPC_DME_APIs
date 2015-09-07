@@ -146,19 +146,15 @@ public class GlobusRestController {
 		Result endPointList;
 		JSONArray fileArray = new JSONArray();
 		String endPointBasePath = "";
-		boolean addFlag = true;
 
 		try {
 			System.out.println("Rescusive Path:"+directory);
 			endPointList = transferClient.endpointLs(endpointName, basedir+directory);
 			fileArray = endPointList.document.getJSONArray("DATA");
 			endPointBasePath = endPointList.document.getString("path");
-			System.out.println("Base Path:"+endPointList.document.getString("path"));
-			System.out.println("length Path:"+endPointList.document.getString("length"));
-			System.out.println("total Path:"+endPointList.document.getString("total"));
+
 			
 		} catch (APIError e) {
-			addFlag = false;
 			if("ExternalError.DirListingFailed.PermissionDenied".equalsIgnoreCase(e.code))
 					removeItemFromList(directory,contentList);
 		}
@@ -172,18 +168,13 @@ public class GlobusRestController {
 		for (int i=0; i < fileArray.length(); i++) {
 		    JSONObject fileObject = fileArray.getJSONObject(i);
 		    GlobusEndpointFile endpointFile = new GlobusEndpointFile();
-		    if (addFlag)
-		    {
 		    endpointFile.setName(fileObject.getString("name"));		    
-		    endpointFile.setPath(directory+fileObject.getString("name"));
-		    endpointFile.setLevel(endpointFile.getPath().split("/").length -1 );
-		    System.out.println("Name:"+endpointFile.getName());
-		    System.out.println("Level:"+endpointFile.getLevel());
-		    System.out.println("Path:"+endpointFile.getPath());
+		    endpointFile.setPath(directory+fileObject.getString("name"));		    
+			endpointFile.setLevel(endpointFile.getPath().split("/").length -1 );		    
 		    contentList.add(endpointFile);
-		    }
 		    if (fileObject.getString("type").equals("dir"))
 		    {
+
 		    	String path = endpointFile.getPath().startsWith("/")?endpointFile.getPath().substring(1) : endpointFile.getPath();		    	
 		        listContents(endpointName, endPointBasePath, endpointFile.getPath()+"/", transferClient,
 						contentList);
