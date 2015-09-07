@@ -187,12 +187,14 @@ public interface HpcDatasetRestService
      * GET Datasets by name.
      *
      * @param name Get datasets which 'name' is contained in their name.
+     * @param regex If set to true, the 'name' will be queried as a regular expression. 
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @GET
     @Path("/dataset/query/name/{name}")
     @Produces("application/json,application/xml")
-    public Response getDatasetsByName(@PathParam("name") String name); 
+    public Response getDatasetsByName(@PathParam("name") String name,
+    		                          @QueryParam("regex") Boolean regex); 
     
     /**
      * POST Datasets by primary metadata. 

@@ -343,13 +343,15 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 	} 	
     
     @Override
-    public Response getDatasetsByName(String name)
+    public Response getDatasetsByName(String name, Boolean regex)
     {
     	logger.info("Invoking RS: GET /dataset/query/name/{name}: " + name);
     	
 		HpcDatasetCollectionDTO datasetCollectionDTO = null;
 		try {
-			 datasetCollectionDTO = datasetBusService.getDatasets(name); 
+			 datasetCollectionDTO = 
+			 datasetBusService.getDatasets(name, 
+					                       regex != null ? regex : false); 
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /dataset/query/name/{name}: failed:", e);
