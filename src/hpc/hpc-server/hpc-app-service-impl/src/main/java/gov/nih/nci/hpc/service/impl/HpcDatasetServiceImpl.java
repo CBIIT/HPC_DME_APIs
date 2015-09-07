@@ -406,22 +406,21 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     @Override
     public List<HpcDataset> getDatasets() throws HpcException
  	{
-    	List<HpcDataset> l = datasetDAO.getDatasets();
-    	int n = l.size();
-    	return l;
+    	return datasetDAO.getDatasets();
  	}
     
     @Override
-    public List<HpcDataset> getDatasets(List<String> userIds, HpcDatasetUserAssociation association) 
+    public List<HpcDataset> getDatasets(List<String> userIds, 
+    		                            HpcDatasetUserAssociation association) 
  	                                   throws HpcException
  	{
     	return datasetDAO.getDatasets(userIds, association);
  	}
     
     @Override
-    public List<HpcDataset> getDatasets(String name) throws HpcException
+    public List<HpcDataset> getDatasets(String name, boolean regex) throws HpcException
  	{
-    	return datasetDAO.getDatasets(name);
+    	return datasetDAO.getDatasets(name, regex);
  	}
     
     @Override
