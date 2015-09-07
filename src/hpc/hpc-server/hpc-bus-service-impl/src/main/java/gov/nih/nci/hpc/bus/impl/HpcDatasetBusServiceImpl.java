@@ -385,14 +385,15 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
    }
     
     @Override
-    public HpcDatasetCollectionDTO getDatasets(String name) throws HpcException
+    public HpcDatasetCollectionDTO getDatasets(String name, boolean regex) 
+    		                                  throws HpcException
     {
     	// Input validation.
     	if(name == null) {
     	   throw new HpcException("Null name", HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	return toDTO(datasetService.getDatasets(name));
+    	return toDTO(datasetService.getDatasets(name, regex));
     }
     
     @Override

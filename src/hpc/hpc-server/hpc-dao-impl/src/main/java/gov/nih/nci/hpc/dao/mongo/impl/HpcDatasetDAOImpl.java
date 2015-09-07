@@ -286,14 +286,15 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     }
 	
 	@Override
-	public List<HpcDataset> getDatasets(String name) throws HpcException
+	public List<HpcDataset> getDatasets(String name, boolean regex) 
+			                           throws HpcException
 	{
 		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
 		HpcSingleResultCallback<List<HpcDataset>> callback = 
                        new HpcSingleResultCallback<List<HpcDataset>>();
 		getCollection().find(
-		                regex(DATASET_NAME_FIELD_NAME, 
-		                	  Pattern.quote(name), "i")).into(datasets, callback); 
+		   regex(DATASET_NAME_FIELD_NAME, 
+		         regex ? name : Pattern.quote(name), "i")).into(datasets, callback); 
 		
 		return callback.getResult();
 	}

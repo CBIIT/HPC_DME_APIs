@@ -85,11 +85,13 @@ public interface HpcDatasetDAO
      * Get datasets which has 'name' contained within its name.
      *
      * @param name Get datasets which 'name' is contained in their name.
+     * @param regex If set to true, the 'name' will be queried as a regular expression. 
      * @return HpcDataset collection, or null if no results found.
      * 
      * @throws HpcException
      */
-    public List<HpcDataset> getDatasets(String name) throws HpcException;
+    public List<HpcDataset> getDatasets(String name, boolean regex) 
+    		                           throws HpcException;
     
     /**
      * Get datasets that match a provided metadata. 
