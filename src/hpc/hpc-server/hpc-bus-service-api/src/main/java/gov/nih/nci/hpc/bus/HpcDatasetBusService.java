@@ -146,11 +146,13 @@ public interface HpcDatasetBusService
      * Get datasets which has 'name' contained within its name.
      *
      * @param name Get datasets which 'name' is contained in their name.
+     * @param regex If set to true, the 'name' will be queried as a regular expression. 
      * @return Collection of Dataset DTO, or null if not found.
      * 
      * @throws HpcException
      */
-    public HpcDatasetCollectionDTO getDatasets(String name) throws HpcException;
+    public HpcDatasetCollectionDTO getDatasets(String name, boolean regex) 
+    		                                  throws HpcException;
     
     /**
      * Get Datasets by file primary metadata.
