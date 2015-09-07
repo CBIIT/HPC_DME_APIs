@@ -128,6 +128,8 @@ app.controller('TypeaheadCtrl', function($scope, $http) {
 app.controller('GridFolderCtrl', ['$scope', '$http', '$interval', 'uiGridTreeViewConstants', function ($scope, $http, $interval, uiGridTreeViewConstants ) {
 	 $scope.$on('endPointNameB', function (event, args) {
 		 $scope.message = args.message;
+		  $scope.loading = true;
+		  $scope.gridOptions.data = [];
 		 console.log($scope.message);
 		    $http.get('/getEndpointContents', {
 			      params: {
@@ -139,13 +141,13 @@ app.controller('GridFolderCtrl', ['$scope', '$http', '$interval', 'uiGridTreeVie
 				 .success(function(data) {
 				        /*<![CDATA[*/
 							for (var i = 0; i < data.length; i++ ){
-								data[i].$$treeLevel = data[i].level;
+									data[i].$$treeLevel = data[i].level;
 							 }
-					     /*]]>*/
-	  
-						
+					     /*]]>*/						  
 						 $scope.gridOptions.data = data;
-				 });		 
+				 }).finally(function() {
+					    $scope.loading = false;
+				});
 		 });
 	
 		$scope.gridOptions = {
@@ -391,7 +393,12 @@ function addTextbox() {
 				</ul>
 			</div>	
 			-->
+
 		    <div ng-controller="GridFolderCtrl">
+		    
+	            <div class="pull-left" >
+	                <img class="spinner" ng-show="loading" src="./img/spinner.gif" />
+	            </div>		    
 		      <div id="grid1" ui-grid="gridOptions" ui-grid-tree-view="true" ui-grid-selection="true" class="grid"></div>
 
 		      <div ng-repeat="file in filesSelected">
