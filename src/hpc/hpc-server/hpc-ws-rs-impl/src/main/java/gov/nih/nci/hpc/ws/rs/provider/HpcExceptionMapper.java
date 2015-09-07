@@ -37,7 +37,7 @@ public class HpcExceptionMapper
     //---------------------------------------------------------------------//
 
     // Enable/Disable stack trace print to exception DTO.
-    boolean stackTraceEnabled = false;
+    private boolean stackTraceEnabled = false;
     
     // HTTP headers context instance.
 	@Context
@@ -79,7 +79,7 @@ public class HpcExceptionMapper
      * @param e The HpcException
      * @return The REST response object.
      */
-    public Response toResponse(HpcException e)
+    public Response.ResponseBuilder toResponse(HpcException e)
     {
     	// Map the exception to a DTO.
     	HpcExceptionDTO exceptionDTO = new HpcExceptionDTO();
@@ -110,7 +110,7 @@ public class HpcExceptionMapper
                    Response.status(Response.Status.INTERNAL_SERVER_ERROR);
 		}
 		
-    	return responseBuilder.entity(exceptionDTO).build();
+    	return responseBuilder.entity(exceptionDTO);
     }
     
     //---------------------------------------------------------------------//
