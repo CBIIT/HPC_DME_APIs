@@ -90,11 +90,9 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
    /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param registrationBusService The registration business service.
-     * @param stackTraceEnabled If set to true, stack trace will be attached to
-     *                          exception DTO.
+     * @param dynamicConfigFile The dynamic config file.
      * 
-     * @throws HpcException If the bus service is not provided by Spring.
+     * @throws HpcException
      */
     private HpcDatasetRestServiceImpl(String dynamicConfigFile)
                                      throws HpcException

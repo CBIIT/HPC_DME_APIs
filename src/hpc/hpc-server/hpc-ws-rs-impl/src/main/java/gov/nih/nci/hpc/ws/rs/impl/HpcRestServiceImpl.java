@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.ws.rs.interceptor.HpcAPIVersionInterceptor;
 import gov.nih.nci.hpc.ws.rs.provider.HpcExceptionMapper;
 
 import java.net.URI;
@@ -43,10 +44,11 @@ public abstract class HpcRestServiceImpl
 	
 	// The exception mapper (Exception to HTTP error code) instance.
 	@Autowired
-	HpcExceptionMapper exceptionMapper = null;
-    
-    // Enable/Disable stack trace print to exception DTO.
-    boolean stackTraceEnabled = false;
+	private HpcExceptionMapper exceptionMapper = null;
+	
+	// The API version interceptor.
+	@Autowired
+	private HpcAPIVersionInterceptor apiVersion = null;
     
     //---------------------------------------------------------------------//
     // Methods
@@ -96,7 +98,9 @@ public abstract class HpcRestServiceImpl
      */
     protected Response errorResponse(HpcException e)
     {
-    	return exceptionMapper.toResponse(e);
+    	// For some reason, the API Version Interceptor doesn't pick up the error response.
+    	// As a workaround - we call it here directly.
+    	return apiVersion.header(exceptionMapper.toResponse(e)).build();
     }
 }
 
