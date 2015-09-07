@@ -45,13 +45,17 @@ public class HpcAuthenticationInterceptor
     //---------------------------------------------------------------------//
 
     /**
-     * Default Constructor disabled.
+     * Default Constructor.
      * 
      */
     public HpcAuthenticationInterceptor() 
     {
         super(Phase.RECEIVE);
     }
+    
+    //---------------------------------------------------------------------//
+    // Methods
+    //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
     // AbstractPhaseInterceptor<Message> Interface Implementation
