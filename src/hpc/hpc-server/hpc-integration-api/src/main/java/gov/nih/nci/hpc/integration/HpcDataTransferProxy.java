@@ -43,7 +43,7 @@ public interface HpcDataTransferProxy
     /**
      * Retrive task status.
      *
-     * @param taskId taskid to retrive status.
+     * @param taskId taskId to retrieve status.
      * @param dataTransferAccount 
      * @return HpcDataTransferReport the data transfer report
      * 
