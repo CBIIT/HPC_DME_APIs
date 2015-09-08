@@ -17,9 +17,10 @@ import gov.nih.nci.hpc.exception.HpcException;
  * </p>
  *
  * @author <a href="mailto:prasad.konka@nih.gov">Prasad Konka</a>
- * @version $Id:  $ 
+ * @version $Id$ 
  */
 
-public interface HpcLdapAuthenticationProxy {
+public interface HpcLdapAuthenticationProxy 
+{
 	public boolean authenticate(String userName, String password) throws HpcException;
 }
