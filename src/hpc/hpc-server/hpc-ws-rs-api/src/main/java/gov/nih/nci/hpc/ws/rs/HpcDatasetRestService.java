@@ -121,6 +121,16 @@ public interface HpcDatasetRestService
     public Response getFile(@PathParam("id") String id);
     
     /**
+     * GET all datasets.
+     *
+     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
+     */
+    @GET
+    @Path("/dataset/query/all")
+    @Produces("application/json,application/xml")
+    public Response getDatasets(); 
+    
+    /**
      * GET Datasets by Registrar ID.
      *
      * @param registrarNihUserId Get datasets associated with this registrar.
@@ -236,7 +246,14 @@ public interface HpcDatasetRestService
     @Path("/getPrimaryConfigurableDataFields/{type}")
     @Produces("application/json")
     public String getPrimaryConfigurableDataFields(@PathParam("type") String id, 
-    		                                       @QueryParam("callback") String callback);   	
+    		                                       @QueryParam("callback") String callback);   
+    
+    
+    // S3 prototype
+    @GET
+    @Path("/eran/{path}")
+    @Produces("application/json,application/xml")
+    public Response s3Upload(@PathParam("path") String path);
 }
 
  

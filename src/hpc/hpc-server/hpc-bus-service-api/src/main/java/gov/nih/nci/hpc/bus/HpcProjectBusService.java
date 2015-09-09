@@ -75,6 +75,15 @@ public interface HpcProjectBusService
     public HpcProjectDTO getProject(String id) throws HpcException;
     
     /**
+     * Get all projects.
+     *
+     * @return Collection of Project DTO, or null if not found.
+     * 
+     * @throws HpcException
+     */
+    public HpcProjectCollectionDTO getProjects() throws HpcException;
+    
+    /**
      * Get projects associated with a specific user.
      *
      * @param nihUserId the user id.

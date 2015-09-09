@@ -115,6 +115,15 @@ public interface HpcDatasetBusService
     public HpcFileDTO getFile(String id) throws HpcException;
     
     /**
+     * Get all datasets.
+     *
+     * @return Collection of Dataset DTO, or null if not found.
+     * 
+     * @throws HpcException
+     */
+    public HpcDatasetCollectionDTO getDatasets() throws HpcException;
+    
+    /**
      * Get datasets associated with a specific user(s).
      *
      * @param userIds The list of user ids to match.
