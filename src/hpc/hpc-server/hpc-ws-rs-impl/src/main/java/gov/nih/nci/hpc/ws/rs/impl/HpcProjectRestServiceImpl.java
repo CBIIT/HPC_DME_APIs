@@ -146,13 +146,30 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
+    public Response getProjects()
+    {
+    	logger.info("Invoking RS: GET /project/query/all");
+    	
+		HpcProjectCollectionDTO projectCollectionDTO = null;
+		try {
+			 projectCollectionDTO = projectBusService.getProjects(); 
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /dataset/query/all: failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(projectCollectionDTO, true);
+    }
+    
+    @Override
     public Response getProjectsByRegistrarId(String registrarId)
     {
     	logger.info("Invoking RS: GET /project/query/registrar/{id}: " + registrarId);
     	
 		HpcProjectCollectionDTO projectCollectionDTO = null;
 		try {
-			projectCollectionDTO = projectBusService.getProjects(
+			 projectCollectionDTO = projectBusService.getProjects(
 										   registrarId, 
 						                   HpcDatasetUserAssociation.REGISTRAR); 
 			 

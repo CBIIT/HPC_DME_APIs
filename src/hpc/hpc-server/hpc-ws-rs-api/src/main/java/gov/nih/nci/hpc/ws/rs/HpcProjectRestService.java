@@ -78,6 +78,16 @@ public interface HpcProjectRestService
     public Response getProject(@PathParam("id") String id); 
     
     /**
+     * GET all projects.
+     *
+     * @return gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO entity.
+     */
+    @GET
+    @Path("/project/query/all")
+    @Produces("application/json,application/xml")
+    public Response getProjects(); 
+    
+    /**
      * GET Projects by Registrar ID.
      *
      * @param creatorId Get projects associated with this Registrar ID.
