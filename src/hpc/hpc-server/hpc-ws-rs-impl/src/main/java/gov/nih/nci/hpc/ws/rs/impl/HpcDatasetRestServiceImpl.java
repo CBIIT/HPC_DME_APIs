@@ -1,5 +1,4 @@
 /**
- * HpcDatasetRestServiceImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -237,6 +236,23 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
+    public Response getDatasets()
+    {
+    	logger.info("Invoking RS: GET /dataset/query/all");
+    	
+		HpcDatasetCollectionDTO datasetCollectionDTO = null;
+		try {
+			 datasetCollectionDTO = datasetBusService.getDatasets(); 
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /dataset/query/all: failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(datasetCollectionDTO, true);
+    }
+    
+    @Override
     public Response getDatasetsByRegistrarId(String registrarNihUserId)
     {
     	logger.info("Invoking RS: GET /dataset/query/registrar/{id}: " + 
@@ -423,6 +439,12 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 		
 		return callBackFn +"("+json.toString()+");";
 	}
+    
+    @Override
+    public Response s3Upload(String path)
+    {
+    	return okResponse(null, false);
+    }
 }
 
  

@@ -222,6 +222,12 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     }
     
     @Override
+    public HpcProjectCollectionDTO getProjects() throws HpcException
+    {
+    	return toDTO(projectService.getProjects());
+    }
+    
+    @Override
     public HpcProjectCollectionDTO getProjects(String userId, 
                                       HpcDatasetUserAssociation association) 
                                       throws HpcException
