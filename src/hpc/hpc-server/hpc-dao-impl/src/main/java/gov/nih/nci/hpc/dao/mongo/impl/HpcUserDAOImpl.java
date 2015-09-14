@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.dao.mongo.impl;
 
-import static com.mongodb.client.model.Filters.or;
+import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.regex;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
@@ -149,7 +149,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
  	        		         "^" + Pattern.quote(lastName) + "$", "i"));
      	}
     	
-		getCollection().find(or(filters)).into(users, callback); 
+		getCollection().find(and(filters)).into(users, callback); 
 		
 		return callback.getResult();
 	}
