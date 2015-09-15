@@ -474,12 +474,11 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 		List<HpcFile> files = dataset.getFileSet().getFiles();
 		if (files != null && !files.isEmpty()) {
 			HpcProjectCollectionDTO projectCollection = new HpcProjectCollectionDTO();
-			for (HpcFile file : files) {
+			for(HpcFile file : files) {
 				List<String> projectIds = file.getProjectIds();
-				if (projectIds != null && !projectIds.isEmpty()) {
-					List<HpcProject> projects = new ArrayList<HpcProject>();
-					for (String projectId : projectIds) {
-						try {
+				if(projectIds != null && !projectIds.isEmpty()) {
+				   for(String projectId : projectIds) {
+					   try {
 							HpcProject project = projectService
 									.getProject(projectId);
 							if (project != null) {
@@ -835,7 +834,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 			try {				
 				 dataTransferReport =
                  dataTransferService.transferDataset(uploadRequest.getLocations(), 
-				                                     user,dataset.getFileSet().getName());				 
+				                                     user, dataset.getFileSet().getName());				 
 			} catch(HpcException e) {
 				    // Failed to upload file. Log and continue.
 					logger.info("Failed to upload file: " + uploadRequest, e);
