@@ -32,7 +32,9 @@
 		<slf4j.version>1.7.12</slf4j.version>
 		<spring-security.version>3.1.4.RELEASE</spring-security.version>
 		<spring-beans.version>3.2.11.RELEASE</spring-beans.version>
-		<aws-s3.version>1.10.16</aws-s3.version>
+		<amazon-aws.version>1.10.8</amazon-aws.version>
+		<jackson.version>2.5.3</jackson.version>
+		<google-json-simple.version>1.1</google-json-simple.version>
 	</properties>
 
 	<modules>
@@ -174,14 +176,29 @@
 				<version>${spring-beans.version}</version>
 			</dependency>
 			<dependency>
-			<groupId>com.amazonaws</groupId>
+				<groupId>com.amazonaws</groupId>
 				<artifactId>aws-java-sdk-s3</artifactId>
-				<version>${aws-s3.version}</version>
+				<version>${amazon-aws.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-annotations</artifactId>
+				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.googlecode.json-simple</groupId>
 				<artifactId>json-simple</artifactId>
-				<version>1.1</version>
+				<version>${google-json-simple.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
