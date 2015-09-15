@@ -33,10 +33,22 @@
 		<bundle>mvn:org.springframework.security/spring-security-ldap/${spring-security.version}</bundle>
 	</feature>
 	
+	<!-- Amazon AWS SDK -->
+	<feature name="hpc-amazon-aws-sdk" version="${amazon-aws.version}">
+		<bundle>mvn:com.fasterxml.jackson.core/jackson-core/${jackson.version}</bundle>
+		<bundle>mvn:com.fasterxml.jackson.core/jackson-databind/${jackson.version}</bundle>
+		<bundle>mvn:com.fasterxml.jackson.core/jackson-annotations/${jackson.version}</bundle>
+		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.aws-java-sdk/${amazon-aws.version}_1</bundle>
+	</feature>
+	
 	<!-- HPC Server -->
 	<feature name="hpc-server" version="${project.version}">
+	
+		<!--  Dependent Features / Bundles -->
 		<feature version="${mongodb.version}">hpc-mongo-async-driver</feature>
 		<feature version="${spring-security.version}">hpc-spring-security-ldap</feature>
+		<feature version="${amazon-aws.version}">hpc-amazon-aws-sdk</feature>
+		<bundle>wrap:mvn:com.googlecode.json-simple/json-simple/${google-json-simple.version}</bundle>
 
 		<!-- Config files -->
 		<configfile finalname="/etc/gov.nih.nci.hpc.cfg" override="false">mvn:${project.groupId}/hpc-features/${project.version}/properties/hpc-server</configfile>
