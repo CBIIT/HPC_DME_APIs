@@ -439,12 +439,107 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 		
 		return callBackFn +"("+json.toString()+");";
 	}
-    
+    /*
     @Override
     public Response s3Upload(String path)
     {
+    	s3SimpleUpload(path);
+    	//s3MultipartUpload(path);
     	return okResponse(null, false);
     }
+    
+    private void s3SimpleUpload(String path)
+    {
+    	BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials("vDZGQHw6OgBBpeI4D1CA", 
+    			                                                            "OVDNthOhfl5npqdSfAD8T9FsIcJlsCJsmuRdfanr");
+    	
+    	AmazonS3 s3client = new AmazonS3Client(cleversafeCredentials);
+    	s3client.setEndpoint("https://8.40.18.82");
+    	
+        try {
+            System.out.println("Uploading a new object to S3 from a file\n");
+            File file = new File(path);
+            s3client.deleteObject("CJ090115", "eran-key");
+            PutObjectResult result = s3client.putObject(new PutObjectRequest(
+            		                                    "CJ090115", "eran-key", file));
+            
+            System.out.println("Upload result md5: " + result.getContentMd5());
+            
+            System.out.println("Get object...");
+            S3Object object = s3client.getObject("CJ090115", "eran-key");
+            InputStream objectData = object.getObjectContent();
+            System.out.println("received object: bytes=" + objectData.available());
+            // Process the objectData stream.
+            objectData.close();
+            
+         } catch (AmazonServiceException ase) {
+            System.out.println("Caught an AmazonServiceException, which " +
+            		"means your request made it " +
+                    "to Amazon S3, but was rejected with an error response" +
+                    " for some reason.");
+            System.out.println("Error Message:    " + ase.getMessage());
+            System.out.println("HTTP Status Code: " + ase.getStatusCode());
+            System.out.println("AWS Error Code:   " + ase.getErrorCode());
+            System.out.println("Error Type:       " + ase.getErrorType());
+            System.out.println("Request ID:       " + ase.getRequestId());
+        } catch (AmazonClientException ace) {
+            System.out.println("Caught an AmazonClientException, which " +
+            		"means the client encountered " +
+                    "an internal error while trying to " +
+                    "communicate with S3, " +
+                    "such as not being able to access the network.");
+            System.out.println("Error Message: " + ace.getMessage());
+        } catch (IOException ioex) {
+        	System.out.println("IO exception: " + ioex);
+        }
+    }
+    
+    private void s3MultipartUpload(String path)
+    {
+    	BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials("vDZGQHw6OgBBpeI4D1CA", 
+    			                                                            "OVDNthOhfl5npqdSfAD8T9FsIcJlsCJsmuRdfanr");
+    	
+    	TransferManager tm = new TransferManager(cleversafeCredentials);
+    	tm.getAmazonS3Client().setEndpoint("http://8.40.18.82");
+    	tm.getAmazonS3Client().deleteObject("CJ090115", "eran-key");
+    	
+    	System.out.println("Multipart Uploading a new object to S3 from a file\n");
+        File file = new File(path);
+        
+        PutObjectRequest request = new PutObjectRequest("CJ090115", "eran-key", file);
+        
+        // You can ask the upload for its progress, or you can 
+        // add a ProgressListener to your request to receive notifications 
+        // when bytes are transferred.
+        request.setGeneralProgressListener(new ProgressListener() {
+			@Override
+			public void progressChanged(ProgressEvent progressEvent) {
+				System.out.println("Progress Event: " + progressEvent.getEventType() +
+				                   "    ***   Transferred bytes: " + 
+						           progressEvent.getBytesTransferred());
+			}
+		});
+        
+        Upload upload = tm.upload(request);
+
+        try {
+        	// Or you can block and wait for the upload to finish
+        	upload.waitForCompletion();
+        	
+            System.out.println("\n\nDownloading object...");
+            S3Object object = tm.getAmazonS3Client().getObject("CJ090115", "eran-key");
+            InputStream objectData = object.getObjectContent();
+            System.out.println("received object: bytes=" + objectData.available());
+            
+        } catch (AmazonClientException amazonClientException) {
+        	System.out.println("Unable to upload file, upload was aborted.");
+        	amazonClientException.printStackTrace();
+        } catch (Exception ioex) {
+        	System.out.println("Interupted exception: " + ioex);
+        }
+        
+
+    }*/
 }
 
  

@@ -248,12 +248,12 @@ public interface HpcDatasetRestService
     public String getPrimaryConfigurableDataFields(@PathParam("type") String id, 
     		                                       @QueryParam("callback") String callback);   
     
-    
+    /*
     // S3 prototype
     @GET
     @Path("/eran/{path}")
     @Produces("application/json,application/xml")
-    public Response s3Upload(@PathParam("path") String path);
+    public Response s3Upload(@PathParam("path") String path);*/
 }
 
  
