@@ -34,6 +34,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetAssociateFileProjectsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDateRangeDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFileDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
@@ -432,6 +433,21 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	return toDTO(datasetService.getDatasets(dataTransferStatus, uploadRequests, 
     			                                          downloadRequests));
 	}
+    
+    @Override
+    public HpcDatasetCollectionDTO getDatasets(
+			  HpcDatasetRegistrationDateRangeDTO registrationDateRangeDTO) 
+			  throws HpcException
+    {
+    	// Input validation.
+    	if(registrationDateRangeDTO == null) {
+    	   throw new HpcException("Null registration date range query DTO", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	return toDTO(datasetService.getDatasets(registrationDateRangeDTO.getFrom(),
+    			                                registrationDateRangeDTO.getTo()));
+    }
     
 	@Override
 	public HpcDatasetCollectionDTO getDatasetsByProjectId(String projectId)
