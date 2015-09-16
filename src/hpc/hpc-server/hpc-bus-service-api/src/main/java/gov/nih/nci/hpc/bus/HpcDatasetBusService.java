@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetAssociateFileProjectsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDateRangeDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFileDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
@@ -190,6 +191,18 @@ public interface HpcDatasetBusService
 			                                   Boolean uploadRequests, 
 			                                   Boolean downloadRequests) 
 			                                  throws HpcException;
+	
+    /**
+     * Get datasets by registration date range.
+     *
+     * @param registrationDateRangeDTO The date range to query.
+     * @return Collection of Dataset DTO, or null if not found.
+     * 
+     * @throws HpcException
+     */
+	public HpcDatasetCollectionDTO getDatasets(
+			  HpcDatasetRegistrationDateRangeDTO registrationDateRangeDTO) 
+			  throws HpcException;
 	
     /**
      * Get datasets associated with given projectId.

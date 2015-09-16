@@ -24,6 +24,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -265,6 +266,18 @@ public interface HpcDatasetService
 	public List<HpcDataset> getDatasets(HpcDataTransferStatus dataTransferStatus,
 			                            Boolean uploadRequests, 
                                         Boolean downloadRequests) throws HpcException;
+	
+    /**
+     * Get datasets by registration date range.
+     *
+     * @param from The from date.
+     * @param from The to date.
+     * @return HpcDataset collection, or null if no results found.
+     * 
+     * @throws HpcException
+     */
+	public List<HpcDataset> getDatasets(Calendar from, Calendar to) 
+			                           throws HpcException;
 	
     /**
      * Find a file in dataset.

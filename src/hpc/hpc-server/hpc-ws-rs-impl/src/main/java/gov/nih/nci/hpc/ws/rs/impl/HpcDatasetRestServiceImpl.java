@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetAssociateFileProjectsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDateRangeDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFileDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
@@ -415,6 +416,25 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 	
 		return okResponse(datasetCollectionDTO, true);
 	}
+    
+    public Response getDatasetsByRegistrationDateRange(
+    		           HpcDatasetRegistrationDateRangeDTO registrationDateRangeDTO)
+    {
+    	logger.info("Invoking RS: GET /dataset/query/registrationDateRange: " + 
+    			    registrationDateRangeDTO);
+
+		HpcDatasetCollectionDTO datasetCollectionDTO = null;
+		try {
+			 datasetCollectionDTO = 
+					datasetBusService.getDatasets(registrationDateRangeDTO); 
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /dataset/query/registrationDateRangeDTO: failed:", e);
+			    return errorResponse(e);
+		}
+	
+		return okResponse(datasetCollectionDTO, true);
+    }
 	
     @Override
     public String getPrimaryConfigurableDataFields(String type, String callBackFn)

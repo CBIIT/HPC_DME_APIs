@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAssociateFileProjectsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDateRangeDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
 
@@ -235,6 +236,18 @@ public interface HpcDatasetRestService
     		           @PathParam("status") HpcDataTransferStatus dataTransferStatus,
     		           @QueryParam("uploadRequests") Boolean uploadRequests, 
     		           @QueryParam("downloadRequests") Boolean downloadRequests);
+    
+    /**
+     * GET Datasets by registration date range.
+     *
+     * @param registrationDateRangeDTO The date range to query.
+     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
+     */
+    @POST
+    @Path("/dataset/query/registrationDateRange")
+    @Produces("application/json,application/xml")
+    public Response getDatasetsByRegistrationDateRange(
+    		           HpcDatasetRegistrationDateRangeDTO registrationDateRangeDTO);
     
    /**
      * GET Configurable items by ID.
