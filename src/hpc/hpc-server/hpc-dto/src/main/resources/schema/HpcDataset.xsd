@@ -137,4 +137,14 @@
 		</xsd:complexType>
 	</xsd:element>
 	
+	<!--  Associate projects with file in a dataset DTO -->
+	<xsd:element name="HpcDatasetRegistrationDateRangeDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="from" type="xsd:date" />
+				<xsd:element name="to" type="xsd:date" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
 </xsd:schema>
