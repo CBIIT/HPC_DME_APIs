@@ -15,6 +15,8 @@ import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.in;
 import static com.mongodb.client.model.Filters.regex;
+import static com.mongodb.client.model.Filters.gte;
+import static com.mongodb.client.model.Filters.lte;
 import gov.nih.nci.hpc.dao.HpcDatasetDAO;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcMongoDB;
@@ -28,6 +30,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -171,6 +174,10 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 							   HpcCodec.DATASET_FILE_SET_KEY + "." + 
 	                           HpcCodec.FILE_SET_FILES_KEY + "." +
 	                           HpcCodec.FILE_ID_KEY;
+	
+	// Field name to query by date range.
+	public final static String DATASET_CREATED_FIELD_NAME = 
+			                   HpcCodec.DATASET_CREATED_KEY;
 	
 	// Projection for query a file by id.
 	public final static String FILE_PROJECTION = 
@@ -343,6 +350,21 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 		
 		return callback.getResult();
 	}  
+	
+	@Override
+	public List<HpcDataset> getDatasets(Calendar from, Calendar to) 
+                                       throws HpcException
+    {
+		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
+		HpcSingleResultCallback<List<HpcDataset>> callback = 
+                       new HpcSingleResultCallback<List<HpcDataset>>();
+		getCollection().find(
+		   and(gte(DATASET_CREATED_FIELD_NAME, from.getTime()), 
+			   lte(DATASET_CREATED_FIELD_NAME, to.getTime()))) 
+		   .into(datasets, callback); 
+		
+		return callback.getResult();
+    }
 	
 	@Override
 	public List<HpcDataset> getDatasetsByProjectId(String projectId)
