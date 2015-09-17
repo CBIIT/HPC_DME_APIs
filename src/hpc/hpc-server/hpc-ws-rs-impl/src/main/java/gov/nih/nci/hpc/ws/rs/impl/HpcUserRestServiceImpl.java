@@ -82,20 +82,20 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return createdResponse(userRegistrationDTO.getNihAccount().getUserId());
+		return createdResponse(userRegistrationDTO.getNciAccount().getUserId());
 	}
     
     @Override
-    public Response getUser(String nihUserId)
+    public Response getUser(String nciUserId)
     {
-		logger.info("Invoking RS: GET /user/{nihUserId}: " + nihUserId);
+		logger.info("Invoking RS: GET /user/{nciUserId}: " + nciUserId);
 		
 		HpcUserDTO userDTO = null;
 		try {
-			 userDTO = userBusService.getUser(nihUserId);
+			 userDTO = userBusService.getUser(nciUserId);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /user/{nihUserId} failed:", e);
+			    logger.error("RS: GET /user/{nciUserId} failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -111,7 +111,7 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 			 valid = userBusService.authenticate(credentials); 
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /user/{nihUserId} failed:", e);
+			    logger.error("RS: GET /user/{nciUserId} failed:", e);
 			    return errorResponse(e);
 		}
 		if(valid)

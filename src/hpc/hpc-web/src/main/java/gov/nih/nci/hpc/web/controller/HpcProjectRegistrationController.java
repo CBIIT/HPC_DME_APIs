@@ -121,11 +121,11 @@ public class HpcProjectRegistrationController extends AbstractHpcController {
 				metadata.setType(HpcProjectType.UNKNOWN);
 
 		}
-		metadata.setPrincipalInvestigatorNihUserId(registration.getPrincipalInvestigatorNihUserId());
+		metadata.setPrincipalInvestigatorNciUserId(registration.getPrincipalInvestigatorNihUserId());
 		//TODO: Get DOC dynamically
 		metadata.setPrincipalInvestigatorDOC("NCI");
 		metadata.setRegistrarDOC("NCI");
-		metadata.setRegistrarNihUserId(user.getNihAccount().getUserId());
+		metadata.setRegistrarNciUserId(user.getNciAccount().getUserId());
 		metadata.setCreated(Calendar.getInstance());
 		dto.setMetadata(metadata);
 		try {

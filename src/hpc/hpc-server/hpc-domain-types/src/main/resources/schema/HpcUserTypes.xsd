@@ -33,7 +33,7 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
-	<xsd:complexType name="HpcNihAccount">
+	<xsd:complexType name="HpcNciAccount">
 		<xsd:sequence>
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="firstName" type="xsd:string" />

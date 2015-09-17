@@ -55,7 +55,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 
 public class HpcDatasetServiceImpl implements HpcDatasetService
-{         
+{   
+    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//    
+    
+    // HpcUser Document keys.
+	private final static String FUNDING_ORGANIZATION_DEFAULT = "Not_Specified"; 
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -181,6 +188,13 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
 		// Set the metadata.
 		HpcFileMetadata metadata = new HpcFileMetadata();
 		metadata.setPrimaryMetadata(uploadRequest.getMetadata());
+		
+		// Default Funding Organization.
+		if(metadata.getPrimaryMetadata().getFundingOrganization() == null) {
+			metadata.getPrimaryMetadata().setFundingOrganization(
+					                         FUNDING_ORGANIZATION_DEFAULT);
+		}
+		
 		file.setMetadata(metadata);
 		
 		// Add the managed file to the dataset.
@@ -197,26 +211,26 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     
     @Override
     public HpcDataTransferRequest addDataTransferUploadRequest(
-                                  HpcDataset dataset, String requesterNihUserId, 
+                                  HpcDataset dataset, String requesterNciUserId, 
                                   String fileId, HpcDataTransferLocations locations,
                                   HpcDataTransferReport report, boolean persist) 
                                   throws HpcException
     {
     	HpcDataTransferRequest dataTransferRequest = 
-    	   newDataTransferRequest(requesterNihUserId, fileId, locations, report);
+    	   newDataTransferRequest(requesterNciUserId, fileId, locations, report);
     	   dataset.getUploadRequests().add(dataTransferRequest);
     	   return dataTransferRequest;
     }
     
     @Override
     public HpcDataTransferRequest addDataTransferDownloadRequest(
-                                  HpcDataset dataset, String requesterNihUserId, 
+                                  HpcDataset dataset, String requesterNciUserId, 
                                   String fileId, HpcDataTransferLocations locations,
                                   HpcDataTransferReport report, boolean persist) 
                                   throws HpcException
     {
     	HpcDataTransferRequest dataTransferRequest = 
-    	   newDataTransferRequest(requesterNihUserId, fileId, locations, report);
+    	   newDataTransferRequest(requesterNciUserId, fileId, locations, report);
     	   dataset.getDownloadRequests().add(dataTransferRequest);
     	   return dataTransferRequest;
     }
@@ -508,10 +522,10 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
 	}
 	
     @Override
-    public boolean exists(String name, String nihUserId, HpcDatasetUserAssociation association) 
+    public boolean exists(String name, String nciUserId, HpcDatasetUserAssociation association) 
                          throws HpcException
     {
-    	return datasetDAO.exists(name, nihUserId, association);
+    	return datasetDAO.exists(name, nciUserId, association);
     }
     
     @Override
@@ -538,7 +552,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     /**
      * Instantiate a data transfer request object.
      *
-     * @param requesterNihUserId The user-id initiated the upload.
+     * @param requesterNciUserId The user-id initiated the upload.
      * @param fileId The uploaded file ID.
      * @param locations The transfer source and destination.
      * @param report The data transfer report.
@@ -548,12 +562,12 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
      * @throws HpcException
      */
     private HpcDataTransferRequest newDataTransferRequest(
-                           String requesterNihUserId, String fileId, 
+                           String requesterNciUserId, String fileId, 
                            HpcDataTransferLocations locations,
                            HpcDataTransferReport report) throws HpcException
 	{
        	// Input validation.
-       	if(requesterNihUserId == null || fileId == null ||
+       	if(requesterNciUserId == null || fileId == null ||
        	   !isValidDataTransferLocations(locations)) {
        	   throw new HpcException("Invalid add data transfer request", 
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
@@ -562,7 +576,7 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
 		HpcDataTransferRequest dataTransferRequest = new HpcDataTransferRequest(); 
 		dataTransferRequest.setReport(report);
 		dataTransferRequest.setFileId(fileId);
-		dataTransferRequest.setRequesterNihUserId(requesterNihUserId);
+		dataTransferRequest.setRequesterNciUserId(requesterNciUserId);
 		dataTransferRequest.setLocations(locations);
 		dataTransferRequest.setDataTransferId(report != null && report.getTaskID() != null ?
 				                              report.getTaskID() : "UNKNOWN");
@@ -613,14 +627,14 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
     	if(update.getPrincipalInvestigatorDOC() != null) {
            metadata.setPrincipalInvestigatorDOC(update.getPrincipalInvestigatorDOC());	
         }
-    	if(update.getPrincipalInvestigatorNihUserId() != null) {
-           metadata.setPrincipalInvestigatorNihUserId(update.getPrincipalInvestigatorNihUserId());	
+    	if(update.getPrincipalInvestigatorNciUserId() != null) {
+           metadata.setPrincipalInvestigatorNciUserId(update.getPrincipalInvestigatorNciUserId());	
         }
     	if(update.getRegistrarDOC() != null) {
            metadata.setRegistrarDOC(update.getRegistrarDOC());	
         }
-    	if(update.getRegistrarNihUserId() != null) {
-           metadata.setRegistrarNihUserId(update.getRegistrarNihUserId());	
+    	if(update.getRegistrarNciUserId() != null) {
+           metadata.setRegistrarNciUserId(update.getRegistrarNciUserId());	
         }
     	if(update.getMetadataItems() != null && !update.getMetadataItems().isEmpty()) {
     	   for(HpcMetadataItem metadataItem : update.getMetadataItems()) {

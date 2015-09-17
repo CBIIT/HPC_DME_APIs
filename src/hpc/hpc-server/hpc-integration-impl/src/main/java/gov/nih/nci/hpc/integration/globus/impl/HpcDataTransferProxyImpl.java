@@ -91,7 +91,7 @@ public class HpcDataTransferProxyImpl
 		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
     	}
     	
-    	return transfer(transferLocations, user.getNihAccount().getUserId());
+    	return transfer(transferLocations, user.getNciAccount().getUserId());
     }
     
     @Override

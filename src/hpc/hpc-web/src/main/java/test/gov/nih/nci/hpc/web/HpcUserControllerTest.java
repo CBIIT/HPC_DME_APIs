@@ -2,7 +2,7 @@ package test.gov.nih.nci.hpc.web;
 
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccountType;
-import gov.nih.nci.hpc.domain.user.HpcNihAccount;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.web.Application;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
@@ -50,11 +50,11 @@ public class HpcUserControllerTest {
 	@Test
 	public void register() throws Exception {
 		HpcUserRegistrationDTO dto = new HpcUserRegistrationDTO();
-		HpcNihAccount account = new HpcNihAccount();
+		HpcNciAccount account = new HpcNciAccount();
 		account.setFirstName("Prasad");
 		account.setLastName("Konka");
 		account.setUserId("konkapv3");
-		dto.setNihAccount(account);
+		dto.setNciAccount(account);
 		HpcDataTransferAccount trAccount = new HpcDataTransferAccount();
 		trAccount.setAccountType(HpcDataTransferAccountType.GLOBUS);
 		trAccount.setUsername("pkonka");

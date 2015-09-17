@@ -60,12 +60,12 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
 	public final static String INTERNAL_PROJECT_ID_FIELD_NAME = 
             HpcCodec.PROJECT_METADATA_KEY + "." + 
             HpcCodec.PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY;
-	public final static String PRINCIPAL_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
+	public final static String PRINCIPAL_INVESTIGATOR_NCI_USER_ID_FIELD_NAME = 
             HpcCodec.PROJECT_METADATA_KEY + "." + 
-            HpcCodec.PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY;
-	public final static String REGISTRAR_NIH_USER_ID_FIELD_NAME = 
+            HpcCodec.PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_NCI_USER_ID_KEY;
+	public final static String REGISTRAR_NCI_USER_ID_FIELD_NAME = 
             HpcCodec.PROJECT_METADATA_KEY + "." + 
-            HpcCodec.PROJECT_METADATA_REGISTRAR_NIH_USER_ID_KEY;
+            HpcCodec.PROJECT_METADATA_REGISTRAR_NCI_USER_ID_KEY;
 	public final static String LAB_BRANCH_FIELD_NAME = 
             HpcCodec.PROJECT_METADATA_KEY + "." + 
             HpcCodec.PROJECT_METADATA_LAB_BRANCH_KEY;
@@ -168,7 +168,7 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
     }
 	
 	@Override
-	public List<HpcProject> getProjects(String nihUserId, 
+	public List<HpcProject> getProjects(String nciUserId, 
                                         HpcDatasetUserAssociation association) 
                                        throws HpcException
     {
@@ -176,11 +176,11 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
 		String fieldName = null;
 		switch(association) {
 		       case PRINCIPAL_INVESTIGATOR:
-		            fieldName = PRINCIPAL_INVESTIGATOR_NIH_USER_ID_FIELD_NAME;
+		            fieldName = PRINCIPAL_INVESTIGATOR_NCI_USER_ID_FIELD_NAME;
 		            break;
 		            
 		       case REGISTRAR:
-		            fieldName = REGISTRAR_NIH_USER_ID_FIELD_NAME;
+		            fieldName = REGISTRAR_NCI_USER_ID_FIELD_NAME;
 		            break;
 		            
 		       case CREATOR:
@@ -195,7 +195,7 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
 		HpcSingleResultCallback<List<HpcProject>> callback = 
                        new HpcSingleResultCallback<List<HpcProject>>();
 		getCollection().find(
-		                eq(fieldName, nihUserId)).into(projects, callback); 
+		                eq(fieldName, nciUserId)).into(projects, callback); 
 		
 		return callback.getResult();
     }
@@ -249,13 +249,13 @@ public class HpcProjectDAOImpl implements HpcProjectDAO
            filters.add(eq(INTERNAL_PROJECT_ID_FIELD_NAME, 
         		          metadata.getInternalProjectId()));
         }
-    	if(metadata.getPrincipalInvestigatorNihUserId() != null) {
-           filters.add(eq(PRINCIPAL_INVESTIGATOR_NIH_USER_ID_FIELD_NAME, 
-          		          metadata.getPrincipalInvestigatorNihUserId()));
+    	if(metadata.getPrincipalInvestigatorNciUserId() != null) {
+           filters.add(eq(PRINCIPAL_INVESTIGATOR_NCI_USER_ID_FIELD_NAME, 
+          		          metadata.getPrincipalInvestigatorNciUserId()));
         }
-     	if(metadata.getRegistrarNihUserId() != null) {
-           filters.add(eq(REGISTRAR_NIH_USER_ID_FIELD_NAME, 
-        		          metadata.getRegistrarNihUserId()));
+     	if(metadata.getRegistrarNciUserId() != null) {
+           filters.add(eq(REGISTRAR_NCI_USER_ID_FIELD_NAME, 
+        		          metadata.getRegistrarNciUserId()));
        	}
     	if(metadata.getLabBranch() != null) {
            filters.add(eq(LAB_BRANCH_FIELD_NAME, 

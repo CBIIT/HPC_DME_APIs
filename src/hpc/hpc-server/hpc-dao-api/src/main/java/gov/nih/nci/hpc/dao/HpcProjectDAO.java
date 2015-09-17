@@ -59,13 +59,13 @@ public interface HpcProjectDAO
     /**
      * Get projects associated with a specific user.
      *
-     * @param nihUserId the user id.
+     * @param nciUserId the user id.
      * @param association The association between the project and the user.
      * @return HpcProject collection, or null if no results found.
      * 
      * @throws HpcException
      */
-    public List<HpcProject> getProjects(String nihUserId, 
+    public List<HpcProject> getProjects(String nciUserId, 
     		                            HpcDatasetUserAssociation association) 
         	                           throws HpcException;
  

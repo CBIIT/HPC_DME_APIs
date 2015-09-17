@@ -264,10 +264,10 @@ public class HpcSearchDatasetController extends AbstractHpcController {
 		if (search.getInvestigatorId() != null
 				&& search.getInvestigatorId().trim().length() > 0
 				&& !search.getInvestigatorId().equals("-1"))
-			metadata.setPrincipalInvestigatorNihUserId(search.getInvestigatorId());
+			metadata.setPrincipalInvestigatorNciUserId(search.getInvestigatorId());
 		if (search.getRegistarId() != null
 				&& search.getRegistarId().trim().length() > 0)
-			metadata.setRegistrarNihUserId(search.getRegistarId());
+			metadata.setRegistrarNciUserId(search.getRegistarId());
 		if (search.getDescription() != null
 				&& search.getDescription().trim().length() > 0)
 			metadata.setDescription(search.getDescription());
@@ -339,9 +339,9 @@ public class HpcSearchDatasetController extends AbstractHpcController {
 				searchResult.setFileId(file.getId());
 				searchResult.setFileType(file.getType().value());
 				searchResult.setFundingOrganization(file.getMetadata().getPrimaryMetadata().getFundingOrganization());
-				searchResult.setInvestigatorId(file.getMetadata().getPrimaryMetadata().getPrincipalInvestigatorNihUserId());
+				searchResult.setInvestigatorId(file.getMetadata().getPrimaryMetadata().getPrincipalInvestigatorNciUserId());
 				searchResult.setLabBranch(file.getMetadata().getPrimaryMetadata().getLabBranch());
-				searchResult.setRegistarId(file.getMetadata().getPrimaryMetadata().getRegistrarNihUserId());
+				searchResult.setRegistarId(file.getMetadata().getPrimaryMetadata().getRegistrarNciUserId());
 				searchResult.setProjectIds(file.getProjectIds());
 				DateFormat dateFormat = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
 				Calendar created = file.getMetadata().getPrimaryMetadata().getOriginallyCreated();

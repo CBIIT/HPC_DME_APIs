@@ -86,14 +86,14 @@ public interface HpcProjectBusService
     /**
      * Get projects associated with a specific user.
      *
-     * @param nihUserId the user id.
+     * @param nciUserId the user id.
      * @param association The association between the project and the user.
      * @return Collection of Project DTO, or null if not found.
      * 
      * @throws HpcException
      */
     public HpcProjectCollectionDTO 
-           getProjects(String nihUserId, 
+           getProjects(String nciUserId, 
     		           HpcDatasetUserAssociation association) 
     		          throws HpcException;
     

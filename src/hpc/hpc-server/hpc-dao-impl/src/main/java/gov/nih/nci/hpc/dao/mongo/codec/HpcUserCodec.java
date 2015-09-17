@@ -11,10 +11,10 @@
 package gov.nih.nci.hpc.dao.mongo.codec;
 
 import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeDataTransferAccount;
-import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeNihAccount;
+import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeNciAccount;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
-import gov.nih.nci.hpc.domain.user.HpcNihAccount;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 
 import java.util.Calendar;
 
@@ -62,7 +62,7 @@ public class HpcUserCodec extends HpcCodec<HpcUser>
 		Document document = new Document();
  
 		// Extract the data from the domain object.
-		HpcNihAccount nihAccount = user.getNihAccount();
+		HpcNciAccount nciAccount = user.getNciAccount();
 		HpcDataTransferAccount dataTransferAccount = 
 				                           user.getDataTransferAccount();
 		Calendar created = user.getCreated();
@@ -70,8 +70,8 @@ public class HpcUserCodec extends HpcCodec<HpcUser>
 		
 		
 		// Set the data on the BSON document.
-		if(nihAccount != null) {
-		   document.put(USER_NIH_ACCOUNT_KEY, nihAccount);	
+		if(nciAccount != null) {
+		   document.put(USER_NCI_ACCOUNT_KEY, nciAccount);	
 		}
 		if(dataTransferAccount != null) {
 		   document.put(USER_DATA_TRANSFER_ACCOUNT_KEY, dataTransferAccount);	
@@ -97,7 +97,7 @@ public class HpcUserCodec extends HpcCodec<HpcUser>
 		
 		// Map the BSON Document to a domain object.
 		HpcUser user = new HpcUser();
-		user.setNihAccount(decodeNihAccount(document.get(USER_NIH_ACCOUNT_KEY, 
+		user.setNciAccount(decodeNciAccount(document.get(USER_NCI_ACCOUNT_KEY, 
                                                          Document.class),
                                             decoderContext, getRegistry()));
 

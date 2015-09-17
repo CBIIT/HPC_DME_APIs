@@ -254,15 +254,15 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getDatasetsByRegistrarId(String registrarNihUserId)
+    public Response getDatasetsByRegistrarId(String registrarNciUserId)
     {
     	logger.info("Invoking RS: GET /dataset/query/registrar/{id}: " + 
-                    registrarNihUserId);
+                    registrarNciUserId);
     	
 		HpcDatasetCollectionDTO datasetCollectionDTO = null;
 		try {
 			 List<String> userIds = new ArrayList<String>();
-			 userIds.add(registrarNihUserId);
+			 userIds.add(registrarNciUserId);
 			 datasetCollectionDTO = datasetBusService.getDatasets(
 					                       userIds, 
 						                   HpcDatasetUserAssociation.REGISTRAR); 
@@ -277,15 +277,15 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     
 	@Override
 	public Response getDatasetsByPrincipalInvestigatorId(
-			                     String principalInvestigatorNihUserId) 
+			                     String principalInvestigatorNciUserId) 
 	{
     	logger.info("Invoking RS: GET /dataset/query/principalInvestigator/{id}: " + 
-    			    principalInvestigatorNihUserId);
+    			    principalInvestigatorNciUserId);
 	
 		HpcDatasetCollectionDTO datasetCollectionDTO = null;
 		List<String> userIds = new ArrayList<String>();
 		try {
-			 userIds.add(principalInvestigatorNihUserId);
+			 userIds.add(principalInvestigatorNciUserId);
 			 datasetCollectionDTO = datasetBusService.getDatasets(
 					                userIds, 
 						            HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR); 
@@ -366,7 +366,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 		try {
 			 datasetCollectionDTO = 
 			 datasetBusService.getDatasets(name, 
-					                       regex != null ? regex : false); 
+					                       regex != null ? regex : true); 
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /dataset/query/name/{name}: failed:", e);
