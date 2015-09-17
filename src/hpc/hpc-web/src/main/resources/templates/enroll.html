@@ -76,10 +76,10 @@ function cancel() {
 		  <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
 		</ul>	
 	</div>  
-	<label class="control-label col-sm-2" for="nihUserId">NIH UserId:</label>
+	<label class="control-label col-sm-2" for="nciUserId">NIH UserId:</label>
 	  <div class="col-sm-7">
-		<label th:if="${#fields.hasErrors('nihUserId')}" th:errors="*{nihUserId}">NIH UserId Error</label>
-		<input type="text" class="form-control" th:field="*{nihUserId}" th:required="required" placeholder="Enter NIH UserId"/>
+		<label th:if="${#fields.hasErrors('nciUserId')}" th:errors="*{nciUserId}">NIH UserId Error</label>
+		<input type="text" class="form-control" th:field="*{nciUserId}" th:required="required" placeholder="Enter NIH UserId"/>
 	  </div>
 	</div>
 	<div class="form-group">

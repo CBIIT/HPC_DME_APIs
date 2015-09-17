@@ -129,16 +129,19 @@
 										<label for="Name">Type:</label> <label for="${project.metadata.type.value()}" th:text="${project.metadata.type.value()}"></label>
 									</div>
 									<div class="col-md-6 form-group">
+										<label for="textbox1">Description:</label> <label for="${project.metadata.description}" th:text="${project.metadata.description}"></label>
+									</div>
+									<div class="col-md-6 form-group">
 										<label for="textbox1">Internal Project Id:</label> <label for="${project.metadata.internalProjectId}" th:text="${project.metadata.internalProjectId}"></label>
 									</div>
 									<div class="col-md-6 form-group">
-										<label for="textbox1">Investigator:</label> <label for="${project.metadata.principalInvestigatorNihUserId}" th:text="${project.metadata.principalInvestigatorNihUserId}"></label>
+										<label for="textbox1">Investigator:</label> <label for="${project.metadata.principalInvestigatorNciUserId}" th:text="${project.metadata.principalInvestigatorNciUserId}"></label>
 									</div>
 									<div class="col-md-6 form-group">
 										<label for="textbox1">Investigator DOC:</label> <label for="${project.metadata.principalInvestigatorDOC}" th:text="${project.metadata.principalInvestigatorDOC}"></label>
 									</div>
 									<div class="col-md-6 form-group">
-										<label for="textbox1">Registrar:</label> <label for="${project.metadata.registrarNihUserId}" th:text="${project.metadata.registrarNihUserId}"></label>
+										<label for="textbox1">Registrar:</label> <label for="${project.metadata.registrarNciUserId}" th:text="${project.metadata.registrarNciUserId}"></label>
 									</div>
 									<div class="col-md-6 form-group">
 										<label for="textbox1">Registrar DOC:</label> <label for="${project.metadata.registrarDOC}" th:text="${project.metadata.registrarDOC}"></label>
