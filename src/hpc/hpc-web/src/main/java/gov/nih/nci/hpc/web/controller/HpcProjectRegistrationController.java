@@ -121,7 +121,7 @@ public class HpcProjectRegistrationController extends AbstractHpcController {
 				metadata.setType(HpcProjectType.UNKNOWN);
 
 		}
-		metadata.setPrincipalInvestigatorNciUserId(registration.getPrincipalInvestigatorNihUserId());
+		metadata.setPrincipalInvestigatorNciUserId(registration.getPrincipalInvestigatorNciUserId());
 		//TODO: Get DOC dynamically
 		metadata.setPrincipalInvestigatorDOC("NCI");
 		metadata.setRegistrarDOC("NCI");

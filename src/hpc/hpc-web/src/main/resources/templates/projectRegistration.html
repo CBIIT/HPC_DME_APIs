@@ -180,10 +180,10 @@ function cancel() {
 	  </div>
 	</div>
 	<div class="form-group">
-	  <label class="control-label col-sm-2" for="principalInvestigatorNihUserId">Investigator Name:</label>
+	  <label class="control-label col-sm-2" for="principalInvestigatorNciUserId">Investigator Name:</label>
 	  <div class="col-sm-7">
-		<label th:if="${#fields.hasErrors('principalInvestigatorNihUserId')}" th:errors="*{principalInvestigatorNihUserId}">investigatorName Error</label>
-		<select th:field="*{principalInvestigatorNihUserId}" class="form-control" th:required="required">
+		<label th:if="${#fields.hasErrors('principalInvestigatorNciUserId')}" th:errors="*{principalInvestigatorNciUserId}">investigatorName Error</label>
+		<select th:field="*{principalInvestigatorNciUserId}" class="form-control" th:required="required">
 		    <option value="-1">----Select----</option>
 		    <option th:each="entry : ${piList.entrySet()}" th:value="${entry.key}" th:text="${entry.value}">
 			Wireframe</option>
