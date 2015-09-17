@@ -204,7 +204,7 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 				metadata.setOriginallyCreated(Calendar.getInstance());
 			else
 			{
-				DateFormat formatter = new SimpleDateFormat("mm-dd-yyyy");
+				DateFormat formatter = new SimpleDateFormat("mm/dd/yyyy");
 				Date date;
 				try {
 					date = formatter.parse(createdOn);

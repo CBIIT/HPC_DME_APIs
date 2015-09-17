@@ -16,6 +16,8 @@ public class HpcDatasetSearch {
 	private String fundingOrganization;
 	private String dataCreationFacility;
 	private String projectId;
+	private String toCreatedDate;
+	private String fromCreatedDate;
 
 	public String getId() {
 		return id;
@@ -136,4 +138,21 @@ public class HpcDatasetSearch {
 	public void setProjectId(String projectId) {
 		this.projectId = projectId;
 	}
+
+	public String getToCreatedDate() {
+		return toCreatedDate;
+	}
+
+	public void setToCreatedDate(String toCreatedDate) {
+		this.toCreatedDate = toCreatedDate;
+	}
+
+	public String getFromCreatedDate() {
+		return fromCreatedDate;
+	}
+
+	public void setFromCreatedDate(String fromCreatedDate) {
+		this.fromCreatedDate = fromCreatedDate;
+	}
+	
 }

@@ -65,7 +65,7 @@ public class HpcUserController extends AbstractHpcController {
 	  try
 	  {
 
-		  URI uri = new URI(serviceUserURL+"/"+hpcUser.getNihUserId());
+		  URI uri = new URI(serviceUserURL+"/"+hpcUser.getNciUserId());
 /*
 		  ResponseEntity<HpcUserDTO> userEntity = restTemplate.getForEntity(uri, HpcUserDTO.class);
 		  if(userEntity != null && userEntity.hasBody() && userEntity.getBody() != null)
@@ -82,7 +82,7 @@ public class HpcUserController extends AbstractHpcController {
 		 // HpcUserRegistrationRestService userRegistration = client.getUserRegistrationServiceProxy();
 	      HpcUserRegistrationDTO userDTO = new HpcUserRegistrationDTO();
 	      HpcNciAccount user = new HpcNciAccount();
-		  user.setUserId(hpcUser.getNihUserId());
+		  user.setUserId(hpcUser.getNciUserId());
 		  user.setFirstName(hpcUser.getFirstName());
 		  user.setLastName(hpcUser.getLastName());
 		  HpcDataTransferAccount dtAccount = new HpcDataTransferAccount();
@@ -116,7 +116,7 @@ public class HpcUserController extends AbstractHpcController {
 	  }
 	  catch(Exception e)
 	  {
-		  ObjectError error = new ObjectError("nihUserId", "Failed to enroll: "+e.getMessage());
+		  ObjectError error = new ObjectError("nciUserId", "Failed to enroll: "+e.getMessage());
 		  bindingResult.addError(error);
 		  return "enroll";
 	  }

@@ -309,8 +309,8 @@ function addTextbox() {
 
 	  <div class="col-sm-7">
 		<label th:if="${#fields.hasErrors('createdOn')}" th:errors="*{createdOn}">Creator Error</label>
-		<div class="input-append date" id="createdDate" data-date="08-27-2015" data-date-format="mm-dd-yyyy">
-			<input type="text" class="form-control" value="08-27-2015" th:field="*{createdOn}" th:required="required" placeholder="Enter Originally created on"/>
+		<div class="input-append date" id="createdDate" data-date-format="mm-dd-yyyy">
+			<input type="text" class="form-control" th:field="*{createdOn}" th:required="required" placeholder="Enter Originally created on"/>
 	    <span class="add-on"><i class="icon-th"></i></span>
 		</div>
 	  </div>
@@ -530,7 +530,9 @@ function addTextbox() {
 	<script src="js/bootstrap-datepicker.js"></script>
 	
   <script>
-  $('#createdDate').datepicker();
+  $('#createdDate').datepicker({
+	    format: 'mm/dd/yyyy'
+	});
       //knob
       $(function() {
         $(".knob").knob({

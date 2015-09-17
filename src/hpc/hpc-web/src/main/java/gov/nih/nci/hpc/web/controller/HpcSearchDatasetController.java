@@ -22,12 +22,15 @@ import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.web.model.HpcDatasetSearch;
 import gov.nih.nci.hpc.web.model.HpcDatasetSearchResult;
 import gov.nih.nci.hpc.web.util.Util;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDateRangeDTO;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -71,7 +74,9 @@ public class HpcSearchDatasetController extends AbstractHpcController {
 	private String destinationEndpoint;
 	@Value("${gov.nih.nci.hpc.server.dataset.query.projectid}")
 	private String serviceProjectIdURL;
-
+	@Value("${gov.nih.nci.hpc.server.dataset.query.daterange}")
+	private String serviceDateRangeURL;
+	
 	/*
 	 * Action for Datset registration page
 	 */
@@ -108,6 +113,80 @@ public class HpcSearchDatasetController extends AbstractHpcController {
 					searchResults);
 			model.addAttribute("datasetURL", serviceNameURL);
 		} catch (Exception e) {
+			ObjectError error = new ObjectError("hpcDatasetSearch",
+					"Failed to search by name: " + e.getMessage());
+			bindingResult.addError(error);
+			model.addAttribute("error",
+					"Failed to search by name: " + e.getMessage());
+			return "searchdataset";
+		} finally {
+			Map<String, String> users = Util.getPIs();
+			model.addAttribute("piList", users);
+			model.addAttribute("creatorList", users);
+		}
+		return "searchdatasetresult";
+	}
+
+	/*
+	 * Action for Dataset registration
+	 */
+	@RequestMapping(value = "/date", method = RequestMethod.POST)
+	public String searchByDate(
+			@Valid @ModelAttribute("hpcDatasetSearch") HpcDatasetSearch search,
+			Model model, BindingResult bindingResult, HttpSession session,
+			HttpServletRequest request) {
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.setErrorHandler(new HpcResponseErrorHandler());
+		HpcDatasetRegistrationDateRangeDTO dto = new HpcDatasetRegistrationDateRangeDTO();
+		if(search.getFromCreatedDate() != null)
+		{
+			Calendar from = Calendar.getInstance();
+			SimpleDateFormat sdf = new SimpleDateFormat("mm/dd/yyyy");
+			try {
+				from.setTime(sdf.parse(search.getFromCreatedDate()));
+				dto.setFrom(from);
+			} catch (ParseException e) {
+				ObjectError error = new ObjectError("hpcDatasetSearch",
+						"Failed to parse date: " + e.getMessage());
+				bindingResult.addError(error);
+				model.addAttribute("error",
+						"Failed to parse date: " + e.getMessage());
+				return "searchdataset";
+			} finally {
+				Map<String, String> users = Util.getPIs();
+				model.addAttribute("piList", users);
+				model.addAttribute("creatorList", users);
+			}
+		}
+		if(search.getToCreatedDate() != null)
+		{
+			Calendar to = Calendar.getInstance();
+			SimpleDateFormat sdf = new SimpleDateFormat("mm/dd/yyyy");
+			try {
+				to.setTime(sdf.parse(search.getToCreatedDate()));
+				dto.setFrom(to);
+			} catch (ParseException e) {
+				ObjectError error = new ObjectError("hpcDatasetSearch",
+						"Failed to parse date: " + e.getMessage());
+				bindingResult.addError(error);
+				model.addAttribute("error",
+						"Failed to parse date: " + e.getMessage());
+				return "searchdataset";
+			} finally {
+				Map<String, String> users = Util.getPIs();
+				model.addAttribute("piList", users);
+				model.addAttribute("creatorList", users);
+			}
+		}
+
+		try {
+			HttpEntity<HpcDatasetCollectionDTO> response = restTemplate
+					.postForEntity(serviceDateRangeURL, dto,
+							HpcDatasetCollectionDTO.class);
+			HpcDatasetCollectionDTO results = response.getBody();
+			List<HpcDatasetSearchResult> searchResults = transformResults(results.getHpcDatasetDTO());
+			model.addAttribute("datasetsearchresults", searchResults);
+		} catch (Exception e) {
 			ObjectError error = new ObjectError("hpcLogin",
 					"Failed to register: " + e.getMessage());
 			bindingResult.addError(error);
@@ -120,8 +199,7 @@ public class HpcSearchDatasetController extends AbstractHpcController {
 			model.addAttribute("creatorList", users);
 		}
 		return "searchdatasetresult";
-	}
-
+	}	
 	@RequestMapping(value = "/id", method = RequestMethod.POST)
 	public String searchById(
 			@Valid @ModelAttribute("hpcDatasetSearch") HpcDatasetSearch search,
