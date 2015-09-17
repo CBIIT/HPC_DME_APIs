@@ -38,12 +38,12 @@ public interface HpcUserDAO
     /**
      * Get user from the repository by ID.
      *
-     * @param nihUserId the user NIH ID.
+     * @param nciUserId the user NCI ID.
      * @return The user if found, or null otherwise.
      * 
      * @throws HpcException
      */
-    public HpcUser getUser(String nihUserId) throws HpcException;
+    public HpcUser getUser(String nciUserId) throws HpcException;
     
     /**
      * Get list of users for a given first and last name.

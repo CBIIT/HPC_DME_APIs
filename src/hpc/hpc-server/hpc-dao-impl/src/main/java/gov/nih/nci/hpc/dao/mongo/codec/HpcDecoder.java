@@ -22,7 +22,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
-import gov.nih.nci.hpc.domain.user.HpcNihAccount;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 
 import org.bson.BsonDocumentReader;
 import org.bson.Document;
@@ -45,14 +45,14 @@ class HpcDecoder
     //---------------------------------------------------------------------//
 	
     /**
-     * Decode HpcNihAccount.
+     * Decode HpcNciAccount.
      *
-     * @param doc The HpcNihAccount document.
+     * @param doc The HpcNciAccount document.
      * @param decoderContext The decoder context.
      * @param registry Codec registry.
-     * @return Decoded HpcNihAccount object.
+     * @return Decoded HpcNciAccount object.
      */
-    public static HpcNihAccount decodeNihAccount(Document doc, 
+    public static HpcNciAccount decodeNciAccount(Document doc, 
     		                                     DecoderContext decoderContext,
     		                                     CodecRegistry registry)
     {
@@ -62,7 +62,7 @@ class HpcDecoder
     	
     	BsonDocumentReader docReader = 
     		new BsonDocumentReader(doc.toBsonDocument(Document.class, registry));
-		return registry.get(HpcNihAccount.class).decode(docReader, decoderContext);
+		return registry.get(HpcNciAccount.class).decode(docReader, decoderContext);
 	}
     
     /**

@@ -141,7 +141,7 @@ public interface HpcDatasetBusService
     /**
      * Get datasets associated with a specific user's first and last name.
      *
-     * @param nihUserId the user id.
+     * @param nciUserId the user id.
      * @param association The association between the dataset and the user.
      * @return Collection of Dataset DTO, or null if not found.
      * 

@@ -48,19 +48,19 @@ public class HpcUserDAOImpl implements HpcUserDAO
     //---------------------------------------------------------------------//    
     
     // User ID field name.
-	public final static String NIH_USER_ID_FIELD_NAME = 
-							       HpcCodec.USER_NIH_ACCOUNT_KEY + "." + 
-                                   HpcCodec.NIH_ACCOUNT_USER_ID_KEY;
+	public final static String NCI_USER_ID_FIELD_NAME = 
+							       HpcCodec.USER_NCI_ACCOUNT_KEY + "." + 
+                                   HpcCodec.NCI_ACCOUNT_USER_ID_KEY;
 	
     // User first name field name.
 	public final static String FIRST_NAME_FIELD_NAME = 
-							         HpcCodec.USER_NIH_ACCOUNT_KEY + "." + 
-                                     HpcCodec.NIH_ACCOUNT_FIRST_NAME_KEY;
+							         HpcCodec.USER_NCI_ACCOUNT_KEY + "." + 
+                                     HpcCodec.NCI_ACCOUNT_FIRST_NAME_KEY;
 	
     // User last name field name.
 	public final static String LAST_NAME_FIELD_NAME = 
-							        HpcCodec.USER_NIH_ACCOUNT_KEY + "." + 
-                                    HpcCodec.NIH_ACCOUNT_LAST_NAME_KEY;
+							        HpcCodec.USER_NCI_ACCOUNT_KEY + "." + 
+                                    HpcCodec.NCI_ACCOUNT_LAST_NAME_KEY;
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -114,7 +114,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
     {
 		HpcSingleResultCallback<UpdateResult> callback = 
 				                      new HpcSingleResultCallback<UpdateResult>();
-		getCollection().replaceOne(eq(NIH_USER_ID_FIELD_NAME, user.getNihAccount().getUserId()), 
+		getCollection().replaceOne(eq(NCI_USER_ID_FIELD_NAME, user.getNciAccount().getUserId()), 
 				                   user, new UpdateOptions().upsert(true), callback);
        
 		// Throw the callback exception (if any).
@@ -122,12 +122,12 @@ public class HpcUserDAOImpl implements HpcUserDAO
     }
 	
 	@Override
-	public HpcUser getUser(String nihUserId) throws HpcException
+	public HpcUser getUser(String nciUserId) throws HpcException
 	{
 		HpcSingleResultCallback<HpcUser> callback = 
                                          new HpcSingleResultCallback<HpcUser>();
 		getCollection().find(
-		   eq(NIH_USER_ID_FIELD_NAME, nihUserId)).first(callback);
+		   eq(NCI_USER_ID_FIELD_NAME, nciUserId)).first(callback);
 		
 		return callback.getResult();
 	}

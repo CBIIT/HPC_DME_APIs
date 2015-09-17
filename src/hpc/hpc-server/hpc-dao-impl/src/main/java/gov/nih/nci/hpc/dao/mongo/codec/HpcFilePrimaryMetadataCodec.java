@@ -71,11 +71,11 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 		HpcEncryptionStatus dataEncrypted = filePrimaryMetadata.getDataEncrypted();
 		HpcCompressionStatus dataCompressed = filePrimaryMetadata.getDataCompressed();
 		String fundingOrganization = filePrimaryMetadata.getFundingOrganization();
-		String principalInvestigatorNihUserId = 
-				        filePrimaryMetadata.getPrincipalInvestigatorNihUserId();
+		String principalInvestigatorNciUserId = 
+				        filePrimaryMetadata.getPrincipalInvestigatorNciUserId();
 		String creatorName = filePrimaryMetadata.getCreatorName();
-		String registrarNihUserId = 
-				        filePrimaryMetadata.getRegistrarNihUserId();
+		String registrarNciUserId = 
+				        filePrimaryMetadata.getRegistrarNciUserId();
 		String labBranch = filePrimaryMetadata.getLabBranch();
 		String description = filePrimaryMetadata.getDescription();
 		String principalInvestigatorDOC = filePrimaryMetadata.getPrincipalInvestigatorDOC();
@@ -104,18 +104,18 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 		   document.put(FILE_PRIMARY_METADATA_FUNDING_ORGANIZATION_KEY, 
 					    fundingOrganization);
 		}
-		if(principalInvestigatorNihUserId != null) {
+		if(principalInvestigatorNciUserId != null) {
 		   document.put(
-		   FILE_PRIMARY_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY, 
-		   principalInvestigatorNihUserId);
+		   FILE_PRIMARY_METADATA_PRINCIPAL_INVESTIGATOR_NCI_USER_ID_KEY, 
+		   principalInvestigatorNciUserId);
 		}
 		if(creatorName != null) {
 		   document.put(FILE_PRIMARY_METADATA_CREATOR_NAME_KEY, 
 				        creatorName);
 		}
-		if(registrarNihUserId != null) {
-		   document.put(FILE_PRIMARY_METADATA_REGISTRAR_NIH_USER_ID_KEY, 
-				        registrarNihUserId);
+		if(registrarNciUserId != null) {
+		   document.put(FILE_PRIMARY_METADATA_REGISTRAR_NCI_USER_ID_KEY, 
+				        registrarNciUserId);
 		}
 		if(labBranch != null) {
 		   document.put(FILE_PRIMARY_METADATA_LAB_BRANCH_KEY, labBranch);
@@ -166,12 +166,12 @@ public class HpcFilePrimaryMetadataCodec extends HpcCodec<HpcFilePrimaryMetadata
 				   document.getString(FILE_PRIMARY_METADATA_DATA_COMPRESSED_KEY)));
 		filePrimaryMetadata.setFundingOrganization(
 				   document.getString(FILE_PRIMARY_METADATA_FUNDING_ORGANIZATION_KEY));
-		filePrimaryMetadata.setPrincipalInvestigatorNihUserId(
-		    document.getString(FILE_PRIMARY_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY));
+		filePrimaryMetadata.setPrincipalInvestigatorNciUserId(
+		    document.getString(FILE_PRIMARY_METADATA_PRINCIPAL_INVESTIGATOR_NCI_USER_ID_KEY));
 		filePrimaryMetadata.setCreatorName(
 		    document.getString(FILE_PRIMARY_METADATA_CREATOR_NAME_KEY));
-		filePrimaryMetadata.setRegistrarNihUserId(
-		    document.getString(FILE_PRIMARY_METADATA_REGISTRAR_NIH_USER_ID_KEY));
+		filePrimaryMetadata.setRegistrarNciUserId(
+		    document.getString(FILE_PRIMARY_METADATA_REGISTRAR_NCI_USER_ID_KEY));
 		filePrimaryMetadata.setLabBranch(
 			document.getString(FILE_PRIMARY_METADATA_LAB_BRANCH_KEY));
 		filePrimaryMetadata.setDescription(

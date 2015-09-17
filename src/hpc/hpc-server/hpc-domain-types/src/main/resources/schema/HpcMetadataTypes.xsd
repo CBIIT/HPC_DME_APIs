@@ -73,10 +73,10 @@
 			<xsd:element name="dataEncrypted" type="hpc-domain-metadata:HpcEncryptionStatus" />
 			<xsd:element name="dataCompressed" type="hpc-domain-metadata:HpcCompressionStatus" />
 			<xsd:element name="fundingOrganization" type="xsd:string" />
-			<xsd:element name="principalInvestigatorNihUserId" type="xsd:string" />
+			<xsd:element name="principalInvestigatorNciUserId" type="xsd:string" />
 			<xsd:element name="principalInvestigatorDOC" type="xsd:string" />
 			<xsd:element name="creatorName" type="xsd:string" />
-			<xsd:element name="registrarNihUserId" type="xsd:string" />
+			<xsd:element name="registrarNciUserId" type="xsd:string" />
 			<xsd:element name="registrarDOC" type="xsd:string" />
 			<xsd:element name="description" type="xsd:string" />
 			<xsd:element name="labBranch" type="xsd:string" />
@@ -117,9 +117,9 @@
 			<xsd:element name="name" type="xsd:string" />
 			<xsd:element name="type" type="hpc-domain-metadata:HpcProjectType" />
 			<xsd:element name="internalProjectId" type="xsd:string" />
-			<xsd:element name="principalInvestigatorNihUserId" type="xsd:ID" />
+			<xsd:element name="principalInvestigatorNciUserId" type="xsd:ID" />
 			<xsd:element name="principalInvestigatorDOC" type="xsd:string" />
-			<xsd:element name="registrarNihUserId" type="xsd:ID" />
+			<xsd:element name="registrarNciUserId" type="xsd:ID" />
 			<xsd:element name="registrarDOC" type="xsd:string" />
 			<xsd:element name="labBranch" type="xsd:string" />
 			<xsd:element name="created" type="xsd:dateTime" />

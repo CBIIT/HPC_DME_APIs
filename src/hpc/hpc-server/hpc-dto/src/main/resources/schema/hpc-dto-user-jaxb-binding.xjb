@@ -41,10 +41,9 @@
 		    <jxb:bindings node="//xsd:complexType[@name='HpcDataTransferAccount']">
                 <jxb:class ref="gov.nih.nci.hpc.domain.user.HpcDataTransferAccount"/>
             </jxb:bindings>
-           	<jxb:bindings node="//xsd:complexType[@name='HpcNihAccount']">
-                <jxb:class ref="gov.nih.nci.hpc.domain.user.HpcNihAccount"/>
+           	<jxb:bindings node="//xsd:complexType[@name='HpcNciAccount']">
+                <jxb:class ref="gov.nih.nci.hpc.domain.user.HpcNciAccount"/>
             </jxb:bindings>
     </jxb:bindings>
 
-	
 </jxb:bindings>
