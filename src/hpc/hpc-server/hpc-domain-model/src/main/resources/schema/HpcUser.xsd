@@ -24,7 +24,7 @@
 	<xsd:element name="HpcUser">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="nihAccount" type="hpc-domain-user:HpcNihAccount" />
+				<xsd:element name="nciAccount" type="hpc-domain-user:HpcNciAccount" />
 				<xsd:element name="dataTransferAccount"
 					         type="hpc-domain-user:HpcDataTransferAccount" />
 				<xsd:element name="created" type="xsd:dateTime" />

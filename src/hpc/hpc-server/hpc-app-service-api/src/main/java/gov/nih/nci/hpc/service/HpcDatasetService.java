@@ -71,7 +71,7 @@ public interface HpcDatasetService
      * Add an upload data transfer request to a dataset.
      *
      * @param dataset The dataset.
-     * @param requesterNihUserId The user-id initiated the upload.
+     * @param requesterNciUserId The user-id initiated the upload.
      * @param fileId The uploaded file ID.
      * @param locations The transfer source and destination.
      * @param report The data transfer report.
@@ -81,7 +81,7 @@ public interface HpcDatasetService
      * @throws HpcException
      */
     public HpcDataTransferRequest addDataTransferUploadRequest(
-    		              HpcDataset dataset, String requesterNihUserId, 
+    		              HpcDataset dataset, String requesterNciUserId, 
     		              String fileId, HpcDataTransferLocations locations,
                           HpcDataTransferReport report, boolean persist) 
                           throws HpcException;
@@ -90,7 +90,7 @@ public interface HpcDatasetService
      * Add a download data transfer request to a dataset.
      *
      * @param dataset The dataset.
-     * @param requesterNihUserId The user-id initiated the upload.
+     * @param requesterNciUserId The user-id initiated the upload.
      * @param fileId The uploaded file ID.
      * @param locations The transfer source and destination.
      * @param report The data transfer report.
@@ -100,7 +100,7 @@ public interface HpcDatasetService
      * @throws HpcException
      */
     public HpcDataTransferRequest addDataTransferDownloadRequest(
-    		              HpcDataset dataset, String requesterNihUserId, 
+    		              HpcDataset dataset, String requesterNciUserId, 
     		              String fileId, HpcDataTransferLocations locations,
                           HpcDataTransferReport report, boolean persist) 
                           throws HpcException;
@@ -291,13 +291,13 @@ public interface HpcDatasetService
     /**
      * Return true if a dataset with a specific name user association exists.
      *
-     * @param nihUserId The user id to match.
+     * @param nciUserId The user id to match.
      * @param association The association between the dataset and the user.
      * @return true if the dataset exists.
      * 
      * @throws HpcException
      */
-    public boolean exists(String name, String nihUserId, 
+    public boolean exists(String name, String nciUserId, 
     		              HpcDatasetUserAssociation association) 
         	             throws HpcException;
     

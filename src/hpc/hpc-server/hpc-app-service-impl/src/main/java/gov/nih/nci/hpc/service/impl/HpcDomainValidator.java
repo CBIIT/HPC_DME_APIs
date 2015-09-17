@@ -18,7 +18,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
-import gov.nih.nci.hpc.domain.user.HpcNihAccount;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 
 import java.util.List;
 
@@ -57,7 +57,7 @@ class HpcDomainValidator
     public static boolean isValidUser(HpcUser user) 
     {
     	if(user == null || 
-    	   !isValidNihAccount(user.getNihAccount()) ||
+    	   !isValidNciAccount(user.getNciAccount()) ||
     	   !isValidDataTransferAccount(user.getDataTransferAccount())) {
     	   logger.info("Invalid User: " + user);
     	   return false;
@@ -66,17 +66,17 @@ class HpcDomainValidator
     }  
     
     /**
-     * Validate NIH Account object.
+     * Validate NCI Account object.
      *
-     * @param nihAccount the object to be validated.
+     * @param nciAccount the object to be validated.
      * @return true if valid, false otherwise.
      */
-    public static boolean isValidNihAccount(HpcNihAccount nihAccount) 
+    public static boolean isValidNciAccount(HpcNciAccount nciAccount) 
     {
-    	if(nihAccount == null || nihAccount.getUserId() == null || 
- 	       nihAccount.getFirstName() == null || 
- 	       nihAccount.getLastName() == null) {
-    	   logger.info("Invalid NIH Account: " + nihAccount);
+    	if(nciAccount == null || nciAccount.getUserId() == null || 
+ 	       nciAccount.getFirstName() == null || 
+ 	       nciAccount.getLastName() == null) {
+    	   logger.info("Invalid NCI Account: " + nciAccount);
     	   return false;
     	}
     	return true;
@@ -167,15 +167,15 @@ class HpcDomainValidator
      */
     public static boolean isValidFilePrimaryMetadata(HpcFilePrimaryMetadata metadata) 
     {
+    	// All fields are mandatory except 'funding organization'.
     	if(metadata == null ||
     	   metadata.getDataContainsPII() == null || 	
-    	   // metadata.getDataContainsPHI() == null ||
+    	   metadata.getDataContainsPHI() == null ||
     	   metadata.getDataEncrypted() == null ||
-    	   //metadata.getDataCompressed() == null ||
-    	   //metadata.getFundingOrganization() == null || 
-    	   metadata.getPrincipalInvestigatorNihUserId() == null ||
+    	   metadata.getDataCompressed() == null ||
+    	   metadata.getPrincipalInvestigatorNciUserId() == null ||
     	   metadata.getCreatorName() == null ||
-    	   metadata.getRegistrarNihUserId() == null ||
+    	   metadata.getRegistrarNciUserId() == null ||
     	   metadata.getDescription() == null ||
     	   metadata.getLabBranch() == null ||
     	   metadata.getPrincipalInvestigatorDOC() == null ||
@@ -203,9 +203,9 @@ class HpcDomainValidator
 	    	metadata.getDataEncrypted() == null &&
 	    	metadata.getDataCompressed() == null &&
 	    	metadata.getFundingOrganization() == null && 
-	    	metadata.getPrincipalInvestigatorNihUserId() == null &&
+	    	metadata.getPrincipalInvestigatorNciUserId() == null &&
 	    	metadata.getCreatorName() == null &&
-	    	metadata.getRegistrarNihUserId() == null &&
+	    	metadata.getRegistrarNciUserId() == null &&
 	    	metadata.getDescription() == null &&
 	    	metadata.getLabBranch() == null &&
 	    	metadata.getPrincipalInvestigatorDOC() == null &&
@@ -231,8 +231,8 @@ class HpcDomainValidator
     	   metadata.getName() == null ||
     	   metadata.getType() == null ||
     	   metadata.getInternalProjectId() == null ||
-    	   metadata.getPrincipalInvestigatorNihUserId() == null ||
-    	   metadata.getRegistrarNihUserId() == null ||
+    	   metadata.getPrincipalInvestigatorNciUserId() == null ||
+    	   metadata.getRegistrarNciUserId() == null ||
     	   metadata.getLabBranch() == null ||
     	   metadata.getPrincipalInvestigatorDOC() == null ||
    	   	   metadata.getRegistrarDOC() == null ||
@@ -257,8 +257,8 @@ class HpcDomainValidator
     	   (metadata.getName() == null &&
     	    metadata.getType() == null &&
     		metadata.getInternalProjectId() == null &&
-    		metadata.getPrincipalInvestigatorNihUserId() == null &&
-    	    metadata.getRegistrarNihUserId() == null &&
+    		metadata.getPrincipalInvestigatorNciUserId() == null &&
+    	    metadata.getRegistrarNciUserId() == null &&
     	    metadata.getLabBranch() == null &&
     	    metadata.getPrincipalInvestigatorDOC() == null &&
     	    metadata.getCreated() == null &&

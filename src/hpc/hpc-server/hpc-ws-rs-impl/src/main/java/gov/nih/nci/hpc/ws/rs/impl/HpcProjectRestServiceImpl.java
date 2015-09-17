@@ -182,15 +182,15 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
     }
 
     @Override
-    public Response getProjectsByPrincipalInvestigatorId(String principalInvestigatorNihUserId)
+    public Response getProjectsByPrincipalInvestigatorId(String principalInvestigatorNciUserId)
     {
     	logger.info("Invoking RS: GET /project/query/principalInvestigator/{id}: " + 
-                    principalInvestigatorNihUserId);
+                    principalInvestigatorNciUserId);
     	
 		HpcProjectCollectionDTO projectCollectionDTO = null;
 		try {
 			 projectCollectionDTO = projectBusService.getProjects(
-					                       principalInvestigatorNihUserId, 
+					                       principalInvestigatorNciUserId, 
 						                   HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR); 
 			 
 		} catch(HpcException e) {

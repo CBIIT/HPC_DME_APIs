@@ -72,13 +72,13 @@ public interface HpcDatasetDAO
     /**
      * Get datasets associated with a specific user(s).
      *
-     * @param nihUserIds The user id collection to match.
+     * @param nciUserIds The user id collection to match.
      * @param association The association between the dataset and the user.
      * @return HpcDataset collection, or null if no results found.
      * 
      * @throws HpcException
      */
-    public List<HpcDataset> getDatasets(List<String> nihUserIds, 
+    public List<HpcDataset> getDatasets(List<String> nciUserIds, 
     		                            HpcDatasetUserAssociation association) 
         	                           throws HpcException;
     
@@ -108,13 +108,13 @@ public interface HpcDatasetDAO
     /**
      * Return true if a dataset with a specific name user association exists.
      *
-     * @param nihUserId The user id to match.
+     * @param nciUserId The user id to match.
      * @param association The association between the dataset and the user.
      * @return true if the dataset exists.
      * 
      * @throws HpcException
      */
-    public boolean exists(String name, String nihUserId, 
+    public boolean exists(String name, String nciUserId, 
     		              HpcDatasetUserAssociation association) 
         	             throws HpcException;
 

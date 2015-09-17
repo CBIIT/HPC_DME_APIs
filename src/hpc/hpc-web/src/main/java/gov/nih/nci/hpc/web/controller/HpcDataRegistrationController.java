@@ -191,9 +191,9 @@ public class HpcDataRegistrationController extends AbstractHpcController {
 			else
 				metadata.setFundingOrganization(registration
 						.getFundingOrganization());
-			metadata.setPrincipalInvestigatorNihUserId(registration
+			metadata.setPrincipalInvestigatorNciUserId(registration
 					.getInvestigatorId());
-			metadata.setRegistrarNihUserId(user.getNihAccount().getUserId());
+			metadata.setRegistrarNciUserId(user.getNciAccount().getUserId());
 			metadata.setDescription(registration.getDescription());
 			// TODO: ID Lookup
 			metadata.setCreatorName(registration.getCreatorId());

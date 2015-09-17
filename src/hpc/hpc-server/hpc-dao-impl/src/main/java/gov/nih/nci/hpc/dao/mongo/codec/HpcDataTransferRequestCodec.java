@@ -64,7 +64,7 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
 		Document document = new Document();
 		
 		// Extract the data from the domain object.
-		String requesterNihUserId = dataTransferRequest.getRequesterNihUserId();
+		String requesterNciUserId = dataTransferRequest.getRequesterNciUserId();
 		String fileId = dataTransferRequest.getFileId();
 		String dataTransferId = dataTransferRequest.getDataTransferId();
 		HpcDataTransferLocations locations = dataTransferRequest.getLocations();
@@ -72,8 +72,8 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
 		HpcDataTransferReport report = dataTransferRequest.getReport();
  
 		// Set the data on the BSON document.
-		if(requesterNihUserId != null) {
-		   document.put(DATA_TRANSFER_REQUEST_REQUESTER_NIH_USER_ID_KEY, requesterNihUserId);
+		if(requesterNciUserId != null) {
+		   document.put(DATA_TRANSFER_REQUEST_REQUESTER_NCI_USER_ID_KEY, requesterNciUserId);
 		}
 		if(fileId != null) {
 		   document.put(DATA_TRANSFER_REQUEST_FILE_ID_KEY, fileId);
@@ -106,8 +106,8 @@ public class HpcDataTransferRequestCodec extends HpcCodec<HpcDataTransferRequest
 		
 		// Map the document to HpcDataTransferAccount instance.
 		HpcDataTransferRequest dataTransferRequest = new HpcDataTransferRequest();
-		dataTransferRequest.setRequesterNihUserId(
-			document.getString(DATA_TRANSFER_REQUEST_REQUESTER_NIH_USER_ID_KEY));
+		dataTransferRequest.setRequesterNciUserId(
+			document.getString(DATA_TRANSFER_REQUEST_REQUESTER_NCI_USER_ID_KEY));
 		dataTransferRequest.setFileId(
 			document.getString(DATA_TRANSFER_REQUEST_FILE_ID_KEY));
 		dataTransferRequest.setDataTransferId(

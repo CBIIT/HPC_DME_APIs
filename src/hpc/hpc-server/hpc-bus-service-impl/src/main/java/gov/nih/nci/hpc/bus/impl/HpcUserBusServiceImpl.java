@@ -86,43 +86,36 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	}
     	
     	// Add the user to the managed collection.
-    	userService.add(userRegistrationDTO.getNihAccount(), 
+    	userService.add(userRegistrationDTO.getNciAccount(), 
     			        userRegistrationDTO.getDataTransferAccount());
     }
     
     @Override
-    public HpcUserDTO getUser(String nihUserId) throws HpcException
+    public HpcUserDTO getUser(String nciUserId) throws HpcException
     {
-    	logger.info("Invoking getDataset(String nihUserId): " + nihUserId);
+    	logger.info("Invoking getDataset(String nciUserId): " + nciUserId);
     	
     	// Input validation.
-    	if(nihUserId == null) {
-    	   throw new HpcException("Null NIH User ID",
+    	if(nciUserId == null) {
+    	   throw new HpcException("Null NCI User ID",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
     	// Get the managed data domain object.
-    	HpcUser user = userService.getUser(nihUserId);
+    	HpcUser user = userService.getUser(nciUserId);
     	if(user == null) {
     	   return null;
     	}
     	
     	// Map it to the DTO.
     	HpcUserDTO userDTO = new HpcUserDTO();
-    	userDTO.setNihAccount(user.getNihAccount());
+    	userDTO.setNciAccount(user.getNciAccount());
     	userDTO.setDataTransferAccount(user.getDataTransferAccount());
     	
     	return userDTO;
     }
     
-    /**
-     * Authenticate User by NIH LDAP credentials.
-     *
-     * @param credentials The user's NIH user id and password.
-     * @return boolean.
-     * 
-     * @throws HpcException
-     */
+    @Override
     public boolean authenticate(HpcUserCredentialsDTO credentials) throws HpcException
     {
     	return authService.authenticate(credentials.getUserName(), credentials.getPassword());

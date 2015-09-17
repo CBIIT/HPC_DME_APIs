@@ -37,20 +37,20 @@ public interface HpcUserBusService
     		                throws HpcException;
     
     /**
-     * Get a user by its NIH user id.
+     * Get a user by its NCI user id.
      *
-     * @param nihUserId The user's NIH user id.
+     * @param nciUserId The user's NCI user id.
      * @return The registered user DTO or null if not found.
      * 
      * @throws HpcException
      */
-    public HpcUserDTO getUser(String nihUserId) throws HpcException;
+    public HpcUserDTO getUser(String nciUserId) throws HpcException;
     
     
     /**
-     * Authenticate User by NIH LDAP credentials.
+     * Authenticate User by NCI LDAP credentials.
      *
-     * @param credentials The user's NIH user id and password.
+     * @param credentials The user's NCI user id and password.
      * @return boolean.
      * 
      * @throws HpcException

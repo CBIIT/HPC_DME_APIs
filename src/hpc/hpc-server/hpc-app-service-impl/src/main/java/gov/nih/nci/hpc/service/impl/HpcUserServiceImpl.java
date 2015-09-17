@@ -11,13 +11,13 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidDataTransferAccount;
-import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNihAccount;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
-import gov.nih.nci.hpc.domain.user.HpcNihAccount;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcUserService;
@@ -77,21 +77,21 @@ public class HpcUserServiceImpl implements HpcUserService
     //---------------------------------------------------------------------//  
     
     @Override
-    public void add(HpcNihAccount nihAccount, 
+    public void add(HpcNciAccount nciAccount, 
 	                HpcDataTransferAccount dataTransferAccount) 
 	               throws HpcException
     {
     	// Input validation.
-    	if(!isValidNihAccount(nihAccount) ||
+    	if(!isValidNciAccount(nciAccount) ||
     	   !isValidDataTransferAccount(dataTransferAccount)) {	
     	   throw new HpcException("Invalid add user input", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
     	// Check if the user already exists.
-    	if(getUser(nihAccount.getUserId()) != null) {
-    	   throw new HpcException("User already exists: nihUserId = " + 
-    	                          nihAccount.getUserId(), 
+    	if(getUser(nciAccount.getUserId()) != null) {
+    	   throw new HpcException("User already exists: nciUserId = " + 
+    	                          nciAccount.getUserId(), 
     	                          HpcRequestRejectReason.USER_ALREADY_EXISTS);	
     	}
     	
@@ -106,7 +106,7 @@ public class HpcUserServiceImpl implements HpcUserService
     	// Create the User domain object.
     	HpcUser user = new HpcUser();
 
-    	user.setNihAccount(nihAccount);
+    	user.setNciAccount(nciAccount);
     	user.setDataTransferAccount(dataTransferAccount);
     	user.setCreated(Calendar.getInstance());
     	
@@ -117,15 +117,15 @@ public class HpcUserServiceImpl implements HpcUserService
     }
     
     @Override
-    public HpcUser getUser(String nihUserId) throws HpcException
+    public HpcUser getUser(String nciUserId) throws HpcException
     {
     	// Input validation.
-    	if(nihUserId == null) {
-    	   throw new HpcException("Null NIH user ID", 
+    	if(nciUserId == null) {
+    	   throw new HpcException("Null NCI user ID", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
-    	return userDAO.getUser(nihUserId);
+    	return userDAO.getUser(nciUserId);
     }
     
     @Override

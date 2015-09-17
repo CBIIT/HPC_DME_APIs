@@ -12,7 +12,7 @@ package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
-import gov.nih.nci.hpc.domain.user.HpcNihAccount;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -31,24 +31,24 @@ public interface HpcUserService
     /**
      * Add user.
      *
-     * @param nihAccount The user's NIH account.
+     * @param nciAccount The user's NCI account.
      * @param dataTransferAccount The user's data transfer account.
      * 
      * @throws HpcException
      */
-    public void add(HpcNihAccount nihAccount, 
+    public void add(HpcNciAccount nciAccount, 
     		        HpcDataTransferAccount dataTransferAccount) 
     		       throws HpcException;
     
     /**
      * Get user.
      *
-     * @param nihUserId The managed user NIH ID.
+     * @param nciUserId The managed user NCI ID.
      * @return The managed user.
      * 
      * @throws HpcException
      */
-    public HpcUser getUser(String nihUserId) throws HpcException;
+    public HpcUser getUser(String nciUserId) throws HpcException;
     
     /**
      * Get list of users for a given first and last name.

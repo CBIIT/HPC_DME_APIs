@@ -124,7 +124,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	// Also validate the associated projects included in the upload requests.
     	validateUploadRequests(datasetRegistrationDTO.getUploadRequests());
     	
-    	// Validate the associated users with this dataset have valid NIH 
+    	// Validate the associated users with this dataset have valid NCI 
     	// account registered with HPC. In addition, validate the registrar
     	// has a valid data transfer account.
     	validateAssociatedUsers(datasetRegistrationDTO.getUploadRequests());
@@ -385,7 +385,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     	
     	List<String> userIds = new ArrayList<String>();
     	for(HpcUser user : users) {
-    		userIds.add(user.getNihAccount().getUserId());
+    		userIds.add(user.getNciAccount().getUserId());
     	}
     		
     	return toDTO(datasetService.getDatasets(userIds, association));
@@ -618,10 +618,10 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		}
     		
     		// Verify PI and Registrar are registered with HPC.
-    		validateUser(uploadRequest.getMetadata().getPrincipalInvestigatorNihUserId(),
+    		validateUser(uploadRequest.getMetadata().getPrincipalInvestigatorNciUserId(),
     				     HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR);
     		HpcUser registrar =
-    		validateUser(uploadRequest.getMetadata().getRegistrarNihUserId(),
+    		validateUser(uploadRequest.getMetadata().getRegistrarNciUserId(),
 			             HpcDatasetUserAssociation.REGISTRAR);
     		
     		// Validate the registrar Data Transfer Account.
@@ -657,15 +657,15 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
       	}     	
     	for(HpcFileUploadRequest uploadRequest : uploadRequests) {
     		if(uploadRequest.getMetadata() == null || 
-    		   uploadRequest.getMetadata().getRegistrarNihUserId() == null) {
+    		   uploadRequest.getMetadata().getRegistrarNciUserId() == null) {
     		   continue;	
     		}
     		
-    		if(datasetService.exists(name, uploadRequest.getMetadata().getRegistrarNihUserId(), 
+    		if(datasetService.exists(name, uploadRequest.getMetadata().getRegistrarNciUserId(), 
     				                 HpcDatasetUserAssociation.REGISTRAR)) {
          	   throw new HpcException(
          			        "Dataset name <" + name + "> already registered by " + 
-         			        uploadRequest.getMetadata().getRegistrarNihUserId(),
+         			        uploadRequest.getMetadata().getRegistrarNciUserId(),
                             HpcRequestRejectReason.DATASET_NAME_ALREADY_EXISTS);	
          	}
     	}
@@ -674,22 +674,22 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     /**
      * Validate a user is registered with HPC.
      * 
-     * @param nihUserId The NIH User ID.
+     * @param nciUserId The NCI User ID.
      * @param userAssociation The user's association to the dataset.
      * 
      * @return The HpcUser.
      *
      * @throws HpcException if the user is not registered with HPC.
      */
-    private HpcUser validateUser(String nihUserId, 
+    private HpcUser validateUser(String nciUserId, 
     		                     HpcDatasetUserAssociation userAssociation)
     		                    throws HpcException
     {
-    	HpcUser user = userService.getUser(nihUserId);
+    	HpcUser user = userService.getUser(nciUserId);
     	if(user == null) {
     	   throw new HpcException("Could not find "+ userAssociation +
-    				               " user with nihUserID = " + nihUserId,
-    		                       HpcRequestRejectReason.INVALID_NIH_ACCOUNT);	
+    				               " user with nihUserID = " + nciUserId,
+    		                       HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
     	}
     	
     	return user;
@@ -792,7 +792,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 			{
 				        // Get the data transfer account to use in checking status.
     		            HpcDataTransferAccount dataTransferAccount = 
- 	    		               userService.getUser(dataTransferRequest.getRequesterNihUserId()).
+ 	    		               userService.getUser(dataTransferRequest.getRequesterNciUserId()).
  	    		                           getDataTransferAccount();
     		
     		            // Get updated report from data transfer.
@@ -841,8 +841,8 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		logger.debug("New File: " + file);
 			
 			// Transfer the file. 
-    		String registrarNihId = uploadRequest.getMetadata().getRegistrarNihUserId();
-			HpcUser user = userService.getUser(registrarNihId);
+    		String registrarNciId = uploadRequest.getMetadata().getRegistrarNciUserId();
+			HpcUser user = userService.getUser(registrarNciId);
     		
 			logger.debug("Submitting data transfer request: " + 
 			             uploadRequest.getLocations());
@@ -859,7 +859,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 			// Attach an upload data transfer request to the dataset.
 			HpcDataTransferRequest transferRequest = 
 			   datasetService.addDataTransferUploadRequest(
-					          dataset, registrarNihId, file.getId(), 
+					          dataset, registrarNciId, file.getId(), 
 					          uploadRequest.getLocations(), dataTransferReport, 
 					          false);
 			logger.debug("Data Transfer Request: " + transferRequest);
