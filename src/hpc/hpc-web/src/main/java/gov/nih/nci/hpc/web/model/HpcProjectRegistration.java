@@ -5,9 +5,9 @@ public class HpcProjectRegistration {
 	private String name;
 	private String projectType;
 	private String internalProjectId;
-	private String principalInvestigatorNihUserId;
+	private String principalInvestigatorNciUserId;
 	private String principalInvestigatorDOC;
-	private String registrarNihUserId;
+	private String registrarNciUserId;
 	private String registrarDOC;
 	private String labBranch;
 	private String description;
@@ -44,13 +44,13 @@ public class HpcProjectRegistration {
 		this.internalProjectId = internalProjectId;
 	}
 
-	public String getPrincipalInvestigatorNihUserId() {
-		return principalInvestigatorNihUserId;
+	public String getPrincipalInvestigatorNciUserId() {
+		return principalInvestigatorNciUserId;
 	}
 
-	public void setPrincipalInvestigatorNihUserId(
-			String principalInvestigatorNihUserId) {
-		this.principalInvestigatorNihUserId = principalInvestigatorNihUserId;
+	public void setPrincipalInvestigatorNciUserId(
+			String principalInvestigatorNciUserId) {
+		this.principalInvestigatorNciUserId = principalInvestigatorNciUserId;
 	}
 
 	public String getPrincipalInvestigatorDOC() {
@@ -61,12 +61,12 @@ public class HpcProjectRegistration {
 		this.principalInvestigatorDOC = principalInvestigatorDOC;
 	}
 
-	public String getRegistrarNihUserId() {
-		return registrarNihUserId;
+	public String getRegistrarNciUserId() {
+		return registrarNciUserId;
 	}
 
-	public void setRegistrarNihUserId(String registrarNihUserId) {
-		this.registrarNihUserId = registrarNihUserId;
+	public void setRegistrarNciUserId(String registrarNciUserId) {
+		this.registrarNciUserId = registrarNciUserId;
 	}
 
 	public String getRegistrarDOC() {

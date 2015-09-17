@@ -6,8 +6,8 @@ public class HpcWebUser {
 	private String id;
 	
 
-	@NotEmpty(message="NIH User Id is required")
-	private String nihUserId;
+	@NotEmpty(message="NCI User Id is required")
+	private String nciUserId;
 	
 	@NotEmpty(message="First name is required")
 	private String firstName;
@@ -15,7 +15,7 @@ public class HpcWebUser {
 	@NotEmpty(message="Last name is required")
 	private String lastName;
 	
-	private String nihUserPasswd;
+	private String nciUserPasswd;
 	
 	@NotEmpty(message="Globus User Id is required")
 	private String globusUserId;
@@ -47,19 +47,19 @@ public class HpcWebUser {
 		this.id = id;
 	}
 	
-	public String getNihUserId() {
-		return nihUserId;
+	public String getNciUserId() {
+		return nciUserId;
 	}
 	
-	public String getNihUserPasswd() {
-		return nihUserPasswd;
+	public String getNciUserPasswd() {
+		return nciUserPasswd;
 	}
-	public void setNihUserPasswd(String nihUserPasswd) {
-		this.nihUserPasswd = nihUserPasswd;
+	public void setNciUserPasswd(String nciUserPasswd) {
+		this.nciUserPasswd = nciUserPasswd;
 	}
 
-	public void setNihUserId(String nihUserId) {
-		this.nihUserId = nihUserId;
+	public void setNciUserId(String nciUserId) {
+		this.nciUserId = nciUserId;
 	}
 	
 	public String getGlobusUserId() {

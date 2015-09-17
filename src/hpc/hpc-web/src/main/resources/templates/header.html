@@ -183,7 +183,7 @@
                     <!-- user login dropdown start-->
                     <li class="dropdown">
                         <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                            <span class="username" th:text="${session.hpcUser.nihAccount.firstName +' '+ session.hpcUser.nihAccount.lastName}"></span>
+                            <span class="username" th:text="${session.hpcUser.nciAccount.firstName +' '+ session.hpcUser.nciAccount.lastName}"></span>
                             <b class="caret"></b>
                         </a>
                         <ul class="dropdown-menu extended logout">
@@ -245,7 +245,7 @@
                       </a>
                       <ul class="sub">
                           <li><a class="" th:href="@{/searchdataset}">Dataset</a></li>
-                          <li><a class="" th:href="@{/searchproject}">Project/Experiment</a></li>
+                          <li><a class="" th:href="@{/projectsearch}">Project/Experiment</a></li>
                      </ul>
                   </li>                  
                   <li class="sub-menu">
