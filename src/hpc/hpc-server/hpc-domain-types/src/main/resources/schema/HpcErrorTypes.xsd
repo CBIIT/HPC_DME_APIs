@@ -44,7 +44,7 @@
 			<xsd:enumeration value="USER_ALREADY_EXISTS" />
 
 			<!-- Dataset Service Request Reject Reasons -->
-			<xsd:enumeration value="INVALID_NIH_ACCOUNT" />
+			<xsd:enumeration value="INVALID_NCI_ACCOUNT" />
 			<xsd:enumeration value="INVALID_DATA_TRANSFER_ACCOUNT" />
 			<xsd:enumeration value="DATASET_NAME_ALREADY_EXISTS" />
 			<xsd:enumeration value="METADATA_ITEM_ALREADY_EXISTS" />

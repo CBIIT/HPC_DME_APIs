@@ -111,7 +111,7 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Validate the associated users with this project have valid NIH 
+    	// Validate the associated users with this project have valid NCI 
     	// account registered with HPC. In addition, validate the registrar
     	// has a valid data transfer account.
     	validateAssociatedUsers(projectRegistrationDTO);
@@ -362,31 +362,31 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     	}
     	
 		// Verify PI, Creator and Registrar are registered with HPC.
-		validateUser(projectDTO.getMetadata().getPrincipalInvestigatorNihUserId(),
+		validateUser(projectDTO.getMetadata().getPrincipalInvestigatorNciUserId(),
 				     HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR);
-		validateUser(projectDTO.getMetadata().getRegistrarNihUserId(),
+		validateUser(projectDTO.getMetadata().getRegistrarNciUserId(),
 		             HpcDatasetUserAssociation.REGISTRAR);
     }
     
     /**
      * Validate a user is registered with HPC.
      * 
-     * @param nihUserId The NIH User ID.
+     * @param nciUserId The NCI User ID.
      * @param userAssociation The user's association to the project.
      * 
      * @return The HpcUser.
      *
      * @throws HpcException if the user is not registered with HPC.
      */
-    private HpcUser validateUser(String nihUserId, 
+    private HpcUser validateUser(String nciUserId, 
     		                     HpcDatasetUserAssociation userAssociation)
     		                    throws HpcException
     {
-    	HpcUser user = userService.getUser(nihUserId);
+    	HpcUser user = userService.getUser(nciUserId);
     	if(user == null) {
     	   throw new HpcException("Could not find "+ userAssociation +
-    				               " user with nihUserID = " + nihUserId,
-    		                       HpcRequestRejectReason.INVALID_NIH_ACCOUNT);	
+    				               " user with nihUserID = " + nciUserId,
+    		                       HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
     	}
     	
     	return user;

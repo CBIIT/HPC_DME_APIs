@@ -66,9 +66,9 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		String name = projectMetadata.getName();
 		HpcProjectType type = projectMetadata.getType();
 		String internalProjectId = projectMetadata.getInternalProjectId();
-		String principalInvestigatorNihUserId = 
-			          projectMetadata.getPrincipalInvestigatorNihUserId();
-		String registrarNihUserId = projectMetadata.getRegistrarNihUserId();
+		String principalInvestigatorNciUserId = 
+			          projectMetadata.getPrincipalInvestigatorNciUserId();
+		String registrarNciUserId = projectMetadata.getRegistrarNciUserId();
 		String labBranch = projectMetadata.getLabBranch();
 		String principalInvestigatorDOC = projectMetadata.getPrincipalInvestigatorDOC();
 		Calendar created = projectMetadata.getCreated();
@@ -87,13 +87,13 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
 		   document.put(PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY, 
 				        internalProjectId);
 		}
-		if(principalInvestigatorNihUserId != null) {
-		   document.put(PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY, 
-			            principalInvestigatorNihUserId);
+		if(principalInvestigatorNciUserId != null) {
+		   document.put(PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_NCI_USER_ID_KEY, 
+			            principalInvestigatorNciUserId);
 		}
-		if(registrarNihUserId != null) {
-		   document.put(PROJECT_METADATA_REGISTRAR_NIH_USER_ID_KEY, 
-				        registrarNihUserId);
+		if(registrarNciUserId != null) {
+		   document.put(PROJECT_METADATA_REGISTRAR_NCI_USER_ID_KEY, 
+				        registrarNciUserId);
 		}
 		if(labBranch != null) {
 		   document.put(PROJECT_METADATA_LAB_BRANCH_KEY, labBranch);
@@ -138,11 +138,11 @@ public class HpcProjectMetadataCodec extends HpcCodec<HpcProjectMetadata>
                                 HpcProjectType.fromValue(typeStr) : null);
 		projectMetadata.setInternalProjectId(
 		                document.getString(PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY));
-		projectMetadata.setPrincipalInvestigatorNihUserId(
+		projectMetadata.setPrincipalInvestigatorNciUserId(
                         document.getString(
-                        PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY));
-		projectMetadata.setRegistrarNihUserId(
-                        document.getString(PROJECT_METADATA_REGISTRAR_NIH_USER_ID_KEY));
+                        PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_NCI_USER_ID_KEY));
+		projectMetadata.setRegistrarNciUserId(
+                        document.getString(PROJECT_METADATA_REGISTRAR_NCI_USER_ID_KEY));
 		projectMetadata.setLabBranch(document.getString(PROJECT_METADATA_LAB_BRANCH_KEY));
 		projectMetadata.setPrincipalInvestigatorDOC(
 				        document.getString(PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_DOC_KEY));

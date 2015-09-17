@@ -31,14 +31,14 @@ public abstract class HpcCodec<T> implements Codec<T>
     // HpcUser Document keys.
 	public final static String USER_CREATED_KEY = "created"; 
 	public final static String USER_LAST_UPDATED_KEY = "last_updated"; 
-	public final static String USER_NIH_ACCOUNT_KEY = "nih_account"; 
+	public final static String USER_NCI_ACCOUNT_KEY = "nci_account"; 
 	public final static String USER_DATA_TRANSFER_ACCOUNT_KEY = 
 			                   "data_transfer_account"; 
 	
-	// HpcNihAccount Document keys.
-	public final static String NIH_ACCOUNT_USER_ID_KEY = "user_id"; 
-	public final static String NIH_ACCOUNT_FIRST_NAME_KEY = "first_name"; 
-	public final static String NIH_ACCOUNT_LAST_NAME_KEY = "last_name"; 
+	// HpcNciAccount Document keys.
+	public final static String NCI_ACCOUNT_USER_ID_KEY = "user_id"; 
+	public final static String NCI_ACCOUNT_FIRST_NAME_KEY = "first_name"; 
+	public final static String NCI_ACCOUNT_LAST_NAME_KEY = "last_name"; 
 	
 	// HpcDataTransferAccount Document keys.
 	public final static String DATA_TRANSFER_ACCOUNT_USERNAME_KEY = "username";
@@ -59,10 +59,10 @@ public abstract class HpcCodec<T> implements Codec<T>
 	public final static String PROJECT_METADATA_TYPE_KEY = "type";
 	public final static String PROJECT_METADATA_INTERNAL_PROJECT_ID_KEY = 
 			                   "internal_project_id";
-	public final static String PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY = 
-                               "principal_investigator_nih_user_id";
-	public final static String PROJECT_METADATA_REGISTRAR_NIH_USER_ID_KEY = 
-                               "registrar_nih_user_id";
+	public final static String PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_NCI_USER_ID_KEY = 
+                               "principal_investigator_nci_user_id";
+	public final static String PROJECT_METADATA_REGISTRAR_NCI_USER_ID_KEY = 
+                               "registrar_nci_user_id";
     public final static String PROJECT_METADATA_PRINCIPAL_INVESTIGATOR_DOC_KEY = 
                                "principal_investigator_doc";
     public final static String PROJECT_METADATA_REGISTRAR_DOC_KEY = 
@@ -118,12 +118,12 @@ public abstract class HpcCodec<T> implements Codec<T>
     public final static String FILE_PRIMARY_METADATA_FUNDING_ORGANIZATION_KEY = 
                                "funding_organization";
     public final static String 
-                 FILE_PRIMARY_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY = 
-            				   "principal_investigator_nih_user_id"; 
+                 FILE_PRIMARY_METADATA_PRINCIPAL_INVESTIGATOR_NCI_USER_ID_KEY = 
+            				   "principal_investigator_nci_user_id"; 
     public final static String FILE_PRIMARY_METADATA_CREATOR_NAME_KEY = 
     		                   "creator_name"; 
-    public final static String FILE_PRIMARY_METADATA_REGISTRAR_NIH_USER_ID_KEY = 
-    		                   "registrar_nih_user_id"; 
+    public final static String FILE_PRIMARY_METADATA_REGISTRAR_NCI_USER_ID_KEY = 
+    		                   "registrar_nci_user_id"; 
     public final static String FILE_PRIMARY_METADATA_LAB_BRANCH_KEY = 
     		                   "lab_branch"; 
     public final static String FILE_PRIMARY_METADATA_DESCRIPTION_KEY = 
@@ -142,8 +142,8 @@ public abstract class HpcCodec<T> implements Codec<T>
     public final static String METADATA_ITEM_VALUE_KEY = "value";
 
     // HpcDataTransferRequest Document keys.
-    public final static String DATA_TRANSFER_REQUEST_REQUESTER_NIH_USER_ID_KEY = 
-                               "requester_nih_user_id";
+    public final static String DATA_TRANSFER_REQUEST_REQUESTER_NCI_USER_ID_KEY = 
+                               "requester_nci_user_id";
     public final static String DATA_TRANSFER_REQUEST_FILE_ID_KEY = 
                                "file_id";
     public final static String DATA_TRANSFER_REQUEST_DATA_TRANSFER_ID_KEY = 

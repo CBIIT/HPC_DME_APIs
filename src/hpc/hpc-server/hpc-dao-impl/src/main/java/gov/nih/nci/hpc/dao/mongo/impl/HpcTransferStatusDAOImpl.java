@@ -38,9 +38,9 @@ public class HpcTransferStatusDAOImpl implements HpcTransferStatusDAO
     //---------------------------------------------------------------------//    
     
     // Dataset ID field name.
-	public final static String NIH_USER_ID_FIELD_NAME = 
-							       HpcCodec.USER_NIH_ACCOUNT_KEY + "." + 
-                                   HpcCodec.NIH_ACCOUNT_USER_ID_KEY;
+	public final static String NCI_USER_ID_FIELD_NAME = 
+							       HpcCodec.USER_NCI_ACCOUNT_KEY + "." + 
+                                   HpcCodec.NCI_ACCOUNT_USER_ID_KEY;
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -106,7 +106,7 @@ public class HpcTransferStatusDAOImpl implements HpcTransferStatusDAO
 		HpcSingleResultCallback<HpcDataTransferRequest> callback = 
                                          new HpcSingleResultCallback<HpcDataTransferRequest>();
 		getCollection().find(
-		   eq(NIH_USER_ID_FIELD_NAME, submissionId)).first(callback);
+		   eq(NCI_USER_ID_FIELD_NAME, submissionId)).first(callback);
 		
 		return callback.getResult();
 	}

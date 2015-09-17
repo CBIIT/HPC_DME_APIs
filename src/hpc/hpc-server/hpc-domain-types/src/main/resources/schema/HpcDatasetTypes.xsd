@@ -101,7 +101,7 @@
 
 	<xsd:complexType name="HpcDataTransferRequest">
 		<xsd:sequence>
-			<xsd:element name="requesterNihUserId" type="xsd:string" />
+			<xsd:element name="requesterNciUserId" type="xsd:string" />
 			<xsd:element name="fileId" type="xsd:ID" />
 			<xsd:element name="dataTransferId" type="xsd:string" />
 			<xsd:element name="locations"

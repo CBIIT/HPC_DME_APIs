@@ -108,7 +108,7 @@ public interface HpcProjectRestService
     @Path("/project/query/principalInvestigator/{id}")
     @Produces("application/json,application/xml")
     public Response getProjectsByPrincipalInvestigatorId(
-    		           @PathParam("id") String principalInvestigatorNihUserId); 
+    		           @PathParam("id") String principalInvestigatorNciUserId); 
     
     /**
      * POST Projects by primary metadata.

@@ -76,8 +76,8 @@ public class HpcProjectControllerTest {
 		metadata.setInternalProjectId("Iproject");
 		metadata.setLabBranch("CCR");
 		metadata.setRegistrarDOC("Org");
-		metadata.setPrincipalInvestigatorNihUserId("konkapv");
-		metadata.setRegistrarNihUserId("konkapv");
+		metadata.setPrincipalInvestigatorNciUserId("konkapv");
+		metadata.setRegistrarNciUserId("konkapv");
 		dto.setMetadata(metadata);
 		dto.getHpcDatasetRegistrationDTO().add(getDataset());
 		ObjectMapper mapper = new ObjectMapper();
@@ -138,9 +138,9 @@ public class HpcProjectControllerTest {
 			metadata.setDataCompressed(HpcCompressionStatus.NOT_COMPRESSED);
 			metadata.setDataContainsPHI(HpcPHIContent.PHI_NOT_PRESENT);
 			metadata.setFundingOrganization("NCI");
-			metadata.setPrincipalInvestigatorNihUserId("konkapv");
+			metadata.setPrincipalInvestigatorNciUserId("konkapv");
 			metadata.setPrincipalInvestigatorDOC("test");
-			metadata.setRegistrarNihUserId("konkapv");
+			metadata.setRegistrarNciUserId("konkapv");
 			metadata.setDescription("Description");			// TODO: ID Lookup
 			metadata.setCreatorName("PRasad Konka");
 			metadata.setLabBranch("CCR");

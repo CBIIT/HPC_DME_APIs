@@ -71,25 +71,25 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 							   HpcCodec.FILE_SET_FILES_KEY + "." +
 	                           HpcCodec.FILE_PROJECT_IDS_KEY;
 	
-	// Field names to query by NIH user id.
-	public final static String PRINCIPAL_INVESTIGATOR_NIH_USER_ID_FIELD_NAME = 
+	// Field names to query by NCI user id.
+	public final static String PRINCIPAL_INVESTIGATOR_NCI_USER_ID_FIELD_NAME = 
                  HpcCodec.DATASET_FILE_SET_KEY + "." + 
                  HpcCodec.FILE_SET_FILES_KEY + "." + 
                  HpcCodec.FILE_METADATA_KEY + "." + 
                  HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
-                 HpcCodec.FILE_PRIMARY_METADATA_PRINCIPAL_INVESTIGATOR_NIH_USER_ID_KEY;
+                 HpcCodec.FILE_PRIMARY_METADATA_PRINCIPAL_INVESTIGATOR_NCI_USER_ID_KEY;
 	public final static String CREATOR_NAME_FIELD_NAME = 
 			     HpcCodec.DATASET_FILE_SET_KEY + "." + 
 	             HpcCodec.FILE_SET_FILES_KEY + "." + 
 	             HpcCodec.FILE_METADATA_KEY + "." + 
 	             HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
 	             HpcCodec.FILE_PRIMARY_METADATA_CREATOR_NAME_KEY;
-	public final static String REGISTRAR_NIH_USER_ID_FIELD_NAME = 
+	public final static String REGISTRAR_NCI_USER_ID_FIELD_NAME = 
 			     HpcCodec.DATASET_FILE_SET_KEY + "." + 
 		         HpcCodec.FILE_SET_FILES_KEY + "." + 
 		         HpcCodec.FILE_METADATA_KEY + "." + 
 		         HpcCodec.FILE_METADATA_PRIMARY_METADATA_KEY + "." + 
-		         HpcCodec.FILE_PRIMARY_METADATA_REGISTRAR_NIH_USER_ID_KEY;
+		         HpcCodec.FILE_PRIMARY_METADATA_REGISTRAR_NCI_USER_ID_KEY;
 	
 	// Field names to query by Primary Metadata.
 	public final static String DATA_CONTAINS_PII_FIELD_NAME = 
@@ -280,14 +280,14 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     }
 	
 	@Override
-	public List<HpcDataset> getDatasets(List<String> nihUserIds, 
+	public List<HpcDataset> getDatasets(List<String> nciUserIds, 
                                         HpcDatasetUserAssociation association) 
                                        throws HpcException
     {
 		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
 		HpcSingleResultCallback<List<HpcDataset>> callback = 
                        new HpcSingleResultCallback<List<HpcDataset>>();
-		getCollection().find(in(getFieldName(association), nihUserIds)).into(datasets, callback); 
+		getCollection().find(in(getFieldName(association), nciUserIds)).into(datasets, callback); 
 		
 		return callback.getResult();
     }
@@ -320,12 +320,12 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     }
 	
 	@Override
-    public boolean exists(String name, String nihUserId, 
+    public boolean exists(String name, String nciUserId, 
                           HpcDatasetUserAssociation association) 
                          throws HpcException
     {
 		HpcSingleResultCallback<Long> callback = new HpcSingleResultCallback<Long>();
-    	getCollection().count(and(eq(getFieldName(association), nihUserId),
+    	getCollection().count(and(eq(getFieldName(association), nciUserId),
     			                  regex(DATASET_NAME_FIELD_NAME, 
 	                	                "^" + Pattern.quote(name) + "$", "i")), callback);
     	return callback.getResult() != null ? callback.getResult() > 0 : false;
@@ -423,17 +423,17 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
        	   filters.add(eq(FUNDING_ORGANIZATION_FIELD_NAME, 
        			          primaryMetadata.getFundingOrganization()));
        	}
-    	if(primaryMetadata.getPrincipalInvestigatorNihUserId() != null) {
-           filters.add(eq(PRINCIPAL_INVESTIGATOR_NIH_USER_ID_FIELD_NAME, 
-        		          primaryMetadata.getPrincipalInvestigatorNihUserId()));
+    	if(primaryMetadata.getPrincipalInvestigatorNciUserId() != null) {
+           filters.add(eq(PRINCIPAL_INVESTIGATOR_NCI_USER_ID_FIELD_NAME, 
+        		          primaryMetadata.getPrincipalInvestigatorNciUserId()));
         }
     	if(primaryMetadata.getCreatorName() != null) {
      	   filters.add(eq(CREATOR_NAME_FIELD_NAME, 
      			          primaryMetadata.getCreatorName()));
     	}
-    	if(primaryMetadata.getRegistrarNihUserId() != null) {
-      	   filters.add(eq(REGISTRAR_NIH_USER_ID_FIELD_NAME, 
-      			          primaryMetadata.getRegistrarNihUserId()));
+    	if(primaryMetadata.getRegistrarNciUserId() != null) {
+      	   filters.add(eq(REGISTRAR_NCI_USER_ID_FIELD_NAME, 
+      			          primaryMetadata.getRegistrarNciUserId()));
      	}
     	if(primaryMetadata.getDescription() != null) {
        	   filters.add(regex(DESCRIPTION_FIELD_NAME, 
@@ -477,10 +477,10 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
     {
 		switch(association) {
 	           case PRINCIPAL_INVESTIGATOR:
-	                return PRINCIPAL_INVESTIGATOR_NIH_USER_ID_FIELD_NAME;
+	                return PRINCIPAL_INVESTIGATOR_NCI_USER_ID_FIELD_NAME;
 	         
 	           case REGISTRAR:
-	                return REGISTRAR_NIH_USER_ID_FIELD_NAME;
+	                return REGISTRAR_NCI_USER_ID_FIELD_NAME;
 	         
 	           default:
 	 	            throw new HpcException("Invalid Association Value: " + 

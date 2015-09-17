@@ -44,21 +44,21 @@ public interface HpcUserRestService
     public Response registerUser(HpcUserRegistrationDTO userRegistrationDTO);
     
     /**
-     * Get user by NIH User ID.
+     * Get user by NCI User ID.
      *
-     * @param nihUserId The registered user ID.
+     * @param nciUserId The registered user ID.
      * @return gov.nih.nci.hpc.dto.user.HpcUserDTO entity.
      */
     @GET
-    @Path("/user/{nihUserId}")
+    @Path("/user/{nciUserId}")
     @Produces("application/json,application/xml")
-    public Response getUser(@PathParam("nihUserId") String nihUserId); 
+    public Response getUser(@PathParam("nciUserId") String nciUserId); 
 
     /**
      * Authenticate
      *
-     * @param nihUserId The registered user ID.
-     * @param password NIH LDAP password
+     * @param nciUserId The registered user ID.
+     * @param password NCI LDAP password
      * @return boolean entity.
      */
     @POST

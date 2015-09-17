@@ -134,26 +134,26 @@ public interface HpcDatasetRestService
     /**
      * GET Datasets by Registrar ID.
      *
-     * @param registrarNihUserId Get datasets associated with this registrar.
+     * @param registrarNciUserId Get datasets associated with this registrar.
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @GET
     @Path("/dataset/query/registrar/{id}")
     @Produces("application/json,application/xml")
     public Response getDatasetsByRegistrarId(
-    		           @PathParam("id") String registrarNihUserId); 
+    		           @PathParam("id") String registrarNciUserId); 
     
    /** 
    * GET Datasets by Primary Investigator ID.
      *
-     * @param principalInvestigatorNihUserId Get datasets associated with this principal investigator.
+     * @param principalInvestigatorNciUserId Get datasets associated with this principal investigator.
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @GET
     @Path("/dataset/query/principalInvestigator/{id}")
     @Produces("application/json,application/xml")
     public Response getDatasetsByPrincipalInvestigatorId(
-    		           @PathParam("id") String principalInvestigatorNihUserId); 
+    		           @PathParam("id") String principalInvestigatorNciUserId); 
     
     /**
      * GET Datasets by Principal Investigator's first and last name.

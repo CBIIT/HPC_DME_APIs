@@ -11,7 +11,7 @@ package gov.nih.nci.hpc.web.controller;
 
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
 import gov.nih.nci.hpc.domain.user.HpcDataTransferAccountType;
-import gov.nih.nci.hpc.domain.user.HpcNihAccount;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
 
@@ -81,7 +81,7 @@ public class HpcUserController extends AbstractHpcController {
 		 // HpcProxy client =  new HpcProxyImpl(serverURL);
 		 // HpcUserRegistrationRestService userRegistration = client.getUserRegistrationServiceProxy();
 	      HpcUserRegistrationDTO userDTO = new HpcUserRegistrationDTO();
-	      HpcNihAccount user = new HpcNihAccount();
+	      HpcNciAccount user = new HpcNciAccount();
 		  user.setUserId(hpcUser.getNihUserId());
 		  user.setFirstName(hpcUser.getFirstName());
 		  user.setLastName(hpcUser.getLastName());
@@ -90,7 +90,7 @@ public class HpcUserController extends AbstractHpcController {
 		  dtAccount.setPassword(hpcUser.getGlobusPasswd());
 		  dtAccount.setAccountType(HpcDataTransferAccountType.GLOBUS);
 		  userDTO.setDataTransferAccount(dtAccount);
-		  userDTO.setNihAccount(user);
+		  userDTO.setNciAccount(user);
 /*
 		  Boolean validGlobusCredentials = restTemplate.postForObject(new URI(serviceGlobusUserURL),  userDTO, Boolean.class);
 		  if(validGlobusCredentials != null)
