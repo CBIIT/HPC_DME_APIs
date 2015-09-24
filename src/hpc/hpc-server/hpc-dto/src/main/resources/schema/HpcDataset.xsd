@@ -147,4 +147,12 @@
 		</xsd:complexType>
 	</xsd:element>
 	
+	<xsd:simpleType name="HpcDatasetQueryType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="ALL" />
+			<xsd:enumeration value="REGISTRAR_ID" />
+			<xsd:enumeration value="PRINCIPAL_INVESTIGATOR_ID" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
 </xsd:schema>

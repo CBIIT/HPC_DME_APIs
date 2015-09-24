@@ -495,16 +495,16 @@ public class HpcDatasetServiceImpl implements HpcDatasetService
                                        throws HpcException
 	{
     	// Input Validation. Both upload/download requests can't be null
-    	if(from == null || to == null) {
+    	if(from == null && to == null) {
     	   throw new HpcException("Null or Invalid from/to date range", 
                                   HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Need to roll the to up one day, so datasets created on the 'to' date
+    	// Need to roll the 'to' up one day, so datasets created on the 'to' date
     	// will be included.
-    	to.add(Calendar.DAY_OF_MONTH, 1);
-    	
-    	System.out.println(to);
+    	if(to != null) {
+    	   to.add(Calendar.DAY_OF_MONTH, 1);
+    	}
     	
 		return datasetDAO.getDatasets(from, to);
 	}
