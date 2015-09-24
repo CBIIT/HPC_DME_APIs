@@ -135,6 +135,9 @@
 		<jxb:bindings node="//xsd:element[@name='HpcDatasetRegistrationDateRangeDTO']">
         	<jxb:class ref="gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDateRangeDTO"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcDatasetQueryType']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.dto.dataset.HpcDatasetQueryType"/>
+        </jxb:bindings>
     </jxb:bindings>
     
 </jxb:bindings>
