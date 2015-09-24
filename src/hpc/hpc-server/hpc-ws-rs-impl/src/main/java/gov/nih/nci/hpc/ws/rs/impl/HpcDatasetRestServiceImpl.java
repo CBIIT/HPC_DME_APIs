@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAssociateFileProjectsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetQueryType;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDateRangeDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
@@ -42,6 +43,7 @@ import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
 
 /**
  * <p>
@@ -237,16 +239,39 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response getDatasets()
+    public Response getDatasets(HpcDatasetQueryType queryType, 
+    		                    String nciUserId)
     {
-    	logger.info("Invoking RS: GET /dataset/query/all");
+    	logger.info("Invoking RS: GET /dataset");
     	
+    	// If no query type provided, default to ALL.
+    	if(queryType == null) {
+		   queryType = HpcDatasetQueryType.ALL;
+    	}
+    	
+    	// Determine the requested query and invoke the appropriate bus service.
 		HpcDatasetCollectionDTO datasetCollectionDTO = null;
 		try {
-			 datasetCollectionDTO = datasetBusService.getDatasets(); 
+			 switch(queryType) {
+			        case ALL:
+			        	 datasetCollectionDTO = datasetBusService.getDatasets();
+                         break;
+                         
+			        case REGISTRAR_ID:
+			             datasetCollectionDTO = 
+			                    getDatasets(nciUserId, 
+			             		            HpcDatasetUserAssociation.REGISTRAR);
+			             break;
+			             
+			        case PRINCIPAL_INVESTIGATOR_ID:
+			             datasetCollectionDTO = 
+			                    getDatasets(nciUserId, 
+			             		            HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR);
+			             break;
+			 }
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/all: failed:", e);
+			    logger.error("RS: GET /dataset: failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -459,12 +484,38 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 		
 		return callBackFn +"("+json.toString()+");";
 	}
+
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//  
+    
+    /**
+     * Query datasets associated with a user.
+     *
+     * @param nciUserId The user ID.
+     * @param association The user's association to the dataset.
+     * @return Dataset collection.
+     * 
+     * @throws HpcException 
+     */
+    private HpcDatasetCollectionDTO getDatasets(String nciUserId, 
+    		                        HpcDatasetUserAssociation association)
+    		                        throws HpcException
+    {
+    	List<String> userIds = new ArrayList<String>();
+    	if(nciUserId != null) {
+    	   userIds.add(nciUserId);
+    	}
+    	
+    	return datasetBusService.getDatasets(userIds, association); 
+    }
+    
     /*
     @Override
     public Response s3Upload(String path)
     {
-    	s3SimpleUpload(path);
-    	//s3MultipartUpload(path);
+    	//s3SimpleUpload(path);
+    	s3MultipartUpload(path);
     	return okResponse(null, false);
     }
     
@@ -479,14 +530,14 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
         try {
             System.out.println("Uploading a new object to S3 from a file\n");
             File file = new File(path);
-            s3client.deleteObject("CJ090115", "eran-key");
+            s3client.deleteObject("CJ090115", "HPC-generated-key");
             PutObjectResult result = s3client.putObject(new PutObjectRequest(
-            		                                    "CJ090115", "eran-key", file));
+            		                                    "CJ090115", "HPC-generated-key", file));
             
             System.out.println("Upload result md5: " + result.getContentMd5());
             
             System.out.println("Get object...");
-            S3Object object = s3client.getObject("CJ090115", "eran-key");
+            S3Object object = s3client.getObject("CJ090115", "HPC-generated-key");
             InputStream objectData = object.getObjectContent();
             System.out.println("received object: bytes=" + objectData.available());
             // Process the objectData stream.
@@ -518,15 +569,15 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     {
     	BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials("vDZGQHw6OgBBpeI4D1CA", 
     			                                                            "OVDNthOhfl5npqdSfAD8T9FsIcJlsCJsmuRdfanr");
-    	
     	TransferManager tm = new TransferManager(cleversafeCredentials);
     	tm.getAmazonS3Client().setEndpoint("http://8.40.18.82");
-    	tm.getAmazonS3Client().deleteObject("CJ090115", "eran-key");
     	
+    	
+    	tm.getAmazonS3Client().deleteObject("CJ090115", "HPC-generated-key");
     	System.out.println("Multipart Uploading a new object to S3 from a file\n");
         File file = new File(path);
         
-        PutObjectRequest request = new PutObjectRequest("CJ090115", "eran-key", file);
+        PutObjectRequest request = new PutObjectRequest("CJ090115", "HPC-generated-key", file);
         
         // You can ask the upload for its progress, or you can 
         // add a ProgressListener to your request to receive notifications 
@@ -543,11 +594,11 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
         Upload upload = tm.upload(request);
 
         try {
-        	// Or you can block and wait for the upload to finish
+        	// Block and wait for the upload to finish
         	upload.waitForCompletion();
         	
             System.out.println("\n\nDownloading object...");
-            S3Object object = tm.getAmazonS3Client().getObject("CJ090115", "eran-key");
+            S3Object object = tm.getAmazonS3Client().getObject("CJ090115", "HPC-generated-key");
             InputStream objectData = object.getObjectContent();
             System.out.println("received object: bytes=" + objectData.available());
             
@@ -557,9 +608,8 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
         } catch (Exception ioex) {
         	System.out.println("Interupted exception: " + ioex);
         }
-        
-
-    }*/
+    }
+    */
 }
 
  

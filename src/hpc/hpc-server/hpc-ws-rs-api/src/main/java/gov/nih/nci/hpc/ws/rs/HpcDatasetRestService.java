@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAssociateFileProjectsDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcDatasetQueryType;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDateRangeDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
@@ -127,9 +128,11 @@ public interface HpcDatasetRestService
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @GET
-    @Path("/dataset/query/all")
+    @Path("/dataset")
     @Produces("application/json,application/xml")
-    public Response getDatasets(); 
+    public Response getDatasets(
+    		           @QueryParam("queryType") HpcDatasetQueryType queryType,
+    		           @QueryParam("nciUserId") String nciUserId); 
     
     /**
      * GET Datasets by Registrar ID.
@@ -266,7 +269,8 @@ public interface HpcDatasetRestService
     @GET
     @Path("/eran/{path}")
     @Produces("application/json,application/xml")
-    public Response s3Upload(@PathParam("path") String path);*/
+    public Response s3Upload(@PathParam("path") String path);
+    */
 }
 
  

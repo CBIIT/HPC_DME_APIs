@@ -355,13 +355,20 @@ public class HpcDatasetDAOImpl implements HpcDatasetDAO
 	public List<HpcDataset> getDatasets(Calendar from, Calendar to) 
                                        throws HpcException
     {
+		// Create the filters.
+    	List<Bson> filters = new ArrayList<Bson>();
+    	if(from != null) {
+    	   filters.add(gte(DATASET_CREATED_FIELD_NAME, from.getTime()));
+    	}
+    	if(to != null) {
+     	   filters.add(lte(DATASET_CREATED_FIELD_NAME, to.getTime()));
+     	}
+    	
+    	// Query the data.
 		List<HpcDataset> datasets = new ArrayList<HpcDataset>();
 		HpcSingleResultCallback<List<HpcDataset>> callback = 
                        new HpcSingleResultCallback<List<HpcDataset>>();
-		getCollection().find(
-		   and(gte(DATASET_CREATED_FIELD_NAME, from.getTime()), 
-			   lte(DATASET_CREATED_FIELD_NAME, to.getTime()))) 
-		   .into(datasets, callback); 
+		getCollection().find(and(filters)).into(datasets, callback); 
 		
 		return callback.getResult();
     }
