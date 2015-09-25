@@ -30,7 +30,10 @@ import gov.nih.nci.hpc.ws.rs.HpcDatasetRestService;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.ws.rs.core.Context;
@@ -44,7 +47,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-
 /**
  * <p>
  * HPC Dataset REST Service Implementation.
@@ -57,6 +59,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
              implements HpcDatasetRestService
 {   
+    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//    
+    
+    // Date format.
+	private final static String DATE_FORMAT = "yyyy-MM-dd";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -240,7 +249,12 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     
     @Override
     public Response getDatasets(HpcDatasetQueryType queryType, 
-    		                    String nciUserId)
+    		                    String nciUserId, String firstName, 
+    		                    String lastName, String projectId, 
+    		                    String name, Boolean regex,
+    		                    HpcDataTransferStatus dataTransferStatus,
+    		    		        Boolean uploadRequests, Boolean downloadRequests,
+    		    		        String from, String to)
     {
     	logger.info("Invoking RS: GET /dataset");
     	
@@ -259,15 +273,50 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
                          
 			        case REGISTRAR_ID:
 			             datasetCollectionDTO = 
-			                    getDatasets(nciUserId, 
-			             		            HpcDatasetUserAssociation.REGISTRAR);
+			             getDatasets(nciUserId, 
+			                         HpcDatasetUserAssociation.REGISTRAR);
+			             break;
+			             
+			        case REGISTRAR_NAME:
+			        	 datasetCollectionDTO = 
+			        	 datasetBusService.getDatasets(
+			        	          		   firstName, lastName, 
+				                           HpcDatasetUserAssociation.REGISTRAR); 
 			             break;
 			             
 			        case PRINCIPAL_INVESTIGATOR_ID:
 			             datasetCollectionDTO = 
-			                    getDatasets(nciUserId, 
-			             		            HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR);
+			             getDatasets(nciUserId, 
+			                         HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR);
 			             break;
+			             
+			        case PRINCIPAL_INVESTIGATOR_NAME:
+			        	 datasetCollectionDTO = 
+			        	 datasetBusService.getDatasets(
+			        	                   firstName, lastName, 
+				                           HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR); 
+			        	 
+			        case PROJECT_ID:
+			        	 datasetCollectionDTO = 
+			        	 datasetBusService.getDatasetsByProjectId(projectId); 
+			        	 break;
+			        	 
+			        case NAME:
+			        	 datasetCollectionDTO = 
+			        	 datasetBusService.getDatasets(name, 
+					                                   regex != null ? regex : true);
+			        	 break;
+			        	 
+			        case DATA_TRANSFER_STATUS:
+			        	 datasetCollectionDTO = 
+			             datasetBusService.getDatasets(dataTransferStatus, uploadRequests, 
+					                                   downloadRequests); 
+			        	 break;
+			        	 
+			        case REGISTRATION_DATE_RANGE:
+			        	 datasetCollectionDTO = 
+			             datasetBusService.getDatasets(toCalendar(from), toCalendar(to)); 
+			        	 break;
 			 }
 			 
 		} catch(HpcException e) {
@@ -451,7 +500,8 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 		HpcDatasetCollectionDTO datasetCollectionDTO = null;
 		try {
 			 datasetCollectionDTO = 
-					datasetBusService.getDatasets(registrationDateRangeDTO); 
+					datasetBusService.getDatasets(registrationDateRangeDTO.getFrom(),
+							                      registrationDateRangeDTO.getTo()); 
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /dataset/query/registrationDateRangeDTO: failed:", e);
@@ -508,6 +558,34 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     	}
     	
     	return datasetBusService.getDatasets(userIds, association); 
+    }
+    
+    /**
+     * Parse a calendar string.
+     *
+     * @param calStr The calendar string
+     * @return Calendar instance
+     * 
+     * @throws HpcException if parsing exception
+     */
+    private Calendar toCalendar(String calStr) throws HpcException
+    {
+    	if(calStr == null) {
+    	   return null;
+    	}
+    	
+    	DateFormat format = new SimpleDateFormat(DATE_FORMAT);
+    	Calendar calendar = Calendar.getInstance();
+    	
+    	try {
+		 	 calendar.setTime(format.parse(calStr));
+			
+    	} catch(java.text.ParseException e) {
+				throw new HpcException("Invalid date format. Date not in [" + DATE_FORMAT + "]",
+						               HpcErrorType.INVALID_REQUEST_INPUT, e);
+		}
+    	
+    	return calendar;
     }
     
     /*

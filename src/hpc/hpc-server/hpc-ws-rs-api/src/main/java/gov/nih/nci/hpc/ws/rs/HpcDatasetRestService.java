@@ -123,8 +123,20 @@ public interface HpcDatasetRestService
     public Response getFile(@PathParam("id") String id);
     
     /**
-     * GET all datasets.
+     * GET datasets.
      *
+     * @param queryType The query type.
+     * @param nciUserId NCI user id.
+     * @param firstName User's first name.
+     * @param lastName User's last name.
+     * @param projectId Project ID.
+     * @param name Dataset name.
+     * @param regex true to query name as regex. false as literal. 
+     * @param dataTransferStatus Data transfer status.
+     * @param uploadRequests true to include upload requests in query.
+     * @param downloadRequests true to include download requests in query.
+     * @param from From date.
+     * @param to To date.
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @GET
@@ -132,7 +144,17 @@ public interface HpcDatasetRestService
     @Produces("application/json,application/xml")
     public Response getDatasets(
     		           @QueryParam("queryType") HpcDatasetQueryType queryType,
-    		           @QueryParam("nciUserId") String nciUserId); 
+    		           @QueryParam("nciUserId") String nciUserId,
+    		           @QueryParam("firstName") String firstName,
+    		           @QueryParam("lastName") String lastName,
+    		           @QueryParam("projectId") String projectId,
+    		           @QueryParam("name") String name,
+                       @QueryParam("regex") Boolean regex,
+                       @QueryParam("dataTransferStatus") HpcDataTransferStatus dataTransferStatus,
+    		           @QueryParam("uploadRequests") Boolean uploadRequests, 
+    		           @QueryParam("downloadRequests") Boolean downloadRequests,
+    				   @QueryParam("from") String from,
+    				   @QueryParam("to") String to);
     
     /**
      * GET Datasets by Registrar ID.
