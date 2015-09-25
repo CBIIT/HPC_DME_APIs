@@ -151,7 +151,13 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="ALL" />
 			<xsd:enumeration value="REGISTRAR_ID" />
+			<xsd:enumeration value="REGISTRAR_NAME" />
 			<xsd:enumeration value="PRINCIPAL_INVESTIGATOR_ID" />
+			<xsd:enumeration value="PRINCIPAL_INVESTIGATOR_NAME" />
+			<xsd:enumeration value="PROJECT_ID" />
+			<xsd:enumeration value="NAME" />
+			<xsd:enumeration value="DATA_TRANSFER_STATUS" />
+			<xsd:enumeration value="REGISTRATION_DATE_RANGE" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
