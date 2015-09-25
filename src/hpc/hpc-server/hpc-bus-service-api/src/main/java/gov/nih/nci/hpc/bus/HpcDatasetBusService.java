@@ -18,12 +18,12 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetAssociateFileProjectsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDateRangeDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFileDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -195,14 +195,14 @@ public interface HpcDatasetBusService
     /**
      * Get datasets by registration date range.
      *
-     * @param registrationDateRangeDTO The date range to query.
+     * @param from The from date.
+     * @param to The to date.
      * @return Collection of Dataset DTO, or null if not found.
      * 
      * @throws HpcException
      */
-	public HpcDatasetCollectionDTO getDatasets(
-			  HpcDatasetRegistrationDateRangeDTO registrationDateRangeDTO) 
-			  throws HpcException;
+	public HpcDatasetCollectionDTO getDatasets(Calendar from, Calendar to) 
+			                                  throws HpcException;
 	
     /**
      * Get datasets associated with given projectId.
