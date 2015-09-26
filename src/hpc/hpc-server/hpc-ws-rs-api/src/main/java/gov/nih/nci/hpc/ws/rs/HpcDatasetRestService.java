@@ -140,7 +140,7 @@ public interface HpcDatasetRestService
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @GET
-    @Path("/dataset")
+    @Path("/datasets")
     @Produces("application/json,application/xml")
     public Response getDatasets(
     		           @QueryParam("queryType") HpcDatasetQueryType queryType,
