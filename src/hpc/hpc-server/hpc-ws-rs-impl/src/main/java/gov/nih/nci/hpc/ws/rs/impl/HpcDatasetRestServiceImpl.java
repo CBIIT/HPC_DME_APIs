@@ -295,6 +295,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 			        	 datasetBusService.getDatasets(
 			        	                   firstName, lastName, 
 				                           HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR); 
+			        	 break;
 			        	 
 			        case PROJECT_ID:
 			        	 datasetCollectionDTO = 
