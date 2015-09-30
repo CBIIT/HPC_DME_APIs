@@ -48,7 +48,7 @@ public interface HpcDatasetRestService
      * @return The new datset URI.
      */
     @POST
-    @Path("/dataset")
+    @Path("/datasets")
     @Consumes("application/json,application/xml")
     public Response registerDataset(HpcDatasetRegistrationDTO datasetRegistrationDTO);
     
@@ -58,7 +58,7 @@ public interface HpcDatasetRestService
      * @param addFilesDTO The add-files request DTO.
      */
     @POST
-    @Path("/dataset/files")
+    @Path("/datasets/files")
     @Consumes("application/json,application/xml")
     public Response addFiles(HpcDatasetAddFilesDTO addFilesDTO);
     
@@ -68,7 +68,7 @@ public interface HpcDatasetRestService
      * @param associateFileProjectsDTO The projects to file association request DTO.
      */
     @POST
-    @Path("/dataset/projects")
+    @Path("/datasets/projects")
     @Consumes("application/json,application/xml")
     public Response associateProjects(
     		        HpcDatasetAssociateFileProjectsDTO associateFileProjectsDTO);
@@ -80,7 +80,7 @@ public interface HpcDatasetRestService
      * @return gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO entity.
      */
     @POST
-    @Path("/dataset/metadata/primary/items")
+    @Path("/datasets/metadata/primary/items")
     @Consumes("application/json,application/xml")
     public Response addPrimaryMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO);
     
@@ -91,7 +91,7 @@ public interface HpcDatasetRestService
      * @return gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO entity.
      */
     @POST
-    @Path("/dataset/metadata/primary")
+    @Path("/datasets/metadata/primary")
     @Consumes("application/json,application/xml")
     public Response updatePrimaryMetadata(HpcDatasetUpdateFilePrimaryMetadataDTO updateMetadataDTO);
     
@@ -105,7 +105,7 @@ public interface HpcDatasetRestService
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO entity.
      */
     @GET
-    @Path("/dataset/{id}")
+    @Path("/datasets/{id}")
     @Produces("application/json,application/xml")
     public Response getDataset(@PathParam("id") String id,
     		                   @QueryParam("skipDataTransferStatusUpdate") 
@@ -118,7 +118,7 @@ public interface HpcDatasetRestService
      * @return gov.nih.nci.hpc.dto.dataset.HpcFileDTO entity.
      */
     @GET
-    @Path("/file/{id}")
+    @Path("/files/{id}")
     @Produces("application/json,application/xml")
     public Response getFile(@PathParam("id") String id);
     
