@@ -29,6 +29,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -40,6 +41,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -66,31 +68,28 @@ import org.springframework.web.client.RestTemplate;
 public class HpcSearchDatasetController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.dataset.query.primarymetadata}")
 	private String serviceURL;
-	@Value("${gov.nih.nci.hpc.server.dataset.query.name}")
-	private String serviceNameURL;
-	@Value("${gov.nih.nci.hpc.server.dataset.query.id}")
+	@Value("${gov.nih.nci.hpc.server.dataset}")
 	private String serviceIdURL;
 	@Value("${gov.nih.nci.hpc.nihfnlcr.name}")
 	private String destinationEndpoint;
-	@Value("${gov.nih.nci.hpc.server.dataset.query.projectid}")
-	private String serviceProjectIdURL;
-	@Value("${gov.nih.nci.hpc.server.dataset.query.daterange}")
-	private String serviceDateRangeURL;
 	
 	/*
 	 * Action for Datset registration page
 	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(Model model) {
+		init(model);
+		return "searchdataset";
+	}
+
+	private void init(Model model)
+	{
 		HpcDatasetSearch hpcDatasetSearch = new HpcDatasetSearch();
 		model.addAttribute("hpcDatasetSearch", hpcDatasetSearch);
 		Map<String, String> users = Util.getPIs();
 		model.addAttribute("piList", users);
 		model.addAttribute("creatorList", users);
-
-		return "searchdataset";
 	}
-
 	/*
 	 * Action for Dataset registration
 	 */
@@ -103,15 +102,17 @@ public class HpcSearchDatasetController extends AbstractHpcController {
 		restTemplate.setErrorHandler(new HpcResponseErrorHandler());
 
 		try {
+			Map<String, String> params = new HashMap<String, String>();
+			params.put("name", search.getDatasetName());
 			HttpEntity<HpcDatasetCollectionDTO> response = restTemplate
 					.getForEntity(
-							serviceNameURL + "/" + search.getDatasetName(),
-							HpcDatasetCollectionDTO.class);
+							serviceIdURL,
+							HpcDatasetCollectionDTO.class, params);
 			HpcDatasetCollectionDTO results = response.getBody();
 			List<HpcDatasetSearchResult> searchResults = transformResults(results.getHpcDatasetDTO());
 			model.addAttribute("datasetsearchresults",
 					searchResults);
-			model.addAttribute("datasetURL", serviceNameURL);
+			model.addAttribute("datasetURL", serviceURL);
 		} catch (Exception e) {
 			ObjectError error = new ObjectError("hpcDatasetSearch",
 					"Failed to search by name: " + e.getMessage());
@@ -120,9 +121,7 @@ public class HpcSearchDatasetController extends AbstractHpcController {
 					"Failed to search by name: " + e.getMessage());
 			return "searchdataset";
 		} finally {
-			Map<String, String> users = Util.getPIs();
-			model.addAttribute("piList", users);
-			model.addAttribute("creatorList", users);
+			init(model);
 		}
 		return "searchdatasetresult";
 	}
@@ -138,65 +137,35 @@ public class HpcSearchDatasetController extends AbstractHpcController {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.setErrorHandler(new HpcResponseErrorHandler());
 		HpcDatasetRegistrationDateRangeDTO dto = new HpcDatasetRegistrationDateRangeDTO();
+		Map<String, String> params = new HashMap<String, String>();
 		if(search.getFromCreatedDate() != null)
 		{
-			Calendar from = Calendar.getInstance();
-			SimpleDateFormat sdf = new SimpleDateFormat("mm/dd/yyyy");
-			try {
-				from.setTime(sdf.parse(search.getFromCreatedDate()));
-				dto.setFrom(from);
-			} catch (ParseException e) {
-				ObjectError error = new ObjectError("hpcDatasetSearch",
-						"Failed to parse date: " + e.getMessage());
-				bindingResult.addError(error);
-				model.addAttribute("error",
-						"Failed to parse date: " + e.getMessage());
-				return "searchdataset";
-			} finally {
-				Map<String, String> users = Util.getPIs();
-				model.addAttribute("piList", users);
-				model.addAttribute("creatorList", users);
-			}
+			params.put("from", search.getFromCreatedDate());
 		}
 		if(search.getToCreatedDate() != null)
 		{
-			Calendar to = Calendar.getInstance();
-			SimpleDateFormat sdf = new SimpleDateFormat("mm/dd/yyyy");
-			try {
-				to.setTime(sdf.parse(search.getToCreatedDate()));
-				dto.setFrom(to);
-			} catch (ParseException e) {
-				ObjectError error = new ObjectError("hpcDatasetSearch",
-						"Failed to parse date: " + e.getMessage());
-				bindingResult.addError(error);
-				model.addAttribute("error",
-						"Failed to parse date: " + e.getMessage());
-				return "searchdataset";
-			} finally {
-				Map<String, String> users = Util.getPIs();
-				model.addAttribute("piList", users);
-				model.addAttribute("creatorList", users);
-			}
+			params.put("to", search.getToCreatedDate());
 		}
 
 		try {
 			HttpEntity<HpcDatasetCollectionDTO> response = restTemplate
-					.postForEntity(serviceDateRangeURL, dto,
-							HpcDatasetCollectionDTO.class);
+					.getForEntity(
+							serviceIdURL,
+							HpcDatasetCollectionDTO.class, params);
 			HpcDatasetCollectionDTO results = response.getBody();
 			List<HpcDatasetSearchResult> searchResults = transformResults(results.getHpcDatasetDTO());
-			model.addAttribute("datasetsearchresults", searchResults);
+			model.addAttribute("datasetsearchresults",
+					searchResults);
+			model.addAttribute("datasetURL", serviceURL);
 		} catch (Exception e) {
 			ObjectError error = new ObjectError("hpcLogin",
-					"Failed to register: " + e.getMessage());
+					"Failed to search: " + e.getMessage());
 			bindingResult.addError(error);
 			model.addAttribute("error",
-					"Failed to register your request due to: " + e.getMessage());
-			return "searchdatasetresult";
+					"Failed to search due to: " + e.getMessage());
+			return "searchdataset";
 		} finally {
-			Map<String, String> users = Util.getPIs();
-			model.addAttribute("piList", users);
-			model.addAttribute("creatorList", users);
+			init(model);
 		}
 		return "searchdatasetresult";
 	}	
@@ -217,33 +186,15 @@ public class HpcSearchDatasetController extends AbstractHpcController {
 			results.add(dto);
 			List<HpcDatasetSearchResult> searchResults = transformResults(results);
 			model.addAttribute("datasetsearchresults", searchResults);
-		} catch (HttpStatusCodeException e) {
-			String errorpayload = e.getResponseBodyAsString();
-			ObjectError error = new ObjectError("hpcLogin",
-					"Failed to register: " + errorpayload);
-			bindingResult.addError(error);
-			model.addAttribute("registrationStatus", false);
-			model.addAttribute("error",
-					"Failed to register your request due to: " + errorpayload);
-			return "searchdatasetresult";
-		} catch (RestClientException e) {
-			ObjectError error = new ObjectError("hpcLogin",
-					"Failed to register: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error",
-					"Failed to register your request due to: " + e.getMessage());
-			return "searchdatasetresult";
 		} catch (Exception e) {
 			ObjectError error = new ObjectError("hpcLogin",
-					"Failed to register: " + e.getMessage());
+					"Failed to search: " + e.getMessage());
 			bindingResult.addError(error);
 			model.addAttribute("error",
-					"Failed to register your request due to: " + e.getMessage());
-			return "searchdatasetresult";
+					"Failed to search due to: " + e.getMessage());
+			return "searchdataset";
 		} finally {
-			Map<String, String> users = Util.getPIs();
-			model.addAttribute("piList", users);
-			model.addAttribute("creatorList", users);
+			init(model);
 		}
 		return "searchdatasetresult";
 	}
@@ -257,41 +208,26 @@ public class HpcSearchDatasetController extends AbstractHpcController {
 		restTemplate.setErrorHandler(new HpcResponseErrorHandler());
 
 		try {
+			Map<String, String> params = new HashMap<String, String>();
+			params.put("projectId", search.getProjectId());
+			
 			HttpEntity<HpcDatasetDTO> response = restTemplate.getForEntity(
-					serviceProjectIdURL + "/" + search.getProjectId(), HpcDatasetDTO.class);
+					serviceURL, HpcDatasetDTO.class, params);
 
 			HpcDatasetDTO dto = response.getBody();
 			List<HpcDatasetDTO> results = new ArrayList<HpcDatasetDTO>();
 			results.add(dto);
 			List<HpcDatasetSearchResult> searchResults = transformResults(results);
 			model.addAttribute("datasetsearchresults", searchResults);
-		} catch (HttpStatusCodeException e) {
-			String errorpayload = e.getResponseBodyAsString();
-			ObjectError error = new ObjectError("hpcLogin",
-					"Failed to register: " + errorpayload);
-			bindingResult.addError(error);
-			model.addAttribute("registrationStatus", false);
-			model.addAttribute("error",
-					"Failed to register your request due to: " + errorpayload);
-			return "searchdatasetresult";
-		} catch (RestClientException e) {
-			ObjectError error = new ObjectError("hpcLogin",
-					"Failed to register: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error",
-					"Failed to register your request due to: " + e.getMessage());
-			return "searchdatasetresult";
 		} catch (Exception e) {
 			ObjectError error = new ObjectError("hpcLogin",
-					"Failed to register: " + e.getMessage());
+					"Failed to search: " + e.getMessage());
 			bindingResult.addError(error);
 			model.addAttribute("error",
-					"Failed to register your request due to: " + e.getMessage());
-			return "searchdatasetresult";
+					"Failed to search due to: " + e.getMessage());
+			return "searchdataset";
 		} finally {
-			Map<String, String> users = Util.getPIs();
-			model.addAttribute("piList", users);
-			model.addAttribute("creatorList", users);
+			init(model);
 		}
 		return "searchdatasetresult";
 	}
@@ -365,33 +301,15 @@ public class HpcSearchDatasetController extends AbstractHpcController {
 			HpcDatasetCollectionDTO results = response.getBody();
 			List<HpcDatasetSearchResult> searchResults = transformResults(results.getHpcDatasetDTO());
 			model.addAttribute("datasetsearchresults", searchResults);
-		} catch (HttpStatusCodeException e) {
-			String errorpayload = e.getResponseBodyAsString();
-			ObjectError error = new ObjectError("hpcLogin",
-					"Failed to register: " + errorpayload);
-			bindingResult.addError(error);
-			model.addAttribute("registrationStatus", false);
-			model.addAttribute("error",
-					"Failed to register your request due to: " + errorpayload);
-			return "searchdatasetresult";
-		} catch (RestClientException e) {
-			ObjectError error = new ObjectError("hpcLogin",
-					"Failed to register: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error",
-					"Failed to register your request due to: " + e.getMessage());
-			return "searchdatasetresult";
 		} catch (Exception e) {
 			ObjectError error = new ObjectError("hpcLogin",
-					"Failed to register: " + e.getMessage());
+					"Failed to search: " + e.getMessage());
 			bindingResult.addError(error);
 			model.addAttribute("error",
-					"Failed to register your request due to: " + e.getMessage());
-			return "searchdatasetresult";
+					"Failed to search due to: " + e.getMessage());
+			return "searchdataset";
 		} finally {
-			Map<String, String> users = Util.getPIs();
-			model.addAttribute("piList", users);
-			model.addAttribute("creatorList", users);
+			init(model);
 		}
 		return "searchdatasetresult";
 	}

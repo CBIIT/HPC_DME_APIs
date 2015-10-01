@@ -175,18 +175,18 @@ function handleButtons()
 	</div>
 	<form class="form-horizontal" action="#" role="form" th:action="@{/searchdataset/date}" th:object="${hpcDatasetSearch}" method="post" enctype="multipart/form-data">
 	<div class="control-group">
-	  <label class="control-label col-sm-2" for="createdDate">Registered On:</label>
-	  <label class="control-label col-sm-2" for="createdDate">Between:</label>
+	  <label class="control-label col-sm-2" for="fromCreatedDate">Registered On:</label>
+	  <label class="control-label col-sm-1" for="fromCreatedDate">Between:</label>
 	  <div class="col-sm-2">
 		<div class="input-append date" id="fromCreatedDate" data-date-format="mm-dd-yyyy">
-			<input type="text" class="form-control" th:field="*{fromCreatedDate}" onchange="handleButtons()" th:required="required" placeholder="Enter From date"/>
+			<input type="text" class="form-control" th:field="*{fromCreatedDate}" onchange="handleButtons()" placeholder="Enter From date"/>
 	    <span class="add-on"><i class="icon-th"></i></span>
 		</div>
 	  </div>
 	  <label class="control-label col-sm-2" for="toCreatedDate"> AND </label>
 	  <div class="col-sm-2">
 		<div class="input-append date" id="toCreatedDate" data-date-format="mm-dd-yyyy">
-			<input type="text" class="form-control" th:field="*{toCreatedDate}" onchange="handleButtons()" th:required="required" placeholder="Enter to Date"/>
+			<input type="text" class="form-control" th:field="*{toCreatedDate}" onchange="handleButtons()"  placeholder="Enter to Date"/>
 	    <span class="add-on"><i class="icon-th"></i></span>
 		</div>
 	  </div>

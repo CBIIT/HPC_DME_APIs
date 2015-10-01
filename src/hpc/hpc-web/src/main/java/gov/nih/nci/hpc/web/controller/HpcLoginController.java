@@ -56,7 +56,7 @@ import test.gov.nih.nci.hpc.web.ClientResponseLoggingFilter;
 public class HpcLoginController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.user}")
     private String serviceUserURL;
-	@Value("${gov.nih.nci.hpc.server.dataset.query.registrar}")
+	@Value("${gov.nih.nci.hpc.server.dataset}")
 	private String datasetURL;
 	@Value("${gov.nih.nci.hpc.server.user.authenticate.hpc}")
 	private String authenticateHpcURL;
