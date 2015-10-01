@@ -33,6 +33,7 @@
 		<spring-security.version>3.1.4.RELEASE</spring-security.version>
 		<spring-beans.version>3.2.11.RELEASE</spring-beans.version>
 		<amazon-aws.version>1.10.8</amazon-aws.version>
+		<jargon.version>4.0.2.1-RELEASE</jargon.version>
 		<jackson.version>2.5.3</jackson.version>
 		<google-json-simple.version>1.1</google-json-simple.version>
 	</properties>
@@ -181,6 +182,26 @@
 				<version>${amazon-aws.version}</version>
 			</dependency>
 			<dependency>
+ 				<groupId>org.irods.jargon</groupId>
+ 				<artifactId>jargon-core</artifactId>
+ 				<version>${jargon.version}</version>
+ 			</dependency>
+ 			<dependency>
+ 				<groupId>org.irods.jargon</groupId>
+ 				<artifactId>jargon-data-utils</artifactId>
+ 				<version>${jargon.version}</version>
+ 			</dependency>
+ 			<dependency>
+ 				<groupId>org.irods.jargon</groupId>
+ 				<artifactId>jargon-conveyor</artifactId>
+ 				<version>${jargon.version}</version>
+ 			</dependency>
+ 			<dependency>
+ 				<groupId>org.irods.jargon</groupId>
+ 				<artifactId>jargon-user-tagging</artifactId>
+ 				<version>${jargon.version}</version>
+ 			</dependency>
+			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
 				<version>${jackson.version}</version>
@@ -202,4 +223,33 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+	<repositories>
+	<!--  
+ 		<repository>
+ 			<id>dice.repository snaps</id>
+ 			<name>dice.repository.snapshots</name>
+ 			<url>https://raw.github.com/DICE-UNC/DICE-Maven/master/snapshots</url>
+ 			<releases>
+ 				<enabled>true</enabled>
+ 			</releases>
+ 			<snapshots>
+ 				<enabled>true</enabled>
+ 				<updatePolicy>always</updatePolicy>
+ 				<checksumPolicy>warn</checksumPolicy>
+ 			</snapshots>
+ 		</repository>-->
+ 		<repository>
+ 			<id>dice.repository</id>
+ 			<name>dice.repository</name>
+ 			<url>https://raw.github.com/DICE-UNC/DICE-Maven/master/releases</url>
+ 			<releases>
+ 				<enabled>true</enabled>
+ 			</releases>
+ 			<snapshots>
+ 				<enabled>false</enabled>
+ 				<updatePolicy>always</updatePolicy>
+ 				<checksumPolicy>warn</checksumPolicy>
+ 			</snapshots>
+ 		</repository>
+	</repositories>
 </project>
