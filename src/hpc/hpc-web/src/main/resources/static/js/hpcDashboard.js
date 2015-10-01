@@ -10,7 +10,7 @@ app.controller('MyCtrl', function($scope, $http, $q, $attrs) {
 	$scope.$watch('userId', function () {
 	console.log('$scope.userId', $scope.userId);
 
-	$http.get($scope.datasetURL + '/' + $scope.userId).
+	$http.get($scope.datasetURL + '?nciUserId=' + $scope.userId).
 	//$http.get('/js/hpcDatasets.json').
 	  success(function(data, status, headers, config) {
 		        var collection = data["gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO"];
