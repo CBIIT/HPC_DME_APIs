@@ -16,7 +16,6 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAssociateFileProjectsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetQueryType;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDateRangeDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
 
@@ -157,83 +156,7 @@ public interface HpcDatasetRestService
     				   @QueryParam("to") String to);
     
     /**
-     * GET Datasets by Registrar ID.
-     *
-     * @param registrarNciUserId Get datasets associated with this registrar.
-     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
-     */
-    @GET
-    @Path("/dataset/query/registrar/{id}")
-    @Produces("application/json,application/xml")
-    public Response getDatasetsByRegistrarId(
-    		           @PathParam("id") String registrarNciUserId); 
-    
-   /** 
-   * GET Datasets by Primary Investigator ID.
-     *
-     * @param principalInvestigatorNciUserId Get datasets associated with this principal investigator.
-     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
-     */
-    @GET
-    @Path("/dataset/query/principalInvestigator/{id}")
-    @Produces("application/json,application/xml")
-    public Response getDatasetsByPrincipalInvestigatorId(
-    		           @PathParam("id") String principalInvestigatorNciUserId); 
-    
-    /**
-     * GET Datasets by Principal Investigator's first and last name.
-     *
-     * @param firstName The principal investigator first name.
-     * @param lastName The principal investigator last name.
-     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
-     */
-    @GET
-    @Path("/dataset/query/principalInvestigator")
-    @Produces("application/json,application/xml")
-    public Response getDatasetsByPrincipalInvestigatorName(
-    		                   @QueryParam("firstName") String firstName,
-    		                   @QueryParam("lastName") String lastName); 
-    
-    /**
-     * GET Datasets by Registrar's first and last name.
-     *
-     * @param firstName The registrar first name.
-     * @param lastName The registrar last name.
-     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
-     */
-    @GET
-    @Path("/dataset/query/registrar")
-    @Produces("application/json,application/xml")
-    public Response getDatasetsByRegistrarName(
-    		                   @QueryParam("firstName") String firstName,
-    		                   @QueryParam("lastName") String lastName); 
- 
-    /**
-     * GET Datasets by Project ID.
-     *
-     * @param projectId Get datasets associated with this project Id.
-     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
-     */
-    @GET
-    @Path("/dataset/query/project/{id}")
-    @Produces("application/json,application/xml")
-    public Response getDatasetsByProjectId(@PathParam("id") String projectId); 
-    
-    /**
-     * GET Datasets by name.
-     *
-     * @param name Get datasets which 'name' is contained in their name.
-     * @param regex If set to true, the 'name' will be queried as a regular expression. 
-     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
-     */
-    @GET
-    @Path("/dataset/query/name/{name}")
-    @Produces("application/json,application/xml")
-    public Response getDatasetsByName(@PathParam("name") String name,
-    		                          @QueryParam("regex") Boolean regex); 
-    
-    /**
-     * POST Datasets by primary metadata. 
+     * POST Search Datasets by primary metadata. 
      *
      * @param primaryMetadataQueryDTO Get datasets that match the primary 
      *        metadata search criteria. All datasets will be returned if empty
@@ -241,38 +164,10 @@ public interface HpcDatasetRestService
      * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
      */
     @POST
-    @Path("/dataset/query/primaryMetadata")
+    @Path("/datasets/query/primaryMetadata")
     @Produces("application/json,application/xml")
     public Response getDatasetsByPrimaryMetadata(
     		           HpcFilePrimaryMetadataDTO primaryMetadataDTO);
-    
-    /**
-     * GET Datasets by data transfer status.
-     *
-     * @param dataTransferStatus The data transfer status to query for.
-     * @param uploadRequests Search the upload data transfer requests.
-     * @param downloadRequests Search the download data transfer requests.
-     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
-     */
-    @GET
-    @Path("/dataset/query/dataTransferStatus/{status}")
-    @Produces("application/json,application/xml")
-    public Response getDatasetsByDataTransferStatus(
-    		           @PathParam("status") HpcDataTransferStatus dataTransferStatus,
-    		           @QueryParam("uploadRequests") Boolean uploadRequests, 
-    		           @QueryParam("downloadRequests") Boolean downloadRequests);
-    
-    /**
-     * GET Datasets by registration date range.
-     *
-     * @param registrationDateRangeDTO The date range to query.
-     * @return gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO entity.
-     */
-    @POST
-    @Path("/dataset/query/registrationDateRange")
-    @Produces("application/json,application/xml")
-    public Response getDatasetsByRegistrationDateRange(
-    		           HpcDatasetRegistrationDateRangeDTO registrationDateRangeDTO);
     
    /**
      * GET Configurable items by ID.
@@ -292,6 +187,12 @@ public interface HpcDatasetRestService
     @Path("/eran/{path}")
     @Produces("application/json,application/xml")
     public Response s3Upload(@PathParam("path") String path);
+    
+    // Jargon prototype
+    @GET
+    @Path("/eran/{path}")
+    @Produces("application/json,application/xml")
+    public Response irodsUpload(@PathParam("path") String path);
     */
 }
 

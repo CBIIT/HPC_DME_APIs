@@ -20,7 +20,6 @@ import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetQueryType;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDateRangeDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetUpdateFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFileDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
@@ -127,14 +126,14 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response registerDataset(HpcDatasetRegistrationDTO datasetRegistrationDTO)
     {	
-		logger.info("Invoking RS: POST /dataset: " + datasetRegistrationDTO);
+		logger.info("Invoking RS: POST /datasets: " + datasetRegistrationDTO);
 		
 		String datasetId = null;
 		try {
 			 datasetId = datasetBusService.registerDataset(datasetRegistrationDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /dataset failed:", e);
+			    logger.error("RS: POST /datasets failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -144,13 +143,13 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response addFiles(HpcDatasetAddFilesDTO addFilesDTO)
     {	
-		logger.info("Invoking RS: POST /dataset/files: " + addFilesDTO);
+		logger.info("Invoking RS: POST /datasets/files: " + addFilesDTO);
 		
 		try {
 			 datasetBusService.addFiles(addFilesDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /dataset/files failed:", e);
+			    logger.error("RS: POST /datasets/files failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -161,13 +160,13 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     public Response associateProjects(
 	                HpcDatasetAssociateFileProjectsDTO associateFileProjectsDTO)
     {	
-		logger.info("Invoking RS: POST /dataset/projects: " + associateFileProjectsDTO);
+		logger.info("Invoking RS: POST /datasets/projects: " + associateFileProjectsDTO);
 		
 		try {
 			 datasetBusService.associateProjects(associateFileProjectsDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /dataset/projects failed:", e);
+			    logger.error("RS: POST /datasets/projects failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -177,14 +176,14 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response addPrimaryMetadataItems(HpcDatasetAddMetadataItemsDTO addMetadataItemsDTO)
     {
-		logger.info("Invoking RS: POST /dataset/metadata/primary/items: " + addMetadataItemsDTO);
+		logger.info("Invoking RS: POST /datasets/metadata/primary/items: " + addMetadataItemsDTO);
 		
 		HpcFilePrimaryMetadataDTO primaryMetadataDTO = null;
 		try {
 			primaryMetadataDTO = datasetBusService.addPrimaryMetadataItems(addMetadataItemsDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /dataset/metadata/primary/items failed:", e);
+			    logger.error("RS: POST /datasets/metadata/primary/items failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -194,14 +193,14 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response updatePrimaryMetadata(HpcDatasetUpdateFilePrimaryMetadataDTO updateMetadataDTO)
     {
-		logger.info("Invoking RS: POST /dataset/metadata/primary: " + updateMetadataDTO);
+		logger.info("Invoking RS: POST /datasets/metadata/primary: " + updateMetadataDTO);
 		
 		HpcFilePrimaryMetadataDTO primaryMetadataDTO = null;
 		try {
 			 primaryMetadataDTO = datasetBusService.updatePrimaryMetadata(updateMetadataDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /dataset/metadata/primary failed:", e);
+			    logger.error("RS: POST /datasets/metadata/primary failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -212,7 +211,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     public Response getDataset(String id, 
     		                   Boolean skipDataTransferStatusUpdate)
     {
-		logger.info("Invoking RS: GET /dataset/{id}: " + id);
+		logger.info("Invoking RS: GET /datasets/{id}: " + id);
 		
 		HpcDatasetDTO datasetDTO = null;
 		try {
@@ -223,7 +222,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 					              skipDataTransferStatusUpdate : false);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/{id}: failed:", e);
+			    logger.error("RS: GET /datasets/{id}: failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -256,7 +255,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     		    		        Boolean uploadRequests, Boolean downloadRequests,
     		    		        String from, String to)
     {
-    	logger.info("Invoking RS: GET /dataset");
+    	logger.info("Invoking RS: GET /datasets");
     	
     	// If no query type provided, default to ALL.
     	if(queryType == null) {
@@ -321,130 +320,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 			 }
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset: failed:", e);
-			    return errorResponse(e);
-		}
-		
-		return okResponse(datasetCollectionDTO, true);
-    }
-    
-    @Override
-    public Response getDatasetsByRegistrarId(String registrarNciUserId)
-    {
-    	logger.info("Invoking RS: GET /dataset/query/registrar/{id}: " + 
-                    registrarNciUserId);
-    	
-		HpcDatasetCollectionDTO datasetCollectionDTO = null;
-		try {
-			 List<String> userIds = new ArrayList<String>();
-			 userIds.add(registrarNciUserId);
-			 datasetCollectionDTO = datasetBusService.getDatasets(
-					                       userIds, 
-						                   HpcDatasetUserAssociation.REGISTRAR); 
-			 
-		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/registrar/{id}: failed:", e);
-			    return errorResponse(e);
-		}
-		
-		return okResponse(datasetCollectionDTO, true);
-    }
-    
-	@Override
-	public Response getDatasetsByPrincipalInvestigatorId(
-			                     String principalInvestigatorNciUserId) 
-	{
-    	logger.info("Invoking RS: GET /dataset/query/principalInvestigator/{id}: " + 
-    			    principalInvestigatorNciUserId);
-	
-		HpcDatasetCollectionDTO datasetCollectionDTO = null;
-		List<String> userIds = new ArrayList<String>();
-		try {
-			 userIds.add(principalInvestigatorNciUserId);
-			 datasetCollectionDTO = datasetBusService.getDatasets(
-					                userIds, 
-						            HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR); 
-			 
-		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/principalInvestigator/{id}: failed:", e);
-			    return errorResponse(e);
-		}
-		
-		return okResponse(datasetCollectionDTO, true);
-	}
-	
-    @Override
-    public Response getDatasetsByPrincipalInvestigatorName(String firstName,
-    		                                               String lastName)
-    {
-    	logger.info("Invoking RS: GET /dataset/query/principalInvestigator: " + 
-    			    firstName + " " + lastName);
-    	
-		HpcDatasetCollectionDTO datasetCollectionDTO = null;
-		try {
-			 datasetCollectionDTO = datasetBusService.getDatasets(
-					                       firstName, lastName, 
-						                   HpcDatasetUserAssociation.PRINCIPAL_INVESTIGATOR); 
-			 
-		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/principalInvestigator: failed:", e);
-			    return errorResponse(e);
-		}
-		
-		return okResponse(datasetCollectionDTO, true);
-    }
-    
-    @Override
-    public Response getDatasetsByRegistrarName(String firstName,
-    		                                   String lastName)
-    {
-    	logger.info("Invoking RS: GET /dataset/query/registrar: " + 
-    			    firstName + " " + lastName);
-    	
-		HpcDatasetCollectionDTO datasetCollectionDTO = null;
-		try {
-			 datasetCollectionDTO = datasetBusService.getDatasets(
-					                       firstName, lastName, 
-						                   HpcDatasetUserAssociation.REGISTRAR); 
-			 
-		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/registrar: failed:", e);
-			    return errorResponse(e);
-		}
-		
-		return okResponse(datasetCollectionDTO, true);
-    }
-    
-	@Override
-	public Response getDatasetsByProjectId(String projectId) 
-	{
-    	logger.info("Invoking RS: GET /dataset/query/project/{id}: " + 
-    			    projectId);
-	
-		HpcDatasetCollectionDTO datasetCollectionDTO = null;
-		try {
-			 datasetCollectionDTO = datasetBusService.getDatasetsByProjectId(projectId); 
-		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/project/{id}: failed:", e);
-			    return errorResponse(e);
-		}
-		
-		return okResponse(datasetCollectionDTO, true);	
-	} 	
-    
-    @Override
-    public Response getDatasetsByName(String name, Boolean regex)
-    {
-    	logger.info("Invoking RS: GET /dataset/query/name/{name}: " + name);
-    	
-		HpcDatasetCollectionDTO datasetCollectionDTO = null;
-		try {
-			 datasetCollectionDTO = 
-			 datasetBusService.getDatasets(name, 
-					                       regex != null ? regex : true); 
-			 
-		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/name/{name}: failed:", e);
+			    logger.error("RS: GET /datasets: failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -455,7 +331,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     public Response getDatasetsByPrimaryMetadata(
     		                     HpcFilePrimaryMetadataDTO primaryMetadataDTO)
 	{
-    	logger.info("Invoking RS: POST /dataset/query/primaryMetadata: " + 
+    	logger.info("Invoking RS: POST /datasets/query/primaryMetadata: " + 
     			    primaryMetadataDTO);
     	
 		HpcDatasetCollectionDTO datasetCollectionDTO = null;
@@ -463,55 +339,13 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 			 datasetCollectionDTO = datasetBusService.getDatasets(primaryMetadataDTO); 
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /dataset/query/primaryMetadata: failed:", e);
+			    logger.error("RS: POST /datasets/query/primaryMetadata: failed:", e);
 			    return errorResponse(e);
 		}
 		
 		return okResponse(datasetCollectionDTO, true);
 	}
     
-    @Override
-    public Response getDatasetsByDataTransferStatus(HpcDataTransferStatus dataTransferStatus,
-    		                                        Boolean uploadRequests, 
-	                                                Boolean downloadRequests)
-    {	
-    	logger.info("Invoking RS: GET /dataset/query/dataTransferStatus/upload/{status}: " + 
-                    dataTransferStatus);
-	
-    	HpcDatasetCollectionDTO datasetCollectionDTO = null;
-		try {
-			 datasetCollectionDTO = 
-					datasetBusService.getDatasets(dataTransferStatus, uploadRequests, 
-							                      downloadRequests); 
-			 
-		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/dataTransferStatus/upload/{status}: failed:", e);
-			    return errorResponse(e);
-		}
-	
-		return okResponse(datasetCollectionDTO, true);
-	}
-    
-    public Response getDatasetsByRegistrationDateRange(
-    		           HpcDatasetRegistrationDateRangeDTO registrationDateRangeDTO)
-    {
-    	logger.info("Invoking RS: GET /dataset/query/registrationDateRange: " + 
-    			    registrationDateRangeDTO);
-
-		HpcDatasetCollectionDTO datasetCollectionDTO = null;
-		try {
-			 datasetCollectionDTO = 
-					datasetBusService.getDatasets(registrationDateRangeDTO.getFrom(),
-							                      registrationDateRangeDTO.getTo()); 
-			 
-		} catch(HpcException e) {
-			    logger.error("RS: GET /dataset/query/registrationDateRangeDTO: failed:", e);
-			    return errorResponse(e);
-		}
-	
-		return okResponse(datasetCollectionDTO, true);
-    }
-	
     @Override
     public String getPrimaryConfigurableDataFields(String type, String callBackFn)
     {
@@ -590,6 +424,15 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     }
     
     /*
+    private void irodsUpload()
+    {
+    	IRODSAccount account = IRODSAccount.instance(final String host, final int port,
+    			final String userName, final String password,
+    			final String homeDirectory, final String zone,
+    			final String defaultStorageResource)
+    }
+    
+    
     @Override
     public Response s3Upload(String path)
     {
