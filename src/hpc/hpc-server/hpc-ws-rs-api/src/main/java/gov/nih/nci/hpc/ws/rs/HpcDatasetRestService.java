@@ -184,16 +184,17 @@ public interface HpcDatasetRestService
     /*
     // S3 prototype
     @GET
-    @Path("/eran/{path}")
+    @Path("/s3/{path}")
     @Produces("application/json,application/xml")
     public Response s3Upload(@PathParam("path") String path);
     
+    */
     // Jargon prototype
     @GET
-    @Path("/eran/{path}")
+    @Path("/jargon/{path}")
     @Produces("application/json,application/xml")
-    public Response irodsUpload(@PathParam("path") String path);
-    */
+    public Response irodsUpload(@PathParam("path") String inputPath);
+    
 }
 
  
