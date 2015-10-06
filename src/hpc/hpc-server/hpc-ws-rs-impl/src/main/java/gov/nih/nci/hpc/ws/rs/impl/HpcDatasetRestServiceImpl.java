@@ -26,9 +26,13 @@ import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDatasetRestService;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,6 +43,14 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.DataObjectAO;
+import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
+import org.irods.jargon.core.pub.IRODSFileSystem;
+import org.irods.jargon.core.pub.domain.AvuData;
+import org.irods.jargon.core.pub.io.IRODSFile;
+import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -81,6 +93,9 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 	// The Logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
+	
+	// IRODS file system.
+	private IRODSFileSystem irodsFileSystem = null;
     
     //---------------------------------------------------------------------//
     // Constructors
@@ -113,6 +128,14 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     	}
     	
 		this.dynamicConfigFile = dynamicConfigFile;
+		
+		try {
+		     this.irodsFileSystem = IRODSFileSystem.instance();
+		     
+		} catch(JargonException e) {
+			    throw new HpcException("Failed to instantiate iRODs file system",
+	                                   HpcErrorType.UNEXPECTED_ERROR, e);
+		}
     }	
     
     //---------------------------------------------------------------------//
@@ -423,15 +446,69 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     	return calendar;
     }
     
-    /*
-    private void irodsUpload()
+    @Override
+    public Response irodsUpload(String inputPath) 
     {
-    	IRODSAccount account = IRODSAccount.instance(final String host, final int port,
-    			final String userName, final String password,
-    			final String homeDirectory, final String zone,
-    			final String defaultStorageResource)
+    	try {
+    		 // Account credentials.
+    		 IRODSAccount irodsAccount = 
+    		              IRODSAccount.instance("52.7.244.225", 1247, "rods", 
+    			         		                "irods", "/tempZone/home/rods", 
+    			    	    	                "tempZone", "demoResc");
+    		 
+    		 // iRODs factories.
+    		 IRODSFileFactory irodsFileFactory = 
+    				          irodsFileSystem.getIRODSFileFactory(irodsAccount);
+    		 IRODSAccessObjectFactory irodsAccessObjectFactory = 
+    				                  irodsFileSystem.getIRODSAccessObjectFactory();
+    		 
+    		 // Upload a file.
+    		 
+    		 // Instantiate input/output files.
+    		 File inputFile = new File(inputPath);
+    		 String irodsFilePath = "/tempZone/home/rods/" + inputFile.getName();
+    		 IRODSFile irodsOutputFile = irodsFileFactory.instanceIRODSFile(irodsFilePath);
+    		 
+    		 // Instantiate input/output streams.
+    		 InputStream inputStream = new FileInputStream(inputFile);
+    		 OutputStream outputStream = 
+    				      irodsFileFactory.instanceIRODSFileOutputStream(irodsOutputFile);
+    		 
+    		 // Copy data in 1K chunks
+    		 byte[] buffer = new byte[1024];
+    		 int bytesRead = 0;
+    		 try {
+    		      while((bytesRead = inputStream.read(buffer)) > 0) {
+    		             outputStream.write(buffer, 0, bytesRead);
+    		      }
+    		 } finally {
+    		            inputStream.close();
+    		            outputStream.close();
+    		 }
+    		 
+    		 // Attach metadata.
+    		 DataObjectAO irodsDataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
+    		 AvuData avu = AvuData.instance("jargon-test", "Success - yeah!", "N/A");
+    		 irodsDataObjectAO.addAVUMetadata(irodsFilePath, avu);
+    		 
+    		 
+    	} catch(FileNotFoundException fnfe) {
+    		    return errorResponse(new HpcException("File Not Found: " + fnfe.getMessage(),
+                                                      HpcErrorType.UNEXPECTED_ERROR, fnfe));
+    		
+    	} catch(IOException ioe) {
+    		    return errorResponse(new HpcException("I/O exception: " + ioe.getMessage(),
+                                                      HpcErrorType.UNEXPECTED_ERROR, ioe));
+    		    
+    	} catch(JargonException e) {
+    	        return errorResponse(new HpcException("iRODs error: " + e.getMessage(),
+	                                                  HpcErrorType.UNEXPECTED_ERROR, e));
+    	}
+    	
+    	return okResponse(null, false);
     }
     
+    /*
     
     @Override
     public Response s3Upload(String path)
