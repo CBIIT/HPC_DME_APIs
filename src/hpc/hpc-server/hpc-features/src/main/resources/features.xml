@@ -41,6 +41,14 @@
 		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.aws-java-sdk/${amazon-aws.version}_1</bundle>
 	</feature>
 	
+	<!-- iRODs Jargon SDK -->
+	<feature name="hpc-jargon-sdk" version="${jargon.version}">
+		<bundle>wrap:mvn:org.irods.jargon/jargon-core/${jargon.version}</bundle>
+		<bundle>wrap:mvn:org.irods.jargon/jargon-data-utils/${jargon.version}</bundle>
+		<bundle>wrap:mvn:org.irods.jargon/jargon-conveyor/${jargon.version}</bundle>
+		<bundle>wrap:mvn:org.irods.jargon/jargon-user-tagging/${jargon.version}</bundle>
+	</feature>
+	
 	<!-- HPC Server -->
 	<feature name="hpc-server" version="${project.version}">
 	
@@ -48,6 +56,7 @@
 		<feature version="${mongodb.version}">hpc-mongo-async-driver</feature>
 		<feature version="${spring-security.version}">hpc-spring-security-ldap</feature>
 		<feature version="${amazon-aws.version}">hpc-amazon-aws-sdk</feature>
+		<feature version="${jargon.version}">hpc-jargon-sdk</feature>
 		<bundle>wrap:mvn:com.googlecode.json-simple/json-simple/${google-json-simple.version}</bundle>
 
 		<!-- Config files -->
