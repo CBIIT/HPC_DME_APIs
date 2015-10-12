@@ -454,7 +454,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     		 IRODSAccount irodsAccount = 
     		              IRODSAccount.instance("52.7.244.225", 1247, "rods", 
     			         		                "irods", "/tempZone/home/rods", 
-    			    	    	                "tempZone", "demoResc");
+    			    	    	                "tempZone", "dsnetresource");
     		 
     		 // iRODs factories.
     		 IRODSFileFactory irodsFileFactory = 
@@ -466,7 +466,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     		 
     		 // Instantiate input/output files.
     		 File inputFile = new File(inputPath);
-    		 String irodsFilePath = "/tempZone/home/rods/" + inputFile.getName();
+    		 String irodsFilePath = "/tempZone/home/rods/folder-a/" + inputFile.getName();
     		 IRODSFile irodsOutputFile = irodsFileFactory.instanceIRODSFile(irodsFilePath);
     		 
     		 // Instantiate input/output streams.
