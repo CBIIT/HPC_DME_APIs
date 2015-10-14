@@ -1,5 +1,5 @@
 /**
- * HpcDatasetRegistrationRestService.java
+ * HpcProjectRestService.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
