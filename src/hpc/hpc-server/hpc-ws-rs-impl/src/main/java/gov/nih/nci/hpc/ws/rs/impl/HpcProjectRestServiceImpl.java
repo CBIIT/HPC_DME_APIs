@@ -74,7 +74,7 @@ public class HpcProjectRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcDatasetRestService Interface Implementation
+    // HpcProjectRestService Interface Implementation
     //---------------------------------------------------------------------//  
 	
     @Override
