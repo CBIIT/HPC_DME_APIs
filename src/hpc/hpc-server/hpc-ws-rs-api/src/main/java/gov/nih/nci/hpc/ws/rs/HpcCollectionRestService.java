@@ -21,7 +21,7 @@ import javax.ws.rs.core.Response;
 
 /**
  * <p>
- * HPC Project REST Service Interface.
+ * HPC Collection REST Service Interface.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
