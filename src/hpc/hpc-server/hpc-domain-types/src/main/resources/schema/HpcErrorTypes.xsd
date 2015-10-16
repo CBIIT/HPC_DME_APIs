@@ -32,6 +32,7 @@
 			<!-- Service Implementation Errors -->
 			<xsd:enumeration value="DATABASE_ERROR" />
 			<xsd:enumeration value="DATA_TRANSFER_ERROR" />
+			<xsd:enumeration value="DATA_MANAGEMENT_ERROR" />
 			<xsd:enumeration value="UNEXPECTED_ERROR" />
 
 		</xsd:restriction>
