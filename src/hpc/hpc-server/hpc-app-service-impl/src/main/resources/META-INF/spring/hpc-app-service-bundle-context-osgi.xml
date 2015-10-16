@@ -43,6 +43,8 @@
 		          interface="gov.nih.nci.hpc.service.HpcTransferStatusService" />		          
 	<osgi:service ref="hpcProjectService"
 		          interface="gov.nih.nci.hpc.service.HpcProjectService" />	
+	<osgi:service ref="hpcCollectionService"
+		          interface="gov.nih.nci.hpc.service.HpcCollectionService" />	
 
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcUserDAO" 
@@ -60,5 +62,7 @@
 	<osgi:reference id="hpcProjectDAO" 
 					interface="gov.nih.nci.hpc.dao.HpcProjectDAO" />	
 	<osgi:reference id="hpcFileMetadataHistoryDAO" 
-					interface="gov.nih.nci.hpc.dao.HpcFileMetadataHistoryDAO" />					
+					interface="gov.nih.nci.hpc.dao.HpcFileMetadataHistoryDAO" />	
+	<osgi:reference id="hpcDataManagementProxy"
+		            interface="gov.nih.nci.hpc.integration.HpcDataManagementProxy" />				
 </beans>

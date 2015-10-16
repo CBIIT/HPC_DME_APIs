@@ -43,11 +43,10 @@
 							gov.nih.nci.hpc.integration.impl,
 							gov.nih.nci.hpc.integration.globus.impl,
 							gov.nih.nci.hpc.integration.globus.driver,
-							gov.nih.nci.hpc.integration.ldap.authentication
+							gov.nih.nci.hpc.integration.ldap.authentication,
+							gov.nih.nci.hpc.integration.irods.impl
 						</Private-Package>
-						<Import-Package>
-										*
-						</Import-Package>
+						<Import-Package>*</Import-Package>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -86,6 +85,26 @@
 	    <dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-ldap</artifactId>
-		</dependency>		
+		</dependency>	
+		<dependency>
+			<groupId>org.irods.jargon</groupId>
+			<artifactId>jargon-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.irods.jargon</groupId>
+			<artifactId>jargon-data-utils</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.irods.jargon</groupId>
+			<artifactId>jargon-conveyor</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.irods.jargon</groupId>
+			<artifactId>jargon-user-tagging</artifactId>
+		</dependency>	
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+		</dependency>
 	</dependencies>
 </project>

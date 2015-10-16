@@ -102,6 +102,23 @@ public abstract class HpcRestServiceImpl
     	// As a workaround - we call it here directly.
     	return apiVersion.header(exceptionMapper.toResponse(e)).build();
     }
+    
+    /**
+     * Convert a path to an absolute 'path' (i.e. it begins with '/')
+     *
+     * @param path The path.
+     * @return The absolute path.
+     */
+	protected String toAbsolutePath(String path)
+	{
+		StringBuilder buf = new StringBuilder();
+
+		if(path.isEmpty() || path.charAt(0) != '/') {
+		   buf.append('/');
+		} 
+		buf.append(path);
+		return buf.toString();
+	}
 }
 
  

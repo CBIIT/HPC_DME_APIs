@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.domain.model.HpcUser;
@@ -273,9 +274,9 @@ class HpcDomainValidator
     }
     
     /**
-     * Validate metadata items collection
+     * Validate metadata item collection.
      *
-     * @param metadataItems Metadata items collection
+     * @param metadataItems Metadata item collection.
      * @return true if valid, false otherwise.
      */
     public static boolean isValidMetadataItems(List<HpcMetadataItem> metadataItems) 
@@ -286,6 +287,27 @@ class HpcDomainValidator
     	for(HpcMetadataItem metadataItem : metadataItems) {
     		if(metadataItem.getKey() == null ||
     		   metadataItem.getValue() == null) {
+    		   return false;
+    		}
+    	}
+     	return true;
+    }
+    
+    /**
+     * Validate metadata entry collection.
+     *
+     * @param metadataEntries Metadata entry collection.
+     * @return true if valid, false otherwise.
+     */
+    public static boolean isValidMetadataEntries(List<HpcMetadataEntry> metadataEntries) 
+    {
+    	if(metadataEntries == null) {
+    	   return false;
+     	}
+    	for(HpcMetadataEntry metadataEntry : metadataEntries) {
+    		if(metadataEntry.getAttribute() == null ||
+    		   metadataEntry.getValue() == null ||
+    		   metadataEntry.getUnit() == null) {
     		   return false;
     		}
     	}

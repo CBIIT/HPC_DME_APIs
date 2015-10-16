@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.ws.rs.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import gov.nih.nci.hpc.bus.HpcCollectionBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.collection.HpcCollectionRegistrationDTO;
@@ -31,6 +32,7 @@ import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.irods.jargon.core.pub.domain.AvuData;
 
 /**
@@ -49,9 +51,9 @@ public class HpcCollectionRestServiceImpl extends HpcRestServiceImpl
     // Instance members
     //---------------------------------------------------------------------//
 
-    // The Project Registration Business Service instance.
-	//@Autowired
-    //private HpcProjectBusService projectBusService = null;
+    // The Collection Business Service instance.
+	@Autowired
+    private HpcCollectionBusService collectionBusService = null;
     
     // The URI Info context instance.
     //private @Context UriInfo uriInfo;
@@ -92,65 +94,26 @@ public class HpcCollectionRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//  
 	
     @Override
-    public Response addCollection(final String path, 
-    		                      final HpcCollectionRegistrationDTO collectionRegistrationDTO)
+    public Response addCollection(
+    		           String path, 
+    		           HpcCollectionRegistrationDTO collectionRegistrationDTO)
     {	
+    	path = toAbsolutePath(path);
 		logger.info("Invoking RS: PUT /collection" + path);
 		
-		IRODSAccessObjectFactory irodsAccessObjectFactory = null;
-    	try {
-	   		 // Account credentials.
-	   		 IRODSAccount irodsAccount = 
-	   		              IRODSAccount.instance("52.7.244.225", 1247, "rods", 
-	   			         		                "irods", "/tempZone/home/rods", 
-	   			    	    	                "tempZone", "dsnetresource");
-	   		 
-	   		 // iRODs factories.
-	   		IRODSFileFactory irodsFileFactory = 
-	   				          irodsFileSystem.getIRODSFileFactory(irodsAccount);
-	   		irodsAccessObjectFactory = 
-	   				                  irodsFileSystem.getIRODSAccessObjectFactory();
-	   		CollectionAO collectionAO = irodsAccessObjectFactory.getCollectionAO(irodsAccount);
-	   		 
-	   		 // Create the directory in iRODs file system.
-	   		 
-	   		 //String decodedPath = DataUtils.buildDecodedPathFromURLPathInfo(
-		     //	                                   path, retrieveEncoding());
-	   		String calcPath = "/" + path;
-			IRODSFile collectionFile = irodsFileFactory.instanceIRODSFile(calcPath);
-			collectionFile.mkdirs();
-			
-			// Register the collection metadata.
-			List<AvuData> avuDatas = new ArrayList<AvuData>();
-
-			for (HpcMetadataEntry metadataEntry : collectionRegistrationDTO.getMetadataEntries()) {
-				avuDatas.add(AvuData.instance(metadataEntry.getAttribute(),
-						metadataEntry.getValue(), metadataEntry.getUnit()));
-			}
-
-			List<BulkAVUOperationResponse> bulkAVUOperationResponses = collectionAO
-					.addBulkAVUMetadataToCollection(calcPath, avuDatas);
-			
-	   		
-	   	} catch(JargonException e) {
-	   	        return errorResponse(new HpcException("iRODs error: " + e.getMessage(),
-		                                                  HpcErrorType.UNEXPECTED_ERROR, e));
-	   	} finally {
-	   		       irodsAccessObjectFactory.closeSessionAndEatExceptions();
-	   		    
-	   	}
-    	
-    	HpcCollectionRegistrationDTO dto = new HpcCollectionRegistrationDTO();
-    	HpcMetadataEntry e = new HpcMetadataEntry();
-    	e.setAttribute("Attr");
-    	e.setValue("Val");
-    	e.setUnit("Uni");
-    	dto.getMetadataEntries().add(e);
-    	dto.getMetadataEntries().add(e);
-	   	return okResponse(dto, false);
+		String collectionId = null;
+		try {
+			 collectionId = collectionBusService.registerCollection(
+					                                     path,
+					                                     collectionRegistrationDTO);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: PUT /collection" + path + " failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return createdResponse(collectionId);
 	}
-    
-    
 }
 
  
