@@ -64,9 +64,8 @@ public class HpcProjectServiceImpl implements HpcProjectService
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @throws HpcException Constructor is disabled.
      */
-    private HpcProjectServiceImpl() throws HpcException
+    private HpcProjectServiceImpl()
     {
     }   
     
