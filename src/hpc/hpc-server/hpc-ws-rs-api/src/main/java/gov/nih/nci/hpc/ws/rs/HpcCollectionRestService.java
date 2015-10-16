@@ -40,8 +40,9 @@ public interface HpcCollectionRestService
 	@Path("{path:.*}")
 	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")
-	public Response addCollection(@PathParam("path") final String path,
-			                      final HpcCollectionRegistrationDTO collectionRegistrationDTO);
+	public Response addCollection(
+			           @PathParam("path") String path,
+			           HpcCollectionRegistrationDTO collectionRegistrationDTO);
 }
 
  

@@ -38,6 +38,7 @@
 	<bean id="hpcDatasetService" class="gov.nih.nci.hpc.service.impl.HpcDatasetServiceImpl">
 		<constructor-arg ref="hpcDataTransferStatusMap" />
 	</bean>
+	<bean id="hpcCollectionService" class="gov.nih.nci.hpc.service.impl.HpcCollectionServiceImpl" />
 
 	<bean id="hpcTransferStatusService" class="gov.nih.nci.hpc.service.impl.HpcTransferStatusServiceImpl">
 		<constructor-arg ref="transferStatusDAO" />

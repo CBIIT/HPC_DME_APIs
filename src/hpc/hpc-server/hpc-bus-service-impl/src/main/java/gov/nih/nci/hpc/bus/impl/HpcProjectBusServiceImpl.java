@@ -84,9 +84,8 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @throws HpcException Constructor is disabled.
      */
-    private HpcProjectBusServiceImpl() throws HpcException
+    private HpcProjectBusServiceImpl()
     {
     }   
     
@@ -102,12 +101,12 @@ public class HpcProjectBusServiceImpl implements HpcProjectBusService
     public String registerProject(HpcProjectRegistrationDTO projectRegistrationDTO)  
     		                     throws HpcException
     {
-    	logger.info("Invoking registerProject(HpcProjectDTO): " + 
+    	logger.info("Invoking registerProject(HpcProjectRegistrationDTO): " + 
     			     projectRegistrationDTO);
     	
     	// Input validation.
     	if(projectRegistrationDTO == null) {
-    	   throw new HpcException("Null HpcProjectDTO",
+    	   throw new HpcException("Null HpcProjectRegistrationDTO",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	

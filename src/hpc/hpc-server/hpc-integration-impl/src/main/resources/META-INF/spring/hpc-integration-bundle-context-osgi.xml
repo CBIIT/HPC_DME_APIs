@@ -35,7 +35,7 @@
 		          interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
 	<osgi:service ref="hpcDataTransferAccountValidatorProvider"
 		          interface="gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProvider" />
-
-	<!-- OSGi beans import -->
+	<osgi:service ref="hpcDataManagementProxy"
+		          interface="gov.nih.nci.hpc.integration.HpcDataManagementProxy" />
 
 </beans>
