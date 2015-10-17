@@ -10,36 +10,12 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
-import static gov.nih.nci.hpc.bus.impl.HpcBusServiceUtil.associateProjectMetadataLock;
 import gov.nih.nci.hpc.bus.HpcCollectionBusService;
-import gov.nih.nci.hpc.bus.HpcDatasetBusService;
-import gov.nih.nci.hpc.bus.HpcProjectBusService;
-import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
-import gov.nih.nci.hpc.domain.dataset.HpcFile;
-import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
-import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
-import gov.nih.nci.hpc.domain.model.HpcDataset;
-import gov.nih.nci.hpc.domain.model.HpcProject;
-import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.dto.collection.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetRegistrationDTO;
-import gov.nih.nci.hpc.dto.project.HpcProjectAddMetadataItemsDTO;
-import gov.nih.nci.hpc.dto.project.HpcProjectAssociateDatasetsDTO;
-import gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO;
-import gov.nih.nci.hpc.dto.project.HpcProjectDTO;
-import gov.nih.nci.hpc.dto.project.HpcProjectMetadataDTO;
-import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcCollectionService;
-import gov.nih.nci.hpc.service.HpcDatasetService;
-import gov.nih.nci.hpc.service.HpcProjectService;
-import gov.nih.nci.hpc.service.HpcUserService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -93,14 +69,14 @@ public class HpcCollectionBusServiceImpl implements HpcCollectionBusService
     @Override
     public String registerCollection(
     					  String path,
-    		              HpcCollectionRegistrationDTO collectionRegistrationDTO)  
+    					  List<HpcMetadataEntry> metadataEntries)  
     		              throws HpcException
     {
-    	logger.info("Invoking registerCollection(HpcCollectionRegistrationDTO): " + 
-    			     collectionRegistrationDTO);
+    	logger.info("Invoking registerCollection(List<HpcMetadataEntry>): " + 
+    			    metadataEntries);
     	
     	// Input validation.
-    	if(path == null || collectionRegistrationDTO == null) {
+    	if(path == null || metadataEntries == null) {
     	   throw new HpcException("Null path or HpcCollectionRegistrationDTO",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
@@ -109,8 +85,7 @@ public class HpcCollectionBusServiceImpl implements HpcCollectionBusService
     	collectionService.createDirectory(path);
     	
     	// Attach the metadata.
-    	collectionService.addMetadata(path, 
-    			                      collectionRegistrationDTO.getMetadataEntries());
+    	collectionService.addMetadata(path, metadataEntries);
     	
     	return "collection-id";
     }
