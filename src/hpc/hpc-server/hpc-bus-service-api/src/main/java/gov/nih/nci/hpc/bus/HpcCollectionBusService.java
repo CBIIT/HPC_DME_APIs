@@ -10,8 +10,10 @@
 
 package gov.nih.nci.hpc.bus;
 
-import gov.nih.nci.hpc.dto.collection.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.util.List;
 
 /**
  * <p>
@@ -28,13 +30,13 @@ public interface HpcCollectionBusService
      * Register a Collection.
      *
      * @param path The collection's path.
-     * @param collectionRegistrationDTO The collection registration DTO.
+     * @param metadataEntries A list of metadata entries to attach to the collection.
      * @return The registered collection ID.
      * 
      * @throws HpcException
      */
     public String registerCollection(String path,
-    		                         HpcCollectionRegistrationDTO collectionRegistrationDTO) 
+    		                         List<HpcMetadataEntry> metadataEntries) 
     		                        throws HpcException;
 }
 

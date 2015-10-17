@@ -10,7 +10,9 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
-import gov.nih.nci.hpc.dto.collection.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
@@ -35,6 +37,7 @@ public interface HpcCollectionRestService
      * PUT Collection registration request.
      *
      * @param path The collection path.
+     * @param @param metadataEntries A list of metadata entries to attach to the collection.
      */
 	@PUT
 	@Path("{path:.*}")
@@ -42,7 +45,7 @@ public interface HpcCollectionRestService
 	@Produces("application/json,application/xml")
 	public Response addCollection(
 			           @PathParam("path") String path,
-			           HpcCollectionRegistrationDTO collectionRegistrationDTO);
+			           List<HpcMetadataEntry> metadataEntries);
 }
 
  
