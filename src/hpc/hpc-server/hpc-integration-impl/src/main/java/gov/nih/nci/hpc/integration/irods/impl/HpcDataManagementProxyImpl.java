@@ -67,7 +67,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     public void createCollectionDirectory(String path) throws HpcException
     {
 		try {
-			String enc = irodsConnection.getCollectionAO().getIRODSAccessObjectFactory().getJargonProperties().getEncoding();
 			 IRODSFile collectionFile = 
 			      irodsConnection.getIRODSFileFactory().instanceIRODSFile(path);
 			 collectionFile.mkdirs();
