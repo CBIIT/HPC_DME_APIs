@@ -21,15 +21,4 @@
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
 		        schemaLocation="HpcMetadataTypes.xsd" />
 			
-	<!--  Collection Registration DTO -->
-	<xsd:element name="HpcCollectionRegistrationDTO">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="metadataEntries" 
-				             type="hpc-domain-metadata:HpcMetadataEntry"
-					         minOccurs="0" maxOccurs="unbounded" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-	
 </xsd:schema>
