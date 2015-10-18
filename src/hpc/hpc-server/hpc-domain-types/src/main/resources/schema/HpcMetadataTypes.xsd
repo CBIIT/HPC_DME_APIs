@@ -138,4 +138,12 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:complexType name="HpcMandatoryMetadataEntry">
+		<xsd:sequence>
+			<xsd:element name="attribute" type="xsd:string" />
+			<xsd:element name="defaultValue" type="xsd:string" />
+			<xsd:element name="defaultUnit" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
 </xsd:schema>
