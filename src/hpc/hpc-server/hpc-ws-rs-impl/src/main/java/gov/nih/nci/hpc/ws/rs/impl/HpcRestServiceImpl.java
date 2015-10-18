@@ -63,7 +63,7 @@ public abstract class HpcRestServiceImpl
     protected Response createdResponse(String id)
     {
 		UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
-        URI uri = uriBuilder.path(id).build();
+        URI uri = uriBuilder.path(id != null ? id : "").build();
                
 		return Response.created(uri).build();
     }

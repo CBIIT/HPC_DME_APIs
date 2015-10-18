@@ -75,19 +75,15 @@ public class HpcCollectionRestServiceImpl extends HpcRestServiceImpl
     	path = toAbsolutePath(path);
 		logger.info("Invoking RS: PUT /collection" + path);
 		
-		
-		String collectionId = null;
 		try {
-			 collectionId = collectionBusService.registerCollection(
-					                                     path,
-					                                     metadataEntries);
+			 collectionBusService.registerCollection(path, metadataEntries);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: PUT /collection" + path + " failed:", e);
 			    return errorResponse(e);
 		}
 		
-		return createdResponse(collectionId);
+		return createdResponse(null);
 	}
 }
 
