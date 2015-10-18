@@ -67,10 +67,9 @@ public class HpcCollectionBusServiceImpl implements HpcCollectionBusService
     //---------------------------------------------------------------------//  
     
     @Override
-    public String registerCollection(
-    					  String path,
-    					  List<HpcMetadataEntry> metadataEntries)  
-    		              throws HpcException
+    public void registerCollection(String path,
+    					           List<HpcMetadataEntry> metadataEntries)  
+    		                      throws HpcException
     {
     	logger.info("Invoking registerCollection(List<HpcMetadataEntry>): " + 
     			    metadataEntries);
@@ -86,8 +85,6 @@ public class HpcCollectionBusServiceImpl implements HpcCollectionBusService
     	
     	// Attach the metadata.
     	collectionService.addMetadata(path, metadataEntries);
-    	
-    	return "collection-id";
     }
 }
 

@@ -31,13 +31,12 @@ public interface HpcCollectionBusService
      *
      * @param path The collection's path.
      * @param metadataEntries A list of metadata entries to attach to the collection.
-     * @return The registered collection ID.
      * 
      * @throws HpcException
      */
-    public String registerCollection(String path,
-    		                         List<HpcMetadataEntry> metadataEntries) 
-    		                        throws HpcException;
+    public void registerCollection(String path,
+    		                       List<HpcMetadataEntry> metadataEntries) 
+    		                      throws HpcException;
 }
 
  
