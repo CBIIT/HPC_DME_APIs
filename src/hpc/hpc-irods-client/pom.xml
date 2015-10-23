@@ -51,11 +51,11 @@
 	    	<artifactId>hpc-dto</artifactId>
 	    	<version>1.0.0-SNAPSHOT</version>
 		</dependency>		
-        <dependency>
-            <groupId>org.irods.jargon</groupId>
-            <artifactId>jargon-core</artifactId>
-            <version>4.0.2.4-SNAPSHOT</version>
-        </dependency>
+		<dependency>
+			<groupId>org.irods.jargon</groupId>
+			<artifactId>jargon-core</artifactId>
+			<version>4.0.2.1-RELEASE</version>
+		</dependency>	
 		<dependency>
 		   <groupId>org.springframework</groupId>
 		   <artifactId>spring-webmvc</artifactId>
@@ -74,12 +74,7 @@
 		<dependency>
 			<groupId>org.irods.jargon</groupId>
 			<artifactId>jargon-core</artifactId>
-			<version>4.0.2.4-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.irods</groupId>
-		    <artifactId>irods-rest</artifactId>
-		    <version>4.0.2.3-RC1</version>
+			<version>4.0.2.1-RELEASE</version>
 		</dependency>
 	  <dependency>
 		<groupId>com.googlecode.json-simple</groupId>
@@ -153,5 +148,18 @@
 	      <id>libs-release</id>
 	      <url>http://repo.spring.io/libs-release/</url>
 	    </repository>
+ 		<repository>
+ 			<id>dice.repository</id>
+ 			<name>dice.repository</name>
+ 			<url>https://raw.github.com/DICE-UNC/DICE-Maven/master/releases</url>
+ 			<releases>
+ 				<enabled>true</enabled>
+ 			</releases>
+ 			<snapshots>
+ 				<enabled>false</enabled>
+ 				<updatePolicy>always</updatePolicy>
+ 				<checksumPolicy>warn</checksumPolicy>
+ 			</snapshots>
+ 		</repository>		
 	  </repositories>
 </project>
