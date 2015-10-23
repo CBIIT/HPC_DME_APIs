@@ -1,7 +1,7 @@
 package gov.nih.nci.hpc.cli.util;
 
 import java.io.File;
-
+import java.io.IOException;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.configuration.CompositeConfiguration;
@@ -17,16 +17,23 @@ public class HpcConfigProperties {
 
 	private CompositeConfiguration configuration;
 	private PropertiesConfiguration pConfig;
+	private static final String COFIG_PROPS = "config.properties";
+	private static final String HPC_PROPS = "hpc.properties";
 
 	@PostConstruct
 	private void init() {
 		try {			
-			String filePath = System.getProperty("user.home") + File.separator + ".hpcenv";
+			String filePath = System.getProperty("user.home") + File.separator + ".hpcenv" + File.separator + COFIG_PROPS;
 			File configDir = new File(filePath);
 			if (!configDir.exists())
-				configDir.mkdirs();
+			{
+				if (configDir.getParentFile().mkdir()) {
+					System.out.println("ADDING THE FILE");
+					configDir.createNewFile();
+				}	
+			}
 			System.out.println("Loading the properties file: " + filePath);
-			pConfig = new PropertiesConfiguration(filePath+File.separator+"config.properties");
+			pConfig = new PropertiesConfiguration(filePath);
 			
 			
 			//Reload the file when changed 
@@ -37,8 +44,11 @@ public class HpcConfigProperties {
 			configuration = new CompositeConfiguration();
 			configuration.addConfiguration(pConfig);
 			configuration.addConfiguration(
-				    new PropertiesConfiguration("hpc.properties"));
-		} catch (ConfigurationException e) {
+				    new PropertiesConfiguration(HPC_PROPS));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		catch (ConfigurationException e) {
 			e.printStackTrace();
 		}
 	}
