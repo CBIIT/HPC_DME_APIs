@@ -1,249 +1,135 @@
 package gov.nih.nci.hpc.cli;
 
-import gov.nih.nci.hpc.cli.util.BasicAuthRestTemplate;
+import gov.nih.nci.hpc.cli.domain.HPCDataObject;
+import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.collection.HpcCollectionRegistrationDTO;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.springframework.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthCache;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.protocol.ClientContext;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicAuthCache;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.util.EntityUtils;
+import javax.xml.bind.DatatypeConverter;
+
 //import org.codehaus.jackson.map.ObjectMapper;
 import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.exception.DataNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.exception.OverwriteException;
+import org.irods.jargon.core.pub.BulkAVUOperationResponse;
+import org.irods.jargon.core.pub.CollectionAO;
+import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.DataTransferOperations;
-import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFile;
-import org.irods.jargon.rest.auth.DefaultHttpClientAndContext;
-import org.irods.jargon.rest.auth.RestAuthUtils;
-import org.irods.jargon.rest.commands.dataobject.DataObjectAvuFunctions;
-import org.irods.jargon.rest.commands.dataobject.DataObjectAvuFunctionsImpl;
-import org.irods.jargon.rest.configuration.RestConfiguration;
-import org.irods.jargon.rest.domain.DataObjectData;
-import org.irods.jargon.rest.domain.MetadataEntry;
-import org.irods.jargon.rest.domain.MetadataOperationResultEntry;
-import org.irods.jargon.rest.utils.DataUtils;
-import org.irods.jargon.rest.utils.RestTestingProperties;
-import org.irods.jargon.testutils.filemanip.FileGenerator;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.validation.ObjectError;
-
-@EnableAutoConfiguration
+import org.springframework.web.client.RestTemplate;
+@Component
 public class IrodsClient implements HPCClient{
-	@Value("${irods.server.host}")
-	private String irodsHost;
-	@Value("${irods.server.port}")
-	private String irodsHttpPort;
-	@Value("${irods.server.user}")
-	private String irodsUser;
-	@Value("${irods.server.password}")
-	private String irodsPassword;
-	@Value("${irods.file}")
-	private String fileName;
+	@Autowired
+	private HpcConfigProperties configProperties;
 	
-	IRODSFileSystem irodsFileSystem = null;
-	BasicAuthRestTemplate basicAuthRestTemplate;
-	public IrodsClient(String str) throws JargonException
+	private IRODSFileSystem irodsFileSystem = null;
+	private IRODSAccount account = null;
+	private HPCDataObject hpcDataObject;
+
+	
+	public IrodsClient() throws JargonException
 	{
-		irodsFileSystem = IRODSFileSystem.instance();
 		//initialize
+		irodsFileSystem = IRODSFileSystem.instance();
+		
 	}
 
+
+	
 	@Override
-	public void processDataObject() {
-		try {
-			Map<String, String> env = System.getenv();
-			System.out.println("irods.file::"+ env.get("irods.file"));
-			System.out.println("fileName::"+ fileName);
-			System.out.println("irodsHost::"+ irodsHost);
-			
-			
-			basicAuthRestTemplate = new BasicAuthRestTemplate(irodsUser, irodsPassword);
-				
-			
-			//ResponseEntity<DataObjectData> dataSetEntities = basicAuthRestTemplate
-				//	.getForEntity("http://52.7.244.225:8080/irods-rest/rest/dataObject/tempZone/home/rods/Zhengwu.txt", DataObjectData.class);
-			//if (dataSetEntities == null || !dataSetEntities.hasBody()) 
-			//{
-				//ObjectError error = new ObjectError("id",
-					//	"DataObjects not found!");
-				//log.info("DataObjects not found!");				  
-			//}
-			//else
-				//System.out.print("dataSetEntities::"+dataSetEntities);
-			
-			
-			//HttpPost httpPost = new HttpPost(sb.toString());
-			//httpPost.addHeader("accept", "application/json");
+	public String processDataObject() {
 
-			
-			
-			
-			File localFile = new File("testRest.txt");
-			// httpPost.addHeader("Content-type", "multipart/form-data");
-			//FileBody fileEntity = new FileBody(localFile,
-			//"application/octet-stream");
-			//MultipartEntity reqEntity = new MultipartEntity(
-			//HttpMultipartMode.BROWSER_COMPATIBLE);
-			//reqEntity.addPart("uploadFile", fileEntity);
-			//httpPost.setEntity(reqEntity);
-			//HttpResponse response = clientAndContext.getHttpClient().execute(
-			//httpPost, clientAndContext.getHttpContext());
-			
-			
-			
-			//POST WITH MULTIPART
-			//MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-			//builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-			//FileBody fileBody = new FileBody(localFile); //image should be a String
-			//builder.addPart("uploadFile", fileBody); 
-			//System.out.print("BUILDING ENTITY::");
-			//HttpEntity entity = builder.build();
-			//System.out.print("POSTING REQUEST::");
-			
-			/*
-			FileSystemResource resource = new FileSystemResource(localFile);
-
-			MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>();
-			map.add("file", resource);
-			HttpHeaders headers1 = new HttpHeaders();
-			headers1.setContentType(MediaType.MULTIPART_FORM_DATA);
-			HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<MultiValueMap<String, Object>>(map, headers1);			
-			//HttpEntity<MultiValueMap<String, Object>> entity1 = new HttpEntity<MultiValueMap<String, Object>>(map, requestHeaders);			
-			
-			ResponseEntity<DataObjectData> dataSetResEntity = basicAuthRestTemplate.postForEntity("http://52.7.244.225:8080/irods-rest/rest/fileContents/tempZone/home/rods",requestEntity,DataObjectData.class);
-			//ResponseEntity<DataObjectData> dataSetResEntity = basicAuthRestTemplate.exchange(new URI("http://52.7.244.225:8080/irods-rest/rest/fileContents/tempZone/home/rods/testRest.txt"), HttpMethod.POST, entity, DataObjectData.class);
-						
-			System.out.print("RESPONSE FROM POST::" + dataSetResEntity);
-			*/
-			
-			
-			
-			//Map<String, Object> map1 = new HashMap<String, Object>();
-			//List<MetadataEntry>  metadataEntries = new ArrayList<MetadataEntry>();
-			//MetadataEntry metadataEntry = new MetadataEntry();
-			//metadataEntry.setAttribute("MyAttt1");
-			//metadataEntry.setValue("MyVal1");
-			//metadataEntry.setUnit("MyUnit1");
-			//metadataEntries.add(metadataEntry);
-			//map1.put("metadataEntries", metadataEntries);
-			//readMetadataJsonFromFile();
-			//String jSonStr = "{\"metadataEntries\":[{\"attribute\":\"attr4\",\"value\":\"val4\",\"unit\":\"unit4\"}]}";
-		
-			Map<String, String> map1 = new HashMap<String, String>();
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-			HttpEntity<String> entity = new HttpEntity<String>(readMetadataJsonFromFile(),headers);
-//			map1.put("metadataEntries", "");
-			basicAuthRestTemplate.put("http://52.7.244.225:8080/irods-rest/rest/dataObject/tempZone/home/rods/Zhengwu.txt/metadata", entity);   			
-			
-			
-			
-			
-
-			//postDataObject();
-			//readAddMetadataForDataObject();
+			try{
 			putUploadFileJargon();
+			}catch(DataNotFoundException dnfe){
+				return "Input collection/dataset folder not found";
+			}catch(OverwriteException oe){
+				return "Input collection/dataset already at the target location";
+			}catch(JargonException je){
+				return "Can not process " + je.getMessage();
+			}
 			
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}        
- 
+			//addMetadataToObject();
+			if (isDirectory(hpcDataObject.getFilename()))
+				validateAddMetadataToObject();
+			
 		
+		return "Collection "+hpcDataObject.getFilename()+" added to archive";
 	}
 	
-	
-	public void readAddMetadataForDataObject() throws Exception {
-		String fileName = "Zhengwu.txt";
-		String expectedAttribName = "testName";
-		String expectedValueName = "testVal";
 
-		String targetIrodsObj = "http://52.7.244.225:8080/irods-rest/rest/dataObject/tempZone/home/rods";
+ private boolean isDirectory(String filename) {
+	 	if (Files.exists(Paths.get(filename)) && Files.isDirectory(Paths.get(filename)))
+	 		return true;
+	 	else
+	 		return false;
 		
-
-		String targetIrodsDataObject = targetIrodsObj + "/" + fileName;
-
-		IRODSAccount account = new IRODSAccount(irodsHost, 8080,
-				irodsUser, irodsPassword,
-				irodsUser, "tempZone",
-				"");	
-
-		DefaultHttpClientAndContext clientAndContext = setContext(account);
-		
-		IRODSFile targetIrodsFile = irodsFileSystem.getIRODSFileFactory(
-				account).instanceIRODSFile(targetIrodsObj);
-		targetIrodsFile.deleteWithForceOption();
-		targetIrodsFile.mkdirs();
-		
-		DataTransferOperations dataTransferOperationsAO = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						account);
-		dataTransferOperationsAO.putOperation(new File(fileName),
-				targetIrodsFile, null, null);
-
-		AvuData avuData = AvuData.instance(expectedAttribName,
-				expectedValueName, "");
-		List<AvuData> bulkAvuData = new ArrayList<AvuData>();
-		bulkAvuData.add(avuData);
-
-		RestConfiguration restConfiguration = new RestConfiguration();
-
-		DataObjectAvuFunctions dataObjectAvuFunctionsImpl = new DataObjectAvuFunctionsImpl(
-				restConfiguration, account,
-				irodsFileSystem.getIRODSAccessObjectFactory());
-
-		List<MetadataOperationResultEntry> responses = dataObjectAvuFunctionsImpl
-				.addAvuMetadata(targetIrodsDataObject, bulkAvuData);
-
 	}
 
 
- public String readMetadataJsonFromFile() {
+
+private void validateAddMetadataToObject() {
+		String hpcServerURL = configProperties.getProperty("hpc.server.url");
+		String hpcCollection = configProperties.getProperty("hpc.collection.service");
+		final String irodsZoneHome = configProperties.getProperty("irods.default.zoneHome");
+		final String irodsUsername = configProperties.getProperty("irods.username");	 
+	 	JSONObject jsonObject = readMetadataJsonFromFile();
+		JSONArray jsonArray = (JSONArray) jsonObject.get("metadataEntries");
+
+	 	List<HpcMetadataEntry> listOfhpcCollection = new ArrayList<HpcMetadataEntry>();
+		AvuData avuData = null;
+		for (int i = 0; i < jsonArray.size(); i++) {
+			JSONObject attrObj=(JSONObject) jsonArray.get(i);
+		    //System.out.println(attrObj.get("attribute"));
+		    HpcMetadataEntry hpcMetadataEntry = new HpcMetadataEntry();
+		    hpcMetadataEntry.setAttribute((String) attrObj.get("attribute"));
+		    hpcMetadataEntry.setValue((String) attrObj.get("value"));
+		    hpcMetadataEntry.setUnit((String) attrObj.get("unit"));
+		    listOfhpcCollection.add(hpcMetadataEntry);
+		}
+		RestTemplate restTemplate = new RestTemplate();
+		  HashMap<String, String > urlMap = new HashMap<String, String>(){{
+		        put("path",irodsZoneHome+"/"+irodsUsername);
+		    }};
+		HpcCollectionRegistrationDTO hpcCollectionRegistrationDTO = new HpcCollectionRegistrationDTO();
+		hpcCollectionRegistrationDTO.getMetadataEntries().addAll(listOfhpcCollection);
+
+		
+		restTemplate.put(
+				hpcServerURL+"/"+hpcCollection+irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getFilename(),hpcCollectionRegistrationDTO,urlMap);
+	
+	}
+
+
+
+public JSONObject readMetadataJsonFromFile() {
 
 	JSONParser parser = new JSONParser();
 	try {
-			Object obj = parser.parse(new FileReader("testRest.json"));	
-			JSONObject jsonObject = (JSONObject) obj;
+			JSONObject jsonObject = (JSONObject) parser.parse(new FileReader(hpcDataObject.getMetadataFile()));	
+			//JSONArray jsonObject = (JSONArray) obj;
 			System.out.println(jsonObject.toJSONString());
-			return jsonObject.toJSONString();
+			//return (JSONObject) jsonObject.get("metadataEntries");
+			return jsonObject;
 	
 	} catch (FileNotFoundException e) 
 	{
@@ -254,108 +140,77 @@ public class IrodsClient implements HPCClient{
 	} catch (ParseException e) 
 	{
 			e.printStackTrace();
-	}	
-		return "";
+	}
+	return null;
 }
 	
-	
-	private DefaultHttpClientAndContext setContext(IRODSAccount account) {
-		HttpHost targetHost = new HttpHost(irodsHost,8080, "http");		
-		
-		DefaultHttpClient httpclient = new DefaultHttpClient();
-		httpclient.getCredentialsProvider().setCredentials(
-				new AuthScope(irodsHost, 8080),
-				new UsernamePasswordCredentials(account.getUserName(),
-						account.getPassword()));
-		// Create AuthCache instance
-		AuthCache authCache = new BasicAuthCache();
-		// Generate BASIC scheme object and add it to the local
-		// auth cache
-		BasicScheme basicAuth = new BasicScheme();
-		authCache.put(targetHost, basicAuth);
+	 public void addMetadataToObject() throws Exception
+	 {
+		 	JSONObject jsonObject = readMetadataJsonFromFile();
+		 	/*
+			if("COLLECTION".equalsIgnoreCase(hpcDataObject.getObjectType()))
+			{
+				CollectionAO collectionAO = irodsFileSystem.getIRODSAccessObjectFactory()
+						.getCollectionAO(account);
+				List<AvuData> listOfAvuData = new ArrayList<AvuData>();
+				AvuData avuData = null;
+				for (int i = 0; i < jsonObject.size(); i++) {
+					JSONObject attrObj=(JSONObject) jsonObject.get(i);
+				    System.out.println(attrObj.get("attribute"));
+				    avuData = new AvuData((String) attrObj.get("attribute"),(String) attrObj.get("value"),(String) attrObj.get("unit"));
+				    listOfAvuData.add(avuData);
+				}
+			
+				collectionAO.addBulkAVUMetadataToCollection(configProperties.getProperty("irods.default.zoneHome")+"/"+configProperties.getProperty("irods.username")+"/"+hpcDataObject.getFilename(),
+						listOfAvuData);
+			}
 
-		// Add AuthCache to the execution context
-		BasicHttpContext localcontext = new BasicHttpContext();
-		localcontext.setAttribute(ClientContext.AUTH_CACHE, authCache);
-		DefaultHttpClientAndContext clientAndContext = new DefaultHttpClientAndContext();
-		clientAndContext.setHost(irodsHost);
-		clientAndContext.setHttpClient(httpclient);
-		clientAndContext.setHttpContext(localcontext);
-		return clientAndContext;
-	}
-	
-	public void postDataObject() throws Exception {
-	File localFile = new File("testRest.txt");
-	
-	IRODSAccount account = new IRODSAccount(irodsHost, 8080,
-			irodsUser, irodsPassword,
-			irodsUser, "tempZone",
-			"");	
-	
-	IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-			.getIRODSAccessObjectFactory();
+			if("DATAOBJECT".equalsIgnoreCase(hpcDataObject.getObjectType()))
+			{
+*/
+				DataObjectAO dataObjectAO = irodsFileSystem
+						.getIRODSAccessObjectFactory().getDataObjectAO(account);
+				JSONArray jsonArray = (JSONArray) jsonObject.get("metadataEntries");
 
-	StringBuilder sb = new StringBuilder();
-	sb.append("http://52.7.244.225:");
-	sb.append(8080);
-	sb.append("/irods-rest/rest/fileContents/");
-	sb.append(DataUtils.encodeIrodsAbsolutePath("tempZone/home/rods/testRest.txt",
-			accessObjectFactory.getJargonProperties().getEncoding()));
+				List<AvuData> listOfAvuData = new ArrayList<AvuData>();
+				AvuData avuData = null;
+				for (int i = 0; i < jsonArray.size(); i++) {
+					JSONObject attrObj=(JSONObject) jsonArray.get(i);
+				    avuData = new AvuData((String) attrObj.get("attribute"),(String) attrObj.get("value"),(String) attrObj.get("unit"));
+				    listOfAvuData.add(avuData);
+				}
 
+				List<BulkAVUOperationResponse> response = dataObjectAO.addBulkAVUMetadataToDataObject(configProperties.getProperty("irods.default.zoneHome")+"/"+configProperties.getProperty("irods.username")+"/"+hpcDataObject.getFilename(), listOfAvuData);
+				
+//			}			
 
+	 }
+ 
 
-
-	DefaultHttpClientAndContext clientAndContext = setContext(account);
-
-	try {
-
-		HttpPost httpPost = new HttpPost(sb.toString());
-		httpPost.addHeader("accept", "application/json");
-		// httpPost.addHeader("Content-type", "multipart/form-data");
-		FileBody fileEntity = new FileBody(localFile,
-				"application/octet-stream");
-		MultipartEntity reqEntity = new MultipartEntity(
-				HttpMultipartMode.BROWSER_COMPATIBLE);
-		reqEntity.addPart("uploadFile", fileEntity);
-		httpPost.setEntity(reqEntity);
-		HttpResponse response = clientAndContext.getHttpClient().execute(
-				httpPost, clientAndContext.getHttpContext());
-		//HttpEntity entity = response.getEntity();
-
-		//String entityData = EntityUtils.toString(entity);
-		//EntityUtils.consume(entity);
-		System.out.println("JSON>>>");
-		//System.out.println(entityData);
-		//ObjectMapper objectMapper = new ObjectMapper();
-		//DataObjectData result = objectMapper.readValue(entityData,
-			//	DataObjectData.class);
-
-
-
-		//IRODSFile actual = accessObjectFactory.getIRODSFileFactory(
-				//account).instanceIRODSFile("testRest.txt");
-
-
-	} finally {
-		// When HttpClient instance is no longer needed,
-		// shut down the connection manager to ensure
-		// immediate deallocation of all system resources
-		clientAndContext.getHttpClient().getConnectionManager().shutdown();
-	}
-	}
-	
-	
-    public void putUploadFileJargon() throws Exception {
-    	// generate a local scratch file
-        String testFileName = "testRest.txt";
-
-        File localFile=new File(testFileName);
-        IRODSAccount account = IRODSAccount.instance(irodsHost, 1247, irodsUser, irodsPassword,
-                "/tempZone/home/rods", "tempZone", "");
+   public void putUploadFileJargon() throws DataNotFoundException,JargonException,OverwriteException
+   {
+		String irodsUsername = configProperties.getProperty("irods.username");		
+        File localFile=new File(hpcDataObject.getFilename());
         DataTransferOperations dto=irodsFileSystem.getIRODSAccessObjectFactory().getDataTransferOperations(account);
-        IRODSFile destFile=irodsFileSystem.getIRODSFileFactory(account).instanceIRODSFile("/tempZone/home/rods");
-        dto.putOperation(localFile,destFile,null,null);
-        
-    }	
+        IRODSFile destFile=irodsFileSystem.getIRODSFileFactory(account).instanceIRODSFileUserHomeDir(irodsUsername);
+        dto.putOperation(localFile,destFile,null,null);        
+    }
 
+
+	public void setHPCDataObject(HPCDataObject hpcDataObject) {
+		this.hpcDataObject = hpcDataObject;	
+	}
+
+	public void setHPCAccount() throws NumberFormatException, JargonException {
+		String irodsHostName = configProperties.getProperty("irods.default.host");
+		String irodsPort = configProperties.getProperty("irods.default.port");
+		String irodsZone = configProperties.getProperty("irods.default.zone");
+		String irodsZoneHome = configProperties.getProperty("irods.default.zoneHome");
+		String irodsUsername = configProperties.getProperty("irods.username");
+		String irodsPassword = new String(DatatypeConverter.parseBase64Binary(configProperties.getProperty("irods.password")));
+		String irodsResource = configProperties.getProperty("irods.resource");		
+        account = IRODSAccount.instance(irodsHostName, Integer.parseInt(irodsPort),irodsUsername , irodsPassword,
+        		irodsZoneHome+"/"+irodsUsername, irodsZone, irodsResource);
+	}	
 }
+
