@@ -128,6 +128,15 @@
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
+								<xsdOption>
+									<xsd>xjc-build/schema/HpcMetadata.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.domain.model</packagename>
+									<bindingFile>xjc-build/schema/hpc-domain-metadata-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:multiline</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
 							</xsdOptions>
 						</configuration>
 					</execution>
