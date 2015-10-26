@@ -305,9 +305,10 @@ class HpcDomainValidator
     	   return false;
      	}
     	for(HpcMetadataEntry metadataEntry : metadataEntries) {
-    		if(metadataEntry.getAttribute() == null ||
+    		if(metadataEntry.getAttribute() == null || 
+    		   metadataEntry.getAttribute().isEmpty() ||
     		   metadataEntry.getValue() == null ||
-    		   metadataEntry.getUnit() == null) {
+    		   metadataEntry.getValue().isEmpty()) {
     		   return false;
     		}
     	}
