@@ -58,6 +58,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.event.ProgressEvent;
+import com.amazonaws.event.ProgressListener;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.Upload;
+
 /**
  * <p>
  * HPC Dataset REST Service Implementation.
@@ -466,7 +479,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     		 
     		 // Instantiate input/output files.
     		 File inputFile = new File(inputPath);
-    		 String irodsFilePath = "/tempZone/home/rods/folder-a/" + inputFile.getName();
+    		 String irodsFilePath = "/tempZone/home/rods/" + inputFile.getName();
     		 IRODSFile irodsOutputFile = irodsFileFactory.instanceIRODSFile(irodsFilePath);
     		 
     		 // Instantiate input/output streams.
@@ -508,8 +521,6 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     	return okResponse(null, false);
     }
     
-    /*
-    
     @Override
     public Response s3Upload(String path)
     {
@@ -520,67 +531,56 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     
     private void s3SimpleUpload(String path)
     {
+    	// Instantiate S3 Client and set the Cleversafe endpoint URL.
     	BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials("vDZGQHw6OgBBpeI4D1CA", 
     			                                                            "OVDNthOhfl5npqdSfAD8T9FsIcJlsCJsmuRdfanr");
-    	
     	AmazonS3 s3client = new AmazonS3Client(cleversafeCredentials);
     	s3client.setEndpoint("https://8.40.18.82");
     	
         try {
-            System.out.println("Uploading a new object to S3 from a file\n");
-            File file = new File(path);
-            s3client.deleteObject("CJ090115", "HPC-generated-key");
-            PutObjectResult result = s3client.putObject(new PutObjectRequest(
-            		                                    "CJ090115", "HPC-generated-key", file));
+        	 // Put an object.
+             System.out.println("Uploading a new object to S3 from a file\n");
+             File file = new File(path);
+             PutObjectResult result = s3client.putObject(new PutObjectRequest(
+              		                                    "CJ090115", "HPC-generated-key", file));
             
-            System.out.println("Upload result md5: " + result.getContentMd5());
+             System.out.println("Upload result md5: " + result.getContentMd5());
             
-            System.out.println("Get object...");
-            S3Object object = s3client.getObject("CJ090115", "HPC-generated-key");
-            InputStream objectData = object.getObjectContent();
-            System.out.println("received object: bytes=" + objectData.available());
-            // Process the objectData stream.
-            objectData.close();
-            
-         } catch (AmazonServiceException ase) {
-            System.out.println("Caught an AmazonServiceException, which " +
-            		"means your request made it " +
-                    "to Amazon S3, but was rejected with an error response" +
-                    " for some reason.");
-            System.out.println("Error Message:    " + ase.getMessage());
-            System.out.println("HTTP Status Code: " + ase.getStatusCode());
-            System.out.println("AWS Error Code:   " + ase.getErrorCode());
-            System.out.println("Error Type:       " + ase.getErrorType());
-            System.out.println("Request ID:       " + ase.getRequestId());
-        } catch (AmazonClientException ace) {
-            System.out.println("Caught an AmazonClientException, which " +
-            		"means the client encountered " +
-                    "an internal error while trying to " +
-                    "communicate with S3, " +
-                    "such as not being able to access the network.");
-            System.out.println("Error Message: " + ace.getMessage());
-        } catch (IOException ioex) {
-        	System.out.println("IO exception: " + ioex);
-        }
+         } catch(AmazonServiceException ase) {
+                 System.out.println("Caught an AmazonServiceException, which " +
+            	                    "means your request made it " +
+                                    "to Amazon S3, but was rejected with an error response" +
+                                    " for some reason.");
+                 System.out.println("Error Message:    " + ase.getMessage());
+                 System.out.println("HTTP Status Code: " + ase.getStatusCode());
+                 System.out.println("AWS Error Code:   " + ase.getErrorCode());
+                 System.out.println("Error Type:       " + ase.getErrorType());
+                 System.out.println("Request ID:       " + ase.getRequestId());
+                 
+         } catch(AmazonClientException ace) {
+                 System.out.println("Caught an AmazonClientException, which " +
+            	 "means the client encountered " +
+                 "an internal error while trying to " +
+                 "communicate with S3, " +
+                 "such as not being able to access the network.");
+                 System.out.println("Error Message: " + ace.getMessage());
+        } 
     }
     
     private void s3MultipartUpload(String path)
     {
+    	// Instantiate a Transfer Manager using Cleversafe AWS credentials
     	BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials("vDZGQHw6OgBBpeI4D1CA", 
     			                                                            "OVDNthOhfl5npqdSfAD8T9FsIcJlsCJsmuRdfanr");
     	TransferManager tm = new TransferManager(cleversafeCredentials);
-    	tm.getAmazonS3Client().setEndpoint("http://8.40.18.82");
+    	tm.getAmazonS3Client().setEndpoint("https://8.40.18.82");
     	
-    	
-    	tm.getAmazonS3Client().deleteObject("CJ090115", "HPC-generated-key");
+    	// Create an upload request
     	System.out.println("Multipart Uploading a new object to S3 from a file\n");
         File file = new File(path);
-        
         PutObjectRequest request = new PutObjectRequest("CJ090115", "HPC-generated-key", file);
         
-        // You can ask the upload for its progress, or you can 
-        // add a ProgressListener to your request to receive notifications 
-        // when bytes are transferred.
+        // Attach a progress listener.
         request.setGeneralProgressListener(new ProgressListener() {
 			@Override
 			public void progressChanged(ProgressEvent progressEvent) {
@@ -590,25 +590,22 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 			}
 		});
         
+        // Invoke the asynchrnous upload.
         Upload upload = tm.upload(request);
 
+        // For a demo we'll block and wait for the upload to complete.
         try {
-        	// Block and wait for the upload to finish
-        	upload.waitForCompletion();
+        	 upload.waitForCompletion();
+        	 
+        	 System.out.println("Async upload completed");
         	
-            System.out.println("\n\nDownloading object...");
-            S3Object object = tm.getAmazonS3Client().getObject("CJ090115", "HPC-generated-key");
-            InputStream objectData = object.getObjectContent();
-            System.out.println("received object: bytes=" + objectData.available());
-            
-        } catch (AmazonClientException amazonClientException) {
-        	System.out.println("Unable to upload file, upload was aborted.");
-        	amazonClientException.printStackTrace();
-        } catch (Exception ioex) {
-        	System.out.println("Interupted exception: " + ioex);
+        } catch(AmazonClientException amazonClientException) {
+        	    System.out.println("Unable to upload file, upload was aborted.");
+        	    amazonClientException.printStackTrace();
+        } catch(Exception ioex) {
+        	    System.out.println("Interupted exception: " + ioex);
         }
     }
-    */
 }
 
  

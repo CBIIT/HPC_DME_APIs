@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcMetadata.xsd
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
+	targetNamespace="http://hpc.nci.nih.gov/domain/model"
+	elementFormDefault="unqualified">
+
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
+		        schemaLocation="HpcMetadataTypes.xsd" />
+		
+	<xsd:element name="HpcMandatoryMetadata">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="mandatoryMetadataEntries" 
+			                 type="hpc-domain-metadata:HpcMandatoryMetadataEntry" 
+			                 minOccurs="0" maxOccurs="unbounded" />
+			    <xsd:element name="collectionsMandatoryMetadata" 
+			                 type="hpc-domain-metadata:HpcCollectionTypeMandatoryMetadata" 
+			                 minOccurs="0" maxOccurs="unbounded"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>
