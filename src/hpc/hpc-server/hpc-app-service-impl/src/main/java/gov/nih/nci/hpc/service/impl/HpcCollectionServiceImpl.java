@@ -12,16 +12,17 @@ package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.metadata.HpcCollectionTypeMandatoryMetadata;
-import gov.nih.nci.hpc.domain.metadata.HpcMandatoryMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.model.HpcMandatoryMetadata;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
+import gov.nih.nci.hpc.domain.model.HpcMetadataValidationRules;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcCollectionService;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -41,7 +42,7 @@ public class HpcCollectionServiceImpl implements HpcCollectionService
     //---------------------------------------------------------------------//    
     
     // Collection type attribute name.
-	private final static String COLLECTION_TYPE_ATTRIBUTE = "type"; 
+	private final static String COLLECTION_TYPE_ATTRIBUTE = "Collection type"; 
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -52,7 +53,8 @@ public class HpcCollectionServiceImpl implements HpcCollectionService
     private HpcDataManagementProxy dataManagementProxy = null;
 	
 	// A collection of mandatory metadata entries.
-	private HpcMandatoryMetadata mandatoryMetadata = new HpcMandatoryMetadata();
+	private HpcMetadataValidationRules metadataValidationRules = 
+			                           new HpcMetadataValidationRules();
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -66,28 +68,106 @@ public class HpcCollectionServiceImpl implements HpcCollectionService
     {
     	// TODO: move this to external JSON config.
 
-    	// Common mandatory metadata
-    	HpcMandatoryMetadataEntry type = new HpcMandatoryMetadataEntry();
-    	type.setAttribute("type");
-    	mandatoryMetadata.getMandatoryMetadataEntries().add(type);
+    	// Collection metadata validation rules.
+    	HpcMetadataValidationRule collectionType = new HpcMetadataValidationRule();
+    	collectionType.setAttribute("Collection type");
+    	collectionType.setMandatory(true);
+    	collectionType.setRuleEnabled(true);
+    	collectionType.setDOC("DOC-NAME");
+    	collectionType.getValidValues().addAll(Arrays.asList("project", "dataset"));
     	
-    	HpcMandatoryMetadataEntry name = new HpcMandatoryMetadataEntry();
-    	name.setAttribute("name");
-    	mandatoryMetadata.getMandatoryMetadataEntries().add(name);
+    	HpcMetadataValidationRule projectName = new HpcMetadataValidationRule();
+    	projectName.setAttribute("Project name");
+    	projectName.setMandatory(true);
+    	projectName.setRuleEnabled(true);
+    	projectName.setDOC("DOC-NAME");
+    	projectName.setCollectionType("project");
     	
-    	// Project mandatory metadata.
-    	HpcCollectionTypeMandatoryMetadata projectMandatoryMetadata = new HpcCollectionTypeMandatoryMetadata();
-    	projectMandatoryMetadata.setType("project");
+    	HpcMetadataValidationRule projectType = new HpcMetadataValidationRule();
+    	projectType.setAttribute("Project type");
+    	projectType.setDefaultValue("Unspecified");
+    	projectType.setMandatory(true);
+    	projectType.setRuleEnabled(true);
+    	projectType.setDOC("DOC-NAME");
+    	projectType.setCollectionType("project");
     	
-    	HpcMandatoryMetadataEntry internalProjectId = new HpcMandatoryMetadataEntry();
-    	internalProjectId.setAttribute("internalProjectId");
-    	projectMandatoryMetadata.getMandatoryMetadataEntries().add(internalProjectId);
+    	HpcMetadataValidationRule projectDescription = new HpcMetadataValidationRule();
+    	projectDescription.setAttribute("Project description");
+    	projectDescription.setMandatory(true);
+    	projectDescription.setRuleEnabled(true);
+    	projectDescription.setDOC("DOC-NAME");
+    	projectDescription.setCollectionType("project");
     	
-    	HpcMandatoryMetadataEntry principalInvestigatorNciUserId = new HpcMandatoryMetadataEntry();
-    	principalInvestigatorNciUserId.setAttribute("principalInvestigatorNciUserId");
-    	projectMandatoryMetadata.getMandatoryMetadataEntries().add(principalInvestigatorNciUserId);
+    	HpcMetadataValidationRule internalProjectId = new HpcMetadataValidationRule();
+    	internalProjectId.setAttribute("Internal Project ID");
+    	internalProjectId.setMandatory(true);
+    	internalProjectId.setRuleEnabled(true);
+    	internalProjectId.setDOC("DOC-NAME");
+    	internalProjectId.setCollectionType("project");
     	
-    	mandatoryMetadata.getCollectionsMandatoryMetadata().add(projectMandatoryMetadata);
+    	HpcMetadataValidationRule sourceLabPI = new HpcMetadataValidationRule();
+    	sourceLabPI.setAttribute("Source Lab PI");
+    	sourceLabPI.setMandatory(true);
+    	sourceLabPI.setRuleEnabled(true);
+    	sourceLabPI.setDOC("DOC-NAME");
+    	sourceLabPI.setCollectionType("project");
+    	
+    	HpcMetadataValidationRule labBranch = new HpcMetadataValidationRule();
+    	labBranch.setAttribute("Lab / Branch Name");
+    	labBranch.setMandatory(true);
+    	labBranch.setRuleEnabled(true);
+    	labBranch.setDOC("DOC-NAME");
+    	labBranch.setCollectionType("project");
+    	
+    	HpcMetadataValidationRule piDOC = new HpcMetadataValidationRule();
+    	piDOC.setAttribute("DOC of the PI");
+    	piDOC.setMandatory(true);
+    	piDOC.setRuleEnabled(true);
+    	piDOC.setDOC("DOC-NAME");
+    	piDOC.setCollectionType("project");
+    	
+    	HpcMetadataValidationRule projectDate = new HpcMetadataValidationRule();
+    	projectDate.setAttribute("Date the Project was created");
+    	projectDate.setMandatory(true);
+    	projectDate.setRuleEnabled(true);
+    	projectDate.setDOC("DOC-NAME");
+    	projectDate.setCollectionType("project");
+    	
+    	HpcMetadataValidationRule userName = new HpcMetadataValidationRule();
+    	userName.setAttribute("Name of the User registering the Project (Registrar)");
+    	userName.setMandatory(true);
+    	userName.setRuleEnabled(true);
+    	userName.setDOC("DOC-NAME");
+    	userName.setCollectionType("project");
+    	
+    	HpcMetadataValidationRule registrarDOC = new HpcMetadataValidationRule();
+    	registrarDOC.setAttribute("DOC of the Registrar");
+    	registrarDOC.setMandatory(true);
+    	registrarDOC.setRuleEnabled(true);
+    	registrarDOC.setDOC("DOC-NAME");
+    	registrarDOC.setCollectionType("project");
+    	
+    	HpcMetadataValidationRule otherProjects = new HpcMetadataValidationRule();
+    	otherProjects.setAttribute("Link to other projects");
+    	otherProjects.setMandatory(true);
+    	otherProjects.setRuleEnabled(true);
+    	otherProjects.setDOC("DOC-NAME");
+    	otherProjects.setCollectionType("project");
+    	
+    	metadataValidationRules.getCollectionMetadataValidationRules().addAll(
+    			Arrays.asList(collectionType, projectName, projectType, projectDescription,
+    					      internalProjectId, sourceLabPI, labBranch, piDOC, projectDate, 
+    					      userName, registrarDOC, otherProjects));
+    	
+    	// File metadata validation rules.
+    	HpcMetadataValidationRule piiContent = new HpcMetadataValidationRule();
+    	piiContent.setAttribute("PII Content");
+    	piiContent.setMandatory(true);
+    	piiContent.setRuleEnabled(true);
+    	piiContent.setDOC("DOC-NAME");
+    	piiContent.getValidValues().addAll(Arrays.asList("true", "false"));
+    	
+    	metadataValidationRules.getFileMetadataValidationRules().addAll(Arrays.asList(piiContent));
     }   
     
     //---------------------------------------------------------------------//
@@ -114,8 +194,8 @@ public class HpcCollectionServiceImpl implements HpcCollectionService
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
-       	// Validate Metadata entries are provided.
-       	validateMandatoryMetadata(metadataEntries);
+       	// Validate Metadata.
+       	validateMetadata(metadataEntries);
        	
        	dataManagementProxy.addMetadataToCollection(path, metadataEntries);
     }
@@ -125,21 +205,21 @@ public class HpcCollectionServiceImpl implements HpcCollectionService
     //---------------------------------------------------------------------//  
 
     /**
-     * Validate mandatory metadata. Null unit values are converted to empty strings.
+     * Validate metadata. Null unit values are converted to empty strings.
      *
      * @param metadataEntries The metadata entries collection to validate.
      * 
      * @throws HpcException If the metadata is invalid.
      */
-    private void validateMandatoryMetadata(List<HpcMetadataEntry> metadataEntries) 
-    		                              throws HpcException
+    private void validateMetadata(List<HpcMetadataEntry> metadataEntries) 
+    		                     throws HpcException
     {
     	String collectionType = null;
     	
-    	// Create a collection of all metadata attributes.
-    	List<String> metadataEntryAttributes = new ArrayList<String>();
+    	// Crate a metadata <attribute, value> map.
+    	Map<String, String> metadataEntriesMap = new HashMap<String, String>();
     	for(HpcMetadataEntry metadataEntry : metadataEntries) {
-    		metadataEntryAttributes.add(metadataEntry.getAttribute());
+    		metadataEntriesMap.put(metadataEntry.getAttribute(), metadataEntry.getValue());
     		// Default null unit values to empty string (This is an iRODS expectation).
     		if(metadataEntry.getUnit() == null) {
     		   metadataEntry.setUnit("");	
@@ -157,57 +237,59 @@ public class HpcCollectionServiceImpl implements HpcCollectionService
                                   HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
-    	// Validate common mandatory metadata entries are provided.
-    	validateMandatoryMetadataEntries(metadataEntries,
-    		                             metadataEntryAttributes,
-    		                             mandatoryMetadata.getMandatoryMetadataEntries());
-    	
-    	// Validate type-specific mandatory metadata entries are provided.
-    	for(HpcCollectionTypeMandatoryMetadata collectionMandatoryMetadata: 
-    		mandatoryMetadata.getCollectionsMandatoryMetadata()) {
-    		if(collectionMandatoryMetadata.getType().equals(collectionType)) {
-    		   validateMandatoryMetadataEntries(
-    				   metadataEntries,
-                       metadataEntryAttributes,
-                       collectionMandatoryMetadata.getMandatoryMetadataEntries());
-    		}
-    	}
-    }
-    
-    /**
-     * Validate mandatory metadata entries provided. 
-     *
-     * @param metadataEntries The metadata entries collection to validate.
-     * @param metadataEntryAttributes A List of the metadata attributes.
-     * @param mandatoryMetadataEntries The mandatory metadata entries to check for.
-     * 
-     * @throws HpcException If found a mandatory metadata not provided.
-     */
-    private void validateMandatoryMetadataEntries(
-    		                      List<HpcMetadataEntry> metadataEntries,
-    		                      List<String> metadataEntryAttributes,
-    		                      List<HpcMandatoryMetadataEntry> mandatoryMetadataEntries) 
-    		                      throws HpcException
-    {
-	    for(HpcMandatoryMetadataEntry mandatoryMetadataEntry: mandatoryMetadataEntries) {
-			if(!metadataEntryAttributes.contains(mandatoryMetadataEntry.getAttribute())) {
-			   if(mandatoryMetadataEntry.getDefaultValue() != null && 
-				  !mandatoryMetadataEntry.getDefaultValue().isEmpty()) {
-				  // Metadata entry is missing, but a default is defined.
+	    for(HpcMetadataValidationRule metadataValidationRule: 
+	    	metadataValidationRules.getCollectionMetadataValidationRules()) {
+	    	// Skip disabled rules.
+	    	if(!metadataValidationRule.getRuleEnabled()) {
+	    	   continue;
+	    	}
+	    
+	        // Skip rules for other collection types.
+	    	if(metadataValidationRule.getCollectionType() != null &&
+	    	   !metadataValidationRule.getCollectionType().equals(collectionType)) {
+	    	   continue;
+	    	}
+	    	
+	    	// Apply default value/unit if default is defined and metadata was not provided.
+	    	if(metadataValidationRule.getDefaultValue() != null &&
+	    	   !metadataValidationRule.getDefaultValue().isEmpty()) {
+	    	   if(!metadataEntriesMap.containsKey(metadataValidationRule.getAttribute())) {
 				  HpcMetadataEntry defaultMetadataEntry = new HpcMetadataEntry();
-				  defaultMetadataEntry.setAttribute(mandatoryMetadataEntry.getAttribute());
-				  defaultMetadataEntry.setValue(mandatoryMetadataEntry.getDefaultValue());
-				  defaultMetadataEntry.setUnit(mandatoryMetadataEntry.getDefaultUnit());
+				  defaultMetadataEntry.setAttribute(metadataValidationRule.getAttribute());
+				  defaultMetadataEntry.setValue(metadataValidationRule.getDefaultValue());
+				  defaultMetadataEntry.setUnit(metadataValidationRule.getDefaultUnit() != null ?
+						                       metadataValidationRule.getDefaultUnit() : "");
 				  metadataEntries.add(defaultMetadataEntry);
-			   } else {
-				       // Metadata entry is missing, but no default is defined.
-			           throw new HpcException("Missing mandataory metadata: " + 
-			                                  mandatoryMetadataEntry.getAttribute(), 
-			                                  HpcErrorType.INVALID_REQUEST_INPUT);
+				  metadataEntriesMap.put(defaultMetadataEntry.getAttribute(), defaultMetadataEntry.getValue());
+			   }
+	    	}
+	    	
+	    	// Validate a mandatory metadata is provided.
+	    	if(metadataValidationRule.getMandatory()) {
+	    	   if(!metadataEntriesMap.containsKey(metadataValidationRule.getAttribute())) {	
+				  // Metadata entry is missing, but no default is defined.
+			      throw new HpcException("Missing mandataory metadata: " + 
+			    		                 metadataValidationRule.getAttribute(), 
+			                             HpcErrorType.INVALID_REQUEST_INPUT);
 			   }
 			}
+	    	
+	    	// Validate the metadata value is valid.
+	    	if(metadataValidationRule.getValidValues() != null &&
+	    	   !metadataValidationRule.getValidValues().isEmpty()) {
+	    	   String value = metadataEntriesMap.get(metadataValidationRule.getAttribute());
+	    	   if(metadataEntriesMap.containsKey(metadataValidationRule.getAttribute()) &&
+	    		  !metadataValidationRule.getValidValues().contains(value)) {
+	    		  throw new HpcException("Invalid Metadata Value: " + 
+	    		                         metadataValidationRule.getAttribute() + " = " + 
+	    				                 value + ". Valid values: " +
+  		                                 metadataValidationRule.getValidValues(), 
+                                         HpcErrorType.INVALID_REQUEST_INPUT);
+	    	   }
+	    	}
 		}
-    }
+    }    	
+
 }
 
  

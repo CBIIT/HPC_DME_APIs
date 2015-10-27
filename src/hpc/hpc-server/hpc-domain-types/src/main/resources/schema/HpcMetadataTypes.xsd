@@ -138,21 +138,17 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
-	<xsd:complexType name="HpcMandatoryMetadataEntry">
+	<xsd:complexType name="HpcMetadataValidationRule">
 		<xsd:sequence>
 			<xsd:element name="attribute" type="xsd:string" />
+			<xsd:element name="mandatory" type="xsd:boolean" />
+			<xsd:element name="validValues" type="xsd:string" 
+			             minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element name="defaultValue" type="xsd:string" />
 			<xsd:element name="defaultUnit" type="xsd:string" />
-		</xsd:sequence>
-	</xsd:complexType>
-	
-	<xsd:complexType name="HpcCollectionTypeMandatoryMetadata">
-		<xsd:sequence>
-			<xsd:element name="type" type="xsd:string" />
-			<xsd:element name="mandatoryMetadataEntries" 
-			             type="hpc-domain-metadata:HpcMandatoryMetadataEntry" 
-			             minOccurs="0" maxOccurs="unbounded" />
-			<xsd:element name="defaultUnit" type="xsd:string" />
+			<xsd:element name="collectionType" type="xsd:string" />
+			<xsd:element name="ruleEnabled" type="xsd:boolean" />
+			<xsd:element name="DOC" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
