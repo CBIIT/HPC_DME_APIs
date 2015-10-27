@@ -20,15 +20,15 @@
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
 		        schemaLocation="HpcMetadataTypes.xsd" />
 		
-	<xsd:element name="HpcMandatoryMetadata">
+	<xsd:element name="HpcMetadataValidationRules">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="mandatoryMetadataEntries" 
-			                 type="hpc-domain-metadata:HpcMandatoryMetadataEntry" 
+				<xsd:element name="collectionMetadataValidationRules" 
+			                 type="hpc-domain-metadata:HpcMetadataValidationRule" 
 			                 minOccurs="0" maxOccurs="unbounded" />
-			    <xsd:element name="collectionsMandatoryMetadata" 
-			                 type="hpc-domain-metadata:HpcCollectionTypeMandatoryMetadata" 
-			                 minOccurs="0" maxOccurs="unbounded"/>
+			    <xsd:element name="fileMetadataValidationRules" 
+			                 type="hpc-domain-metadata:HpcMetadataValidationRule" 
+			                 minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
