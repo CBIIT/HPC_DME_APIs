@@ -26,6 +26,7 @@
 		<prop key="hpc.service.dataTransferStatusMap.IN_PROGRESS">ACTIVE</prop>
 		<prop key="hpc.service.dataTransferStatusMap.COMPLETED">SUCCEEDED</prop>
 		<prop key="hpc.service.dataTransferStatusMap.FAILED">FAILED</prop>
+		<prop key="hpc.service.metadataValidationRulesPath">${karaf.base}/etc/hpc-server/metadataValidationRules.json</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

@@ -1,0 +1,102 @@
+{"HpcMetadataValidationRules": {
+   "collectionMetadataValidationRules":    [
+            {
+         "attribute": "Collection type",
+         "mandatory": true,
+         "validValues":          [
+            "project",
+            "dataset"
+         ],
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Project name",
+         "mandatory": true,
+         "collectionType": "project",
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Project type",
+         "mandatory": true,
+         "defaultValue": "Unspecified",
+         "collectionType": "project",
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Project description",
+         "mandatory": true,
+         "collectionType": "project",
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Internal Project ID",
+         "mandatory": true,
+         "collectionType": "project",
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Source Lab PI",
+         "mandatory": true,
+         "collectionType": "project",
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Lab / Branch Name",
+         "mandatory": true,
+         "collectionType": "project",
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "DOC of the PI",
+         "mandatory": true,
+         "collectionType": "project",
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Date the Project was created",
+         "mandatory": true,
+         "collectionType": "project",
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Name of the User registering the Project (Registrar)",
+         "mandatory": true,
+         "collectionType": "project",
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "DOC of the Registrar",
+         "mandatory": true,
+         "collectionType": "project",
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Link to other projects",
+         "mandatory": true,
+         "collectionType": "project",
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      }
+   ],
+   "fileMetadataValidationRules":    {
+      "attribute": "PII Content",
+      "mandatory": true,
+      "validValues":       [
+         true,
+         false
+      ],
+      "ruleEnabled": true,
+      "DOC": "DOC-NAME"
+   }
+}}

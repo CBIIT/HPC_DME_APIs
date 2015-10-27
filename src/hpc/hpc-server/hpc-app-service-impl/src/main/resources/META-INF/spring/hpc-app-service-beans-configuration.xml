@@ -30,6 +30,11 @@
 	
 	<!--  HPC Keys generator -->
 	<bean id="hpcKeyGenerator" class="gov.nih.nci.hpc.service.impl.HpcUUIDKeyGeneratorImpl" />
+
+	<!--  HPC Metadata Validator -->
+	<bean id="hpcMetadataValidator" class="gov.nih.nci.hpc.service.impl.HpcMetadataValidator">
+		<constructor-arg value="${hpc.service.metadataValidationRulesPath}" />
+	</bean>
 	
 	<!-- HPC Application Services Beans -->
 	<bean id="hpcUserService" class="gov.nih.nci.hpc.service.impl.HpcUserServiceImpl" />
