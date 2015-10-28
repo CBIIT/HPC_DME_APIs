@@ -27,6 +27,7 @@ import javax.xml.bind.DatatypeConverter;
 
 
 
+
 //import org.codehaus.jackson.map.ObjectMapper;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.DataNotFoundException;
@@ -77,7 +78,8 @@ public class IrodsClient implements HPCClient{
 	public String processDataObject() {
 		String message = null;
 			try{
-			putUploadFileJargon();
+				if (hpcDataObject.getSource() != null)
+						putUploadFileJargon();
 			}catch(DataNotFoundException dnfe){
 				message = "Input collection/dataset folder not found";
 			}catch(OverwriteException oe){
@@ -85,12 +87,10 @@ public class IrodsClient implements HPCClient{
 			}catch(JargonException je){
 				message = "Can not process " + je.getMessage();
 			}
-			
-			//addMetadataToObject();
-			if (isDirectory(hpcDataObject.getFilename()))
-				message = validateAddMetadataToObject();
+
+			message = validateAddMetadataToObject();
 			if (message == null)
-				message = "Collection "+hpcDataObject.getFilename()+" added to archive";
+				message = "Collection "+hpcDataObject.getCollection()+" added to archive";
 		return message;
 	}
 	
@@ -112,35 +112,26 @@ private String validateAddMetadataToObject() {
 		String hpcCollection = configProperties.getProperty("hpc.collection.service");
 		final String irodsZoneHome = configProperties.getProperty("irods.default.zoneHome");
 		final String irodsUsername = configProperties.getProperty("irods.username");	 
-		
-         if(hpcDataObject.getLocation() != null)
-        {
-        	targetLocation=irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getLocation();	
-        }else
-        {
-        	targetLocation=irodsZoneHome+"/"+irodsUsername;
-        }		
+				
+        targetLocation = getTargetLocation(irodsZoneHome, irodsUsername);		
 		
 	 	List<HpcMetadataEntry> listOfhpcCollection = getListOfAVUs();
-		RestTemplate restTemplate = new RestTemplate();
-		  HashMap<String, String > urlMap = new HashMap<String, String>(){{
-		        put("path",irodsZoneHome+"/"+irodsUsername);
-		    }};
+
 		HpcCollectionRegistrationDTO hpcCollectionRegistrationDTO = new HpcCollectionRegistrationDTO();
 		hpcCollectionRegistrationDTO.getMetadataEntries().addAll(listOfhpcCollection);
 		
 	try{
 		//restTemplate.put(
 			//	hpcServerURL+"/"+hpcCollection+irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getFilename(),hpcCollectionRegistrationDTO,urlMap);
-
+		RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
 		List <MediaType> mediaTypeList = new ArrayList<MediaType>();
 		mediaTypeList.add(MediaType.APPLICATION_JSON);
 		headers.setAccept(mediaTypeList);
         //headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<HpcCollectionRegistrationDTO> entity = new HttpEntity<HpcCollectionRegistrationDTO>(hpcCollectionRegistrationDTO, headers);
-        
-		ResponseEntity<HpcExceptionDTO> response = restTemplate.exchange(hpcServerURL+"/"+hpcCollection+targetLocation+"/"+hpcDataObject.getFilename(), HttpMethod.PUT,entity , HpcExceptionDTO.class);
+        System.out.println("Adding Metadata..");
+		ResponseEntity<HpcExceptionDTO> response = restTemplate.exchange(hpcServerURL+"/"+hpcCollection+targetLocation, HttpMethod.PUT,entity , HpcExceptionDTO.class);
 
 		
 		}catch (HttpStatusCodeException e) {
@@ -157,6 +148,25 @@ private String validateAddMetadataToObject() {
 		}
 	return message;		
 	}
+
+
+
+private String getTargetLocation(final String irodsZoneHome,
+		final String irodsUsername) {
+	String targetLocation;
+	if(hpcDataObject.getCollection() != null)
+	{
+	    File localFile=new File(hpcDataObject.getSource());            
+		if(localFile.isFile())
+			targetLocation=irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getCollection()+"/"+localFile.getName();
+		else
+			targetLocation=irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getCollection();
+	}else
+	{
+		targetLocation=irodsZoneHome+"/"+irodsUsername;
+	}
+	return targetLocation;
+}
 
 
 
@@ -184,8 +194,10 @@ private String getErrorMessage(String errorpayload) {
 	JSONParser parser = new JSONParser();
 	try 
 	{
+		System.out.println(errorpayload);
 		JSONObject jsonObject = (JSONObject) parser.parse(errorpayload);
 		JSONObject exceptioDTO = (JSONObject) jsonObject.get("gov.nih.nci.hpc.dto.error.HpcExceptionDTO");
+		
 		return (String) exceptioDTO.get("message");	
 	} catch (Exception ex) 
 	{			
@@ -199,9 +211,9 @@ public JSONObject readMetadataJsonFromFile() {
 
 	JSONParser parser = new JSONParser();
 	try {
-			JSONObject jsonObject = (JSONObject) parser.parse(new FileReader(hpcDataObject.getMetadataFile()));	
+			JSONObject jsonObject = (JSONObject) parser.parse(new FileReader(hpcDataObject.getMetadata()));	
 			//JSONArray jsonObject = (JSONArray) obj;
-			System.out.println(jsonObject.toJSONString());
+			//System.out.println(jsonObject.toJSONString());
 			//return (JSONObject) jsonObject.get("metadataEntries");
 			return jsonObject;
 	
@@ -217,64 +229,26 @@ public JSONObject readMetadataJsonFromFile() {
 	}
 	return null;
 }
-	
-	 public void addMetadataToObject() throws Exception
-	 {
-		 	JSONObject jsonObject = readMetadataJsonFromFile();
-		 	/*
-			if("COLLECTION".equalsIgnoreCase(hpcDataObject.getObjectType()))
-			{
-				CollectionAO collectionAO = irodsFileSystem.getIRODSAccessObjectFactory()
-						.getCollectionAO(account);
-				List<AvuData> listOfAvuData = new ArrayList<AvuData>();
-				AvuData avuData = null;
-				for (int i = 0; i < jsonObject.size(); i++) {
-					JSONObject attrObj=(JSONObject) jsonObject.get(i);
-				    System.out.println(attrObj.get("attribute"));
-				    avuData = new AvuData((String) attrObj.get("attribute"),(String) attrObj.get("value"),(String) attrObj.get("unit"));
-				    listOfAvuData.add(avuData);
-				}
-			
-				collectionAO.addBulkAVUMetadataToCollection(configProperties.getProperty("irods.default.zoneHome")+"/"+configProperties.getProperty("irods.username")+"/"+hpcDataObject.getFilename(),
-						listOfAvuData);
-			}
-
-			if("DATAOBJECT".equalsIgnoreCase(hpcDataObject.getObjectType()))
-			{
-*/
-				DataObjectAO dataObjectAO = irodsFileSystem
-						.getIRODSAccessObjectFactory().getDataObjectAO(account);
-				JSONArray jsonArray = (JSONArray) jsonObject.get("metadataEntries");
-
-				List<AvuData> listOfAvuData = new ArrayList<AvuData>();
-				AvuData avuData = null;
-				for (int i = 0; i < jsonArray.size(); i++) {
-					JSONObject attrObj=(JSONObject) jsonArray.get(i);
-				    avuData = new AvuData((String) attrObj.get("attribute"),(String) attrObj.get("value"),(String) attrObj.get("unit"));
-				    listOfAvuData.add(avuData);
-				}
-
-				List<BulkAVUOperationResponse> response = dataObjectAO.addBulkAVUMetadataToDataObject(configProperties.getProperty("irods.default.zoneHome")+"/"+configProperties.getProperty("irods.username")+"/"+hpcDataObject.getFilename(), listOfAvuData);
-				
-//			}			
-
-	 }
- 
+	 
 
    public void putUploadFileJargon() throws DataNotFoundException,JargonException,OverwriteException
    {
 	    IRODSFile destFile = null;
+	    String targetCollection = null;
+	    
 	    String irodsZoneHome = configProperties.getProperty("irods.default.zoneHome");
 		String irodsUsername = configProperties.getProperty("irods.username");		
-        File localFile=new File(hpcDataObject.getFilename());
-        String targetLocation = hpcDataObject.getLocation();
-        if(targetLocation != null)
-        {
-        	destFile=irodsFileSystem.getIRODSFileFactory(account).instanceIRODSFile(irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getLocation());	
-        }else
-        {
-        	destFile=irodsFileSystem.getIRODSFileFactory(account).instanceIRODSFileUserHomeDir(irodsUsername);
-        }
+        File localFile=new File(hpcDataObject.getSource());
+        String collection = hpcDataObject.getCollection();        
+        
+		if(localFile.isFile())
+        	targetCollection  = irodsZoneHome+"/"+irodsUsername+"/"+collection+"/"+localFile.getName();
+        else
+        	targetCollection = irodsZoneHome+"/"+irodsUsername+"/"+collection;
+        
+        destFile=irodsFileSystem.getIRODSFileFactory(account).instanceIRODSFile(targetCollection);	
+                	
+        System.out.println("Adding files:"+localFile.getName());
         DataTransferOperations dto=irodsFileSystem.getIRODSAccessObjectFactory().getDataTransferOperations(account);        
         dto.putOperation(localFile,destFile,null,null);        
     }
