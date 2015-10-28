@@ -88,8 +88,7 @@ public class IrodsClient implements HPCClient{
 			
 			//addMetadataToObject();
 			if (isDirectory(hpcDataObject.getFilename()))
-				validateAddMetadataToObject();
-			System.out.println("message:outside::" + message);
+				message = validateAddMetadataToObject();
 			if (message == null)
 				message = "Collection "+hpcDataObject.getFilename()+" added to archive";
 		return message;
@@ -146,12 +145,15 @@ private String validateAddMetadataToObject() {
 		
 		}catch (HttpStatusCodeException e) {
 			message = getErrorMessage(e.getResponseBodyAsString());	
+			//System.out.println("message1::"+message);
 		} catch (RestClientException e) {
 			e.printStackTrace();
 			message = "Client error occured while adding collection :" + e.getMessage();
+			//System.out.println("message2::"+message);
 		} catch (Exception e) {
 			e.printStackTrace();
 			message = "Exception occured while adding metadata :" + e.getMessage();
+			//System.out.println("message3::"+message);
 		}
 	return message;		
 	}
