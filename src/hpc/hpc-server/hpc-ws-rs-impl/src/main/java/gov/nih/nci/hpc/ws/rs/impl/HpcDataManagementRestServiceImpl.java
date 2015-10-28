@@ -10,10 +10,10 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
-import gov.nih.nci.hpc.bus.HpcCollectionBusService;
+import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.ws.rs.HpcCollectionRestService;
+import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 
 import java.util.List;
 
@@ -32,8 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @version $Id$
  */
 
-public class HpcCollectionRestServiceImpl extends HpcRestServiceImpl
-             implements HpcCollectionRestService
+public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
+             implements HpcDataManagementRestService
 {   
     //---------------------------------------------------------------------//
     // Instance members
@@ -41,8 +41,8 @@ public class HpcCollectionRestServiceImpl extends HpcRestServiceImpl
 
     // The Collection Business Service instance.
 	@Autowired
-    private HpcCollectionBusService collectionBusService = null;
-    
+    private HpcDataManagementBusService dataManagementBusService = null;
+	
 	// The Logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -55,7 +55,7 @@ public class HpcCollectionRestServiceImpl extends HpcRestServiceImpl
      * Constructor for Spring Dependency Injection.
      * 
      */
-    private HpcCollectionRestServiceImpl() 
+    private HpcDataManagementRestServiceImpl() 
     {
     }  
     
@@ -76,10 +76,29 @@ public class HpcCollectionRestServiceImpl extends HpcRestServiceImpl
 		logger.info("Invoking RS: PUT /collection" + path);
 		
 		try {
-			 collectionBusService.registerCollection(path, metadataEntries);
+			 dataManagementBusService.registerCollection(path, metadataEntries);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: PUT /collection" + path + " failed:", e);
+			    return errorResponse(e);
+		}
+    	
+		return createdResponse(null);
+	}
+    
+    @Override
+    public Response addDataObject(
+    		           String path, 
+    		           List<HpcMetadataEntry> metadataEntries)
+    {	
+    	path = toAbsolutePath(path);
+		logger.info("Invoking RS: PUT /dataObject" + path);
+		
+		try {
+			 dataManagementBusService.registerDataObject(path, metadataEntries);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: PUT /dataObject" + path + " failed:", e);
 			    return errorResponse(e);
 		}
     	

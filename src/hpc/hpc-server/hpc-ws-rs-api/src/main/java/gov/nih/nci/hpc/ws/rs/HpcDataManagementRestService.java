@@ -1,5 +1,5 @@
 /**
- * HpcCollectionRestService.java
+ * HpcDataManagementRestService.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -23,15 +23,15 @@ import javax.ws.rs.core.Response;
 
 /**
  * <p>
- * HPC Collection REST Service Interface.
+ * HPC Data Management REST Service Interface.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-@Path("/collection")
-public interface HpcCollectionRestService
+@Path("/")
+public interface HpcDataManagementRestService
 {   
     /**
      * PUT Collection registration request.
@@ -40,10 +40,24 @@ public interface HpcCollectionRestService
      * @param @param metadataEntries A list of metadata entries to attach to the collection.
      */
 	@PUT
-	@Path("{path:.*}")
+	@Path("/collection/{path:.*}")
 	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")
 	public Response addCollection(
+			           @PathParam("path") String path,
+			           List<HpcMetadataEntry> metadataEntries);
+	
+    /**
+     * PUT Data object registration request.
+     *
+     * @param path The data object path.
+     * @param @param metadataEntries A list of metadata entries to attach to the data object.
+     */
+	@PUT
+	@Path("/dataObject/{path:.*}")
+	@Consumes("application/json,application/xml")
+	@Produces("application/json,application/xml")
+	public Response addDataObject(
 			           @PathParam("path") String path,
 			           List<HpcMetadataEntry> metadataEntries);
 }
