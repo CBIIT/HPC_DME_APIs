@@ -13,8 +13,9 @@ public class HPCDataObject {
 		this.objectType = objectType;
 	}
 
-	public HPCDataObject(String filename, String metadataFile) {
+	public HPCDataObject(String filename, String location, String metadataFile) {
 		this.filename = filename;
+		this.location = location;
 		this.metadataFile = metadataFile;
 	}
 	public String getFilename() {

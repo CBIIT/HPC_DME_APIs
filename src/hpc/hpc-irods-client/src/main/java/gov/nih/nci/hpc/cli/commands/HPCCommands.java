@@ -46,18 +46,18 @@ public class HPCCommands implements CommandMarker {
 			return false;
 		}
 	}
-		
+	/*	
 	@CliCommand(value = "hpcget", help = "transfer file from irods ")
 	public String hpcget(
 		@CliOption(key = { "file" }, mandatory = true, help = "Filename to transfer") final String filename,
 		@CliOption(key = { "location" }, mandatory = false, help = "Location of the file") final String location) {		
 		return "file = [" + filename + "] Location = [" + location + "]";
 	}
-	
+	*/
 	@CliCommand(value = "hpcput", help = "transfer file to irods")
 	public String hpcput(
 		@CliOption(key = { "file" }, mandatory = true, help = "Filename to transfer") final String filename,
-		//@CliOption(key = { "location"}, mandatory = true, help = "Location of the file") final String location,
+		@CliOption(key = { "location"}, mandatory = false, help = "Location/Collection of the file") final String location,
 		@CliOption(key = { "metadataFile" }, mandatory = true, help = "Metadata filename") final String metadataFile)
 		//@CliOption(key = { "objectType" }, mandatory = true, help = "Object type") final String objectType)
 		{
@@ -71,7 +71,7 @@ public class HPCCommands implements CommandMarker {
 		}
 		*/
 		//HPCDataObject hpcDataObject = new HPCDataObject(filename,location,metadataFile,objectType);
-		HPCDataObject hpcDataObject = new HPCDataObject(filename,metadataFile);
+		HPCDataObject hpcDataObject = new HPCDataObject(filename,location,metadataFile);
 		irodsClient.setHPCDataObject(hpcDataObject);
 		try {
 			irodsClient.setHPCAccount();
@@ -101,7 +101,7 @@ public class HPCCommands implements CommandMarker {
 		return "username = [" + configProperties.getProperty("irods.username") + "] password = [" + new String(DatatypeConverter.parseBase64Binary(configProperties.getProperty("irods.password"))) + "]";
 	}
 		
-	
+	/*
 	@CliCommand(value = "hpc init", help = "Initialize HPC configuration")
 	public String einit(
 		@CliOption(key = { "message" }, mandatory = true, help = "Initialize HPC configuration") final MessageType message){		
@@ -123,4 +123,5 @@ public class HPCCommands implements CommandMarker {
 			return type;
 		}
 	}
+	*/
 }
