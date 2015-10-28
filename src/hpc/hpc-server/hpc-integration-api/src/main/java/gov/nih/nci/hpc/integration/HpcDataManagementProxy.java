@@ -47,6 +47,17 @@ public interface HpcDataManagementProxy
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException;
     
+    /**
+     * Add metadata to a data object.
+     *
+     * @param path The data object path.
+     * @param metadataEntries The metadata entries to add.
+     * 
+     * @throws HpcException
+     */
+    public void addMetadataToDataObject(String path,
+    		                            List<HpcMetadataEntry> metadataEntries) 
+    		                           throws HpcException;
 }
 
  
