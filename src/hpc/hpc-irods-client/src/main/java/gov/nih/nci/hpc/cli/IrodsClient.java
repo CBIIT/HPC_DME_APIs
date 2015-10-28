@@ -4,6 +4,7 @@ import gov.nih.nci.hpc.cli.domain.HPCDataObject;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.collection.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,6 +17,15 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.xml.bind.DatatypeConverter;
+
+
+
+
+
+
+
+
+
 
 //import org.codehaus.jackson.map.ObjectMapper;
 import org.irods.jargon.core.connection.IRODSAccount;
@@ -34,7 +44,15 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 @Component
 public class IrodsClient implements HPCClient{
@@ -57,23 +75,24 @@ public class IrodsClient implements HPCClient{
 	
 	@Override
 	public String processDataObject() {
-
+		String message = null;
 			try{
 			putUploadFileJargon();
 			}catch(DataNotFoundException dnfe){
-				return "Input collection/dataset folder not found";
+				message = "Input collection/dataset folder not found";
 			}catch(OverwriteException oe){
-				return "Input collection/dataset already at the target location";
+				message = "Input collection/dataset already at the target location";
 			}catch(JargonException je){
-				return "Can not process " + je.getMessage();
+				message = "Can not process " + je.getMessage();
 			}
 			
 			//addMetadataToObject();
 			if (isDirectory(hpcDataObject.getFilename()))
 				validateAddMetadataToObject();
-			
-		
-		return "Collection "+hpcDataObject.getFilename()+" added to archive";
+			System.out.println("message:outside::" + message);
+			if (message == null)
+				message = "Collection "+hpcDataObject.getFilename()+" added to archive";
+		return message;
 	}
 	
 
@@ -87,37 +106,90 @@ public class IrodsClient implements HPCClient{
 
 
 
-private void validateAddMetadataToObject() {
+private String validateAddMetadataToObject() {
+		String message = null;
+		String targetLocation = null;
 		String hpcServerURL = configProperties.getProperty("hpc.server.url");
 		String hpcCollection = configProperties.getProperty("hpc.collection.service");
 		final String irodsZoneHome = configProperties.getProperty("irods.default.zoneHome");
 		final String irodsUsername = configProperties.getProperty("irods.username");	 
-	 	JSONObject jsonObject = readMetadataJsonFromFile();
-		JSONArray jsonArray = (JSONArray) jsonObject.get("metadataEntries");
-
-	 	List<HpcMetadataEntry> listOfhpcCollection = new ArrayList<HpcMetadataEntry>();
-		AvuData avuData = null;
-		for (int i = 0; i < jsonArray.size(); i++) {
-			JSONObject attrObj=(JSONObject) jsonArray.get(i);
-		    //System.out.println(attrObj.get("attribute"));
-		    HpcMetadataEntry hpcMetadataEntry = new HpcMetadataEntry();
-		    hpcMetadataEntry.setAttribute((String) attrObj.get("attribute"));
-		    hpcMetadataEntry.setValue((String) attrObj.get("value"));
-		    hpcMetadataEntry.setUnit((String) attrObj.get("unit"));
-		    listOfhpcCollection.add(hpcMetadataEntry);
-		}
+		
+         if(hpcDataObject.getLocation() != null)
+        {
+        	targetLocation=irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getLocation();	
+        }else
+        {
+        	targetLocation=irodsZoneHome+"/"+irodsUsername;
+        }		
+		
+	 	List<HpcMetadataEntry> listOfhpcCollection = getListOfAVUs();
 		RestTemplate restTemplate = new RestTemplate();
 		  HashMap<String, String > urlMap = new HashMap<String, String>(){{
 		        put("path",irodsZoneHome+"/"+irodsUsername);
 		    }};
 		HpcCollectionRegistrationDTO hpcCollectionRegistrationDTO = new HpcCollectionRegistrationDTO();
 		hpcCollectionRegistrationDTO.getMetadataEntries().addAll(listOfhpcCollection);
+		
+	try{
+		//restTemplate.put(
+			//	hpcServerURL+"/"+hpcCollection+irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getFilename(),hpcCollectionRegistrationDTO,urlMap);
+
+        HttpHeaders headers = new HttpHeaders();
+		List <MediaType> mediaTypeList = new ArrayList<MediaType>();
+		mediaTypeList.add(MediaType.APPLICATION_JSON);
+		headers.setAccept(mediaTypeList);
+        //headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<HpcCollectionRegistrationDTO> entity = new HttpEntity<HpcCollectionRegistrationDTO>(hpcCollectionRegistrationDTO, headers);
+        
+		ResponseEntity<HpcExceptionDTO> response = restTemplate.exchange(hpcServerURL+"/"+hpcCollection+targetLocation+"/"+hpcDataObject.getFilename(), HttpMethod.PUT,entity , HpcExceptionDTO.class);
 
 		
-		restTemplate.put(
-				hpcServerURL+"/"+hpcCollection+irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getFilename(),hpcCollectionRegistrationDTO,urlMap);
-	
+		}catch (HttpStatusCodeException e) {
+			message = getErrorMessage(e.getResponseBodyAsString());	
+		} catch (RestClientException e) {
+			e.printStackTrace();
+			message = "Client error occured while adding collection :" + e.getMessage();
+		} catch (Exception e) {
+			e.printStackTrace();
+			message = "Exception occured while adding metadata :" + e.getMessage();
+		}
+	return message;		
 	}
+
+
+
+private List<HpcMetadataEntry> getListOfAVUs() {
+ 	JSONObject jsonObject = readMetadataJsonFromFile();
+	JSONArray jsonArray = (JSONArray) jsonObject.get("metadataEntries");
+	
+	List<HpcMetadataEntry> listOfhpcCollection = new ArrayList<HpcMetadataEntry>();
+	AvuData avuData = null;
+	for (int i = 0; i < jsonArray.size(); i++) {
+		JSONObject attrObj=(JSONObject) jsonArray.get(i);
+	    //System.out.println(attrObj.get("attribute"));
+	    HpcMetadataEntry hpcMetadataEntry = new HpcMetadataEntry();
+	    hpcMetadataEntry.setAttribute((String) attrObj.get("attribute"));
+	    hpcMetadataEntry.setValue((String) attrObj.get("value"));
+	    hpcMetadataEntry.setUnit((String) attrObj.get("unit"));
+	    listOfhpcCollection.add(hpcMetadataEntry);
+	}
+	return listOfhpcCollection;
+}
+
+
+
+private String getErrorMessage(String errorpayload) {
+	JSONParser parser = new JSONParser();
+	try 
+	{
+		JSONObject jsonObject = (JSONObject) parser.parse(errorpayload);
+		JSONObject exceptioDTO = (JSONObject) jsonObject.get("gov.nih.nci.hpc.dto.error.HpcExceptionDTO");
+		return (String) exceptioDTO.get("message");	
+	} catch (Exception ex) 
+	{			
+		return "Cannot parse the error message";
+	}
+}
 
 
 
@@ -189,10 +261,19 @@ public JSONObject readMetadataJsonFromFile() {
 
    public void putUploadFileJargon() throws DataNotFoundException,JargonException,OverwriteException
    {
+	    IRODSFile destFile = null;
+	    String irodsZoneHome = configProperties.getProperty("irods.default.zoneHome");
 		String irodsUsername = configProperties.getProperty("irods.username");		
         File localFile=new File(hpcDataObject.getFilename());
-        DataTransferOperations dto=irodsFileSystem.getIRODSAccessObjectFactory().getDataTransferOperations(account);
-        IRODSFile destFile=irodsFileSystem.getIRODSFileFactory(account).instanceIRODSFileUserHomeDir(irodsUsername);
+        String targetLocation = hpcDataObject.getLocation();
+        if(targetLocation != null)
+        {
+        	destFile=irodsFileSystem.getIRODSFileFactory(account).instanceIRODSFile(irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getLocation());	
+        }else
+        {
+        	destFile=irodsFileSystem.getIRODSFileFactory(account).instanceIRODSFileUserHomeDir(irodsUsername);
+        }
+        DataTransferOperations dto=irodsFileSystem.getIRODSAccessObjectFactory().getDataTransferOperations(account);        
         dto.putOperation(localFile,destFile,null,null);        
     }
 
