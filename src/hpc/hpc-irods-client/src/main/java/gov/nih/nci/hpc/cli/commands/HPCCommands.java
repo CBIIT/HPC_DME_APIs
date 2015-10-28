@@ -54,10 +54,10 @@ public class HPCCommands implements CommandMarker {
 	@CliCommand(value = "hpcput", help = "Create/Add data to HPC Archive")
 	public String hpcput(
 		@CliOption(key = { "source" }, mandatory = false, help = "Source location for transfer") final String source,
-		@CliOption(key = { "collection"}, mandatory = true, help = "Location/Collection of the file") final String collection,
+		//@CliOption(key = { "collection"}, mandatory = true, help = "Location/Collection of the file") final String collection,
 		@CliOption(key = { "metadata" }, mandatory = true, help = "Metadata filename") final String metadata)
 		{
-			HPCDataObject hpcDataObject = new HPCDataObject(source,collection,metadata);
+			HPCDataObject hpcDataObject = new HPCDataObject(source,metadata);
 			irodsClient.setHPCDataObject(hpcDataObject);
 			try {
 				irodsClient.setHPCAccount();
