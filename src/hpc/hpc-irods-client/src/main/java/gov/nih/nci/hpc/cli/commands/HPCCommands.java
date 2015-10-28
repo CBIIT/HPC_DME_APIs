@@ -1,14 +1,12 @@
 package gov.nih.nci.hpc.cli.commands;
 
-import java.io.File;
-import java.io.IOException;
+import java.util.logging.Logger;
 
-import javax.xml.bind.DatatypeConverter;
-
-import gov.nih.nci.hpc.cli.HPCClient;
 import gov.nih.nci.hpc.cli.IrodsClient;
 import gov.nih.nci.hpc.cli.domain.HPCDataObject;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
+
+import javax.xml.bind.DatatypeConverter;
 
 import org.irods.jargon.core.exception.JargonException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +15,6 @@ import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
 
 @Component
 public class HPCCommands implements CommandMarker {
@@ -28,6 +24,7 @@ public class HPCCommands implements CommandMarker {
 	private HpcConfigProperties configProperties;
 	@Autowired
 	private IrodsClient irodsClient;
+	protected final Logger LOG = Logger.getLogger(getClass().getName());
 
 	@CliAvailabilityIndicator({"hpcput"})
 	public boolean isHpcputAvailable() {
@@ -54,41 +51,30 @@ public class HPCCommands implements CommandMarker {
 		return "file = [" + filename + "] Location = [" + location + "]";
 	}
 	*/
-	@CliCommand(value = "hpcput", help = "transfer file to irods")
+	@CliCommand(value = "hpcput", help = "Create/Add data to HPC Archive")
 	public String hpcput(
-		@CliOption(key = { "file" }, mandatory = true, help = "Filename to transfer") final String filename,
-		@CliOption(key = { "location"}, mandatory = false, help = "Location/Collection of the file") final String location,
-		@CliOption(key = { "metadataFile" }, mandatory = true, help = "Metadata filename") final String metadataFile)
-		//@CliOption(key = { "objectType" }, mandatory = true, help = "Object type") final String objectType)
+		@CliOption(key = { "source" }, mandatory = false, help = "Source location for transfer") final String source,
+		@CliOption(key = { "collection"}, mandatory = true, help = "Location/Collection of the file") final String collection,
+		@CliOption(key = { "metadata" }, mandatory = true, help = "Metadata filename") final String metadata)
 		{
-		/*
-		HPCClient hpcClient = null;
-		try {
-			hpcClient = new IrodsClient();
-		} catch (JargonException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		*/
-		//HPCDataObject hpcDataObject = new HPCDataObject(filename,location,metadataFile,objectType);
-		HPCDataObject hpcDataObject = new HPCDataObject(filename,location,metadataFile);
-		irodsClient.setHPCDataObject(hpcDataObject);
-		try {
-			irodsClient.setHPCAccount();
-		} catch (NumberFormatException e) {
+			HPCDataObject hpcDataObject = new HPCDataObject(source,collection,metadata);
+			irodsClient.setHPCDataObject(hpcDataObject);
+			try {
+				irodsClient.setHPCAccount();
+			} catch (NumberFormatException e) {
 			//Handle this
-			e.printStackTrace();
-		} catch (JargonException e) {
+				e.printStackTrace();
+			} catch (JargonException e) {
 			//Handle this
-			e.printStackTrace();
-		}
+				e.printStackTrace();
+			}
 		return  irodsClient.processDataObject();
 	}
 	
 	@CliCommand(value = "hpcinit", help = "Initialize HPC configuration ")
 	public String hpcinit(
 		@CliOption(key = { "username" }, mandatory = true, help = "Username for storage") final String username,
-		@CliOption(key = { "password" }, mandatory = false, help = "Password for storage") final String password) {		
+		@CliOption(key = { "password" }, mandatory = true, help = "Password for storage") final String password) {		
 		hpcinitCommandExecuted = true;
 
 		configProperties.setProperty("irods.username", username);
@@ -96,9 +82,8 @@ public class HPCCommands implements CommandMarker {
 		//ConfigurationDecoder.decode(password);
 		configProperties.setProperty("irods.password", token);
 		configProperties.save();
-		System.out.println("HOSTNAME::"+configProperties.getProperty("irods.default.host"));
  		
-		return "username = [" + configProperties.getProperty("irods.username") + "] password = [" + new String(DatatypeConverter.parseBase64Binary(configProperties.getProperty("irods.password"))) + "]";
+		return "HPC User  [" + configProperties.getProperty("irods.username") + "] initialized ";
 	}
 		
 	/*

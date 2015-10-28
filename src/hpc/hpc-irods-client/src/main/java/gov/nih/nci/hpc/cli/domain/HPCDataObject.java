@@ -1,53 +1,37 @@
 package gov.nih.nci.hpc.cli.domain;
 
 public class HPCDataObject {
-	private String filename;
-	private String location;
-	private String metadataFile;
-	private String objectType;
+	private String source;
+	private String collection;
+	private String metadata;
 
-	public HPCDataObject(String filename, String location, String metadataFile, String objectType) {
-		this.filename = filename;
-		this.location = location;
-		this.metadataFile = metadataFile;
-		this.objectType = objectType;
+	public HPCDataObject(String source, String collection, String metadata) {
+		this.source = source;
+		this.collection = collection;
+		this.metadata = metadata;
 	}
 
-	public HPCDataObject(String filename, String location, String metadataFile) {
-		this.filename = filename;
-		this.location = location;
-		this.metadataFile = metadataFile;
-	}
-	public String getFilename() {
-		return filename;
+	public String getSource() {
+		return source;
 	}
 
-	public void setFilename(String filename) {
-		this.filename = filename;
+	public void setSource(String source) {
+		this.source = source;
 	}
 
-	public String getLocation() {
-		return location;
+	public String getCollection() {
+		return collection;
 	}
 
-	public void setLocation(String location) {
-		this.location = location;
+	public void setCollection(String collection) {
+		this.collection = collection;
 	}
 
-	public String getMetadataFile() {
-		return metadataFile;
+	public String getMetadata() {
+		return metadata;
 	}
 
-	public void setMetadataFile(String metadataFile) {
-		this.metadataFile = metadataFile;
+	public void setMetadata(String metadata) {
+		this.metadata = metadata;
 	}
-
-	public String getObjectType() {
-		return objectType;
-	}
-
-	public void setObjectType(String objectType) {
-		this.objectType = objectType;
-	}
-
 }
