@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.CollectionAO;
+import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.slf4j.Logger;
@@ -96,7 +97,7 @@ public class HpcIRODSConnection
     }
     
     /**
-     * Get iRODS file factory instance.
+     * Get iRODS Collection AO instance.
      *
      * @throws HpcException
      */
@@ -108,6 +109,24 @@ public class HpcIRODSConnection
 		} catch(JargonException e) {
 			    throw new HpcException(
 			                 "Failed to get iRODs Colelction Access Object: " + 
+	                         e.getMessage(),
+                             HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		}	
+    }
+    
+    /**
+     * Get iRODS Data Object AO instance.
+     *
+     * @throws HpcException
+     */
+    public DataObjectAO getDataObjectAO() throws HpcException
+    {
+    	try {
+			 return irodsFileSystem.getIRODSAccessObjectFactory().getDataObjectAO(irodsAccount);
+			 
+		} catch(JargonException e) {
+			    throw new HpcException(
+			                 "Failed to get iRODs Data Object Access Object: " + 
 	                         e.getMessage(),
                              HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		}	

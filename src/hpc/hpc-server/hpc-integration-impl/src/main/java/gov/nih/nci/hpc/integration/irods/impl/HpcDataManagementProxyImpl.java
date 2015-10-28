@@ -105,6 +105,32 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			       irodsConnection.closeConnection();
 		}
     }
+    
+    @Override
+    public void addMetadataToDataObject(String path,
+    		                            List<HpcMetadataEntry> metadataEntries) 
+    		                           throws HpcException
+    {
+		List<AvuData> avuDatas = new ArrayList<AvuData>();
+
+		try {
+		     for(HpcMetadataEntry metadataEntry : metadataEntries) {
+			     avuDatas.add(AvuData.instance(metadataEntry.getAttribute(),
+			                                   metadataEntry.getValue(), 
+			                                   metadataEntry.getUnit()));
+		     }
+
+		     List<BulkAVUOperationResponse> bulkAVUOperationResponses = 
+		     irodsConnection.getDataObjectAO().addBulkAVUMetadataToDataObject(path, avuDatas);
+		     
+		} catch(JargonException e) {
+	            throw new HpcException("Failed to add metadata to a data object: " + 
+                                       e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} finally {
+			       irodsConnection.closeConnection();
+		}
+    }
 }
 
  

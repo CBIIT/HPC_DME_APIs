@@ -15,7 +15,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
-import gov.nih.nci.hpc.service.HpcCollectionService;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @version $Id$
  */
 
-public class HpcCollectionServiceImpl implements HpcCollectionService
+public class HpcDataManagementServiceImpl implements HpcDataManagementService
 {    
     //---------------------------------------------------------------------//
     // Instance members
@@ -52,7 +52,7 @@ public class HpcCollectionServiceImpl implements HpcCollectionService
      * Constructor for Spring Dependency Injection.
      * 
      */
-    private HpcCollectionServiceImpl()
+    private HpcDataManagementServiceImpl()
     {
     }   
     
@@ -71,8 +71,9 @@ public class HpcCollectionServiceImpl implements HpcCollectionService
     }
 
     @Override
-    public void addMetadata(String path, List<HpcMetadataEntry> metadataEntries) 
-    		               throws HpcException
+    public void addMetadataToCollection(String path, 
+    		                            List<HpcMetadataEntry> metadataEntries) 
+    		                           throws HpcException
     {
        	// Input validation.
        	if(path == null || !isValidMetadataEntries(metadataEntries)) {
@@ -83,6 +84,25 @@ public class HpcCollectionServiceImpl implements HpcCollectionService
        	// Validate Metadata.
        	metadataValidator.validateCollectionMetadata(metadataEntries);
        	
+       	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToCollection(path, metadataEntries);
+    }
+    
+    @Override
+    public void addMetadataToDataObject(String path, 
+    		                            List<HpcMetadataEntry> metadataEntries) 
+    		                           throws HpcException
+    {
+       	// Input validation.
+       	if(path == null || !isValidMetadataEntries(metadataEntries)) {
+       	   throw new HpcException("Null path or Invalid metadata entry", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+       	// Validate Metadata.
+       	metadataValidator.validateDataObjectMetadata(metadataEntries);
+       	
+       	// Add Metadata to the DM system.
+       	dataManagementProxy.addMetadataToDataObject(path, metadataEntries);
     }
 }

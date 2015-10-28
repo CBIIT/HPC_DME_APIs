@@ -35,8 +35,8 @@
 		          interface="gov.nih.nci.hpc.bus.HpcDatasetBusService" />
 	<osgi:service ref="hpcProjectBusService"
 		          interface="gov.nih.nci.hpc.bus.HpcProjectBusService" />
-	<osgi:service ref="hpcCollectionBusService"
-		          interface="gov.nih.nci.hpc.bus.HpcCollectionBusService" />
+	<osgi:service ref="hpcDataManagementBusService"
+		          interface="gov.nih.nci.hpc.bus.HpcDataManagementBusService" />
 
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcUserService"
@@ -51,7 +51,7 @@
 		            interface="gov.nih.nci.hpc.service.HpcProjectService" />
 	<osgi:reference id="hpcLdapAuthenticationService"
 		            interface="gov.nih.nci.hpc.service.HpcLdapAuthenticationService" />
-	<osgi:reference id="hpcCollectionService"
-		            interface="gov.nih.nci.hpc.service.HpcCollectionService" />
+	<osgi:reference id="hpcDataManagementService"
+		            interface="gov.nih.nci.hpc.service.HpcDataManagementService" />
 
 </beans>

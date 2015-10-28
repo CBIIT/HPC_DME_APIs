@@ -24,7 +24,7 @@ import java.util.List;
  * @version $Id$
  */
 
-public interface HpcCollectionService 
+public interface HpcDataManagementService 
 {         
     /**
      * Create a collection's directory.
@@ -43,8 +43,21 @@ public interface HpcCollectionService
      * 
      * @throws HpcException
      */
-    public void addMetadata(String path, List<HpcMetadataEntry> metadataEntries) 
-    		               throws HpcException; 
+    public void addMetadataToCollection(String path, 
+    		                            List<HpcMetadataEntry> metadataEntries) 
+    		                           throws HpcException; 
+    
+    /**
+     * Add metadata to a data object.
+     *
+     * @param path The data object path.
+     * @param metadataEntries The metadata entries to add.
+     * 
+     * @throws HpcException
+     */
+    public void addMetadataToDataObject(String path, 
+    		                            List<HpcMetadataEntry> metadataEntries) 
+    		                           throws HpcException; 
 }
 
  

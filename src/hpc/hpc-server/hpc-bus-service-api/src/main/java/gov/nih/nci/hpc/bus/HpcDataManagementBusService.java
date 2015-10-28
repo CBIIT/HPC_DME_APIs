@@ -1,5 +1,5 @@
 /**
- * HpcProjectBusService.java
+ * HpcDataManagementBusService.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -17,14 +17,14 @@ import java.util.List;
 
 /**
  * <p>
- * HPC Collection Business Service Interface.
+ * HPC Data Management Business Service Interface.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public interface HpcCollectionBusService 
+public interface HpcDataManagementBusService 
 {         
     /**
      * Register a Collection.
@@ -35,6 +35,18 @@ public interface HpcCollectionBusService
      * @throws HpcException
      */
     public void registerCollection(String path,
+    		                       List<HpcMetadataEntry> metadataEntries) 
+    		                      throws HpcException;
+    
+    /**
+     * Register a Data object.
+     *
+     * @param path The data object's path.
+     * @param metadataEntries A list of metadata entries to attach to the collection.
+     * 
+     * @throws HpcException
+     */
+    public void registerDataObject(String path,
     		                       List<HpcMetadataEntry> metadataEntries) 
     		                      throws HpcException;
 }
