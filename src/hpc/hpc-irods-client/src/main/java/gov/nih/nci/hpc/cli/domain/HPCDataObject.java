@@ -5,9 +5,8 @@ public class HPCDataObject {
 	private String collection;
 	private String metadata;
 
-	public HPCDataObject(String source, String collection, String metadata) {
+	public HPCDataObject(String source, String metadata) {
 		this.source = source;
-		this.collection = collection;
 		this.metadata = metadata;
 	}
 

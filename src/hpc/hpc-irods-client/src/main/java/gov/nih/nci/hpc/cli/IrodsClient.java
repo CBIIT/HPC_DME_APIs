@@ -28,6 +28,7 @@ import javax.xml.bind.DatatypeConverter;
 
 
 
+
 //import org.codehaus.jackson.map.ObjectMapper;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.DataNotFoundException;
@@ -76,9 +77,12 @@ public class IrodsClient implements HPCClient{
 	
 	@Override
 	public String processDataObject() {
-		String message = null;
-			try{
-				if (hpcDataObject.getSource() != null)
+		String message = validateAddMetadataToObject();
+		
+		if(message == null)
+		{	
+		try{
+			if (hpcDataObject.getSource() != null)
 						putUploadFileJargon();
 			}catch(DataNotFoundException dnfe){
 				message = "Input collection/dataset folder not found";
@@ -87,10 +91,10 @@ public class IrodsClient implements HPCClient{
 			}catch(JargonException je){
 				message = "Can not process " + je.getMessage();
 			}
-
-			message = validateAddMetadataToObject();
-			if (message == null)
-				message = "Collection "+hpcDataObject.getCollection()+" added to archive";
+		}
+		
+		if (message == null)
+			message = "Collection "+hpcDataObject.getCollection()+" added to archive";
 		return message;
 	}
 	
@@ -113,12 +117,13 @@ private String validateAddMetadataToObject() {
 		final String irodsZoneHome = configProperties.getProperty("irods.default.zoneHome");
 		final String irodsUsername = configProperties.getProperty("irods.username");	 
 				
-        targetLocation = getTargetLocation(irodsZoneHome, irodsUsername);		
+       	
 		
-	 	List<HpcMetadataEntry> listOfhpcCollection = getListOfAVUs();
-
-		HpcCollectionRegistrationDTO hpcCollectionRegistrationDTO = new HpcCollectionRegistrationDTO();
-		hpcCollectionRegistrationDTO.getMetadataEntries().addAll(listOfhpcCollection);
+	 	HpcCollectionRegistrationDTO hpcCollectionRegistrationDTO = getCollectionRegistrationDTO();
+	 	
+	 	setCollectionName(hpcCollectionRegistrationDTO);
+		
+		targetLocation = getTargetLocation(irodsZoneHome, irodsUsername);
 		
 	try{
 		//restTemplate.put(
@@ -130,13 +135,14 @@ private String validateAddMetadataToObject() {
 		headers.setAccept(mediaTypeList);
         //headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<HpcCollectionRegistrationDTO> entity = new HttpEntity<HpcCollectionRegistrationDTO>(hpcCollectionRegistrationDTO, headers);
-        System.out.println("Adding Metadata..");
+        System.out.println("Adding Metadata to .."+ targetLocation);
 		ResponseEntity<HpcExceptionDTO> response = restTemplate.exchange(hpcServerURL+"/"+hpcCollection+targetLocation, HttpMethod.PUT,entity , HpcExceptionDTO.class);
 
 		
 		}catch (HttpStatusCodeException e) {
+			System.out.println("message1::"+e.getMessage());
 			message = getErrorMessage(e.getResponseBodyAsString());	
-			//System.out.println("message1::"+message);
+			//
 		} catch (RestClientException e) {
 			e.printStackTrace();
 			message = "Client error occured while adding collection :" + e.getMessage();
@@ -151,15 +157,50 @@ private String validateAddMetadataToObject() {
 
 
 
+private HpcCollectionRegistrationDTO getCollectionRegistrationDTO() {
+	List<HpcMetadataEntry> listOfhpcCollection = getListOfAVUs();
+
+	HpcCollectionRegistrationDTO hpcCollectionRegistrationDTO = new HpcCollectionRegistrationDTO();
+	hpcCollectionRegistrationDTO.getMetadataEntries().addAll(listOfhpcCollection);
+	return hpcCollectionRegistrationDTO;
+}
+
+private void setCollectionName(HpcCollectionRegistrationDTO hpcCollectionRegistrationDTO) {
+	String collectionType = getAttributeValueByName(configProperties.getProperty("hpc.collection.type"), hpcCollectionRegistrationDTO);
+	if (collectionType.equalsIgnoreCase("dataset"))
+		hpcDataObject.setCollection(getAttributeValueByName(configProperties.getProperty("hpc.dataset.name"),hpcCollectionRegistrationDTO));
+	else if (collectionType.equalsIgnoreCase("project"))
+		hpcDataObject.setCollection(getAttributeValueByName(configProperties.getProperty("hpc.project.name"),hpcCollectionRegistrationDTO));
+	else
+		hpcDataObject.setCollection("");
+}
+
+
+
+private String getAttributeValueByName(String collectionType,
+		HpcCollectionRegistrationDTO hpcCollectionRegistrationDTO) 
+{
+	for (HpcMetadataEntry hpcMetadataEntry : hpcCollectionRegistrationDTO.getMetadataEntries()) {
+		if(collectionType.equalsIgnoreCase(hpcMetadataEntry.getAttribute()))
+			return hpcMetadataEntry.getValue();
+	}
+	return null;
+}
+
+
 private String getTargetLocation(final String irodsZoneHome,
 		final String irodsUsername) {
-	String targetLocation;
+	String targetLocation = null;
 	if(hpcDataObject.getCollection() != null)
 	{
-	    File localFile=new File(hpcDataObject.getSource());            
-		if(localFile.isFile())
-			targetLocation=irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getCollection()+"/"+localFile.getName();
-		else
+		if(hpcDataObject.getSource() != null)
+		{	
+			File localFile=new File(hpcDataObject.getSource());            
+			if(localFile.isFile())
+				targetLocation=irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getCollection()+"/"+localFile.getName();
+			else
+				targetLocation=irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getCollection();
+		}else
 			targetLocation=irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getCollection();
 	}else
 	{
