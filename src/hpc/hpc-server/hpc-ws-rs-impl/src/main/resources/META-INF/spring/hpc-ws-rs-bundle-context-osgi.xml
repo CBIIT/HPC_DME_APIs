@@ -51,6 +51,6 @@
 		interface="gov.nih.nci.hpc.bus.HpcDatasetBusService" />
 	<osgi:reference id="hpcProjectBusService"
 		interface="gov.nih.nci.hpc.bus.HpcProjectBusService" />
-	<osgi:reference id="hpcCollectionBusService"
-		interface="gov.nih.nci.hpc.bus.HpcCollectionBusService" />
+	<osgi:reference id="hpcDataManagementnBusService"
+		interface="gov.nih.nci.hpc.bus.HpcDataManagementBusService" />
 </beans>

@@ -44,8 +44,8 @@
 		          interface="gov.nih.nci.hpc.service.HpcTransferStatusService" />		          
 	<osgi:service ref="hpcProjectService"
 		          interface="gov.nih.nci.hpc.service.HpcProjectService" />	
-	<osgi:service ref="hpcCollectionService"
-		          interface="gov.nih.nci.hpc.service.HpcCollectionService" />	
+	<osgi:service ref="hpcDataManagementService"
+		          interface="gov.nih.nci.hpc.service.HpcDataManagementService" />	
 
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcUserDAO" 
