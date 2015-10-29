@@ -211,15 +211,19 @@ private String getTargetLocation(final String irodsZoneHome,
 	String targetLocation = null;
 	if(hpcDataObject.getCollection() != null)
 	{
+		String parentCollection = getParentCollection();
+		String collName = hpcDataObject.getCollection();
+		if(parentCollection != null)
+			collName = parentCollection + "/" + collName;
 		if(hpcDataObject.getSource() != null)
 		{	
 			File localFile=new File(hpcDataObject.getSource());            
 			if(localFile.isFile())
-				targetLocation=irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getCollection()+"/"+localFile.getName();
+				targetLocation=irodsZoneHome+"/"+irodsUsername+"/"+collName+"/"+localFile.getName();
 			else
-				targetLocation=irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getCollection();
+				targetLocation=irodsZoneHome+"/"+irodsUsername+"/"+collName;
 		}else
-			targetLocation=irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getCollection();
+			targetLocation=irodsZoneHome+"/"+irodsUsername+"/"+collName;
 	}else
 	{
 		targetLocation=irodsZoneHome+"/"+irodsUsername;
@@ -247,6 +251,23 @@ private List<HpcMetadataEntry> getListOfAVUs() {
 	return listOfhpcCollection;
 }
 
+private String getParentCollection() {
+ 	JSONObject jsonObject = readMetadataJsonFromFile();
+	JSONArray jsonArray = (JSONArray) jsonObject.get("metadataEntries");
+	
+	List<HpcMetadataEntry> listOfhpcCollection = new ArrayList<HpcMetadataEntry>();
+	AvuData avuData = null;
+	for (int i = 0; i < jsonArray.size(); i++) {
+		JSONObject attrObj=(JSONObject) jsonArray.get(i);
+	    //System.out.println(attrObj.get("attribute"));
+		String attr = (String) attrObj.get("attribute");
+		if(!attr.equalsIgnoreCase("Parent Collection"))
+			continue;
+		else
+			return (String) attrObj.get("value");
+	}
+	return null;
+}
 
 
 private String getErrorMessage(String errorpayload) {
