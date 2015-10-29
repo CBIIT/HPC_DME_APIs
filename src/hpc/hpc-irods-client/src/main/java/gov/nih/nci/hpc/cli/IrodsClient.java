@@ -127,7 +127,7 @@ private String validateAddMetadataToObject() {
 		
 		targetLocation = getTargetLocation(irodsZoneHome, irodsUsername);
 		
-		System.out.println("Collection name::"+ hpcDataObject.getCollection());
+		//System.out.println("Collection name::"+ hpcDataObject.getCollection());
 	try{
 		if(hpcDataObject.getCollection() != null && !hpcDataObject.getCollection().isEmpty())
 		{	
@@ -292,6 +292,9 @@ public JSONObject readMetadataJsonFromFile() {
 
    public void putUploadFileJargon() throws DataNotFoundException,JargonException,OverwriteException
    {
+       if(hpcDataObject.getSource() == null)
+    	   return;
+       
 	    IRODSFile destFile = null;
 	    String targetCollection = null;
 	    
@@ -300,7 +303,7 @@ public JSONObject readMetadataJsonFromFile() {
         File localFile=new File(hpcDataObject.getSource());
         String collection = hpcDataObject.getCollection();        
         
-		if(localFile.isFile())
+		if(localFile != null && localFile.isFile())
         	targetCollection  = irodsZoneHome+"/"+irodsUsername+"/"+collection+"/"+localFile.getName();
         else
         	targetCollection = irodsZoneHome+"/"+irodsUsername+"/"+collection;
