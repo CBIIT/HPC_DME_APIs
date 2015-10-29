@@ -29,6 +29,7 @@ import javax.xml.bind.DatatypeConverter;
 
 
 
+
 //import org.codehaus.jackson.map.ObjectMapper;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.DataNotFoundException;
@@ -82,7 +83,7 @@ public class IrodsClient implements HPCClient{
 		if(message == null)
 		{	
 		try{
-			if (hpcDataObject.getSource() != null)
+			if (hpcDataObject.getSource() != null && !hpcDataObject.getCollection().isEmpty())
 						putUploadFileJargon();
 			}catch(DataNotFoundException dnfe){
 				message = "Input collection/dataset folder not found";
@@ -114,6 +115,7 @@ private String validateAddMetadataToObject() {
 		String targetLocation = null;
 		String hpcServerURL = configProperties.getProperty("hpc.server.url");
 		String hpcCollection = configProperties.getProperty("hpc.collection.service");
+		String hpcDataObjectService = configProperties.getProperty("hpc.dataobject.service");
 		final String irodsZoneHome = configProperties.getProperty("irods.default.zoneHome");
 		final String irodsUsername = configProperties.getProperty("irods.username");	 
 				
@@ -125,20 +127,19 @@ private String validateAddMetadataToObject() {
 		
 		targetLocation = getTargetLocation(irodsZoneHome, irodsUsername);
 		
+		System.out.println("Collection name::"+ hpcDataObject.getCollection());
 	try{
-		//restTemplate.put(
-			//	hpcServerURL+"/"+hpcCollection+irodsZoneHome+"/"+irodsUsername+"/"+hpcDataObject.getFilename(),hpcCollectionRegistrationDTO,urlMap);
-		RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-		List <MediaType> mediaTypeList = new ArrayList<MediaType>();
-		mediaTypeList.add(MediaType.APPLICATION_JSON);
-		headers.setAccept(mediaTypeList);
-        //headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<HpcCollectionRegistrationDTO> entity = new HttpEntity<HpcCollectionRegistrationDTO>(hpcCollectionRegistrationDTO, headers);
-        System.out.println("Adding Metadata to .."+ targetLocation);
-		ResponseEntity<HpcExceptionDTO> response = restTemplate.exchange(hpcServerURL+"/"+hpcCollection+targetLocation, HttpMethod.PUT,entity , HpcExceptionDTO.class);
-
-		
+		if(hpcDataObject.getCollection() != null && !hpcDataObject.getCollection().isEmpty())
+		{	
+			putCollectionDataObjectHPCMetadata(targetLocation, hpcServerURL, hpcCollection,
+					hpcCollectionRegistrationDTO);
+		}
+		else
+		{
+			putUploadFileJargon();
+			putCollectionDataObjectHPCMetadata(targetLocation, hpcServerURL, hpcDataObjectService,
+					hpcCollectionRegistrationDTO);
+		}
 		}catch (HttpStatusCodeException e) {
 			System.out.println("message1::"+e.getMessage());
 			message = getErrorMessage(e.getResponseBodyAsString());	
@@ -157,6 +158,23 @@ private String validateAddMetadataToObject() {
 
 
 
+private void putCollectionDataObjectHPCMetadata(String targetLocation,
+		String hpcServerURL, String hpcCollection,
+		HpcCollectionRegistrationDTO hpcCollectionRegistrationDTO) {
+	
+	RestTemplate restTemplate = new RestTemplate();
+	HttpHeaders headers = new HttpHeaders();
+	List <MediaType> mediaTypeList = new ArrayList<MediaType>();
+	mediaTypeList.add(MediaType.APPLICATION_JSON);
+	headers.setAccept(mediaTypeList);
+	//headers.setContentType(MediaType.APPLICATION_JSON);
+	HttpEntity<HpcCollectionRegistrationDTO> entity = new HttpEntity<HpcCollectionRegistrationDTO>(hpcCollectionRegistrationDTO, headers);
+	System.out.println("Adding Metadata to .."+ targetLocation);
+	ResponseEntity<HpcExceptionDTO> response = restTemplate.exchange(hpcServerURL+"/"+hpcCollection+targetLocation, HttpMethod.PUT,entity , HpcExceptionDTO.class);
+}
+
+
+
 private HpcCollectionRegistrationDTO getCollectionRegistrationDTO() {
 	List<HpcMetadataEntry> listOfhpcCollection = getListOfAVUs();
 
@@ -167,9 +185,9 @@ private HpcCollectionRegistrationDTO getCollectionRegistrationDTO() {
 
 private void setCollectionName(HpcCollectionRegistrationDTO hpcCollectionRegistrationDTO) {
 	String collectionType = getAttributeValueByName(configProperties.getProperty("hpc.collection.type"), hpcCollectionRegistrationDTO);
-	if (collectionType.equalsIgnoreCase("dataset"))
+	if (collectionType != null && collectionType.equalsIgnoreCase("dataset"))
 		hpcDataObject.setCollection(getAttributeValueByName(configProperties.getProperty("hpc.dataset.name"),hpcCollectionRegistrationDTO));
-	else if (collectionType.equalsIgnoreCase("project"))
+	else if (collectionType != null && collectionType.equalsIgnoreCase("project"))
 		hpcDataObject.setCollection(getAttributeValueByName(configProperties.getProperty("hpc.project.name"),hpcCollectionRegistrationDTO));
 	else
 		hpcDataObject.setCollection("");
