@@ -26,7 +26,7 @@
 				<xsd:element name="collectionMetadataValidationRules" 
 			                 type="hpc-domain-metadata:HpcMetadataValidationRule" 
 			                 minOccurs="0" maxOccurs="unbounded" />
-			    <xsd:element name="fileMetadataValidationRules" 
+			    <xsd:element name="dataObjectMetadataValidationRules" 
 			                 type="hpc-domain-metadata:HpcMetadataValidationRule" 
 			                 minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
