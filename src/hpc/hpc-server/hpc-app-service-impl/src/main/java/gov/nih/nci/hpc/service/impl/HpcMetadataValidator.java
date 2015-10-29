@@ -86,9 +86,9 @@ public class HpcMetadataValidator
 		}
 		catch(ParseException e) {
 		    logger.error("ParseException failed:", e);
-		}
+		}*/
 		
-		return callBackFn +"("+json.toString()+");";*/
+		
 		
     	// Collection metadata validation rules.
     	HpcMetadataValidationRule collectionType = new HpcMetadataValidationRule();
@@ -175,7 +175,69 @@ public class HpcMetadataValidator
     					      internalProjectId, sourceLabPI, labBranch, piDOC, projectDate, 
     					      userName, registrarDOC));
     	
-    	// File metadata validation rules.
+    	// Data Object metadata validation rules.
+    	HpcMetadataValidationRule datasetName = new HpcMetadataValidationRule();
+    	datasetName.setAttribute("Dataset name");
+    	datasetName.setMandatory(true);
+    	datasetName.setRuleEnabled(true);
+    	datasetName.setDOC("DOC-NAME");
+    	
+    	HpcMetadataValidationRule datasetDescription = new HpcMetadataValidationRule();
+    	datasetDescription.setAttribute("Dataset description");
+    	datasetDescription.setMandatory(true);
+    	datasetDescription.setRuleEnabled(true);
+    	datasetDescription.setDOC("DOC-NAME");
+    	
+    	HpcMetadataValidationRule sourceLabPI_DO = new HpcMetadataValidationRule();
+    	sourceLabPI_DO.setAttribute("Source Lab PI");
+    	sourceLabPI_DO.setMandatory(true);
+    	sourceLabPI_DO.setRuleEnabled(true);
+    	sourceLabPI_DO.setDOC("DOC-NAME");
+    	
+    	HpcMetadataValidationRule labBranch_DO = new HpcMetadataValidationRule();
+    	labBranch_DO.setAttribute("Lab/Branch");
+    	labBranch_DO.setMandatory(true);
+    	labBranch_DO.setRuleEnabled(true);
+    	labBranch_DO.setDOC("DOC-NAME");
+    	
+    	HpcMetadataValidationRule piDOC_DO = new HpcMetadataValidationRule();
+    	piDOC_DO.setAttribute("DOC of the PI");
+    	piDOC_DO.setMandatory(true);
+    	piDOC_DO.setRuleEnabled(true);
+    	piDOC_DO.setDOC("DOC-NAME");
+    	
+    	HpcMetadataValidationRule datasetCreationDate = new HpcMetadataValidationRule();
+    	datasetCreationDate.setAttribute("Date the dataset was created Originally");
+    	datasetCreationDate.setMandatory(true);
+    	datasetCreationDate.setRuleEnabled(true);
+    	datasetCreationDate.setDOC("DOC-NAME");
+    	
+    	HpcMetadataValidationRule creator = new HpcMetadataValidationRule();
+    	creator.setAttribute("Data Creator");
+    	creator.setDefaultValue("Not Specified");
+    	creator.setMandatory(true);
+    	creator.setRuleEnabled(true);
+    	creator.setDOC("DOC-NAME");
+    	
+    	HpcMetadataValidationRule registrar = new HpcMetadataValidationRule();
+    	registrar.setAttribute("Name of the User registering the dataset");
+    	registrar.setMandatory(true);
+    	registrar.setRuleEnabled(true);
+    	registrar.setDOC("DOC-NAME");
+    	
+    	HpcMetadataValidationRule registrarDOC_DO = new HpcMetadataValidationRule();
+    	registrarDOC_DO.setAttribute("DOC of the user registering the dataset");
+    	registrarDOC_DO.setMandatory(true);
+    	registrarDOC_DO.setRuleEnabled(true);
+    	registrarDOC_DO.setDOC("DOC-NAME");
+    	
+    	HpcMetadataValidationRule phiContent = new HpcMetadataValidationRule();
+    	phiContent.setAttribute("PHI Content");
+    	phiContent.setMandatory(true);
+    	phiContent.setRuleEnabled(true);
+    	phiContent.setDOC("DOC-NAME");
+    	phiContent.getValidValues().addAll(Arrays.asList("PHI Present", "PHI Not Present", "Not Specified"));
+    	
     	HpcMetadataValidationRule piiContent = new HpcMetadataValidationRule();
     	piiContent.setAttribute("PII Content");
     	piiContent.setMandatory(true);
@@ -183,7 +245,32 @@ public class HpcMetadataValidator
     	piiContent.setDOC("DOC-NAME");
     	piiContent.getValidValues().addAll(Arrays.asList("PII Present", "PII Not Present", "Not Specified"));
     	
-    	metadataValidationRules.getFileMetadataValidationRules().addAll(Arrays.asList(piiContent));
+    	HpcMetadataValidationRule encryption = new HpcMetadataValidationRule();
+    	encryption.setAttribute("Data Encryption Status");
+    	encryption.setMandatory(true);
+    	encryption.setRuleEnabled(true);
+    	encryption.setDOC("DOC-NAME");
+    	encryption.getValidValues().addAll(Arrays.asList("Encrypted", "Not Encrypted", "Not Specified"));
+    	
+    	HpcMetadataValidationRule compression = new HpcMetadataValidationRule();
+    	compression.setAttribute("Data Compression Statuss");
+    	compression.setMandatory(true);
+    	compression.setRuleEnabled(true);
+    	compression.setDOC("DOC-NAME");
+    	compression.getValidValues().addAll(Arrays.asList("Compressed", "Not Compressed", "Not Specified"));
+    	
+    	HpcMetadataValidationRule fundingOrganization = new HpcMetadataValidationRule();
+    	fundingOrganization.setAttribute("Organization Funding the generation of Data");
+    	fundingOrganization.setDefaultValue("Not Specified");
+    	fundingOrganization.setMandatory(true);
+    	fundingOrganization.setRuleEnabled(true);
+    	fundingOrganization.setDOC("DOC-NAME");
+    	
+    	metadataValidationRules.getDataObjectMetadataValidationRules().addAll(
+    			Arrays.asList(datasetName, datasetDescription, sourceLabPI_DO,
+    					      labBranch_DO, piDOC_DO, datasetCreationDate, creator, registrar,
+    					      registrarDOC_DO, phiContent, piiContent, encryption, compression,
+    					      fundingOrganization));
     }   
     
     //---------------------------------------------------------------------//
@@ -215,7 +302,7 @@ public class HpcMetadataValidator
     		                              throws HpcException
     {
     	validateMetadata(metadataEntries, 
-    			         metadataValidationRules.getFileMetadataValidationRules());
+    			         metadataValidationRules.getDataObjectMetadataValidationRules());
     }
     		                               
     //---------------------------------------------------------------------//
