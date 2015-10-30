@@ -30,11 +30,14 @@ import javax.xml.bind.DatatypeConverter;
 
 
 
+
+
 //import org.codehaus.jackson.map.ObjectMapper;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.DataNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.exception.OverwriteException;
+import org.irods.jargon.core.packinstr.TransferOptions;
 import org.irods.jargon.core.pub.BulkAVUOperationResponse;
 import org.irods.jargon.core.pub.CollectionAO;
 import org.irods.jargon.core.pub.DataObjectAO;
@@ -42,6 +45,7 @@ import org.irods.jargon.core.pub.DataTransferOperations;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFile;
+import org.irods.jargon.core.transfer.TransferControlBlock;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -332,8 +336,20 @@ public JSONObject readMetadataJsonFromFile() {
         destFile=irodsFileSystem.getIRODSFileFactory(account).instanceIRODSFile(targetCollection);	
                 	
         System.out.println("Adding files:"+localFile.getName());
-        DataTransferOperations dto=irodsFileSystem.getIRODSAccessObjectFactory().getDataTransferOperations(account);        
-        dto.putOperation(localFile,destFile,null,null);        
+        DataTransferOperations dto=irodsFileSystem.getIRODSAccessObjectFactory().getDataTransferOperations(account);
+        
+		TransferOptions transferOptions = new TransferOptions();
+		transferOptions.setComputeAndVerifyChecksumAfterTransfer(true);
+		transferOptions.setMaxThreads(0);
+		transferOptions.setUseParallelTransfer(false);        
+        
+		TransferControlBlock tcb = irodsFileSystem.getIrodsSession()
+				.buildDefaultTransferControlBlockBasedOnJargonProperties();
+		tcb.setTransferOptions(transferOptions);
+
+
+		
+        dto.putOperation(localFile,destFile,null,tcb);        
     }
 
 
