@@ -82,7 +82,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    logger.error("RS: PUT /collection" + path + " failed:", e);
 			    return errorResponse(e);
 		}
-    	
+		
 		return createdResponse(null);
 	}
     
