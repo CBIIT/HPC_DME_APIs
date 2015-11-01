@@ -16,12 +16,17 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.domain.model.HpcMetadataValidationRules;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 /**
  * <p>
@@ -73,23 +78,28 @@ public class HpcMetadataValidator
     private HpcMetadataValidator(String metadataValidationRulesPath) throws HpcException
     {
     	// TODO: move this to external JSON config.
-/*
-		JSONParser parser = new JSONParser();
-		JSONObject json = new JSONObject();
 		try {
 	         FileReader reader = new FileReader(metadataValidationRulesPath);
-	         json = (JSONObject) parser.parse(reader);
-		} catch(FileNotFoundException e) {
-		    logger.error("FileNotFoundException failed:", e);
-		}catch(IOException e) {
-		    logger.error("IOException failed:", e);
+	         JSONObject jsonMetadataValidationRules = (JSONObject) ((JSONObject) new JSONParser().parse(reader)).get("HpcMetadataValidationRules");
+	         
+	         if(jsonMetadataValidationRules == null ||
+	        	!jsonMetadataValidationRules.containsKey("collectionMetadataValidationRules") ||
+	            !jsonMetadataValidationRules.containsKey("dataObjectMetadataValidationRules")) {
+	        	 throw new HpcException("Invalid JSON rules: " + jsonMetadataValidationRules,
+		                                HpcErrorType.SPRING_CONFIGURATION_ERROR);	
+	         }
+	         
+	         metadataValidationRules.getCollectionMetadataValidationRules().addAll(
+	        		 fromJSON((JSONArray) jsonMetadataValidationRules.get("collectionMetadataValidationRules")));
+	         metadataValidationRules.getDataObjectMetadataValidationRules().addAll(
+	        		 fromJSON((JSONArray) jsonMetadataValidationRules.get("dataObjectMetadataValidationRules")));
+	         
+		} catch(Exception e) {
+			    throw new HpcException("Could not open or parse: " + metadataValidationRulesPath,
+                                       HpcErrorType.SPRING_CONFIGURATION_ERROR, e);
 		}
-		catch(ParseException e) {
-		    logger.error("ParseException failed:", e);
-		}*/
 		
-		
-		
+		/*
     	// Collection metadata validation rules.
     	HpcMetadataValidationRule collectionType = new HpcMetadataValidationRule();
     	collectionType.setAttribute("Collection type");
@@ -270,7 +280,7 @@ public class HpcMetadataValidator
     			Arrays.asList(datasetName, datasetDescription, sourceLabPI_DO,
     					      labBranch_DO, piDOC_DO, datasetCreationDate, creator, registrar,
     					      registrarDOC_DO, phiContent, piiContent, encryption, compression,
-    					      fundingOrganization));
+    					      fundingOrganization));*/
     }   
     
     //---------------------------------------------------------------------//
@@ -385,6 +395,58 @@ public class HpcMetadataValidator
 	    	}
 		}
     }  
+    
+    /**
+     * Instantiate list metadata validation rules from JSON.
+     *
+     * @param jsonMetadataValidationRules The validation rules JSON array. 
+     * 
+     * @throws HpcException If failed to parse the JSON
+     */
+    @SuppressWarnings("unchecked")
+	private List<HpcMetadataValidationRule> fromJSON(JSONArray jsonMetadataValidationRules) 
+    		                                        throws HpcException
+    {
+    	List<HpcMetadataValidationRule> metadataValidationRules = 
+    			                        new ArrayList<HpcMetadataValidationRule>();
+    	
+    	// Iterate through the rules and map to POJO.
+    	Iterator<JSONObject> rulesIterator = jsonMetadataValidationRules.iterator();
+    	while(rulesIterator.hasNext()) {
+    		  JSONObject jsonMetadataValidationRule = rulesIterator.next();
+    		
+	    	  if(!jsonMetadataValidationRule.containsKey("attribute") ||
+	    		 !jsonMetadataValidationRule.containsKey("mandatory") ||
+	    		 !jsonMetadataValidationRule.containsKey("ruleEnabled") ||
+	    		 !jsonMetadataValidationRule.containsKey("DOC")) {
+	    		 throw new HpcException("Invalid rule JSON object: " + jsonMetadataValidationRule,
+	    		                        HpcErrorType.SPRING_CONFIGURATION_ERROR);	
+	    	  }
+	    			
+	    	  // JSON -> POJO.
+	    	  HpcMetadataValidationRule metadataValidationRule = new HpcMetadataValidationRule();
+	    	  metadataValidationRule.setAttribute((String) jsonMetadataValidationRule.get("attribute"));
+	    	  metadataValidationRule.setMandatory((Boolean) jsonMetadataValidationRule.get("mandatory"));
+	    	  metadataValidationRule.setRuleEnabled((Boolean) jsonMetadataValidationRule.get("ruleEnabled"));
+	    	  metadataValidationRule.setDOC((String) jsonMetadataValidationRule.get("DOC"));
+	    	  metadataValidationRule.setDefaultValue((String) jsonMetadataValidationRule.get("defaultValue"));
+	    	  metadataValidationRule.setDefaultUnit((String) jsonMetadataValidationRule.get("defaultUnit"));
+	    	  metadataValidationRule.setCollectionType((String) jsonMetadataValidationRule.get("collectionType"));
+	    	  
+	    	  // Extract the valid values.
+	    	  JSONArray jsonValidValues = (JSONArray) jsonMetadataValidationRule.get("validValues");
+	    	  if(jsonValidValues != null) {
+	    	     Iterator<String> validValuesIterator = jsonValidValues.iterator();
+	    	     while(validValuesIterator.hasNext()) {
+	    	    	   metadataValidationRule.getValidValues().add(validValuesIterator.next());
+	    	     }
+	    	  }
+	    	  
+	    	  metadataValidationRules.add(metadataValidationRule);
+    	}
+    	
+    	return metadataValidationRules;
+    }
 }
 
  

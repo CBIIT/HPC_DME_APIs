@@ -4,8 +4,8 @@
          "attribute": "Collection type",
          "mandatory": true,
          "validValues":          [
-            "project",
-            "dataset"
+            "Project",
+            "Dataset"
          ],
          "ruleEnabled": true,
          "DOC": "DOC-NAME"
@@ -13,90 +13,187 @@
             {
          "attribute": "Project name",
          "mandatory": true,
-         "collectionType": "project",
+         "collectionType": "Project",
          "ruleEnabled": true,
          "DOC": "DOC-NAME"
       },
             {
          "attribute": "Project type",
          "mandatory": true,
-         "defaultValue": "Unspecified",
-         "collectionType": "project",
+         "validValues":          [
+            "Unknown",
+            "Sequencing",
+            "Analysis",
+            "Umbrella"
+         ],
+         "defaultValue": "Unknown",
+         "collectionType": "Project",
          "ruleEnabled": true,
          "DOC": "DOC-NAME"
       },
             {
          "attribute": "Project description",
          "mandatory": true,
-         "collectionType": "project",
+         "collectionType": "Project",
          "ruleEnabled": true,
          "DOC": "DOC-NAME"
       },
             {
          "attribute": "Internal Project ID",
          "mandatory": true,
-         "collectionType": "project",
+         "collectionType": "Project",
          "ruleEnabled": true,
          "DOC": "DOC-NAME"
       },
             {
          "attribute": "Source Lab PI",
          "mandatory": true,
-         "collectionType": "project",
+         "collectionType": "Project",
          "ruleEnabled": true,
          "DOC": "DOC-NAME"
       },
             {
          "attribute": "Lab / Branch Name",
          "mandatory": true,
-         "collectionType": "project",
+         "collectionType": "Project",
          "ruleEnabled": true,
          "DOC": "DOC-NAME"
       },
             {
          "attribute": "DOC of the PI",
          "mandatory": true,
-         "collectionType": "project",
+         "collectionType": "Project",
          "ruleEnabled": true,
          "DOC": "DOC-NAME"
       },
             {
-         "attribute": "Date the Project was created",
+         "attribute": "Original Date the Project was created on",
          "mandatory": true,
-         "collectionType": "project",
+         "collectionType": "Project",
          "ruleEnabled": true,
          "DOC": "DOC-NAME"
       },
             {
          "attribute": "Name of the User registering the Project (Registrar)",
          "mandatory": true,
-         "collectionType": "project",
+         "collectionType": "Project",
          "ruleEnabled": true,
          "DOC": "DOC-NAME"
       },
             {
          "attribute": "DOC of the Registrar",
          "mandatory": true,
-         "collectionType": "project",
-         "ruleEnabled": true,
-         "DOC": "DOC-NAME"
-      },
-            {
-         "attribute": "Link to other projects",
-         "mandatory": true,
-         "collectionType": "project",
+         "collectionType": "Project",
          "ruleEnabled": true,
          "DOC": "DOC-NAME"
       }
    ],
-   "fileMetadataValidationRules":    {
-      "attribute": "PII Content",
-      "mandatory": true,
-      "validValues":       [
-         true,
-         false
-      ],
-      "ruleEnabled": true,
-      "DOC": "DOC-NAME"
-   }
+   "dataObjectMetadataValidationRules":    [
+            {
+         "attribute": "Dataset name",
+         "mandatory": true,
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Dataset description",
+         "mandatory": true,
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Source Lab PI",
+         "mandatory": true,
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Lab/Branch",
+         "mandatory": true,
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "DOC of the PI",
+         "mandatory": true,
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Date the dataset was created Originally",
+         "mandatory": true,
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Data Creator",
+         "mandatory": true,
+         "defaultValue": "Not Specified",
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Name of the User registering the dataset",
+         "mandatory": true,
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "DOC of the user registering the dataset",
+         "mandatory": true,
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "PHI Content",
+         "mandatory": true,
+         "validValues":          [
+            "PHI Present",
+            "PHI Not Present",
+            "Not Specified"
+         ],
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "PII Content",
+         "mandatory": true,
+         "validValues":          [
+            "PII Present",
+            "PII Not Present",
+            "Not Specified"
+         ],
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Data Encryption Status",
+         "mandatory": true,
+         "validValues":          [
+            "Encrypted",
+            "Not Encrypted",
+            "Not Specified"
+         ],
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Data Compression Statuss",
+         "mandatory": true,
+         "validValues":          [
+            "Compressed",
+            "Not Compressed",
+            "Not Specified"
+         ],
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      },
+            {
+         "attribute": "Organization Funding the generation of Data",
+         "mandatory": true,
+         "defaultValue": "Not Specified",
+         "ruleEnabled": true,
+         "DOC": "DOC-NAME"
+      }
+   ]
 }}
