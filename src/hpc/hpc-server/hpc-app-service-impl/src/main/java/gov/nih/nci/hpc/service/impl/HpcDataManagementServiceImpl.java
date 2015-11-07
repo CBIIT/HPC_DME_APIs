@@ -69,6 +69,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	dataManagementProxy.createCollectionDirectory(path);
     }
+    
+    @Override
+    public void createFile(String path) throws HpcException
+    {
+    	dataManagementProxy.createDataObjectFile(path);
+    }
 
     @Override
     public void addMetadataToCollection(String path, 

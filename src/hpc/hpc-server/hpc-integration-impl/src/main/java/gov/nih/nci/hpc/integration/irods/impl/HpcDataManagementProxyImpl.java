@@ -15,11 +15,11 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.BulkAVUOperationResponse;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +79,27 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			       irodsConnection.closeConnection();
 		}
     }
+    
+    @Override    
+    public void createDataObjectFile(String path) throws HpcException
+    {
+		try {
+			 IRODSFile dataObjectFile = 
+			      irodsConnection.getIRODSFileFactory().instanceIRODSFile(path);
+			 dataObjectFile.createNewFile();
+			 
+		} catch(JargonException e) {
+		        throw new HpcException("Failed to create a file: " + 
+                                       e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} catch(IOException ioe) {
+	            throw new HpcException("Failed to create a file: " + 
+                                       ioe.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, ioe);
+		} finally {
+			       irodsConnection.closeConnection();
+		}
+    }
 
     @Override
     public void addMetadataToCollection(String path,
@@ -94,7 +115,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			                                   metadataEntry.getUnit()));
 		     }
 
-		     List<BulkAVUOperationResponse> bulkAVUOperationResponses = 
 		     irodsConnection.getCollectionAO().addBulkAVUMetadataToCollection(path, avuDatas);
 		     
 		} catch(JargonException e) {
@@ -120,7 +140,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			                                   metadataEntry.getUnit()));
 		     }
 
-		     List<BulkAVUOperationResponse> bulkAVUOperationResponses = 
 		     irodsConnection.getDataObjectAO().addBulkAVUMetadataToDataObject(path, avuDatas);
 		     
 		} catch(JargonException e) {
