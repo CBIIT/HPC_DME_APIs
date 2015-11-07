@@ -41,6 +41,20 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
+	
+	<!-- Data Object Registration DTO -->
+	<xsd:element name="HpcDataObjectRegistrationDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="locations"
+				             type="hpc-domain-dataset:HpcDataTransferLocations" />
+				<xsd:element name="metadataEntries" 
+				             type="hpc-domain-metadata:HpcMetadataEntry" 
+					         maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
 
 	<!-- Dataset DTO -->
 	<xsd:element name="HpcDatasetDTO">
