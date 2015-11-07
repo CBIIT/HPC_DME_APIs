@@ -13,8 +13,12 @@ package gov.nih.nci.hpc.bus.impl;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcDataTransferService;
+import gov.nih.nci.hpc.service.HpcUserService;
 
 import java.util.List;
 
@@ -32,12 +36,26 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 
 public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusService
-{         
+{  
+    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//    
+    
+    // Registrar NCI user-id attribute name.
+	private final static String REGISTRAR_USER_ID_ATTRIBUTE = 
+			                    "NCI user-id of the User registering the File (Registrar)"; 
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
     // Application service instances.
+	
+	@Autowired
+    private HpcUserService userService = null;
+	
+	@Autowired
+    private HpcDataTransferService dataTransferService = null;
 	
 	@Autowired
     private HpcDataManagementService dataManagementService = null;
@@ -89,20 +107,74 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     
     @Override
     public void registerDataObject(String path,
-    					           List<HpcMetadataEntry> metadataEntries)  
+    		                       HpcDataObjectRegistrationDTO dataObjectRegistrationDTO)  
     		                      throws HpcException
     {
-    	logger.info("Invoking registerDataObject(List<HpcMetadataEntry>): " + 
-    			    metadataEntries);
+    	logger.info("Invoking registerDataObject(HpcDataObjectRegistrationDTO): " + 
+    			    dataObjectRegistrationDTO);
     	
     	// Input validation.
-    	if(path == null || metadataEntries == null) {
-    	   throw new HpcException("Null path or metadata entries",
+    	if(path == null || dataObjectRegistrationDTO == null) {
+    	   throw new HpcException("Null path or dataObjectRegistrationDTO",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	// Populate the DTO with the destination path taken from the URL parameter.
+    	if(dataObjectRegistrationDTO.getLocations() != null &&
+    	   dataObjectRegistrationDTO.getLocations().getDestination() != null) {
+    	   if(dataObjectRegistrationDTO.getLocations().getDestination().getPath() != null) {
+    		  throw new HpcException("Path is only accepted as a URL parameter, not in the JSON",
+		                             HpcErrorType.INVALID_REQUEST_INPUT);	
+    	   }
+    	   dataObjectRegistrationDTO.getLocations().getDestination().setPath(path);
+    	}
+    	
+    	// Create a data object file (in the data management system).
+    	dataManagementService.createFile(path);
+    	
+		// Transfer the file. 
+		HpcUser user = userService.getUser(
+				           getRegistrarUserId(dataObjectRegistrationDTO.getMetadataEntries()));
+        dataTransferService.transferDataset(dataObjectRegistrationDTO.getLocations(), 
+        		                            user);				 
+    	
     	// Attach the metadata.
-    	dataManagementService.addMetadataToDataObject(path, metadataEntries);
+    	dataManagementService.addMetadataToDataObject(
+    			                 path, 
+    			                 dataObjectRegistrationDTO.getMetadataEntries());
+    }
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//
+    
+    /**
+     * Extract the registrar NCI user-id from the metadata.
+     *
+     * @param metadataEntries A collection of metadata entries.
+     * @return The Registrar NCI user-id.
+     * 
+     * @throws HpcException If the metadata is not in the list.
+     */
+    private String getRegistrarUserId(List<HpcMetadataEntry> metadataEntries) 
+    		                         throws HpcException
+    {
+    	String registrarUserId = null;
+    	if(metadataEntries != null) {
+    	   for(HpcMetadataEntry metadataEntry : metadataEntries) {
+    		   if(metadataEntry.getAttribute().equals(REGISTRAR_USER_ID_ATTRIBUTE)) {
+    			  registrarUserId = metadataEntry.getValue();
+    			  break;
+    		   }
+    	   }
+    	}
+    	
+    	if(registrarUserId == null) {
+    	   throw new HpcException("Registrar NCI user-id not provided. Metadata \"" + 
+    			                  REGISTRAR_USER_ID_ATTRIBUTE + "\" is missing",
+	                              HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	return registrarUserId;
     }
 }
 

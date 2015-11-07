@@ -839,10 +839,11 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 			logger.debug("Submitting data transfer request: " + 
 			             uploadRequest.getLocations());
 			HpcDataTransferReport dataTransferReport = null;
+			uploadRequest.getLocations().getDestination().setPath(dataset.getFileSet().getName());
 			try {				
 				 dataTransferReport =
                  dataTransferService.transferDataset(uploadRequest.getLocations(), 
-				                                     user, dataset.getFileSet().getName());				 
+				                                     user);				 
 			} catch(HpcException e) {
 				    // Failed to upload file. Log and continue.
 					logger.info("Failed to upload file: " + uploadRequest, e);

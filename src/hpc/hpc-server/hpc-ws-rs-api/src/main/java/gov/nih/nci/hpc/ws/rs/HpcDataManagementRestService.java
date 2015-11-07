@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
 
 import java.util.List;
 
@@ -37,13 +38,13 @@ public interface HpcDataManagementRestService
      * PUT Collection registration request.
      *
      * @param path The collection path.
-     * @param @param metadataEntries A list of metadata entries to attach to the collection.
+     * @param metadataEntries A list of metadata entries to attach to the collection.
      */
 	@PUT
 	@Path("/collection/{path:.*}")
 	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")
-	public Response addCollection(
+	public Response registerCollection(
 			           @PathParam("path") String path,
 			           List<HpcMetadataEntry> metadataEntries);
 	
@@ -51,15 +52,15 @@ public interface HpcDataManagementRestService
      * PUT Data object registration request.
      *
      * @param path The data object path.
-     * @param @param metadataEntries A list of metadata entries to attach to the data object.
+     * @param dataObjectRegistrationDTO A DTO contains the metadata and data transfer locations.
      */
 	@PUT
 	@Path("/dataObject/{path:.*}")
 	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")
-	public Response addDataObject(
+	public Response registerDataObject(
 			           @PathParam("path") String path,
-			           List<HpcMetadataEntry> metadataEntries);
+			           HpcDataObjectRegistrationDTO dataObjectRegistrationDTO);
 }
 
  
