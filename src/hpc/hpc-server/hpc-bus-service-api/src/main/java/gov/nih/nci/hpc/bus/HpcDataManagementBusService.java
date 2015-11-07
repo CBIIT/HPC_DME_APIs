@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -42,12 +43,12 @@ public interface HpcDataManagementBusService
      * Register a Data object.
      *
      * @param path The data object's path.
-     * @param metadataEntries A list of metadata entries to attach to the collection.
+     * @param dataObjectRegistrationDTO A DTO contains the metadata and data transfer locations.
      * 
      * @throws HpcException
      */
     public void registerDataObject(String path,
-    		                       List<HpcMetadataEntry> metadataEntries) 
+    		                       HpcDataObjectRegistrationDTO dataObjectRegistrationDTO) 
     		                      throws HpcException;
 }
 

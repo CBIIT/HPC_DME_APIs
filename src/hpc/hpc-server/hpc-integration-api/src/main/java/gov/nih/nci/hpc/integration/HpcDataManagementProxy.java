@@ -34,6 +34,15 @@ public interface HpcDataManagementProxy
      * @throws HpcException
      */
     public void createCollectionDirectory(String path) throws HpcException;
+    
+    /**
+     * Create a data object's file.
+     *
+     * @param path The data object path.
+     * 
+     * @throws HpcException
+     */
+    public void createDataObjectFile(String path) throws HpcException;
 
     /**
      * Add metadata to a collection.
