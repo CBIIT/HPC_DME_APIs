@@ -64,7 +64,7 @@ public class HpcIRODSConnection
 		     // TODO: instantiate via spring injection.
 		     irodsAccount = 
                   IRODSAccount.instance("52.7.244.225", 1247, "rods", 
-  		         		                "irods", "/tempZone/home/rods", 
+  		         		                "irods", "" /*/tempZone/home/rods"*/, 
   		    	    	                "tempZone", "dsnetresource");
 		     
 		} catch(JargonException e) {
