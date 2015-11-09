@@ -11,7 +11,6 @@
 package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
-import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -33,7 +32,7 @@ public interface HpcUserBusService
      * 
      * @throws HpcException
      */
-    public void registerUser(HpcUserRegistrationDTO userRegistrationDTO) 
+    public void registerUser(HpcUserDTO userRegistrationDTO) 
     		                throws HpcException;
     
     /**

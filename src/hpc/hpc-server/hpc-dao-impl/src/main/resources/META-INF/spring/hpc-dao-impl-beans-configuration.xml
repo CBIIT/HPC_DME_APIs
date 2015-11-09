@@ -24,8 +24,8 @@
 	<!-- HPC User Codecs -->
 	<bean id="hpcUserCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcUserCodec" />
 	<bean id="hpcNciAccountCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcNciAccountCodec" />
-	<bean id="hpcDataTransferAccountCodec"
-		class="gov.nih.nci.hpc.dao.mongo.codec.HpcDataTransferAccountCodec">
+	<bean id="hpcIntegratedSystemAccountCodec"
+		class="gov.nih.nci.hpc.dao.mongo.codec.HpcIntegratedSystemAccountCodec">
 		<constructor-arg ref="hpcEncryptor" />
 	</bean>
 
@@ -53,8 +53,8 @@
 				       value-ref="hpcUserCodec" />
 				<entry key="gov.nih.nci.hpc.domain.user.HpcNciAccount"
 					   value-ref="hpcNciAccountCodec" />
-				<entry key="gov.nih.nci.hpc.domain.user.HpcDataTransferAccount"
-					   value-ref="hpcDataTransferAccountCodec" />
+				<entry key="gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount"
+					   value-ref="hpcIntegratedSystemAccountCodec" />
 				<entry key="gov.nih.nci.hpc.domain.model.HpcDataset"
 					   value-ref="hpcDatasetCodec" />
 				<entry key="gov.nih.nci.hpc.domain.dataset.HpcFileSet"

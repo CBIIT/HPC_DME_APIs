@@ -20,24 +20,15 @@
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/user"
 		schemaLocation="HpcUserTypes.xsd" />
 
-	<!-- User Registration DTO -->
-	<xsd:element name="HpcUserRegistrationDTO">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="nciAccount" type="hpc-domain-user:HpcNciAccount" />
-				<xsd:element name="dataTransferAccount"
-					type="hpc-domain-user:HpcDataTransferAccount" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-
 	<!-- User DTO -->
 	<xsd:element name="HpcUserDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="nciAccount" type="hpc-domain-user:HpcNciAccount" />
 				<xsd:element name="dataTransferAccount"
-					         type="hpc-domain-user:HpcDataTransferAccount" />
+					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
+				<xsd:element name="dataManagementAccount"
+					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

@@ -27,7 +27,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAssociateFileProjectsDTO;
@@ -783,7 +783,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 									dataTransferRequest.getStatus() == HpcDataTransferStatus.INITIATED)
 			{
 				        // Get the data transfer account to use in checking status.
-    		            HpcDataTransferAccount dataTransferAccount = 
+    		            HpcIntegratedSystemAccount dataTransferAccount = 
  	    		               userService.getUser(dataTransferRequest.getRequesterNciUserId()).
  	    		                           getDataTransferAccount();
     		

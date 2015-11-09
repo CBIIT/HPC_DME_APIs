@@ -10,13 +10,13 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidDataTransferAccount;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidIntegratedSystemAccount;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -78,12 +78,14 @@ public class HpcUserServiceImpl implements HpcUserService
     
     @Override
     public void add(HpcNciAccount nciAccount, 
-	                HpcDataTransferAccount dataTransferAccount) 
+	                HpcIntegratedSystemAccount dataTransferAccount,
+	                HpcIntegratedSystemAccount dataManagementAccount) 
 	               throws HpcException
     {
     	// Input validation.
     	if(!isValidNciAccount(nciAccount) ||
-    	   !isValidDataTransferAccount(dataTransferAccount)) {	
+    	   !isValidIntegratedSystemAccount(dataTransferAccount) ||
+    	   !isValidIntegratedSystemAccount(dataManagementAccount)) {	
     	   throw new HpcException("Invalid add user input", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
@@ -108,6 +110,7 @@ public class HpcUserServiceImpl implements HpcUserService
 
     	user.setNciAccount(nciAccount);
     	user.setDataTransferAccount(dataTransferAccount);
+    	user.setDataManagementAccount(dataManagementAccount);
     	user.setCreated(Calendar.getInstance());
     	
     	// Persist to Mongo.

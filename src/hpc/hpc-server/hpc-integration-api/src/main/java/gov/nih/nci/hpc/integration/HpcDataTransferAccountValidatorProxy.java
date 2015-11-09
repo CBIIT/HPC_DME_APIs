@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.integration;
 
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -33,7 +33,7 @@ public interface HpcDataTransferAccountValidatorProxy
      * @throws HpcException
      */
     public boolean validateDataTransferAccount(
-    		                   HpcDataTransferAccount dataTransferAccount)
+    		                   HpcIntegratedSystemAccount dataTransferAccount)
     		                   throws HpcException; 
 }
 
