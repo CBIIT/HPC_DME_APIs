@@ -98,11 +98,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	// Get the HPC user calling this service.
+		HpcUser user = userService.getUser(
+		               getRegistrarUserId(metadataEntries));
+    	
     	// Create a collection directory.
-    	dataManagementService.createDirectory(path);
+    	dataManagementService.createDirectory(user.getDataManagementAccount(), path);
     	
     	// Attach the metadata.
-    	dataManagementService.addMetadataToCollection(path, metadataEntries);
+    	dataManagementService.addMetadataToCollection(user.getDataManagementAccount(), 
+    			                                      path, metadataEntries);
     }
     
     @Override
@@ -119,6 +124,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	// Get the HPC user calling this service.
+		HpcUser user = userService.getUser(
+		               getRegistrarUserId(dataObjectRegistrationDTO.getMetadataEntries()));
+    	
     	// Populate the DTO with the destination path taken from the URL parameter.
     	if(dataObjectRegistrationDTO.getLocations() != null &&
     	   dataObjectRegistrationDTO.getLocations().getDestination() != null) {
@@ -130,16 +139,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Create a data object file (in the data management system).
-    	dataManagementService.createFile(path);
+    	dataManagementService.createFile(user.getDataManagementAccount(), path);
     	
 		// Transfer the file. 
-		HpcUser user = userService.getUser(
-				           getRegistrarUserId(dataObjectRegistrationDTO.getMetadataEntries()));
+
         dataTransferService.transferDataset(dataObjectRegistrationDTO.getLocations(), 
         		                            user);				 
     	
     	// Attach the metadata.
     	dataManagementService.addMetadataToDataObject(
+    			                 user.getDataManagementAccount(),
     			                 path, 
     			                 dataObjectRegistrationDTO.getMetadataEntries());
     }

@@ -4,7 +4,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
@@ -96,7 +96,7 @@ public class HpcDataTransferProxyImpl
     
     @Override
     public boolean validateDataTransferAccount(
-                               HpcDataTransferAccount dataTransferAccount) 
+                               HpcIntegratedSystemAccount dataTransferAccount) 
                         	   throws HpcException
     {
     	try
@@ -214,7 +214,7 @@ public class HpcDataTransferProxyImpl
     }    
     
     public HpcDataTransferReport getTaskStatusReport(String taskId,
-    		                                         HpcDataTransferAccount dataTransferAccount)
+    		                                         HpcIntegratedSystemAccount dataTransferAccount)
     	                                            throws HpcException 
     {
     	try {

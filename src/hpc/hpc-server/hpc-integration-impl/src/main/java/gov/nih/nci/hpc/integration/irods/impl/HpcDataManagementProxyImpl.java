@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.integration.irods.impl;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
@@ -64,11 +65,14 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     //---------------------------------------------------------------------//  
     
     @Override    
-    public void createCollectionDirectory(String path) throws HpcException
+    public void createCollectionDirectory(
+    		          HpcIntegratedSystemAccount dataManagementAccount, 
+    		          String path) 
+    		          throws HpcException
     {
 		try {
 			 IRODSFile collectionFile = 
-			      irodsConnection.getIRODSFileFactory().instanceIRODSFile(path);
+			      irodsConnection.getIRODSFileFactory(dataManagementAccount).instanceIRODSFile(path);
 			 collectionFile.mkdirs();
 			 
 		} catch(JargonException e) {
@@ -76,16 +80,19 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} finally {
-			       irodsConnection.closeConnection();
+			       irodsConnection.closeConnection(dataManagementAccount);
 		}
     }
     
     @Override    
-    public void createDataObjectFile(String path) throws HpcException
+    public void createDataObjectFile(
+    		          HpcIntegratedSystemAccount dataManagementAccount, 
+    		          String path) 
+    		          throws HpcException
     {
 		try {
 			 IRODSFile dataObjectFile = 
-			      irodsConnection.getIRODSFileFactory().instanceIRODSFile(path);
+			      irodsConnection.getIRODSFileFactory(dataManagementAccount).instanceIRODSFile(path);
 			 dataObjectFile.createNewFile();
 			 
 		} catch(JargonException e) {
@@ -97,14 +104,16 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                        ioe.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, ioe);
 		} finally {
-			       irodsConnection.closeConnection();
+			       irodsConnection.closeConnection(dataManagementAccount);
 		}
     }
 
     @Override
-    public void addMetadataToCollection(String path,
-    		                            List<HpcMetadataEntry> metadataEntries) 
-    		                           throws HpcException
+    public void addMetadataToCollection(
+    		       HpcIntegratedSystemAccount dataManagementAccount, 
+    		       String path,
+    		       List<HpcMetadataEntry> metadataEntries) 
+    		       throws HpcException
     {
 		List<AvuData> avuDatas = new ArrayList<AvuData>();
 
@@ -115,21 +124,23 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			                                   metadataEntry.getUnit()));
 		     }
 
-		     irodsConnection.getCollectionAO().addBulkAVUMetadataToCollection(path, avuDatas);
+		     irodsConnection.getCollectionAO(dataManagementAccount).addBulkAVUMetadataToCollection(path, avuDatas);
 		     
 		} catch(JargonException e) {
 	            throw new HpcException("Failed to add metadata to a collection: " + 
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} finally {
-			       irodsConnection.closeConnection();
+			       irodsConnection.closeConnection(dataManagementAccount);
 		}
     }
     
     @Override
-    public void addMetadataToDataObject(String path,
-    		                            List<HpcMetadataEntry> metadataEntries) 
-    		                           throws HpcException
+    public void addMetadataToDataObject(
+    		       HpcIntegratedSystemAccount dataManagementAccount, 
+    		       String path,
+    		       List<HpcMetadataEntry> metadataEntries) 
+    		       throws HpcException
     {
 		List<AvuData> avuDatas = new ArrayList<AvuData>();
 
@@ -140,14 +151,14 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			                                   metadataEntry.getUnit()));
 		     }
 
-		     irodsConnection.getDataObjectAO().addBulkAVUMetadataToDataObject(path, avuDatas);
+		     irodsConnection.getDataObjectAO(dataManagementAccount).addBulkAVUMetadataToDataObject(path, avuDatas);
 		     
 		} catch(JargonException e) {
 	            throw new HpcException("Failed to add metadata to a data object: " + 
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} finally {
-			       irodsConnection.closeConnection();
+			       irodsConnection.closeConnection(dataManagementAccount);
 		}
     }
 }
