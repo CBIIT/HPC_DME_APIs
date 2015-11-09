@@ -34,17 +34,19 @@ public abstract class HpcCodec<T> implements Codec<T>
 	public final static String USER_NCI_ACCOUNT_KEY = "nci_account"; 
 	public final static String USER_DATA_TRANSFER_ACCOUNT_KEY = 
 			                   "data_transfer_account"; 
+	public final static String USER_DATA_MANAGEMENT_ACCOUNT_KEY = 
+                               "data_management_account"; 
 	
 	// HpcNciAccount Document keys.
 	public final static String NCI_ACCOUNT_USER_ID_KEY = "user_id"; 
 	public final static String NCI_ACCOUNT_FIRST_NAME_KEY = "first_name"; 
 	public final static String NCI_ACCOUNT_LAST_NAME_KEY = "last_name"; 
 	
-	// HpcDataTransferAccount Document keys.
-	public final static String DATA_TRANSFER_ACCOUNT_USERNAME_KEY = "username";
-	public final static String DATA_TRANSFER_ACCOUNT_PASSWORD_KEY = "password";
-	public final static String DATA_TRANSFER_ACCOUNT_ACCOUNT_TYPE_KEY = 
-			                   "account_type";
+	// HpcIntegratedSystemAccount Document keys.
+	public final static String INTEGRATED_SYSTEM_ACCOUNT_USERNAME_KEY = "username";
+	public final static String INTEGRATED_SYSTEM_ACCOUNT_PASSWORD_KEY = "password";
+	public final static String INTEGRATED_SYSTEM_ACCOUNT_INTEGRATED_SYSTEM_KEY = 
+			                   "integrated_system";
 	// HpcProject Document keys.
 	public final static String PROJECT_CREATED_KEY = "created"; 
 	public final static String PROJECT_LAST_UPDATED_KEY = "last_updated"; 

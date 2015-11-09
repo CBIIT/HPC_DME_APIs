@@ -18,18 +18,19 @@
 	targetNamespace="http://hpc.nci.nih.gov/domain/user"
 	elementFormDefault="unqualified">
 
-	<xsd:simpleType name="HpcDataTransferAccountType">
+	<xsd:simpleType name="HpcIntegratedSystem">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="GLOBUS" />
+			<xsd:enumeration value="IRODS" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
-	<xsd:complexType name="HpcDataTransferAccount">
+	<xsd:complexType name="HpcIntegratedSystemAccount">
 		<xsd:sequence>
 			<xsd:element name="username" type="xsd:string" />
 			<xsd:element name="password" type="xsd:string" />
-			<xsd:element name="accountType" 
-			             type="hpc-domain-user:HpcDataTransferAccountType" />
+			<xsd:element name="integratedSystem" 
+			             type="hpc-domain-user:HpcIntegratedSystem" />
 		</xsd:sequence>
 	</xsd:complexType>
 

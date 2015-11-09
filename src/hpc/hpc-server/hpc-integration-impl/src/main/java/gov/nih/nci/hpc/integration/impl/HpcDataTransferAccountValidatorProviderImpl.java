@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.integration.impl;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccountType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProvider;
 import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy;
@@ -35,8 +35,8 @@ public class HpcDataTransferAccountValidatorProviderImpl
     // Instance members
     //---------------------------------------------------------------------//
 	
-	private Map<HpcDataTransferAccountType, HpcDataTransferAccountValidatorProxy> 
-	        accountValidators = new HashMap<HpcDataTransferAccountType, 
+	private Map<HpcIntegratedSystem, HpcDataTransferAccountValidatorProxy> 
+	        accountValidators = new HashMap<HpcIntegratedSystem, 
 	                                        HpcDataTransferAccountValidatorProxy>();
 	
     //---------------------------------------------------------------------//
@@ -62,7 +62,7 @@ public class HpcDataTransferAccountValidatorProviderImpl
      * @throws HpcException If providers map was not provided
      */
     private HpcDataTransferAccountValidatorProviderImpl(
-    		       Map<HpcDataTransferAccountType, 
+    		       Map<HpcIntegratedSystem, 
     		           HpcDataTransferAccountValidatorProxy> accountValidators) 
     		       throws HpcException
     {
@@ -84,9 +84,9 @@ public class HpcDataTransferAccountValidatorProviderImpl
     
     @Override    
     public HpcDataTransferAccountValidatorProxy 
-                                 get(HpcDataTransferAccountType accountType) 
+                                 get(HpcIntegratedSystem dataTransferSystem) 
     {
-    	return accountValidators.get(accountType);
+    	return accountValidators.get(dataTransferSystem);
     }                    
 }
 

@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.service.impl;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -65,19 +66,24 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     //---------------------------------------------------------------------//  
 
     @Override
-    public void createDirectory(String path) throws HpcException
+    public void createDirectory(HpcIntegratedSystemAccount dataManagementAccount,
+    		                    String path) 
+    		                   throws HpcException
     {
-    	dataManagementProxy.createCollectionDirectory(path);
+    	dataManagementProxy.createCollectionDirectory(dataManagementAccount, path);
     }
     
     @Override
-    public void createFile(String path) throws HpcException
+    public void createFile(HpcIntegratedSystemAccount dataManagementAccount,
+    		               String path) 
+    		              throws HpcException
     {
-    	dataManagementProxy.createDataObjectFile(path);
+    	dataManagementProxy.createDataObjectFile(dataManagementAccount, path);
     }
 
     @Override
-    public void addMetadataToCollection(String path, 
+    public void addMetadataToCollection(HpcIntegratedSystemAccount dataManagementAccount,
+    		                            String path, 
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException
     {
@@ -91,11 +97,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	metadataValidator.validateCollectionMetadata(metadataEntries);
        	
        	// Add Metadata to the DM system.
-       	dataManagementProxy.addMetadataToCollection(path, metadataEntries);
+       	dataManagementProxy.addMetadataToCollection(dataManagementAccount,
+       			                                    path, metadataEntries);
     }
     
     @Override
-    public void addMetadataToDataObject(String path, 
+    public void addMetadataToDataObject(HpcIntegratedSystemAccount dataManagementAccount,
+    		                            String path, 
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException
     {
@@ -109,6 +117,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	metadataValidator.validateDataObjectMetadata(metadataEntries);
        	
        	// Add Metadata to the DM system.
-       	dataManagementProxy.addMetadataToDataObject(path, metadataEntries);
+       	dataManagementProxy.addMetadataToDataObject(dataManagementAccount, 
+       			                                    path, metadataEntries);
     }
 }

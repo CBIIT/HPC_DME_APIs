@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.integration;
 
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccountType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 
 /**
  * <p>
@@ -30,7 +30,7 @@ public interface HpcDataTransferAccountValidatorProvider
      * @return HpcDataTransferAccountValidatorProxy or null if no provider found.
      */
     public HpcDataTransferAccountValidatorProxy 
-                                 get(HpcDataTransferAccountType accountType);
+                                 get(HpcIntegratedSystem dataTransferSystem);
 }
 
  

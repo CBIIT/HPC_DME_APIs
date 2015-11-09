@@ -10,10 +10,10 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeDataTransferAccount;
+import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeIntegratedSystemAccount;
 import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeNciAccount;
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 
 import java.util.Calendar;
@@ -63,8 +63,10 @@ public class HpcUserCodec extends HpcCodec<HpcUser>
  
 		// Extract the data from the domain object.
 		HpcNciAccount nciAccount = user.getNciAccount();
-		HpcDataTransferAccount dataTransferAccount = 
-				                           user.getDataTransferAccount();
+		HpcIntegratedSystemAccount dataTransferAccount = 
+				                       user.getDataTransferAccount();
+		HpcIntegratedSystemAccount dataManagementAccount = 
+                                       user.getDataManagementAccount();
 		Calendar created = user.getCreated();
 		Calendar lastUpdated = user.getLastUpdated();
 		
@@ -75,6 +77,9 @@ public class HpcUserCodec extends HpcCodec<HpcUser>
 		}
 		if(dataTransferAccount != null) {
 		   document.put(USER_DATA_TRANSFER_ACCOUNT_KEY, dataTransferAccount);	
+		}
+		if(dataManagementAccount != null) {
+		   document.put(USER_DATA_MANAGEMENT_ACCOUNT_KEY, dataManagementAccount);	
 		}
 		if(created != null) {
 		   document.put(USER_CREATED_KEY, created.getTime());
@@ -101,10 +106,15 @@ public class HpcUserCodec extends HpcCodec<HpcUser>
                                                          Document.class),
                                             decoderContext, getRegistry()));
 
-		user.setDataTransferAccount(decodeDataTransferAccount(
+		user.setDataTransferAccount(decodeIntegratedSystemAccount(
 				                    document.get(USER_DATA_TRANSFER_ACCOUNT_KEY, 
                                                  Document.class),
                                     decoderContext, getRegistry()));
+		
+		user.setDataManagementAccount(decodeIntegratedSystemAccount(
+                                      document.get(USER_DATA_MANAGEMENT_ACCOUNT_KEY, 
+                                                   Document.class),
+                                      decoderContext, getRegistry()));
 		
 		if(document.getDate(USER_CREATED_KEY) != null) {
 		   Calendar created = Calendar.getInstance();

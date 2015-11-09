@@ -15,7 +15,6 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
-import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcLdapAuthenticationService;
 import gov.nih.nci.hpc.service.HpcUserService;
@@ -73,7 +72,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     //---------------------------------------------------------------------//  
     
     @Override
-    public void registerUser(HpcUserRegistrationDTO userRegistrationDTO)  
+    public void registerUser(HpcUserDTO userRegistrationDTO)  
     		                throws HpcException
     {
     	logger.info("Invoking registerDataset(HpcDatasetDTO): " + 
@@ -87,7 +86,8 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	
     	// Add the user to the managed collection.
     	userService.add(userRegistrationDTO.getNciAccount(), 
-    			        userRegistrationDTO.getDataTransferAccount());
+    			        userRegistrationDTO.getDataTransferAccount(),
+    			        userRegistrationDTO.getDataManagementAccount());
     }
     
     @Override

@@ -10,8 +10,8 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
-import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -41,7 +41,7 @@ public interface HpcUserRestService
     @POST
     @Path("/user")
     @Consumes("application/json,application/xml")
-    public Response registerUser(HpcUserRegistrationDTO userRegistrationDTO);
+    public Response registerUser(HpcUserDTO userRegistrationDTO);
     
     /**
      * Get user by NCI User ID.
