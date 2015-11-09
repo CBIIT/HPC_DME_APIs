@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.integration;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -29,42 +30,52 @@ public interface HpcDataManagementProxy
     /**
      * Create a collection's directory.
      *
+     * @param dataManagementAccount The Data Management System account.
      * @param path The collection path.
      * 
      * @throws HpcException
      */
-    public void createCollectionDirectory(String path) throws HpcException;
+    public void createCollectionDirectory(HpcIntegratedSystemAccount dataManagementAccount, 
+    		                              String path) 
+    		                             throws HpcException;
     
     /**
      * Create a data object's file.
      *
+     * @param dataManagementAccount The Data Management System account.
      * @param path The data object path.
      * 
      * @throws HpcException
      */
-    public void createDataObjectFile(String path) throws HpcException;
+    public void createDataObjectFile(HpcIntegratedSystemAccount dataManagementAccount, 
+    		                         String path) 
+    		                        throws HpcException;
 
     /**
      * Add metadata to a collection.
      *
+     * @param dataManagementAccount The Data Management System account.
      * @param path The collection path.
      * @param metadataEntries The metadata entries to add.
      * 
      * @throws HpcException
      */
-    public void addMetadataToCollection(String path,
+    public void addMetadataToCollection(HpcIntegratedSystemAccount dataManagementAccount, 
+    		                            String path,
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException;
     
     /**
      * Add metadata to a data object.
      *
+     * @param dataManagementAccount The Data Management System account.
      * @param path The data object path.
      * @param metadataEntries The metadata entries to add.
      * 
      * @throws HpcException
      */
-    public void addMetadataToDataObject(String path,
+    public void addMetadataToDataObject(HpcIntegratedSystemAccount dataManagementAccount, 
+    		                            String path,
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException;
 }

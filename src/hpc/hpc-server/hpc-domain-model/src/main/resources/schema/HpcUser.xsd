@@ -26,7 +26,9 @@
 			<xsd:sequence>
 				<xsd:element name="nciAccount" type="hpc-domain-user:HpcNciAccount" />
 				<xsd:element name="dataTransferAccount"
-					         type="hpc-domain-user:HpcDataTransferAccount" />
+					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
+				<xsd:element name="dataManagementAccount"
+					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 				<xsd:element name="created" type="xsd:dateTime" />
 				<xsd:element name="lastUpdated" type="xsd:dateTime" />
 			</xsd:sequence>

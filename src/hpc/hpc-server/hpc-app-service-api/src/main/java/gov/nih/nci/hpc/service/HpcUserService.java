@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -33,11 +33,13 @@ public interface HpcUserService
      *
      * @param nciAccount The user's NCI account.
      * @param dataTransferAccount The user's data transfer account.
+     * @param dataTransferAccount The user's data management account.
      * 
      * @throws HpcException
      */
     public void add(HpcNciAccount nciAccount, 
-    		        HpcDataTransferAccount dataTransferAccount) 
+    		        HpcIntegratedSystemAccount dataTransferAccount,
+    		        HpcIntegratedSystemAccount dataManagementAccount) 
     		       throws HpcException;
     
     /**

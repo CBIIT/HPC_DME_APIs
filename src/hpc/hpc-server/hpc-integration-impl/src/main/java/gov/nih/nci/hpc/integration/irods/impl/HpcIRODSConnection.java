@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.integration.irods.impl;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import org.irods.jargon.core.connection.IRODSAccount;
@@ -40,8 +41,11 @@ public class HpcIRODSConnection
 	// iRODS file system.
 	private IRODSFileSystem irodsFileSystem = null;
 	
-	// iRODS Account.
-	IRODSAccount irodsAccount = null;
+	// iRODS connection attributes.
+	private String irodsHost = null;
+	private Integer irodsPort = null;
+	private String irodsZone = null;
+	private String irodsResource = null;
 	
     // The logger instance.
 	private final Logger logger = 
@@ -52,27 +56,45 @@ public class HpcIRODSConnection
     //---------------------------------------------------------------------//
 	
     /**
-     * Default Constructor.
+     * Constructor for Spring Dependency Injection.
      * 
      * @throws HpcException If it failed to instantiate the iRODS file system.
      */
-    private HpcIRODSConnection() throws HpcException
+    private HpcIRODSConnection(String irodsHost, Integer irodsPort, 
+    		                   String irodsZone, String irodsResource) throws HpcException
     {
+    	if(irodsHost == null || irodsHost.isEmpty() ||
+    	   irodsPort == null ||
+    	   irodsZone == null || irodsZone.isEmpty() ||
+    	   irodsResource == null || irodsResource.isEmpty()) {
+    	   throw new HpcException("Null or empty iRODS connection attributes",
+                                  HpcErrorType.SPRING_CONFIGURATION_ERROR);	
+    	}
+    	this.irodsHost = irodsHost;
+    	this.irodsPort = irodsPort;
+    	this.irodsZone = irodsZone;
+    	this.irodsResource = irodsResource;
+    	
 		try {
 		     irodsFileSystem = IRODSFileSystem.instance();
-		     
-		     // TODO: instantiate via spring injection.
-		     irodsAccount = 
-                  IRODSAccount.instance("52.7.244.225", 1247, "rods", 
-  		         		                "irods", "" /*/tempZone/home/rods"*/, 
-  		    	    	                "tempZone", "dsnetresource");
 		     
 		} catch(JargonException e) {
 			    throw new HpcException("Failed to instantiate iRODs file system: " + 
 		                               e.getMessage(),
 	                                   HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		}
-    }   
+    }  
+    
+    /**
+     * Default Constructor disabled.
+     * 
+     * @throws HpcException.
+     */
+    private HpcIRODSConnection() throws HpcException
+    {
+    	throw new HpcException("HpcIRODSConnection default constructor disabled",
+                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    }
     
     //---------------------------------------------------------------------//
     // Methods
@@ -80,13 +102,18 @@ public class HpcIRODSConnection
     
     /**
      * Get iRODS file factory instance.
+     * 
+     * @param dataManagementAccount The Data Management System account.
      *
      * @throws HpcException
      */
-    public IRODSFileFactory getIRODSFileFactory() throws HpcException
+    public IRODSFileFactory getIRODSFileFactory(
+    		                   HpcIntegratedSystemAccount dataManagementAccount) 
+    		                   throws HpcException
     {
     	try {
-			 return irodsFileSystem.getIRODSFileFactory(irodsAccount);
+			 return irodsFileSystem.getIRODSFileFactory(
+					                   getIrodsAccount(dataManagementAccount));
 			 
 		} catch(JargonException e) {
 			    throw new HpcException(
@@ -99,12 +126,17 @@ public class HpcIRODSConnection
     /**
      * Get iRODS Collection AO instance.
      *
+     * @param dataManagementAccount The Data Management System account.
+     *  
      * @throws HpcException
      */
-    public CollectionAO getCollectionAO() throws HpcException
+    public CollectionAO getCollectionAO(
+    		               HpcIntegratedSystemAccount dataManagementAccount) 
+    		               throws HpcException
     {
     	try {
-			 return irodsFileSystem.getIRODSAccessObjectFactory().getCollectionAO(irodsAccount);
+			 return irodsFileSystem.getIRODSAccessObjectFactory().getCollectionAO(
+					                   getIrodsAccount(dataManagementAccount));
 			 
 		} catch(JargonException e) {
 			    throw new HpcException(
@@ -117,12 +149,17 @@ public class HpcIRODSConnection
     /**
      * Get iRODS Data Object AO instance.
      *
+     * @param dataManagementAccount The Data Management System account.
+     * 
      * @throws HpcException
      */
-    public DataObjectAO getDataObjectAO() throws HpcException
+    public DataObjectAO getDataObjectAO(
+    		               HpcIntegratedSystemAccount dataManagementAccount) 
+    		               throws HpcException
     {
     	try {
-			 return irodsFileSystem.getIRODSAccessObjectFactory().getDataObjectAO(irodsAccount);
+			 return irodsFileSystem.getIRODSAccessObjectFactory().getDataObjectAO(
+					                   getIrodsAccount(dataManagementAccount));
 			 
 		} catch(JargonException e) {
 			    throw new HpcException(
@@ -135,17 +172,45 @@ public class HpcIRODSConnection
     /**
      * Get iRODS file factory instance.
      *
+     * @param dataManagementAccount The Data Management System account.
+     *
      * @throws HpcException
      */
-    public void closeConnection()
+    public void closeConnection(HpcIntegratedSystemAccount dataManagementAccount)
     {
     	try {
-			 irodsFileSystem.getIRODSAccessObjectFactory().closeSessionAndEatExceptions(irodsAccount);
+			 irodsFileSystem.getIRODSAccessObjectFactory().closeSessionAndEatExceptions(
+					            getIrodsAccount(dataManagementAccount));
 			 
-		} catch(JargonException e) {
+		} catch(Exception e) {
 			    logger.error("Failed to close iRODS session: " + e);
 		}
     }   
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//  
+    
+    /**
+     * Get iRODS Account instance for a HPC user.
+     * 
+     * @param dataManagementAccount The Data Management System account.
+     *
+     * @throws HpcException
+     */
+    private IRODSAccount getIrodsAccount(HpcIntegratedSystemAccount dataManagementAccount) throws HpcException
+    {
+    	try {
+    	     return IRODSAccount.instance(irodsHost, irodsPort, 
+    	    		                      dataManagementAccount.getUsername(), 
+    	    		                      dataManagementAccount.getPassword(), "", 
+	    	                              irodsZone, irodsResource);
+    	} catch(JargonException e) {
+    		    throw new HpcException("Failed instantiate an iRODS account: " + 
+                                       e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+    	}
+    }
 }
 
  

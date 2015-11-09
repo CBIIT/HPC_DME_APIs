@@ -10,18 +10,18 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProvider;
 import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -82,11 +82,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     
 	@Override
 	public boolean validateDataTransferAccount(
-                                       HpcDataTransferAccount dataTransferAccount)
+                                       HpcIntegratedSystemAccount dataTransferAccount)
                                        throws HpcException
     {
     	// Input validation.
-    	if(!HpcDomainValidator.isValidDataTransferAccount(dataTransferAccount)) {	
+    	if(!HpcDomainValidator.isValidIntegratedSystemAccount(dataTransferAccount)) {	
     	   throw new HpcException("Invalid data transfer account", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}	
@@ -94,10 +94,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	// Get the validator for this account type.
     	HpcDataTransferAccountValidatorProxy validator = 
     	   dataTransferAccountValidatorProvider.get(
-    			                       dataTransferAccount.getAccountType());
+    			                       dataTransferAccount.getIntegratedSystem());
     	if(validator == null) {
     	   throw new HpcException("Could not locate a validator for: " +
-    			                  dataTransferAccount.getAccountType(), 
+    			                  dataTransferAccount.getIntegratedSystem(), 
 	                              HpcErrorType.UNEXPECTED_ERROR);
     	}
 		return validator.validateDataTransferAccount(dataTransferAccount);
@@ -107,7 +107,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	   @Override
 	   public HpcDataTransferReport 
        getTransferRequestStatus(String dataTransferId, 
-     	                        HpcDataTransferAccount dataTransferAccount) 
+     	                        HpcIntegratedSystemAccount dataTransferAccount) 
 		                       throws HpcException
 	   {	
 		   try {

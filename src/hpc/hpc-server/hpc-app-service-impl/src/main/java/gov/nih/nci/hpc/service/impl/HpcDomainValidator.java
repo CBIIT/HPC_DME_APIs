@@ -18,7 +18,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 
 import java.util.List;
@@ -59,7 +59,8 @@ class HpcDomainValidator
     {
     	if(user == null || 
     	   !isValidNciAccount(user.getNciAccount()) ||
-    	   !isValidDataTransferAccount(user.getDataTransferAccount())) {
+    	   !isValidIntegratedSystemAccount(user.getDataTransferAccount()) ||
+    	   !isValidIntegratedSystemAccount(user.getDataManagementAccount())) {
     	   logger.info("Invalid User: " + user);
     	   return false;
     	}
@@ -84,19 +85,19 @@ class HpcDomainValidator
     }  
     
     /**
-     * Validate Data Transfer Account object.
+     * Validate Integrated System Account object.
      *
      * @param dataTransferAccount the object to be validated.
      * @return true if valid, false otherwise.
      */
-    public static boolean isValidDataTransferAccount(
-    		                HpcDataTransferAccount dataTransferAccount) 
+    public static boolean isValidIntegratedSystemAccount(
+    		                HpcIntegratedSystemAccount integratedSystemAccount) 
     {
-    	if(dataTransferAccount == null || 
-    	   dataTransferAccount.getUsername() == null || 
-    	   dataTransferAccount.getPassword() == null ||
-    	   dataTransferAccount.getAccountType() == null) {
-    	   logger.info("Invalid Data Transfer Account: " + dataTransferAccount);
+    	if(integratedSystemAccount == null || 
+    	   integratedSystemAccount.getUsername() == null || 
+    	   integratedSystemAccount.getPassword() == null ||
+    	   integratedSystemAccount.getIntegratedSystem() == null) {
+    	   logger.info("Invalid Integrated System Account: " + integratedSystemAccount);
     	   return false;
     	}
     	return true;

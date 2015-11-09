@@ -144,7 +144,7 @@
 			<ref bean="hpcExceptionMapper" />
 		</jaxrs:providers>
 		<jaxrs:inInterceptors>
-			<ref bean="hpcAuthenticationInterceptor" />
+			<!-- <ref bean="hpcAuthenticationInterceptor" /> -->
       </jaxrs:inInterceptors>
 	</jaxrs:server>
 </beans>

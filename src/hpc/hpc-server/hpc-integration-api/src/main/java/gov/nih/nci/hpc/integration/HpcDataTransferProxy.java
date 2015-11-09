@@ -13,7 +13,7 @@ package gov.nih.nci.hpc.integration;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -49,7 +49,9 @@ public interface HpcDataTransferProxy
      * 
      * @throws HpcTransferException
      */
-    public HpcDataTransferReport getTaskStatusReport(String taskId, HpcDataTransferAccount dataTransferAccount) throws Exception;
+    public HpcDataTransferReport getTaskStatusReport(String taskId, 
+    		                                         HpcIntegratedSystemAccount dataTransferAccount) 
+    		                                        throws Exception;
     
 }
 

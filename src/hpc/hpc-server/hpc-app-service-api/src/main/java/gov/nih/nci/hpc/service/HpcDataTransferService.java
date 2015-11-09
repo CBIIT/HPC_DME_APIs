@@ -13,7 +13,7 @@ package gov.nih.nci.hpc.service;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -52,7 +52,7 @@ public interface HpcDataTransferService
      */
     public HpcDataTransferReport 
               getTransferRequestStatus(String dataTransferId, 
-            	                       HpcDataTransferAccount dataTransferAccount) 
+            	                       HpcIntegratedSystemAccount dataTransferAccount) 
     		                          throws HpcException; 
     
     /**
@@ -62,7 +62,7 @@ public interface HpcDataTransferService
      * @return True if the account is valid, or false otherwise.
      */
     public boolean validateDataTransferAccount(
-    		               HpcDataTransferAccount dataTransferAccount)
+    		               HpcIntegratedSystemAccount dataTransferAccount)
     		               throws HpcException;
 }
 

@@ -12,9 +12,8 @@ package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcUserBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.dto.user.HpcUserDTO;
-import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcUserRestService;
 
@@ -70,7 +69,7 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//  
 	
     @Override
-    public Response registerUser(HpcUserRegistrationDTO userRegistrationDTO)
+    public Response registerUser(HpcUserDTO userRegistrationDTO)
     {	
 		logger.info("Invoking RS: POST /user: " + userRegistrationDTO);
 		

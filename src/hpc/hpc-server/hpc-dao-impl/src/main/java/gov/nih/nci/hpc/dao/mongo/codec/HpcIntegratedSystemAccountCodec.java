@@ -1,5 +1,5 @@
 /**
- * HpcDataTransferAccountCodec.java
+ * HpcIntegratedSystemAccountCodec.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -11,8 +11,8 @@
 package gov.nih.nci.hpc.dao.mongo.codec;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccountType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import org.bson.BsonReader;
@@ -31,7 +31,7 @@ import org.bson.types.Binary;
  * @version $Id$
  */
 
-public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount>
+public class HpcIntegratedSystemAccountCodec extends HpcCodec<HpcIntegratedSystemAccount>
 { 
     //---------------------------------------------------------------------//
     // Instance members
@@ -49,7 +49,7 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcDataTransferAccountCodec() throws HpcException
+    private HpcIntegratedSystemAccountCodec() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -62,7 +62,7 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
      * 
      * @throws HpcException If an encryptor instance was not provided.
      */
-    private HpcDataTransferAccountCodec(HpcEncryptor encryptor) throws HpcException
+    private HpcIntegratedSystemAccountCodec(HpcEncryptor encryptor) throws HpcException
     {
     	if(encryptor == null) {
     	   throw new HpcException("Null Encryptor instance",
@@ -77,32 +77,32 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // Codec<HpcDataTransferAccount> Interface Implementation
+    // Codec<HpcIntegratedSystemAccount> Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
 	public void encode(BsonWriter writer, 
-			           HpcDataTransferAccount dataTransferAccount,
+			           HpcIntegratedSystemAccount integratedSystemAccount,
 					   EncoderContext encoderContext) 
 	{
 		Document document = new Document();
 
 		// Extract the data from the POJO.
-		String username = dataTransferAccount.getUsername();
-		String password = dataTransferAccount.getPassword();
-		HpcDataTransferAccountType accountType = dataTransferAccount.getAccountType();
+		String username = integratedSystemAccount.getUsername();
+		String password = integratedSystemAccount.getPassword();
+		HpcIntegratedSystem integratedSystem = integratedSystemAccount.getIntegratedSystem();
 
 		if(username != null) {
-		   document.put(DATA_TRANSFER_ACCOUNT_USERNAME_KEY, 
+		   document.put(INTEGRATED_SYSTEM_ACCOUNT_USERNAME_KEY, 
 				        encryptor.encrypt(username));
 		}
 		if(password != null) {
-		   document.put(DATA_TRANSFER_ACCOUNT_PASSWORD_KEY, 
+		   document.put(INTEGRATED_SYSTEM_ACCOUNT_PASSWORD_KEY, 
 				        encryptor.encrypt(password));
 		}
-		if(accountType != null) {
-		   document.put(DATA_TRANSFER_ACCOUNT_ACCOUNT_TYPE_KEY, 
-				        accountType.value());
+		if(integratedSystem != null) {
+		   document.put(INTEGRATED_SYSTEM_ACCOUNT_INTEGRATED_SYSTEM_KEY, 
+				        integratedSystem.value());
 		}
 		
 		getRegistry().get(Document.class).encode(writer, document, 
@@ -110,8 +110,8 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
 	}
  
 	@Override
-	public HpcDataTransferAccount decode(BsonReader reader, 
-			                             DecoderContext decoderContext) 
+	public HpcIntegratedSystemAccount decode(BsonReader reader, 
+			                                 DecoderContext decoderContext) 
 	{
 		// Get the BSON Document.
 		Document document = 
@@ -119,24 +119,24 @@ public class HpcDataTransferAccountCodec extends HpcCodec<HpcDataTransferAccount
 	            		                                  decoderContext);
 		
 		// Map the document to HpcDataTransferAccount instance.
-		HpcDataTransferAccount dataTransferAccount = new HpcDataTransferAccount();
-		dataTransferAccount.setUsername(
-			encryptor.decrypt(document.get(DATA_TRANSFER_ACCOUNT_USERNAME_KEY, 
+		HpcIntegratedSystemAccount integratedSystemAccount = new HpcIntegratedSystemAccount();
+		integratedSystemAccount.setUsername(
+			encryptor.decrypt(document.get(INTEGRATED_SYSTEM_ACCOUNT_USERNAME_KEY, 
 				                           Binary.class)));
-		dataTransferAccount.setPassword(
-			encryptor.decrypt(document.get(DATA_TRANSFER_ACCOUNT_PASSWORD_KEY, 
+		integratedSystemAccount.setPassword(
+			encryptor.decrypt(document.get(INTEGRATED_SYSTEM_ACCOUNT_PASSWORD_KEY, 
                                            Binary.class)));
-		dataTransferAccount.setAccountType(
-		    HpcDataTransferAccountType.fromValue(
-		    	   document.getString(DATA_TRANSFER_ACCOUNT_ACCOUNT_TYPE_KEY)));
+		integratedSystemAccount.setIntegratedSystem(
+		          HpcIntegratedSystem.fromValue(
+		    	     document.getString(INTEGRATED_SYSTEM_ACCOUNT_INTEGRATED_SYSTEM_KEY)));
 		
-		return dataTransferAccount;
+		return integratedSystemAccount;
 	}
 	
 	@Override
-	public Class<HpcDataTransferAccount> getEncoderClass() 
+	public Class<HpcIntegratedSystemAccount> getEncoderClass() 
 	{
-		return HpcDataTransferAccount.class;
+		return HpcIntegratedSystemAccount.class;
 	}
 }
 
