@@ -3,7 +3,6 @@ package gov.nih.nci.hpc.integration.globus.impl;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy;
@@ -77,21 +76,21 @@ public class HpcDataTransferProxyImpl
     //---------------------------------------------------------------------//  
     
     @Override
-    public HpcDataTransferReport transferDataset(
-    		                             HpcDataTransferLocations transferLocations,
-    		                             HpcUser user)
+    public HpcDataTransferReport transferData(
+    		                             HpcIntegratedSystemAccount dataTransferAccount,
+    		                             HpcDataTransferLocations transferLocations)
     		                             throws HpcException
     {
     	try {
-    	     hpcGOTransfer.setTransferCient(user.getDataTransferAccount().getUsername(), 
-    		       	                        user.getDataTransferAccount().getPassword());
+    	     hpcGOTransfer.setTransferCient(dataTransferAccount.getUsername(), 
+    	    		                        dataTransferAccount.getPassword());
     	     
     	} catch(Exception e) {
     		    throw new HpcException("Failed to create Globus transfer client",
 		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
     	}
     	
-    	return transfer(transferLocations, user.getNciAccount().getUserId());
+    	return transfer(transferLocations);
     }
     
     @Override
@@ -121,8 +120,7 @@ public class HpcDataTransferProxyImpl
     	return true;
     }
       
-    private HpcDataTransferReport transfer(HpcDataTransferLocations transferLocations,
-    		                               String nihUsername)
+    private HpcDataTransferReport transfer(HpcDataTransferLocations transferLocations)
                                           throws HpcException 
     {
     	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();
@@ -142,7 +140,7 @@ public class HpcDataTransferProxyImpl
 	        JSONObject transfer = new JSONObject();
 	        transfer.put("DATA_TYPE", "transfer");
 	        transfer.put("submission_id", submissionId);
-	        JSONObject item = setJSONItem(transferLocations, client, nihUsername);
+	        JSONObject item = setJSONItem(transferLocations, client);
 	        transfer.append("DATA", item);
 
 	        r = client.postResult("/transfer", transfer, null);
@@ -213,8 +211,9 @@ public class HpcDataTransferProxyImpl
 		return directoryExists;
     }    
     
-    public HpcDataTransferReport getTaskStatusReport(String taskId,
-    		                                         HpcIntegratedSystemAccount dataTransferAccount)
+    @Override
+    public HpcDataTransferReport getTaskStatusReport(HpcIntegratedSystemAccount dataTransferAccount,
+    		                                         String taskId)
     	                                            throws HpcException 
     {
     	try {
@@ -291,17 +290,19 @@ public class HpcDataTransferProxyImpl
 	}
 
     
-	private JSONObject setJSONItem(HpcDataTransferLocations transferLocations,JSONTransferAPIClient client,String nihUsername)  throws HpcException {
+	private JSONObject setJSONItem(HpcDataTransferLocations transferLocations,JSONTransferAPIClient client)  throws HpcException {
     	JSONObject item = new JSONObject();
     	try {
 	        item.put("DATA_TYPE", "transfer_item");
 	        item.put("source_endpoint", transferLocations.getSource().getEndpoint());
 	        item.put("source_path", transferLocations.getSource().getPath());
 	        item.put("destination_endpoint", transferLocations.getDestination().getEndpoint());
+	        item.put("destination_path", transferLocations.getDestination().getPath());
 	        //if(transferLocations.getDestination() != null && transferLocations.getDestination().getPath() != null && !transferLocations.getDestination().getPath().isEmpty())
 	        	//item.put("destination_path", getGODestinationPath(transferLocations.getDestination().getPath(),nihUsername));
 	        //else
-	        item.put("destination_path", getGODestinationPath(transferLocations.getDestination().getPath(),transferLocations.getSource().getPath(),nihUsername,transferLocations.getDestination().getEndpoint()));
+	        //item.put("destination_path", getGODestinationPath(transferLocations.getDestination().getPath(),transferLocations.getSource().getPath(),nihUsername,transferLocations.getDestination().getEndpoint()));
+	        
 	        item.put("recursive", checkFileDirectoryAndSetRecursive(transferLocations.getSource().getEndpoint(),transferLocations.getSource().getPath(),client));
 	        return item;
 	        
@@ -312,6 +313,7 @@ public class HpcDataTransferProxyImpl
 		}    
     }
 
+	/*
     private String getGODestinationPath(String destinationPath, String path,String nihUsername,String desEndpoint) throws HpcException {
     	String sourceFileName = path.substring(path.lastIndexOf('/')+1);
     	String destinationFileName = destinationPath.substring(destinationPath.lastIndexOf('/')+1);
@@ -320,7 +322,8 @@ public class HpcDataTransferProxyImpl
     		createDestinationDirectory(desEndpoint,createPath.toString(),destinationFileName);
 		return hpcGOTransfer.getDestinationBaseLocation()+"/"+nihUsername+"/"+destinationFileName+"/"+sourceFileName;
 	}
-
+	*/
+	
 	public boolean autoActivate(String endpointName, JSONTransferAPIClient client)
                                throws HpcException {
 		try {

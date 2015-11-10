@@ -179,6 +179,7 @@
 			<artifactId>spring-beans</artifactId>
 		</dependency>
 
+<!--  
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
@@ -200,7 +201,7 @@
 			<groupId>org.irods.jargon</groupId>
 			<artifactId>jargon-user-tagging</artifactId>
 		</dependency>
-		
+-->		
 		<dependency>
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>

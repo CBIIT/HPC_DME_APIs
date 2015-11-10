@@ -128,29 +128,32 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcUser user = userService.getUser(
 		               getRegistrarUserId(dataObjectRegistrationDTO.getMetadataEntries()));
     	
-    	// Populate the DTO with the destination path taken from the URL parameter.
+    	// Append the path to the destination's base path (if a base path provided).
     	if(dataObjectRegistrationDTO.getLocations() != null &&
     	   dataObjectRegistrationDTO.getLocations().getDestination() != null) {
-    	   if(dataObjectRegistrationDTO.getLocations().getDestination().getPath() != null) {
-    		  throw new HpcException("Path is only accepted as a URL parameter, not in the JSON",
-		                             HpcErrorType.INVALID_REQUEST_INPUT);	
-    	   }
-    	   dataObjectRegistrationDTO.getLocations().getDestination().setPath(path);
+    	   String basePath = dataObjectRegistrationDTO.getLocations().getDestination().getPath();	
+    	   dataObjectRegistrationDTO.getLocations().getDestination().setPath(
+    		                                           basePath != null ? basePath + path : path);
     	}
     	
     	// Create a data object file (in the data management system).
     	dataManagementService.createFile(user.getDataManagementAccount(), path);
     	
 		// Transfer the file. 
-
-        dataTransferService.transferDataset(dataObjectRegistrationDTO.getLocations(), 
-        		                            user);				 
+        dataTransferService.transferData(user.getDataTransferAccount(),
+        		                         dataObjectRegistrationDTO.getLocations());				 
     	
-    	// Attach the metadata.
+    	// Attach the user provided metadata.
     	dataManagementService.addMetadataToDataObject(
     			                 user.getDataManagementAccount(),
     			                 path, 
     			                 dataObjectRegistrationDTO.getMetadataEntries());
+    	
+    	// Create and attach the file source and location metadata.
+    	dataManagementService.addFileLocationsMetadataToDataObject(
+    			                 user.getDataManagementAccount(), path, 
+    			                 dataObjectRegistrationDTO.getLocations().getDestination(),
+    			                 dataObjectRegistrationDTO.getLocations().getSource()); 
     }
     
     //---------------------------------------------------------------------//

@@ -790,8 +790,8 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
     		            // Get updated report from data transfer.
 			            HpcDataTransferReport dataTransferReport = 
 			            	   dataTransferService.getTransferRequestStatus(
-			            			                  dataTransferRequest.getDataTransferId(),
-			            				              dataTransferAccount);
+			            			                  dataTransferAccount,
+			            			                  dataTransferRequest.getDataTransferId());
 			            
 			            // Update the upload request.
 			            transferStatusChanged |= 
@@ -842,8 +842,8 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 			uploadRequest.getLocations().getDestination().setPath(dataset.getFileSet().getName());
 			try {				
 				 dataTransferReport =
-                 dataTransferService.transferDataset(uploadRequest.getLocations(), 
-				                                     user);				 
+                 dataTransferService.transferData(user.getDataTransferAccount(),
+                		                          uploadRequest.getLocations());				 
 			} catch(HpcException e) {
 				    // Failed to upload file. Log and continue.
 					logger.info("Failed to upload file: " + uploadRequest, e);
