@@ -23,6 +23,7 @@ import java.util.List;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFile;
+import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -150,11 +151,59 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			                                   metadataEntry.getValue(), 
 			                                   metadataEntry.getUnit()));
 		     }
-
 		     irodsConnection.getDataObjectAO(dataManagementAccount).addBulkAVUMetadataToDataObject(path, avuDatas);
 		     
 		} catch(JargonException e) {
 	            throw new HpcException("Failed to add metadata to a data object: " + 
+                                       e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} finally {
+			       irodsConnection.closeConnection(dataManagementAccount);
+		}
+    }
+    
+    @Override    
+    public void createParentPathDirectory(
+    		          HpcIntegratedSystemAccount dataManagementAccount, 
+    		          String path) 
+    		          throws HpcException
+    {
+		try {
+			 IRODSFileFactory irodsFileFactory = 
+					          irodsConnection.getIRODSFileFactory(dataManagementAccount);
+			 IRODSFile file = irodsFileFactory.instanceIRODSFile(path);
+			 IRODSFile parentPath = irodsFileFactory.instanceIRODSFile(file.getParent());
+			 
+			 if(parentPath.isFile()) {
+				throw new HpcException("Path exists as a file: " + parentPath.getPath(), 
+                                       HpcErrorType.INVALID_REQUEST_INPUT);
+			 }
+			 
+			 if(!parentPath.isDirectory()) {
+				parentPath.mkdirs(); 
+			 }
+			 
+		} catch(JargonException e) {
+		        throw new HpcException("Failed to get a path parent: " + 
+                                       e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} finally {
+			       irodsConnection.closeConnection(dataManagementAccount);
+		}
+    }
+    
+    @Override    
+    public boolean exists(HpcIntegratedSystemAccount dataManagementAccount, 
+    		              String path) 
+    		             throws HpcException
+    {
+		try {
+			 IRODSFile file = 
+					   irodsConnection.getIRODSFileFactory(dataManagementAccount).instanceIRODSFile(path);
+			 return file.exists();
+			 
+		} catch(JargonException e) {
+		        throw new HpcException("Failed to check if a path exists: " + 
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} finally {

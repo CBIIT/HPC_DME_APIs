@@ -78,6 +78,30 @@ public interface HpcDataManagementProxy
     		                            String path,
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException;
+    
+    /**
+     * Create a parent directory (if it doesn't exist already).
+     *
+     * @param dataManagementAccount The Data Management System account.
+     * @param path The data-object path.
+     * 
+     * @throws HpcException
+     */
+    public void createParentPathDirectory(HpcIntegratedSystemAccount dataManagementAccount, 
+    		                              String path)
+    		                             throws HpcException;   
+    
+    /**
+     * Check if a path exists (as a directory or file)
+     *
+     * @param dataManagementAccount The Data Management System account.
+     * @param path The data-object/collection path.
+     * 
+     * @throws HpcException
+     */
+    public boolean exists(HpcIntegratedSystemAccount dataManagementAccount, 
+    		              String path)
+    		             throws HpcException;  
 }
 
  

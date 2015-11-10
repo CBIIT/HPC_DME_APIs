@@ -12,7 +12,6 @@ package gov.nih.nci.hpc.integration;
 
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
-import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -28,31 +27,32 @@ import gov.nih.nci.hpc.exception.HpcException;
 public interface HpcDataTransferProxy 
 {         
     /**
-     * Transfer a dataset.
+     * Transfer a data file.
      *
-     * @param dataTransferLocations The file source/destination
-     * @param user The HPC user that submitted the transfer request.
+     * @param dataTransferAccount The data transfer account.
+     * @param dataTransferLocations The file source/destination.
+     * 
      * @return A transfer report.
      * 
      * @throws HpcException
      */
-    public HpcDataTransferReport transferDataset(HpcDataTransferLocations transferLocations, 
-    		                                     HpcUser user) 
-    		                                    throws HpcException;
+    public HpcDataTransferReport transferData(HpcIntegratedSystemAccount dataTransferAccount,
+    		                                  HpcDataTransferLocations transferLocations) 
+    		                                 throws HpcException;
 
     /**
-     * Retrive task status.
+     * Get a data transfer task report.
      *
-     * @param taskId taskId to retrieve status.
-     * @param dataTransferAccount 
+     * @param dataTransferAccount The data transfer account.
+     * @param taskId The data transfer task ID.
+     * 
      * @return HpcDataTransferReport the data transfer report
      * 
      * @throws HpcTransferException
      */
-    public HpcDataTransferReport getTaskStatusReport(String taskId, 
-    		                                         HpcIntegratedSystemAccount dataTransferAccount) 
+    public HpcDataTransferReport getTaskStatusReport(HpcIntegratedSystemAccount dataTransferAccount,
+    		                                         String taskId) 
     		                                        throws Exception;
-    
 }
 
  
