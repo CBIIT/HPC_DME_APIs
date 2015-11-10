@@ -181,6 +181,7 @@ public interface HpcDatasetRestService
     public String getPrimaryConfigurableDataFields(@PathParam("type") String id, 
     		                                       @QueryParam("callback") String callback);   
     
+    /*
     // S3 prototype
     @GET
     @Path("/s3/{path}")
@@ -193,7 +194,7 @@ public interface HpcDatasetRestService
     @Path("/jargon/{path}")
     @Produces("application/json,application/xml")
     public Response irodsUpload(@PathParam("path") String inputPath);
-    
+    */
 }
 
  

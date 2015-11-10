@@ -26,13 +26,9 @@ import gov.nih.nci.hpc.dto.dataset.HpcFilePrimaryMetadataDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDatasetRestService;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -43,33 +39,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.irods.jargon.core.connection.IRODSAccount;
-import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.DataObjectAO;
-import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
-import org.irods.jargon.core.pub.IRODSFileSystem;
-import org.irods.jargon.core.pub.domain.AvuData;
-import org.irods.jargon.core.pub.io.IRODSFile;
-import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.event.ProgressEvent;
-import com.amazonaws.event.ProgressListener;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.Upload;
 
 /**
  * <p>
@@ -108,7 +83,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
 			             LoggerFactory.getLogger(this.getClass().getName());
 	
 	// IRODS file system.
-	private IRODSFileSystem irodsFileSystem = null;
+	//private IRODSFileSystem irodsFileSystem = null;
     
     //---------------------------------------------------------------------//
     // Constructors
@@ -142,13 +117,14 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     	
 		this.dynamicConfigFile = dynamicConfigFile;
 		
+		/*
 		try {
 		     this.irodsFileSystem = IRODSFileSystem.instance();
 		     
 		} catch(JargonException e) {
 			    throw new HpcException("Failed to instantiate iRODs file system",
 	                                   HpcErrorType.UNEXPECTED_ERROR, e);
-		}
+		}*/
     }	
     
     //---------------------------------------------------------------------//
@@ -459,6 +435,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
     	return calendar;
     }
     
+    /*
     @Override
     public Response irodsUpload(String inputPath) 
     {
@@ -606,6 +583,7 @@ public class HpcDatasetRestServiceImpl extends HpcRestServiceImpl
         	    System.out.println("Interupted exception: " + ioex);
         }
     }
+    */
 }
 
  

@@ -18,11 +18,14 @@ import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 
 import java.util.List;
 
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import org.apache.cxf.jaxrs.ext.MessageContext;
 
 /**
  * <p>

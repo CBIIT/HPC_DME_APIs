@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.service;
 
+import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -78,6 +79,23 @@ public interface HpcDataManagementService
     		                            String path, 
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException; 
+    
+    /**
+     * Create and attach file (physical) location and source metadata to a data object.
+     *
+     * @param dataManagementAccount The Data Management account.
+     * @param path The data object path.
+     * @param fileLocation The physical file location.
+     * @param fileSource The source location of the file.
+     * 
+     * @throws HpcException
+     */
+    public void addFileLocationsMetadataToDataObject(
+    		           HpcIntegratedSystemAccount dataManagementAccount,
+    		           String path, 
+    		           HpcFileLocation fileLocation,
+    		           HpcFileLocation fileSource) 
+    		           throws HpcException; 
 }
 
  

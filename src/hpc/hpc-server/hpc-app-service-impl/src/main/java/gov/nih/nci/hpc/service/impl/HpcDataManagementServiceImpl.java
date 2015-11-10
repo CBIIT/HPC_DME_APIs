@@ -11,13 +11,17 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
+import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +37,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class HpcDataManagementServiceImpl implements HpcDataManagementService
 {    
+    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//    
+    
+    // File Location metadata attributes.
+	public final static String FILE_LOCATION_ENDPOINT_ATTRIBUTE = 
+			                   "Data Location Globus Endpoint"; 
+	public final static String FILE_LOCATION_PATH_ATTRIBUTE = 
+			                   "Data Location Globus Path"; 
+	public final static String FILE_SOURCE_ENDPOINT_ATTRIBUTE = 
+			                   "Data Source Globus Endpoint"; 
+	public final static String FILE_SOURCE_PATH_ATTRIBUTE = 
+			                   "Data Source Globus Path"; 
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -78,6 +96,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		               String path) 
     		              throws HpcException
     {
+    	// Check the path is available.
+    	if(dataManagementProxy.exists(dataManagementAccount, path)) {
+    		throw new HpcException("Path already exists: " + path, 
+    				               HpcRequestRejectReason.DATA_OBJECT_PATH_ALREADY_EXISTS);
+    	}
+    	
+    	// Create the parent directory if it doesn't already exist.
+    	dataManagementProxy.createParentPathDirectory(dataManagementAccount, path);
+    	
+    	// Create the data object file.
     	dataManagementProxy.createDataObjectFile(dataManagementAccount, path);
     }
 
@@ -119,5 +147,54 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToDataObject(dataManagementAccount, 
        			                                    path, metadataEntries);
+    }
+    
+    @Override
+    public void addFileLocationsMetadataToDataObject(
+    		           HpcIntegratedSystemAccount dataManagementAccount,
+                       String path, 
+                       HpcFileLocation fileLocation,
+    		           HpcFileLocation fileSource) 
+                       throws HpcException
+    {
+       	// Input validation.
+       	if(path == null || !isValidFileLocation(fileLocation)) {
+       	   throw new HpcException("Null path or Invalid file location", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+       	List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
+       	
+       	// Create the file location endpoint metadata.
+       	HpcMetadataEntry locationEndpointMetadata = new HpcMetadataEntry();
+       	locationEndpointMetadata.setAttribute(FILE_LOCATION_ENDPOINT_ATTRIBUTE);
+       	locationEndpointMetadata.setValue(fileLocation.getEndpoint());
+       	locationEndpointMetadata.setUnit("");
+       	metadataEntries.add(locationEndpointMetadata);
+       	
+       	// Create the file location path metadata.
+       	HpcMetadataEntry locationPathMetadata = new HpcMetadataEntry();
+       	locationPathMetadata.setAttribute(FILE_LOCATION_PATH_ATTRIBUTE);
+       	locationPathMetadata.setValue(fileLocation.getPath());
+       	locationPathMetadata.setUnit("");
+       	metadataEntries.add(locationPathMetadata);
+       	
+       	// Create the file source endpoint metadata.
+       	HpcMetadataEntry sourceEndpointMetadata = new HpcMetadataEntry();
+       	sourceEndpointMetadata.setAttribute(FILE_SOURCE_ENDPOINT_ATTRIBUTE);
+       	sourceEndpointMetadata.setValue(fileSource.getEndpoint());
+       	sourceEndpointMetadata.setUnit("");
+       	metadataEntries.add(sourceEndpointMetadata);
+       	
+       	// Create the file source path metadata.
+       	HpcMetadataEntry sourcePathMetadata = new HpcMetadataEntry();
+       	sourcePathMetadata.setAttribute(FILE_SOURCE_PATH_ATTRIBUTE);
+       	sourcePathMetadata.setValue(fileSource.getPath());
+       	sourcePathMetadata.setUnit("");
+       	metadataEntries.add(sourcePathMetadata);
+       	
+       	// Add Metadata to the DM system.
+       	dataManagementProxy.addMetadataToDataObject(dataManagementAccount, 
+       			                                    path, metadataEntries);    	
     }
 }
