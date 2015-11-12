@@ -13,19 +13,17 @@ package gov.nih.nci.hpc.ws.rs.impl;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.metadata.HpcMetadataEntryParam;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 
 import java.util.List;
 
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import org.apache.cxf.jaxrs.ext.MessageContext;
 
 /**
  * <p>
@@ -88,6 +86,25 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		
 		return createdResponse(null);
 	}
+    
+    @Override
+    public Response queryCollections(List<HpcMetadataEntryParam> metadataEntries)
+    {
+    	logger.info("Invoking RS: GET /collection/" + metadataEntries);
+		try {
+			 // Validate the metadata entries JSON was parsed successfully.
+			 for(HpcMetadataEntryParam metadataEntry : metadataEntries)
+			 if(metadataEntry.getJSONParsingException() != null) {
+				throw metadataEntry.getJSONParsingException();
+			 }
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /collection/" + metadataEntries + " failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(metadataEntries.size(), false);
+    }
     
     @Override
     public Response registerDataObject(String path, 
