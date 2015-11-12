@@ -12,14 +12,17 @@ package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.metadata.HpcMetadataEntryParam;
 
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 /**
@@ -47,6 +50,18 @@ public interface HpcDataManagementRestService
 	public Response registerCollection(
 			           @PathParam("path") String path,
 			           List<HpcMetadataEntry> metadataEntries);
+	
+    /**
+     * GET Collections by metadata query.
+     *
+     * @param metadataEntries A list of metadata entries to query for.
+     */
+	@GET
+	@Path("/collection")
+	@Produces("application/json,application/xml")
+	public Response queryCollections(
+			             @QueryParam("metadataEntry") 
+			             List<HpcMetadataEntryParam> metadataEntries);
 	
     /**
      * PUT Data object registration request.

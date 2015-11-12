@@ -18,7 +18,6 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -77,7 +76,6 @@ public class HpcMetadataValidator
      */
     private HpcMetadataValidator(String metadataValidationRulesPath) throws HpcException
     {
-    	// TODO: move this to external JSON config.
 		try {
 	         FileReader reader = new FileReader(metadataValidationRulesPath);
 	         JSONObject jsonMetadataValidationRules = (JSONObject) ((JSONObject) new JSONParser().parse(reader)).get("HpcMetadataValidationRules");
@@ -98,190 +96,8 @@ public class HpcMetadataValidator
 			    throw new HpcException("Could not open or parse: " + metadataValidationRulesPath,
                                        HpcErrorType.SPRING_CONFIGURATION_ERROR, e);
 		}
-		
-		/*
-    	// Collection metadata validation rules.
-    	HpcMetadataValidationRule collectionType = new HpcMetadataValidationRule();
-    	collectionType.setAttribute("Collection type");
-    	collectionType.setMandatory(true);
-    	collectionType.setRuleEnabled(true);
-    	collectionType.setDOC("DOC-NAME");
-    	collectionType.getValidValues().addAll(Arrays.asList("Project", "Dataset"));
-    	
-    	HpcMetadataValidationRule projectName = new HpcMetadataValidationRule();
-    	projectName.setAttribute("Project name");
-    	projectName.setMandatory(true);
-    	projectName.setRuleEnabled(true);
-    	projectName.setDOC("DOC-NAME");
-    	projectName.setCollectionType("Project");
-    	
-    	HpcMetadataValidationRule projectType = new HpcMetadataValidationRule();
-    	projectType.setAttribute("Project type");
-    	projectType.setDefaultValue("Unknown");
-    	projectType.setMandatory(true);
-    	projectType.setRuleEnabled(true);
-    	projectType.setDOC("DOC-NAME");
-    	projectType.setCollectionType("Project");
-    	projectType.getValidValues().addAll(Arrays.asList("Unknown", "Sequencing", "Analysis", "Umbrella"));
-    	
-    	HpcMetadataValidationRule projectDescription = new HpcMetadataValidationRule();
-    	projectDescription.setAttribute("Project description");
-    	projectDescription.setMandatory(true);
-    	projectDescription.setRuleEnabled(true);
-    	projectDescription.setDOC("DOC-NAME");
-    	projectDescription.setCollectionType("Project");
-    	
-    	HpcMetadataValidationRule internalProjectId = new HpcMetadataValidationRule();
-    	internalProjectId.setAttribute("Internal Project ID");
-    	internalProjectId.setMandatory(true);
-    	internalProjectId.setRuleEnabled(true);
-    	internalProjectId.setDOC("DOC-NAME");
-    	internalProjectId.setCollectionType("Project");
-    	
-    	HpcMetadataValidationRule sourceLabPI = new HpcMetadataValidationRule();
-    	sourceLabPI.setAttribute("Source Lab PI");
-    	sourceLabPI.setMandatory(true);
-    	sourceLabPI.setRuleEnabled(true);
-    	sourceLabPI.setDOC("DOC-NAME");
-    	sourceLabPI.setCollectionType("Project");
-    	
-    	HpcMetadataValidationRule labBranch = new HpcMetadataValidationRule();
-    	labBranch.setAttribute("Lab / Branch Name");
-    	labBranch.setMandatory(true);
-    	labBranch.setRuleEnabled(true);
-    	labBranch.setDOC("DOC-NAME");
-    	labBranch.setCollectionType("Project");
-    	
-    	HpcMetadataValidationRule piDOC = new HpcMetadataValidationRule();
-    	piDOC.setAttribute("DOC of the PI");
-    	piDOC.setMandatory(true);
-    	piDOC.setRuleEnabled(true);
-    	piDOC.setDOC("DOC-NAME");
-    	piDOC.setCollectionType("Project");
-    	
-    	HpcMetadataValidationRule projectDate = new HpcMetadataValidationRule();
-    	projectDate.setAttribute("Original Date the Project was created on");
-    	projectDate.setMandatory(true);
-    	projectDate.setRuleEnabled(true);
-    	projectDate.setDOC("DOC-NAME");
-    	projectDate.setCollectionType("Project");
-    	
-    	HpcMetadataValidationRule userName = new HpcMetadataValidationRule();
-    	userName.setAttribute("Name of the User registering the Project (Registrar)");
-    	userName.setMandatory(true);
-    	userName.setRuleEnabled(true);
-    	userName.setDOC("DOC-NAME");
-    	userName.setCollectionType("Project");
-    	
-    	HpcMetadataValidationRule registrarDOC = new HpcMetadataValidationRule();
-    	registrarDOC.setAttribute("DOC of the Registrar");
-    	registrarDOC.setMandatory(true);
-    	registrarDOC.setRuleEnabled(true);
-    	registrarDOC.setDOC("DOC-NAME");
-    	registrarDOC.setCollectionType("Project");
-    	
-    	metadataValidationRules.getCollectionMetadataValidationRules().addAll(
-    			Arrays.asList(collectionType, projectName, projectType, projectDescription,
-    					      internalProjectId, sourceLabPI, labBranch, piDOC, projectDate, 
-    					      userName, registrarDOC));
-    	
-    	// Data Object metadata validation rules.
-    	HpcMetadataValidationRule datasetName = new HpcMetadataValidationRule();
-    	datasetName.setAttribute("Dataset name");
-    	datasetName.setMandatory(true);
-    	datasetName.setRuleEnabled(true);
-    	datasetName.setDOC("DOC-NAME");
-    	
-    	HpcMetadataValidationRule datasetDescription = new HpcMetadataValidationRule();
-    	datasetDescription.setAttribute("Dataset description");
-    	datasetDescription.setMandatory(true);
-    	datasetDescription.setRuleEnabled(true);
-    	datasetDescription.setDOC("DOC-NAME");
-    	
-    	HpcMetadataValidationRule sourceLabPI_DO = new HpcMetadataValidationRule();
-    	sourceLabPI_DO.setAttribute("Source Lab PI");
-    	sourceLabPI_DO.setMandatory(true);
-    	sourceLabPI_DO.setRuleEnabled(true);
-    	sourceLabPI_DO.setDOC("DOC-NAME");
-    	
-    	HpcMetadataValidationRule labBranch_DO = new HpcMetadataValidationRule();
-    	labBranch_DO.setAttribute("Lab/Branch");
-    	labBranch_DO.setMandatory(true);
-    	labBranch_DO.setRuleEnabled(true);
-    	labBranch_DO.setDOC("DOC-NAME");
-    	
-    	HpcMetadataValidationRule piDOC_DO = new HpcMetadataValidationRule();
-    	piDOC_DO.setAttribute("DOC of the PI");
-    	piDOC_DO.setMandatory(true);
-    	piDOC_DO.setRuleEnabled(true);
-    	piDOC_DO.setDOC("DOC-NAME");
-    	
-    	HpcMetadataValidationRule datasetCreationDate = new HpcMetadataValidationRule();
-    	datasetCreationDate.setAttribute("Date the dataset was created Originally");
-    	datasetCreationDate.setMandatory(true);
-    	datasetCreationDate.setRuleEnabled(true);
-    	datasetCreationDate.setDOC("DOC-NAME");
-    	
-    	HpcMetadataValidationRule creator = new HpcMetadataValidationRule();
-    	creator.setAttribute("Data Creator");
-    	creator.setDefaultValue("Not Specified");
-    	creator.setMandatory(true);
-    	creator.setRuleEnabled(true);
-    	creator.setDOC("DOC-NAME");
-    	
-    	HpcMetadataValidationRule registrar = new HpcMetadataValidationRule();
-    	registrar.setAttribute("Name of the User registering the dataset");
-    	registrar.setMandatory(true);
-    	registrar.setRuleEnabled(true);
-    	registrar.setDOC("DOC-NAME");
-    	
-    	HpcMetadataValidationRule registrarDOC_DO = new HpcMetadataValidationRule();
-    	registrarDOC_DO.setAttribute("DOC of the user registering the dataset");
-    	registrarDOC_DO.setMandatory(true);
-    	registrarDOC_DO.setRuleEnabled(true);
-    	registrarDOC_DO.setDOC("DOC-NAME");
-    	
-    	HpcMetadataValidationRule phiContent = new HpcMetadataValidationRule();
-    	phiContent.setAttribute("PHI Content");
-    	phiContent.setMandatory(true);
-    	phiContent.setRuleEnabled(true);
-    	phiContent.setDOC("DOC-NAME");
-    	phiContent.getValidValues().addAll(Arrays.asList("PHI Present", "PHI Not Present", "Not Specified"));
-    	
-    	HpcMetadataValidationRule piiContent = new HpcMetadataValidationRule();
-    	piiContent.setAttribute("PII Content");
-    	piiContent.setMandatory(true);
-    	piiContent.setRuleEnabled(true);
-    	piiContent.setDOC("DOC-NAME");
-    	piiContent.getValidValues().addAll(Arrays.asList("PII Present", "PII Not Present", "Not Specified"));
-    	
-    	HpcMetadataValidationRule encryption = new HpcMetadataValidationRule();
-    	encryption.setAttribute("Data Encryption Status");
-    	encryption.setMandatory(true);
-    	encryption.setRuleEnabled(true);
-    	encryption.setDOC("DOC-NAME");
-    	encryption.getValidValues().addAll(Arrays.asList("Encrypted", "Not Encrypted", "Not Specified"));
-    	
-    	HpcMetadataValidationRule compression = new HpcMetadataValidationRule();
-    	compression.setAttribute("Data Compression Statuss");
-    	compression.setMandatory(true);
-    	compression.setRuleEnabled(true);
-    	compression.setDOC("DOC-NAME");
-    	compression.getValidValues().addAll(Arrays.asList("Compressed", "Not Compressed", "Not Specified"));
-    	
-    	HpcMetadataValidationRule fundingOrganization = new HpcMetadataValidationRule();
-    	fundingOrganization.setAttribute("Organization Funding the generation of Data");
-    	fundingOrganization.setDefaultValue("Not Specified");
-    	fundingOrganization.setMandatory(true);
-    	fundingOrganization.setRuleEnabled(true);
-    	fundingOrganization.setDOC("DOC-NAME");
-    	
-    	metadataValidationRules.getDataObjectMetadataValidationRules().addAll(
-    			Arrays.asList(datasetName, datasetDescription, sourceLabPI_DO,
-    					      labBranch_DO, piDOC_DO, datasetCreationDate, creator, registrar,
-    					      registrarDOC_DO, phiContent, piiContent, encryption, compression,
-    					      fundingOrganization));*/
-    }   
+    }		
+
     
     //---------------------------------------------------------------------//
     // Methods
