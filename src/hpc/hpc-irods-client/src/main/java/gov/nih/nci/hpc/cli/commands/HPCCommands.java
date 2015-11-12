@@ -2,8 +2,11 @@ package gov.nih.nci.hpc.cli.commands;
 
 import java.util.logging.Logger;
 
+import gov.nih.nci.hpc.cli.HPCBatch;
+import gov.nih.nci.hpc.cli.HPCFile;
 import gov.nih.nci.hpc.cli.IrodsClient;
 import gov.nih.nci.hpc.cli.domain.HPCDataObject;
+import gov.nih.nci.hpc.cli.util.HPCCSVFile;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
 
 import javax.xml.bind.DatatypeConverter;
@@ -85,7 +88,16 @@ public class HPCCommands implements CommandMarker {
  		
 		return "HPC User  [" + configProperties.getProperty("irods.username") + "] initialized ";
 	}
-		
+
+	
+	@CliCommand(value = "hpcbatch", help = "Batch upload to HPC Archive")
+	public String hpcbatch(
+		@CliOption(key = { "source" }, mandatory = false, help = "Source location for transfer") final String source)
+		{
+			HPCCSVFile hpcBatch = new HPCCSVFile();
+
+		return  hpcBatch.parseBatchFile(source);
+	}	
 	/*
 	@CliCommand(value = "hpc init", help = "Initialize HPC configuration")
 	public String einit(
