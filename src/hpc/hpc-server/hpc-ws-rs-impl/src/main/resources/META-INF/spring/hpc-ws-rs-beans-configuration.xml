@@ -71,6 +71,8 @@
 	<!-- JSON Provider -->
 	<bean id="jsonProvider" class="org.apache.cxf.jaxrs.provider.json.JSONProvider">
 		<property name="namespaceMap" ref="jsonProviderNamespaceMap" />
+		<property name="dropRootElement" value="true" />
+		<property name="dropCollectionWrapperElement" value="true" />
 	</bean>
 	<util:map id="jsonProviderNamespaceMap" map-class="java.util.Hashtable">
 		<entry key="http://hpc.nci.nih.gov/dto/error" value="gov.nih.nci.hpc.dto.error" />

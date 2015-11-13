@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.irods.jargon.core.exception.InvalidInputParameterException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFile;
@@ -74,7 +75,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		try {
 			 IRODSFile collectionFile = 
 			      irodsConnection.getIRODSFileFactory(dataManagementAccount).instanceIRODSFile(path);
-			 collectionFile.mkdirs();
+			 mkdirs(collectionFile);
 			 
 		} catch(JargonException e) {
 		        throw new HpcException("Failed to create a collection directory: " + 
@@ -180,13 +181,17 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			 }
 			 
 			 if(!parentPath.isDirectory()) {
-				parentPath.mkdirs(); 
+				mkdirs(parentPath); 
 			 }
 			 
+		} catch(InvalidInputParameterException ex) {
+			    
+			    
 		} catch(JargonException e) {
 		        throw new HpcException("Failed to get a path parent: " + 
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		        
 		} finally {
 			       irodsConnection.closeConnection(dataManagementAccount);
 		}
@@ -209,6 +214,30 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		} finally {
 			       irodsConnection.closeConnection(dataManagementAccount);
 		}
+    }
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------// 
+    
+    /**
+     * Create directories. This Jargon API throws runtime exception if the 
+     * path is invalid, so we catch it and convert to HpcException
+     *
+     * @param irodsFile The iRODS file.
+     * 
+     * @throws HpcException
+     */
+    private void mkdirs(IRODSFile irodsFile) throws HpcException
+    {
+    	try {
+    		 irodsFile.mkdirs();
+    		 
+    	} catch(Throwable t) {
+    		    throw new HpcException("Failed to create directory: " + 
+    	                               irodsFile.getPath(),
+                                       HpcErrorType.INVALID_REQUEST_INPUT , t);
+    	}
     }
 }
 
