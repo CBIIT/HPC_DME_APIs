@@ -11,8 +11,10 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
+import gov.nih.nci.hpc.domain.dataset.HpcManagedEntity;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.dataset.HpcManagedEntityCollectionDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataEntryParam;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
@@ -91,8 +93,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     public Response queryCollections(List<HpcMetadataEntryParam> metadataEntries)
     {
     	logger.info("Invoking RS: GET /collection/" + metadataEntries);
+    	
+    	HpcManagedEntityCollectionDTO collections = new HpcManagedEntityCollectionDTO();
 		try {
-			 // Validate the metadata entries JSON was parsed successfully.
+			 // Validate the metadata entries input (JSON) was parsed successfully.
 			 for(HpcMetadataEntryParam metadataEntry : metadataEntries)
 			 if(metadataEntry.getJSONParsingException() != null) {
 				throw metadataEntry.getJSONParsingException();
@@ -103,7 +107,17 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return okResponse(metadataEntries.size(), false);
+		HpcManagedEntity ent = new HpcManagedEntity();
+		ent.setId(1002);
+		ent.setPath("/folder-a/folder-b");
+		collections.getManagedEntities().add(ent);
+		
+		HpcManagedEntity ent1 = new HpcManagedEntity();
+		ent1.setId(100255);
+		ent1.setPath("/folder-c/folder-d");
+		collections.getManagedEntities().add(ent1);
+		
+		return okResponse(collections, false);
     }
     
     @Override
