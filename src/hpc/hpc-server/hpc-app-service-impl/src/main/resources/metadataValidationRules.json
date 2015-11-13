@@ -113,7 +113,7 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Datset description",
+            "attribute":"Dataset description",
             "mandatory":true,
             "collectionType":"Dataset",
             "ruleEnabled":true,
