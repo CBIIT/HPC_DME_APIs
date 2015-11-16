@@ -9,10 +9,10 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccountType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
-import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
 
 import java.net.URI;
@@ -80,15 +80,15 @@ public class HpcUserController extends AbstractHpcController {
 	*/  
 		 // HpcProxy client =  new HpcProxyImpl(serverURL);
 		 // HpcUserRegistrationRestService userRegistration = client.getUserRegistrationServiceProxy();
-	      HpcUserRegistrationDTO userDTO = new HpcUserRegistrationDTO();
+	      HpcUserDTO userDTO = new HpcUserDTO();
 	      HpcNciAccount user = new HpcNciAccount();
 		  user.setUserId(hpcUser.getNciUserId());
 		  user.setFirstName(hpcUser.getFirstName());
 		  user.setLastName(hpcUser.getLastName());
-		  HpcDataTransferAccount dtAccount = new HpcDataTransferAccount();
+		  HpcIntegratedSystemAccount dtAccount = new HpcIntegratedSystemAccount();
 		  dtAccount.setUsername(hpcUser.getGlobusUserId());
 		  dtAccount.setPassword(hpcUser.getGlobusPasswd());
-		  dtAccount.setAccountType(HpcDataTransferAccountType.GLOBUS);
+		  dtAccount.setIntegratedSystem(HpcIntegratedSystem.GLOBUS);
 		  userDTO.setDataTransferAccount(dtAccount);
 		  userDTO.setNciAccount(user);
 /*

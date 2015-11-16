@@ -11,9 +11,12 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
+import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.dto.dataset.HpcDataManagementEntitiesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -111,6 +114,28 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
+    public HpcDataManagementEntitiesDTO getCollections(
+    		                               String userId,
+                                           List<HpcMetadataEntry> metadataEntryQueries) 
+                                           throws HpcException
+    {
+    	logger.info("Invoking getCollections(List<HpcMetadataEntry>): " + 
+    			    metadataEntryQueries);
+    	
+    	// Input validation.
+    	if(metadataEntryQueries == null) {
+    	   throw new HpcException("Null metadata entry queries",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Get the HPC user calling this service.
+		HpcUser user = userService.getUser(userId);
+		
+    	return toDTO(dataManagementService.getCollections(user.getDataManagementAccount(),
+    			                                          metadataEntryQueries));
+    }
+    
+    @Override
     public void registerDataObject(String path,
     		                       HpcDataObjectRegistrationDTO dataObjectRegistrationDTO)  
     		                      throws HpcException
@@ -187,6 +212,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	return registrarUserId;
+    }
+    
+    /**
+     * Create a data management entities DTO from a domain object.
+     * 
+     * @param dataManagementEntities the domain object.
+     *
+     * @return The DTO.
+     */
+    private HpcDataManagementEntitiesDTO toDTO(List<HpcDataManagementEntity> entities) 
+    {
+    	HpcDataManagementEntitiesDTO entitiesDTO = new HpcDataManagementEntitiesDTO();
+    	entitiesDTO.getEntities().addAll(entities);
+    	return entitiesDTO;
     }
 }
 
