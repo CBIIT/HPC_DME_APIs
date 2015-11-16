@@ -11,8 +11,14 @@
 package gov.nih.nci.hpc.ws.rs.interceptor;
 
 import gov.nih.nci.hpc.bus.HpcUserBusService;
+import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
 import gov.nih.nci.hpc.exception.HpcAuthenticationException;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.io.IOException;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.message.Message;
@@ -64,16 +70,26 @@ public class HpcAuthenticationInterceptor
     @Override
     public void handleMessage(Message message) 
     {
-        AuthorizationPolicy policy = message.get(AuthorizationPolicy.class);
-
-        // Check that credentials were set on the request.
-        if (policy == null) {
+    	Map<String, List<String>> headers = (Map<String, List<String>>)message.get(Message.PROTOCOL_HEADERS);
+        List<String> auth = headers.get("authorization");
+        if(auth == null || auth.size() == 0)
         	throw new HpcAuthenticationException("No user credentials provided");
-        }
-    
-        // Authenticate the client.
         try {
-        	 if(userBusService.getUser(policy.getUserName()) == null) {
+            String authString = auth.get(0);
+            String[] authParts = authString.split("\\s+");
+            String authInfo = authParts[1];
+            // Decode the data back to original string
+             byte[] bytes = Base64.getDecoder().decode(authInfo);
+	        String decodedAuth = new String(bytes);
+	        String[] loginParts = authString.split(":");
+	        String userId = loginParts[0];
+	        String password = loginParts[1];
+        
+	        // Authenticate the client.
+        	HpcUserCredentialsDTO dto = new HpcUserCredentialsDTO();
+        	dto.setUserName(userId);
+        	dto.setPassword(password);
+        	 if(!userBusService.authenticate(dto)) {
     		    throw new HpcAuthenticationException("Invalid user credentials");
     	     }
     		
