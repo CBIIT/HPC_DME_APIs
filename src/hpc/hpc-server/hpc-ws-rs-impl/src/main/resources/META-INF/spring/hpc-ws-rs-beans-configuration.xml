@@ -147,7 +147,7 @@
 		</jaxrs:providers>
 		<jaxrs:inInterceptors>
 			<!-- <ref bean="hpcAuthenticationInterceptor" /> -->
-      		</jaxrs:inInterceptors>
+      </jaxrs:inInterceptors>
 	</jaxrs:server>
 </beans>
 
