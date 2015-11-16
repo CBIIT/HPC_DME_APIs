@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.integration.irods.impl;
 
+import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -23,8 +24,12 @@ import java.util.List;
 import org.irods.jargon.core.exception.InvalidInputParameterException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.AvuData;
+import org.irods.jargon.core.pub.domain.Collection;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
+import org.irods.jargon.core.query.AVUQueryElement;
+import org.irods.jargon.core.query.AVUQueryElement.AVUQueryPart;
+import org.irods.jargon.core.query.AVUQueryOperatorEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -213,6 +218,39 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} finally {
 			       irodsConnection.closeConnection(dataManagementAccount);
+		}
+    }
+    
+    @Override
+    public List<HpcDataManagementEntity> getCollections(
+    		    HpcIntegratedSystemAccount dataManagementAccount,
+		        List<HpcMetadataEntry> metadataEntryQueries) throws HpcException
+    {
+    	List<AVUQueryElement> queryElements = new ArrayList<AVUQueryElement>();
+    	try {
+             queryElements.add(
+    		      AVUQueryElement.instanceForValueQuery(AVUQueryPart.ATTRIBUTE, AVUQueryOperatorEnum.EQUAL, 
+    				      metadataEntryQueries.get(0).getAttribute()));
+    	
+             List<Collection> collections = 
+             irodsConnection.getCollectionAO(dataManagementAccount).findDomainByMetadataQuery(queryElements);
+             
+             List<HpcDataManagementEntity> entities = new ArrayList<HpcDataManagementEntity>();
+             for(Collection collection : collections) {
+            	 HpcDataManagementEntity entity = new HpcDataManagementEntity();
+            	 entity.setId(collection.getCollectionId());
+            	 entity.setPath(collection.getAbsolutePath());
+            	 entities.add(entity);
+             }
+             
+             return entities;
+             
+		} catch(Exception e) {
+	            throw new HpcException("Failed to get Collections: " + 
+                                       e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} finally {
+		          irodsConnection.closeConnection(dataManagementAccount);
 		}
     }
     

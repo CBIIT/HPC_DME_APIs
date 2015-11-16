@@ -313,17 +313,6 @@ public class HpcDataTransferProxyImpl
 		}    
     }
 
-	/*
-    private String getGODestinationPath(String destinationPath, String path,String nihUsername,String desEndpoint) throws HpcException {
-    	String sourceFileName = path.substring(path.lastIndexOf('/')+1);
-    	String destinationFileName = destinationPath.substring(destinationPath.lastIndexOf('/')+1);
-    	StringBuilder createPath = new  StringBuilder(hpcGOTransfer.getDestinationBaseLocation()+"/"+nihUsername+"/");
-    	if(!checkIfDirectoryExists(desEndpoint,createPath.toString(),destinationFileName))
-    		createDestinationDirectory(desEndpoint,createPath.toString(),destinationFileName);
-		return hpcGOTransfer.getDestinationBaseLocation()+"/"+nihUsername+"/"+destinationFileName+"/"+sourceFileName;
-	}
-	*/
-	
 	public boolean autoActivate(String endpointName, JSONTransferAPIClient client)
                                throws HpcException {
 		try {

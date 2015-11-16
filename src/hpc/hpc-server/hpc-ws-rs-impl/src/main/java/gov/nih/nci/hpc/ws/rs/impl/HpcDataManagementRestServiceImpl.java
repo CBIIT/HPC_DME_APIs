@@ -11,18 +11,21 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
-import gov.nih.nci.hpc.domain.dataset.HpcManagedEntity;
+import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.dataset.HpcDataManagementEntitiesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcManagedEntityCollectionDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataEntryParam;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
 
+import org.apache.cxf.configuration.security.AuthorizationPolicy;
+import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,32 +93,40 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response queryCollections(List<HpcMetadataEntryParam> metadataEntries)
+    public Response getCollections(List<HpcMetadataEntryParam> metadataEntryQueries)
     {
-    	logger.info("Invoking RS: GET /collection/" + metadataEntries);
+    	logger.info("Invoking RS: GET /collection/" + metadataEntryQueries);
     	
-    	HpcManagedEntityCollectionDTO collections = new HpcManagedEntityCollectionDTO();
+    	AuthorizationPolicy policy = PhaseInterceptorChain.getCurrentMessage().get(AuthorizationPolicy.class);
+    	
+    	HpcDataManagementEntitiesDTO collections = new HpcDataManagementEntitiesDTO();
 		try {
 			 // Validate the metadata entries input (JSON) was parsed successfully.
-			 for(HpcMetadataEntryParam metadataEntry : metadataEntries)
-			 if(metadataEntry.getJSONParsingException() != null) {
-				throw metadataEntry.getJSONParsingException();
+			 List<HpcMetadataEntry> queries = new ArrayList<HpcMetadataEntry>();
+			 for(HpcMetadataEntryParam metadataEntryQuery : metadataEntryQueries) {
+			     if(metadataEntryQuery.getJSONParsingException() != null) {
+				    throw metadataEntryQuery.getJSONParsingException();
+			     }
+			     queries.add(metadataEntryQuery);
 			 }
 			 
+			 dataManagementBusService.getCollections(policy.getUserName(), queries);
+			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /collection/" + metadataEntries + " failed:", e);
+			    logger.error("RS: GET /collection/" + metadataEntryQueries + 
+			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 		
-		HpcManagedEntity ent = new HpcManagedEntity();
+		HpcDataManagementEntity ent = new HpcDataManagementEntity();
 		ent.setId(1002);
 		ent.setPath("/folder-a/folder-b");
-		collections.getManagedEntities().add(ent);
+		collections.getEntities().add(ent);
 		
-		HpcManagedEntity ent1 = new HpcManagedEntity();
+		HpcDataManagementEntity ent1 = new HpcDataManagementEntity();
 		ent1.setId(100255);
 		ent1.setPath("/folder-c/folder-d");
-		collections.getManagedEntities().add(ent1);
+		collections.getEntities().add(ent1);
 		
 		return okResponse(collections, false);
     }

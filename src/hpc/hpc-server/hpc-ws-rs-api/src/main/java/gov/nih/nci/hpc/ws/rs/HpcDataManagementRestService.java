@@ -18,6 +18,7 @@ import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -54,14 +55,15 @@ public interface HpcDataManagementRestService
     /**
      * GET Collections by metadata query.
      *
-     * @param metadataEntries A list of metadata entries to query for.
+     * @param metadataEntryQueries A list of metadata entries to query for.
      */
 	@GET
 	@Path("/collection")
 	@Produces("application/json,application/xml")
-	public Response queryCollections(
-			             @QueryParam("metadataEntry") 
-			             List<HpcMetadataEntryParam> metadataEntries);
+	public Response getCollections(
+			           @QueryParam("metadataQuery") 
+			           List<HpcMetadataEntryParam> metadataEntryQueries);
+			           /*@HeaderParam("userId") final String userId)*/;
 	
     /**
      * PUT Data object registration request.
