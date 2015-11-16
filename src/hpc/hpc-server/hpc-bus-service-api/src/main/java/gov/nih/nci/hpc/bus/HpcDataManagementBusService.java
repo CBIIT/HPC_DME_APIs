@@ -11,6 +11,8 @@
 package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.dto.dataset.HpcDataManagementEntitiesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -38,6 +40,18 @@ public interface HpcDataManagementBusService
     public void registerCollection(String path,
     		                       List<HpcMetadataEntry> metadataEntries) 
     		                      throws HpcException;
+    
+    /**
+     * Get Collections by metadata query.
+     *
+     * @param metadataEntryQueries The metadata entries to query for.
+     * 
+     * @throws HpcException
+     */
+    public HpcDataManagementEntitiesDTO getCollections(
+    		                        String userId,
+    		                        List<HpcMetadataEntry> metadataEntryQueries) 
+    		                        throws HpcException;
     
     /**
      * Register a Data object.
