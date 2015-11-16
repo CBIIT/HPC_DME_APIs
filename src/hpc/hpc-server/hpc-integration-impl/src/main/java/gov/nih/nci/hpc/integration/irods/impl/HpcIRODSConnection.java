@@ -14,10 +14,15 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import org.irods.jargon.core.connection.AuthScheme;
 import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.connection.IRODSSession;
+import org.irods.jargon.core.connection.IRODSSimpleProtocolManager;
+import org.irods.jargon.core.connection.auth.AuthResponse;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.CollectionAO;
 import org.irods.jargon.core.pub.DataObjectAO;
+import org.irods.jargon.core.pub.IRODSAccessObjectFactoryImpl;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.slf4j.Logger;
@@ -201,10 +206,16 @@ public class HpcIRODSConnection
     private IRODSAccount getIrodsAccount(HpcIntegratedSystemAccount dataManagementAccount) throws HpcException
     {
     	try {
-    	     return IRODSAccount.instance(irodsHost, irodsPort, 
+    		IRODSAccount irodsAccount = IRODSAccount.instance(irodsHost, irodsPort, 
     	    		                      dataManagementAccount.getUsername(), 
     	    		                      dataManagementAccount.getPassword(), "", 
 	    	                              irodsZone, irodsResource);
+    		irodsAccount.setAuthenticationScheme(AuthScheme.PAM);
+    		IRODSSession session = new IRODSSession(new IRODSSimpleProtocolManager());
+    		
+    		AuthResponse authResponse = new IRODSAccessObjectFactoryImpl(session).authenticateIRODSAccount(irodsAccount);
+    		return authResponse.getAuthenticatedIRODSAccount();
+    		
     	} catch(JargonException e) {
     		    throw new HpcException("Failed instantiate an iRODS account: " + 
                                        e.getMessage(),
