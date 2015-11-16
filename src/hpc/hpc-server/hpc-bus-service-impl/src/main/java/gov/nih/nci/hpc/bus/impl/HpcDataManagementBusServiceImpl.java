@@ -13,9 +13,9 @@ package gov.nih.nci.hpc.bus.impl;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.dto.dataset.HpcDataManagementEntitiesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -104,6 +104,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Get the HPC user calling this service.
 		HpcUser user = userService.getUser(
 		               getRegistrarUserId(metadataEntries));
+		if(user == null || user.getDataManagementAccount() == null) {
+		   throw new HpcException("Unknown user or invalid data management account",
+				                  HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
+		}
     	
     	// Create a collection directory.
     	dataManagementService.createDirectory(user.getDataManagementAccount(), path);
@@ -130,6 +134,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Get the HPC user calling this service.
 		HpcUser user = userService.getUser(userId);
+		if(user == null || user.getDataManagementAccount() == null) {
+			   throw new HpcException("Unknown user or invalid data management account",
+					                  HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
+		}
 		
     	return toDTO(dataManagementService.getCollections(user.getDataManagementAccount(),
     			                                          metadataEntryQueries));

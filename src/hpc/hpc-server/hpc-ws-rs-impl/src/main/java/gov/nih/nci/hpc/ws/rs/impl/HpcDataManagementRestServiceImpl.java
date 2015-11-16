@@ -110,7 +110,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			     queries.add(metadataQuery);
 			 }
 			 
-			 collections = dataManagementBusService.getCollections(policy.getUserName(), queries);
+			 collections = dataManagementBusService.getCollections(policy != null ? policy.getUserName() : null, 
+					                                               queries);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /collection/" + metadataQueries + 
