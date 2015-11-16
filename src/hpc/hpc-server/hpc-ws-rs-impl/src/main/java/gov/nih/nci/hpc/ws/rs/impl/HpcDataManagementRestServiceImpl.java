@@ -93,42 +93,32 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response getCollections(List<HpcMetadataEntryParam> metadataEntryQueries)
+    public Response getCollections(List<HpcMetadataEntryParam> metadataQueries)
     {
-    	logger.info("Invoking RS: GET /collection/" + metadataEntryQueries);
+    	logger.info("Invoking RS: GET /collection/" + metadataQueries);
     	
     	AuthorizationPolicy policy = PhaseInterceptorChain.getCurrentMessage().get(AuthorizationPolicy.class);
     	
-    	HpcDataManagementEntitiesDTO collections = new HpcDataManagementEntitiesDTO();
+    	HpcDataManagementEntitiesDTO collections = null;
 		try {
 			 // Validate the metadata entries input (JSON) was parsed successfully.
 			 List<HpcMetadataEntry> queries = new ArrayList<HpcMetadataEntry>();
-			 for(HpcMetadataEntryParam metadataEntryQuery : metadataEntryQueries) {
-			     if(metadataEntryQuery.getJSONParsingException() != null) {
-				    throw metadataEntryQuery.getJSONParsingException();
+			 for(HpcMetadataEntryParam metadataQuery : metadataQueries) {
+			     if(metadataQuery.getJSONParsingException() != null) {
+				    throw metadataQuery.getJSONParsingException();
 			     }
-			     queries.add(metadataEntryQuery);
+			     queries.add(metadataQuery);
 			 }
 			 
-			 dataManagementBusService.getCollections(policy.getUserName(), queries);
+			 collections = dataManagementBusService.getCollections(policy.getUserName(), queries);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /collection/" + metadataEntryQueries + 
+			    logger.error("RS: GET /collection/" + metadataQueries + 
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 		
-		HpcDataManagementEntity ent = new HpcDataManagementEntity();
-		ent.setId(1002);
-		ent.setPath("/folder-a/folder-b");
-		collections.getEntities().add(ent);
-		
-		HpcDataManagementEntity ent1 = new HpcDataManagementEntity();
-		ent1.setId(100255);
-		ent1.setPath("/folder-c/folder-d");
-		collections.getEntities().add(ent1);
-		
-		return okResponse(collections, false);
+		return okResponse(collections, true);
     }
     
     @Override
