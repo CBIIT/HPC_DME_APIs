@@ -228,19 +228,31 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     {
     	List<AVUQueryElement> queryElements = new ArrayList<AVUQueryElement>();
     	try {
-             queryElements.add(
-    		      AVUQueryElement.instanceForValueQuery(AVUQueryPart.ATTRIBUTE, AVUQueryOperatorEnum.EQUAL, 
-    				      metadataEntryQueries.get(0).getAttribute()));
-    	
+    		 // Prepare the Query.
+    		 for(HpcMetadataEntry metadataQuery : metadataEntryQueries) {
+    			 queryElements.add(
+    		          AVUQueryElement.instanceForValueQuery(AVUQueryPart.ATTRIBUTE, 
+    		        		                                AVUQueryOperatorEnum.EQUAL, 
+    		    		                                    metadataQuery.getAttribute()));
+    			 queryElements.add(
+       		          AVUQueryElement.instanceForValueQuery(AVUQueryPart.VALUE, 
+       		        		                                AVUQueryOperatorEnum.EQUAL, 
+       		        		                                metadataQuery.getValue()));
+    		 }
+    		 
+    		 // Execute the query.
              List<Collection> collections = 
              irodsConnection.getCollectionAO(dataManagementAccount).findDomainByMetadataQuery(queryElements);
              
+             // Map the query results to a Domain POJO.
              List<HpcDataManagementEntity> entities = new ArrayList<HpcDataManagementEntity>();
-             for(Collection collection : collections) {
-            	 HpcDataManagementEntity entity = new HpcDataManagementEntity();
-            	 entity.setId(collection.getCollectionId());
-            	 entity.setPath(collection.getAbsolutePath());
-            	 entities.add(entity);
+             if(collections != null) {
+                for(Collection collection : collections) {
+            	    HpcDataManagementEntity entity = new HpcDataManagementEntity();
+            	    entity.setId(collection.getCollectionId());
+            	    entity.setPath(collection.getAbsolutePath());
+            	    entities.add(entity);
+                }
              }
              
              return entities;
@@ -250,7 +262,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} finally {
-		          irodsConnection.closeConnection(dataManagementAccount);
+		           irodsConnection.closeConnection(dataManagementAccount);
 		}
     }
     
