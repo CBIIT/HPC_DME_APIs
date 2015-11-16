@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
+import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -196,5 +197,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToDataObject(dataManagementAccount, 
        			                                    path, metadataEntries);    	
+    }
+    
+    @Override
+    public List<HpcDataManagementEntity> getCollections(
+    		    HpcIntegratedSystemAccount dataManagementAccount,
+		        List<HpcMetadataEntry> metadataEntryQueries) throws HpcException
+    {
+    	return dataManagementProxy.getCollections(dataManagementAccount,
+    			                                  metadataEntryQueries);
     }
 }

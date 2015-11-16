@@ -1,9 +1,9 @@
 package test.gov.nih.nci.hpc.web;
 
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccount;
-import gov.nih.nci.hpc.domain.user.HpcDataTransferAccountType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
-import gov.nih.nci.hpc.dto.user.HpcUserRegistrationDTO;
+import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.web.Application;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 
@@ -49,14 +49,14 @@ public class HpcUserControllerTest {
 
 	@Test
 	public void register() throws Exception {
-		HpcUserRegistrationDTO dto = new HpcUserRegistrationDTO();
+		HpcUserDTO dto = new HpcUserDTO();
 		HpcNciAccount account = new HpcNciAccount();
 		account.setFirstName("Prasad");
 		account.setLastName("Konka");
 		account.setUserId("konkapv3");
 		dto.setNciAccount(account);
-		HpcDataTransferAccount trAccount = new HpcDataTransferAccount();
-		trAccount.setAccountType(HpcDataTransferAccountType.GLOBUS);
+		HpcIntegratedSystemAccount trAccount = new HpcIntegratedSystemAccount();
+		trAccount.setIntegratedSystem(HpcIntegratedSystem.GLOBUS);
 		trAccount.setUsername("pkonka");
 		trAccount.setPassword("IpgSvg12!@");
 		dto.setDataTransferAccount(trAccount);
@@ -141,11 +141,11 @@ public class HpcUserControllerTest {
 */
 	}
 
-	private void writeXML(HpcUserRegistrationDTO dto) {
+	private void writeXML(HpcUserDTO dto) {
 		try {
 
 			JAXBContext jaxbContext = JAXBContext
-					.newInstance(HpcUserRegistrationDTO.class);
+					.newInstance(HpcUserDTO.class);
 			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 
 			// output pretty printed

@@ -66,8 +66,8 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcFileSet']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcFileSet"/>
 		</jxb:bindings>
-		<jxb:bindings node="//xsd:complexType[@name='HpcManagedEntity']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcManagedEntity"/>
+		<jxb:bindings node="//xsd:complexType[@name='HpcDataManagementEntity']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity"/>
 		</jxb:bindings>
     </jxb:bindings>
     

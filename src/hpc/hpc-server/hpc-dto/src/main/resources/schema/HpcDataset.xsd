@@ -175,12 +175,12 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 	
-	<!--  A collection of Managed Entities -->
-	<xsd:element name="HpcManagedEntityCollectionDTO">
+	<!--  A collection of Data Management Entities -->
+	<xsd:element name="HpcDataManagementEntitiesDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="managedEntities" 
-				             type="hpc-domain-dataset:HpcManagedEntity" 
+				<xsd:element name="entities" 
+				             type="hpc-domain-dataset:HpcDataManagementEntity" 
 				             minOccurs="0" maxOccurs="unbounded"/>
 			</xsd:sequence>
 		</xsd:complexType>
