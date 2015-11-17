@@ -16,9 +16,10 @@ import gov.nih.nci.hpc.exception.HpcAuthenticationException;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.io.IOException;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.bind.DatatypeConverter;
 
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.message.Message;
@@ -79,7 +80,7 @@ public class HpcAuthenticationInterceptor
             String[] authParts = authString.split("\\s+");
             String authInfo = authParts[1];
             // Decode the data back to original string
-             byte[] bytes = Base64.getDecoder().decode(authInfo);
+             byte[] bytes = DatatypeConverter.parseBase64Binary(authInfo);
 	        String decodedAuth = new String(bytes);
 	        String[] loginParts = authString.split(":");
 	        String userId = loginParts[0];
