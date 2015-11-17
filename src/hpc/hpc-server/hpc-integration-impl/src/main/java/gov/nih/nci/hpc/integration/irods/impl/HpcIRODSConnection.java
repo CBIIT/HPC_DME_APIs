@@ -51,6 +51,7 @@ public class HpcIRODSConnection
 	private Integer irodsPort = null;
 	private String irodsZone = null;
 	private String irodsResource = null;
+	private AuthScheme irodsAuthentication = null;
 	
     // The logger instance.
 	private final Logger logger = 
@@ -63,15 +64,23 @@ public class HpcIRODSConnection
     /**
      * Constructor for Spring Dependency Injection.
      * 
+     * @param irodsHost The iRODS server host name / IP.
+     * @param irodsPort The iRODS server port.
+     * @param irodsZone The iRODS zone.
+     * @param irodsResource The iRODS resource to use.
+     * @param irodsAuthentication The iRODS authentication method to use.
+     * 
      * @throws HpcException If it failed to instantiate the iRODS file system.
      */
     private HpcIRODSConnection(String irodsHost, Integer irodsPort, 
-    		                   String irodsZone, String irodsResource) throws HpcException
+    		                   String irodsZone, String irodsResource,
+    		                   AuthScheme irodsAuthentication) throws HpcException
     {
     	if(irodsHost == null || irodsHost.isEmpty() ||
     	   irodsPort == null ||
     	   irodsZone == null || irodsZone.isEmpty() ||
-    	   irodsResource == null || irodsResource.isEmpty()) {
+    	   irodsResource == null || irodsResource.isEmpty() ||
+    	   irodsAuthentication == null) {
     	   throw new HpcException("Null or empty iRODS connection attributes",
                                   HpcErrorType.SPRING_CONFIGURATION_ERROR);	
     	}
@@ -79,6 +88,7 @@ public class HpcIRODSConnection
     	this.irodsPort = irodsPort;
     	this.irodsZone = irodsZone;
     	this.irodsResource = irodsResource;
+    	this.irodsAuthentication = irodsAuthentication;
     	
 		try {
 		     irodsFileSystem = IRODSFileSystem.instance();
@@ -206,11 +216,13 @@ public class HpcIRODSConnection
     private IRODSAccount getIrodsAccount(HpcIntegratedSystemAccount dataManagementAccount) throws HpcException
     {
     	try {
-    		IRODSAccount irodsAccount = IRODSAccount.instance(irodsHost, irodsPort, 
-    	    		                      dataManagementAccount.getUsername(), 
-    	    		                      dataManagementAccount.getPassword(), "", 
-	    	                              irodsZone, irodsResource);
-    		irodsAccount.setAuthenticationScheme(AuthScheme.PAM);
+    		IRODSAccount irodsAccount = 
+    				     IRODSAccount.instance(irodsHost, irodsPort, 
+    	    		                           dataManagementAccount.getUsername(), 
+    	    		                           dataManagementAccount.getPassword(), "", 
+	    	                                   irodsZone, irodsResource);
+    		
+    		irodsAccount.setAuthenticationScheme(irodsAuthentication);
     		IRODSSession session = new IRODSSession(new IRODSSimpleProtocolManager());
     		
     		AuthResponse authResponse = new IRODSAccessObjectFactoryImpl(session).authenticateIRODSAccount(irodsAccount);
