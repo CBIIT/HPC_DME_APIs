@@ -148,6 +148,21 @@
           							<noprompt>true</noprompt>
         						</configuration>
           					</execution>     					
+          					<execution>
+          						<id>importiRODSServerCertificate</id>
+            					<goals>
+            						<goal>importCertificate</goal>
+            					</goals>
+            					<phase>generate-resources</phase>
+            					<configuration>
+            						<keystore>src/main/resources/keystore.jks</keystore>
+            						<file>src/main/resources/irods_server.crt</file>
+          							<storepass>***REMOVED***</storepass>
+          							<alias>hpc-irods-server</alias>
+          							<trustcacerts>true</trustcacerts>
+          							<noprompt>true</noprompt>
+        						</configuration>
+          					</execution>     					
         				</executions>
       				</plugin>
       			</plugins>

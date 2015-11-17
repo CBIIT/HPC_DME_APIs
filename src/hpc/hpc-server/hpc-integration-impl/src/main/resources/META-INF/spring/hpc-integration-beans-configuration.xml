@@ -94,7 +94,7 @@
 	<!--  HPC iRODS Conenction -->
 	<bean id="hpcIRODSConnection" 
 	      class="gov.nih.nci.hpc.integration.irods.impl.HpcIRODSConnection" >
-	      <constructor-arg value="52.7.244.225" index="0" />
+	      <constructor-arg value="fr-s-hpcdm-gp-d.ncifcrf.gov" index="0" />
 	      <constructor-arg value="1247" index="1" />
 	      <constructor-arg value="tempZone" index="2" />
 	      <constructor-arg value="demoResc" index="3" />
