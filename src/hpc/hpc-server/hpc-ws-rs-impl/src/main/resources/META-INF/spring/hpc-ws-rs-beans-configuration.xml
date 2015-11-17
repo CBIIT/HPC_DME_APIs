@@ -94,7 +94,9 @@
 	
 	<!-- Authentication Interceptor -->
 	<bean id="hpcAuthenticationInterceptor" 
-	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAuthenticationInterceptor"/>
+	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAuthenticationInterceptor">
+	      <constructor-arg value="${hpc.ws.rs.ldapAuthentication}" />
+	</bean>
 	      
 	<!-- API Version Interceptor -->
 	<bean id="hpcAPIVersionInterceptor" 
@@ -129,7 +131,6 @@
       	<jaxrs:outInterceptors>
       		<ref bean="hpcAPIVersionInterceptor" />
       	</jaxrs:outInterceptors>
-      
 	</jaxrs:server>
 	
 	<!-- CXF JAX-RS Secured Server Config -->
@@ -146,7 +147,7 @@
 			<ref bean="hpcExceptionMapper" />
 		</jaxrs:providers>
 		<jaxrs:inInterceptors>
-			<!-- <ref bean="hpcAuthenticationInterceptor" /> -->
+			<ref bean="hpcAuthenticationInterceptor" /> 
       </jaxrs:inInterceptors>
 	</jaxrs:server>
 </beans>
