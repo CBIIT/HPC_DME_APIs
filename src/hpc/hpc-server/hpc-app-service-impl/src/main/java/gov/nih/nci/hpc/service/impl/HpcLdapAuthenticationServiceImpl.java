@@ -20,7 +20,7 @@ import gov.nih.nci.hpc.service.HpcLdapAuthenticationService;
  * </p>
  *
  * @author <a href="mailto:prasad.konka@nih.gov">Prasad Konka</a>
- * @version $Id:  $
+ * @version $Id$
  */
 public class HpcLdapAuthenticationServiceImpl implements HpcLdapAuthenticationService {
 
