@@ -11,17 +11,15 @@
 package gov.nih.nci.hpc.ws.rs.interceptor;
 
 import gov.nih.nci.hpc.bus.HpcUserBusService;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
 import gov.nih.nci.hpc.exception.HpcAuthenticationException;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.DatatypeConverter;
-
-import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
@@ -47,17 +45,32 @@ public class HpcAuthenticationInterceptor
 	@Autowired
     private HpcUserBusService userBusService = null;
 	
+	// LDAP authentication on/off switch.
+	private boolean ldapAuthentication = true;
+	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
 
     /**
-     * Default Constructor.
+     * Default Constructor disabled.
      * 
      */
-    public HpcAuthenticationInterceptor() 
+    private HpcAuthenticationInterceptor() throws HpcException
+    {
+    	super(Phase.RECEIVE);
+        throw new HpcException("Constructor disabled",
+        	                   HpcErrorType.SPRING_CONFIGURATION_ERROR); 
+    }
+    
+    /**
+     * Constructoe for Sprind Dependency Injection.
+     * 
+     */
+    private HpcAuthenticationInterceptor(boolean ldapAuthentication) 
     {
         super(Phase.RECEIVE);
+        this.ldapAuthentication = ldapAuthentication;
     }
     
     //---------------------------------------------------------------------//
@@ -71,31 +84,52 @@ public class HpcAuthenticationInterceptor
     @Override
     public void handleMessage(Message message) 
     {
-    	Map<String, List<String>> headers = (Map<String, List<String>>)message.get(Message.PROTOCOL_HEADERS);
+    	// Authenticate the caller.
+    	String userId = authenticate(message);
+    }
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//
+    
+    private String authenticate(Message message)
+    {
+    	@SuppressWarnings("unchecked")
+		Map<String, List<String>> headers = (Map<String, List<String>>)message.get(Message.PROTOCOL_HEADERS);
+    	
         List<String> auth = headers.get("authorization");
-        if(auth == null || auth.size() == 0)
-        	throw new HpcAuthenticationException("No user credentials provided");
-        try {
-            String authString = auth.get(0);
-            String[] authParts = authString.split("\\s+");
-            String authInfo = authParts[1];
-            // Decode the data back to original string
-            byte[] bytes = DatatypeConverter.parseBase64Binary(authInfo);
-	        String decodedAuth = new String(bytes);
-	        String[] loginParts = decodedAuth.split(":");
-	        String userId = loginParts[0];
-	        String password = loginParts[1];
-        
-	        // Authenticate the client.
-        	HpcUserCredentialsDTO dto = new HpcUserCredentialsDTO();
-        	dto.setUserName(userId);
-        	dto.setPassword(password);
-        	 if(!userBusService.authenticate(dto)) {
-    		    throw new HpcAuthenticationException("Invalid user credentials");
-    	     }
-    		
-        } catch(HpcException e) {
-    	        throw new HpcAuthenticationException("Authentication failed", e);  
+        if(auth == null || auth.size() == 0) {
+           throw new HpcAuthenticationException("No user credentials provided");
         }
+
+        // Extract the user-id and password from the authorization header parameter.
+        String authString = auth.get(0);
+        String[] authParts = authString.split("\\s+");
+        String authInfo = authParts[1];
+        // Decode the data back to original string
+        byte[] bytes = Base64.getDecoder().decode(authInfo);
+        String decodedAuth = new String(bytes);
+        String[] loginParts = decodedAuth.split(":");
+        String userId = loginParts[0];
+        String password = loginParts[1];
+	           
+	    // Authenticate the caller (LDAP).
+	    if(ldapAuthentication) {
+           HpcUserCredentialsDTO dto = new HpcUserCredentialsDTO();
+           dto.setUserName(userId);
+           dto.setPassword(password);
+           try {
+        	    if(!userBusService.authenticate(dto)) {
+        	       throw new HpcAuthenticationException("Invalid NCI user credentials"); 
+        	    }
+	         
+           } catch(Throwable t) {
+        	       throw (t instanceof HpcAuthenticationException) ? 
+        	    		  (HpcAuthenticationException) t :
+        	    	      new HpcAuthenticationException("LDAP authentication failed", t);
+           }
+	    }
+	    
+	    return userId;
     }
 } 
