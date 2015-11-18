@@ -29,35 +29,31 @@ public interface HpcDataTransferService
     /**
      * Request Data (file) Transfer.
      *
-     * @param dataTransferAccount The data transfer account.
      * @param dataTransferLocations The file source/destination.
      * @return A transfer report.
      * 
      * @throws HpcException
      */
     public HpcDataTransferReport 
-              transferData(HpcIntegratedSystemAccount dataTransferAccount,
-            		       HpcDataTransferLocations dataTransferLocations) 
+              transferData(HpcDataTransferLocations dataTransferLocations) 
     		              throws HpcException;
 
     /**
      * Get data transfer request updated status.
      *
-     * @param dataTransferAccount The account used to transfer the request.
      * @param dataTransferId The data transfer request ID.
      * @return A transfer report.
      * 
      * @throws HpcException
      */
     public HpcDataTransferReport 
-              getTransferRequestStatus(HpcIntegratedSystemAccount dataTransferAccount,
-            		                   String dataTransferId) 
+              getTransferRequestStatus(String dataTransferId) 
     		                          throws HpcException; 
     
     /**
      * Validate a data transfer account.
      *
-     * @param dataTransferAccount The account to use for the transfer.
+     * @param dataTransferAccount The account to validate.
      * @return True if the account is valid, or false otherwise.
      */
     public boolean validateDataTransferAccount(
