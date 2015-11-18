@@ -3,10 +3,10 @@ package gov.nih.nci.hpc.cli.commands;
 import java.util.logging.Logger;
 
 import gov.nih.nci.hpc.cli.HPCBatch;
+import gov.nih.nci.hpc.cli.HPCCSVFile;
 import gov.nih.nci.hpc.cli.HPCFile;
 import gov.nih.nci.hpc.cli.IrodsClient;
 import gov.nih.nci.hpc.cli.domain.HPCDataObject;
-import gov.nih.nci.hpc.cli.util.HPCCSVFile;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
 
 import javax.xml.bind.DatatypeConverter;
@@ -27,6 +27,9 @@ public class HPCCommands implements CommandMarker {
 	private HpcConfigProperties configProperties;
 	@Autowired
 	private IrodsClient irodsClient;
+	@Autowired
+	private HPCCSVFile hpcBatch;
+	
 	protected final Logger LOG = Logger.getLogger(getClass().getName());
 
 	@CliAvailabilityIndicator({"hpcput"})
@@ -94,7 +97,7 @@ public class HPCCommands implements CommandMarker {
 	public String hpcbatch(
 		@CliOption(key = { "source" }, mandatory = false, help = "Source location for transfer") final String source)
 		{
-			HPCCSVFile hpcBatch = new HPCCSVFile();
+			//HPCCSVFile hpcBatch = new HPCCSVFile();
 
 		return  hpcBatch.parseBatchFile(source);
 	}	
