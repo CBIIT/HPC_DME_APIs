@@ -50,11 +50,26 @@ public interface HpcUserBusService
      * Authenticate User by NCI LDAP credentials.
      *
      * @param credentials The user's NCI user id and password.
-     * @return boolean.
+     * @param ldapAuthentication Set to true if LDAP authentication should be performed.
+     * @return boolean Returns true if the user was successfully authenticated.
      * 
      * @throws HpcException
      */
-    public boolean authenticate(HpcUserCredentialsDTO credentials) throws HpcException;    
+    public boolean authenticate(HpcUserCredentialsDTO credentials) throws HpcException;  
+    
+    /**
+     * Authenticate User and populate the request context with the user.
+     * LDAP authentication is optional.
+     *
+     * @param nciUserId The user ID.
+     * @param password The password.
+     * @param ldapAuthentication LDAP authentication will be skipped if this is set to false
+     * @return boolean Returns true if the user was successfully authenticated.
+     * 
+     * @throws HpcException
+     */
+    public boolean authenticate(String nciUserId, String password, boolean ldapAuthentication)
+    		                   throws HpcException; 
 }
 
  
