@@ -32,71 +32,58 @@ public interface HpcDataManagementService
     /**
      * Create a collection's directory.
      *
-     * @param dataManagementAccount The Data Management account.
      * @param path The collection path.
      * 
      * @throws HpcException
      */
-    public void createDirectory(HpcIntegratedSystemAccount dataManagementAccount,
-    		                    String path) 
-    		                   throws HpcException;
+    public void createDirectory(String path) throws HpcException;
     
     /**
      * Create a data object's file.
      *
-     * @param dataManagementAccount The Data Management account.
      * @param path The data object path.
      * 
      * @throws HpcException
      */
-    public void createFile(HpcIntegratedSystemAccount dataManagementAccount,
-    		               String path) 
-    		              throws HpcException;
+    public void createFile(String path) throws HpcException;
 
     /**
      * Add metadata to a collection.
      *
-     * @param dataManagementAccount The Data Management account.
      * @param path The collection path.
      * @param metadataEntries The metadata entries to add.
      * 
      * @throws HpcException
      */
-    public void addMetadataToCollection(HpcIntegratedSystemAccount dataManagementAccount,
-    		                            String path, 
+    public void addMetadataToCollection(String path, 
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException; 
     
     /**
      * Add metadata to a data object.
      *
-     * @param dataManagementAccount The Data Management account.
      * @param path The data object path.
      * @param metadataEntries The metadata entries to add.
      * 
      * @throws HpcException
      */
-    public void addMetadataToDataObject(HpcIntegratedSystemAccount dataManagementAccount,
-    		                            String path, 
+    public void addMetadataToDataObject(String path, 
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException; 
     
     /**
      * Create and attach file (physical) location and source metadata to a data object.
      *
-     * @param dataManagementAccount The Data Management account.
      * @param path The data object path.
      * @param fileLocation The physical file location.
      * @param fileSource The source location of the file.
      * 
      * @throws HpcException
      */
-    public void addFileLocationsMetadataToDataObject(
-    		           HpcIntegratedSystemAccount dataManagementAccount,
-    		           String path, 
-    		           HpcFileLocation fileLocation,
-    		           HpcFileLocation fileSource) 
-    		           throws HpcException; 
+    public void addFileLocationsMetadataToDataObject(String path, 
+    		                                         HpcFileLocation fileLocation,
+    		                                         HpcFileLocation fileSource) 
+    		                                        throws HpcException; 
     
     /**
      * Get collections by metadata query.
@@ -107,7 +94,6 @@ public interface HpcDataManagementService
      * @throws HpcException
      */
     public List<HpcDataManagementEntity> getCollections(
-    		    HpcIntegratedSystemAccount dataManagementAccount,
     		    List<HpcMetadataEntry> metadataEntryQueries) throws HpcException;
 }
 

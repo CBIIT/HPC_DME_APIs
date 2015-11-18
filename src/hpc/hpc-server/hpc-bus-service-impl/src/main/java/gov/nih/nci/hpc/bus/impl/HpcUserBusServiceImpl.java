@@ -13,6 +13,9 @@ package gov.nih.nci.hpc.bus.impl;
 import gov.nih.nci.hpc.bus.HpcUserBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -121,6 +124,56 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	return authService.authenticate(credentials.getUserName(), credentials.getPassword());
     }
     
+    @Override
+    public boolean authenticate(String nciUserId, String password, boolean ldapAuthentication) 
+                               throws HpcException
+    {
+    	// Input Validation
+    	if(nciUserId == null || password == null) {
+      	   throw new HpcException("User credentials (user-id and/or password) not provided",
+      			                  HpcErrorType.INVALID_REQUEST_INPUT); 	
+      	}
+    	
+    	// LDAP authentication.
+    	boolean userAuthenticated = ldapAuthentication ? 
+    			                    authService.authenticate(nciUserId, password) : false;
+                    
+    	// Get the HPC user.
+    	HpcUser user = null;
+    	try {
+    	     user = userService.getUser(nciUserId);
+			
+    	} catch(HpcException e) {
+    	}
+    	
+    	if(user == null) {
+    	   // This is a request from a user that is not registered with HPC.
+    	   logger.info("Service call for a user that is not registered with HPC. NCI User-id: " + nciUserId);
+    	
+    	   user = new HpcUser();
+ 		   HpcNciAccount nciAccount = new HpcNciAccount();
+ 		   nciAccount.setUserId("Unknown-NCI-User-ID");
+     	   user.setNciAccount(nciAccount);
+     	   user.setDataManagementAccount(null);
+     	   user.setDataTransferAccount(null);
+        }
+    	
+    	// If the user was authenticated w/ LDAP, then we use the NCI credentials to access
+    	// Data Management (iRODS).
+    	if(userAuthenticated) {
+    	   HpcIntegratedSystemAccount dataManagementAccount = new HpcIntegratedSystemAccount();
+    	   dataManagementAccount.setIntegratedSystem(HpcIntegratedSystem.IRODS);
+    	   dataManagementAccount.setUsername(nciUserId);
+    	   dataManagementAccount.setPassword(password);
+    	   user.setDataManagementAccount(dataManagementAccount);
+    	}
+    	
+    	// Populate the request context with the HPC user.
+    	userService.setRequestInvoker(user);
+    	
+    	return ldapAuthentication ? userAuthenticated : true;	                
+   
+    }
 }
 
  

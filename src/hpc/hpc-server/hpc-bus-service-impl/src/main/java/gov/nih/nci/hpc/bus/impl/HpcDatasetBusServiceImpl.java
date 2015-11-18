@@ -27,7 +27,6 @@ import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.domain.model.HpcProject;
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAssociateFileProjectsDTO;
@@ -782,15 +781,9 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 							dataTransferRequest.getStatus() == HpcDataTransferStatus.FAILED ||
 									dataTransferRequest.getStatus() == HpcDataTransferStatus.INITIATED)
 			{
-				        // Get the data transfer account to use in checking status.
-    		            HpcIntegratedSystemAccount dataTransferAccount = 
- 	    		               userService.getUser(dataTransferRequest.getRequesterNciUserId()).
- 	    		                           getDataTransferAccount();
-    		
     		            // Get updated report from data transfer.
 			            HpcDataTransferReport dataTransferReport = 
 			            	   dataTransferService.getTransferRequestStatus(
-			            			                  dataTransferAccount,
 			            			                  dataTransferRequest.getDataTransferId());
 			            
 			            // Update the upload request.
@@ -834,7 +827,6 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 			
 			// Transfer the file. 
     		String registrarNciId = uploadRequest.getMetadata().getRegistrarNciUserId();
-			HpcUser user = userService.getUser(registrarNciId);
     		
 			logger.debug("Submitting data transfer request: " + 
 			             uploadRequest.getLocations());
@@ -842,8 +834,7 @@ public class HpcDatasetBusServiceImpl implements HpcDatasetBusService
 			uploadRequest.getLocations().getDestination().setPath(dataset.getFileSet().getName());
 			try {				
 				 dataTransferReport =
-                 dataTransferService.transferData(user.getDataTransferAccount(),
-                		                          uploadRequest.getLocations());				 
+                 dataTransferService.transferData(uploadRequest.getLocations());				 
 			} catch(HpcException e) {
 				    // Failed to upload file. Log and continue.
 					logger.info("Failed to upload file: " + uploadRequest, e);
