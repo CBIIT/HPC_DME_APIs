@@ -151,6 +151,12 @@ public class HpcUserServiceImpl implements HpcUserService
     	   userDAO.upsert(user);
     	}
     }
+    
+    @Override
+    public void setRequestInvoker(HpcUser user)
+    {
+    	HpcRequestContext.setRequestInvoker(user);
+    }
 }
 
  

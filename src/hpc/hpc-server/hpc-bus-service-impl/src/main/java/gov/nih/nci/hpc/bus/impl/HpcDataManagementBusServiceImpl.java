@@ -13,9 +13,7 @@ package gov.nih.nci.hpc.bus.impl;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.dto.dataset.HpcDataManagementEntitiesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -40,14 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusService
 {  
-    //---------------------------------------------------------------------//
-    // Constants
-    //---------------------------------------------------------------------//    
-    
-    // Registrar NCI user-id attribute name.
-	private final static String REGISTRAR_USER_ID_ATTRIBUTE = 
-			                    "NCI user-id of the User registering the File (Registrar)"; 
-	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -101,20 +91,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Get the HPC user calling this service.
-		HpcUser user = userService.getUser(
-		               getRegistrarUserId(metadataEntries));
-		if(user == null || user.getDataManagementAccount() == null) {
-		   throw new HpcException("Unknown user or invalid data management account",
-				                  HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
-		}
-    	
     	// Create a collection directory.
-    	dataManagementService.createDirectory(user.getDataManagementAccount(), path);
+    	dataManagementService.createDirectory(path);
     	
     	// Attach the metadata.
-    	dataManagementService.addMetadataToCollection(user.getDataManagementAccount(), 
-    			                                      path, metadataEntries);
+    	dataManagementService.addMetadataToCollection(path, metadataEntries);
     }
     
     @Override
@@ -132,15 +113,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Get the HPC user calling this service.
-		HpcUser user = userService.getUser(userId);
-		if(user == null || user.getDataManagementAccount() == null) {
-			   throw new HpcException("Unknown user or invalid data management account",
-					                  HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
-		}
-		
-    	return toDTO(dataManagementService.getCollections(user.getDataManagementAccount(),
-    			                                          metadataEntryQueries));
+    	return toDTO(dataManagementService.getCollections(metadataEntryQueries));
     }
     
     @Override
@@ -157,10 +130,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Get the HPC user calling this service.
-		HpcUser user = userService.getUser(
-		               getRegistrarUserId(dataObjectRegistrationDTO.getMetadataEntries()));
-    	
     	// Append the path to the destination's base path (if a base path provided).
     	if(dataObjectRegistrationDTO.getLocations() != null &&
     	   dataObjectRegistrationDTO.getLocations().getDestination() != null) {
@@ -170,21 +139,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Create a data object file (in the data management system).
-    	dataManagementService.createFile(user.getDataManagementAccount(), path);
+    	dataManagementService.createFile(path);
     	
 		// Transfer the file. 
-        dataTransferService.transferData(user.getDataTransferAccount(),
-        		                         dataObjectRegistrationDTO.getLocations());				 
+        dataTransferService.transferData(dataObjectRegistrationDTO.getLocations());				 
     	
     	// Attach the user provided metadata.
     	dataManagementService.addMetadataToDataObject(
-    			                 user.getDataManagementAccount(),
     			                 path, 
     			                 dataObjectRegistrationDTO.getMetadataEntries());
     	
     	// Create and attach the file source and location metadata.
     	dataManagementService.addFileLocationsMetadataToDataObject(
-    			                 user.getDataManagementAccount(), path, 
+    			                 path, 
     			                 dataObjectRegistrationDTO.getLocations().getDestination(),
     			                 dataObjectRegistrationDTO.getLocations().getSource()); 
     }
@@ -192,35 +159,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
-    
-    /**
-     * Extract the registrar NCI user-id from the metadata.
-     *
-     * @param metadataEntries A collection of metadata entries.
-     * @return The Registrar NCI user-id.
-     * 
-     * @throws HpcException If the metadata is not in the list.
-     */
-    private String getRegistrarUserId(List<HpcMetadataEntry> metadataEntries) 
-    		                         throws HpcException
-    {
-    	String registrarUserId = null;
-    	if(metadataEntries != null) {
-    	   for(HpcMetadataEntry metadataEntry : metadataEntries) {
-    		   if(metadataEntry.getAttribute().equals(REGISTRAR_USER_ID_ATTRIBUTE)) {
-    			  registrarUserId = metadataEntry.getValue();
-    			  break;
-    		   }
-    	   }
-    	}
-    	
-    	if(registrarUserId == null) {
-    	   throw new HpcException("Registrar NCI user-id not provided. Metadata \"" + 
-    			                  REGISTRAR_USER_ID_ATTRIBUTE + "\" is missing",
-	                              HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
-    	return registrarUserId;
-    }
     
     /**
      * Create a data management entities DTO from a domain object.

@@ -10,13 +10,15 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidIntegratedSystemAccount;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
@@ -85,18 +87,17 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     //---------------------------------------------------------------------//  
 
     @Override
-    public void createDirectory(HpcIntegratedSystemAccount dataManagementAccount,
-    		                    String path) 
+    public void createDirectory(String path) 
     		                   throws HpcException
     {
-    	dataManagementProxy.createCollectionDirectory(dataManagementAccount, path);
+    	dataManagementProxy.createCollectionDirectory(getDataManagementAccount(), 
+    			                                      path);
     }
     
     @Override
-    public void createFile(HpcIntegratedSystemAccount dataManagementAccount,
-    		               String path) 
-    		              throws HpcException
+    public void createFile(String path) throws HpcException
     {
+    	HpcIntegratedSystemAccount dataManagementAccount = getDataManagementAccount();
     	// Check the path is available.
     	if(dataManagementProxy.exists(dataManagementAccount, path)) {
     		throw new HpcException("Path already exists: " + path, 
@@ -111,8 +112,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
 
     @Override
-    public void addMetadataToCollection(HpcIntegratedSystemAccount dataManagementAccount,
-    		                            String path, 
+    public void addMetadataToCollection(String path, 
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException
     {
@@ -126,13 +126,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	metadataValidator.validateCollectionMetadata(metadataEntries);
        	
        	// Add Metadata to the DM system.
-       	dataManagementProxy.addMetadataToCollection(dataManagementAccount,
+       	dataManagementProxy.addMetadataToCollection(getDataManagementAccount(),
        			                                    path, metadataEntries);
     }
     
     @Override
-    public void addMetadataToDataObject(HpcIntegratedSystemAccount dataManagementAccount,
-    		                            String path, 
+    public void addMetadataToDataObject(String path, 
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException
     {
@@ -146,13 +145,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	metadataValidator.validateDataObjectMetadata(metadataEntries);
        	
        	// Add Metadata to the DM system.
-       	dataManagementProxy.addMetadataToDataObject(dataManagementAccount, 
+       	dataManagementProxy.addMetadataToDataObject(getDataManagementAccount(), 
        			                                    path, metadataEntries);
     }
     
     @Override
     public void addFileLocationsMetadataToDataObject(
-    		           HpcIntegratedSystemAccount dataManagementAccount,
                        String path, 
                        HpcFileLocation fileLocation,
     		           HpcFileLocation fileSource) 
@@ -195,16 +193,36 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	metadataEntries.add(sourcePathMetadata);
        	
        	// Add Metadata to the DM system.
-       	dataManagementProxy.addMetadataToDataObject(dataManagementAccount, 
+       	dataManagementProxy.addMetadataToDataObject(getDataManagementAccount(), 
        			                                    path, metadataEntries);    	
     }
     
     @Override
     public List<HpcDataManagementEntity> getCollections(
-    		    HpcIntegratedSystemAccount dataManagementAccount,
 		        List<HpcMetadataEntry> metadataEntryQueries) throws HpcException
     {
-    	return dataManagementProxy.getCollections(dataManagementAccount,
+    	return dataManagementProxy.getCollections(getDataManagementAccount(),
     			                                  metadataEntryQueries);
+    }
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//  
+	
+    /**
+     * Get the data management account from the request context.
+     *
+     * @throws HpcException If the account is not set or invalid.
+     */
+    private HpcIntegratedSystemAccount getDataManagementAccount() throws HpcException
+    {
+    	HpcUser user = HpcRequestContext.getRequestInvoker();
+    	if(user == null || 
+    	   !isValidIntegratedSystemAccount(user.getDataManagementAccount())) {
+	       throw new HpcException("Unknown user or invalid data management account",
+			                      HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
+    	}
+    	
+    	return user.getDataManagementAccount();
     }
 }

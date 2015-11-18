@@ -10,9 +10,12 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProvider;
@@ -65,18 +68,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     
     @Override
     public HpcDataTransferReport 
-                  transferData(HpcIntegratedSystemAccount dataTransferAccount,
-                		       HpcDataTransferLocations dataTransferLocations) 
+                  transferData(HpcDataTransferLocations dataTransferLocations) 
 	                          throws HpcException
     {   
     	// Input validation.
-    	if(!HpcDomainValidator.isValidDataTransferLocations(dataTransferLocations) ||
-    	   !HpcDomainValidator.isValidIntegratedSystemAccount(dataTransferAccount)) {	
+    	if(!HpcDomainValidator.isValidDataTransferLocations(dataTransferLocations)) {	
     	   throw new HpcException("Invalid data transfer request input", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
         	
-  	    return dataTransferProxy.transferData(dataTransferAccount, dataTransferLocations);
+  	    return dataTransferProxy.transferData(getDataTransferAccount(), 
+  	    		                              dataTransferLocations);
     }
     
 	@Override
@@ -104,12 +106,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 
 	@Override   
 	public HpcDataTransferReport 
-	       getTransferRequestStatus(HpcIntegratedSystemAccount dataTransferAccount,
-	    		                    String dataTransferId) 
+	       getTransferRequestStatus(String dataTransferId) 
 		                           throws HpcException
     {	
 		try {
-             return dataTransferProxy.getTaskStatusReport(dataTransferAccount, 
+             return dataTransferProxy.getTaskStatusReport(getDataTransferAccount(), 
             		                                     dataTransferId);
         	 
 		} catch(Exception ex) {
@@ -117,5 +118,26 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     		         		           HpcErrorType.DATA_TRANSFER_ERROR);
         }
     }	
+	
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//  
+	
+    /**
+     * Get the data transfer account from the request context.
+     *
+     * @throws HpcException If the account is not set or invalid.
+     */
+    private HpcIntegratedSystemAccount getDataTransferAccount() throws HpcException
+    {
+    	HpcUser user = HpcRequestContext.getRequestInvoker();
+    	if(user == null || 
+    	   !isValidIntegratedSystemAccount(user.getDataTransferAccount())) {
+	       throw new HpcException("Unknown user or invalid data transfer account",
+			                      HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
+    	}
+    	
+    	return user.getDataTransferAccount();
+    }
 }
  
