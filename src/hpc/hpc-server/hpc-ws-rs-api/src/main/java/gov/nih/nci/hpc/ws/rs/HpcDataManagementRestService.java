@@ -12,7 +12,7 @@ package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.metadata.HpcMetadataEntryParam;
+import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 
 import java.util.List;
 
@@ -61,7 +61,7 @@ public interface HpcDataManagementRestService
 	@Produces("application/json,application/xml")
 	public Response getCollections(
 			           @QueryParam("metadataQuery")
-			           List<HpcMetadataEntryParam> metadataQueries);
+			           List<HpcMetadataQueryParam> metadataQueries);
 	
     /**
      * PUT Data object registration request.

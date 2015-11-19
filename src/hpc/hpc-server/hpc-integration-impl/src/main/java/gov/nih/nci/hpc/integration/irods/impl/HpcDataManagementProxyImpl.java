@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.integration.irods.impl;
 import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
@@ -224,25 +225,28 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     @Override
     public List<HpcDataManagementEntity> getCollections(
     		    HpcIntegratedSystemAccount dataManagementAccount,
-		        List<HpcMetadataEntry> metadataEntryQueries) throws HpcException
+    		    List<HpcMetadataQuery> metadataQueries) throws HpcException
     {
     	List<AVUQueryElement> queryElements = new ArrayList<AVUQueryElement>();
     	try {
     		 // Prepare the Query.
-    		 for(HpcMetadataEntry metadataQuery : metadataEntryQueries) {
+    		 for(HpcMetadataQuery metadataQuery : metadataQueries) {
+    			 AVUQueryOperatorEnum operator = valueOf(metadataQuery.getOperator());
+    			 
     			 queryElements.add(
     		          AVUQueryElement.instanceForValueQuery(AVUQueryPart.ATTRIBUTE, 
-    		        		                                AVUQueryOperatorEnum.EQUAL, 
+    		        		                                operator, 
     		    		                                    metadataQuery.getAttribute()));
     			 queryElements.add(
        		          AVUQueryElement.instanceForValueQuery(AVUQueryPart.VALUE, 
-       		        		                                AVUQueryOperatorEnum.EQUAL, 
+       		        		                                operator, 
        		        		                                metadataQuery.getValue()));
     		 }
     		 
-    		 // Execute the query.
+    		 // Execute the query w/ Case insensitive query.
              List<Collection> collections = 
-             irodsConnection.getCollectionAO(dataManagementAccount).findDomainByMetadataQuery(queryElements);
+             irodsConnection.getCollectionAO(dataManagementAccount).
+                             findDomainByMetadataQuery(queryElements, 0, true);
              
              // Map the query results to a Domain POJO.
              List<HpcDataManagementEntity> entities = new ArrayList<HpcDataManagementEntity>();
@@ -257,10 +261,13 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
              
              return entities;
              
+    	} catch(HpcException ex) {
+    		    throw ex;
+    		    
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get Collections: " + 
-                                       e.getMessage(),
-                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+                                        e.getMessage(),
+                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} finally {
 		           irodsConnection.closeConnection(dataManagementAccount);
 		}
@@ -286,6 +293,25 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	} catch(Throwable t) {
     		    throw new HpcException("Failed to create directory: " + 
     	                               irodsFile.getPath(),
+                                       HpcErrorType.INVALID_REQUEST_INPUT , t);
+    	}
+    }
+    
+    /**
+     * Get Query operator enum from a String
+     *
+     * @param operator The string
+     * @return The enum value
+     * 
+     * @throws HpcException
+     */
+    private AVUQueryOperatorEnum valueOf(String operator) throws HpcException
+    {
+    	try {
+    		 return AVUQueryOperatorEnum.valueOf(operator);
+    		 
+    	} catch(Throwable t) {
+    		    throw new HpcException("Invalid query operator: " + operator,
                                        HpcErrorType.INVALID_REQUEST_INPUT , t);
     	}
     }

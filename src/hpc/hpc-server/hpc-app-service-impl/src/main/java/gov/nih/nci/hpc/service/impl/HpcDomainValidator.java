@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -310,6 +311,30 @@ class HpcDomainValidator
     		   metadataEntry.getAttribute().isEmpty() ||
     		   metadataEntry.getValue() == null ||
     		   metadataEntry.getValue().isEmpty()) {
+    		   return false;
+    		}
+    	}
+     	return true;
+    }
+    
+    /**
+     * Validate metadata query collection.
+     *
+     * @param metadataQueries Metadata query collection.
+     * @return true if valid, false otherwise.
+     */
+    public static boolean isValidMetadataQueries(List<HpcMetadataQuery> metadataQueries) 
+    {
+    	if(metadataQueries == null) {
+    	   return false;
+     	}
+    	for(HpcMetadataQuery metadataQuery : metadataQueries) {
+    		if(metadataQuery.getAttribute() == null || 
+    		   metadataQuery.getAttribute().isEmpty() ||
+    		   metadataQuery.getValue() == null ||
+    		   metadataQuery.getValue().isEmpty() ||
+    		   metadataQuery.getOperator() == null ||
+    		   metadataQuery.getOperator().isEmpty()) {
     		   return false;
     		}
     	}
