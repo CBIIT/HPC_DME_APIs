@@ -13,7 +13,7 @@ package gov.nih.nci.hpc.service;
 import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -88,13 +88,13 @@ public interface HpcDataManagementService
     /**
      * Get collections by metadata query.
      *
-     * @param metadataEntryQueries The metadata entries to query for.
+     * @param metadataQueries The metadata queries.
      * @return HpcDataset collection, or null if no results found.
      * 
      * @throws HpcException
      */
     public List<HpcDataManagementEntity> getCollections(
-    		    List<HpcMetadataEntry> metadataEntryQueries) throws HpcException;
+    		    List<HpcMetadataQuery> metadataQueries) throws HpcException;
 }
 
  

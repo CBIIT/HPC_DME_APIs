@@ -11,11 +11,11 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
-import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.dataset.HpcDataManagementEntitiesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.metadata.HpcMetadataEntryParam;
+import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 
@@ -93,7 +93,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response getCollections(List<HpcMetadataEntryParam> metadataQueries)
+    public Response getCollections(List<HpcMetadataQueryParam> metadataQueries)
     {
     	logger.info("Invoking RS: GET /collection/" + metadataQueries);
     	
@@ -102,12 +102,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	HpcDataManagementEntitiesDTO collections = null;
 		try {
 			 // Validate the metadata entries input (JSON) was parsed successfully.
-			 List<HpcMetadataEntry> queries = new ArrayList<HpcMetadataEntry>();
-			 for(HpcMetadataEntryParam metadataQuery : metadataQueries) {
-			     if(metadataQuery.getJSONParsingException() != null) {
-				    throw metadataQuery.getJSONParsingException();
+			 List<HpcMetadataQuery> queries = new ArrayList<HpcMetadataQuery>();
+			 for(HpcMetadataQueryParam queryParam : metadataQueries) {
+			     if(queryParam.getJSONParsingException() != null) {
+				    throw queryParam.getJSONParsingException();
 			     }
-			     queries.add(metadataQuery);
+			     queries.add(queryParam);
 			 }
 			 
 			 collections = dataManagementBusService.getCollections(policy != null ? policy.getUserName() : null, 
