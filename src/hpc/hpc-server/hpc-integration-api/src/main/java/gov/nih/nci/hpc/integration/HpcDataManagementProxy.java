@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.integration;
 
 import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -107,14 +108,15 @@ public interface HpcDataManagementProxy
     /**
      * Get collections by metadata query.
      *
-     * @param metadataEntryQueries The metadata entries to query for.
+     * @param dataManagementAccount The Data Management System account.
+     * @param metadataQueries The metadata entries to query for.
      * @return HpcDataset collection, or null if no results found.
      * 
      * @throws HpcException
      */
     public List<HpcDataManagementEntity> getCollections(
     		    HpcIntegratedSystemAccount dataManagementAccount,
-    		    List<HpcMetadataEntry> metadataEntryQueries) throws HpcException;
+    		    List<HpcMetadataQuery> metadataQueries) throws HpcException;
 }
 
  

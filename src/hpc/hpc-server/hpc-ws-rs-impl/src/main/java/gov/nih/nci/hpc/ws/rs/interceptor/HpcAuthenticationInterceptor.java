@@ -94,10 +94,11 @@ public class HpcAuthenticationInterceptor
         } catch(HpcException e) {
         	    throw new HpcAuthenticationException(e.getMessage(), e);
         	    
+        } catch(HpcAuthenticationException ex) {
+    	        throw ex;
+        	    
         } catch(Throwable t) {
-   	            throw (t instanceof HpcAuthenticationException) ? 
-   	     	           (HpcAuthenticationException) t :
-   	    	           new HpcAuthenticationException("LDAP authentication failed", t);
+   	            throw new HpcAuthenticationException("LDAP authentication failed", t);
        }
     }
 } 
