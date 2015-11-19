@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.dto.metadata;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import org.json.simple.JSONObject;
@@ -20,14 +20,14 @@ import org.json.simple.parser.ParseException;
 	
 /**
  * <p>
- * HPC Metada Entry to be used as JAX-RS parameter.
+ * HPC Metadata query param (used as JAX-RS query parameter).
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcMetadataEntryParam extends HpcMetadataEntry
+public class HpcMetadataQueryParam extends HpcMetadataQuery
 {   
     //---------------------------------------------------------------------//
     // Instance members
@@ -48,7 +48,7 @@ public class HpcMetadataEntryParam extends HpcMetadataEntry
      * @param metadataEntryJSONString A metadata entry JSON string.
      * 
      */
-	public HpcMetadataEntryParam(String metadataEntryJSONString) 
+	public HpcMetadataQueryParam(String metadataEntryJSONString) 
 	{
 		super();
 		
@@ -56,9 +56,9 @@ public class HpcMetadataEntryParam extends HpcMetadataEntry
 		try {
              JSONObject jsonMetadataEntry = 
             		    ((JSONObject) new JSONParser().parse(metadataEntryJSONString));
-             setAttribute((String) jsonMetadataEntry.get("attribute"));
-             setValue((String) jsonMetadataEntry.get("value"));
-             setUnit((String) jsonMetadataEntry.get("unit"));
+             setAttribute((String) jsonMetadataEntry.get("a"));
+             setValue((String) jsonMetadataEntry.get("v"));
+             setOperator((String) jsonMetadataEntry.get("o"));
              
 		} catch(ParseException e) {
 			    jsonParsingException = 

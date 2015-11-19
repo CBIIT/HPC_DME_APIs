@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.dataset.HpcDataManagementEntitiesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -101,19 +102,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     @Override
     public HpcDataManagementEntitiesDTO getCollections(
     		                               String userId,
-                                           List<HpcMetadataEntry> metadataEntryQueries) 
+    		                               List<HpcMetadataQuery> metadataQueries) 
                                            throws HpcException
     {
-    	logger.info("Invoking getCollections(List<HpcMetadataEntry>): " + 
-    			    metadataEntryQueries);
+    	logger.info("Invoking getCollections(List<HpcMetadataQuery>): " + 
+    			    metadataQueries);
     	
     	// Input validation.
-    	if(metadataEntryQueries == null) {
-    	   throw new HpcException("Null metadata entry queries",
+    	if(metadataQueries == null) {
+    	   throw new HpcException("Null metadata queries",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	return toDTO(dataManagementService.getCollections(metadataEntryQueries));
+    	return toDTO(dataManagementService.getCollections(metadataQueries));
     }
     
     @Override

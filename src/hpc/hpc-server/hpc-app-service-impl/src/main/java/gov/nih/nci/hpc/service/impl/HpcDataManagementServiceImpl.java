@@ -13,11 +13,13 @@ package gov.nih.nci.hpc.service.impl;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidIntegratedSystemAccount;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueries;
 import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -199,10 +201,15 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     
     @Override
     public List<HpcDataManagementEntity> getCollections(
-		        List<HpcMetadataEntry> metadataEntryQueries) throws HpcException
+    		    List<HpcMetadataQuery> metadataQueries) throws HpcException
     {
+       	if(!isValidMetadataQueries(metadataQueries) || metadataQueries.isEmpty()) {
+           throw new HpcException("Invalid or empty metadata queries", 
+        			              HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+       	
     	return dataManagementProxy.getCollections(getDataManagementAccount(),
-    			                                  metadataEntryQueries);
+    			                                  metadataQueries);
     }
     
     //---------------------------------------------------------------------//
