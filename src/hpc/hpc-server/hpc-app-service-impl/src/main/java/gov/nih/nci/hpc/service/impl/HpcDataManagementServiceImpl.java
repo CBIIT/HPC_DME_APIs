@@ -14,7 +14,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocatio
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidIntegratedSystemAccount;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueries;
-import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
+import gov.nih.nci.hpc.domain.dataset.HpcCollection;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -200,7 +200,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<HpcDataManagementEntity> getCollections(
+    public List<HpcCollection> getCollections(
     		    List<HpcMetadataQuery> metadataQueries) throws HpcException
     {
        	if(!isValidMetadataQueries(metadataQueries) || metadataQueries.isEmpty()) {
