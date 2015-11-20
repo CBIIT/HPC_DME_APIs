@@ -10,10 +10,14 @@ import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,6 +26,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,11 +92,13 @@ public class HPCCSVFile {
             	String collName = null;
 
             	List<HpcMetadataEntry> listOfhpcCollection = new ArrayList<HpcMetadataEntry>();
-              	for (Entry<String, Integer> entry : headersMap.entrySet()) {          		
+              	for (Entry<String, Integer> entry : headersMap.entrySet()) { 
+              			String cellVal = record.get( entry.getKey());
             			HpcMetadataEntry hpcMetadataEntry = new HpcMetadataEntry();
             			hpcMetadataEntry.setAttribute(entry.getKey());
-            			hpcMetadataEntry.setValue(record.get( entry.getKey()));
-            			listOfhpcCollection.add(hpcMetadataEntry);
+            			hpcMetadataEntry.setValue(cellVal);
+            			if (StringUtils.isNotBlank(cellVal))
+            				listOfhpcCollection.add(hpcMetadataEntry);
             		}            		              	  
             	  	
               	
@@ -167,7 +174,7 @@ public class HPCCSVFile {
             
         } 
         catch (Exception e) {
-        	System.out.println("Error in CsvFileReader !!!");
+        	System.out.println("Cannot read the input file");
             e.printStackTrace();
         } finally {
             try {
@@ -182,32 +189,43 @@ public class HPCCSVFile {
 	}
 	
 	private void addToErrorCollection(String responseBodyAsString,CSVRecord record,Map<String, Integer> headers) {
-		String logDir = configProperties.getProperty("hpc.error-log.file");
+		String logDir = configProperties.getProperty("hpc.error-log.dir");
+		
 		JSONParser parser = new JSONParser();
-		try {
-			System.out.println(responseBodyAsString);
-			JSONObject jsonObject = (JSONObject) parser.parse(responseBodyAsString);
-			JSONObject exceptioDTO = (JSONObject) jsonObject.get("gov.nih.nci.hpc.dto.error.HpcExceptionDTO");
+		JSONObject hpcException = null;
+	    FileWriter fileWriter = null;
+		CSVPrinter csvFilePrinter = null;
+		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator("\n");		
 
-			
-		    FileWriter fileWriter = null;
-
-			 CSVPrinter csvFilePrinter = null;
-			 CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator("\n");
 			 try 
 			 {
-				 fileWriter = new FileWriter(logDir);
+				String logFile = logDir +"/"+"errorLog"+  new SimpleDateFormat("yyyyMMddhhmm'.csv'").format(new Date());
+	    		File file =new File(logFile);
+	    		if(!file.exists()){
+	    			file.createNewFile();
+	    		}				 
+				 fileWriter = new FileWriter(file,true);
 			 	 csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
-			
-			 	 for (Entry<String, Integer> entry : headers.entrySet()) { 
+			 	 Object [] headerArray =  new ArrayList<Object>(headers.keySet()).toArray();
+			 	 if(!checkIfHeaderExists(logFile))
+			 		 csvFilePrinter.printRecord(headerArray);
+			 	 else
+			 		 csvFilePrinter.println();
+			 	 for (Entry<String, Integer> entry : headers.entrySet()) { 			 		
 			 		csvFilePrinter.print(record.get(entry.getKey()));		                 							 		
 			 	 } 
-			 	csvFilePrinter.print(exceptioDTO.get("message"));
-			 	System.out.println("Log entry successfull!!!");
+				 System.out.println(responseBodyAsString);
+				 JSONObject jsonObject = (JSONObject) parser.parse(responseBodyAsString);
+				 hpcException = (JSONObject) jsonObject.get("gov.nih.nci.hpc.dto.error.HpcExceptionDTO");
+				 if(hpcException == null)
+					csvFilePrinter.print(jsonObject.get("message"));
+				 else
+					csvFilePrinter.print(hpcException.get("message"));			 	
+			 	System.out.println("Log entry successfull");
 			  } 
 			 catch (Exception e) 
 			 {
-			      System.out.println("Error in CsvFileWriter !!!");
+			      System.out.println("Error in Writing the error log !!!");
 			      e.printStackTrace();
 			 }
 			 finally 
@@ -224,9 +242,19 @@ public class HPCCSVFile {
                   }
 			 }
 			//return (String) exceptioDTO.get("message");
-		} catch (Exception ex) {
-			//return "Cannot parse the error message";
-		}
+	}
+
+
+	private boolean checkIfHeaderExists(String logFile) throws IOException {
+        CSVFormat csvFileFormat = CSVFormat.DEFAULT.withHeader();
+        FileReader fileReader = new FileReader(logFile);
+        CSVParser csvFileParser = new CSVParser(fileReader, csvFileFormat);
+        Map<String, Integer> headersMap = csvFileParser.getHeaderMap();
+        //System.out.println("HEADER MAP::" + headersMap);
+        if(headersMap != null &&  !headersMap.isEmpty())
+        	return true;
+        else
+        	return false;
 	}
 
 
