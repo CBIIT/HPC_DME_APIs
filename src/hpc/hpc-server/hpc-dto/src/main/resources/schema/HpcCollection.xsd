@@ -14,14 +14,18 @@
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-dataset="http://hpc.nci.nih.gov/domain/dataset"
 	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
+	xmlns:hpc-dto-collection="http://hpc.nci.nih.gov/dto/collection"
 	targetNamespace="http://hpc.nci.nih.gov/dto/collection"
 	elementFormDefault="unqualified">
 	
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/dataset"
+		        schemaLocation="HpcDatasetTypes.xsd" />
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
 		        schemaLocation="HpcMetadataTypes.xsd" />
 
-	<!--  Add metadata items to a file in a dataset DTO -->
+	<!--  Collection Registration DTO -->
 	<xsd:element name="HpcCollectionRegistrationDTO">
 		<xsd:complexType>
 			<xsd:sequence>
@@ -30,5 +34,26 @@
 				             minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>				
+	</xsd:element>	
+	
+	<!-- Collections DTO -->
+	<xsd:complexType name="HpcCollectionDTO">
+		<xsd:sequence>
+			<xsd:element name="collection" 
+			             type="hpc-domain-dataset:HpcCollection" />
+			<xsd:element name="metadataEntries" 
+			             type="hpc-domain-metadata:HpcMetadataEntry" 
+				         maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="HpcCollectionsDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="collections"
+				             type="hpc-dto-collection:HpcCollectionDTO"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>		
 </xsd:schema>

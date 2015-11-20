@@ -11,11 +11,12 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
-import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
+import gov.nih.nci.hpc.domain.dataset.HpcCollection;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
-import gov.nih.nci.hpc.dto.dataset.HpcDataManagementEntitiesDTO;
+import gov.nih.nci.hpc.dto.collection.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.collection.HpcCollectionsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -100,9 +101,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcDataManagementEntitiesDTO getCollections(
-    		                               String userId,
-    		                               List<HpcMetadataQuery> metadataQueries) 
+    public HpcCollectionsDTO getCollections(List<HpcMetadataQuery> metadataQueries) 
                                            throws HpcException
     {
     	logger.info("Invoking getCollections(List<HpcMetadataQuery>): " + 
@@ -114,7 +113,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	return toDTO(dataManagementService.getCollections(metadataQueries));
+    	// Construct the DTO.
+    	HpcCollectionsDTO collectionsDTO = new HpcCollectionsDTO();
+    	for(HpcCollection collection : dataManagementService.getCollections(metadataQueries)) {
+    		// Get the metadata for this colelction.
+    		List<HpcMetadataEntry> metadataEntries = null;
+    		
+    		// Combine collection attributes and metadata into a single DTO.
+    		collectionsDTO.getCollections().add(toDTO(collection, metadataEntries));
+    	}
+    	
+    	return collectionsDTO;
     }
     
     @Override
@@ -162,17 +171,22 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     //---------------------------------------------------------------------//
     
     /**
-     * Create a data management entities DTO from a domain object.
+     * Create a collction DTO from domain objects.
      * 
-     * @param dataManagementEntities the domain object.
+     * @param collection The collection domain object.
+     * @param metadataEntries The list of metadata domain objects.
      *
      * @return The DTO.
      */
-    private HpcDataManagementEntitiesDTO toDTO(List<HpcDataManagementEntity> entities) 
+    private HpcCollectionDTO toDTO(HpcCollection collection, List<HpcMetadataEntry> metadataEntries) 
     {
-    	HpcDataManagementEntitiesDTO entitiesDTO = new HpcDataManagementEntitiesDTO();
-    	entitiesDTO.getEntities().addAll(entities);
-    	return entitiesDTO;
+    	HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
+    	collectionDTO.setCollection(collection);
+    	if(metadataEntries != null) {
+    	   collectionDTO.getMetadataEntries().addAll(metadataEntries);
+    	}
+    	
+    	return collectionDTO;
     }
 }
 
