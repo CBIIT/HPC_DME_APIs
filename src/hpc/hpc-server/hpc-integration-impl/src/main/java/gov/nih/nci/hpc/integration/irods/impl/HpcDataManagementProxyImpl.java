@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.integration.irods.impl;
 
-import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
+import gov.nih.nci.hpc.domain.dataset.HpcCollection;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -20,6 +20,7 @@ import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import org.irods.jargon.core.exception.InvalidInputParameterException;
@@ -223,7 +224,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public List<HpcDataManagementEntity> getCollections(
+    public List<HpcCollection> getCollections(
     		    HpcIntegratedSystemAccount dataManagementAccount,
     		    List<HpcMetadataQuery> metadataQueries) throws HpcException
     {
@@ -249,17 +250,36 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                              findDomainByMetadataQuery(queryElements, 0, true);
              
              // Map the query results to a Domain POJO.
-             List<HpcDataManagementEntity> entities = new ArrayList<HpcDataManagementEntity>();
+             List<HpcCollection> hpcCollections = new ArrayList<HpcCollection>();
              if(collections != null) {
                 for(Collection collection : collections) {
-            	    HpcDataManagementEntity entity = new HpcDataManagementEntity();
-            	    entity.setId(collection.getCollectionId());
-            	    entity.setPath(collection.getAbsolutePath());
-            	    entities.add(entity);
+            	    HpcCollection hpcCollection = new HpcCollection();
+            	    
+            	    hpcCollection.setCollectionId(collection.getCollectionId());
+            	    hpcCollection.setCollectionName(collection.getCollectionName());
+            	    hpcCollection.setObjectPath(collection.getObjectPath());
+            	    hpcCollection.setCollectionParentName(collection.getCollectionParentName());
+            	    hpcCollection.setCollectionOwnerName(collection.getCollectionOwnerName());
+            	    hpcCollection.setCollectionOwnerZone(collection.getCollectionOwnerZone());
+            	    hpcCollection.setCollectionMapId(collection.getCollectionMapId());
+            	    hpcCollection.setCollectionInheritance(collection.getCollectionInheritance());
+            	    hpcCollection.setComments(collection.getComments());
+            	    hpcCollection.setInfo1(collection.getInfo1());
+            	    hpcCollection.setInfo2(collection.getInfo2());
+            	    
+            	    Calendar createdAt = Calendar.getInstance();
+            	    createdAt.setTime(collection.getCreatedAt());
+            	    hpcCollection.setCreatedAt(createdAt);
+            	    
+            	    Calendar modifiedAt = Calendar.getInstance();
+            	    modifiedAt.setTime(collection.getModifiedAt());
+            	    hpcCollection.setModifiedAt(modifiedAt);
+            	    
+            	    hpcCollections.add(hpcCollection);
                 }
              }
              
-             return entities;
+             return hpcCollections;
              
     	} catch(HpcException ex) {
     		    throw ex;

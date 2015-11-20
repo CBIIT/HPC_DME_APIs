@@ -13,7 +13,7 @@ package gov.nih.nci.hpc.ws.rs.impl;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
-import gov.nih.nci.hpc.dto.dataset.HpcDataManagementEntitiesDTO;
+import gov.nih.nci.hpc.dto.collection.HpcCollectionsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -24,8 +24,6 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
-import org.apache.cxf.configuration.security.AuthorizationPolicy;
-import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,9 +95,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     {
     	logger.info("Invoking RS: GET /collection/" + metadataQueries);
     	
-    	AuthorizationPolicy policy = PhaseInterceptorChain.getCurrentMessage().get(AuthorizationPolicy.class);
-    	
-    	HpcDataManagementEntitiesDTO collections = null;
+    	HpcCollectionsDTO collections = null;
 		try {
 			 // Validate the metadata entries input (JSON) was parsed successfully.
 			 List<HpcMetadataQuery> queries = new ArrayList<HpcMetadataQuery>();
@@ -110,8 +106,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			     queries.add(queryParam);
 			 }
 			 
-			 collections = dataManagementBusService.getCollections(policy != null ? policy.getUserName() : null, 
-					                                               queries);
+			 collections = dataManagementBusService.getCollections(queries);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /collection/" + metadataQueries + 
