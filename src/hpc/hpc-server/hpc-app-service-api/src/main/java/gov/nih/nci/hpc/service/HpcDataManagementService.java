@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.service;
 
-import gov.nih.nci.hpc.domain.dataset.HpcDataManagementEntity;
+import gov.nih.nci.hpc.domain.dataset.HpcCollection;
 import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -89,11 +89,11 @@ public interface HpcDataManagementService
      * Get collections by metadata query.
      *
      * @param metadataQueries The metadata queries.
-     * @return HpcDataset collection, or null if no results found.
+     * @return HpcCollection list, or null if no results found.
      * 
      * @throws HpcException
      */
-    public List<HpcDataManagementEntity> getCollections(
+    public List<HpcCollection> getCollections(
     		    List<HpcMetadataQuery> metadataQueries) throws HpcException;
 }
 
