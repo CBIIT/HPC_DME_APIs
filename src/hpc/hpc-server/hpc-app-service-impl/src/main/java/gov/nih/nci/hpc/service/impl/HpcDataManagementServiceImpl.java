@@ -212,6 +212,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     			                                  metadataQueries);
     }
     
+    @Override
+    public List<HpcMetadataEntry> getCollectionMetadata(String path) throws HpcException
+    {
+       	// Input validation.
+       	if(path == null) {
+       	   throw new HpcException("Null path", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+    	return dataManagementProxy.getCollectionMetadata(getDataManagementAccount(),
+                                                         path);
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
