@@ -153,7 +153,7 @@
 		<xsd:sequence>
 			<xsd:element name="collectionId" type="xsd:int" />
 			<xsd:element name="collectionName" type="xsd:string" />
-			<xsd:element name="objectPath" type="xsd:string" />
+			<xsd:element name="absolutePath" type="xsd:string" />
 			<xsd:element name="collectionParentName" type="xsd:string" />
 			<xsd:element name="collectionOwnerName" type="xsd:string" />
 			<xsd:element name="collectionOwnerZone" type="xsd:string" />
