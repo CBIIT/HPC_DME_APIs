@@ -117,6 +117,19 @@ public interface HpcDataManagementProxy
     public List<HpcCollection> getCollections(
     		    HpcIntegratedSystemAccount dataManagementAccount,
     		    List<HpcMetadataQuery> metadataQueries) throws HpcException;
+    
+    /**
+     * Get metadata of a collection.
+     *
+     * @param dataManagementAccount The Data Management System account.
+     * @param path The collection path.
+     * @return HpcMetadataEntry collection, or null if no results found.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcMetadataEntry> getCollectionMetadata(
+   		                          HpcIntegratedSystemAccount dataManagementAccount, 
+   		                          String path) throws HpcException;
 }
 
  

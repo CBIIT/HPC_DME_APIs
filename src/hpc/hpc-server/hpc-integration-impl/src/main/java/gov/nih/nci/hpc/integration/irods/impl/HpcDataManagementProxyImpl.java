@@ -32,6 +32,7 @@ import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.query.AVUQueryElement;
 import org.irods.jargon.core.query.AVUQueryElement.AVUQueryPart;
 import org.irods.jargon.core.query.AVUQueryOperatorEnum;
+import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -254,10 +255,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
              if(collections != null) {
                 for(Collection collection : collections) {
             	    HpcCollection hpcCollection = new HpcCollection();
-            	    
             	    hpcCollection.setCollectionId(collection.getCollectionId());
             	    hpcCollection.setCollectionName(collection.getCollectionName());
-            	    hpcCollection.setObjectPath(collection.getObjectPath());
+            	    hpcCollection.setAbsolutePath(collection.getAbsolutePath());
             	    hpcCollection.setCollectionParentName(collection.getCollectionParentName());
             	    hpcCollection.setCollectionOwnerName(collection.getCollectionOwnerName());
             	    hpcCollection.setCollectionOwnerZone(collection.getCollectionOwnerZone());
@@ -292,6 +292,38 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		           irodsConnection.closeConnection(dataManagementAccount);
 		}
     }
+    
+    @Override
+    public List<HpcMetadataEntry> getCollectionMetadata(
+   		    HpcIntegratedSystemAccount dataManagementAccount, 
+   		    String path) throws HpcException
+    {
+    	List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
+
+		try {
+			 List<MetaDataAndDomainData> metadataValues =
+			 irodsConnection.getCollectionAO(dataManagementAccount).findMetadataValuesForCollection(path);
+			 if(metadataValues != null) {
+		        for(MetaDataAndDomainData metadataValue : metadataValues) {
+		    	    HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
+		    	    metadataEntry.setAttribute(metadataValue.getAvuAttribute());
+		    	    metadataEntry.setValue(metadataValue.getAvuValue());
+		    	    String unit = metadataValue.getAvuUnit();
+		    	    metadataEntry.setUnit(unit != null && !unit.isEmpty() ? unit : null);
+		    	    metadataEntries.add(metadataEntry);
+		        }
+		     }
+			 
+			 return metadataEntries;
+
+		} catch(Exception e) {
+	            throw new HpcException("Failed to get metadata of a collection: " + 
+                                      e.getMessage(),
+                                      HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} finally {
+			       irodsConnection.closeConnection(dataManagementAccount);
+		}
+   }
     
     //---------------------------------------------------------------------//
     // Helper Methods
