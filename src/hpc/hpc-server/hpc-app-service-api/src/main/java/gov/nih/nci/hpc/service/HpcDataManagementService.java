@@ -95,6 +95,16 @@ public interface HpcDataManagementService
      */
     public List<HpcCollection> getCollections(
     		    List<HpcMetadataQuery> metadataQueries) throws HpcException;
+    
+    /**
+     * Get metadata of a collection.
+     *
+     * @param path The collection path.
+     * @return HpcMetadataEntry collection, or null if no results found.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcMetadataEntry> getCollectionMetadata(String path) throws HpcException;
 }
 
  

@@ -116,8 +116,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Construct the DTO.
     	HpcCollectionsDTO collectionsDTO = new HpcCollectionsDTO();
     	for(HpcCollection collection : dataManagementService.getCollections(metadataQueries)) {
-    		// Get the metadata for this colelction.
-    		List<HpcMetadataEntry> metadataEntries = null;
+    		// Get the metadata for this collection.
+    		List<HpcMetadataEntry> metadataEntries = 
+    		dataManagementService.getCollectionMetadata(collection.getAbsolutePath());
     		
     		// Combine collection attributes and metadata into a single DTO.
     		collectionsDTO.getCollections().add(toDTO(collection, metadataEntries));
