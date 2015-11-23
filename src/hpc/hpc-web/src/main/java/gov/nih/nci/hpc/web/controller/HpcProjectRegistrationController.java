@@ -9,20 +9,11 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
-import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
-import gov.nih.nci.hpc.domain.dataset.HpcFileType;
-import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
-import gov.nih.nci.hpc.domain.metadata.HpcCompressionStatus;
-import gov.nih.nci.hpc.domain.metadata.HpcEncryptionStatus;
-import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
-import gov.nih.nci.hpc.domain.metadata.HpcPHIContent;
-import gov.nih.nci.hpc.domain.metadata.HpcPIIContent;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcProjectType;
-import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
+import gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.web.model.HpcProjectRegistration;
@@ -60,7 +51,7 @@ import org.springframework.web.client.RestTemplate;
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDataRegistrationController.java
+ * @version $Id$
  */
 
 @Controller

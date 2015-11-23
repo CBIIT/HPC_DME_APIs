@@ -10,13 +10,13 @@
 
 package gov.nih.nci.hpc.service;
 
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadataHistory;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;

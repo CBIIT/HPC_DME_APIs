@@ -10,11 +10,11 @@
 
 package gov.nih.nci.hpc.dao;
 
-import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
-import gov.nih.nci.hpc.domain.model.HpcDataset;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
+import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
+import gov.nih.nci.hpc.domain.model.HpcDataset;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.Calendar;

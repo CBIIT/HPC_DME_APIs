@@ -2,16 +2,15 @@ package gov.nih.nci.hpc.cli;
 
 import gov.nih.nci.hpc.cli.domain.HPCBatchCollection;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
-import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;

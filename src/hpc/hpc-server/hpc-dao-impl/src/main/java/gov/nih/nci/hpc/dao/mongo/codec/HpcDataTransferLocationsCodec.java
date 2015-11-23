@@ -11,8 +11,8 @@
 package gov.nih.nci.hpc.dao.mongo.codec;
 
 import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeFileLocation;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
-import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;

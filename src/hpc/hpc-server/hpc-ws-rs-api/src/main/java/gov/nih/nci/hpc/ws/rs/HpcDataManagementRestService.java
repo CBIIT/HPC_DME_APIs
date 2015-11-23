@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 
 import java.util.List;

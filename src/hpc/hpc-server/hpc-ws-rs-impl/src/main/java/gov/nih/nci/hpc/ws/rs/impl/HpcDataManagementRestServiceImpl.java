@@ -14,7 +14,7 @@ import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionsDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;

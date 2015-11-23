@@ -61,7 +61,7 @@
 				 	   value-ref="hpcFileSetCodec" />
 				<entry key="gov.nih.nci.hpc.domain.dataset.HpcFile" 
 				       value-ref="hpcFileCodec" />
-				<entry key="gov.nih.nci.hpc.domain.dataset.HpcFileLocation"
+				<entry key="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation"
 					   value-ref="hpcFileLocationCodec" />
 				<entry key="gov.nih.nci.hpc.domain.metadata.HpcFileMetadata"
 					   value-ref="hpcFileMetadataCodec" />
@@ -77,11 +77,11 @@
                        value-ref="hpcProjectCodec" />
 				<entry key="gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata"
    					   value-ref="hpcProjectMetadataCodec" />
-				<entry key="gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest"
+				<entry key="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequest"
 					   value-ref="hpcDataTransferRequestCodec" />
-				<entry key="gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport"
+				<entry key="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport"
 					   value-ref="hpcDataTransferReportCodec" />	
-				<entry key="gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations"
+				<entry key="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations"
 					   value-ref="hpcDataTransferLocationsCodec" />	
 			</map>
 		</constructor-arg>

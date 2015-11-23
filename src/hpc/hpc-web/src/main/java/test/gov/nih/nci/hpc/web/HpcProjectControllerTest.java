@@ -1,9 +1,9 @@
 package test.gov.nih.nci.hpc.web;
 
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
-import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcCompressionStatus;
 import gov.nih.nci.hpc.domain.metadata.HpcEncryptionStatus;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
