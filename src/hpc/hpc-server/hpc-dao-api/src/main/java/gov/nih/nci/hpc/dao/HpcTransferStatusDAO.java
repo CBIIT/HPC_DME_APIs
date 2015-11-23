@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.dao;
 
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequest;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**

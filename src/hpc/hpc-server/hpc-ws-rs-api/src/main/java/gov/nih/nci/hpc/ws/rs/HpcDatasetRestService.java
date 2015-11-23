@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddFilesDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAddMetadataItemsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDatasetAssociateFileProjectsDTO;

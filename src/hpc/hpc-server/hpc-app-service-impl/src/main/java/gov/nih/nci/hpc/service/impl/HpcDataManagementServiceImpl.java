@@ -14,8 +14,8 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocatio
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidIntegratedSystemAccount;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueries;
-import gov.nih.nci.hpc.domain.dataset.HpcCollection;
-import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -159,7 +159,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
                        throws HpcException
     {
        	// Input validation.
-       	if(path == null || !isValidFileLocation(fileLocation)) {
+       	if(path == null || !isValidFileLocation(fileLocation) ||
+       	   !isValidFileLocation(fileSource)) {
        	   throw new HpcException("Null path or Invalid file location", 
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	

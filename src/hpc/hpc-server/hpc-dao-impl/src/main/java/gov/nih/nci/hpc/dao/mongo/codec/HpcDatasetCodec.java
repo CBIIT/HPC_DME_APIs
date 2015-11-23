@@ -12,8 +12,8 @@ package gov.nih.nci.hpc.dao.mongo.codec;
 
 import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeDataTransferRequest;
 import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeFileSet;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataset;
 
 import java.util.Calendar;

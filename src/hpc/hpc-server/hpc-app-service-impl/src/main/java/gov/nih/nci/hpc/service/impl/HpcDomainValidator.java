@@ -10,9 +10,9 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
-import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataItem;
@@ -107,6 +107,7 @@ class HpcDomainValidator
     //---------------------------------------------------------------------//
     // Dataset Domain Object Types Validators
     //---------------------------------------------------------------------//
+
     /**
      * Validate a file upload request object.
      *
