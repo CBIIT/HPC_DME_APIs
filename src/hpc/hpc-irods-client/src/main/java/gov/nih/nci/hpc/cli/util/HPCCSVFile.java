@@ -1,5 +1,12 @@
 package gov.nih.nci.hpc.cli.util;
 
+import gov.nih.nci.hpc.cli.domain.HPCBatchCollection;
+import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
+import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
+
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.FileReader;
@@ -12,24 +19,12 @@ import java.util.Map.Entry;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.irods.jargon.core.pub.domain.AvuData;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-
-import gov.nih.nci.hpc.cli.HPCFile;
-import gov.nih.nci.hpc.cli.domain.HPCBatchCollection;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
-import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.collection.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 public class HPCCSVFile {
 	//CSV file header

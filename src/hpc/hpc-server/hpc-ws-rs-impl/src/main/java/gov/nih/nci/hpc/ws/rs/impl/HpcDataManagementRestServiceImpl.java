@@ -13,7 +13,7 @@ package gov.nih.nci.hpc.ws.rs.impl;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
-import gov.nih.nci.hpc.dto.collection.HpcCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionsDTO;
 import gov.nih.nci.hpc.dto.dataset.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -134,6 +134,33 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	
 		return createdResponse(null);
 	}
+    
+    @Override
+    public Response getDataObjects(List<HpcMetadataQueryParam> metadataQueries)
+    {
+    	logger.info("Invoking RS: GET /dataObject/" + metadataQueries);
+    	
+    	HpcCollectionsDTO collections = null;
+		try {
+			 // Validate the metadata entries input (JSON) was parsed successfully.
+			 List<HpcMetadataQuery> queries = new ArrayList<HpcMetadataQuery>();
+			 for(HpcMetadataQueryParam queryParam : metadataQueries) {
+			     if(queryParam.getJSONParsingException() != null) {
+				    throw queryParam.getJSONParsingException();
+			     }
+			     queries.add(queryParam);
+			 }
+			 
+			 collections = dataManagementBusService.getCollections(queries);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /dataObject/" + metadataQueries + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(collections, true);
+    }
 }
 
  

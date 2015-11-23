@@ -138,9 +138,9 @@
 									</extensionArgs>
 								</xsdOption>
 								<xsdOption>
-									<xsd>xjc-build/schema/HpcCollection.xsd</xsd>
-									<packagename>gov.nih.nci.hpc.dto.collection</packagename>
-									<bindingFile>xjc-build/schema/hpc-dto-collection-jaxb-binding.xjb</bindingFile>
+									<xsd>xjc-build/schema/HpcDataManagement.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.dto.datamanagement</packagename>
+									<bindingFile>xjc-build/schema/hpc-dto-datamanagement-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
 										<arg>-Xts:style:multiline</arg>
 										<arg>-Xbg</arg>
@@ -163,7 +163,7 @@
 							gov.nih.nci.hpc.dto.user,
 							gov.nih.nci.hpc.dto.dataset,
 							gov.nih.nci.hpc.dto.project,
-							gov.nih.nci.hpc.dto.collection,
+							gov.nih.nci.hpc.dto.datamanagement,
 							gov.nih.nci.hpc.dto.metadata
 						</Export-Package>
 						<Import-Package>*</Import-Package>
