@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcDataManagementTypes.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id: HpcDatasetTypes.xsd 631 2015-11-22 22:28:03Z rosenbergea $
+ -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-datamanagement="http://hpc.nci.nih.gov/domain/datamanagement"
+	targetNamespace="http://hpc.nci.nih.gov/domain/datamanagement"
+	elementFormDefault="unqualified">
+
+	<xsd:complexType name="HpcCollection">
+		<xsd:sequence>
+			<xsd:element name="collectionId" type="xsd:int" />
+			<xsd:element name="collectionName" type="xsd:string" />
+			<xsd:element name="absolutePath" type="xsd:string" />
+			<xsd:element name="collectionParentName" type="xsd:string" />
+			<xsd:element name="collectionOwnerName" type="xsd:string" />
+			<xsd:element name="collectionOwnerZone" type="xsd:string" />
+			<xsd:element name="collectionMapId" type="xsd:string" />
+			<xsd:element name="collectionInheritance" type="xsd:string" />
+			<xsd:element name="comments" type="xsd:string" />
+			<xsd:element name="info1" type="xsd:string" />
+			<xsd:element name="info2" type="xsd:string" />
+			<xsd:element name="createdAt" type="xsd:date" />
+			<xsd:element name="modifiedAt" type="xsd:date" />
+			<xsd:element name="specColType" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+</xsd:schema>

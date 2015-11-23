@@ -80,6 +80,24 @@
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
+								<xsdOption>
+									<xsd>src/main/resources/schema/HpcDataManagementTypes.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.domain.datamanagement</packagename>
+									<bindingFile>src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:multiline</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
+								<xsdOption>
+									<xsd>src/main/resources/schema/HpcDataTransferTypes.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.domain.datatransfer</packagename>
+									<bindingFile>src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:multiline</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
 							</xsdOptions>
 						</configuration>
 					</execution>
@@ -97,7 +115,9 @@
 							gov.nih.nci.hpc.domain.user,
 							gov.nih.nci.hpc.domain.metadata,
 							gov.nih.nci.hpc.domain.dataset,
-							gov.nih.nci.hpc.domain.project
+							gov.nih.nci.hpc.domain.project,
+							gov.nih.nci.hpc.domain.datamanagement,
+							gov.nih.nci.hpc.domain.datatransfer
 						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>

@@ -11,9 +11,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.dao.HpcTransferStatusDAO;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
@@ -31,7 +29,6 @@ import gov.nih.nci.hpc.service.HpcTransferStatusService;
 public class HpcTransferStatusServiceImpl implements HpcTransferStatusService
 {            
 
-    // The User DAO instance.
     private HpcTransferStatusDAO transferStatusDao = null;
     private HpcDataTransferProxy dataTransferProxy = null;
 

@@ -12,10 +12,10 @@ package gov.nih.nci.hpc.dao.mongo.codec;
 
 import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeDataTransferLocations;
 import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeDataTransferReport;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;

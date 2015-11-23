@@ -14,22 +14,25 @@
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
-	xmlns:hpc-domain-dataset="http://hpc.nci.nih.gov/domain/dataset"
+	xmlns:hpc-domain-datamanagement="http://hpc.nci.nih.gov/domain/datamanagement"
+	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
 	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
 	xmlns:hpc-dto-datamanagement="http://hpc.nci.nih.gov/dto/datamanagement"
 	targetNamespace="http://hpc.nci.nih.gov/dto/datamanagement"
 	elementFormDefault="unqualified">
 	
-	<xsd:import namespace="http://hpc.nci.nih.gov/domain/dataset"
-		        schemaLocation="HpcDatasetTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datamanagement"
+		        schemaLocation="HpcDataManagementTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datatransfer"
+		        schemaLocation="HpcDataTransferTypes.xsd" />
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
 		        schemaLocation="HpcMetadataTypes.xsd" />
 
-	<!-- Collections DTO -->
+	<!-- Collection DTO -->
 	<xsd:complexType name="HpcCollectionDTO">
 		<xsd:sequence>
 			<xsd:element name="collection" 
-			             type="hpc-domain-dataset:HpcCollection" />
+			             type="hpc-domain-datamanagement:HpcCollection" />
 			<xsd:element name="metadataEntries" 
 			             type="hpc-domain-metadata:HpcMetadataEntry" 
 				         maxOccurs="unbounded" />
@@ -44,5 +47,18 @@
 					         minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>		
+	</xsd:element>	
+	
+	<!-- Data Object DTO -->
+	<xsd:element name="HpcDataObjectRegistrationDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="locations"
+				             type="hpc-domain-datatransfer:HpcDataTransferLocations" />
+				<xsd:element name="metadataEntries" 
+				             type="hpc-domain-metadata:HpcMetadataEntry" 
+					         maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
 </xsd:schema>

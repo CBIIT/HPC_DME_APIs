@@ -15,14 +15,17 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	xmlns:hpc-domain-dataset="http://hpc.nci.nih.gov/domain/dataset"
-	xmlns:hpc-dto-dataset="http://hpc.nci.nih.gov/dto/dataset"
+	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
 	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
 	xmlns:hpc-dto-project="http://hpc.nci.nih.gov/dto/project"
+	xmlns:hpc-dto-dataset="http://hpc.nci.nih.gov/dto/dataset"
 	targetNamespace="http://hpc.nci.nih.gov/dto/dataset"
 	elementFormDefault="unqualified">
 
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/dataset"
 		        schemaLocation="HpcDatasetTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datatransfer"
+		        schemaLocation="HpcDataTransferTypes.xsd" />
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
 		        schemaLocation="HpcMetadataTypes.xsd" />
 	<xsd:import namespace="http://hpc.nci.nih.gov/dto/project"
@@ -42,20 +45,6 @@
 		</xsd:complexType>
 	</xsd:element>
 	
-	<!-- Data Object Registration DTO -->
-	<xsd:element name="HpcDataObjectRegistrationDTO">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="locations"
-				             type="hpc-domain-dataset:HpcDataTransferLocations" />
-				<xsd:element name="metadataEntries" 
-				             type="hpc-domain-metadata:HpcMetadataEntry" 
-					         maxOccurs="unbounded" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-
-
 	<!-- Dataset DTO -->
 	<xsd:element name="HpcDatasetDTO">
 		<xsd:complexType>
@@ -63,7 +52,7 @@
 				<xsd:element name="id" type="xsd:ID" />
 				<xsd:element name="fileSet" type="hpc-domain-dataset:HpcFileSet" />
 				<xsd:element name="uploadRequests"
-					         type="hpc-domain-dataset:HpcDataTransferRequest" 
+					         type="hpc-domain-datatransfer:HpcDataTransferRequest" 
 					         minOccurs="0" maxOccurs="unbounded" />				
 				<xsd:element ref="hpc-dto-project:HpcProjectCollectionDTO"/>
 				<xsd:element name="created" type="xsd:dateTime" />

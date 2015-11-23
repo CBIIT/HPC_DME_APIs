@@ -39,24 +39,9 @@
     	<jxb:bindings node="//xsd:simpleType[@name='HpcFileType']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.dataset.HpcFileType"/>
 		</jxb:bindings>
-        <jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferStatus']">
-        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus"/>
-        </jxb:bindings>
         <jxb:bindings node="//xsd:simpleType[@name='HpcDatasetUserAssociation']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation"/>
         </jxb:bindings>
-        <jxb:bindings node="//xsd:complexType[@name='HpcDataTransferReport']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport"/>
-		</jxb:bindings>
-		<jxb:bindings node="//xsd:complexType[@name='HpcFileLocation']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcFileLocation"/>
-        </jxb:bindings>
-        <jxb:bindings node="//xsd:complexType[@name='HpcDataTransferLocations']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations"/>
-        </jxb:bindings>
-        <jxb:bindings node="//xsd:complexType[@name='HpcDataTransferRequest']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest"/>
-		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcFileUploadRequest']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest"/>
 		</jxb:bindings>
@@ -66,8 +51,23 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcFileSet']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcFileSet"/>
 		</jxb:bindings>
-		<jxb:bindings node="//xsd:complexType[@name='HpcCollection']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.dataset.HpcCollection"/>
+    </jxb:bindings>
+    
+    <jxb:bindings schemaLocation="HpcDataTransferTypes.xsd">
+    	<jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferStatus']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus"/>
+        </jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcDataTransferReport']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcFileLocation']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcDataTransferLocations']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcDataTransferRequest']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequest"/>
 		</jxb:bindings>
     </jxb:bindings>
     
@@ -115,6 +115,7 @@
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcProjectType"/>
         </jxb:bindings>
     </jxb:bindings>
+    
    <jxb:bindings schemaLocation="HpcProject.xsd">
 		<jxb:bindings node="//xsd:element[@name='HpcProjectRegistrationDTO']">
         	<jxb:class ref="gov.nih.nci.hpc.dto.project.HpcProjectRegistrationDTO"/>
