@@ -76,6 +76,18 @@ public interface HpcDataManagementRestService
 	public Response registerDataObject(
 			           @PathParam("path") String path,
 			           HpcDataObjectRegistrationDTO dataObjectRegistrationDTO);
+	
+    /**
+     * GET Data objects by metadata query.
+     *
+     * @param metadataEntryQueries A list of metadata entries to query for.
+     */
+	@GET
+	@Path("/dataObject")
+	@Produces("application/json,application/xml")
+	public Response getDataObjects(
+			           @QueryParam("metadataQuery")
+			           List<HpcMetadataQueryParam> metadataQueries);
 }
 
  

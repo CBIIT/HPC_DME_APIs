@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--  
- * HpcCollection.xsd
+ * HpcDataManagement.xsd
  *
  * Copyright SVG,  Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -16,8 +16,8 @@
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	xmlns:hpc-domain-dataset="http://hpc.nci.nih.gov/domain/dataset"
 	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
-	xmlns:hpc-dto-collection="http://hpc.nci.nih.gov/dto/collection"
-	targetNamespace="http://hpc.nci.nih.gov/dto/collection"
+	xmlns:hpc-dto-datamanagement="http://hpc.nci.nih.gov/dto/datamanagement"
+	targetNamespace="http://hpc.nci.nih.gov/dto/datamanagement"
 	elementFormDefault="unqualified">
 	
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/dataset"
@@ -25,17 +25,6 @@
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
 		        schemaLocation="HpcMetadataTypes.xsd" />
 
-	<!--  Collection Registration DTO -->
-	<xsd:element name="HpcCollectionRegistrationDTO">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="metadataEntries" 
-			                 type="hpc-domain-metadata:HpcMetadataEntry"
-				             minOccurs="0" maxOccurs="unbounded" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>	
-	
 	<!-- Collections DTO -->
 	<xsd:complexType name="HpcCollectionDTO">
 		<xsd:sequence>
@@ -51,7 +40,7 @@
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="collections"
-				             type="hpc-dto-collection:HpcCollectionDTO"
+				             type="hpc-dto-datamanagement:HpcCollectionDTO"
 					         minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
