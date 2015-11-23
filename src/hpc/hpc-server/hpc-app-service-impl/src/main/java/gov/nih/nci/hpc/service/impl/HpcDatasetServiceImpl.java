@@ -11,20 +11,20 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isEmptyFilePrimaryMetadata;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isOverlapping;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidDataTransferLocations;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileUploadRequest;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataItems;
-import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isOverlapping;
 import gov.nih.nci.hpc.dao.HpcDatasetDAO;
 import gov.nih.nci.hpc.dao.HpcFileMetadataHistoryDAO;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferLocations;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;

@@ -12,8 +12,8 @@ package gov.nih.nci.hpc.dao.mongo.codec;
 import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeFileLocation;
 import static gov.nih.nci.hpc.dao.mongo.codec.HpcDecoder.decodeFileMetadata;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
-import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
 import gov.nih.nci.hpc.domain.dataset.HpcFileType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;
 
 import java.util.List;

@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.integration.irods.impl;
 
-import gov.nih.nci.hpc.domain.dataset.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;

@@ -14,12 +14,12 @@ import static gov.nih.nci.hpc.bus.impl.HpcBusServiceUtil.associateProjectMetadat
 import static gov.nih.nci.hpc.bus.impl.HpcBusServiceUtil.cloneJAXB;
 import static gov.nih.nci.hpc.bus.impl.HpcBusServiceUtil.updateMetadataLock;
 import gov.nih.nci.hpc.bus.HpcDatasetBusService;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferReport;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferRequest;
-import gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.dataset.HpcDatasetUserAssociation;
 import gov.nih.nci.hpc.domain.dataset.HpcFile;
 import gov.nih.nci.hpc.domain.dataset.HpcFileUploadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcFileMetadata;

@@ -22,7 +22,7 @@
 	<context:annotation-config />
 	
 	<!--  Map data transfer status string to enum -->
-	<util:map id="hpcDataTransferStatusMap" value-type="gov.nih.nci.hpc.domain.dataset.HpcDataTransferStatus">
+	<util:map id="hpcDataTransferStatusMap" value-type="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus">
 		<entry key="${hpc.service.dataTransferStatusMap.IN_PROGRESS}" value="IN_PROGRESS" />
 		<entry key="${hpc.service.dataTransferStatusMap.COMPLETED}" value="COMPLETED" />
 		<entry key="${hpc.service.dataTransferStatusMap.FAILED}" value="FAILED" />

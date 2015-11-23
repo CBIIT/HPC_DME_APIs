@@ -80,11 +80,12 @@
 		<entry key="http://hpc.nci.nih.gov/dto/dataset" value="gov.nih.nci.hpc.dto.dataset" />
 		<entry key="http://hpc.nci.nih.gov/dto/user" value="gov.nih.nci.hpc.dto.user" />
 		<entry key="http://hpc.nci.nih.gov/dto/project" value="gov.nih.nci.hpc.dto.project" />
-		<entry key="http://hpc.nci.nih.gov/dto/collection" value="gov.nih.nci.hpc.dto.collection" />
+		<entry key="http://hpc.nci.nih.gov/dto/datamanagement" value="gov.nih.nci.hpc.dto.datamanagement" />
 		<entry key="http://hpc.nci.nih.gov/domain/dataset" value="gov.nih.nci.hpc.domain.dataset" />
 		<entry key="http://hpc.nci.nih.gov/domain/metadata" value="gov.nih.nci.hpc.domain.metadata" />
 		<entry key="http://hpc.nci.nih.gov/domain/user" value="gov.nih.nci.hpc.domain.user" />
 		<entry key="http://hpc.nci.nih.gov/domain/project" value="gov.nih.nci.hpc.domain.project" />
+		<entry key="http://hpc.nci.nih.gov/domain/datamanagement" value="gov.nih.nci.hpc.domain.datamanagement" />
 	</util:map>
 
 	<!-- Exception Mapper Provider -->

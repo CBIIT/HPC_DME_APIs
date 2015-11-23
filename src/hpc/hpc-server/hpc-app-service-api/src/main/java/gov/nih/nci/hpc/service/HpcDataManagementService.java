@@ -10,8 +10,8 @@
 
 package gov.nih.nci.hpc.service;
 
-import gov.nih.nci.hpc.domain.dataset.HpcCollection;
-import gov.nih.nci.hpc.domain.dataset.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
