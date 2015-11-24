@@ -15,6 +15,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidIntegratedS
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueries;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -223,6 +224,32 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	}	
        	
     	return dataManagementProxy.getCollectionMetadata(getDataManagementAccount(),
+                                                         path);
+    }
+    
+    @Override
+    public List<HpcDataObject> getDataObjects(
+    		    List<HpcMetadataQuery> metadataQueries) throws HpcException
+    {
+       	if(!isValidMetadataQueries(metadataQueries) || metadataQueries.isEmpty()) {
+           throw new HpcException("Invalid or empty metadata queries", 
+        			              HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+       	
+    	return dataManagementProxy.getDataObjects(getDataManagementAccount(),
+    			                                  metadataQueries);
+    }
+    
+    @Override
+    public List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException
+    {
+       	// Input validation.
+       	if(path == null) {
+       	   throw new HpcException("Null path", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+    	return dataManagementProxy.getDataObjectMetadata(getDataManagementAccount(),
                                                          path);
     }
     
