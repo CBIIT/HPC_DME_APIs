@@ -61,4 +61,24 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
+	
+	<xsd:complexType name="HpcDataObjectDTO">
+		<xsd:sequence>
+			<xsd:element name="dataObject" 
+			             type="hpc-domain-datamanagement:HpcDataObject" />
+			<xsd:element name="metadataEntries" 
+			             type="hpc-domain-metadata:HpcMetadataEntry" 
+				         maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="HpcDataObjectsDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="dataObjects"
+				             type="hpc-dto-datamanagement:HpcDataObjectDTO"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
 </xsd:schema>
