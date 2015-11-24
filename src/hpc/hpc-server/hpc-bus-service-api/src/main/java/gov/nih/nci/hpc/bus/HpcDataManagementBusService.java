@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -63,6 +64,17 @@ public interface HpcDataManagementBusService
     public void registerDataObject(String path,
     		                       HpcDataObjectRegistrationDTO dataObjectRegistrationDTO) 
     		                      throws HpcException;
+    
+    /**
+     * Get data objects by metadata query.
+     *
+     * @param metadataQueries The metadata queries.
+     * @return A list of HpcDataObjectDTO
+     * 
+     * @throws HpcException
+     */
+    public HpcDataObjectsDTO getDataObjects(List<HpcMetadataQuery> metadataQueries) 
+    		                               throws HpcException;
 }
 
  

@@ -12,12 +12,15 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -167,12 +170,39 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                 dataObjectRegistrationDTO.getLocations().getSource()); 
     }
     
+    @Override
+    public HpcDataObjectsDTO getDataObjects(List<HpcMetadataQuery> metadataQueries) 
+                                           throws HpcException
+    {
+    	logger.info("Invoking getDataObjects(List<HpcMetadataQuery>): " + 
+    			    metadataQueries);
+    	
+    	// Input validation.
+    	if(metadataQueries == null) {
+    	   throw new HpcException("Null metadata queries",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Construct the DTO.
+    	HpcDataObjectsDTO dataObjectsDTO = new HpcDataObjectsDTO();
+    	for(HpcDataObject dataObject : dataManagementService.getDataObjects(metadataQueries)) {
+    		// Get the metadata for this data object.
+    		List<HpcMetadataEntry> metadataEntries = 
+    		dataManagementService.getDataObjectMetadata(dataObject.getAbsolutePath());
+    		
+    		// Combine data object attributes and metadata into a single DTO.
+    		dataObjectsDTO.getDataObjects().add(toDTO(dataObject, metadataEntries));
+    	}
+    	
+    	return dataObjectsDTO;
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
     
     /**
-     * Create a collction DTO from domain objects.
+     * Create a collection DTO from domain objects.
      * 
      * @param collection The collection domain object.
      * @param metadataEntries The list of metadata domain objects.
@@ -188,6 +218,25 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	return collectionDTO;
+    }
+    
+    /**
+     * Create a data object DTO from domain objects.
+     * 
+     * @param data object The data object domain object.
+     * @param metadataEntries The list of metadata domain objects.
+     *
+     * @return The DTO.
+     */
+    private HpcDataObjectDTO toDTO(HpcDataObject dataObject, List<HpcMetadataEntry> metadataEntries) 
+    {
+    	HpcDataObjectDTO dataObjectDTO = new HpcDataObjectDTO();
+    	dataObjectDTO.setDataObject(dataObject);
+    	if(metadataEntries != null) {
+    	   dataObjectDTO.getMetadataEntries().addAll(metadataEntries);
+    	}
+    	
+    	return dataObjectDTO;
     }
 }
 

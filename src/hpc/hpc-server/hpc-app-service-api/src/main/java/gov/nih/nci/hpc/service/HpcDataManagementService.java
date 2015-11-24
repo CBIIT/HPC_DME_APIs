@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -89,7 +90,7 @@ public interface HpcDataManagementService
      * Get collections by metadata query.
      *
      * @param metadataQueries The metadata queries.
-     * @return HpcCollection list, or null if no results found.
+     * @return HpcCollection list.
      * 
      * @throws HpcException
      */
@@ -100,11 +101,32 @@ public interface HpcDataManagementService
      * Get metadata of a collection.
      *
      * @param path The collection path.
-     * @return HpcMetadataEntry collection, or null if no results found.
+     * @return HpcMetadataEntry collection.
      * 
      * @throws HpcException
      */
     public List<HpcMetadataEntry> getCollectionMetadata(String path) throws HpcException;
+    
+    /**
+     * Get data objects by metadata query.
+     *
+     * @param metadataQueries The metadata queries.
+     * @return HpcDataObject list.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcDataObject> getDataObjects(
+    		    List<HpcMetadataQuery> metadataQueries) throws HpcException;
+    
+    /**
+     * Get metadata of a data object.
+     *
+     * @param path The collection path.
+     * @return HpcMetadataEntry collection.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException;
 }
 
  
