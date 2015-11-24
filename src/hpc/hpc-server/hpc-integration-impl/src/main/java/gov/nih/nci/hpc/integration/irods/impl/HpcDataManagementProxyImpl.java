@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.integration.irods.impl;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -27,11 +28,13 @@ import org.irods.jargon.core.exception.InvalidInputParameterException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.Collection;
+import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.query.AVUQueryElement;
 import org.irods.jargon.core.query.AVUQueryElement.AVUQueryPart;
 import org.irods.jargon.core.query.AVUQueryOperatorEnum;
+import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -229,50 +232,36 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		    HpcIntegratedSystemAccount dataManagementAccount,
     		    List<HpcMetadataQuery> metadataQueries) throws HpcException
     {
-    	List<AVUQueryElement> queryElements = new ArrayList<AVUQueryElement>();
     	try {
-    		 // Prepare the Query.
-    		 for(HpcMetadataQuery metadataQuery : metadataQueries) {
-    			 AVUQueryOperatorEnum operator = valueOf(metadataQuery.getOperator());
-    			 
-    			 queryElements.add(
-    		          AVUQueryElement.instanceForValueQuery(AVUQueryPart.ATTRIBUTE, 
-    		        		                                operator, 
-    		    		                                    metadataQuery.getAttribute()));
-    			 queryElements.add(
-       		          AVUQueryElement.instanceForValueQuery(AVUQueryPart.VALUE, 
-       		        		                                operator, 
-       		        		                                metadataQuery.getValue()));
-    		 }
-    		 
     		 // Execute the query w/ Case insensitive query.
-             List<Collection> collections = 
+             List<Collection> irodsCollections = 
              irodsConnection.getCollectionAO(dataManagementAccount).
-                             findDomainByMetadataQuery(queryElements, 0, true);
+                             findDomainByMetadataQuery(toIRODSQuery(metadataQueries), 0, true);
              
              // Map the query results to a Domain POJO.
              List<HpcCollection> hpcCollections = new ArrayList<HpcCollection>();
-             if(collections != null) {
-                for(Collection collection : collections) {
+             if(irodsCollections != null) {
+                for(Collection irodsCollection : irodsCollections) {
             	    HpcCollection hpcCollection = new HpcCollection();
-            	    hpcCollection.setCollectionId(collection.getCollectionId());
-            	    hpcCollection.setCollectionName(collection.getCollectionName());
-            	    hpcCollection.setAbsolutePath(collection.getAbsolutePath());
-            	    hpcCollection.setCollectionParentName(collection.getCollectionParentName());
-            	    hpcCollection.setCollectionOwnerName(collection.getCollectionOwnerName());
-            	    hpcCollection.setCollectionOwnerZone(collection.getCollectionOwnerZone());
-            	    hpcCollection.setCollectionMapId(collection.getCollectionMapId());
-            	    hpcCollection.setCollectionInheritance(collection.getCollectionInheritance());
-            	    hpcCollection.setComments(collection.getComments());
-            	    hpcCollection.setInfo1(collection.getInfo1());
-            	    hpcCollection.setInfo2(collection.getInfo2());
+            	    hpcCollection.setCollectionId(irodsCollection.getCollectionId());
+            	    hpcCollection.setCollectionName(irodsCollection.getCollectionName());
+            	    hpcCollection.setAbsolutePath(irodsCollection.getAbsolutePath());
+            	    hpcCollection.setCollectionParentName(irodsCollection.getCollectionParentName());
+            	    hpcCollection.setCollectionOwnerName(irodsCollection.getCollectionOwnerName());
+            	    hpcCollection.setCollectionOwnerZone(irodsCollection.getCollectionOwnerZone());
+            	    hpcCollection.setCollectionMapId(irodsCollection.getCollectionMapId());
+            	    hpcCollection.setCollectionInheritance(irodsCollection.getCollectionInheritance());
+            	    hpcCollection.setComments(irodsCollection.getComments());
+            	    hpcCollection.setInfo1(irodsCollection.getInfo1());
+            	    hpcCollection.setInfo2(irodsCollection.getInfo2());
+            	    hpcCollection.setSpecColType(irodsCollection.getSpecColType().toString());
             	    
             	    Calendar createdAt = Calendar.getInstance();
-            	    createdAt.setTime(collection.getCreatedAt());
+            	    createdAt.setTime(irodsCollection.getCreatedAt());
             	    hpcCollection.setCreatedAt(createdAt);
             	    
             	    Calendar modifiedAt = Calendar.getInstance();
-            	    modifiedAt.setTime(collection.getModifiedAt());
+            	    modifiedAt.setTime(irodsCollection.getModifiedAt());
             	    hpcCollection.setModifiedAt(modifiedAt);
             	    
             	    hpcCollections.add(hpcCollection);
@@ -298,23 +287,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
    		    HpcIntegratedSystemAccount dataManagementAccount, 
    		    String path) throws HpcException
     {
-    	List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
-
 		try {
-			 List<MetaDataAndDomainData> metadataValues =
-			 irodsConnection.getCollectionAO(dataManagementAccount).findMetadataValuesForCollection(path);
-			 if(metadataValues != null) {
-		        for(MetaDataAndDomainData metadataValue : metadataValues) {
-		    	    HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
-		    	    metadataEntry.setAttribute(metadataValue.getAvuAttribute());
-		    	    metadataEntry.setValue(metadataValue.getAvuValue());
-		    	    String unit = metadataValue.getAvuUnit();
-		    	    metadataEntry.setUnit(unit != null && !unit.isEmpty() ? unit : null);
-		    	    metadataEntries.add(metadataEntry);
-		        }
-		     }
-			 
-			 return metadataEntries;
+			 return toHpcMetadata(irodsConnection.getCollectionAO(dataManagementAccount).
+					              findMetadataValuesForCollection(path));
 
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get metadata of a collection: " + 
@@ -323,7 +298,89 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		} finally {
 			       irodsConnection.closeConnection(dataManagementAccount);
 		}
-   }
+    }
+    
+    @Override
+    public List<HpcDataObject> getDataObjects(
+    		    HpcIntegratedSystemAccount dataManagementAccount,
+    		    List<HpcMetadataQuery> metadataQueries) throws HpcException
+    {
+    	try {
+    		 // Execute the query w/ Case insensitive query.
+             List<DataObject> irodsDataObjects = 
+             irodsConnection.getDataObjectAO(dataManagementAccount).
+                             findDomainByMetadataQuery(toIRODSQuery(metadataQueries), 0, true);
+             
+             // Map the query results to a Domain POJO.
+             List<HpcDataObject> hpcDataObjects = new ArrayList<HpcDataObject>();
+             if(hpcDataObjects != null) {
+                for(DataObject irodsDataObject : irodsDataObjects) {
+            	    HpcDataObject hpcDataObject = new HpcDataObject();
+            	    hpcDataObject.setId(irodsDataObject.getId());
+            	    hpcDataObject.setCollectionId(irodsDataObject.getCollectionId());
+            	    hpcDataObject.setCollectionName(irodsDataObject.getCollectionName());
+            	    hpcDataObject.setAbsolutePath(irodsDataObject.getAbsolutePath());
+            	    hpcDataObject.setDataReplicationNumber(irodsDataObject.getDataReplicationNumber());
+            	    hpcDataObject.setDataVersion(irodsDataObject.getDataVersion());
+            	    hpcDataObject.setDataSize(irodsDataObject.getDataSize());
+            	    hpcDataObject.setDataTypeName(irodsDataObject.getDataTypeName());
+            	    hpcDataObject.setResourceGroupName(irodsDataObject.getResourceGroupName());
+            	    hpcDataObject.setResourceName(irodsDataObject.getResourceName());
+            	    hpcDataObject.setDataPath(irodsDataObject.getDataPath());
+            	    hpcDataObject.setDataOwnerName(irodsDataObject.getDataOwnerName());
+            	    hpcDataObject.setDataOwnerZone(irodsDataObject.getDataOwnerZone());
+            	    hpcDataObject.setReplicationStatus(irodsDataObject.getReplicationStatus());
+            	    hpcDataObject.setDataStatus(irodsDataObject.getDataStatus());
+            	    hpcDataObject.setChecksum(irodsDataObject.getChecksum());
+            	    hpcDataObject.setExpiry(irodsDataObject.getExpiry());
+            	    hpcDataObject.setDataMapId(irodsDataObject.getDataMapId());
+            	    hpcDataObject.setComments(irodsDataObject.getComments());
+            	    hpcDataObject.setSpecColType(irodsDataObject.getSpecColType().toString());
+            	    
+            	    Calendar createdAt = Calendar.getInstance();
+            	    createdAt.setTime(irodsDataObject.getCreatedAt());
+            	    hpcDataObject.setCreatedAt(createdAt);
+            	    
+            	    Calendar updatedAt = Calendar.getInstance();
+            	    updatedAt.setTime(irodsDataObject.getUpdatedAt());
+            	    hpcDataObject.setUpdatedAt(updatedAt);
+
+            	    hpcDataObjects.add(hpcDataObject);
+                }
+             }
+             
+             return hpcDataObjects;
+             
+    	} catch(HpcException ex) {
+    		    throw ex;
+    		    
+		} catch(Exception e) {
+	            throw new HpcException("Failed to get data objects: " + 
+                                        e.getMessage(),
+                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} finally {
+		           irodsConnection.closeConnection(dataManagementAccount);
+		}
+    }
+    
+    @Override
+    public List<HpcMetadataEntry> getDataObjectMetadata(
+   		                          HpcIntegratedSystemAccount dataManagementAccount, 
+   		                          String path) throws HpcException
+    {
+    	
+		try {
+			 return toHpcMetadata(irodsConnection.getDataObjectAO(dataManagementAccount).
+					              findMetadataValuesForDataObject(path));
+	
+		} catch(Exception e) {
+	            throw new HpcException("Failed to get metadata of a collection: " + 
+	                                     e.getMessage(),
+	                                     HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} finally {
+			       irodsConnection.closeConnection(dataManagementAccount);
+		}
+	}
     
     //---------------------------------------------------------------------//
     // Helper Methods
@@ -350,7 +407,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     /**
-     * Get Query operator enum from a String
+     * Get Query operator enum from a String.
      *
      * @param operator The string
      * @return The enum value
@@ -363,10 +420,77 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		 return AVUQueryOperatorEnum.valueOf(operator);
     		 
     	} catch(Throwable t) {
-    		    throw new HpcException("Invalid query operator: " + operator,
+    		    StringBuffer operatorValues = new StringBuffer();
+    		    operatorValues.append("[ ");
+    		    for(AVUQueryOperatorEnum value : AVUQueryOperatorEnum.values()) {
+    		    	operatorValues.append(value + " | ");
+    		    }
+    		    operatorValues.replace(operatorValues.length() - 2, operatorValues.length(), "]");
+    		    
+    		    throw new HpcException("Invalid query operator: " + operator +
+    		    		               ". Valid values: " + operatorValues,
                                        HpcErrorType.INVALID_REQUEST_INPUT , t);
     	}
     }
+    
+    /**
+     * Prepare an iRODS query.
+     *
+     * @param metadataQueries The HPC metadata queries.
+     * @return The iRODS query.
+     * 
+     * @throws HpcException
+     */
+    private List<AVUQueryElement> toIRODSQuery(List<HpcMetadataQuery> metadataQueries)
+                                              throws HpcException
+    {
+    	List<AVUQueryElement> queryElements = new ArrayList<AVUQueryElement>();
+    	try {
+		     // Prepare the Query.
+		     for(HpcMetadataQuery metadataQuery : metadataQueries) {
+			     AVUQueryOperatorEnum operator = valueOf(metadataQuery.getOperator());
+			     queryElements.add(
+		              AVUQueryElement.instanceForValueQuery(AVUQueryPart.ATTRIBUTE, 
+		        		                                    operator, 
+		    		                                        metadataQuery.getAttribute()));
+			     queryElements.add(
+			    	  AVUQueryElement.instanceForValueQuery(AVUQueryPart.VALUE, 
+   		        		                                    operator, 
+   		        		                                    metadataQuery.getValue()));
+		     }
+		     
+		 } catch(JargonQueryException e) {
+			     throw new HpcException("Failed to get prepare iRODS query: " + 
+                                        e.getMessage(),
+                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		 }
+    	
+		 return queryElements;
+    }
+    
+    /**
+     * Convery iRODS metadata results to HPC metadata domain objects.
+     *
+     * @param metadataValues The iRODS metadata values
+     * @return HPCMetadataEntry list.
+     */
+    private List<HpcMetadataEntry> toHpcMetadata(List<MetaDataAndDomainData> metadataValues)
+    {
+    	List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
+	    if(metadataValues != null) {
+		   for(MetaDataAndDomainData metadataValue : metadataValues) {
+		       HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
+		       metadataEntry.setAttribute(metadataValue.getAvuAttribute());
+		       metadataEntry.setValue(metadataValue.getAvuValue());
+		       String unit = metadataValue.getAvuUnit();
+		       metadataEntry.setUnit(unit != null && !unit.isEmpty() ? unit : null);
+		       metadataEntries.add(metadataEntry);
+		   }
+	    }
+	    
+	    return metadataEntries;
+    }
+			 
 }
 
  

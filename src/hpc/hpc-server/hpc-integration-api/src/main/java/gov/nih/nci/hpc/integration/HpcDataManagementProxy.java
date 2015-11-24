@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.integration;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -110,7 +111,7 @@ public interface HpcDataManagementProxy
      *
      * @param dataManagementAccount The Data Management System account.
      * @param metadataQueries The metadata entries to query for.
-     * @return HpcDataset collection, or null if no results found.
+     * @return HpcCollection list.
      * 
      * @throws HpcException
      */
@@ -123,13 +124,39 @@ public interface HpcDataManagementProxy
      *
      * @param dataManagementAccount The Data Management System account.
      * @param path The collection path.
-     * @return HpcMetadataEntry collection, or null if no results found.
+     * @return HpcMetadataEntry list.
      * 
      * @throws HpcException
      */
     public List<HpcMetadataEntry> getCollectionMetadata(
    		                          HpcIntegratedSystemAccount dataManagementAccount, 
    		                          String path) throws HpcException;
+    
+    /**
+     * Get data objects by metadata query.
+     *
+     * @param dataManagementAccount The Data Management System account.
+     * @param metadataQueries The metadata entries to query for.
+     * @return HpcDataObject list.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcDataObject> getDataObjects(
+    		    HpcIntegratedSystemAccount dataManagementAccount,
+    		    List<HpcMetadataQuery> metadataQueries) throws HpcException;
+    
+    /**
+     * Get metadata of a data object.
+     *
+     * @param dataManagementAccount The Data Management System account.
+     * @param path The collection path.
+     * @return HpcMetadataEntry list.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcMetadataEntry> getDataObjectMetadata(
+   		                          HpcIntegratedSystemAccount dataManagementAccount, 
+   		                          String path) throws HpcException;    
 }
 
  

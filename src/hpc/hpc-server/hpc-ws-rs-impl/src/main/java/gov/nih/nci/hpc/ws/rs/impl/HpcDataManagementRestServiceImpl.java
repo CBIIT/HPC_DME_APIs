@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
@@ -97,16 +98,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	
     	HpcCollectionsDTO collections = null;
 		try {
-			 // Validate the metadata entries input (JSON) was parsed successfully.
-			 List<HpcMetadataQuery> queries = new ArrayList<HpcMetadataQuery>();
-			 for(HpcMetadataQueryParam queryParam : metadataQueries) {
-			     if(queryParam.getJSONParsingException() != null) {
-				    throw queryParam.getJSONParsingException();
-			     }
-			     queries.add(queryParam);
-			 }
-			 
-			 collections = dataManagementBusService.getCollections(queries);
+			 collections = dataManagementBusService.getCollections(
+					                     unmarshallQueryParams(metadataQueries));
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /collection/" + metadataQueries + 
@@ -140,18 +133,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     {
     	logger.info("Invoking RS: GET /dataObject/" + metadataQueries);
     	
-    	HpcCollectionsDTO collections = null;
+    	HpcDataObjectsDTO dataObjects = null;
 		try {
-			 // Validate the metadata entries input (JSON) was parsed successfully.
-			 List<HpcMetadataQuery> queries = new ArrayList<HpcMetadataQuery>();
-			 for(HpcMetadataQueryParam queryParam : metadataQueries) {
-			     if(queryParam.getJSONParsingException() != null) {
-				    throw queryParam.getJSONParsingException();
-			     }
-			     queries.add(queryParam);
-			 }
-			 
-			 collections = dataManagementBusService.getCollections(queries);
+			 dataObjects = dataManagementBusService.getDataObjects(
+					                     unmarshallQueryParams(metadataQueries));
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /dataObject/" + metadataQueries + 
@@ -159,7 +144,36 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return okResponse(collections, true);
+		return okResponse(dataObjects, true);
+    }
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//
+    
+    /**
+     * Unmarshall metadata query passed as JSON in a URL parameter.
+     * 
+     * @param metadataQueries The query params to unmarshall.
+     * @return List of HpcMetadataQuery.
+     * 
+     * @throws HpcException if the params unmarshalling failed.
+     */
+    
+    private List<HpcMetadataQuery> unmarshallQueryParams(
+    		                               List<HpcMetadataQueryParam> metadataQueries)
+    		                               throws HpcException
+    {
+		 // Validate the metadata entries input (JSON) was parsed successfully.
+		 List<HpcMetadataQuery> queries = new ArrayList<HpcMetadataQuery>();
+		 for(HpcMetadataQueryParam queryParam : metadataQueries) {
+		     if(queryParam.getJSONParsingException() != null) {
+			    throw queryParam.getJSONParsingException();
+		     }
+		     queries.add(queryParam);
+		 }
+		 
+		 return queries;
     }
 }
 
