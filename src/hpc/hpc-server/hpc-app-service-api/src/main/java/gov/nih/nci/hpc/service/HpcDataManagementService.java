@@ -43,10 +43,12 @@ public interface HpcDataManagementService
      * Create a data object's file.
      *
      * @param path The data object path.
+     * @param createParentPathDirectory If set to true, create the directory for the file.
      * 
      * @throws HpcException
      */
-    public void createFile(String path) throws HpcException;
+    public void createFile(String path, boolean createParentPathDirectory) 
+    		              throws HpcException;
 
     /**
      * Add metadata to a collection.
@@ -85,6 +87,16 @@ public interface HpcDataManagementService
     		                                         HpcFileLocation fileLocation,
     		                                         HpcFileLocation fileSource) 
     		                                        throws HpcException; 
+    
+    /**
+     * Get collection by its path..
+     *
+     * @param path The collection's path.
+     * @return HpcCollection
+     * 
+     * @throws HpcException
+     */
+    public HpcCollection getCollection(String path) throws HpcException;
     
     /**
      * Get collections by metadata query.

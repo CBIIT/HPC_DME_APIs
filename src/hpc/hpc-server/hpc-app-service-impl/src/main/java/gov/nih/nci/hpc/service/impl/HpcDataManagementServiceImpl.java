@@ -98,17 +98,28 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public void createFile(String path) throws HpcException
+    public void createFile(String path, boolean createParentPathDirectory) 
+    		              throws HpcException
     {
     	HpcIntegratedSystemAccount dataManagementAccount = getDataManagementAccount();
-    	// Check the path is available.
+    	
+    	// Validate the path is available.
     	if(dataManagementProxy.exists(dataManagementAccount, path)) {
     		throw new HpcException("Path already exists: " + path, 
     				               HpcRequestRejectReason.DATA_OBJECT_PATH_ALREADY_EXISTS);
     	}
     	
+    	//  Validate the parent directory exists.
+    	if(!createParentPathDirectory && 
+    	   !dataManagementProxy.isParentPathDirectory(dataManagementAccount, path)) {
+    		throw new HpcException("Invalid data object path. Directory doesn't exist: " + path, 
+                    HpcRequestRejectReason.INVALID_DATA_OBJECT_PATH);
+    	}
+    	
     	// Create the parent directory if it doesn't already exist.
-    	dataManagementProxy.createParentPathDirectory(dataManagementAccount, path);
+    	if(createParentPathDirectory) {
+    	   dataManagementProxy.createParentPathDirectory(dataManagementAccount, path);
+    	}
     	
     	// Create the data object file.
     	dataManagementProxy.createDataObjectFile(dataManagementAccount, path);
@@ -199,6 +210,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToDataObject(getDataManagementAccount(), 
        			                                    path, metadataEntries);    	
+    }
+    
+    @Override
+    public HpcCollection getCollection(String path) throws HpcException
+    {
+    	return dataManagementProxy.getCollection(getDataManagementAccount(), path);
     }
     
     @Override
