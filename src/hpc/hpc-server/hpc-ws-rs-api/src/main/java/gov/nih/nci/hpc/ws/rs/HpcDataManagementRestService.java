@@ -52,6 +52,17 @@ public interface HpcDataManagementRestService
 			           List<HpcMetadataEntry> metadataEntries);
 	
     /**
+     * GET Collection.
+     *
+     * @param path The collection path.
+     */
+	@PUT
+	@Path("/collection/{path:.*}")
+	@Consumes("application/json,application/xml")
+	@Produces("application/json,application/xml")
+	public Response getCollection(@PathParam("path") String path);
+	
+    /**
      * GET Collections by metadata query.
      *
      * @param metadataEntryQueries A list of metadata entries to query for.
