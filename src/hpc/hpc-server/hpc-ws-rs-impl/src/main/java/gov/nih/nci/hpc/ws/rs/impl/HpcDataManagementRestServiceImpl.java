@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.ws.rs.impl;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDTO;
@@ -90,6 +91,25 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		
 		return createdResponse(null);
 	}
+    
+    @Override
+    public Response getCollection(String path)
+    {	
+    	path = toAbsolutePath(path);
+    	logger.info("Invoking RS: GET /collection/" + path);
+    	
+    	HpcCollectionDTO collection = null;
+		try {
+			 collection = dataManagementBusService.getCollection(path);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /collection/" + path + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(collection, true);
+    }
     
     @Override
     public Response getCollections(List<HpcMetadataQueryParam> metadataQueries)
