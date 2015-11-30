@@ -104,6 +104,27 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
+    public HpcCollectionDTO getCollection(String path) throws HpcException
+    {
+    	logger.info("Invoking getCollection(String): " + path);
+    	
+    	// Input validation.
+    	if(path == null) {
+    	   throw new HpcException("Null colelction path",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Get the colelction.
+    	HpcCollection collection = dataManagementService.getCollection(path);
+    		
+    	// Get the metadata for this collection.
+    	List<HpcMetadataEntry> metadataEntries = 
+    		                   dataManagementService.getCollectionMetadata(path);
+    		
+    	return toDTO(collection, metadataEntries);
+    }
+    
+    @Override
     public HpcCollectionsDTO getCollections(List<HpcMetadataQuery> metadataQueries) 
                                            throws HpcException
     {
@@ -144,7 +165,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Append the path to the destination's base path (if a base path provided).
+    	// Calculated the data transfer destination absolute path by appending the path to the 
+    	// destination's base path (if a base path provided).
     	if(dataObjectRegistrationDTO.getLocations() != null &&
     	   dataObjectRegistrationDTO.getLocations().getDestination() != null) {
     	   String basePath = dataObjectRegistrationDTO.getLocations().getDestination().getPath();	
@@ -153,7 +175,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Create a data object file (in the data management system).
-    	dataManagementService.createFile(path);
+    	dataManagementService.createFile(path, false);
     	
 		// Transfer the file. 
         dataTransferService.transferData(dataObjectRegistrationDTO.getLocations());				 

@@ -49,6 +49,7 @@
 			<xsd:enumeration value="INVALID_DATA_TRANSFER_ACCOUNT" />
 			<xsd:enumeration value="INVALID_DATA_MANAGEMENT_ACCOUNT" />
 			<xsd:enumeration value="DATA_OBJECT_PATH_ALREADY_EXISTS" />
+			<xsd:enumeration value="INVALID_DATA_OBJECT_PATH" />
 			<xsd:enumeration value="DATASET_NAME_ALREADY_EXISTS" />
 			<xsd:enumeration value="METADATA_ITEM_ALREADY_EXISTS" />
 			<xsd:enumeration value="DATASET_NAME_SIZE_LIMITATION" />

@@ -81,6 +81,17 @@ public interface HpcDataManagementProxy
     		                            String path,
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException;
+    /**
+     * Check if a parent path is a directory.
+     *
+     * @param dataManagementAccount The Data Management System account.
+     * @param path The path.
+     * 
+     * @throws HpcException
+     */
+    public boolean isParentPathDirectory(HpcIntegratedSystemAccount dataManagementAccount, 
+    		                             String path)
+    		                             throws HpcException;   
     
     /**
      * Create a parent directory (if it doesn't exist already).
@@ -105,6 +116,18 @@ public interface HpcDataManagementProxy
     public boolean exists(HpcIntegratedSystemAccount dataManagementAccount, 
     		              String path)
     		             throws HpcException;  
+    
+    /**
+     * Get collection by its path.
+     *
+      *@param dataManagementAccount The Data Management System account.
+     * @param path The collection's path.
+     * @return HpcCollection.
+     * 
+     * @throws HpcException
+     */
+    public HpcCollection getCollection(HpcIntegratedSystemAccount dataManagementAccount,
+    		                           String path) throws HpcException;
     
     /**
      * Get collections by metadata query.

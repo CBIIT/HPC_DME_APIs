@@ -173,6 +173,28 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			       irodsConnection.closeConnection(dataManagementAccount);
 		}
     }
+    @Override    
+    public boolean isParentPathDirectory(
+    		                   HpcIntegratedSystemAccount dataManagementAccount, 
+    		                   String path) 
+    		                   throws HpcException
+    {
+		try {
+			 IRODSFileFactory irodsFileFactory = 
+					          irodsConnection.getIRODSFileFactory(dataManagementAccount);
+			 IRODSFile file = irodsFileFactory.instanceIRODSFile(path);
+			 IRODSFile parentPath = irodsFileFactory.instanceIRODSFile(file.getParent());
+			 return parentPath.isDirectory();
+			 
+		} catch(JargonException e) {
+		        throw new HpcException("Failed to get a path parent: " + 
+                                       e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		        
+		} finally {
+			       irodsConnection.closeConnection(dataManagementAccount);
+		}
+    }
     
     @Override    
     public void createParentPathDirectory(
@@ -228,6 +250,24 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
+    public HpcCollection getCollection(HpcIntegratedSystemAccount dataManagementAccount,
+    		                           String path) throws HpcException
+    {
+    	try {
+    		 // Execute the query w/ Case insensitive query.
+             return toHpcCollection(irodsConnection.getCollectionAO(dataManagementAccount).
+            		                                findByAbsolutePath(path));
+             
+		} catch(Exception e) {
+	            throw new HpcException("Failed to get Collection: " + 
+                                        e.getMessage(),
+                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} finally {
+		           irodsConnection.closeConnection(dataManagementAccount);
+		}
+    }
+    
+    @Override
     public List<HpcCollection> getCollections(
     		    HpcIntegratedSystemAccount dataManagementAccount,
     		    List<HpcMetadataQuery> metadataQueries) throws HpcException
@@ -242,29 +282,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
              List<HpcCollection> hpcCollections = new ArrayList<HpcCollection>();
              if(irodsCollections != null) {
                 for(Collection irodsCollection : irodsCollections) {
-            	    HpcCollection hpcCollection = new HpcCollection();
-            	    hpcCollection.setCollectionId(irodsCollection.getCollectionId());
-            	    hpcCollection.setCollectionName(irodsCollection.getCollectionName());
-            	    hpcCollection.setAbsolutePath(irodsCollection.getAbsolutePath());
-            	    hpcCollection.setCollectionParentName(irodsCollection.getCollectionParentName());
-            	    hpcCollection.setCollectionOwnerName(irodsCollection.getCollectionOwnerName());
-            	    hpcCollection.setCollectionOwnerZone(irodsCollection.getCollectionOwnerZone());
-            	    hpcCollection.setCollectionMapId(irodsCollection.getCollectionMapId());
-            	    hpcCollection.setCollectionInheritance(irodsCollection.getCollectionInheritance());
-            	    hpcCollection.setComments(irodsCollection.getComments());
-            	    hpcCollection.setInfo1(irodsCollection.getInfo1());
-            	    hpcCollection.setInfo2(irodsCollection.getInfo2());
-            	    hpcCollection.setSpecColType(irodsCollection.getSpecColType().toString());
-            	    
-            	    Calendar createdAt = Calendar.getInstance();
-            	    createdAt.setTime(irodsCollection.getCreatedAt());
-            	    hpcCollection.setCreatedAt(createdAt);
-            	    
-            	    Calendar modifiedAt = Calendar.getInstance();
-            	    modifiedAt.setTime(irodsCollection.getModifiedAt());
-            	    hpcCollection.setModifiedAt(modifiedAt);
-            	    
-            	    hpcCollections.add(hpcCollection);
+            	    hpcCollections.add(toHpcCollection(irodsCollection));
                 }
              }
              
@@ -469,10 +487,10 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     /**
-     * Convery iRODS metadata results to HPC metadata domain objects.
+     * Convert iRODS metadata results to HPC metadata domain objects.
      *
      * @param metadataValues The iRODS metadata values
-     * @return HPCMetadataEntry list.
+     * @return HpcMetadataEntry list.
      */
     private List<HpcMetadataEntry> toHpcMetadata(List<MetaDataAndDomainData> metadataValues)
     {
@@ -490,7 +508,43 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	    
 	    return metadataEntries;
     }
-			 
+    
+    /**
+     * Convert iRODS collection to HPC collection domain object.
+     *
+     * @param irodsCollection The iRODS collection.
+     * @return HpcCollection
+     */
+    private HpcCollection toHpcCollection(Collection irodsCollection)
+    {
+    	if(irodsCollection == null) {
+    	   return null;
+    	}
+	
+	    HpcCollection hpcCollection = new HpcCollection();
+	    hpcCollection.setCollectionId(irodsCollection.getCollectionId());
+	    hpcCollection.setCollectionName(irodsCollection.getCollectionName());
+	    hpcCollection.setAbsolutePath(irodsCollection.getAbsolutePath());
+	    hpcCollection.setCollectionParentName(irodsCollection.getCollectionParentName());
+	    hpcCollection.setCollectionOwnerName(irodsCollection.getCollectionOwnerName());
+	    hpcCollection.setCollectionOwnerZone(irodsCollection.getCollectionOwnerZone());
+	    hpcCollection.setCollectionMapId(irodsCollection.getCollectionMapId());
+	    hpcCollection.setCollectionInheritance(irodsCollection.getCollectionInheritance());
+	    hpcCollection.setComments(irodsCollection.getComments());
+	    hpcCollection.setInfo1(irodsCollection.getInfo1());
+	    hpcCollection.setInfo2(irodsCollection.getInfo2());
+	    hpcCollection.setSpecColType(irodsCollection.getSpecColType().toString());
+	    
+	    Calendar createdAt = Calendar.getInstance();
+	    createdAt.setTime(irodsCollection.getCreatedAt());
+	    hpcCollection.setCreatedAt(createdAt);
+	    
+	    Calendar modifiedAt = Calendar.getInstance();
+	    modifiedAt.setTime(irodsCollection.getModifiedAt());
+	    hpcCollection.setModifiedAt(modifiedAt);
+	    
+	    return hpcCollection;
+    }
 }
 
  
