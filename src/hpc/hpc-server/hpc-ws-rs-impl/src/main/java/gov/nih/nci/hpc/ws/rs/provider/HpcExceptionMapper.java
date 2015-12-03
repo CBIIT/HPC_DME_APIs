@@ -12,14 +12,12 @@ package gov.nih.nci.hpc.ws.rs.provider;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
-import gov.nih.nci.hpc.exception.HpcAuthenticationException;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
 /**
  * <p>
  * Mapping HPC Exceptions to REST response.
@@ -30,19 +28,18 @@ import javax.ws.rs.ext.ExceptionMapper;
  */
 
 public class HpcExceptionMapper 
-             implements ExceptionMapper<HpcAuthenticationException>
 {
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
-    // Enable/Disable stack trace print to exception DTO.
-    private boolean stackTraceEnabled = false;
-    
     // HTTP headers context instance.
 	@Context
     private HttpHeaders headers;
 	
+    // Enable/Disable stack trace print to exception DTO.
+    private boolean stackTraceEnabled = false;
+    
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -51,7 +48,7 @@ public class HpcExceptionMapper
      * Default Constructor disabled.
      * 
      */
-	private HpcExceptionMapper() throws HpcException
+	protected HpcExceptionMapper() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -63,7 +60,7 @@ public class HpcExceptionMapper
      * @param stackTraceEnabled If set to true, stack trace will be attached to
      *                          exception DTO.
      */
-    private HpcExceptionMapper(boolean stackTraceEnabled)
+    protected HpcExceptionMapper(boolean stackTraceEnabled)
     {
     	this.stackTraceEnabled = stackTraceEnabled;
     }  
@@ -71,6 +68,29 @@ public class HpcExceptionMapper
     //---------------------------------------------------------------------//
     // Methods
     //---------------------------------------------------------------------//
+    
+    /**
+     * Get the stack trace enabled indicator
+     *
+     * @return The indicator.
+     */
+    public boolean getStackTraceEnabled()
+    {
+    	return stackTraceEnabled;
+    }
+    
+    /**
+     * Get accepted media type.
+     *
+     * @return Accepted media type.
+     */
+    public MediaType getAcceptedMediaType()
+    {
+    	return headers != null && headers.getAcceptableMediaTypes() != null &&
+  			   !headers.getAcceptableMediaTypes().isEmpty() &&
+  			   headers.getAcceptableMediaTypes().get(0).equals(MediaType.APPLICATION_XML_TYPE) ?
+  			   MediaType.APPLICATION_XML_TYPE : MediaType.APPLICATION_JSON_TYPE;
+    }
     
     /**
      * Return an error REST response instance. 
@@ -111,41 +131,5 @@ public class HpcExceptionMapper
 		}
 		
     	return responseBuilder.entity(exceptionDTO);
-    }
-    
-    //---------------------------------------------------------------------//
-    // ExceptionMapper<HpcAuthenticationException>
-    //---------------------------------------------------------------------//  
-    
-    @Override
-    public Response toResponse(HpcAuthenticationException exception) 
-    {
-        HpcExceptionDTO exceptionDTO = new HpcExceptionDTO();
-    	exceptionDTO.setMessage("Access Denied: " + exception.getMessage());
-    	exceptionDTO.setErrorType(HpcErrorType.REQUEST_AUTHENTICATION_FAILED);
-    	
-    	if(stackTraceEnabled) {
-     	   exceptionDTO.setStackTrace(exception.getStackTraceString());
-     	}
-    	
-        return Response.status(Response.Status.UNAUTHORIZED).entity(exceptionDTO).
-        	   type(getAcceptedMediaType()).build();
-    }
-    
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-	
-    /**
-     * Get accepted media type.
-     *
-     * @return A The dataset Mongo collection.
-     */
-    private MediaType getAcceptedMediaType()
-    {
-    	return headers != null && headers.getAcceptableMediaTypes() != null &&
-  			   !headers.getAcceptableMediaTypes().isEmpty() &&
-  			   headers.getAcceptableMediaTypes().get(0).equals(MediaType.APPLICATION_XML_TYPE) ?
-  			   MediaType.APPLICATION_XML_TYPE : MediaType.APPLICATION_JSON_TYPE;
     }
 }
