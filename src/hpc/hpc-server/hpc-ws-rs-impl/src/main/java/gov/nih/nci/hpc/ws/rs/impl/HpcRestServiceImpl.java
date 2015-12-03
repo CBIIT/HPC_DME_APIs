@@ -22,6 +22,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * <p>
@@ -44,6 +45,7 @@ public abstract class HpcRestServiceImpl
 	
 	// The exception mapper (Exception to HTTP error code) instance.
 	@Autowired
+	@Qualifier("hpcExceptionMapper")
 	private HpcExceptionMapper exceptionMapper = null;
 	
 	// The API version interceptor.

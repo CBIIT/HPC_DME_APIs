@@ -88,9 +88,17 @@
 		<entry key="http://hpc.nci.nih.gov/domain/datamanagement" value="gov.nih.nci.hpc.domain.datamanagement" />
 	</util:map>
 
-	<!-- Exception Mapper Provider -->
+	<!-- Exception Mapper Providers -->
 	<bean id="hpcExceptionMapper" 
 	      class="gov.nih.nci.hpc.ws.rs.provider.HpcExceptionMapper">
+		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
+	</bean>
+	<bean id="hpcAuthenticationExceptionMapper" 
+	      class="gov.nih.nci.hpc.ws.rs.provider.HpcAuthenticationExceptionMapper">
+		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
+	</bean>
+	<bean id="hpcAuthorizationExceptionMapper" 
+	      class="gov.nih.nci.hpc.ws.rs.provider.HpcAuthorizationExceptionMapper">
 		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
 	</bean>
 	
@@ -98,6 +106,11 @@
 	<bean id="hpcAuthenticationInterceptor" 
 	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAuthenticationInterceptor">
 	      <constructor-arg value="${hpc.ws.rs.ldapAuthentication}" />
+	</bean>
+	
+	<!-- Authorization Interceptor -->
+	<bean id="hpcAuthorizationInterceptor" class="org.apache.cxf.interceptor.security.SecureAnnotationsInterceptor">
+   		<property name="securedObject" ref="hpcUserRestService"/>
 	</bean>
 	      
 	<!-- API Version Interceptor -->
@@ -125,10 +138,12 @@
 		<jaxrs:providers>
 			<ref bean="jaxbProvider" />
 			<ref bean="jsonProvider" />
-			<ref bean="hpcExceptionMapper" />
+			<ref bean="hpcAuthenticationExceptionMapper" />
+			<ref bean="hpcAuthorizationExceptionMapper" />
 		</jaxrs:providers>
 		<jaxrs:inInterceptors>
 			<ref bean="hpcAuthenticationInterceptor" />
+			<ref bean="hpcAuthorizationInterceptor" />
       	</jaxrs:inInterceptors>
       	<jaxrs:outInterceptors>
       		<ref bean="hpcAPIVersionInterceptor" />
@@ -146,10 +161,12 @@
 		<jaxrs:providers>
 			<ref bean="jaxbProvider" />
 			<ref bean="jsonProvider" />
-			<ref bean="hpcExceptionMapper" />
+			<ref bean="hpcAuthenticationExceptionMapper" />
+			<ref bean="hpcAuthorizationExceptionMapper" />
 		</jaxrs:providers>
 		<jaxrs:inInterceptors>
 			<ref bean="hpcAuthenticationInterceptor" /> 
+			<ref bean="hpcAuthorizationInterceptor" />
       </jaxrs:inInterceptors>
 	</jaxrs:server>
 </beans>
