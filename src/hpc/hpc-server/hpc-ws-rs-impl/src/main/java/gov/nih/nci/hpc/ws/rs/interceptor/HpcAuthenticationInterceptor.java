@@ -15,10 +15,13 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcAuthenticationException;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import org.apache.cxf.common.security.SimpleSecurityContext;
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
+import org.apache.cxf.interceptor.security.SecureAnnotationsInterceptor;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
+import org.apache.cxf.security.SecurityContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,13 +63,17 @@ public class HpcAuthenticationInterceptor
     }
     
     /**
-     * Constructoe for Sprind Dependency Injection.
+     * Constructor for Spring Dependency Injection.
      * 
+     * @param ldapAuthentication Enable LDAP authentication indicator.
      */
     private HpcAuthenticationInterceptor(boolean ldapAuthentication) 
     {
         super(Phase.RECEIVE);
         this.ldapAuthentication = ldapAuthentication;
+        
+        // We need to authenticate first, and then authorize.
+        getBefore().add(SecureAnnotationsInterceptor.class.getName());
     }
     
     //---------------------------------------------------------------------//
@@ -90,7 +97,11 @@ public class HpcAuthenticationInterceptor
              if(!userBusService.authenticate(userId, password, ldapAuthentication)) {
                 throw new HpcAuthenticationException("Invalid NCI user credentials"); 
              }
-	       
+             
+             // Set a security context with the user's role.
+             HpcSecurityContext sc = new HpcSecurityContext("admin");
+             message.put(SecurityContext.class, sc);
+             
         } catch(HpcException e) {
         	    throw new HpcAuthenticationException(e.getMessage(), e);
         	    
