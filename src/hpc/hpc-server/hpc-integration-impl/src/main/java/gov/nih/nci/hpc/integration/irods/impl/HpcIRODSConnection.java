@@ -24,6 +24,7 @@ import org.irods.jargon.core.pub.CollectionAO;
 import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactoryImpl;
 import org.irods.jargon.core.pub.IRODSFileSystem;
+import org.irods.jargon.core.pub.UserAO;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -185,6 +186,29 @@ public class HpcIRODSConnection
     }
     
     /**
+     * Get iRODS User AO instance.
+     *
+     * @param dataManagementAccount The Data Management System account.
+     * 
+     * @throws HpcException
+     */
+    public UserAO getUserAO(
+    		               HpcIntegratedSystemAccount dataManagementAccount) 
+    		               throws HpcException
+    {
+    	try {
+			 return irodsFileSystem.getIRODSAccessObjectFactory().getUserAO(
+					                   getIrodsAccount(dataManagementAccount));
+			 
+		} catch(JargonException e) {
+			    throw new HpcException(
+			                 "Failed to get iRODs User Access Object: " + 
+	                         e.getMessage(),
+                             HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		}	
+    }
+    
+    /**
      * Get iRODS file factory instance.
      *
      * @param dataManagementAccount The Data Management System account.
@@ -213,7 +237,8 @@ public class HpcIRODSConnection
      *
      * @throws HpcException
      */
-    private IRODSAccount getIrodsAccount(HpcIntegratedSystemAccount dataManagementAccount) throws HpcException
+    private IRODSAccount getIrodsAccount(HpcIntegratedSystemAccount dataManagementAccount) 
+    		                            throws HpcException
     {
     	try {
     		IRODSAccount irodsAccount = 
@@ -225,7 +250,8 @@ public class HpcIRODSConnection
     		irodsAccount.setAuthenticationScheme(irodsAuthentication);
     		IRODSSession session = new IRODSSession(new IRODSSimpleProtocolManager());
     		
-    		AuthResponse authResponse = new IRODSAccessObjectFactoryImpl(session).authenticateIRODSAccount(irodsAccount);
+    		AuthResponse authResponse = new IRODSAccessObjectFactoryImpl(session).
+    				                        authenticateIRODSAccount(irodsAccount);
     		return authResponse.getAuthenticatedIRODSAccount();
     		
     	} catch(JargonException e) {

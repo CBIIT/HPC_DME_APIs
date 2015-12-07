@@ -34,8 +34,6 @@
 	<!-- OSGi beans export -->
 	<osgi:service ref="hpcUserService" 
 	              interface="gov.nih.nci.hpc.service.HpcUserService" />
-	<osgi:service ref="hpcLdapAuthenticationService" 
-	              interface="gov.nih.nci.hpc.service.HpcLdapAuthenticationService" />
 	<osgi:service ref="hpcDatasetService"
 		          interface="gov.nih.nci.hpc.service.HpcDatasetService" />
 	<osgi:service ref="hpcDataTransferService"

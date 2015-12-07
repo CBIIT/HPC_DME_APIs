@@ -165,9 +165,12 @@
 			<ref bean="hpcAuthorizationExceptionMapper" />
 		</jaxrs:providers>
 		<jaxrs:inInterceptors>
-			<ref bean="hpcAuthenticationInterceptor" /> 
+			<ref bean="hpcAuthenticationInterceptor" />
 			<ref bean="hpcAuthorizationInterceptor" />
-      </jaxrs:inInterceptors>
+      	</jaxrs:inInterceptors>
+      	<jaxrs:outInterceptors>
+      		<ref bean="hpcAPIVersionInterceptor" />
+      	</jaxrs:outInterceptors>
 	</jaxrs:server>
 </beans>
 

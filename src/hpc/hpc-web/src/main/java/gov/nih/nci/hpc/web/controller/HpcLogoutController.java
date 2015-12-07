@@ -9,8 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
-import gov.nih.nci.hpc.web.model.HpcLogin;
+import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 
 import javax.servlet.http.HttpSession;
 
@@ -35,7 +34,7 @@ public class HpcLogoutController extends AbstractHpcController {
 
   @RequestMapping(method = RequestMethod.GET)
   public String home(Model model, HttpSession session){
-	  HpcUserCredentialsDTO hpcLogin = new HpcUserCredentialsDTO();
+	  HpcAuthenticationRequestDTO hpcLogin = new HpcAuthenticationRequestDTO();
 	  model.addAttribute("hpcLogin", hpcLogin);
 	  session.invalidate();
 	  session = null;

@@ -29,7 +29,7 @@ import java.util.List;
 public interface HpcUserService 
 {         
     /**
-     * Add user.
+     * Add a user.
      *
      * @param nciAccount The user's NCI account.
      * @param dataTransferAccount The user's data transfer account.
@@ -37,13 +37,13 @@ public interface HpcUserService
      * 
      * @throws HpcException
      */
-    public void add(HpcNciAccount nciAccount, 
-    		        HpcIntegratedSystemAccount dataTransferAccount,
-    		        HpcIntegratedSystemAccount dataManagementAccount) 
-    		       throws HpcException;
+    public void addUser(HpcNciAccount nciAccount, 
+    		            HpcIntegratedSystemAccount dataTransferAccount,
+    		            HpcIntegratedSystemAccount dataManagementAccount) 
+    		           throws HpcException;
     
     /**
-     * Get user.
+     * Get a user.
      *
      * @param nciUserId The managed user NCI ID.
      * @return The managed user.
@@ -78,6 +78,17 @@ public interface HpcUserService
      * @param user The user to set as the service call invoker.
      */
     public void setRequestInvoker(HpcUser user);
+    
+    /**
+     * Authenticate a user (via LDAP).
+     *
+     * @param userName The user's name.
+     * @param password The password.
+     * @return true if the user was successfully authenticated, or false otherwise.
+     * 
+     * @throws HpcException
+     */
+    public boolean authenticate(String userName, String password) throws HpcException;
 }
 
  

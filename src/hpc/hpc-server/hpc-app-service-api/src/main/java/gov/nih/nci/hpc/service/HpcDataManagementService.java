@@ -139,6 +139,15 @@ public interface HpcDataManagementService
      * @throws HpcException
      */
     public List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException;
+    
+    /**
+     * Get the user type of this service invoker.
+     *
+     * @return The user's type
+     * 
+     * @throws HpcException
+     */
+    public String getUserType() throws HpcException;   
 }
 
  

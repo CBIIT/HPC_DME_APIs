@@ -10,13 +10,14 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
-import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
+import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -39,7 +40,7 @@ public interface HpcUserRestService
      *
      * @param userRegistrationDTO The user DTO to register.
      */
-    @POST
+    @PUT
     @Path("/user")
     @Consumes("application/json,application/xml")
     public Response registerUser(HpcUserDTO userRegistrationDTO);
@@ -53,20 +54,19 @@ public interface HpcUserRestService
     @GET
     @Path("/user/{nciUserId}")
     @Produces("application/json,application/xml")
-    @RolesAllowed("admin")
+    @RolesAllowed("rodsadmin")
     public Response getUser(@PathParam("nciUserId") String nciUserId); 
 
     /**
-     * Authenticate
+     * Authenticate a user.
      *
-     * @param nciUserId The registered user ID.
-     * @param password NCI LDAP password
-     * @return boolean entity.
+     * @param authenticationRequest The authentication request.
+     * @return gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO entity.
      */
     @POST
     @Path("/user/authenticate")
     @Consumes("application/json,application/xml")
-    public Response authenticate(HpcUserCredentialsDTO credentials);
+    public Response authenticate(HpcAuthenticationRequestDTO authenticationRequest);
 }
 
  
