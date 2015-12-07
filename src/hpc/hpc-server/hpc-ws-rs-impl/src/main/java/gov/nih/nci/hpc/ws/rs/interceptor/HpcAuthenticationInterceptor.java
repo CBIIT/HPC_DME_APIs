@@ -12,10 +12,11 @@ package gov.nih.nci.hpc.ws.rs.interceptor;
 
 import gov.nih.nci.hpc.bus.HpcUserBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
+import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.exception.HpcAuthenticationException;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import org.apache.cxf.common.security.SimpleSecurityContext;
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.interceptor.security.SecureAnnotationsInterceptor;
 import org.apache.cxf.message.Message;
@@ -87,19 +88,24 @@ public class HpcAuthenticationInterceptor
     @Override
     public void handleMessage(Message message) 
     {
-    	// Get and validate the authortization policy set by the caller.
+    	// Get and validate the authorization policy set by the caller.
+    	HpcAuthenticationRequestDTO authenticationRequest = new HpcAuthenticationRequestDTO();
     	AuthorizationPolicy policy = message.get(AuthorizationPolicy.class);
-    	String userId = policy != null ? policy.getUserName() : null;
-    	String password = policy != null ? policy.getPassword() : null;
+    	if(policy != null) {
+    	   authenticationRequest.setUserName(policy.getUserName());
+    	   authenticationRequest.setPassword(policy.getPassword());
+    	}
     	
     	// Authenticate the caller (if configured to do so) and populate the request context.
         try {
-             if(!userBusService.authenticate(userId, password, ldapAuthentication)) {
+        	 HpcAuthenticationResponseDTO authenticationResponse =
+        	    userBusService.authenticate(authenticationRequest, ldapAuthentication);
+             if(!authenticationResponse.getAuthenticated()) {
                 throw new HpcAuthenticationException("Invalid NCI user credentials"); 
              }
              
              // Set a security context with the user's role.
-             HpcSecurityContext sc = new HpcSecurityContext("admin");
+             HpcSecurityContext sc = new HpcSecurityContext(authenticationResponse.getUserRole());
              message.put(SecurityContext.class, sc);
              
         } catch(HpcException e) {

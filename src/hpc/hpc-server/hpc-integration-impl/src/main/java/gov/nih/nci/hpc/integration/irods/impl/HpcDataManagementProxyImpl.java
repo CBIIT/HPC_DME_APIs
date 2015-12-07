@@ -29,6 +29,7 @@ import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.Collection;
 import org.irods.jargon.core.pub.domain.DataObject;
+import org.irods.jargon.core.pub.domain.User;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.query.AVUQueryElement;
@@ -386,7 +387,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
    		                          HpcIntegratedSystemAccount dataManagementAccount, 
    		                          String path) throws HpcException
     {
-    	
 		try {
 			 return toHpcMetadata(irodsConnection.getDataObjectAO(dataManagementAccount).
 					              findMetadataValuesForDataObject(path));
@@ -399,6 +399,24 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			       irodsConnection.closeConnection(dataManagementAccount);
 		}
 	}
+    
+    @Override
+    public String getUserType(HpcIntegratedSystemAccount dataManagementAccount) 
+                             throws HpcException
+    {
+		try {
+			 User user = irodsConnection.getUserAO(dataManagementAccount).
+					                     findByName(dataManagementAccount.getUsername());
+			 return user != null ? user.getUserType().getTextValue() : null;
+	
+		} catch(Exception e) {
+	            throw new HpcException("Failed to get user type: " + 
+	                                     e.getMessage(),
+	                                     HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} finally {
+			       irodsConnection.closeConnection(dataManagementAccount);
+		}
+	}    	
     
     //---------------------------------------------------------------------//
     // Helper Methods

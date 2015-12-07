@@ -33,11 +33,21 @@
 		</xsd:complexType>
 	</xsd:element>
 	
-	<xsd:element name="HpcUserCredentialsDTO">
+	<!--  Authentication Request / Response -->
+	<xsd:element name="HpcAuthenticationRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="userName" type="xsd:string" />
 				<xsd:element name="password" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="HpcAuthenticationResponseDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="authenticated" type="xsd:boolean" />
+				<xsd:element name="userRole" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

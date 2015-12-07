@@ -9,7 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
+import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 
 import java.net.URI;
@@ -63,14 +63,14 @@ public class HpcLoginController extends AbstractHpcController {
 
   @RequestMapping(method = RequestMethod.GET)
   public String home(Model model){
-	  HpcUserCredentialsDTO hpcLogin = new HpcUserCredentialsDTO();
+	  HpcAuthenticationRequestDTO hpcLogin = new HpcAuthenticationRequestDTO();
 	  model.addAttribute("hpcLogin", hpcLogin);
 	  model.addAttribute("ldap", loginModule.equals("ldap")?"true":"false");
       return "index";
   }
 
   @RequestMapping(method = RequestMethod.POST)
-  public String login(@Valid @ModelAttribute("hpcLogin") HpcUserCredentialsDTO hpcLogin, BindingResult bindingResult, Model model, HttpSession session) {
+  public String login(@Valid @ModelAttribute("hpcLogin") HpcAuthenticationRequestDTO hpcLogin, BindingResult bindingResult, Model model, HttpSession session) {
       if (bindingResult.hasErrors()) {
           return "index";
       }
