@@ -10,7 +10,8 @@
 
 package gov.nih.nci.hpc.bus;
 
-import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
+import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
+import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -47,29 +48,18 @@ public interface HpcUserBusService
     
     
     /**
-     * Authenticate User by NCI LDAP credentials.
+     * Authenticate user.
      *
-     * @param credentials The user's NCI user id and password.
+     * @param authenticationRequest The authentication request.
      * @param ldapAuthentication Set to true if LDAP authentication should be performed.
-     * @return boolean Returns true if the user was successfully authenticated.
+     * @return HpcAuthenticationResponseDTO Authentication results.
      * 
      * @throws HpcException
      */
-    public boolean authenticate(HpcUserCredentialsDTO credentials) throws HpcException;  
-    
-    /**
-     * Authenticate User and populate the request context with the user.
-     * LDAP authentication is optional.
-     *
-     * @param nciUserId The user ID.
-     * @param password The password.
-     * @param ldapAuthentication LDAP authentication will be skipped if this is set to false
-     * @return boolean Returns true if the user was successfully authenticated.
-     * 
-     * @throws HpcException
-     */
-    public boolean authenticate(String nciUserId, String password, boolean ldapAuthentication)
-    		                   throws HpcException; 
+    public HpcAuthenticationResponseDTO authenticate(
+    		                            HpcAuthenticationRequestDTO authenticationRequest,
+    		                            boolean ldapAuthentication) 
+    		                            throws HpcException;  
 }
 
  

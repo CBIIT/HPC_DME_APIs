@@ -270,6 +270,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
                                                          path);
     }
     
+    @Override
+    public String getUserType() throws HpcException
+    {
+    	return dataManagementProxy.getUserType(getDataManagementAccount());
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  

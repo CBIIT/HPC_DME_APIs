@@ -9,8 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
-import gov.nih.nci.hpc.web.model.HpcLogin;
+import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -39,7 +38,7 @@ public class HpcDataManagementController extends AbstractHpcController {
 
   @RequestMapping(method = RequestMethod.GET)
   public String index(Model model){
-	  HpcUserCredentialsDTO hpcLogin = new HpcUserCredentialsDTO();
+	  HpcAuthenticationRequestDTO hpcLogin = new HpcAuthenticationRequestDTO();
 	  model.addAttribute("hpcLogin", hpcLogin);
 	  model.addAttribute("ldap", loginModule.equals("ldap")?"true":"false");
       return "index";

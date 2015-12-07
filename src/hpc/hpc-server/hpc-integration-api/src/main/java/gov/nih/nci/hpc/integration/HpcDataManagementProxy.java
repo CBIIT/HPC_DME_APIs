@@ -179,7 +179,18 @@ public interface HpcDataManagementProxy
      */
     public List<HpcMetadataEntry> getDataObjectMetadata(
    		                          HpcIntegratedSystemAccount dataManagementAccount, 
-   		                          String path) throws HpcException;    
+   		                          String path) throws HpcException;   
+    
+    /**
+     * Get the user type.
+     *
+     * @param dataManagementAccount The Data Management System account.
+     * @return The user's type.
+     * 
+     * @throws HpcException
+     */
+    public String getUserType(HpcIntegratedSystemAccount dataManagementAccount) 
+    		                 throws HpcException;   
 }
 
  
