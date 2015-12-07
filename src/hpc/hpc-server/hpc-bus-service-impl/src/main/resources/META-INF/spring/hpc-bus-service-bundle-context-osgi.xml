@@ -49,8 +49,6 @@
 		            interface="gov.nih.nci.hpc.service.HpcTransferStatusService" />		
 	<osgi:reference id="hpcProjectService"
 		            interface="gov.nih.nci.hpc.service.HpcProjectService" />
-	<osgi:reference id="hpcLdapAuthenticationService"
-		            interface="gov.nih.nci.hpc.service.HpcLdapAuthenticationService" />
 	<osgi:reference id="hpcDataManagementService"
 		            interface="gov.nih.nci.hpc.service.HpcDataManagementService" />
 

@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
@@ -50,7 +51,11 @@ public class HpcUserServiceImpl implements HpcUserService
     // The Data Transfer Service instance.
 	@Autowired
     private HpcDataTransferService dataTransferService = null;
-    
+	
+	// The LDAP authenticator instance.
+	@Autowired
+	HpcLdapAuthenticationProxy ldapAuthenticationProxy = null;
+	
     // The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -77,10 +82,10 @@ public class HpcUserServiceImpl implements HpcUserService
     //---------------------------------------------------------------------//  
     
     @Override
-    public void add(HpcNciAccount nciAccount, 
-	                HpcIntegratedSystemAccount dataTransferAccount,
-	                HpcIntegratedSystemAccount dataManagementAccount) 
-	               throws HpcException
+    public void addUser(HpcNciAccount nciAccount, 
+	                    HpcIntegratedSystemAccount dataTransferAccount,
+	                    HpcIntegratedSystemAccount dataManagementAccount) 
+	                   throws HpcException
     {
     	// Input validation.
     	if(!isValidNciAccount(nciAccount) ||
@@ -157,6 +162,22 @@ public class HpcUserServiceImpl implements HpcUserService
     {
     	HpcRequestContext.setRequestInvoker(user);
     }
+    
+    @Override
+	public boolean authenticate(String userName, String password) throws HpcException
+	{
+    	// Input validation.
+		if(userName == null || userName.trim().length() == 0) {
+		   throw new HpcException("User name cannot be null or empty", 
+				                  HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if(password == null || password.trim().length() == 0) {
+		   throw new HpcException("Password cannot be null or empty", 
+				                  HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		return ldapAuthenticationProxy.authenticate(userName, password);
+	}
 }
 
  

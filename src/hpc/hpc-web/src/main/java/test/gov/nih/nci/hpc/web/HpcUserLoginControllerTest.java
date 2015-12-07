@@ -1,6 +1,6 @@
 package test.gov.nih.nci.hpc.web;
 
-import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
+import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.web.Application;
 
 import javax.ws.rs.client.Client;
@@ -41,7 +41,7 @@ public class HpcUserLoginControllerTest {
 
 	@Test
 	public void login() throws Exception {
-		  HpcUserCredentialsDTO dto = new HpcUserCredentialsDTO();
+		  HpcAuthenticationRequestDTO dto = new HpcAuthenticationRequestDTO();
 		  dto.setUserName("konkapv");
 		  dto.setPassword("xyz");
 

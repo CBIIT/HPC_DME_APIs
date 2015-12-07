@@ -20,7 +20,6 @@ import org.globusonline.nexus.exception.InvalidCredentialsException;
 import org.globusonline.transfer.APIError;
 import org.globusonline.transfer.BaseTransferAPIClient;
 import org.globusonline.transfer.JSONTransferAPIClient;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,60 +156,6 @@ public class HpcDataTransferProxyImpl
         }
     }
 
-    
-    private boolean createDestinationDirectory(String destinationEndpoint, String destinationPath, String destinationFileName)
-           throws HpcException 
-    {
-    	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();
-		try 
-		{
-			logger.info("Creating a directory at endpoint :" + destinationEndpoint);
-			JSONTransferAPIClient.Result r;
-			JSONObject mkDirectory = new JSONObject();			
-			mkDirectory.put("path", destinationPath+"/"+destinationFileName);
-			mkDirectory.put("DATA_TYPE", "mkdir");
-			logger.info("Submitting create directory request :" + mkDirectory.toString());
-			r = client.postResult(client.endpointPath(destinationEndpoint) + "/mkdir", mkDirectory);
-            String code = r.document.getString("code");
-            if (code.startsWith("DirectoryCreated")) 
-           	 	return true;
-           	 else
-           		return false;					
-		} 
-		catch(Exception e) 
-		{
-			throw new HpcException(
-			 "Failed to create directory: " + destinationPath, 
-			 HpcErrorType.DATA_TRANSFER_ERROR, e);
-		}
-    }
-    
-    
-    private boolean checkIfDirectoryExists(String endpointName, String destinationFilePath,String destinationFileName)
-    throws HpcException {
-    	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();
-    	boolean directoryExists = false;
-		try 
-		{  
-			JSONTransferAPIClient.Result endPointList;
-	    	endPointList = client.endpointLs(endpointName, destinationFilePath);
-	
-	        JSONArray fileArray = endPointList.document.getJSONArray("DATA");
-	        for (int i=0; i < fileArray.length(); i++) {
-	            JSONObject fileObject = fileArray.getJSONObject(i);
-	            if (fileObject.getString("name") != null && fileObject.getString("name").equals(destinationFileName))
-	            	directoryExists = true;
-	        }
-		}
-		catch(Exception e) 
-		{
-			throw new HpcException(
-			 "Failed to check the directory exists: " + destinationFileName, 
-			 HpcErrorType.DATA_TRANSFER_ERROR, e);
-		}
-		return directoryExists;
-    }    
-    
     @Override
     public HpcDataTransferReport getTaskStatusReport(HpcIntegratedSystemAccount dataTransferAccount,
     		                                         String taskId)

@@ -16,10 +16,11 @@ import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
-import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
+import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
+import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.service.HpcLdapAuthenticationService;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
 import org.slf4j.Logger;
@@ -47,8 +48,8 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     private HpcUserService userService = null;
 	
 	@Autowired
-    private HpcLdapAuthenticationService authService = null;
-    
+    private HpcDataManagementService dataManagementService = null;
+	
     // The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -88,9 +89,9 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	}
     	
     	// Add the user to the managed collection.
-    	userService.add(userRegistrationDTO.getNciAccount(), 
-    			        userRegistrationDTO.getDataTransferAccount(),
-    			        userRegistrationDTO.getDataManagementAccount());
+    	userService.addUser(userRegistrationDTO.getNciAccount(), 
+    			            userRegistrationDTO.getDataTransferAccount(),
+    			            userRegistrationDTO.getDataManagementAccount());
     }
     
     @Override
@@ -119,36 +120,36 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     }
     
     @Override
-    public boolean authenticate(HpcUserCredentialsDTO credentials) throws HpcException
-    {
-    	return authService.authenticate(credentials.getUserName(), credentials.getPassword());
-    }
-    
-    @Override
-    public boolean authenticate(String nciUserId, String password, boolean ldapAuthentication) 
-                               throws HpcException
+    public HpcAuthenticationResponseDTO authenticate(
+    		                HpcAuthenticationRequestDTO authenticationRequest, 
+    		                boolean ldapAuthentication) 
+                            throws HpcException
     {
     	// Input Validation
-    	if(nciUserId == null || password == null) {
-      	   throw new HpcException("User credentials (user-id and/or password) not provided",
+    	if(authenticationRequest == null) {
+      	   throw new HpcException("Null authentication request",
       			                  HpcErrorType.INVALID_REQUEST_INPUT); 	
       	}
     	
     	// LDAP authentication.
-    	boolean userAuthenticated = ldapAuthentication ? 
-    			                    authService.authenticate(nciUserId, password) : false;
+    	boolean userAuthenticated =
+    			    ldapAuthentication ? 
+    			        userService.authenticate(authenticationRequest.getUserName(), 
+    			                         		 authenticationRequest.getPassword()) : 
+    			        false;
                     
     	// Get the HPC user.
     	HpcUser user = null;
     	try {
-    	     user = userService.getUser(nciUserId);
+    	     user = userService.getUser(authenticationRequest.getUserName());
 			
     	} catch(HpcException e) {
     	}
     	
     	if(user == null) {
     	   // This is a request from a user that is not registered with HPC.
-    	   logger.info("Service call for a user that is not registered with HPC. NCI User-id: " + nciUserId);
+    	   logger.info("Service call for a user that is not registered with HPC. NCI User-id: " + 
+    	               authenticationRequest.getUserName());
     	
     	   user = new HpcUser();
  		   HpcNciAccount nciAccount = new HpcNciAccount();
@@ -163,16 +164,20 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	if(userAuthenticated) {
     	   HpcIntegratedSystemAccount dataManagementAccount = new HpcIntegratedSystemAccount();
     	   dataManagementAccount.setIntegratedSystem(HpcIntegratedSystem.IRODS);
-    	   dataManagementAccount.setUsername(nciUserId);
-    	   dataManagementAccount.setPassword(password);
+    	   dataManagementAccount.setUsername(authenticationRequest.getUserName());
+    	   dataManagementAccount.setPassword(authenticationRequest.getPassword());
     	   user.setDataManagementAccount(dataManagementAccount);
     	}
     	
     	// Populate the request context with the HPC user.
     	userService.setRequestInvoker(user);
     	
-    	return ldapAuthentication ? userAuthenticated : true;	                
-   
+    	// Prepare and return a response DTO.
+    	HpcAuthenticationResponseDTO authenticationResponse = new HpcAuthenticationResponseDTO();
+    	authenticationResponse.setAuthenticated(ldapAuthentication ? userAuthenticated : true);	                
+    	authenticationResponse.setUserRole(dataManagementService.getUserType());
+    	
+    	return authenticationResponse;
     }
 }
 

@@ -11,8 +11,8 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcUserBusService;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.dto.user.HpcUserCredentialsDTO;
+import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
+import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcUserRestService;
@@ -102,25 +102,21 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response authenticate(HpcUserCredentialsDTO credentials)
+    public Response authenticate(HpcAuthenticationRequestDTO authenticationRequest)
     {
-		logger.info("Invoking RS: POST /user/authenticate: " + credentials.getUserName());
-		boolean valid = false;
+		logger.info("Invoking RS: POST /user/authenticate: " + authenticationRequest.getUserName());
+		
+		HpcAuthenticationResponseDTO authenticationResponse = null;
 		try {
-			 valid = userBusService.authenticate(credentials); 
+			 authenticationResponse = userBusService.authenticate(authenticationRequest, true); 
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /user/{nciUserId} failed:", e);
+			    logger.error("RS: POST /user/authenticate failed: " + 
+		                     authenticationRequest.getUserName(), e);
 			    return errorResponse(e);
 		}
-		if(valid)
-			return okResponse(valid, true);
-		else
-		{
-			HpcException ex = new HpcException("Invalid login credentials", HpcErrorType.REQUEST_AUTHENTICATION_FAILED);
-			return errorResponse(ex);
-			
-		}
+		
+		return okResponse(authenticationResponse, false);
 	}    
 }
 
