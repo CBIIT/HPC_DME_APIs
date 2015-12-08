@@ -113,16 +113,16 @@
    		<property name="methodRolesMap">
       		<map>
       			<!-- User Service Authorizations -->
-      			<entry key="registerUser" value="rodsadmin "/>
-        		<entry key="getUser" value="rodsadmin"/>
-        		<entry key="authenticateUser" value="rodsadmin"/>
+      			<entry key="registerUser" value="${hpc.ws.rs.auth.register-user}"/>
+        		<entry key="getUser" value="${hpc.ws.rs.auth.get-user}"/>
+        		<entry key="authenticateUser" value="${hpc.ws.rs.auth.authenticate-user}"/>
         		
         		<!--  Data Management Service Authorizations -->
-        		<entry key="registerCollection" value="rodsadmin groupadmin"/>
-        		<entry key="getCollection" value="rodsadmin groupadmin rodsuser"/>
-        		<entry key="getCollections" value="rodsadmin groupadmin rodsuser"/>
-        		<entry key="registerDataObject" value="rodsadmin groupadmin"/>
-        		<entry key="getDataObjects" value="rodsadmin groupadmin rodsuser"/>
+        		<entry key="registerCollection" value="${hpc.ws.rs.auth.register-collection}"/>
+        		<entry key="getCollection" value="${hpc.ws.rs.auth.get-collection}"/>
+        		<entry key="getCollections" value="${hpc.ws.rs.auth.get-collections}"/>
+        		<entry key="registerDataObject" value="${hpc.ws.rs.auth.register-data-object}"/>
+        		<entry key="getDataObjects" value="${hpc.ws.rs.auth.get-data-objects}"/>
       		</map>
    		</property>
 	</bean>
