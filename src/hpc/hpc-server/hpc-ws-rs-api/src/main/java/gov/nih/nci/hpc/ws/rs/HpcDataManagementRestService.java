@@ -56,7 +56,7 @@ public interface HpcDataManagementRestService
      *
      * @param path The collection path.
      */
-	@PUT
+	@GET
 	@Path("/collection/{path:.*}")
 	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")

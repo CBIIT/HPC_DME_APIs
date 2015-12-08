@@ -13,7 +13,6 @@ package gov.nih.nci.hpc.ws.rs;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 
-import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -54,7 +53,6 @@ public interface HpcUserRestService
     @GET
     @Path("/user/{nciUserId}")
     @Produces("application/json,application/xml")
-    @RolesAllowed("rodsadmin")
     public Response getUser(@PathParam("nciUserId") String nciUserId); 
 
     /**
@@ -66,7 +64,7 @@ public interface HpcUserRestService
     @POST
     @Path("/user/authenticate")
     @Consumes("application/json,application/xml")
-    public Response authenticate(HpcAuthenticationRequestDTO authenticationRequest);
+    public Response authenticateUser(HpcAuthenticationRequestDTO authenticationRequest);
 }
 
  
