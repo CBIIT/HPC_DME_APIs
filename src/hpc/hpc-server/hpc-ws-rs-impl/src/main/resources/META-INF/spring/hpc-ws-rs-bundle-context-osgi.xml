@@ -40,6 +40,14 @@
 		<prop key="hpc.ws.rs.ssl.truststore.password">***REMOVED***</prop>
 		<prop key="hpc.ws.rs.ssl.wantClientAuth">true</prop>
 		<prop key="hpc.ws.rs.ssl.needClientAuth">true</prop>
+		<prop key="hpc.ws.rs.auth.register-user">rodsadmin</prop>
+		<prop key="hpc.ws.rs.auth.get-user">rodsadmin</prop>
+		<prop key="hpc.ws.rs.auth.authenticate-user">rodsadmin</prop>
+		<prop key="hpc.ws.rs.auth.register-collection">rodsadmin groupadmin</prop>
+		<prop key="hpc.ws.rs.auth.get-collection">rodsadmin groupadmin rodsuser</prop>
+		<prop key="hpc.ws.rs.auth.get-collections">rodsadmin groupadmin rodsuser</prop>
+		<prop key="hpc.ws.rs.auth.register-data-object">rodsadmin groupadmin</prop>
+		<prop key="hpc.ws.rs.auth.get-data-objects">rodsadmin groupadmin rodsuser</prop>
 		<prop key="hpc.ws.rs.dynamicfields">${karaf.base}/etc/hpc-server/dynamicfields.json</prop>
 	</osgix:cm-properties>
 
