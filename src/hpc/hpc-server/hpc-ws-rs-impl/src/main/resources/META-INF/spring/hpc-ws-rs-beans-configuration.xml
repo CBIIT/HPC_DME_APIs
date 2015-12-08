@@ -109,8 +109,22 @@
 	</bean>
 	
 	<!-- Authorization Interceptor -->
-	<bean id="hpcAuthorizationInterceptor" class="org.apache.cxf.interceptor.security.SecureAnnotationsInterceptor">
-   		<property name="securedObject" ref="hpcUserRestService"/>
+	<bean id="hpcAuthorizationInterceptor" class="org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor">
+   		<property name="methodRolesMap">
+      		<map>
+      			<!-- User Service Authorizations -->
+      			<entry key="registerUser" value="rodsadmin "/>
+        		<entry key="getUser" value="rodsadmin"/>
+        		<entry key="authenticateUser" value="rodsadmin"/>
+        		
+        		<!--  Data Management Service Authorizations -->
+        		<entry key="registerCollection" value="rodsadmin groupadmin"/>
+        		<entry key="getCollection" value="rodsadmin groupadmin rodsuser"/>
+        		<entry key="getCollections" value="rodsadmin groupadmin rodsuser"/>
+        		<entry key="registerDataObject" value="rodsadmin groupadmin"/>
+        		<entry key="getDataObjects" value="rodsadmin groupadmin rodsuser"/>
+      		</map>
+   		</property>
 	</bean>
 	      
 	<!-- API Version Interceptor -->

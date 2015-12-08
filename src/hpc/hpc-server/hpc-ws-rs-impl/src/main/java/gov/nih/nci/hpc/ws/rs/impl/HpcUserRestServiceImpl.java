@@ -102,7 +102,7 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response authenticate(HpcAuthenticationRequestDTO authenticationRequest)
+    public Response authenticateUser(HpcAuthenticationRequestDTO authenticationRequest)
     {
 		logger.info("Invoking RS: POST /user/authenticate: " + authenticationRequest.getUserName());
 		
