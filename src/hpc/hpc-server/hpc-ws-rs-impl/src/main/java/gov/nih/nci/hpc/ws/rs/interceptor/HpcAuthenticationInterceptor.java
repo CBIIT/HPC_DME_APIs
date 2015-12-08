@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.interceptor.security.SecureAnnotationsInterceptor;
+import org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
@@ -75,6 +76,7 @@ public class HpcAuthenticationInterceptor
         
         // We need to authenticate first, and then authorize.
         getBefore().add(SecureAnnotationsInterceptor.class.getName());
+        getBefore().add(SimpleAuthorizingInterceptor.class.getName());
     }
     
     //---------------------------------------------------------------------//
