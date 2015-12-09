@@ -17,7 +17,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDTO;
@@ -125,8 +125,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcCollectionsDTO getCollections(List<HpcMetadataQuery> metadataQueries) 
-                                           throws HpcException
+    public HpcCollectionListDTO getCollections(List<HpcMetadataQuery> metadataQueries) 
+                                              throws HpcException
     {
     	logger.info("Invoking getCollections(List<HpcMetadataQuery>): " + 
     			    metadataQueries);
@@ -138,7 +138,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Construct the DTO.
-    	HpcCollectionsDTO collectionsDTO = new HpcCollectionsDTO();
+    	HpcCollectionListDTO collectionsDTO = new HpcCollectionListDTO();
     	for(HpcCollection collection : dataManagementService.getCollections(metadataQueries)) {
     		// Get the metadata for this collection.
     		List<HpcMetadataEntry> metadataEntries = 

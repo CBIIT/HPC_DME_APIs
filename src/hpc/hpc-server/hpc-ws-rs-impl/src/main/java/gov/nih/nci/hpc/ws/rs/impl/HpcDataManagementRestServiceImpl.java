@@ -14,7 +14,7 @@ import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
@@ -98,9 +98,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	path = toAbsolutePath(path);
     	logger.info("Invoking RS: GET /collection/" + path);
     	
-    	HpcCollectionDTO collection = null;
+    	HpcCollectionListDTO collections = new HpcCollectionListDTO();
 		try {
-			 collection = dataManagementBusService.getCollection(path);
+			 HpcCollectionDTO collection = dataManagementBusService.getCollection(path);
+			 if(collection != null) {
+				collections.getCollections().add(collection);
+			 }
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /collection/" + path + 
@@ -108,7 +111,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return okResponse(collection, true);
+		return okResponse(!collections.getCollections().isEmpty() ? collections : null , true);
     }
     
     @Override
@@ -116,7 +119,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     {
     	logger.info("Invoking RS: GET /collection/" + metadataQueries);
     	
-    	HpcCollectionsDTO collections = null;
+    	HpcCollectionListDTO collections = null;
 		try {
 			 collections = dataManagementBusService.getCollections(
 					                     unmarshallQueryParams(metadataQueries));
@@ -127,7 +130,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return okResponse(collections, true);
+		return okResponse(!collections.getCollections().isEmpty() ? collections : null , true);
     }
     
     @Override
