@@ -13,7 +13,7 @@ package gov.nih.nci.hpc.bus;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -61,8 +61,8 @@ public interface HpcDataManagementBusService
      * 
      * @throws HpcException
      */
-    public HpcCollectionsDTO getCollections(List<HpcMetadataQuery> metadataQueries) 
-    		                               throws HpcException;
+    public HpcCollectionListDTO getCollections(List<HpcMetadataQuery> metadataQueries) 
+    		                                  throws HpcException;
     
     /**
      * Register a Data object.
