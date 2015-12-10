@@ -29,7 +29,13 @@ import java.util.List;
  */
 
 public interface HpcDataManagementProxy 
-{         
+{    
+	class HpcDataManagementPathAttributes {
+       public boolean exists = false;
+       public boolean isFile = false;
+       public boolean isDirectory = false;
+    }
+	
     /**
      * Create a collection's directory.
      *
@@ -106,16 +112,17 @@ public interface HpcDataManagementProxy
     		                             throws HpcException;   
     
     /**
-     * Check if a path exists (as a directory or file)
+     * Get path attributes (exists, isDirectory, isFile)
      *
      * @param dataManagementAccount The Data Management System account.
      * @param path The data-object/collection path.
      * 
      * @throws HpcException
      */
-    public boolean exists(HpcIntegratedSystemAccount dataManagementAccount, 
-    		              String path)
-    		             throws HpcException;  
+    public HpcDataManagementPathAttributes getPathAttributes(
+    		                    HpcIntegratedSystemAccount dataManagementAccount, 
+    		                    String path)
+    		                    throws HpcException;  
     
     /**
      * Get collection by its path.
