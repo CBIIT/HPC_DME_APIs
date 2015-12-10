@@ -104,7 +104,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	HpcIntegratedSystemAccount dataManagementAccount = getDataManagementAccount();
     	
     	// Validate the path is available.
-    	if(dataManagementProxy.exists(dataManagementAccount, path)) {
+    	if(dataManagementProxy.getPathAttributes(dataManagementAccount, path).exists) {
     		throw new HpcException("Path already exists: " + path, 
     				               HpcRequestRejectReason.DATA_OBJECT_PATH_ALREADY_EXISTS);
     	}
@@ -215,7 +215,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     @Override
     public HpcCollection getCollection(String path) throws HpcException
     {
-    	return dataManagementProxy.getCollection(getDataManagementAccount(), path);
+    	HpcIntegratedSystemAccount dataManagementAccount = getDataManagementAccount();
+    	if(dataManagementProxy.getPathAttributes(dataManagementAccount, path).isDirectory) {
+    	   return dataManagementProxy.getCollection(getDataManagementAccount(), path);
+    	}
+    	return null;
     }
     
     @Override

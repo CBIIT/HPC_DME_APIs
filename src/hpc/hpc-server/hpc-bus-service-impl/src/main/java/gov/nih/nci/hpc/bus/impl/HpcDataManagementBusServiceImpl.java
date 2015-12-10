@@ -114,8 +114,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Get the colelction.
+    	// Get the collection.
     	HpcCollection collection = dataManagementService.getCollection(path);
+    	if(collection == null) {
+    	   return null;
+    	}
     		
     	// Get the metadata for this collection.
     	List<HpcMetadataEntry> metadataEntries = 
