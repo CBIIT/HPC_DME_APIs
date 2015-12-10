@@ -232,14 +232,20 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override    
-    public boolean exists(HpcIntegratedSystemAccount dataManagementAccount, 
-    		              String path) 
-    		             throws HpcException
+    public HpcDataManagementPathAttributes getPathAttributes(
+    		                HpcIntegratedSystemAccount dataManagementAccount, 
+    		                String path) 
+    		                throws HpcException
     {
 		try {
 			 IRODSFile file = 
 					   irodsConnection.getIRODSFileFactory(dataManagementAccount).instanceIRODSFile(path);
-			 return file.exists();
+			 HpcDataManagementPathAttributes attributes = new HpcDataManagementPathAttributes();
+			 attributes.exists = file.exists();
+			 attributes.isDirectory = file.isDirectory();
+			 attributes.isFile = file.isFile();
+			 
+			 return attributes;
 			 
 		} catch(JargonException e) {
 		        throw new HpcException("Failed to check if a path exists: " + 
