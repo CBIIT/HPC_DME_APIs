@@ -37,7 +37,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 
 public class HpcUserBusServiceImpl implements HpcUserBusService
-{         
+{      
+    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//    
+    
+    // Unauthenticated user role.
+	private final static String UNAUTHENTICATED_ROLE = "unauthenticated";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -175,7 +182,9 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	// Prepare and return a response DTO.
     	HpcAuthenticationResponseDTO authenticationResponse = new HpcAuthenticationResponseDTO();
     	authenticationResponse.setAuthenticated(ldapAuthentication ? userAuthenticated : true);	                
-    	authenticationResponse.setUserRole(dataManagementService.getUserType());
+    	authenticationResponse.setUserRole(user.getDataManagementAccount() != null ? 
+    			                           dataManagementService.getUserType() : 
+    			                           UNAUTHENTICATED_ROLE);
     	
     	return authenticationResponse;
     }
