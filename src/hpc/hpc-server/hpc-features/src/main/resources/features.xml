@@ -45,7 +45,7 @@
 	<feature name="hpc-jargon-sdk" version="${jargon.version}">
 		<bundle>wrap:mvn:org.irods.jargon/jargon-core/${jargon.version}</bundle>
 		<bundle>wrap:mvn:org.irods.jargon/jargon-data-utils/${jargon.version}</bundle>
-		<bundle>wrap:mvn:org.irods.jargon/jargon-conveyor/${jargon.version}</bundle>
+		<bundle>wrap:mvn:org.irods.jargon/jargon-conveyor/${jargon-conveyor.version}</bundle>
 		<bundle>wrap:mvn:org.irods.jargon/jargon-user-tagging/${jargon.version}</bundle>
 	</feature>
 	

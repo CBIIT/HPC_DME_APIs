@@ -219,6 +219,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	if(dataManagementProxy.getPathAttributes(dataManagementAccount, path).isDirectory) {
     	   return dataManagementProxy.getCollection(getDataManagementAccount(), path);
     	}
+    	
     	return null;
     }
     
