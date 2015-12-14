@@ -40,7 +40,7 @@
 		<prop key="hpc.ws.rs.ssl.truststore.password">hpc-server-store-pwd</prop>
 		<prop key="hpc.ws.rs.ssl.wantClientAuth">true</prop>
 		<prop key="hpc.ws.rs.ssl.needClientAuth">true</prop>
-		<prop key="hpc.ws.rs.auth.register-user">rodsadmin</prop>
+		<prop key="hpc.ws.rs.auth.register-user">rodsadmin unauthenticated</prop>
 		<prop key="hpc.ws.rs.auth.get-user">rodsadmin</prop>
 		<prop key="hpc.ws.rs.auth.authenticate-user">rodsadmin</prop>
 		<prop key="hpc.ws.rs.auth.register-collection">rodsadmin groupadmin</prop>

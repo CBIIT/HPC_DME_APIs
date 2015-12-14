@@ -91,9 +91,10 @@ public class HpcAuthenticationInterceptor
     public void handleMessage(Message message) 
     {
     	// Get and validate the authorization policy set by the caller.
-    	HpcAuthenticationRequestDTO authenticationRequest = new HpcAuthenticationRequestDTO();
+    	HpcAuthenticationRequestDTO authenticationRequest = null;
     	AuthorizationPolicy policy = message.get(AuthorizationPolicy.class);
     	if(policy != null) {
+    	   authenticationRequest = new HpcAuthenticationRequestDTO();
     	   authenticationRequest.setUserName(policy.getUserName());
     	   authenticationRequest.setPassword(policy.getPassword());
     	}
