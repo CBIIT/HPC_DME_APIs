@@ -33,7 +33,8 @@
 		<spring-security.version>3.1.4.RELEASE</spring-security.version>
 		<spring-beans.version>3.2.11.RELEASE</spring-beans.version>
 		<amazon-aws.version>1.10.8</amazon-aws.version>
-		<jargon.version>4.0.2.1-RELEASE</jargon.version>
+		<jargon.version>4.0.2.4-RELEASE</jargon.version>
+		<jargon-conveyor.version>4.0.2.1-RELEASE</jargon-conveyor.version>
 		<jackson.version>2.5.3</jackson.version>
 		<google-json-simple.version>1.1</google-json-simple.version>
 	</properties>
@@ -194,7 +195,7 @@
  			<dependency>
  				<groupId>org.irods.jargon</groupId>
  				<artifactId>jargon-conveyor</artifactId>
- 				<version>${jargon.version}</version>
+ 				<version>${jargon-conveyor.version}</version>
  			</dependency>
  			<dependency>
  				<groupId>org.irods.jargon</groupId>
