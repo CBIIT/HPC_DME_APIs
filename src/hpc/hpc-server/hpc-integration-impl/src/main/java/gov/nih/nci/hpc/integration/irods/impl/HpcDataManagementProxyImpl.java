@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.irods.jargon.core.exception.InvalidInputParameterException;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.protovalues.UserTypeEnum;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.Collection;
 import org.irods.jargon.core.pub.domain.DataObject;
@@ -413,7 +414,13 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		try {
 			 User user = irodsConnection.getUserAO(dataManagementAccount).
 					                     findByName(dataManagementAccount.getUsername());
-			 return user != null ? user.getUserType().getTextValue() : null;
+			 if(user == null) {
+				return null;  
+			 }
+			 
+			 // Bypassing a Jargon defect returning unknow for a groupadmin.
+			 return user.getUserType().equals(UserTypeEnum.RODS_UNKNOWN) ? 
+					"groupadmin" :  user.getUserType().getTextValue();
 	
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get user type: " + 
