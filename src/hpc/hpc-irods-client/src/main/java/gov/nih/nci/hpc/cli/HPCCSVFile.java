@@ -7,6 +7,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
+import gov.nih.nci.hpc.cli.util.BasicAuthRestTemplate;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -20,6 +21,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.net.URLEncoder;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -50,13 +52,34 @@ public class HPCCSVFile {
 
 	
 	public String parseBatchFile(String fileName) {
-		readCsvFile(fileName);
-		return "Batch Upload Successful";
+		try
+		{
+			jline.console.ConsoleReader reader = new jline.console.ConsoleReader();
+			reader.setExpandEvents(false);
+			System.out.println("Enter NCI Login UserId:");
+			String userId = reader.readLine();
+			
+			System.out.println("Enter NCI Login password:");
+			String password = reader.readLine(new Character('*'));
+			System.out.println("Initiating batch process as NCI Login UserId:" +userId);
+
+			boolean success = readCsvFile(fileName, userId, password);
+			if(success)
+				return "Batch Upload Successful";
+			else
+				return "Batch Upload is not Successful. Please error log for the records not processed.";
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+			return "Failed to run batch registration";
+		}
 	}
 
 
 	
-	private void readCsvFile(String fileName) {
+	private boolean readCsvFile(String fileName, String userId, String password) {
+		boolean success = true;
 		String hpcServerURL = configProperties.getProperty("hpc.server.url");
 		String irodsZoneHome = configProperties.getProperty("irods.default.zoneHome");//rods
 		String hpcDestinationEndpoint = configProperties.getProperty("hpc.destination.endpoint");
@@ -140,7 +163,7 @@ public class HPCCSVFile {
 					collName = parentCollection + "/" + collName;
 
 
-				RestTemplate restTemplate = new RestTemplate();
+				BasicAuthRestTemplate restTemplate = new BasicAuthRestTemplate(userId, password);
 				HttpHeaders headers = new HttpHeaders();
 				List <MediaType> mediaTypeList = new ArrayList<MediaType>();
 				mediaTypeList.add(MediaType.APPLICATION_JSON);
@@ -150,21 +173,26 @@ public class HPCCSVFile {
 				//System.out.println("Adding Metadata to .."+ hpcServerURL+"/"+hpcCollection+targetCollection);
 				try
 				{
-					ResponseEntity<HpcExceptionDTO> response = restTemplate.exchange(hpcServerURL + "/"+ hpcDataService +"/" +irodsZoneHome+"/"+irodsUsername+"/"+collName, HttpMethod.PUT,entity , HpcExceptionDTO.class);
+					String collNameEncoded = URLEncoder.encode(collName);
+					System.out.println(hpcServerURL + "/"+ hpcDataService +"/" +irodsZoneHome+"/"+userId+"/"+collNameEncoded);
+					ResponseEntity<HpcExceptionDTO> response = restTemplate.exchange(hpcServerURL + "/"+ hpcDataService +"/" +irodsZoneHome+"/"+userId+"/"+collNameEncoded, HttpMethod.PUT,entity , HpcExceptionDTO.class);
 				}
 				catch (HttpStatusCodeException e) {
 					System.out.println("Cannot add Dataobject/Collection " + collName + "Due to " +  e.getMessage());
 					//System.out.println("Adding to error log ");
 					//message = getErrorMessage(e.getResponseBodyAsString());
 					addToErrorCollection(e.getResponseBodyAsString(),record, headersMap);
+					success = false;
 					continue;
 					
 				} catch (RestClientException e) {
 					e.printStackTrace();
+					success = false;
 					//message = "Client error occured while adding collection :" + e.getMessage();
 					// System.out.println("message2::"+message);
 				} catch (Exception e) {
 					e.printStackTrace();
+					success = false;
 					//message = "Exception occured while adding metadata :" + e.getMessage();
 					// System.out.println("message3::"+message);
 				}
@@ -184,6 +212,7 @@ public class HPCCSVFile {
                 e.printStackTrace();
             }
         }
+        return success;
 
 	}
 	
