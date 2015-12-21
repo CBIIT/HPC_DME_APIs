@@ -94,9 +94,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		        throw new HpcException("Failed to create a collection directory: " + 
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} finally {
-			       irodsConnection.closeConnection(dataManagementAccount);
-		}
+		} 
     }
     
     @Override    
@@ -118,9 +116,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	            throw new HpcException("Failed to create a file: " + 
                                        ioe.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, ioe);
-		} finally {
-			       irodsConnection.closeConnection(dataManagementAccount);
-		}
+		} 
     }
 
     @Override
@@ -145,9 +141,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	            throw new HpcException("Failed to add metadata to a collection: " + 
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} finally {
-			       irodsConnection.closeConnection(dataManagementAccount);
-		}
+		} 
     }
     
     @Override
@@ -171,10 +165,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	            throw new HpcException("Failed to add metadata to a data object: " + 
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} finally {
-			       irodsConnection.closeConnection(dataManagementAccount);
-		}
+		} 
     }
+    
     @Override    
     public boolean isParentPathDirectory(
     		                   HpcIntegratedSystemAccount dataManagementAccount, 
@@ -193,9 +186,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		        
-		} finally {
-			       irodsConnection.closeConnection(dataManagementAccount);
-		}
+		} 
     }
     
     @Override    
@@ -227,9 +218,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		        
-		} finally {
-			       irodsConnection.closeConnection(dataManagementAccount);
-		}
+		} 
     }
     
     @Override    
@@ -252,9 +241,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		        throw new HpcException("Failed to check if a path exists: " + 
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} finally {
-			       irodsConnection.closeConnection(dataManagementAccount);
-		}
+		} 
     }
     
     @Override
@@ -270,9 +257,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	            throw new HpcException("Failed to get Collection: " + 
                                         e.getMessage(),
                                         HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} finally {
-		           irodsConnection.closeConnection(dataManagementAccount);
-		}
+		} 
     }
     
     @Override
@@ -303,9 +288,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	            throw new HpcException("Failed to get Collections: " + 
                                         e.getMessage(),
                                         HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} finally {
-		           irodsConnection.closeConnection(dataManagementAccount);
-		}
+		} 
     }
     
     @Override
@@ -321,9 +304,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	            throw new HpcException("Failed to get metadata of a collection: " + 
                                       e.getMessage(),
                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} finally {
-			       irodsConnection.closeConnection(dataManagementAccount);
-		}
+		} 
     }
     
     @Override
@@ -384,9 +365,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	            throw new HpcException("Failed to get data objects: " + 
                                         e.getMessage(),
                                         HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} finally {
-		           irodsConnection.closeConnection(dataManagementAccount);
-		}
+		} 
     }
     
     @Override
@@ -402,9 +381,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	            throw new HpcException("Failed to get metadata of a collection: " + 
 	                                     e.getMessage(),
 	                                     HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} finally {
-			       irodsConnection.closeConnection(dataManagementAccount);
-		}
+		} 
 	}
     
     @Override
@@ -426,10 +403,14 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	            throw new HpcException("Failed to get user type: " + 
 	                                     e.getMessage(),
 	                                     HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} finally {
-			       irodsConnection.closeConnection(dataManagementAccount);
-		}
-	}    	
+		} 
+	}  
+    
+    @Override
+    public void closeConnection(HpcIntegratedSystemAccount dataManagementAccount)
+    {
+    	irodsConnection.closeConnection(dataManagementAccount);
+    }
     
     //---------------------------------------------------------------------//
     // Helper Methods

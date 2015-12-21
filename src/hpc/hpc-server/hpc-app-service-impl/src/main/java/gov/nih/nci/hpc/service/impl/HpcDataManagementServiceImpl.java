@@ -281,6 +281,18 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	return dataManagementProxy.getUserType(getDataManagementAccount());
     }
     
+    @Override
+    public void closeConnection()
+    {
+    	try {
+    	     dataManagementProxy.closeConnection(getDataManagementAccount());
+    	     
+    	} catch(HpcException e) {
+    		    // Ignore.
+    	}
+    	
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  

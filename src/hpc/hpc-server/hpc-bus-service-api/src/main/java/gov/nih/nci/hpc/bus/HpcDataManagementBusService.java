@@ -86,6 +86,11 @@ public interface HpcDataManagementBusService
      */
     public HpcDataObjectsDTO getDataObjects(List<HpcMetadataQuery> metadataQueries) 
     		                               throws HpcException;
+    
+    /**
+     * Close connection to Data Management system for the current service call.
+     */
+    public void closeConnection();
 }
 
  
