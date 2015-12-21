@@ -198,6 +198,13 @@ public interface HpcDataManagementProxy
      */
     public String getUserType(HpcIntegratedSystemAccount dataManagementAccount) 
     		                 throws HpcException;   
+    
+    /**
+     * Close iRODS connection of an account.
+     *
+     * @param dataManagementAccount The Data Management System account.
+     */
+    public void closeConnection(HpcIntegratedSystemAccount dataManagementAccount);
 }
 
  

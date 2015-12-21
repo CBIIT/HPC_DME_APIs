@@ -147,7 +147,12 @@ public interface HpcDataManagementService
      * 
      * @throws HpcException
      */
-    public String getUserType() throws HpcException;   
+    public String getUserType() throws HpcException;  
+    
+    /**
+     * Close connection to Data Management system for the current service call.
+     */
+    public void closeConnection();
 }
 
  
