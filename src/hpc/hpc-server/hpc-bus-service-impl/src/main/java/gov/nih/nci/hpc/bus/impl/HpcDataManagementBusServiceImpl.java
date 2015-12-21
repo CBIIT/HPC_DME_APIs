@@ -222,6 +222,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	return dataObjectsDTO;
     }
     
+    @Override
+    public void closeConnection()
+    {
+    	dataManagementService.closeConnection();
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
