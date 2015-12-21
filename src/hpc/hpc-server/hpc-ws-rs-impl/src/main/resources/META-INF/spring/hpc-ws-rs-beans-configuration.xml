@@ -133,6 +133,10 @@
 		<constructor-arg value="${hpc.ws.rs.api-version}" />
 	</bean>
 	
+	<!-- Cleanup Interceptor -->
+	<bean id="hpcCleanupInterceptor" 
+	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcCleanupInterceptor" />
+	
 	<!-- JAX-RS Service Beans -->
 	<bean id="hpcUserRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcUserRestServiceImpl" />
 	<bean id="hpcDatasetRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDatasetRestServiceImpl">
@@ -161,6 +165,7 @@
       	</jaxrs:inInterceptors>
       	<jaxrs:outInterceptors>
       		<ref bean="hpcAPIVersionInterceptor" />
+      		<ref bean="hpcCleanupInterceptor" />
       	</jaxrs:outInterceptors>
 	</jaxrs:server>
 	
@@ -184,6 +189,7 @@
       	</jaxrs:inInterceptors>
       	<jaxrs:outInterceptors>
       		<ref bean="hpcAPIVersionInterceptor" />
+      		<ref bean="hpcCleanupInterceptor" />
       	</jaxrs:outInterceptors>
 	</jaxrs:server>
 </beans>

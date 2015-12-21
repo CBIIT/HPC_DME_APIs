@@ -16,13 +16,10 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import org.irods.jargon.core.connection.AuthScheme;
 import org.irods.jargon.core.connection.IRODSAccount;
-import org.irods.jargon.core.connection.IRODSSession;
-import org.irods.jargon.core.connection.IRODSSimpleProtocolManager;
 import org.irods.jargon.core.connection.auth.AuthResponse;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.CollectionAO;
 import org.irods.jargon.core.pub.DataObjectAO;
-import org.irods.jargon.core.pub.IRODSAccessObjectFactoryImpl;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.pub.UserAO;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
@@ -209,11 +206,9 @@ public class HpcIRODSConnection
     }
     
     /**
-     * Get iRODS file factory instance.
+     * Close iRODS connection of an account.
      *
      * @param dataManagementAccount The Data Management System account.
-     *
-     * @throws HpcException
      */
     public void closeConnection(HpcIntegratedSystemAccount dataManagementAccount)
     {
