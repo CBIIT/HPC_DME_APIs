@@ -135,7 +135,7 @@
 			<dependency>
 			  <groupId>org.apache.cxf</groupId>
 			  <artifactId>cxf-rt-rs-service-description</artifactId>
-			  <version>3.0.0-milestone1</version>
+			  <version>${cxf.version}</version>
 			</dependency>		
 			<dependency>
 				<groupId>org.apache.cxf.xjc-utils</groupId>
