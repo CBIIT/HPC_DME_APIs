@@ -30,9 +30,11 @@ SERVER=`cat ../../utils/server`
 curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-server/user  --config ../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s
 
 ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
+ERROR_REASON=`get_json_value $RESPONSE_MSG requestRejectReason`
 #ERROR_TYPE=`grep errorType $RESPONSE_MSG | sed 's/.*errorType":"\([^"]*\)".*/\1/'`
 #ERROR_CODE=`grep 'HTTP' $RESPONSE_HEADER  | grep '[02-9][0-9][0-9]' | sed 's/.*\([0-9][0-9][0-9]\).*/\1/'`
 ERROR_CODE=`get_http_code $RESPONSE_HEADER`
 
 echo $ERROR_TYPE
+echo $ERROR_REASON
 echo $ERROR_CODE 1>&2
