@@ -12,4 +12,4 @@
 # Common script to clean a test
 # Usage: cleantest [no arguments]
 
-rm -rf response-message.json  response-header autotest-output
+rm -rf response-message.json  response-header 
