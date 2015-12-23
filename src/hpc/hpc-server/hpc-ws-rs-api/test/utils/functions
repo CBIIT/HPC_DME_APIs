@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+#Return the HTTP code in the response excluding 100
+function get_http_code {
+    grep 'HTTP' $1  | grep '[02-9][0-9][0-9]' | sed 's/.*\([0-9][0-9][0-9]\).*/\1/'
+}
+
+#Return a single value for a given attribute in a json http response message 
+#The json file 
+#Inputs: json-file-name  attribute 
+function get_json_value {
+    FILE=$1
+    ATTRIBUTE=$2
+    grep $ATTRIBUTE $FILE | sed 's/.*errorType":"\([^"]*\)".*/\1/'
+}
+
+
