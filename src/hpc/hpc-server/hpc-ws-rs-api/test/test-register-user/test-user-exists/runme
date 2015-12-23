@@ -26,7 +26,6 @@ RESPONSE_MSG=response-message.json
 SERVER=`cat ../../utils/server`
 
 # add -D <filename> to dump the header
-#curl -H "Content-Type: application/json" -d @input.json -X POST  -u $USERNAME:$PASSWORD www.example.com  -w "%{http_code}" -o response 2>status >http_code
 
 curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-server/user  --config ../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s
 
