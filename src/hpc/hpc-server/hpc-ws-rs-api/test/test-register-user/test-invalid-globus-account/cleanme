@@ -12,10 +12,4 @@
 # Script to clean the resutls of this test
 # Usage: cleanme [no arguments]
 
-
-
-
-# Script to build the executable for this test
-# Usage: makeme [no arguments]
-
-../../utils/maketest
+../../utils/cleantest
