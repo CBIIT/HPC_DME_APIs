@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source ../../utils/functions
+
+#Run common script
+../../utils/runtest
+
+#Clean previous results
+./cleanme
+
+RESPONSE_HEADER=response-header
+RESPONSE_MSG=response-message.json
+SERVER=`cat ../../utils/server`
+
+# add -D <filename> to dump the header
+#curl -H "Content-Type: application/json" -d @input.json -X POST  -u $USERNAME:$PASSWORD www.example.com  -w "%{http_code}" -o response 2>status >http_code
+
+curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-server/user  --config ../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s
+
+ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
+#ERROR_TYPE=`grep errorType $RESPONSE_MSG | sed 's/.*errorType":"\([^"]*\)".*/\1/'`
+#ERROR_CODE=`grep 'HTTP' $RESPONSE_HEADER  | grep '[02-9][0-9][0-9]' | sed 's/.*\([0-9][0-9][0-9]\).*/\1/'`
+ERROR_CODE=`get_http_code $RESPONSE_HEADER`
+
+echo $ERROR_TYPE
+echo $ERROR_CODE 1>&2
