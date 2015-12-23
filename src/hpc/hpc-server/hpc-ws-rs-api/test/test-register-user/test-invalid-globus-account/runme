@@ -19,7 +19,7 @@ source ../../utils/functions
 ../../utils/runtest
 
 #Clean previous results
-#./cleanme
+./cleanme
 
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
