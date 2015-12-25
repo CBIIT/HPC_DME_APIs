@@ -14,8 +14,8 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -84,8 +84,8 @@ public interface HpcDataManagementBusService
      * 
      * @throws HpcException
      */
-    public HpcDataObjectsDTO getDataObjects(List<HpcMetadataQuery> metadataQueries) 
-    		                               throws HpcException;
+    public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries) 
+    		                                  throws HpcException;
     
     /**
      * Close connection to Data Management system for the current service call.
