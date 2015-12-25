@@ -11,12 +11,17 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
@@ -168,6 +173,44 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		return okResponse(dataObjects, true);
+    }
+    
+    @Override
+    public Response setPermissions(List<HpcEntityPermissionRequestDTO> entityPermissionRequests)
+    {
+    	HpcEntityPermissionResponseListDTO resList = new HpcEntityPermissionResponseListDTO();
+    	
+    	HpcEntityPermissionResponseDTO res = new HpcEntityPermissionResponseDTO();
+    	res.setPath("/tempZone/rods/proj");
+    	HpcUserPermissionResponseDTO perm = new HpcUserPermissionResponseDTO();
+    	perm.setUserId("rosenbergea");
+    	perm.setResult(true);
+    	res.getUserPermissionResponses().add(perm);
+    	
+    	perm = new HpcUserPermissionResponseDTO();
+    	perm.setUserId("rods");
+    	perm.setResult(false);
+    	perm.setMessage("Detailed Error Message");
+    	res.getUserPermissionResponses().add(perm);
+    	resList.getEntityPermissionResponses().add(res);
+    	
+
+    	res = new HpcEntityPermissionResponseDTO();
+    	res.setPath("/tempZone/rods/proj-2");
+    	perm = new HpcUserPermissionResponseDTO();
+    	perm.setUserId("rosenbergea");
+    	perm.setResult(true);
+    	res.getUserPermissionResponses().add(perm);
+    	
+    	perm = new HpcUserPermissionResponseDTO();
+    	perm.setUserId("rods");
+    	perm.setResult(false);
+    	perm.setMessage("Another Detailed Error Message");
+    	res.getUserPermissionResponses().add(perm);
+    	resList.getEntityPermissionResponses().add(res);
+    	
+    	return okResponse(resList, true);
+    	
     }
     
     //---------------------------------------------------------------------//
