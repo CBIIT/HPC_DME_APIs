@@ -42,6 +42,9 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcDataObject']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcDataObject"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcUserPermission']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission"/>
+		</jxb:bindings>
     </jxb:bindings>
     
 	<jxb:bindings schemaLocation="HpcDataTransferTypes.xsd">
