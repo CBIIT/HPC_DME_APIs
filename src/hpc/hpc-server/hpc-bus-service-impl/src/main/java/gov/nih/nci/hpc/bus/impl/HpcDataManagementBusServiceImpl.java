@@ -19,8 +19,8 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -196,7 +196,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcDataObjectsDTO getDataObjects(List<HpcMetadataQuery> metadataQueries) 
+    public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries) 
                                            throws HpcException
     {
     	logger.info("Invoking getDataObjects(List<HpcMetadataQuery>): " + 
@@ -209,7 +209,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Construct the DTO.
-    	HpcDataObjectsDTO dataObjectsDTO = new HpcDataObjectsDTO();
+    	HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
     	for(HpcDataObject dataObject : dataManagementService.getDataObjects(metadataQueries)) {
     		// Get the metadata for this data object.
     		List<HpcMetadataEntry> metadataEntries = 
