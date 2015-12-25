@@ -12,12 +12,14 @@ package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 
 import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -99,6 +101,16 @@ public interface HpcDataManagementRestService
 	public Response getDataObjects(
 			           @QueryParam("metadataQuery")
 			           List<HpcMetadataQueryParam> metadataQueries);
+	
+    /**
+     * POST Set permissions.
+     *
+     * @param TBD.
+     */
+	@POST
+	@Path("/acl")
+	@Produces("application/json,application/xml")
+	public Response setPermissions(List<HpcEntityPermissionRequestDTO> entityPermissionRequests);
 }
 
  
