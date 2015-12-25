@@ -15,8 +15,8 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
@@ -156,7 +156,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     {
     	logger.info("Invoking RS: GET /dataObject/" + metadataQueries);
     	
-    	HpcDataObjectsDTO dataObjects = null;
+    	HpcDataObjectListDTO dataObjects = null;
 		try {
 			 dataObjects = dataManagementBusService.getDataObjects(
 					                     unmarshallQueryParams(metadataQueries));
@@ -184,8 +184,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
      */
     
     private List<HpcMetadataQuery> unmarshallQueryParams(
-    		                               List<HpcMetadataQueryParam> metadataQueries)
-    		                               throws HpcException
+    		                                 List<HpcMetadataQueryParam> metadataQueries)
+    		                                 throws HpcException
     {
 		 // Validate the metadata entries input (JSON) was parsed successfully.
 		 List<HpcMetadataQuery> queries = new ArrayList<HpcMetadataQuery>();

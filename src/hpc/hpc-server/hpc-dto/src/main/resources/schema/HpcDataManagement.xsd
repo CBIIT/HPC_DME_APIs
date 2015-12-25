@@ -72,7 +72,7 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
-	<xsd:element name="HpcDataObjectsDTO">
+	<xsd:element name="HpcDataObjectListDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="dataObjects"
@@ -81,4 +81,6 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
+	
+	<!-- Permissions DTO -->
 </xsd:schema>
