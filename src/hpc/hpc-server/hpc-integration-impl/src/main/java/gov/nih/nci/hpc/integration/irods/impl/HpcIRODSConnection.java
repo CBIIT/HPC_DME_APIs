@@ -221,6 +221,15 @@ public class HpcIRODSConnection
 		}
     }   
     
+    /**
+     * Get the iRODS zone.
+     *
+     */
+    public String getZone()
+    {
+    	return irodsZone;
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  

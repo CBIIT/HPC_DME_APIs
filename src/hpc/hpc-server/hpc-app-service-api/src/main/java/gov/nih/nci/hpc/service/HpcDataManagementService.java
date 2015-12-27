@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -153,6 +154,18 @@ public interface HpcDataManagementService
      * Close connection to Data Management system for the current service call.
      */
     public void closeConnection();
+    
+    /**
+     * Set permission of an entity (collection or data object) for a user. 
+     *
+     * @param path The entity path.
+     * @param permissionRequest The permission request.
+     * @return HpcMetadataEntry collection.
+     * 
+     * @throws HpcException
+     */
+    public void setPermission(String path, HpcUserPermission permissionRequest) 
+    		                 throws HpcException;
 }
 
  

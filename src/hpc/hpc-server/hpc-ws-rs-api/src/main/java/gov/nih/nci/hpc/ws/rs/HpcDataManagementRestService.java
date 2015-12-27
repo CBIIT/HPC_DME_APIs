@@ -105,7 +105,7 @@ public interface HpcDataManagementRestService
     /**
      * POST Set permissions.
      *
-     * @param TBD.
+     * @param entityPermissionRequests Requests to set entities (Collections or Data Objects) permissions.
      */
 	@POST
 	@Path("/acl")
