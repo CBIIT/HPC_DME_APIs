@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.integration.irods.impl;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -26,6 +27,7 @@ import java.util.List;
 
 import org.irods.jargon.core.exception.InvalidInputParameterException;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.protovalues.UserTypeEnum;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.Collection;
@@ -401,8 +403,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get user type: " + 
-	                                     e.getMessage(),
-	                                     HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+	                                    e.getMessage(),
+	                                    HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} 
 	}  
     
@@ -410,6 +412,64 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     public void closeConnection(HpcIntegratedSystemAccount dataManagementAccount)
     {
     	irodsConnection.closeConnection(dataManagementAccount);
+    }
+    
+    @Override
+    public void SetCollectionPermission(HpcIntegratedSystemAccount dataManagementAccount,
+                                        String path,
+                                        HpcUserPermission permissionRequest) 
+                                       throws HpcException
+    {
+    	FilePermissionEnum permission = null;
+    	try {
+    		 permission = FilePermissionEnum.valueOf(permissionRequest.getPermission());
+    		 
+    	} catch(Throwable t) {
+    		    throw new HpcException("Invalid permission: " + permissionRequest.getPermission(),
+    		    		               HpcErrorType.INVALID_REQUEST_INPUT, t);
+    	}
+    	
+    	try {
+    	     irodsConnection.getCollectionAO(dataManagementAccount).setAccessPermission(
+    		     	                         irodsConnection.getZone(), 
+    		     	                         path,
+    			                             permissionRequest.getUserId(),
+    			                             true, permission);
+    	     
+    	} catch(Exception e) {
+                throw new HpcException("Failed to set collection permission: " + 
+                                       e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+    	} 
+    }
+    
+    @Override
+    public void SetDataObjectPermission(HpcIntegratedSystemAccount dataManagementAccount,
+                                        String path,
+                                        HpcUserPermission permissionRequest) 
+                                       throws HpcException
+    {
+    	FilePermissionEnum permission = null;
+    	try {
+    		 permission = FilePermissionEnum.valueOf(permissionRequest.getPermission());
+    		 
+    	} catch(Throwable t) {
+    		    throw new HpcException("Invalid permission: " + permissionRequest.getPermission(),
+    		    		               HpcErrorType.INVALID_REQUEST_INPUT, t);
+    	}
+    	
+    	try {
+    	     irodsConnection.getDataObjectAO(dataManagementAccount).setAccessPermission(
+    		     	                         irodsConnection.getZone(), 
+    		     	                         path,
+    			                             permissionRequest.getUserId(),
+    			                             permission);
+    	     
+    	} catch(Exception e) {
+                throw new HpcException("Failed to set collection permission: " + 
+                                       e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+    	} 
     }
     
     //---------------------------------------------------------------------//

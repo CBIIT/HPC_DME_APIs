@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.integration;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -116,6 +117,7 @@ public interface HpcDataManagementProxy
      *
      * @param dataManagementAccount The Data Management System account.
      * @param path The data-object/collection path.
+     * @return The path attributes.
      * 
      * @throws HpcException
      */
@@ -127,7 +129,7 @@ public interface HpcDataManagementProxy
     /**
      * Get collection by its path.
      *
-      *@param dataManagementAccount The Data Management System account.
+     * @param dataManagementAccount The Data Management System account.
      * @param path The collection's path.
      * @return HpcCollection.
      * 
@@ -205,6 +207,34 @@ public interface HpcDataManagementProxy
      * @param dataManagementAccount The Data Management System account.
      */
     public void closeConnection(HpcIntegratedSystemAccount dataManagementAccount);
+    
+    /**
+     * Set Collection permission.
+     *
+     * @param dataManagementAccount The Data Management System account.
+     * @param path The collection's path.
+     * @param permissionRequest The user permission request.
+     * 
+     * @throws HpcException
+     */
+    public void SetCollectionPermission(HpcIntegratedSystemAccount dataManagementAccount,
+    		                            String path,
+    		                            HpcUserPermission permissionRequest) 
+    		                           throws HpcException;   
+    
+    /**
+     * Set Data Object permission.
+     *
+     * @param dataManagementAccount The Data Management System account.
+     * @param path The data object's path.
+     * @param permissionRequest The user permission request.
+     * 
+     * @throws HpcException
+     */
+    public void SetDataObjectPermission(HpcIntegratedSystemAccount dataManagementAccount,
+    		                            String path,
+    		                            HpcUserPermission permissionRequest) 
+    		                           throws HpcException; 
 }
 
  
