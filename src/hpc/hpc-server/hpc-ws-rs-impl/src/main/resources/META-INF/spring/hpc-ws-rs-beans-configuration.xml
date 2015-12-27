@@ -123,6 +123,7 @@
         		<entry key="getCollections" value="${hpc.ws.rs.auth.get-collections}"/>
         		<entry key="registerDataObject" value="${hpc.ws.rs.auth.register-data-object}"/>
         		<entry key="getDataObjects" value="${hpc.ws.rs.auth.get-data-objects}"/>
+        		<entry key="setPermissions" value="${hpc.ws.rs.auth.set-permissions}"/>
       		</map>
    		</property>
 	</bean>

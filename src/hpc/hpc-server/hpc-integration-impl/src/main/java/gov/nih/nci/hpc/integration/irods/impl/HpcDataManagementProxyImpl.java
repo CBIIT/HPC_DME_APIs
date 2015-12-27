@@ -466,7 +466,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     			                             permission);
     	     
     	} catch(Exception e) {
-                throw new HpcException("Failed to set collection permission: " + 
+                throw new HpcException("Failed to set data object permission: " + 
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
     	} 
