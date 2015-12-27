@@ -16,6 +16,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEnt
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueries;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -25,6 +26,7 @@ import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
+import gov.nih.nci.hpc.integration.HpcDataManagementProxy.HpcDataManagementPathAttributes;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 
 import java.util.ArrayList;
@@ -291,6 +293,32 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		    // Ignore.
     	}
     	
+    }
+    
+    @Override
+    public void setPermission(String path, HpcUserPermission permissionRequest) 
+                             throws HpcException
+    {
+    	// Input validation.
+    	if(path == null || permissionRequest == null) {
+           throw new HpcException("Null path", 
+		                          HpcErrorType.INVALID_REQUEST_INPUT);    	   	
+    	}
+    	
+    	HpcDataManagementPathAttributes pathAttributes = 
+    		   dataManagementProxy.getPathAttributes(getDataManagementAccount(), path);
+    	if(pathAttributes.isDirectory) {
+    	   dataManagementProxy.SetCollectionPermission(getDataManagementAccount(), 
+    			                                       path, 
+    			                                       permissionRequest);
+    	} else if(pathAttributes.isFile) {
+    		      dataManagementProxy.SetDataObjectPermission(getDataManagementAccount(), 
+    		    		                                      path, 
+                                                              permissionRequest);
+    	} else {
+    		    throw new HpcException("Entity path doesn't exist", 
+                                       HpcErrorType.INVALID_REQUEST_INPUT);   
+    	}
     }
     
     //---------------------------------------------------------------------//

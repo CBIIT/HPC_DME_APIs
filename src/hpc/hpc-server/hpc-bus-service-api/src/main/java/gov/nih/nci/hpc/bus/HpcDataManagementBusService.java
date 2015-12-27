@@ -16,6 +16,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -80,7 +82,7 @@ public interface HpcDataManagementBusService
      * Get data objects by metadata query.
      *
      * @param metadataQueries The metadata queries.
-     * @return A list of HpcDataObjectDTO
+     * @return A list of HpcDataObjectDTO.
      * 
      * @throws HpcException
      */
@@ -91,6 +93,18 @@ public interface HpcDataManagementBusService
      * Close connection to Data Management system for the current service call.
      */
     public void closeConnection();
+    
+    /**
+     * POST Set permissions.
+     *
+     * @param entityPermissionRequests Requests to set entities (Collections or Data Objects) permissions.
+     * @return Responses with each request's result.
+     * 
+     * @throws HpcException
+     */
+	public HpcEntityPermissionResponseListDTO setPermissions(
+			                  List<HpcEntityPermissionRequestDTO> entityPermissionRequests)
+			                  throws HpcException;
 }
 
  
