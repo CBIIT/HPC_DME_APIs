@@ -32,6 +32,7 @@
 		<prop key="hpc.ws.rs.stackTraceEnabled">true</prop>
 		<prop key="hpc.ws.rs.api-version">1.0.0</prop>
 		<prop key="hpc.ws.rs.ldapAuthentication">false</prop>
+		
 		<prop key="hpc.ws.rs.ssl.keystore.path">${karaf.base}/etc/hpc-server/keystore.jks</prop>
 		<prop key="hpc.ws.rs.ssl.keystore.type">JKS</prop>
 		<prop key="hpc.ws.rs.ssl.keystore.password">hpc-server-store-pwd</prop>
@@ -40,6 +41,7 @@
 		<prop key="hpc.ws.rs.ssl.truststore.password">hpc-server-store-pwd</prop>
 		<prop key="hpc.ws.rs.ssl.wantClientAuth">true</prop>
 		<prop key="hpc.ws.rs.ssl.needClientAuth">true</prop>
+		
 		<prop key="hpc.ws.rs.auth.register-user">rodsadmin unauthenticated</prop>
 		<prop key="hpc.ws.rs.auth.get-user">rodsadmin</prop>
 		<prop key="hpc.ws.rs.auth.authenticate-user">rodsadmin</prop>
@@ -48,6 +50,8 @@
 		<prop key="hpc.ws.rs.auth.get-collections">rodsadmin groupadmin rodsuser</prop>
 		<prop key="hpc.ws.rs.auth.register-data-object">rodsadmin groupadmin</prop>
 		<prop key="hpc.ws.rs.auth.get-data-objects">rodsadmin groupadmin rodsuser</prop>
+		<prop key="hpc.ws.rs.auth.set-permissions">rodsadmin groupadmin</prop>
+		
 		<prop key="hpc.ws.rs.dynamicfields">${karaf.base}/etc/hpc-server/dynamicfields.json</prop>
 	</osgix:cm-properties>
 
