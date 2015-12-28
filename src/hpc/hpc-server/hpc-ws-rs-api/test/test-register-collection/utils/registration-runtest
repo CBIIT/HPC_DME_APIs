@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+#import common functions
+
+
+source ../../utils/functions
+source ../utils/registration-functions
+
+POLICIES_FILE=../../../../../hpc-server/hpc-app-service-impl/src/main/resources/metadataValidationRules.json
+#Run common script
+../../utils/runtest
+
+RESPONSE_HEADER=response-header
+RESPONSE_MSG=response-message.json
+
+#Clean previous results
+./cleanme
+
+#RESPONSE_HEADER=response-header
+#RESPONSE_MSG=response-message.json
+SERVER=`cat ../../utils/server`
+
+DESTINATION="tempZone/home/rods/eran-test-folder-a/folder-b"
+
+VALID_INPUT=`validate_input $POLICIES_FILE  input.json`
+#echo "$VALID_INPUT"
+
+# add -D <filename> to dump the header
+curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-server/collection/${DESTINATION}  --config ../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s
+
+RETURN_CODE=`get_http_code $RESPONSE_HEADER`
+#If the input is valide, 201 should be returned
+if [ ! "$VALID_INPUT" == "PASS" -a "$RETURN_CODE" == "201" ]
+then
+    echo "Valid input with return code $RETURN_CODE"
+fi
+
+#If teh input is not valide, 400 should be returned
+if [ "$VALID_INPUT" == "FAIL" ] 
+then
+    if [ "$RETURN_CODE" != "400" ]
+    then
+        echo "Invalid input return code $RETURN_CODE"
+    fi
+    ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
+    
+    #ERROR_REASON=`get_json_value $RESPONSE_MSG requestRejectReason`
+fi
