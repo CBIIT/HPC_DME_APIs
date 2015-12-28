@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+#source /Users/zakigf/src/hpcdm/branches/hpc-prototype-dev/src/hpc/hpc-server/hpc-ws-rs-api/test/utils/functions
+
+#Check if the input data is valid
+#Inputs: policies- file.json
+#        input-file.json
+
+function validate_input {
+
+    POLICIES_FILE=$1
+    INPUT_FILE=$2
+
+    #Refomat the policies file to group related attributes using the '{' as delimiter
+    ONE_LINE=`tr "\n" " " < $POLICIES_FILE`
+    POLICIES_GROUPS=`echo $ONE_LINE | tr "{" "\n"`
+    #echo "$POLICIES_GROUPS"
+    
+    #Get the "Project" attributes 
+    PROJECT_ATTRIBUTES=`echo "$POLICIES_GROUPS" | grep '"collectionType":"Project"'`
+    #echo "$PROJECT_ATTRIBUTES"
+    #mandatory must be true
+    MANDATORY_PROJECT_ATTRIBUTES=`echo "$PROJECT_ATTRIBUTES" | grep '"mandatory":true'`
+
+    #default should not be specified 
+    MANDATORY_PROJECT_ATTRIBUTES=`echo "$MANDATORY_PROJECT_ATTRIBUTES" | grep -v '"defaultValue"'`
+    MANDATORY_PROJECT_ATTRIBUTES_NAMES=`get_json_value "$MANDATORY_PROJECT_ATTRIBUTES"  attribute`
+    #echo "$MANDATORY_PROJECT_ATTRIBUTES"
+    #echo "$MANDATORY_PROJECT_ATTRIBUTES_NAMES"
+    
+    RESTRICTED_PROJECT_ATTRIBUTES=`echo "$PROJECT_ATTRIBUTES" | grep '"validValues"'`
+    RESTRICTED_PROJECT_ATTRIBUTES_NAMES=`get_json_value "$RESTRICTED_PROJECT_ATTRIBUTES" attribute`
+    #echo "$RESTRICTED_PROJECT_ATTRIBUTES_NAMES"
+    
+    #READ the input json file
+    ONE_LINE=`tr "\n" " " < $INPUT_FILE`
+    INPUT_GROUPS=`echo $ONE_LINE | tr "{" "\n"`
+    INPUT_ATTRIBUTES=`get_json_value $INPUT_FILE attribute`
+   
+    #Convert the variables to an array of strings 
+    IFS=$'\n' read -rd '' -a MANDATORY_ARRAY <<<"$MANDATORY_PROJECT_ATTRIBUTES_NAMES"
+    IFS=$'\n' read -rd '' -a INPUT_ARRAY <<<"$INPUT_ATTRIBUTES"
+    
+    #Check 1: All required attributes are present
+    # for (all mandadory attributes)
+    #   check that they exist in the input file 
+    PASS_MANDATORY="YES"
+    for mandatory_attribute in "${MANDATORY_ARRAY[@]}"; do
+        #echo $mandatory_attribute
+        mandatory_found="NO" 
+        for input_attribute  in "${INPUT_ARRAY[@]}"; do
+            #echo "comparing $mandatory_attribute with $input_attribute"
+            if [ "$input_attribute" == "$mandatory_attribute" ]
+            then 
+                mandatory_found="YES" 
+                #echo "mandatory found"
+                break
+            fi
+        done
+        if [ $mandatory_found == "NO" ]
+        then
+            #echo "$mandatory_attribute not found"
+            PASS_MANDATORY="NO"
+            break
+        fi
+    done
+   
+    IFS=$'\n' read -rd '' -a RESTRICTED_ARRAY <<<"$RESTRICTED_PROJECT_ATTRIBUTES_NAMES"
+    
+    #Check 2: Attribues have valid values as mandated by the policies file 
+    # for (all attributes that have valid values)
+    #    Get The list of validValues
+    #    Get the actual input value
+    #    Compare 
+
+     
+    PASS_RESTRICTED="YES"
+    for restricted_attribute in "${RESTRICTED_ARRAY[@]}"; do
+        input_line=`echo "$INPUT_GROUPS" | grep "$restricted_attribute" | tr -d "\n"`
+        if [ ! -z "$input_line" ]
+        then
+            policies_line=`echo "$POLICIES_GROUPS" | grep "$restricted_attribute"`
+            #echo $policies_line
+            valid_values=`get_json_array_value "$policies_line" validValues`
+            input_value=`get_json_value "$input_line" value`
+            #echo $input_value
+            #echo $valid_values
+            if [[ ! "$valid_values" == *"$input_value"* ]]
+            then
+                PASS_RESTRICTED="NO"
+            fi
+        fi
+    done 
+    
+    if [ "$PASS_MANDATORY" == "YES"  -a "$PASS_RESTRICTED" == "YES"  ]
+    then
+        echo "PASS" 
+    else
+        echo "FAIL"
+    fi
+}
