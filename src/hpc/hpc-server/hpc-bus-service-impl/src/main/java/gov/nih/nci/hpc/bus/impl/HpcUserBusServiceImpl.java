@@ -122,6 +122,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	HpcUserDTO userDTO = new HpcUserDTO();
     	userDTO.setNciAccount(user.getNciAccount());
     	userDTO.setDataTransferAccount(user.getDataTransferAccount());
+    	userDTO.setDataManagementAccount(user.getDataManagementAccount());
     	
     	return userDTO;
     }
