@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# runtest
+# Readme.txt
 # @author: George Zaki 
 # 
 # Copyright Leidos Biomedical Research, Inc
@@ -9,11 +9,7 @@
 #
 
 
-# Common script to run tests 
+# Script to clean the resutls of this test
+# Usage: cleanme [no arguments]
 
-
-if [ ! -f input.json ]; then
-    echo "No input.json file"
-    exit
-fi 
-
+../../utils/cleantest
