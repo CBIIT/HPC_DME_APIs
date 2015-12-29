@@ -19,6 +19,7 @@ function validate_input {
 
     POLICIES_FILE=$1
     INPUT_FILE=$2
+    COLLECTION_TYPE=$3
 
     #Refomat the policies file to group related attributes using the '{' as delimiter
     ONE_LINE=`tr "\n" " " < $POLICIES_FILE`
@@ -26,20 +27,25 @@ function validate_input {
     #echo "$POLICIES_GROUPS"
     
     #Get the "Project" attributes 
-    PROJECT_ATTRIBUTES=`echo "$POLICIES_GROUPS" | grep '"collectionType":"Project"'`
-    #echo "$PROJECT_ATTRIBUTES"
+    COLLECTION_ATTRIBUTES=`echo "$POLICIES_GROUPS" | grep "\"collectionType\":\"$COLLECTION_TYPE\""`
+    if [ -z "$COLLECTION_ATTRIBUTES" ] 
+    then
+        echo "No policies for collection type:$COLLECTION_TYPE"
+        exit
+    fi
+    #echo "$COLLECTION_ATTRIBUTES"
     #mandatory must be true
-    MANDATORY_PROJECT_ATTRIBUTES=`echo "$PROJECT_ATTRIBUTES" | grep '"mandatory":true'`
+    MANDATORY_COLLECTION_ATTRIBUTES=`echo "$COLLECTION_ATTRIBUTES" | grep '"mandatory":true'`
 
     #default should not be specified 
-    MANDATORY_PROJECT_ATTRIBUTES=`echo "$MANDATORY_PROJECT_ATTRIBUTES" | grep -v '"defaultValue"'`
-    MANDATORY_PROJECT_ATTRIBUTES_NAMES=`get_json_value "$MANDATORY_PROJECT_ATTRIBUTES"  attribute`
-    #echo "$MANDATORY_PROJECT_ATTRIBUTES"
-    #echo "$MANDATORY_PROJECT_ATTRIBUTES_NAMES"
+    MANDATORY_COLLECTION_ATTRIBUTES=`echo "$MANDATORY_COLLECTION_ATTRIBUTES" | grep -v '"defaultValue"'`
+    MANDATORY_COLLECTION_ATTRIBUTES_NAMES=`get_json_value "$MANDATORY_COLLECTION_ATTRIBUTES"  attribute`
+    #echo "$MANDATORY_COLLECTION_ATTRIBUTES"
+    #echo "$MANDATORY_COLLECTION_ATTRIBUTES_NAMES"
     
-    RESTRICTED_PROJECT_ATTRIBUTES=`echo "$PROJECT_ATTRIBUTES" | grep '"validValues"'`
-    RESTRICTED_PROJECT_ATTRIBUTES_NAMES=`get_json_value "$RESTRICTED_PROJECT_ATTRIBUTES" attribute`
-    #echo "$RESTRICTED_PROJECT_ATTRIBUTES_NAMES"
+    RESTRICTED_COLLECTION_ATTRIBUTES=`echo "$COLLECTION_ATTRIBUTES" | grep '"validValues"'`
+    RESTRICTED_COLLECTION_ATTRIBUTES_NAMES=`get_json_value "$RESTRICTED_COLLECTION_ATTRIBUTES" attribute`
+    #echo "$RESTRICTED_COLLECTION_ATTRIBUTES_NAMES"
     
     #READ the input json file
     ONE_LINE=`tr "\n" " " < $INPUT_FILE`
@@ -47,7 +53,7 @@ function validate_input {
     INPUT_ATTRIBUTES=`get_json_value $INPUT_FILE attribute`
    
     #Convert the variables to an array of strings 
-    IFS=$'\n' read -rd '' -a MANDATORY_ARRAY <<<"$MANDATORY_PROJECT_ATTRIBUTES_NAMES"
+    IFS=$'\n' read -rd '' -a MANDATORY_ARRAY <<<"$MANDATORY_COLLECTION_ATTRIBUTES_NAMES"
     IFS=$'\n' read -rd '' -a INPUT_ARRAY <<<"$INPUT_ATTRIBUTES"
     
     #Check 1: All required attributes are present
@@ -74,7 +80,7 @@ function validate_input {
         fi
     done
    
-    IFS=$'\n' read -rd '' -a RESTRICTED_ARRAY <<<"$RESTRICTED_PROJECT_ATTRIBUTES_NAMES"
+    IFS=$'\n' read -rd '' -a RESTRICTED_ARRAY <<<"$RESTRICTED_COLLECTION_ATTRIBUTES_NAMES"
     
     #Check 2: Attribues have valid values as mandated by the policies file 
     # for (all attributes that have valid values)
