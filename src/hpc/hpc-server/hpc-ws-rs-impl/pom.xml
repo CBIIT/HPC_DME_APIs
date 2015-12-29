@@ -42,6 +42,7 @@
 						<Import-Package>
 							META-INF.cxf,
 							org.apache.cxf.bus.spring,
+							org.apache.cxf.common.injection,
 							*
 						</Import-Package>
 					</instructions>
