@@ -43,6 +43,7 @@
 							META-INF.cxf,
 							org.apache.cxf.bus.spring,
 							org.apache.cxf.common.injection,
+							javax.ws.rs,
 							*
 						</Import-Package>
 					</instructions>
