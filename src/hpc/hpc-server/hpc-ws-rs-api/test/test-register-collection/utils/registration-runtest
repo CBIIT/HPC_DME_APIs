@@ -11,7 +11,7 @@
 # Usage: runme [no arguments]
 #import common functions
 
-
+ERROR_TYPE=$1
 source ../../utils/functions
 source ../utils/registration-functions
 
@@ -51,7 +51,10 @@ then
     then
         echo "Invalid input return code $RETURN_CODE"
     fi
-    ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
-    
+    RETURNED_ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
+    if [ "$RETURNED_ERROR_TYPE" != "$ERROR_TYPE" ]
+    then
+        echo "Invalid error type. Expected: $ERROR_TYPE, received: $RETURNED_ERROR_TYPE"
+    fi
     #ERROR_REASON=`get_json_value $RESPONSE_MSG requestRejectReason`
 fi
