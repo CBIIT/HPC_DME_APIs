@@ -117,7 +117,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Input validation.
     	if(path == null) {
-    	   throw new HpcException("Null colelction path",
+    	   throw new HpcException("Null collection path",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
@@ -200,6 +200,30 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                 path, 
     			                 dataObjectRegistrationDTO.getLocations().getDestination(),
     			                 dataObjectRegistrationDTO.getLocations().getSource()); 
+    }
+    
+    @Override
+    public HpcDataObjectDTO getDataObject(String path) throws HpcException
+    {
+    	logger.info("Invoking getDataObject(String): " + path);
+    	
+    	// Input validation.
+    	if(path == null) {
+    	   throw new HpcException("Null data object path",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Get the data object.
+    	HpcDataObject dataObject = dataManagementService.getDataObject(path);
+    	if(dataObject == null) {
+    	   return null;
+    	}
+    		
+    	// Get the metadata for this data object.
+    	List<HpcMetadataEntry> metadataEntries = 
+    		                   dataManagementService.getDataObjectMetadata(path);
+    		
+    	return toDTO(dataObject, metadataEntries);
     }
     
     @Override

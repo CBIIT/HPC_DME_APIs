@@ -91,6 +91,17 @@ public interface HpcDataManagementRestService
 			           HpcDataObjectRegistrationDTO dataObjectRegistrationDTO);
 	
     /**
+     * GET Data Object.
+     *
+     * @param path The data object path.
+     */
+	@GET
+	@Path("/dataObject/{path:.*}")
+	@Consumes("application/json,application/xml")
+	@Produces("application/json,application/xml")
+	public Response getDataObject(@PathParam("path") String path);
+	
+    /**
      * GET Data objects by metadata query.
      *
      * @param metadataEntryQueries A list of metadata entries to query for.
