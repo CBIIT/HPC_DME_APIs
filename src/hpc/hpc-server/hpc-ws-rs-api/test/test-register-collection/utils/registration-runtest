@@ -13,6 +13,7 @@
 
 ERROR_TYPE=$1
 DESTINATION_PATH=$2
+COLLECTION_TYPE=$3
 
 source ../../utils/functions
 source ../utils/registration-functions
@@ -31,13 +32,20 @@ SERVER=`cat ../../utils/server`
 
 #DESTINATION="tempZone/home/rods/eran-test-folder-a/folder-b"
 
-VALID_INPUT=`validate_input $POLICIES_FILE  input.json`
+VALID_INPUT=`validate_input $POLICIES_FILE  input.json $COLLECTION_TYPE`
 #echo "$VALID_INPUT"
+
+if [  "$VALID_INPUT" !=  "PASS" -a "$VALID_INPUT" != "FAIL" ] 
+then
+    echo "Validation returned: $VALID_INPUT"
+    exit
+fi
 
 # add -D <filename> to dump the header
 curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-server/collection/${DESTINATION_PATH}  --config ../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s
 
 RETURN_CODE=`get_http_code $RESPONSE_HEADER`
+
 #If the input is valide, 201 should be returned
 if [ ! "$VALID_INPUT" == "PASS" -a "$RETURN_CODE" == "201" ]
 then
