@@ -252,6 +252,17 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
+    public HpcDataObject getDataObject(String path) throws HpcException
+    {
+    	HpcIntegratedSystemAccount dataManagementAccount = getDataManagementAccount();
+    	if(dataManagementProxy.getPathAttributes(dataManagementAccount, path).isFile) {
+    	   return dataManagementProxy.getDataObject(getDataManagementAccount(), path);
+    	}
+    	
+    	return null;
+    }
+    
+    @Override
     public List<HpcDataObject> getDataObjects(
     		    List<HpcMetadataQuery> metadataQueries) throws HpcException
     {

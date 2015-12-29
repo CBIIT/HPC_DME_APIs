@@ -90,10 +90,10 @@ public interface HpcDataManagementService
     		                                        throws HpcException; 
     
     /**
-     * Get collection by its path..
+     * Get collection by its path.
      *
      * @param path The collection's path.
-     * @return HpcCollection
+     * @return HpcCollection.
      * 
      * @throws HpcException
      */
@@ -119,6 +119,16 @@ public interface HpcDataManagementService
      * @throws HpcException
      */
     public List<HpcMetadataEntry> getCollectionMetadata(String path) throws HpcException;
+    
+    /**
+     * Get data object by its path.
+     *
+     * @param path The data object's path.
+     * @return HpcDataObject.
+     * 
+     * @throws HpcException
+     */
+    public HpcDataObject getDataObject(String path) throws HpcException;
     
     /**
      * Get data objects by metadata query.
