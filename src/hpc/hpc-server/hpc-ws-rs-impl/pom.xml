@@ -40,7 +40,6 @@
 							gov.nih.nci.hpc.ws.rs.provider
 						</Private-Package>
 						<Import-Package>
-							schemas,
 							META-INF.cxf,
 							org.apache.cxf.bus.spring,
 							org.apache.cxf.common.injection,
