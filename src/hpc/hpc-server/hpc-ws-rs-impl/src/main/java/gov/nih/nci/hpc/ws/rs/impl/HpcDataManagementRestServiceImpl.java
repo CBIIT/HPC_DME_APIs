@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
@@ -152,6 +153,28 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	
 		return createdResponse(null);
 	}
+    
+    @Override
+    public Response getDataObject(String path)
+    {	
+    	path = toAbsolutePath(path);
+    	logger.info("Invoking RS: GET /dataObject/" + path);
+    	
+    	HpcDataObjectListDTO dataObjects = new HpcDataObjectListDTO();
+		try {
+			 HpcDataObjectDTO dataObject = dataManagementBusService.getDataObject(path);
+			 if(dataObject != null) {
+				dataObjects.getDataObjects().add(dataObject);
+			 }
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /dataObjects/" + path + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null , true);
+    }
     
     @Override
     public Response getDataObjects(List<HpcMetadataQueryParam> metadataQueries)

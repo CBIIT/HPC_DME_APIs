@@ -136,7 +136,8 @@ public interface HpcDataManagementProxy
      * @throws HpcException
      */
     public HpcCollection getCollection(HpcIntegratedSystemAccount dataManagementAccount,
-    		                           String path) throws HpcException;
+    		                           String path) 
+    		                          throws HpcException;
     
     /**
      * Get collections by metadata query.
@@ -149,7 +150,8 @@ public interface HpcDataManagementProxy
      */
     public List<HpcCollection> getCollections(
     		    HpcIntegratedSystemAccount dataManagementAccount,
-    		    List<HpcMetadataQuery> metadataQueries) throws HpcException;
+    		    List<HpcMetadataQuery> metadataQueries) 
+    		    throws HpcException;
     
     /**
      * Get metadata of a collection.
@@ -162,7 +164,21 @@ public interface HpcDataManagementProxy
      */
     public List<HpcMetadataEntry> getCollectionMetadata(
    		                          HpcIntegratedSystemAccount dataManagementAccount, 
-   		                          String path) throws HpcException;
+   		                          String path) 
+   		                          throws HpcException;
+    
+    /**
+     * Get data object by its path.
+     *
+     * @param dataManagementAccount The Data Management System account.
+     * @param path The data object's path.
+     * @return HpcDataObject.
+     * 
+     * @throws HpcException
+     */
+    public HpcDataObject getDataObject(HpcIntegratedSystemAccount dataManagementAccount,
+    		                           String path) 
+    		                          throws HpcException;
     
     /**
      * Get data objects by metadata query.
@@ -175,7 +191,8 @@ public interface HpcDataManagementProxy
      */
     public List<HpcDataObject> getDataObjects(
     		    HpcIntegratedSystemAccount dataManagementAccount,
-    		    List<HpcMetadataQuery> metadataQueries) throws HpcException;
+    		    List<HpcMetadataQuery> metadataQueries) 
+    		    throws HpcException;
     
     /**
      * Get metadata of a data object.
@@ -188,7 +205,8 @@ public interface HpcDataManagementProxy
      */
     public List<HpcMetadataEntry> getDataObjectMetadata(
    		                          HpcIntegratedSystemAccount dataManagementAccount, 
-   		                          String path) throws HpcException;   
+   		                          String path) 
+   		                          throws HpcException;   
     
     /**
      * Get the user type.
