@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+#import common functions
+
+DESTINATION_PATH=""
+
+source ../../utils/functions
+source ../utils/registration-functions
+
+POLICIES_FILE=../../../../../hpc-server/hpc-app-service-impl/src/main/resources/metadataValidationRules.json
+#Run common script
+../../utils/runtest
+
+RESPONSE_HEADER=response-header
+RESPONSE_MSG=response-message.json
+
+#Clean previous results
+./cleanme
+
+SERVER=`cat ../../utils/server`
+
+# add -D <filename> to dump the header
+curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-server/collection/${DESTINATION_PATH}  --config ../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s
+
+RETURN_CODE=`get_http_code $RESPONSE_HEADER`
+ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
+ERROR_MSG=`get_json_value $RESPONSE_MSG message`
+
+echo  $RETURN_CODE  1>&2
+echo  $ERROR_TYPE  1>&2
+echo $ERROR_MSG 1>&2
