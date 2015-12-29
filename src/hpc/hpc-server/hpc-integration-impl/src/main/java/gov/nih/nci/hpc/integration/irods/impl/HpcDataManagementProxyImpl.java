@@ -251,7 +251,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                           String path) throws HpcException
     {
     	try {
-    		 // Execute the query w/ Case insensitive query.
              return toHpcCollection(irodsConnection.getCollectionAO(dataManagementAccount).
             		                                findByAbsolutePath(path));
              
@@ -265,7 +264,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     @Override
     public List<HpcCollection> getCollections(
     		    HpcIntegratedSystemAccount dataManagementAccount,
-    		    List<HpcMetadataQuery> metadataQueries) throws HpcException
+    		    List<HpcMetadataQuery> metadataQueries) 
+    		    throws HpcException
     {
     	try {
     		 // Execute the query w/ Case insensitive query.
@@ -295,8 +295,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     
     @Override
     public List<HpcMetadataEntry> getCollectionMetadata(
-   		    HpcIntegratedSystemAccount dataManagementAccount, 
-   		    String path) throws HpcException
+   		        HpcIntegratedSystemAccount dataManagementAccount, 
+   		        String path) 
+   		        throws HpcException
     {
 		try {
 			 return toHpcMetadata(irodsConnection.getCollectionAO(dataManagementAccount).
@@ -306,6 +307,21 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	            throw new HpcException("Failed to get metadata of a collection: " + 
                                       e.getMessage(),
                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} 
+    }
+    
+    @Override
+    public HpcDataObject getDataObject(HpcIntegratedSystemAccount dataManagementAccount,
+    		                           String path) throws HpcException
+    {
+    	try {
+             return toHpcDataObject(irodsConnection.getDataObjectAO(dataManagementAccount).
+            		                                findByAbsolutePath(path));
+             
+		} catch(Exception e) {
+	            throw new HpcException("Failed to get Data Object: " + 
+                                        e.getMessage(),
+                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} 
     }
     
@@ -324,37 +340,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
              List<HpcDataObject> hpcDataObjects = new ArrayList<HpcDataObject>();
              if(hpcDataObjects != null) {
                 for(DataObject irodsDataObject : irodsDataObjects) {
-            	    HpcDataObject hpcDataObject = new HpcDataObject();
-            	    hpcDataObject.setId(irodsDataObject.getId());
-            	    hpcDataObject.setCollectionId(irodsDataObject.getCollectionId());
-            	    hpcDataObject.setCollectionName(irodsDataObject.getCollectionName());
-            	    hpcDataObject.setAbsolutePath(irodsDataObject.getAbsolutePath());
-            	    hpcDataObject.setDataReplicationNumber(irodsDataObject.getDataReplicationNumber());
-            	    hpcDataObject.setDataVersion(irodsDataObject.getDataVersion());
-            	    hpcDataObject.setDataSize(irodsDataObject.getDataSize());
-            	    hpcDataObject.setDataTypeName(irodsDataObject.getDataTypeName());
-            	    hpcDataObject.setResourceGroupName(irodsDataObject.getResourceGroupName());
-            	    hpcDataObject.setResourceName(irodsDataObject.getResourceName());
-            	    hpcDataObject.setDataPath(irodsDataObject.getDataPath());
-            	    hpcDataObject.setDataOwnerName(irodsDataObject.getDataOwnerName());
-            	    hpcDataObject.setDataOwnerZone(irodsDataObject.getDataOwnerZone());
-            	    hpcDataObject.setReplicationStatus(irodsDataObject.getReplicationStatus());
-            	    hpcDataObject.setDataStatus(irodsDataObject.getDataStatus());
-            	    hpcDataObject.setChecksum(irodsDataObject.getChecksum());
-            	    hpcDataObject.setExpiry(irodsDataObject.getExpiry());
-            	    hpcDataObject.setDataMapId(irodsDataObject.getDataMapId());
-            	    hpcDataObject.setComments(irodsDataObject.getComments());
-            	    hpcDataObject.setSpecColType(irodsDataObject.getSpecColType().toString());
-            	    
-            	    Calendar createdAt = Calendar.getInstance();
-            	    createdAt.setTime(irodsDataObject.getCreatedAt());
-            	    hpcDataObject.setCreatedAt(createdAt);
-            	    
-            	    Calendar updatedAt = Calendar.getInstance();
-            	    updatedAt.setTime(irodsDataObject.getUpdatedAt());
-            	    hpcDataObject.setUpdatedAt(updatedAt);
-
-            	    hpcDataObjects.add(hpcDataObject);
+                	hpcDataObjects.add(toHpcDataObject(irodsDataObject));
                 }
              }
              
@@ -585,7 +571,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
      * Convert iRODS collection to HPC collection domain object.
      *
      * @param irodsCollection The iRODS collection.
-     * @return HpcCollection
+     * @return HpcCollection.
      */
     private HpcCollection toHpcCollection(Collection irodsCollection)
     {
@@ -616,6 +602,51 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	    hpcCollection.setModifiedAt(modifiedAt);
 	    
 	    return hpcCollection;
+    }
+    
+    /**
+     * Convert iRODS data object to HPC data object domain-object.
+     *
+     * @param irodsDataObject The iRODS data object.
+     * @return HpcDataObject.
+     */
+    private HpcDataObject toHpcDataObject(DataObject irodsDataObject)
+    {
+    	if(irodsDataObject == null) {
+    	   return null;
+    	}
+	
+    	HpcDataObject hpcDataObject = new HpcDataObject();
+	    hpcDataObject.setId(irodsDataObject.getId());
+	    hpcDataObject.setCollectionId(irodsDataObject.getCollectionId());
+	    hpcDataObject.setCollectionName(irodsDataObject.getCollectionName());
+	    hpcDataObject.setAbsolutePath(irodsDataObject.getAbsolutePath());
+	    hpcDataObject.setDataReplicationNumber(irodsDataObject.getDataReplicationNumber());
+	    hpcDataObject.setDataVersion(irodsDataObject.getDataVersion());
+	    hpcDataObject.setDataSize(irodsDataObject.getDataSize());
+	    hpcDataObject.setDataTypeName(irodsDataObject.getDataTypeName());
+	    hpcDataObject.setResourceGroupName(irodsDataObject.getResourceGroupName());
+	    hpcDataObject.setResourceName(irodsDataObject.getResourceName());
+	    hpcDataObject.setDataPath(irodsDataObject.getDataPath());
+	    hpcDataObject.setDataOwnerName(irodsDataObject.getDataOwnerName());
+	    hpcDataObject.setDataOwnerZone(irodsDataObject.getDataOwnerZone());
+	    hpcDataObject.setReplicationStatus(irodsDataObject.getReplicationStatus());
+	    hpcDataObject.setDataStatus(irodsDataObject.getDataStatus());
+	    hpcDataObject.setChecksum(irodsDataObject.getChecksum());
+	    hpcDataObject.setExpiry(irodsDataObject.getExpiry());
+	    hpcDataObject.setDataMapId(irodsDataObject.getDataMapId());
+	    hpcDataObject.setComments(irodsDataObject.getComments());
+	    hpcDataObject.setSpecColType(irodsDataObject.getSpecColType().toString());
+	    
+	    Calendar createdAt = Calendar.getInstance();
+	    createdAt.setTime(irodsDataObject.getCreatedAt());
+	    hpcDataObject.setCreatedAt(createdAt);
+	    
+	    Calendar updatedAt = Calendar.getInstance();
+	    updatedAt.setTime(irodsDataObject.getUpdatedAt());
+	    hpcDataObject.setUpdatedAt(updatedAt);
+	    
+	    return hpcDataObject;
     }
 }
 
