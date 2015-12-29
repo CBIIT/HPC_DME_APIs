@@ -55,7 +55,20 @@ function validate_input {
     #Convert the variables to an array of strings 
     IFS=$'\n' read -rd '' -a MANDATORY_ARRAY <<<"$MANDATORY_COLLECTION_ATTRIBUTES_NAMES"
     IFS=$'\n' read -rd '' -a INPUT_ARRAY <<<"$INPUT_ATTRIBUTES"
-    
+
+
+    #Check 0: Check that all provided attributes have a value 
+    VALUES_PRESENT=YES
+    for input_attribute  in "${INPUT_ARRAY[@]}"; do
+        input_line=`echo "$INPUT_GROUPS" | grep "$input_attribute" | tr -d "\n"`
+        input_value=`get_json_value "$input_line" value`
+        if [ -z "$input_value" ]
+        then 
+            echo "FAIL"
+            exit
+        fi
+    done
+
     #Check 1: All required attributes are present
     # for (all mandadory attributes)
     #   check that they exist in the input file 
@@ -75,8 +88,9 @@ function validate_input {
         if [ $mandatory_found == "NO" ]
         then
             #echo "$mandatory_attribute not found"
-            PASS_MANDATORY="NO"
-            break
+            echo "FAIL"
+            exit
+            #PASS_MANDATORY="NO"
         fi
     done
    
@@ -102,12 +116,16 @@ function validate_input {
             #echo $valid_values
             if [[ ! "$valid_values" == *"$input_value"* ]]
             then
-                PASS_RESTRICTED="NO"
+                echo "FAIL"
+                exit
+                #PASS_RESTRICTED="NO"
             fi
         fi
     done 
+
+
     
-    if [ "$PASS_MANDATORY" == "YES"  -a "$PASS_RESTRICTED" == "YES"  ]
+    if [ "$PASS_MANDATORY" == "YES" ]  &&  [ "$PASS_RESTRICTED" == "YES" ] && [ "$VALUES_PRESENT" == "YES" ]
     then
         echo "PASS" 
     else

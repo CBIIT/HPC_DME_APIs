@@ -47,17 +47,21 @@ curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-ser
 RETURN_CODE=`get_http_code $RESPONSE_HEADER`
 
 #If the input is valide, 201 should be returned
-if [ ! "$VALID_INPUT" == "PASS" -a "$RETURN_CODE" == "201" ]
-then
-    echo "Valid input with return code $RETURN_CODE"
+if [ "$VALID_INPUT" == "PASS" ]
+then 
+    if [ "$RETURN_CODE" != "201" ] 
+    then
+        echo "Valid input returned code: $RETURN_CODE"
+    fi
 fi
+
 
 #If the input is not valide, 400 should be returned
 if [ "$VALID_INPUT" == "FAIL" ] 
 then
     if [ "$RETURN_CODE" != "400" ]
     then
-        echo "Invalid input return code $RETURN_CODE"
+        echo "Invalid input returned code: $RETURN_CODE"
     fi
     RETURNED_ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
     if [ "$RETURNED_ERROR_TYPE" != "$ERROR_TYPE" ]
