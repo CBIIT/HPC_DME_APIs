@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# -------------------------------------------------------------------------
+# maketest
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+# -------------------------------------------------------------------------
+
+# Common script to clean a test
+# Usage: cleantest [no arguments]
+
+find . -name cleanme -execdir ./{} \;
+find . -name autotest-output -execdir rm -r {} \; 2>/dev/null
