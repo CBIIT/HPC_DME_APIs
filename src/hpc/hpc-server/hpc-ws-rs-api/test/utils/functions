@@ -45,5 +45,15 @@ function get_json_array_value {
     INPUT=`get_file_value "$INPUT"`
     echo "$INPUT" |  grep $ATTRIBUTE | sed "s/.*${ATTRIBUTE}\"[ 	]*:[ 	]*\[\([^]].*\)\].*/\1/"
 }
+#Checks that the response header file has information.
+function check_connection {
+RESPONSE_HEADER=$1
+CONT=`cat "$RESPONSE_HEADER"`
+if [ -z $CONT ]
+then
+    echo "ERROR: THE RESPONSE HEADER FILE $RESPONSE_HEADER IS EMPTY, CHECK CONNECTION" 1>&2
+    exit
+fi
+}
 
 
