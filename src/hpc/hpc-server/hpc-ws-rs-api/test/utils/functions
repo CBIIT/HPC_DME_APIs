@@ -11,12 +11,25 @@
 
 #Return the HTTP code in the response excluding 100
 function get_http_code {
+    if [ -z "$1" ]
+    then
+        echo "ERROR: using get_http_code"
+        echo "USAGE: get_http_code <http-response-file>"
+        exit
+    fi
     grep 'HTTP' $1  | grep '[02-9][0-9][0-9]' | sed 's/.*\([0-9][0-9][0-9]\).*/\1/'
 }
 
 
 #If the input is a filename, return the contents of the file, otherwise return the input
 function get_file_value {
+    if [ -z "$1" ]
+    then
+        echo "ERROR: using get_file_value"
+        echo "USAGE: get_file_value <input-string>"
+        exit
+    fi
+
     INPUT="$1"
     #Check if the input is a file
     if [ -e "$INPUT" ] 
@@ -30,6 +43,13 @@ function get_file_value {
 #Return a single value for a given attribute in a json file 
 #Inputs: json-file-name(or input string)  attribute-name 
 function get_json_value {
+
+    if [ -z "$1" ] || [ -z "$2" ]
+    then
+        echo "ERROR: using get_json_value"
+        echo "USAGE: get_json_value <input-string-or-file> <attribute>"
+        exit
+    fi
     INPUT="$1"
     ATTRIBUTE="$2"
     INPUT=`get_file_value "$INPUT"`
@@ -40,20 +60,38 @@ function get_json_value {
 #Return the array value for a given attribute in a json file 
 #Inputs: json-file-name(or input string)  attribute-name 
 function get_json_array_value {
+
+    if [ -z "$1" ] || [ -z "$2" ]
+    then
+        echo "ERROR: using get_json_array_value"
+        echo "USAGE: get_json_array_value <input-string-or-file> <attribute>"
+        exit
+    fi
+
     INPUT="$1"
     ATTRIBUTE="$2"
     INPUT=`get_file_value "$INPUT"`
     echo "$INPUT" |  grep $ATTRIBUTE | sed "s/.*${ATTRIBUTE}\"[ 	]*:[ 	]*\[\([^]].*\)\].*/\1/"
 }
+
 #Checks that the response header file has information.
 function check_connection {
-RESPONSE_HEADER=$1
-CONT=`cat "$RESPONSE_HEADER"`
-if [ -z "$CONT" ]
-then
-    echo "ERROR: THE RESPONSE HEADER FILE $RESPONSE_HEADER IS EMPTY, CHECK CONNECTION" 1>&2
-    exit
-fi
+    if [ -z "$1" ]
+    then
+        echo "ERROR: using check_connection"
+        echo "USAGE: check_connection <response-file>"
+        exit
+    fi
+    RESPONSE_HEADER="$1"
+    if [ -e "$RESPONSE_HEADER" ]
+    then 
+        CONT=`cat "$RESPONSE_HEADER"`
+    fi
+    if [ -z "$CONT" ]
+    then
+        echo "ERROR: THE RESPONSE HEADER FILE $RESPONSE_HEADER IS EMPTY, CHECK CONNECTION" 1>&2
+        exit
+    fi
 }
 
 
