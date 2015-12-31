@@ -24,21 +24,26 @@ SERVER=`cat ../../utils/server`
 curl -G  -X GET $SERVER/hpc-server/collection --data-urlencode metadataQuery@input.json  --config ../../utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+echo $HTTP_CODE
+
+ATTRIBUTE="Project name"
+VALUE="dxtest-project-name"
 
 #Make sure the response does not include the project named "dxtest-project-name".
 RESPONSE_GROUPS=`cat $RESPONSE_MSG | tr "{" "\n"`
-PROJECT_GROUPS=`echo "$RESPONSE_GROUPS" | grep "Project name"`
+PROJECT_GROUPS=`echo "$RESPONSE_GROUPS" | grep "$ATTRIBUTE"`
 PROJECT_NAMES=`get_json_value "$PROJECT_GROUPS" value`
-PROJECT_FOUND=false
+
+PROJECT_FOUND="FALSE"
 for project in $PROJECT_NAMES; do
-    if [[ $project == *"dxtest-project-name"*  ]]
+    if [[ $project == *"$VALUE"*  ]]
     then
-        PROJECT_FOUND=true
+        PROJECT_FOUND="TRUE"
         break
     fi
 done 
 
-if [ $PROJECT_FOUND ] 
+if [ "$PROJECT_FOUND" == "TRUE" ] 
 then
     echo "ERROR: PROJECT \"dxtest-project-name\" IS PART OF THE RESULTS."  1>&2
 fi
