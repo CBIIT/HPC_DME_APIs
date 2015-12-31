@@ -45,7 +45,7 @@
 		<prop key="hpc.ws.rs.auth.register-user">rodsadmin unauthenticated</prop>
 		<prop key="hpc.ws.rs.auth.get-user">rodsadmin</prop>
 		<prop key="hpc.ws.rs.auth.authenticate-user">rodsadmin</prop>
-		<prop key="hpc.ws.rs.auth.register-collection">rodsadmin groupadmin rodsuser</prop>
+		<prop key="hpc.ws.rs.auth.register-collection">rodsadmin groupadmin</prop>
 		<prop key="hpc.ws.rs.auth.get-collection">rodsadmin groupadmin rodsuser</prop>
 		<prop key="hpc.ws.rs.auth.get-collections">rodsadmin groupadmin rodsuser</prop>
 		<prop key="hpc.ws.rs.auth.register-data-object">rodsadmin groupadmin rodsuser</prop>
