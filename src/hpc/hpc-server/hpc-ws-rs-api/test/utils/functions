@@ -49,7 +49,7 @@ function get_json_array_value {
 function check_connection {
 RESPONSE_HEADER=$1
 CONT=`cat "$RESPONSE_HEADER"`
-if [ -z $CONT ]
+if [ -z "$CONT" ]
 then
     echo "ERROR: THE RESPONSE HEADER FILE $RESPONSE_HEADER IS EMPTY, CHECK CONNECTION" 1>&2
     exit
