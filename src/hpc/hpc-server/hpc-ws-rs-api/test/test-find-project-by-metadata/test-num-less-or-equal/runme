@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source ../../utils/functions
+source ../utils/search-functions
+
+#Check if the register_project function called in makeme was successful.
+check_registration
+
+RESPONSE_HEADER=response-header
+RESPONSE_MSG=response-message.json
+SERVER=`cat ../../utils/server`
+
+curl -G  -X GET $SERVER/hpc-server/collection --data-urlencode metadataQuery@input.json  --config ../../utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s
+
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+echo $HTTP_CODE
+
+#Make sure the response does not include the project named "dxtest-project-name".
+
+ATTRIBUTE="Internal Project ID"
+VALUE="0123456789"
+
+RESPONSE_GROUPS=`cat $RESPONSE_MSG | tr "{" "\n"`
+PROJECT_GROUPS=`echo "$RESPONSE_GROUPS" | grep "$ATTRIBUTE"`
+ID=`get_json_value "$PROJECT_GROUPS" value`
+
+PROJECT_FOUND="FALSE"
+for id in $ID; do
+    echo $id
+    if [[ "$id" == "$VALUE"  ]]
+    then
+        PROJECT_FOUND="TRUE"
+        break
+    fi
+done 
+if [ "$PROJECT_FOUND" == "FALSE" ] 
+then
+    echo "ERROR: PROJECT WITH \"$ATTRIBUTE\" = \"$VALUE\" IS NOT PART OF THE RESULTS."  1>&2
+fi

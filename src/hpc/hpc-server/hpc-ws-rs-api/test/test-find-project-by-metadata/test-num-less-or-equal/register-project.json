@@ -1,0 +1,48 @@
+{
+    "metadataEntries": [
+        {
+         "attribute": "NCI user-id of the User registering the File (Registrar)",
+         "value": "rosenbergea"
+        },
+        {
+         "attribute": "Project name",
+         "value": "dxtest-num-equal"
+        },
+        {
+         "attribute": "Collection type",
+         "value": "Project"
+        },
+        {
+         "attribute": "Project description",
+         "value": "Project desc"
+        },
+        {
+         "attribute": "Internal Project ID",
+         "value": "0123456789"
+        },
+        {
+         "attribute": "Source Lab PI",
+         "value": "Source Lab PI"
+        },
+        {
+         "attribute": "Lab / Branch Name",
+         "value": "Lab / Branch Name"
+        },
+        {
+         "attribute": "Name of the User registering the Project (Registrar)",
+         "value": "me"
+        },
+        {
+         "attribute": "DOC of the PI",
+         "value": "FNLCR"
+        },
+        {
+         "attribute": "NCI user-id of the User registering the Project (Registrar)",
+         "value": "uid"
+        },
+                {
+         "attribute": "DOC of the Registrar",
+         "value": "FNLCR"
+        },
+    ]
+}
