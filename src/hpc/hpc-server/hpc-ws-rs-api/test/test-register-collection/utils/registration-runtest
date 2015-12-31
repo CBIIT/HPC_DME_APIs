@@ -15,12 +15,12 @@ ERROR_TYPE=$1
 DESTINATION_PATH=$2
 COLLECTION_TYPE=$3
 
-source ../../utils/functions
-source ../utils/registration-functions
+source ../../../utils/functions
+source ../../utils/registration-functions
 
-POLICIES_FILE=../../../../../hpc-server/hpc-app-service-impl/src/main/resources/metadataValidationRules.json
+POLICIES_FILE=../../../../../../hpc-server/hpc-app-service-impl/src/main/resources/metadataValidationRules.json
 #Run common script
-../../utils/runtest
+../../../utils/runtest
 
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
@@ -28,7 +28,7 @@ RESPONSE_MSG=response-message.json
 #Clean previous results
 ./cleanme
 
-SERVER=`cat ../../utils/server`
+SERVER=`cat ../../../utils/server`
 
 #DESTINATION="tempZone/home/rods/eran-test-folder-a/folder-b"
 
@@ -42,7 +42,7 @@ then
 fi
 
 # add -D <filename> to dump the header
-curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-server/collection/${DESTINATION_PATH}  --config ../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s
+curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-server/collection/${DESTINATION_PATH}  --config ../../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s
 
 check_connection $RESPONSE_HEADER
 
