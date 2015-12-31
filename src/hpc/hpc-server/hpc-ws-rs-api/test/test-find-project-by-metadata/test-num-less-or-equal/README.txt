@@ -14,4 +14,4 @@
 ******************************/
 
 Register the project before searching. 
-Search for a project using the "NUM_EQUAL" comparator. Should return the HTTP code 200
+Search for a project using the "NUM_LESS_OR_EQUAL" comparator. Should return the HTTP code 200
