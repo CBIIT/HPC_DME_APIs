@@ -19,16 +19,16 @@
 
 	<dependencies>
 		<dependency>
-		  <groupId>org.springframework</groupId>
-		  <artifactId>spring-core</artifactId>
-		  <version>4.1.1.RELEASE</version>
-		  <scope>compile</scope>
-		  <exclusions>
-		    <exclusion>
-		      <artifactId>commons-logging</artifactId>
-		      <groupId>commons-logging</groupId>
-		    </exclusion>
-		  </exclusions>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>4.1.1.RELEASE</version>
+			<scope>compile</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.shell</groupId>
@@ -41,30 +41,41 @@
 			<version>${log4j.version}</version>
 		</dependency>
 		<dependency>
-		  <groupId>junit</groupId>
-		  <artifactId>junit-dep</artifactId>
-		  <version>${junit.version}</version>
-		  <scope>test</scope>
+			<groupId>junit</groupId>
+			<artifactId>junit-dep</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
-	    	<groupId>gov.nih.nci.hpc</groupId>
-	    	<artifactId>hpc-dto</artifactId>
-	    	<version>1.0.0-SNAPSHOT</version>
-		</dependency>		
+			<groupId>gov.nih.nci.hpc</groupId>
+			<artifactId>hpc-dto</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
 		<dependency>
 			<groupId>org.irods.jargon</groupId>
 			<artifactId>jargon-core</artifactId>
 			<version>4.0.2.1-RELEASE</version>
-		</dependency>	
+		</dependency>
 		<dependency>
-		   <groupId>org.springframework</groupId>
-		   <artifactId>spring-webmvc</artifactId>
-		   <version>4.1.0.RELEASE</version>
-		</dependency>        
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>4.1.0.RELEASE</version>
+		</dependency>
+<dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-web</artifactId>
+	<version>4.1.0.RELEASE</version>
+</dependency>
+<dependency>
+	<groupId>com.fasterxml.jackson.core</groupId>
+	<artifactId>jackson-databind</artifactId>
+	<version>2.3.3</version>
+</dependency>
+	
 		<dependency>
-		   <groupId>org.apache.httpcomponents</groupId>
-		   <artifactId>httpclient</artifactId>
-		   <version>4.5.1</version>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -76,26 +87,26 @@
 			<artifactId>jargon-core</artifactId>
 			<version>4.0.2.1-RELEASE</version>
 		</dependency>
-	  <dependency>
-		<groupId>com.googlecode.json-simple</groupId>
-		<artifactId>json-simple</artifactId>
-		<version>1.1</version>
-	  </dependency>
+		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1</version>
+		</dependency>
 		<dependency>
 			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
 			<version>1.10</version>
 		</dependency>
 		<dependency>
-			  <groupId>org.apache.commons</groupId>
-			  <artifactId>commons-csv</artifactId>
-			  <version>1.2</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+			<version>1.2</version>
 		</dependency>
-<dependency>
-  <groupId>jline</groupId>
-  <artifactId>jline</artifactId>
-  <version>2.12.1</version>
-</dependency>		
+		<dependency>
+			<groupId>jline</groupId>
+			<artifactId>jline</artifactId>
+			<version>2.12.1</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -150,32 +161,32 @@
 	</build>
 
 
-	  <repositories>
-	    <repository>
-	      <id>libs-milestone</id>
-	      <url>http://repo.spring.io/libs-milestone/</url>
-	    </repository>
-	    <repository>
-	      <id>libs-release</id>
-	      <url>http://repo.spring.io/libs-release/</url>
-	    </repository>
+	<repositories>
 		<repository>
-            <id>jline</id>
-            <name>JLine Project Repository</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </repository>	    
- 		<repository>
- 			<id>dice.repository</id>
- 			<name>dice.repository</name>
- 			<url>https://raw.github.com/DICE-UNC/DICE-Maven/master/releases</url>
- 			<releases>
- 				<enabled>true</enabled>
- 			</releases>
- 			<snapshots>
- 				<enabled>false</enabled>
- 				<updatePolicy>always</updatePolicy>
- 				<checksumPolicy>warn</checksumPolicy>
- 			</snapshots>
- 		</repository>		
-	  </repositories>
+			<id>libs-milestone</id>
+			<url>http://repo.spring.io/libs-milestone/</url>
+		</repository>
+		<repository>
+			<id>libs-release</id>
+			<url>http://repo.spring.io/libs-release/</url>
+		</repository>
+		<repository>
+			<id>jline</id>
+			<name>JLine Project Repository</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</repository>
+		<repository>
+			<id>dice.repository</id>
+			<name>dice.repository</name>
+			<url>https://raw.github.com/DICE-UNC/DICE-Maven/master/releases</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>warn</checksumPolicy>
+			</snapshots>
+		</repository>
+	</repositories>
 </project>

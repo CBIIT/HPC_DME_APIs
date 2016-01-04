@@ -21,6 +21,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.xml.bind.DatatypeConverter;
+
 import java.net.URLEncoder;
 
 import org.apache.commons.csv.CSVFormat;
@@ -36,17 +39,21 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.FormHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Component
-public class HPCCSVFile {
+public class HPCDatafiles {
 	@Autowired
 	private HpcConfigProperties configProperties;
 	
-	public HPCCSVFile() {
+	public HPCDatafiles() {
 		super();
 	}
 
@@ -106,12 +113,11 @@ public class HPCCSVFile {
     
             //Get a list of CSV file records
             List<CSVRecord> csvRecords = csvFileParser.getRecords(); 
-            
+            String collName = null;
             //Read the CSV file records starting from the second record to skip the header
             for (int i = 0; i < csvRecords.size(); i++) {
             	CSVRecord record = csvRecords.get(i);
             	String[] fields=new String[record.size()];
-            	String collName = null;
 
             	List<HpcMetadataEntry> listOfhpcCollection = new ArrayList<HpcMetadataEntry>();
               	for (Entry<String, Integer> entry : headersMap.entrySet()) { 
@@ -122,60 +128,51 @@ public class HPCCSVFile {
             			if (StringUtils.isNotBlank(cellVal))
             				listOfhpcCollection.add(hpcMetadataEntry);
             		}            		              	  
-            	  	
-              	
-				HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationDTO();
+
+              	HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationDTO();
 				hpcDataObjectRegistrationDTO.getMetadataEntries().addAll(listOfhpcCollection);
-
-				String collectionName = getAttributeValueByName("Collection name",hpcDataObjectRegistrationDTO); 
-
-				if(collectionName != null)
-				{
-					System.out.println("Registering Collection " + collectionName);
-					collName = collectionName;
-					hpcDataService = configProperties.getProperty("hpc.collection.service");
-				}
-				else
-				{
-	    			HpcDataTransferLocations locations = new HpcDataTransferLocations();
-	    			HpcFileLocation source = new HpcFileLocation();
-	    			source.setEndpoint(getAttributeValueByName("File Source (Globus Origin endpoint)",hpcDataObjectRegistrationDTO));
-	    			String filePath = getAttributeValueByName("Source File Path",hpcDataObjectRegistrationDTO) + "/"+getAttributeValueByName("File name",hpcDataObjectRegistrationDTO);
-	        		System.out.println("Adding file from " + filePath);
-	    			source.setPath(filePath);
-	    			HpcFileLocation destination = new HpcFileLocation();
-	    			destination.setEndpoint(hpcDestinationEndpoint);
-	    			destination.setPath(hpcDestinationPath);
-	    			locations.setDestination(destination);
-	    			locations.setSource(source);
-	    			hpcDataObjectRegistrationDTO.setLocations(locations);
-	    		    collName = getAttributeValueByName("File name",hpcDataObjectRegistrationDTO);	    		    
-	    		    hpcDataService = configProperties.getProperty("hpc.dataobject.service");
-				}             	
-              	
-
-				
-				
+            	  	
+    			HpcDataTransferLocations locations = new HpcDataTransferLocations();
+    			HpcFileLocation source = new HpcFileLocation();
+    			source.setEndpoint(getAttributeValueByName("File Source (Globus Origin endpoint)",hpcDataObjectRegistrationDTO));
+    			String filePath = getAttributeValueByName("Source File Path",hpcDataObjectRegistrationDTO) + "/"+getAttributeValueByName("File name",hpcDataObjectRegistrationDTO);
+        		System.out.println("Adding file from " + filePath);
+    			source.setPath(filePath);
+    			HpcFileLocation destination = new HpcFileLocation();
+    			destination.setEndpoint(hpcDestinationEndpoint);
+    			destination.setPath(hpcDestinationPath);
+    			locations.setDestination(destination);
+    			locations.setSource(source);
+    			hpcDataObjectRegistrationDTO.setLocations(locations);
+    		    collName = getAttributeValueByName("File name",hpcDataObjectRegistrationDTO);	    		    
+    		    hpcDataService = configProperties.getProperty("hpc.dataobject.service");
 				String parentCollection = getAttributeValueByName("Parent Collection Path (Logical Path)",hpcDataObjectRegistrationDTO);
-				
 				
 				if(parentCollection != null)
 					collName = parentCollection + "/" + collName;
+					//collName = URLEncoder.encode(parentCollection) + "/" + URLEncoder.encode(collName);
 
+				 List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
+				 messageConverters.add(new FormHttpMessageConverter());
+				 messageConverters.add(new StringHttpMessageConverter());
+				 messageConverters.add(new MappingJackson2HttpMessageConverter());
+				 RestTemplate restTemplate = new RestTemplate();
 
-				BasicAuthRestTemplate restTemplate = new BasicAuthRestTemplate(userId, password);
+				 restTemplate.setMessageConverters(messageConverters);
+				//BasicAuthRestTemplate restTemplate = new BasicAuthRestTemplate(userId, password);
 				HttpHeaders headers = new HttpHeaders();
+				String token =DatatypeConverter.printBase64Binary((userId + ":" + password).getBytes());
+				//byte[] token = Base64.getEncoder().encode(
+					//	(this.username + ":" + this.password).getBytes());
+				headers.add("Authorization", "Basic " + token);				
 				List <MediaType> mediaTypeList = new ArrayList<MediaType>();
 				mediaTypeList.add(MediaType.APPLICATION_JSON);
 				headers.setAccept(mediaTypeList);
-				//headers.setContentType(MediaType.APPLICATION_JSON);
 				HttpEntity<HpcDataObjectRegistrationDTO> entity = new HttpEntity<HpcDataObjectRegistrationDTO>(hpcDataObjectRegistrationDTO, headers);
-				//System.out.println("Adding Metadata to .."+ hpcServerURL+"/"+hpcCollection+targetCollection);
 				try
 				{
-					String collNameEncoded = URLEncoder.encode(collName);
-					System.out.println(hpcServerURL + "/"+ hpcDataService +"/" +irodsZoneHome+"/"+userId+"/"+collNameEncoded);
-					ResponseEntity<HpcExceptionDTO> response = restTemplate.exchange(hpcServerURL + "/"+ hpcDataService +"/" +irodsZoneHome+"/"+userId+"/"+collNameEncoded, HttpMethod.PUT,entity , HpcExceptionDTO.class);
+					System.out.println(hpcServerURL + "/"+ hpcDataService +"/" +irodsZoneHome+"/"+userId+"/"+collName);
+					ResponseEntity<HpcExceptionDTO> response = restTemplate.exchange(hpcServerURL + "/"+ hpcDataService +"/" +irodsZoneHome+"/"+userId+"/"+collName, HttpMethod.PUT,entity , HpcExceptionDTO.class);
 				}
 				catch (HttpStatusCodeException e) {
 					System.out.println("Cannot add Dataobject/Collection " + collName + "Due to " +  e.getMessage());

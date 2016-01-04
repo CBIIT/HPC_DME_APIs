@@ -3,8 +3,10 @@ package gov.nih.nci.hpc.cli.commands;
 import java.util.logging.Logger;
 
 import gov.nih.nci.hpc.cli.HPCBatch;
-import gov.nih.nci.hpc.cli.HPCCSVFile;
+import gov.nih.nci.hpc.cli.HPCCollections;
+import gov.nih.nci.hpc.cli.HPCDatafiles;
 import gov.nih.nci.hpc.cli.HPCFile;
+import gov.nih.nci.hpc.cli.HPCPermissions;
 import gov.nih.nci.hpc.cli.IrodsClient;
 import gov.nih.nci.hpc.cli.domain.HPCDataObject;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
@@ -28,8 +30,12 @@ public class HPCCommands implements CommandMarker {
 	@Autowired
 	private IrodsClient irodsClient;
 	@Autowired
-	private HPCCSVFile hpcBatch;
-	
+	private HPCCollections hpcCollections;
+	@Autowired
+	private HPCDatafiles hpcDatafiles;
+	@Autowired
+	private HPCPermissions hpcPermission;
+
 	protected final Logger LOG = Logger.getLogger(getClass().getName());
 
 	@CliAvailabilityIndicator({"hpcput"})
@@ -93,13 +99,25 @@ public class HPCCommands implements CommandMarker {
 	}
 
 	
-	@CliCommand(value = "hpcbatch", help = "Batch upload to HPC Archive")
-	public String hpcbatch(
-		@CliOption(key = { "source" }, mandatory = false, help = "Source location for transfer") final String source)
+	@CliCommand(value = "hpcCollections", help = "Batch upload Collections to HPC Archive")
+	public String hpcCollections(
+		@CliOption(key = { "source" }, mandatory = false, help = "Source location for collections") final String source)
 		{
-			//HPCCSVFile hpcBatch = new HPCCSVFile();
-
-		return  hpcBatch.parseBatchFile(source);
+		return  hpcCollections.parseBatchFile(source);
+	}	
+	
+	@CliCommand(value = "hpcPermissions", help = "Batch assingment of permissions")
+	public String hpcPermissions(
+		@CliOption(key = { "source" }, mandatory = false, help = "Source location for permissions") final String source)
+		{
+		return  hpcPermission.parseBatchFile(source);
+	}	
+	
+	@CliCommand(value = "hpcDatafiles", help = "Batch upload Collections to HPC Archive")
+	public String hpcDatafiles(
+		@CliOption(key = { "source" }, mandatory = false, help = "Source location for daatafiles") final String source)
+		{
+		return  hpcDatafiles.parseBatchFile(source);
 	}	
 	/*
 	@CliCommand(value = "hpc init", help = "Initialize HPC configuration")
