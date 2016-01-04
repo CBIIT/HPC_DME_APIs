@@ -17,7 +17,6 @@ import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcMongoDB;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcSingleResultCallback;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -26,6 +25,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.bson.conversions.Bson;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.client.model.UpdateOptions;
@@ -67,6 +67,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
     //---------------------------------------------------------------------//
 	
 	// HpcMongoDB instance.
+	@Autowired
 	private HpcMongoDB mongoDB = null;
 	
     //---------------------------------------------------------------------//
@@ -74,32 +75,11 @@ public class HpcUserDAOImpl implements HpcUserDAO
     //---------------------------------------------------------------------//
 	
     /**
-     * Default Constructor.
-     * 
-     * @throws HpcException Constructor is disabled.
+     * Constructor for Spring Dependency Injection. 
      */
     private HpcUserDAOImpl() throws HpcException
     {
-    	throw new HpcException("Constructor Disabled",
-                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }   
-    
-    /**
-     * Constructor for Spring Dependency Injection.
-     * 
-     * @param mongoDB HPC Mongo DB driver instance.
-     * 
-     * @throws HpcException If a HpcMongoDB instance was not provided.
-     */
-    private HpcUserDAOImpl(HpcMongoDB mongoDB) throws HpcException
-    {
-    	if(mongoDB == null) {
-    	   throw new HpcException("Null HpcMongoDB instance",
-    			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
-    	}
-    	
-    	this.mongoDB = mongoDB;
-    }
     
     //---------------------------------------------------------------------//
     // Methods

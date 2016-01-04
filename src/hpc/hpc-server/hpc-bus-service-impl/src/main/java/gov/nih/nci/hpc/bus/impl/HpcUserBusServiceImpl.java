@@ -124,6 +124,9 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	userDTO.setDataTransferAccount(user.getDataTransferAccount());
     	userDTO.setDataManagementAccount(user.getDataManagementAccount());
     	
+    	// Mask passwords.
+    	maskPasswords(userDTO);
+    	
     	return userDTO;
     }
     
@@ -188,6 +191,26 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     			                           UNAUTHENTICATED_ROLE);
     	
     	return authenticationResponse;
+    }
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//
+    
+    /**
+     * Mask account passwords
+     * 
+     * @param userDTO the user DTO to have passwords masked.
+     */
+    
+    private void maskPasswords(HpcUserDTO userDTO)
+    {
+    	if(userDTO.getDataManagementAccount() != null) {
+    	   userDTO.getDataManagementAccount().setPassword("*****");
+    	}
+    	if(userDTO.getDataTransferAccount() != null) {
+    	   userDTO.getDataTransferAccount().setPassword("*****");
+    	}
     }
 }
 
