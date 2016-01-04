@@ -31,24 +31,14 @@
 	<!-- OSGi beans export -->
 	<osgi:service ref="hpcUserBusService" 
 	              interface="gov.nih.nci.hpc.bus.HpcUserBusService" />
-	<osgi:service ref="hpcDatasetBusService"
-		          interface="gov.nih.nci.hpc.bus.HpcDatasetBusService" />
-	<osgi:service ref="hpcProjectBusService"
-		          interface="gov.nih.nci.hpc.bus.HpcProjectBusService" />
 	<osgi:service ref="hpcDataManagementBusService"
 		          interface="gov.nih.nci.hpc.bus.HpcDataManagementBusService" />
 
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcUserService"
 		            interface="gov.nih.nci.hpc.service.HpcUserService" />
-	<osgi:reference id="hpcDatasetService"
-		            interface="gov.nih.nci.hpc.service.HpcDatasetService" />
 	<osgi:reference id="hpcDataTransferService"
 		            interface="gov.nih.nci.hpc.service.HpcDataTransferService" />
-	<osgi:reference id="hpcTransferStatusService"
-		            interface="gov.nih.nci.hpc.service.HpcTransferStatusService" />		
-	<osgi:reference id="hpcProjectService"
-		            interface="gov.nih.nci.hpc.service.HpcProjectService" />
 	<osgi:reference id="hpcDataManagementService"
 		            interface="gov.nih.nci.hpc.service.HpcDataManagementService" />
 

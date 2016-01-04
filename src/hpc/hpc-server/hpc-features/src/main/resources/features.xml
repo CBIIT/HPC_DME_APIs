@@ -61,7 +61,6 @@
 
 		<!-- Config files -->
 		<configfile finalname="/etc/gov.nih.nci.hpc.cfg" override="false">mvn:${project.groupId}/hpc-features/${project.version}/properties/hpc-server</configfile>
-		<configfile finalname="/etc/hpc-server/dynamicfields.json" override="true">mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}/json/dynamicfields</configfile>
 		<configfile finalname="/etc/hpc-server/keystore.jks" override="true">mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}/jks/keystore</configfile>
 		<configfile finalname="/etc/hpc-server/metadataValidationRules.json" override="true">mvn:${project.groupId}/hpc-app-service-impl/${project.version}/json/metadataValidationRules</configfile>
 
