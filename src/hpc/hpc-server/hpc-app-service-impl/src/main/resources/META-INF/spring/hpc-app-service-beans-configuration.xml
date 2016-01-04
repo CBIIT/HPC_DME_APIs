@@ -39,14 +39,5 @@
 	<!-- HPC Application Services Beans -->
 	<bean id="hpcUserService" class="gov.nih.nci.hpc.service.impl.HpcUserServiceImpl" />
 	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl" />
-	<bean id="hpcProjectService" class="gov.nih.nci.hpc.service.impl.HpcProjectServiceImpl" />
-	<bean id="hpcDatasetService" class="gov.nih.nci.hpc.service.impl.HpcDatasetServiceImpl">
-		<constructor-arg ref="hpcDataTransferStatusMap" />
-	</bean>
 	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl" />
-
-	<bean id="hpcTransferStatusService" class="gov.nih.nci.hpc.service.impl.HpcTransferStatusServiceImpl">
-		<constructor-arg ref="transferStatusDAO" />
-		<constructor-arg ref="hpcDataTransferProxy" />
-	</bean>
 </beans>

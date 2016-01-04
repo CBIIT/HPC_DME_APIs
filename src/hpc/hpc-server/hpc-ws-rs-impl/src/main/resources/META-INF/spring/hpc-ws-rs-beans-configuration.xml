@@ -140,18 +140,12 @@
 	
 	<!-- JAX-RS Service Beans -->
 	<bean id="hpcUserRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcUserRestServiceImpl" />
-	<bean id="hpcDatasetRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDatasetRestServiceImpl">
-		<constructor-arg value="${hpc.ws.rs.dynamicfields}" />
-	</bean>
-	<bean id="hpcProjectRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcProjectRestServiceImpl" />
 	<bean id="hpcDataManagementRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl" />
 	
 	<!-- CXF JAX-RS Server Config -->
 	<jaxrs:server id="hpc-server" address="${hpc.ws.rs.url}" bus="cxf">
 		<jaxrs:serviceBeans>
 			<ref bean="hpcUserRestService" />
-			<ref bean="hpcDatasetRestService" />
-			<ref bean="hpcProjectRestService" />
 			<ref bean="hpcDataManagementRestService" />
 		</jaxrs:serviceBeans>
 		<jaxrs:providers>
@@ -174,8 +168,6 @@
 	<jaxrs:server id="hpc-secured-server" address="${hpc.ws.rs.secured-url}" bus="cxf">
 		<jaxrs:serviceBeans>
 			<ref bean="hpcUserRestService" />
-			<ref bean="hpcDatasetRestService" />
-			<ref bean="hpcProjectRestService" />
 			<ref bean="hpcDataManagementRestService" />
 		</jaxrs:serviceBeans>
 		<jaxrs:providers>

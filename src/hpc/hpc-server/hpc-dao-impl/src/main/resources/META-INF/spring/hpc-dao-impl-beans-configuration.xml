@@ -14,8 +14,14 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:util="http://www.springframework.org/schema/util" 
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	                       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	                       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
+	<context:annotation-config />
+	
 	<!-- HPC Encryptor -->
 	<bean id="hpcEncryptor" class="gov.nih.nci.hpc.dao.mongo.codec.HpcEncryptor">
 		<constructor-arg value="${hpc.dao.mongo.encryptor.key}" />
@@ -29,22 +35,6 @@
 		<constructor-arg ref="hpcEncryptor" />
 	</bean>
 
-	<!-- HPC Dataset Codecs -->
-	<bean id="hpcDatasetCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcDatasetCodec" />
-	<bean id="hpcProjectCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcProjectCodec" />
-	<bean id="hpcProjectMetadataCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcProjectMetadataCodec" />
-	<bean id="hpcFileSetCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileSetCodec" />
-	<bean id="hpcFileCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileCodec" />
-	<bean id="hpcFileLocationCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileLocationCodec" />
-	<bean id="hpcFileMetadataCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileMetadataCodec" />
-	<bean id="hpcFileMetadataVersionCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileMetadataVersionCodec" />
-	<bean id="hpcFileMetadataHistoryCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFileMetadataHistoryCodec" />
-	<bean id="hpcFilePrimaryMetadataCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcFilePrimaryMetadataCodec" />
-	<bean id="hpcMetadataItemCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcMetadataItemCodec" />
-	<bean id="hpcDataTransferRequestCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcDataTransferRequestCodec" />
-	<bean id="hpcDataTransferReportCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcDataTransferReportCodec" />
-	<bean id="hpcDataTransferLocationsCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcDataTransferLocationsCodec" />
-
 	<!-- HPC Codec Provider -->
 	<bean id="hpcCodecProvider" class="gov.nih.nci.hpc.dao.mongo.codec.HpcCodecProvider">
 		<constructor-arg>
@@ -55,34 +45,6 @@
 					   value-ref="hpcNciAccountCodec" />
 				<entry key="gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount"
 					   value-ref="hpcIntegratedSystemAccountCodec" />
-				<entry key="gov.nih.nci.hpc.domain.model.HpcDataset"
-					   value-ref="hpcDatasetCodec" />
-				<entry key="gov.nih.nci.hpc.domain.dataset.HpcFileSet"
-				 	   value-ref="hpcFileSetCodec" />
-				<entry key="gov.nih.nci.hpc.domain.dataset.HpcFile" 
-				       value-ref="hpcFileCodec" />
-				<entry key="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation"
-					   value-ref="hpcFileLocationCodec" />
-				<entry key="gov.nih.nci.hpc.domain.metadata.HpcFileMetadata"
-					   value-ref="hpcFileMetadataCodec" />
-				<entry key="gov.nih.nci.hpc.domain.metadata.HpcFileMetadataVersion"
-					   value-ref="hpcFileMetadataVersionCodec" />	
-				<entry key="gov.nih.nci.hpc.domain.metadata.HpcFileMetadataHistory"
-					   value-ref="hpcFileMetadataHistoryCodec" />
-				<entry key="gov.nih.nci.hpc.domain.metadata.HpcFilePrimaryMetadata"
-					   value-ref="hpcFilePrimaryMetadataCodec" />
-				<entry key="gov.nih.nci.hpc.domain.metadata.HpcMetadataItem"
-					   value-ref="hpcMetadataItemCodec" />
-				<entry key="gov.nih.nci.hpc.domain.model.HpcProject"
-                       value-ref="hpcProjectCodec" />
-				<entry key="gov.nih.nci.hpc.domain.metadata.HpcProjectMetadata"
-   					   value-ref="hpcProjectMetadataCodec" />
-				<entry key="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequest"
-					   value-ref="hpcDataTransferRequestCodec" />
-				<entry key="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport"
-					   value-ref="hpcDataTransferReportCodec" />	
-				<entry key="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations"
-					   value-ref="hpcDataTransferLocationsCodec" />	
 			</map>
 		</constructor-arg>
 	</bean>
@@ -95,28 +57,11 @@
 		<constructor-arg index="3">
 			<map>
 				<entry key="gov.nih.nci.hpc.domain.model.HpcUser" value="user" />
-				<entry key="gov.nih.nci.hpc.domain.model.HpcDataset" value="dataset" />
-				<entry key="gov.nih.nci.hpc.domain.model.HpcProject" value="project" />
-				<entry key="gov.nih.nci.hpc.domain.metadata.HpcFileMetadataHistory" value="file_metadata_history" />
 			</map>
 		</constructor-arg>
 	</bean>
 
 	<!-- HPC DAO Implementation Beans -->
-	<bean id="hpcDatasetDAO" class="gov.nih.nci.hpc.dao.mongo.impl.HpcDatasetDAOImpl">
-		<constructor-arg ref="hpcMongoDB" />
-	</bean>
-	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.mongo.impl.HpcUserDAOImpl">
-		<constructor-arg ref="hpcMongoDB" />
-	</bean>
-	<bean id="transferStatusDAO" class="gov.nih.nci.hpc.dao.mongo.impl.HpcTransferStatusDAOImpl">
-		<constructor-arg ref="hpcMongoDB" />
-	</bean>	
-	<bean id="hpcProjectDAO" class="gov.nih.nci.hpc.dao.mongo.impl.HpcProjectDAOImpl">
-		<constructor-arg ref="hpcMongoDB" />
-	</bean>
-	<bean id="hpcFileMetadataHistoryDAO" class="gov.nih.nci.hpc.dao.mongo.impl.HpcFileMetadataHistoryDAOImpl">
-		<constructor-arg ref="hpcMongoDB" />
-	</bean>
+	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.mongo.impl.HpcUserDAOImpl" />
 
 </beans>
