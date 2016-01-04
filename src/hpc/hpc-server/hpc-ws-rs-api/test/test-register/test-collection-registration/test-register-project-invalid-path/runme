@@ -29,7 +29,7 @@ RESPONSE_MSG=response-message.json
 SERVER=`cat ../../../utils/server`
 
 # add -D <filename> to dump the header
-curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-server/collection/${DESTINATION_PATH}  --config ../../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s
+curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-server/collection/${DESTINATION_PATH}  --config ../../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 
 check_connection $RESPONSE_HEADER
 
