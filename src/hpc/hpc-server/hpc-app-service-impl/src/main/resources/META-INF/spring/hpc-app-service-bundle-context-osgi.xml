@@ -34,34 +34,20 @@
 	<!-- OSGi beans export -->
 	<osgi:service ref="hpcUserService" 
 	              interface="gov.nih.nci.hpc.service.HpcUserService" />
-	<osgi:service ref="hpcDatasetService"
-		          interface="gov.nih.nci.hpc.service.HpcDatasetService" />
 	<osgi:service ref="hpcDataTransferService"
 		          interface="gov.nih.nci.hpc.service.HpcDataTransferService" />
-	<osgi:service ref="hpcTransferStatusService"
-		          interface="gov.nih.nci.hpc.service.HpcTransferStatusService" />		          
-	<osgi:service ref="hpcProjectService"
-		          interface="gov.nih.nci.hpc.service.HpcProjectService" />	
 	<osgi:service ref="hpcDataManagementService"
 		          interface="gov.nih.nci.hpc.service.HpcDataManagementService" />	
 
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcUserDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcUserDAO" />
-	<osgi:reference id="hpcDatasetDAO" 
-	                interface="gov.nih.nci.hpc.dao.HpcDatasetDAO" />
 	<osgi:reference id="hpcDataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
 	<osgi:reference id="hpcLdapAuthenticationProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy" />
 	<osgi:reference id="hpcDataTransferAccountValidatorProvider"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProvider" />
-	<osgi:reference id="transferStatusDAO" 
-					interface="gov.nih.nci.hpc.dao.HpcTransferStatusDAO" />
-	<osgi:reference id="hpcProjectDAO" 
-					interface="gov.nih.nci.hpc.dao.HpcProjectDAO" />	
-	<osgi:reference id="hpcFileMetadataHistoryDAO" 
-					interface="gov.nih.nci.hpc.dao.HpcFileMetadataHistoryDAO" />	
 	<osgi:reference id="hpcDataManagementProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataManagementProxy" />				
 </beans>

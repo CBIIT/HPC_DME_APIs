@@ -111,24 +111,6 @@
 									</extensionArgs>
 								</xsdOption>
 								<xsdOption>
-									<xsd>xjc-build/schema/HpcDataset.xsd</xsd>
-									<packagename>gov.nih.nci.hpc.domain.model</packagename>
-									<bindingFile>xjc-build/schema/hpc-domain-dataset-jaxb-binding.xjb</bindingFile>
-									<extensionArgs>
-										<arg>-Xts:style:multiline</arg>
-										<arg>-Xbg</arg>
-									</extensionArgs>
-								</xsdOption>
-								<xsdOption>
-									<xsd>xjc-build/schema/HpcProject.xsd</xsd>
-									<packagename>gov.nih.nci.hpc.domain.model</packagename>
-									<bindingFile>xjc-build/schema/hpc-domain-project-jaxb-binding.xjb</bindingFile>
-									<extensionArgs>
-										<arg>-Xts:style:multiline</arg>
-										<arg>-Xbg</arg>
-									</extensionArgs>
-								</xsdOption>
-								<xsdOption>
 									<xsd>xjc-build/schema/HpcMetadata.xsd</xsd>
 									<packagename>gov.nih.nci.hpc.domain.model</packagename>
 									<bindingFile>xjc-build/schema/hpc-domain-metadata-jaxb-binding.xjb</bindingFile>

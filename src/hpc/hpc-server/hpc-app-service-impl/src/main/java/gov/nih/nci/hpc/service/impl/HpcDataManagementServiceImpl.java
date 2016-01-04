@@ -77,7 +77,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	
     /**
      * Constructor for Spring Dependency Injection.
-     * 
      */
     private HpcDataManagementServiceImpl()
     {

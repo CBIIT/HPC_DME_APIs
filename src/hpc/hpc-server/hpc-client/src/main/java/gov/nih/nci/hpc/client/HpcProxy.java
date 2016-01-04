@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.client;
 
-import gov.nih.nci.hpc.ws.rs.HpcDatasetRestService;
+import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 import gov.nih.nci.hpc.ws.rs.HpcUserRestService;
 
 /**
@@ -32,11 +32,11 @@ public interface HpcProxy
     public HpcUserRestService getUserRestServiceProxy();
     
     /**
-     * Get the dataset service.
+     * Get the data management service.
      *
      * @return A dataset rest service proxy instance.
      */
-    public HpcDatasetRestService getDatasetRestServiceProxy();
+    public HpcDataManagementRestService getDataManagementRestServiceProxy();
 }
 
  
