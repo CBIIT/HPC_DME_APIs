@@ -23,9 +23,6 @@
 
 	<!-- HPC Application Services OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
-		<prop key="hpc.service.dataTransferStatusMap.IN_PROGRESS">ACTIVE</prop>
-		<prop key="hpc.service.dataTransferStatusMap.COMPLETED">SUCCEEDED</prop>
-		<prop key="hpc.service.dataTransferStatusMap.FAILED">FAILED</prop>
 		<prop key="hpc.service.metadataValidationRulesPath">${karaf.base}/etc/hpc-server/metadataValidationRules.json</prop>
 	</osgix:cm-properties>
 
