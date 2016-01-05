@@ -48,9 +48,6 @@
     </jxb:bindings>
     
 	<jxb:bindings schemaLocation="HpcDataTransferTypes.xsd">
-    	<jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferStatus']">
-        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus"/>
-        </jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcDataTransferReport']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport"/>
 		</jxb:bindings>
@@ -59,9 +56,6 @@
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcDataTransferLocations']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations"/>
-		</jxb:bindings>
-		<jxb:bindings node="//xsd:complexType[@name='HpcDataTransferRequest']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequest"/>
 		</jxb:bindings>
     </jxb:bindings>
 	
