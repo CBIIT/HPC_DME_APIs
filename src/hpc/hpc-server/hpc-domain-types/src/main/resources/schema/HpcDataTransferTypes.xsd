@@ -18,17 +18,6 @@
 	targetNamespace="http://hpc.nci.nih.gov/domain/datatransfer"
 	elementFormDefault="unqualified">
 
-	<xsd:simpleType name="HpcDataTransferStatus">
-		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="UNKONWN" />
-			<xsd:enumeration value="INITIATED" />
-			<xsd:enumeration value="IN_PROGRESS" />
-			<xsd:enumeration value="COMPLETED" />
-			<xsd:enumeration value="FAILED" />
-			<xsd:enumeration value="ERROR" />
-		</xsd:restriction>
-	</xsd:simpleType>
-
 	<xsd:complexType name="HpcDataTransferReport">
 		<xsd:sequence>
 			<xsd:element name="taskID" type="xsd:string" />
@@ -72,20 +61,6 @@
 		<xsd:sequence>
 			<xsd:element name="source" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="destination" type="hpc-domain-datatransfer:HpcFileLocation" />
-		</xsd:sequence>
-	</xsd:complexType>
-
-	<xsd:complexType name="HpcDataTransferRequest">
-		<xsd:sequence>
-			<xsd:element name="requesterNciUserId" type="xsd:string" />
-			<xsd:element name="fileId" type="xsd:ID" />
-			<xsd:element name="dataTransferId" type="xsd:string" />
-			<xsd:element name="locations"
-				         type="hpc-domain-datatransfer:HpcDataTransferLocations" />
-			<xsd:element name="status"
-				         type="hpc-domain-datatransfer:HpcDataTransferStatus" />
-			<xsd:element name="report"
-				         type="hpc-domain-datatransfer:HpcDataTransferReport" />
 		</xsd:sequence>
 	</xsd:complexType>
 
