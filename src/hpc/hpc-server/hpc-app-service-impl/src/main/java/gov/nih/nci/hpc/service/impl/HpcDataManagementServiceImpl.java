@@ -213,6 +213,33 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        			                                    path, metadataEntries);    	
     }
     
+    public HpcFileLocation getFileLocation(String path) throws HpcException
+    {
+    	// Input validation.
+    	if(getDataObject(path) == null) {
+           throw new HpcException("Data object not found: " + path, 
+		                          HpcErrorType.INVALID_REQUEST_INPUT);
+    	}	
+    	
+    	HpcFileLocation location = new HpcFileLocation();
+    	for(HpcMetadataEntry metadata : getDataObjectMetadata(path)) {
+    		if(metadata.getAttribute().equals(FILE_LOCATION_ENDPOINT_ATTRIBUTE)) {
+    			location.setEndpoint(metadata.getValue());	
+    			continue;
+    		}
+    		if(metadata.getAttribute().equals(FILE_LOCATION_PATH_ATTRIBUTE)) {
+    		  location.setPath(metadata.getValue());	
+    		}
+    	}
+    	
+    	if(location.getEndpoint() == null || location.getPath() == null) {
+    	   throw new HpcException("File location not found: " + path, 
+    			                  HpcRequestRejectReason.FILE_NOT_FOUND);
+    	}
+    	
+    	return location;
+    }
+    
     @Override
     public HpcCollection getCollection(String path) throws HpcException
     {
@@ -318,11 +345,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	HpcDataManagementPathAttributes pathAttributes = 
     		   dataManagementProxy.getPathAttributes(getDataManagementAccount(), path);
     	if(pathAttributes.isDirectory) {
-    	   dataManagementProxy.SetCollectionPermission(getDataManagementAccount(), 
+    	   dataManagementProxy.setCollectionPermission(getDataManagementAccount(), 
     			                                       path, 
     			                                       permissionRequest);
     	} else if(pathAttributes.isFile) {
-    		      dataManagementProxy.SetDataObjectPermission(getDataManagementAccount(), 
+    		      dataManagementProxy.setDataObjectPermission(getDataManagementAccount(), 
     		    		                                      path, 
                                                               permissionRequest);
     	} else {

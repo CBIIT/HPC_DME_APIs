@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
@@ -196,6 +197,25 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
+	public Response downloadDataObject(String path,
+                                       HpcDataObjectDownloadDTO downloadRequest)
+    {
+    	path = toAbsolutePath(path);
+    	logger.info("Invoking RS: POST /dataObject/" + path + "/download: " + downloadRequest);
+    	
+		try {
+			 dataManagementBusService.downloadDataObject(path, downloadRequest);
+
+		} catch(HpcException e) {
+			    logger.error("RS: POST /dataObject/" + path + "/download: " + downloadRequest + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(null, false);
+    	
+    }
+    @Override
     public Response setPermissions(List<HpcEntityPermissionRequestDTO> entityPermissionRequests)
     {
     	logger.info("Invoking RS: POST /acl: " + entityPermissionRequests);
@@ -212,7 +232,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		return okResponse(permissionResponseList, false);
-    	
     }
     
     //---------------------------------------------------------------------//
