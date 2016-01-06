@@ -14,12 +14,14 @@ import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
@@ -251,6 +253,27 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	return dataObjectsDTO;
+    }
+    @Override
+    public void downloadDataObject(String path,
+                                   HpcDataObjectDownloadDTO downloadRequest)
+                                  throws HpcException
+    {
+    	logger.info("Invoking downloadDataObject(path, downloadReqest): " + path + ", " + 
+                    downloadRequest);
+    	
+    	// Input validation.
+    	if(path == null || downloadRequest == null || 
+    	   downloadRequest.getDestination() == null) {
+    	   throw new HpcException("Null path or download request",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+		// Transfer the file.
+    	HpcDataTransferLocations transferRequest = new HpcDataTransferLocations();
+    	transferRequest.setSource(dataManagementService.getFileLocation(path));
+    	transferRequest.setDestination(downloadRequest.getDestination());
+        dataTransferService.transferData(transferRequest);	
     }
     
     @Override

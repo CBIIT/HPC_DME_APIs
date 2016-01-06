@@ -124,6 +124,7 @@
         		<entry key="registerDataObject" value="${hpc.ws.rs.auth.register-data-object}"/>
         		<entry key="getDataObjects" value="${hpc.ws.rs.auth.get-data-objects}"/>
         		<entry key="setPermissions" value="${hpc.ws.rs.auth.set-permissions}"/>
+        		<entry key="downloadDataObject" value="${hpc.ws.rs.auth.download-data-object}"/>
       		</map>
    		</property>
 	</bean>

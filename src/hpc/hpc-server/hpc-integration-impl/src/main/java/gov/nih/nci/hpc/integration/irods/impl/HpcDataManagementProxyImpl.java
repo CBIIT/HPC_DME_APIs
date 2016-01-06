@@ -401,7 +401,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public void SetCollectionPermission(HpcIntegratedSystemAccount dataManagementAccount,
+    public void setCollectionPermission(HpcIntegratedSystemAccount dataManagementAccount,
                                         String path,
                                         HpcUserPermission permissionRequest) 
                                        throws HpcException
@@ -430,7 +430,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public void SetDataObjectPermission(HpcIntegratedSystemAccount dataManagementAccount,
+    public void setDataObjectPermission(HpcIntegratedSystemAccount dataManagementAccount,
                                         String path,
                                         HpcUserPermission permissionRequest) 
                                        throws HpcException
