@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
@@ -112,6 +113,19 @@ public interface HpcDataManagementRestService
 	public Response getDataObjects(
 			           @QueryParam("metadataQuery")
 			           List<HpcMetadataQueryParam> metadataQueries);
+	
+    /**
+     * POST Download Data Object.
+     *
+     * @param path The data object path.
+     * @param downloadRequest The download request.
+     */
+	@POST
+	@Path("/dataObject/{path:.*}/download")
+	@Consumes("application/json,application/xml")
+	@Produces("application/json,application/xml")
+	public Response downloadDataObject(@PathParam("path") String path,
+			                           HpcDataObjectDownloadDTO downloadRequest);
 	
     /**
      * POST Set permissions.

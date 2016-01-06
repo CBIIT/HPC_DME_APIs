@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
@@ -99,6 +100,18 @@ public interface HpcDataManagementBusService
      */
     public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries) 
     		                                  throws HpcException;
+    
+    /**
+     * Download Data Object.
+     *
+     * @param path The data object path.
+     * @param downloadRequest The download request.
+     * 
+     * @throws HpcException
+     */
+	public void downloadDataObject(String path,
+			                       HpcDataObjectDownloadDTO downloadRequest)
+			                      throws HpcException;
     
     /**
      * Close connection to Data Management system for the current service call.

@@ -51,6 +51,7 @@
 		<prop key="hpc.ws.rs.auth.register-data-object">rodsadmin groupadmin rodsuser</prop>
 		<prop key="hpc.ws.rs.auth.get-data-objects">rodsadmin groupadmin rodsuser</prop>
 		<prop key="hpc.ws.rs.auth.set-permissions">rodsadmin groupadmin rodsuser</prop>
+		<prop key="hpc.ws.rs.auth.download-data-object">rodsadmin groupadmin rodsuser</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
