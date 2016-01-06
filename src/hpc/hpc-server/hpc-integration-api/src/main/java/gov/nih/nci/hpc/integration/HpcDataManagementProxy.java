@@ -235,7 +235,7 @@ public interface HpcDataManagementProxy
      * 
      * @throws HpcException
      */
-    public void SetCollectionPermission(HpcIntegratedSystemAccount dataManagementAccount,
+    public void setCollectionPermission(HpcIntegratedSystemAccount dataManagementAccount,
     		                            String path,
     		                            HpcUserPermission permissionRequest) 
     		                           throws HpcException;   
@@ -249,7 +249,7 @@ public interface HpcDataManagementProxy
      * 
      * @throws HpcException
      */
-    public void SetDataObjectPermission(HpcIntegratedSystemAccount dataManagementAccount,
+    public void setDataObjectPermission(HpcIntegratedSystemAccount dataManagementAccount,
     		                            String path,
     		                            HpcUserPermission permissionRequest) 
     		                           throws HpcException; 

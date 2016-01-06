@@ -90,6 +90,16 @@ public interface HpcDataManagementService
     		                                        throws HpcException; 
     
     /**
+     * Get the physical file location of a data object.
+     *
+     * @param path The data object path.
+     * @return HpcFileLocation
+     * 
+     * @throws HpcException
+     */
+    public HpcFileLocation getFileLocation(String path) throws HpcException; 
+    
+    /**
      * Get collection by its path.
      *
      * @param path The collection's path.

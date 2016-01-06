@@ -121,4 +121,14 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
+		<!-- Data Object DTO -->
+	<xsd:element name="HpcDataObjectDownloadDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="destination"
+				             type="hpc-domain-datatransfer:HpcFileLocation" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
 </xsd:schema>
