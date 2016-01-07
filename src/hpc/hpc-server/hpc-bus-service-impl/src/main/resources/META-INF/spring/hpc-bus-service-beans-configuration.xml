@@ -18,6 +18,12 @@
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 	                       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 	<context:annotation-config />
+
+	<!--  The destination endpoint for all data object registrations. -->	
+	<bean id="hpcDataObjectRegistrationDestination" class="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation" >
+		<property name="endpoint" value="${hpc.bus.data-management.registration.endpoint}" />
+		<property name="path" value="${hpc.bus.data-management.registration.path}" />
+	</bean>
 	
 	<!-- HPC Business Services Beans -->
 	<bean id="hpcUserBusService" class="gov.nih.nci.hpc.bus.impl.HpcUserBusServiceImpl" />

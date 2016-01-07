@@ -53,8 +53,8 @@
 	<xsd:element name="HpcDataObjectRegistrationDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="locations"
-				             type="hpc-domain-datatransfer:HpcDataTransferLocations" />
+				<xsd:element name="source"
+				             type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="metadataEntries" 
 				             type="hpc-domain-metadata:HpcMetadataEntry" 
 					         maxOccurs="unbounded" />
