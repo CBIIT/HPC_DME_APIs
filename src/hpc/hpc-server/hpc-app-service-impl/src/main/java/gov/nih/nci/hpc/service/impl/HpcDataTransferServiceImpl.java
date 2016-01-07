@@ -11,8 +11,8 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidIntegratedSystemAccount;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcUser;
@@ -68,17 +68,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     
     @Override
     public HpcDataTransferReport 
-                  transferData(HpcDataTransferLocations dataTransferLocations) 
+                  transferData(HpcFileLocation source, HpcFileLocation destination) 
 	                          throws HpcException
     {   
     	// Input validation.
-    	if(!HpcDomainValidator.isValidDataTransferLocations(dataTransferLocations)) {	
+    	if(!HpcDomainValidator.isValidFileLocation(source) || 
+    	   !HpcDomainValidator.isValidFileLocation(destination)	) {	
     	   throw new HpcException("Invalid data transfer request input", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
         	
   	    return dataTransferProxy.transferData(getDataTransferAccount(), 
-  	    		                              dataTransferLocations);
+  	    		                              source, destination);
     }
     
 	@Override

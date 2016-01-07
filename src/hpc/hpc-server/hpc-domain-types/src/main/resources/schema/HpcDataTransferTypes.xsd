@@ -57,11 +57,4 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
-	<xsd:complexType name="HpcDataTransferLocations">
-		<xsd:sequence>
-			<xsd:element name="source" type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="destination" type="hpc-domain-datatransfer:HpcFileLocation" />
-		</xsd:sequence>
-	</xsd:complexType>
-
 </xsd:schema>
