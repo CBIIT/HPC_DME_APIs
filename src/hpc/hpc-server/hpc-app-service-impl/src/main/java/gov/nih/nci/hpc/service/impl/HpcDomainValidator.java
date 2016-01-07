@@ -10,7 +10,6 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -115,23 +114,6 @@ class HpcDomainValidator
     	if(location == null || location.getEndpoint() == null ||
     	   location.getPath() == null) {
      	   logger.info("Invalid File Location: " + location);
-     	   return false;
-    	}
-    	return true;
-    }  
-    
-    /**
-     * Validate a Data Transfer Locations object.
-     *
-     * @param locations the object to be validated.
-     * @return true if valid, false otherwise.
-     */
-    public static boolean isValidDataTransferLocations(
-    		                         HpcDataTransferLocations locations) 
-    {
-    	if(locations == null || !isValidFileLocation(locations.getSource()) ||
-    	   !isValidFileLocation(locations.getDestination())) {
-     	   logger.info("Invalid Data Transfer Locations: " + locations);
      	   return false;
     	}
     	return true;

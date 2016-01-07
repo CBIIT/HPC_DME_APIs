@@ -10,8 +10,8 @@
 
 package gov.nih.nci.hpc.integration;
 
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -37,7 +37,7 @@ public interface HpcDataTransferProxy
      * @throws HpcException
      */
     public HpcDataTransferReport transferData(HpcIntegratedSystemAccount dataTransferAccount,
-    		                                  HpcDataTransferLocations transferLocations) 
+    		                                  HpcFileLocation source, HpcFileLocation destination) 
     		                                 throws HpcException;
 
     /**

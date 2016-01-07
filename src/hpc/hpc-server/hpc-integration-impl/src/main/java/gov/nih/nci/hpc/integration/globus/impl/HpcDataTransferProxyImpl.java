@@ -1,7 +1,7 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -77,7 +77,7 @@ public class HpcDataTransferProxyImpl
     @Override
     public HpcDataTransferReport transferData(
     		                             HpcIntegratedSystemAccount dataTransferAccount,
-    		                             HpcDataTransferLocations transferLocations)
+    		                             HpcFileLocation source, HpcFileLocation destination)
     		                             throws HpcException
     {
     	try {
@@ -89,7 +89,7 @@ public class HpcDataTransferProxyImpl
 		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
     	}
     	
-    	return transfer(transferLocations);
+    	return transfer(source, destination);
     }
     
     @Override
@@ -119,14 +119,13 @@ public class HpcDataTransferProxyImpl
     	return true;
     }
       
-    private HpcDataTransferReport transfer(HpcDataTransferLocations transferLocations)
+    private HpcDataTransferReport transfer(HpcFileLocation source, HpcFileLocation destination)
                                           throws HpcException 
     {
     	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();
     	
-        if (!autoActivate(transferLocations.getSource().getEndpoint(), client) || 
-        	!autoActivate(transferLocations.getDestination().getEndpoint(), client)
-        		) {
+        if (!autoActivate(source.getEndpoint(), client) || 
+        	!autoActivate(destination.getEndpoint(), client)) {
             logger.error("Unable to auto activate go tutorial endpoints, exiting");
             // throw ENDPOINT NOT ACTIVATED HPCException
             //return false;
@@ -139,7 +138,7 @@ public class HpcDataTransferProxyImpl
 	        JSONObject transfer = new JSONObject();
 	        transfer.put("DATA_TYPE", "transfer");
 	        transfer.put("submission_id", submissionId);
-	        JSONObject item = setJSONItem(transferLocations, client);
+	        JSONObject item = setJSONItem(source, destination, client);
 	        transfer.append("DATA", item);
 
 	        r = client.postResult("/transfer", transfer, null);
@@ -151,7 +150,7 @@ public class HpcDataTransferProxyImpl
 	        
         } catch(Exception e) {
 	        	throw new HpcException(
-       		                 "Failed to transfer: " + transferLocations, 
+       		                 "Failed to transfer: " + source + ", " + destination, 
        		                 HpcErrorType.DATA_TRANSFER_ERROR, e);
         }
     }
@@ -235,25 +234,21 @@ public class HpcDataTransferProxyImpl
 	}
 
     
-	private JSONObject setJSONItem(HpcDataTransferLocations transferLocations,JSONTransferAPIClient client)  throws HpcException {
+	private JSONObject setJSONItem(HpcFileLocation source, HpcFileLocation destination, JSONTransferAPIClient client)  throws HpcException {
     	JSONObject item = new JSONObject();
     	try {
 	        item.put("DATA_TYPE", "transfer_item");
-	        item.put("source_endpoint", transferLocations.getSource().getEndpoint());
-	        item.put("source_path", transferLocations.getSource().getPath());
-	        item.put("destination_endpoint", transferLocations.getDestination().getEndpoint());
-	        item.put("destination_path", transferLocations.getDestination().getPath());
-	        //if(transferLocations.getDestination() != null && transferLocations.getDestination().getPath() != null && !transferLocations.getDestination().getPath().isEmpty())
-	        	//item.put("destination_path", getGODestinationPath(transferLocations.getDestination().getPath(),nihUsername));
-	        //else
-	        //item.put("destination_path", getGODestinationPath(transferLocations.getDestination().getPath(),transferLocations.getSource().getPath(),nihUsername,transferLocations.getDestination().getEndpoint()));
-	        
-	        item.put("recursive", checkFileDirectoryAndSetRecursive(transferLocations.getSource().getEndpoint(),transferLocations.getSource().getPath(),client));
+	        item.put("source_endpoint", source.getEndpoint());
+	        item.put("source_path", source.getPath());
+	        item.put("destination_endpoint", destination.getEndpoint());
+	        item.put("destination_path", destination.getPath());
+	        item.put("recursive", checkFileDirectoryAndSetRecursive(source.getEndpoint(),
+	        		                                                source.getPath(), client));
 	        return item;
 	        
 		} catch(Exception e) {
 	        throw new HpcException(
-	        		     "Failed to create JSON: " + transferLocations, 
+	        		     "Failed to create JSON: " + source + ", " + destination, 
 	        		     HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}    
     }
