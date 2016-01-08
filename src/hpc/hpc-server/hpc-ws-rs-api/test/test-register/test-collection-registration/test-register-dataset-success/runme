@@ -11,4 +11,4 @@
 # Usage: runme [no arguments]
 #import common functions
 
-../../utils/registration-runtest INVALID_REQUEST_INPUT tempZone/home/rods/eran-demo Dataset
+../../utils/registration-runtest INVALID_REQUEST_INPUT tempZone/home/rods/eran-demo 
