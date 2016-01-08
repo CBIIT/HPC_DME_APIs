@@ -11,28 +11,35 @@
 # Usage: runme [no arguments]
 #import common functions
 
+
+#Run common script
+../../../utils/runtest
+
 ERROR_TYPE=$1
 DESTINATION_PATH=$2
-COLLECTION_TYPE=$3
 
 source ../../../utils/functions
 source ../../utils/registration-functions
 
-POLICIES_FILE=../../../../../../hpc-server/hpc-app-service-impl/src/main/resources/metadataValidationRules.json
-#Run common script
-../../../utils/runtest
+
+POLICIES_FILE=policies.json
+
+if ! [ -f $POLICIES_FILE ] 
+then
+    echo "ERROR: LOCAL POLICIES FILE DOES NOT EXIST. RUN MAKEME FIRST"
+    exit
+fi
+
 
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
 
-#Clean previous results
-./cleanme
 
 SERVER=`cat ../../../utils/server`
 
 #DESTINATION="tempZone/home/rods/eran-test-folder-a/folder-b"
 
-VALID_INPUT=`validate_input $POLICIES_FILE  input.json $COLLECTION_TYPE`
+VALID_INPUT=`validate_collection $POLICIES_FILE  input.json`
 #echo "$VALID_INPUT"
 
 if [  "$VALID_INPUT" !=  "PASS" -a "$VALID_INPUT" != "FAIL" ] 
@@ -40,6 +47,9 @@ then
     echo "Validation returned: $VALID_INPUT"
     exit
 fi
+
+#Clean previous curl results
+../../../utils/cleantest
 
 # add -D <filename> to dump the header
 curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-server/collection/${DESTINATION_PATH}  --config ../../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
