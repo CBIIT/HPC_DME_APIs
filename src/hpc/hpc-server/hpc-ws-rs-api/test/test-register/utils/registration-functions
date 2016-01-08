@@ -9,43 +9,30 @@
 #
 
 
-#source /Users/zakigf/src/hpcdm/branches/hpc-prototype-dev/src/hpc/hpc-server/hpc-ws-rs-api/test/utils/functions
-
-#Check if the input data is valid
-#Inputs: policies- file.json
-#        input-file.json
+#Validate input attributes against a mandatory and restricted list.
+#Inputs: input-file.json
+#        policies-attributes  
 
 function validate_input {
 
-    POLICIES_FILE=$1
-    INPUT_FILE=$2
-    COLLECTION_TYPE=$3
 
-    #Refomat the policies file to group related attributes using the '{' as delimiter
-    ONE_LINE=`tr "\n" " " < $POLICIES_FILE`
-    POLICIES_GROUPS=`echo $ONE_LINE | tr "{" "\n"`
-    #echo "$POLICIES_GROUPS"
-    
-    #Get the "Project" attributes 
-    COLLECTION_ATTRIBUTES=`echo "$POLICIES_GROUPS" | grep "\"collectionType\":\"$COLLECTION_TYPE\""`
-    if [ -z "$COLLECTION_ATTRIBUTES" ] 
-    then
-        echo "No policies for collection type:$COLLECTION_TYPE"
-        exit
-    fi
-    #echo "$COLLECTION_ATTRIBUTES"
-    #mandatory must be true
-    MANDATORY_COLLECTION_ATTRIBUTES=`echo "$COLLECTION_ATTRIBUTES" | grep '"mandatory":true'`
+    INPUT_FILE="$1"
+    POLICIES_ATTRIBUTES="$2"
+
+
+    MANDATORY_POLICIES_ATTRIBUTES=`echo "$POLICIES_ATTRIBUTES" | grep '"mandatory":true'`
+
 
     #default should not be specified 
-    MANDATORY_COLLECTION_ATTRIBUTES=`echo "$MANDATORY_COLLECTION_ATTRIBUTES" | grep -v '"defaultValue"'`
-    MANDATORY_COLLECTION_ATTRIBUTES_NAMES=`get_json_value "$MANDATORY_COLLECTION_ATTRIBUTES"  attribute`
-    #echo "$MANDATORY_COLLECTION_ATTRIBUTES"
-    #echo "$MANDATORY_COLLECTION_ATTRIBUTES_NAMES"
+    MANDATORY_POLICIES_ATTRIBUTES=`echo "$MANDATORY_POLICIES_ATTRIBUTES" | grep -v '"defaultValue"'`
+    MANDATORY_POLICIES_ATTRIBUTES_NAMES=`get_json_value "$MANDATORY_POLICIES_ATTRIBUTES"  attribute`
+
+    #echo "$MANDATORY_POLICIES_ATTRIBUTES"
+    #echo "$MANDATORY_POLICIES_ATTRIBUTES_NAMES"
     
-    RESTRICTED_COLLECTION_ATTRIBUTES=`echo "$COLLECTION_ATTRIBUTES" | grep '"validValues"'`
-    RESTRICTED_COLLECTION_ATTRIBUTES_NAMES=`get_json_value "$RESTRICTED_COLLECTION_ATTRIBUTES" attribute`
-    #echo "$RESTRICTED_COLLECTION_ATTRIBUTES_NAMES"
+    RESTRICTED_POLICIES_ATTRIBUTES=`echo "$POLICIES_ATTRIBUTES" | grep '"validValues"'`
+    RESTRICTED_POLICIES_ATTRIBUTES_NAMES=`get_json_value "$RESTRICTED_POLICIES_ATTRIBUTES" attribute`
+    #echo "$RESTRICTED_POLICIES_ATTRIBUTES_NAMES"
     
     #READ the input json file
     ONE_LINE=`tr "\n" " " < $INPUT_FILE`
@@ -53,7 +40,7 @@ function validate_input {
     INPUT_ATTRIBUTES=`get_json_value $INPUT_FILE attribute`
    
     #Convert the variables to an array of strings 
-    IFS=$'\n' read -rd '' -a MANDATORY_ARRAY <<<"$MANDATORY_COLLECTION_ATTRIBUTES_NAMES"
+    IFS=$'\n' read -rd '' -a MANDATORY_ARRAY <<<"$MANDATORY_POLICIES_ATTRIBUTES_NAMES"
     IFS=$'\n' read -rd '' -a INPUT_ARRAY <<<"$INPUT_ATTRIBUTES"
 
 
@@ -64,7 +51,7 @@ function validate_input {
         input_value=`get_json_value "$input_line" value`
         if [ -z "$input_value" ]
         then 
-            echo "FAIL"
+            echo "FAIL0 "
             exit
         fi
     done
@@ -87,14 +74,14 @@ function validate_input {
         done
         if [ $mandatory_found == "NO" ]
         then
-            #echo "$mandatory_attribute not found"
-            echo "FAIL"
+            echo "$mandatory_attribute not found"
+            echo "FAIL1"
             exit
             #PASS_MANDATORY="NO"
         fi
     done
    
-    IFS=$'\n' read -rd '' -a RESTRICTED_ARRAY <<<"$RESTRICTED_COLLECTION_ATTRIBUTES_NAMES"
+    IFS=$'\n' read -rd '' -a RESTRICTED_ARRAY <<<"$RESTRICTED_POLICIES_ATTRIBUTES_NAMES"
     
     #Check 2: Attribues have valid values as mandated by the policies file 
     # for (all attributes that have valid values)
@@ -108,15 +95,15 @@ function validate_input {
         input_line=`echo "$INPUT_GROUPS" | grep "$restricted_attribute" | tr -d "\n"`
         if [ ! -z "$input_line" ]
         then
-            policies_line=`echo "$POLICIES_GROUPS" | grep "$restricted_attribute"`
+            policies_line=`echo "$POLICIES_ATTRIBUTES" | grep "$restricted_attribute"`
             #echo $policies_line
-            valid_values=`get_json_array_value "$policies_line" validValues`
+            valid_values=`get_json_hier_array_value "$policies_line" validValues`
             input_value=`get_json_value "$input_line" value`
             #echo $input_value
             #echo $valid_values
             if [[ ! "$valid_values" == *"$input_value"* ]]
             then
-                echo "FAIL"
+                echo "FAIL2"
                 exit
                 #PASS_RESTRICTED="NO"
             fi
@@ -131,4 +118,34 @@ function validate_input {
     else
         echo "FAIL"
     fi
+
+
+
+}
+
+
+#Check if the input colleciton values are valid
+#Inputs: policies-file.json
+#        input-file.json
+#        collection type
+
+function validate_collection {
+
+    POLICIES_FILE=$1
+    INPUT_FILE=$2
+
+    COLLECTION_ATTRIBUTES=`cat "$POLICIES_FILE"` 
+    if [ -z "$COLLECTION_ATTRIBUTES" ] 
+    then
+        echo "No policies for collection type:$COLLECTION_TYPE"
+        exit
+    fi
+    #echo "$COLLECTION_ATTRIBUTES"
+   
+    CHECK=`validate_input  "$INPUT_FILE" "$COLLECTION_ATTRIBUTES"`
+    if [ "$CHECK" != "PASS" ]
+    then
+        CHECK="FAIL"
+    fi
+    echo $CHECK
 }

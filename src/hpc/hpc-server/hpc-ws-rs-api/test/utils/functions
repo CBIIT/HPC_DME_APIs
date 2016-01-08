@@ -74,6 +74,21 @@ function get_json_array_value {
     echo "$INPUT" |  grep $ATTRIBUTE | sed "s/.*${ATTRIBUTE}\"[ 	]*:[ 	]*\[\([^]].*\)\].*/\1/"
 }
 
+
+#Return the hierarchical array value for a given attribute in a json string. 
+#Limited to two levels of hierarchy. Example "Attribute":[ []   []  ] 
+#Inputs: "Input string"  "attribute-name" 
+function get_json_hier_array_value {
+
+INPUT="$1"
+ATTRIBUTE="$2"
+
+#First define the regex 'a': <text>[<text>]
+#Then generalize 'a' to define 'b': \(a\)*
+#Then define the matched string as: "attribute":['b'<text>]
+echo "$INPUT" | sed "s/\(.*\)\(\"$ATTRIBUTE\"[  ]*:[ 	]*\[\([^][]*\[[^][]*\]\)*[^][]*\]\)\(.*\)/\2/" 
+}
+
 #Checks that the response header file has information.
 function check_connection {
     if [ -z "$1" ]

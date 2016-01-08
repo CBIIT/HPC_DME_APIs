@@ -13,3 +13,4 @@
 # Usage: cleanme [no arguments]
 
 ../../../utils/cleantest
+../../utils/cleantest
