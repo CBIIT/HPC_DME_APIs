@@ -9,8 +9,8 @@
 #
 
 
-# Script to clean the resutls of this test
-# Usage: cleanme [no arguments]
+# Script to make this test
+# Usage: makeme [no arguments]
 
 
 
@@ -19,3 +19,8 @@
 # Usage: makeme [no arguments]
 
 ../../../utils/maketest
+
+#Clean previous parsed policies file
+../../utils/cleantest
+../../utils/maketest collectionMetadataValidationRules Dataset 
+

@@ -9,6 +9,10 @@
          "value": "Dataset"
         },
         {
+         "attribute": "XXXXDataset name",
+         "value": "dataset-name"
+        },
+        {
          "attribute": "Dataset description",
          "value": "Dataset desc"
         },
