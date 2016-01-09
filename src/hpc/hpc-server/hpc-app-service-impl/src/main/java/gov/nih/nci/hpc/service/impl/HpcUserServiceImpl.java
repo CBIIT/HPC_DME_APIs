@@ -158,6 +158,12 @@ public class HpcUserServiceImpl implements HpcUserService
     }
     
     @Override
+    public HpcUser gettRequestInvoker()
+    {
+    	return HpcRequestContext.getRequestInvoker();
+    }
+    
+    @Override
     public void setRequestInvoker(HpcUser user)
     {
     	HpcRequestContext.setRequestInvoker(user);

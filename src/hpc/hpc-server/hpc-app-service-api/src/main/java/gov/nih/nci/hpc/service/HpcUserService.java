@@ -73,7 +73,14 @@ public interface HpcUserService
     public void persist(HpcUser user) throws HpcException;
     
     /**
-     * Set this user as the service call invoker in the request context.
+     * Get the request invoker (user).
+     *
+     * @return HpcUser
+     */
+    public HpcUser gettRequestInvoker();
+    
+    /**
+     * Set the service call invoker (user) in the request context.
      *
      * @param user The user to set as the service call invoker.
      */
