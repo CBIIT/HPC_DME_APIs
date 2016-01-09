@@ -55,6 +55,7 @@
 			<xsd:sequence>
 				<xsd:element name="source"
 				             type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="filePath" type="xsd:string" />
 				<xsd:element name="metadataEntries" 
 				             type="hpc-domain-metadata:HpcMetadataEntry" 
 					         maxOccurs="unbounded" />

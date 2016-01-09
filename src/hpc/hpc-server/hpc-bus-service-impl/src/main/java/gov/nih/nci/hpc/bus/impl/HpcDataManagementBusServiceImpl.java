@@ -180,11 +180,27 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Calculated the data transfer destination absolute path by appending the path to the 
-    	// destination's base path.
+    	// Calculate the data transfer destination absolute path as the following:
+    	// 'base path' / 'caller's data transfer provided path OR account ID' / 'logical path'
+    	StringBuffer destinationPath = new StringBuffer();
+    	destinationPath.append(dataTransferDestination.getPath());
+    	String filePath = dataObjectRegistrationDTO.getFilePath();
+    	if(filePath != null && !filePath.isEmpty()) {
+    	   if(filePath.charAt(0) != '/') {
+    		  destinationPath.append('/'); 
+    	   }
+    	   destinationPath.append(filePath);
+    	} else {
+    		    // Caller did not provide a path, inject their data-transfer user ID
+    		    destinationPath.append('/');
+    		    destinationPath.append(userService.gettRequestInvoker().
+    		    		                           getDataTransferAccount().
+    		    		                           getUsername());
+    	}
+    	 
     	HpcFileLocation destination = new HpcFileLocation();
     	destination.setEndpoint(dataTransferDestination.getEndpoint());
-    	destination.setPath(dataTransferDestination.getPath() + path);
+    	destination.setPath(destinationPath.toString());
     	
     	// Create a data object file (in the data management system).
     	dataManagementService.createFile(path, false);
