@@ -197,6 +197,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		    		                           getDataTransferAccount().
     		    		                           getUsername());
     	}
+    	destinationPath.append('/');
+    	destinationPath.append(path);
     	 
     	HpcFileLocation destination = new HpcFileLocation();
     	destination.setEndpoint(dataTransferDestination.getEndpoint());
