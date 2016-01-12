@@ -95,9 +95,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     //---------------------------------------------------------------------//  
     
     @Override
-    public void registerCollection(String path,
-    					           List<HpcMetadataEntry> metadataEntries)  
-    		                      throws HpcException
+    public boolean registerCollection(String path,
+    				                  List<HpcMetadataEntry> metadataEntries)  
+    		                         throws HpcException
     {
     	logger.info("Invoking registerCollection(List<HpcMetadataEntry>): " + 
     			    metadataEntries);
@@ -109,10 +109,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Create a collection directory.
-    	dataManagementService.createDirectory(path);
+    	boolean created = dataManagementService.createDirectory(path);
     	
     	// Attach the metadata.
-    	dataManagementService.addMetadataToCollection(path, metadataEntries);
+    	if(created) {
+    	   dataManagementService.addMetadataToCollection(path, metadataEntries);
+    	} else {
+    		    dataManagementService.updateCollectionMetadata(path, metadataEntries);
+    	}
+    	
+    	return created;
     }
     
     @Override

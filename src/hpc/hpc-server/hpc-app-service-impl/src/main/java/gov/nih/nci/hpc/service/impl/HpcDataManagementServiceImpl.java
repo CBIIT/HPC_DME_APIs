@@ -91,11 +91,15 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     //---------------------------------------------------------------------//  
 
     @Override
-    public void createDirectory(String path) 
-    		                   throws HpcException
+    public boolean createDirectory(String path) 
+    		                      throws HpcException
     {
+    	HpcIntegratedSystemAccount dataManagementAccount = getDataManagementAccount();
+    	boolean created = !dataManagementProxy.getPathAttributes(dataManagementAccount, path).exists;
+
     	dataManagementProxy.createCollectionDirectory(getDataManagementAccount(), 
     			                                      path);
+    	return created;
     }
     
     @Override
@@ -143,6 +147,25 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToCollection(getDataManagementAccount(),
        			                                    path, metadataEntries);
+    }
+    
+    @Override
+    public void updateCollectionMetadata(String path, 
+    		                             List<HpcMetadataEntry> metadataEntries) 
+    		                            throws HpcException
+    {
+       	// Input validation.
+       	if(path == null || !isValidMetadataEntries(metadataEntries)) {
+       	   throw new HpcException("Null path or Invalid metadata entry", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+       	// Validate Metadata.
+       	metadataValidator.validateCollectionMetadata(metadataEntries);
+       	
+       	// Add Metadata to the DM system.
+       	dataManagementProxy.updateCollectionMetadata(getDataManagementAccount(),
+       			                                     path, metadataEntries);
     }
     
     @Override
