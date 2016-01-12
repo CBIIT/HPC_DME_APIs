@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import org.irods.jargon.core.exception.DataNotFoundException;
 import org.irods.jargon.core.exception.InvalidInputParameterException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
@@ -141,6 +142,34 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		     
 		} catch(JargonException e) {
 	            throw new HpcException("Failed to add metadata to a collection: " + 
+                                       e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} 
+    }
+    
+    @Override
+    public void updateCollectionMetadata(
+    		          HpcIntegratedSystemAccount dataManagementAccount, 
+    		          String path,
+    		          List<HpcMetadataEntry> metadataEntries) 
+    		          throws HpcException
+    {
+		try {
+		     for(HpcMetadataEntry metadataEntry : metadataEntries) {
+			     AvuData avuData = AvuData.instance(metadataEntry.getAttribute(),
+			                                        metadataEntry.getValue(), 
+			                                        metadataEntry.getUnit());
+		         try {
+		              irodsConnection.getCollectionAO(dataManagementAccount).
+		                              modifyAvuValueBasedOnGivenAttributeAndUnit(path, avuData);
+		         } catch(DataNotFoundException e) {
+		        	     // Metadata was not found to update. Add it.
+		        	     irodsConnection.getCollectionAO(dataManagementAccount).addAVUMetadata(path, avuData);
+		         }
+		     }
+		     
+		} catch(JargonException e) {
+	            throw new HpcException("Failed to update collection metadata: " + 
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} 

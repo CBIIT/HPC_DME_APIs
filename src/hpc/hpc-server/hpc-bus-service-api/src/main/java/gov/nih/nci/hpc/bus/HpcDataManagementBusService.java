@@ -40,12 +40,14 @@ public interface HpcDataManagementBusService
      *
      * @param path The collection's path.
      * @param metadataEntries A list of metadata entries to attach to the collection.
+     * @return true if a new collection was registered, false if the collection already exists
+     *         and its metadata got updated.
      * 
      * @throws HpcException
      */
-    public void registerCollection(String path,
-    		                       List<HpcMetadataEntry> metadataEntries) 
-    		                      throws HpcException;
+    public boolean registerCollection(String path,
+    		                          List<HpcMetadataEntry> metadataEntries) 
+    		                         throws HpcException;
     
     /**
      * Get Collection.
