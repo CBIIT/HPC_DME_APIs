@@ -76,6 +76,20 @@ public interface HpcDataManagementProxy
     		                           throws HpcException;
     
     /**
+     * Update collection's metadata.
+     *
+     * @param dataManagementAccount The Data Management System account.
+     * @param path The collection path.
+     * @param metadataEntries The metadata entries to update.
+     * 
+     * @throws HpcException
+     */
+    public void updateCollectionMetadata(HpcIntegratedSystemAccount dataManagementAccount, 
+    		                             String path,
+    		                             List<HpcMetadataEntry> metadataEntries) 
+    		                            throws HpcException;
+    
+    /**
      * Add metadata to a data object.
      *
      * @param dataManagementAccount The Data Management System account.
