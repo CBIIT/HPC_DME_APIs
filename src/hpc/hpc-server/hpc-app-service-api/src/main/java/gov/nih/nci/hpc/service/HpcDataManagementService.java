@@ -35,10 +35,11 @@ public interface HpcDataManagementService
      * Create a collection's directory.
      *
      * @param path The collection path.
+     * @return true if the directory was created, or false if it already exists.
      * 
      * @throws HpcException
      */
-    public void createDirectory(String path) throws HpcException;
+    public boolean createDirectory(String path) throws HpcException;
     
     /**
      * Create a data object's file.
@@ -62,6 +63,18 @@ public interface HpcDataManagementService
     public void addMetadataToCollection(String path, 
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException; 
+    
+    /**
+     * Update a collection's metadata.
+     *
+     * @param path The collection path.
+     * @param metadataEntries The metadata entries to update.
+     * 
+     * @throws HpcException
+     */
+    public void updateCollectionMetadata(String path, 
+    		                             List<HpcMetadataEntry> metadataEntries) 
+    		                            throws HpcException; 
     
     /**
      * Add metadata to a data object.
