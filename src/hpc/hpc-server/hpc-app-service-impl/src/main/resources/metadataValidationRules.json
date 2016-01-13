@@ -81,20 +81,6 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Name of the User registering the Project (Registrar)",
-            "mandatory":true,
-            "collectionType":"Project",
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"NCI user-id of the User registering the Project (Registrar)",
-            "mandatory":true,
-            "collectionType":"Project",
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
             "attribute":"DOC of the Registrar",
             "mandatory":true,
             "collectionType":"Project",
@@ -146,20 +132,6 @@
          },
          {  
             "attribute":"Date the Project was created",
-            "mandatory":true,
-            "collectionType":"Dataset",
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"Name of the User registering the Dataset (Registrar)",
-            "mandatory":true,
-            "collectionType":"Dataset",
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"NCI user-id of the User registering the Dataset (Registrar)",
             "mandatory":true,
             "collectionType":"Dataset",
             "ruleEnabled":true,
@@ -388,18 +360,6 @@
             "attribute":"Original Date the File was created",
             "mandatory":true,
             "defaultValue":"System-Date",
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"Name of the User registering the File (Registrar)",
-            "mandatory":true,
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"NCI user-id of the User registering the File (Registrar)",
-            "mandatory":true,
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
