@@ -58,6 +58,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 			                   "Data Source Globus Endpoint"; 
 	public final static String FILE_SOURCE_PATH_ATTRIBUTE = 
 			                   "Data Source Globus Path"; 
+	public final static String FILE_REGISTRAR_ID_ATTRIBUTE = 
+                               "NCI user-id of the User registering the File"; 
+	public final static String FILE_REGISTRAR_NAME_ATTRIBUTE = 
+                               "Name of the User registering the File (Registrar)"; 
+	public final static String COLLECTION_REGISTRAR_ID_ATTRIBUTE = 
+                               "NCI user-id of the User registering the Collectiont"; 
+	public final static String COLLECTION_REGISTRAR_NAME_ATTRIBUTE = 
+                               "Name of the User registering the Collectiont (Registrar)"; 
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -150,6 +158,27 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
+    public void addSystemGeneratedMetadataToCollection(String path) 
+                                                      throws HpcException
+    {
+       	// Input validation.
+       	if(path == null) {
+       	   throw new HpcException("Null path", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+       	List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
+       	
+       	// Create the registrar ID and name metadata.
+       	metadataEntries.addAll(generateRegistrarMetadata(COLLECTION_REGISTRAR_ID_ATTRIBUTE,
+       			                                         COLLECTION_REGISTRAR_NAME_ATTRIBUTE));
+       	
+       	// Add Metadata to the DM system.
+       	dataManagementProxy.addMetadataToCollection(getDataManagementAccount(), 
+       			                                    path, metadataEntries);    	
+    }
+    
+    @Override
     public void updateCollectionMetadata(String path, 
     		                             List<HpcMetadataEntry> metadataEntries) 
     		                            throws HpcException
@@ -188,11 +217,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public void addFileLocationsMetadataToDataObject(
-                       String path, 
-                       HpcFileLocation fileLocation,
-    		           HpcFileLocation fileSource) 
-                       throws HpcException
+    public void addSystemGeneratedMetadataToDataObject(String path, 
+                                                       HpcFileLocation fileLocation,
+    		                                           HpcFileLocation fileSource) 
+                                                      throws HpcException
     {
        	// Input validation.
        	if(path == null || !isValidFileLocation(fileLocation) ||
@@ -230,6 +258,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	sourcePathMetadata.setValue(fileSource.getPath());
        	sourcePathMetadata.setUnit("");
        	metadataEntries.add(sourcePathMetadata);
+       	
+       	// Create the registrar ID and name metadata.
+       	metadataEntries.addAll(generateRegistrarMetadata(FILE_REGISTRAR_ID_ATTRIBUTE,
+       			                                         FILE_REGISTRAR_NAME_ATTRIBUTE));
        	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToDataObject(getDataManagementAccount(), 
@@ -400,5 +432,45 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	return user.getDataManagementAccount();
+    }
+    
+    /**
+     * Generate registrar ID and name metadata.
+     * 
+     * @param registrarIdAttribute The registrar ID attribute name.
+     * @param registrarNameAttribute The registrar-name attribute name.
+     *
+     * @throws HpcException if the service invoker is unknown.
+     */
+    private List<HpcMetadataEntry> generateRegistrarMetadata(
+    		                                        String registrarIdAttribute,
+    		                                        String registrarNameAttribute)
+    		                                        throws HpcException
+    {
+       	// Get the service invoker.
+       	HpcUser user = HpcRequestContext.getRequestInvoker();
+       	if(user == null) {
+       	   throw new HpcException("Unknown service invoker", 
+		                          HpcErrorType.UNEXPECTED_ERROR);
+       	}	
+       	
+       	List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
+       	
+       	// Create the registrar user-id metadata.
+       	HpcMetadataEntry registrarIdMetadata = new HpcMetadataEntry();
+       	registrarIdMetadata.setAttribute(registrarIdAttribute);
+       	registrarIdMetadata.setValue(user.getNciAccount().getUserId());
+       	registrarIdMetadata.setUnit("");
+       	metadataEntries.add(registrarIdMetadata);
+       	
+       	// Create the registrar name metadata.
+       	HpcMetadataEntry registrarNameMetadata = new HpcMetadataEntry();
+       	registrarNameMetadata.setAttribute(registrarNameAttribute);
+       	registrarNameMetadata.setValue(user.getNciAccount().getFirstName() + " " +
+       			                       user.getNciAccount().getLastName());
+       	registrarNameMetadata.setUnit("");
+       	metadataEntries.add(registrarNameMetadata);
+       	
+       	return metadataEntries;
     }
 }
