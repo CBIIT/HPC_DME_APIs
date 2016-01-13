@@ -114,6 +114,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Attach the metadata.
     	if(created) {
     	   dataManagementService.addMetadataToCollection(path, metadataEntries);
+       	   
+    	   // Generate system metadata and attach to the collection.
+       	   dataManagementService.addSystemGeneratedMetadataToCollection(path);
+       	   
     	} else {
     		    dataManagementService.updateCollectionMetadata(path, metadataEntries);
     	}
@@ -222,8 +226,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                 path, 
     			                 dataObjectRegistrationDTO.getMetadataEntries());
     	
-    	// Create and attach the file source and location metadata.
-    	dataManagementService.addFileLocationsMetadataToDataObject(
+    	// Generate system metadata and attach to the data object.
+    	dataManagementService.addSystemGeneratedMetadataToDataObject(
     			                 path, destination,
     			                 dataObjectRegistrationDTO.getSource()); 
     }

@@ -65,6 +65,18 @@ public interface HpcDataManagementService
     		                           throws HpcException; 
     
     /**
+     * Generate system metadata and attach to a collection.
+     * System generated metadata is:
+     * 		1. Registrar user ID.
+     * 		2. Registrar name.
+     *
+     * @param path The collection path.
+     * 
+     * @throws HpcException
+     */
+    public void addSystemGeneratedMetadataToCollection(String path) throws HpcException; 
+    
+    /**
      * Update a collection's metadata.
      *
      * @param path The collection path.
@@ -89,7 +101,12 @@ public interface HpcDataManagementService
     		                           throws HpcException; 
     
     /**
-     * Create and attach file (physical) location and source metadata to a data object.
+     * Generate system metadata and attach to the data object.
+     * System generated metadata is:
+     * 		1. Physical file source.
+     * 		2. Physical file location.
+     * 		3. Registrar user ID.
+     * 		4. Registrar name.
      *
      * @param path The data object path.
      * @param fileLocation The physical file location.
@@ -97,10 +114,10 @@ public interface HpcDataManagementService
      * 
      * @throws HpcException
      */
-    public void addFileLocationsMetadataToDataObject(String path, 
-    		                                         HpcFileLocation fileLocation,
-    		                                         HpcFileLocation fileSource) 
-    		                                        throws HpcException; 
+    public void addSystemGeneratedMetadataToDataObject(String path, 
+    		                                           HpcFileLocation fileLocation,
+    		                                           HpcFileLocation fileSource) 
+    		                                          throws HpcException; 
     
     /**
      * Get the physical file location of a data object.
