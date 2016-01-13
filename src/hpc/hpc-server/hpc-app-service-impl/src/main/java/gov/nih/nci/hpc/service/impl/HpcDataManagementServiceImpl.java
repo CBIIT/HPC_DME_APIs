@@ -63,9 +63,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	public final static String FILE_REGISTRAR_NAME_ATTRIBUTE = 
                                "Name of the User registering the File (Registrar)"; 
 	public final static String COLLECTION_REGISTRAR_ID_ATTRIBUTE = 
-                               "NCI user-id of the User registering the Collectiont"; 
+                               "NCI user-id of the User registering the Collection"; 
 	public final static String COLLECTION_REGISTRAR_NAME_ATTRIBUTE = 
-                               "Name of the User registering the Collectiont (Registrar)"; 
+                               "Name of the User registering the Collection (Registrar)"; 
 	
     //---------------------------------------------------------------------//
     // Instance members
