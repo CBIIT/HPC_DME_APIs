@@ -53,7 +53,8 @@
 	
 	<bean id="contextSource"
 	        class="org.springframework.security.ldap.DefaultSpringSecurityContextSource">
-	  <constructor-arg value="ldaps://ncids4a.nci.nih.gov:636"/>
+	  <!--<constructor-arg value="ldaps://ncids4a.nci.nih.gov:636"/> -->
+	  <constructor-arg value="ldaps://ldap-sg.nci.nih.gov:636"/>
 	</bean>
 		
 	<bean id="ldapAuthProvider"
@@ -78,7 +79,7 @@
 	      class="org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator">
 	    <constructor-arg ref="contextSource" />
 	    <!--  group based DN - we will be searching for groups in "ou=groups,dc=example,dc=com" -->
-	    <constructor-arg value="ou=nci,o=nih" />
+	    <constructor-arg value="ou=NCI,o=NIH" />
 	    
 	    <!-- the name of the attribute that will contain role information (which
 	         effectively translates to a user's granted authorities. Default is "cn" -->

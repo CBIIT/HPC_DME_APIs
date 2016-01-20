@@ -50,7 +50,6 @@ public class HpcIRODSConnection
 	private String irodsZone = null;
 	private String irodsResource = null;
 	private AuthScheme irodsAuthentication = null;
-	
     // The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -229,7 +228,11 @@ public class HpcIRODSConnection
     {
     	return irodsZone;
     }
-    
+
+    public String getBasePath()
+    {
+    	return "/" + irodsZone + "/home";
+    }
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
