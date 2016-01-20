@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.irods.jargon.core.exception.DataNotFoundException;
 import org.irods.jargon.core.exception.InvalidInputParameterException;
@@ -61,7 +63,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     // The iRODS connection.
 	@Autowired
     private HpcIRODSConnection irodsConnection = null;
-	
+	private final Logger logger = 
+            LoggerFactory.getLogger(this.getClass().getName());	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -70,8 +73,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
      * Default Constructor.
      * 
      */
-    private HpcDataManagementProxyImpl()
+    private HpcDataManagementProxyImpl(String iRodsZone)
     {
+    	hpcIrodsZone = iRodsZone;
     }   
     
     //---------------------------------------------------------------------//
@@ -89,6 +93,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		          throws HpcException
     {
 		try {
+			path = addPath(path);
 			 IRODSFile collectionFile = 
 			      irodsConnection.getIRODSFileFactory(dataManagementAccount).instanceIRODSFile(path);
 			 mkdirs(collectionFile);
@@ -107,6 +112,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		          throws HpcException
     {
 		try {
+			 path = addPath(path);
 			 IRODSFile dataObjectFile = 
 			      irodsConnection.getIRODSFileFactory(dataManagementAccount).instanceIRODSFile(path);
 			 dataObjectFile.createNewFile();
@@ -129,9 +135,12 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		       List<HpcMetadataEntry> metadataEntries) 
     		       throws HpcException
     {
+    	path = addPath(path);
 		List<AvuData> avuDatas = new ArrayList<AvuData>();
 
 		try {
+			logger.debug("dataManagementAccount user: " + dataManagementAccount.getUsername());
+			logger.debug("dataManagementAccount metadataEntries: " + metadataEntries.toString());
 		     for(HpcMetadataEntry metadataEntry : metadataEntries) {
 			     avuDatas.add(AvuData.instance(metadataEntry.getAttribute(),
 			                                   metadataEntry.getValue(), 
@@ -155,6 +164,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		          throws HpcException
     {
 		try {
+			path = addPath(path);
 		     for(HpcMetadataEntry metadataEntry : metadataEntries) {
 			     AvuData avuData = AvuData.instance(metadataEntry.getAttribute(),
 			                                        metadataEntry.getValue(), 
@@ -185,6 +195,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		List<AvuData> avuDatas = new ArrayList<AvuData>();
 
 		try {
+			 path = addPath(path);
 		     for(HpcMetadataEntry metadataEntry : metadataEntries) {
 			     avuDatas.add(AvuData.instance(metadataEntry.getAttribute(),
 			                                   metadataEntry.getValue(), 
@@ -206,6 +217,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                   throws HpcException
     {
 		try {
+			 path = addPath(path);
 			 IRODSFileFactory irodsFileFactory = 
 					          irodsConnection.getIRODSFileFactory(dataManagementAccount);
 			 IRODSFile file = irodsFileFactory.instanceIRODSFile(path);
@@ -227,6 +239,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		          throws HpcException
     {
 		try {
+			 path = addPath(path);
 			 IRODSFileFactory irodsFileFactory = 
 					          irodsConnection.getIRODSFileFactory(dataManagementAccount);
 			 IRODSFile file = irodsFileFactory.instanceIRODSFile(path);
@@ -259,6 +272,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                throws HpcException
     {
 		try {
+			 path = addPath(path);
 			 IRODSFile file = 
 					   irodsConnection.getIRODSFileFactory(dataManagementAccount).instanceIRODSFile(path);
 			 HpcDataManagementPathAttributes attributes = new HpcDataManagementPathAttributes();
@@ -280,6 +294,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                           String path) throws HpcException
     {
     	try {
+    		path = addPath(path);
              return toHpcCollection(irodsConnection.getCollectionAO(dataManagementAccount).
             		                                findByAbsolutePath(path));
              
@@ -329,6 +344,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
    		        throws HpcException
     {
 		try {
+			path = addPath(path);
 			 return toHpcMetadata(irodsConnection.getCollectionAO(dataManagementAccount).
 					              findMetadataValuesForCollection(path));
 
@@ -344,6 +360,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                           String path) throws HpcException
     {
     	try {
+    		path = addPath(path);
              return toHpcDataObject(irodsConnection.getDataObjectAO(dataManagementAccount).
             		                                findByAbsolutePath(path));
              
@@ -391,6 +408,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
    		                          String path) throws HpcException
     {
 		try {
+			 path = addPath(path);
 			 return toHpcMetadata(irodsConnection.getDataObjectAO(dataManagementAccount).
 					              findMetadataValuesForDataObject(path));
 	
@@ -436,6 +454,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                        throws HpcException
     {
     	FilePermissionEnum permission = null;
+    	path = addPath(path);
     	try {
     		 permission = FilePermissionEnum.valueOf(permissionRequest.getPermission());
     		 
@@ -464,6 +483,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                         HpcUserPermission permissionRequest) 
                                        throws HpcException
     {
+    	path = addPath(path);
     	FilePermissionEnum permission = null;
     	try {
     		 permission = FilePermissionEnum.valueOf(permissionRequest.getPermission());
@@ -618,9 +638,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	
 	    HpcCollection hpcCollection = new HpcCollection();
 	    hpcCollection.setCollectionId(irodsCollection.getCollectionId());
-	    hpcCollection.setCollectionName(irodsCollection.getCollectionName());
-	    hpcCollection.setAbsolutePath(irodsCollection.getAbsolutePath());
-	    hpcCollection.setCollectionParentName(irodsCollection.getCollectionParentName());
+	    hpcCollection.setCollectionName(removePath(irodsCollection.getCollectionName()));
+	    hpcCollection.setAbsolutePath(removePath(irodsCollection.getAbsolutePath()));
+	    hpcCollection.setCollectionParentName(removePath(irodsCollection.getCollectionParentName()));
 	    hpcCollection.setCollectionOwnerName(irodsCollection.getCollectionOwnerName());
 	    hpcCollection.setCollectionOwnerZone(irodsCollection.getCollectionOwnerZone());
 	    hpcCollection.setCollectionMapId(irodsCollection.getCollectionMapId());
@@ -656,8 +676,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	HpcDataObject hpcDataObject = new HpcDataObject();
 	    hpcDataObject.setId(irodsDataObject.getId());
 	    hpcDataObject.setCollectionId(irodsDataObject.getCollectionId());
-	    hpcDataObject.setCollectionName(irodsDataObject.getCollectionName());
-	    hpcDataObject.setAbsolutePath(irodsDataObject.getAbsolutePath());
+	    hpcDataObject.setCollectionName(removePath(irodsDataObject.getCollectionName()));
+	    hpcDataObject.setAbsolutePath(removePath(irodsDataObject.getAbsolutePath()));
 	    hpcDataObject.setDataReplicationNumber(irodsDataObject.getDataReplicationNumber());
 	    hpcDataObject.setDataVersion(irodsDataObject.getDataVersion());
 	    hpcDataObject.setDataSize(irodsDataObject.getDataSize());
@@ -676,15 +696,39 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	    hpcDataObject.setSpecColType(irodsDataObject.getSpecColType().toString());
 	    
 	    Calendar createdAt = Calendar.getInstance();
-	    createdAt.setTime(irodsDataObject.getCreatedAt());
-	    hpcDataObject.setCreatedAt(createdAt);
-	    
+	    if(irodsDataObject.getCreatedAt() != null)
+	    {
+	    	createdAt.setTime(irodsDataObject.getCreatedAt());
+	    	hpcDataObject.setCreatedAt(createdAt);
+	    }
 	    Calendar updatedAt = Calendar.getInstance();
 	    updatedAt.setTime(irodsDataObject.getUpdatedAt());
 	    hpcDataObject.setUpdatedAt(updatedAt);
 	    
 	    return hpcDataObject;
     }
+
+    private String addPath(String path)
+    {
+    	if(path == null)
+    		return irodsConnection.getBasePath();
+    	if(path.startsWith(irodsConnection.getBasePath()))
+    		return path;
+    	else 
+    		return irodsConnection.getBasePath() + (path.startsWith("/") ? "":"/")+ path;
+    }
+
+    private String removePath(String path)
+    {
+    	if(path == null)
+    		return path;
+    	
+    	if(path.startsWith(irodsConnection.getBasePath()))
+    		return path.substring((irodsConnection.getBasePath()).length());
+    	else
+    		return path;
+    }
+
 }
 
  
