@@ -73,9 +73,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
      * Default Constructor.
      * 
      */
-    private HpcDataManagementProxyImpl(String iRodsZone)
+    private HpcDataManagementProxyImpl()
     {
-    	hpcIrodsZone = iRodsZone;
     }   
     
     //---------------------------------------------------------------------//
