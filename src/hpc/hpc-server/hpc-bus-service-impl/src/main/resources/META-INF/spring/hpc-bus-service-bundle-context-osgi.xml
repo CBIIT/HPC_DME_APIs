@@ -24,7 +24,7 @@
 	<!-- HPC Application Services OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		<prop key="hpc.bus.data-management.registration.endpoint">nihfnlcr#gridftp1</prop>
-		<prop key="hpc.bus.data-management.registration.path">/mnt/gridftp</prop>
+		<prop key="hpc.bus.data-management.registration.path">/mnt/IRODsTest/FNL_SF_Archive/</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
