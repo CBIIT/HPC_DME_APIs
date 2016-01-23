@@ -14,6 +14,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocatio
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidIntegratedSystemAccount;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueries;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
@@ -24,6 +25,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy.HpcDataManagementPathAttributes;
@@ -373,6 +375,18 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public String getUserType() throws HpcException
     {
     	return dataManagementProxy.getUserType(getDataManagementAccount());
+    }
+    
+    @Override
+    public void addUser(HpcNciAccount nciAccount) throws HpcException
+    {
+    	// Input validation.
+    	if(!isValidNciAccount(nciAccount)) {	
+    	   throw new HpcException("Invalid NCI Account", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+       	
+    	dataManagementProxy.addUser(getDataManagementAccount(), nciAccount);
     }
     
     @Override
