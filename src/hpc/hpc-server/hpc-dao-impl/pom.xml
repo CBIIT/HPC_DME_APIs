@@ -37,9 +37,13 @@
 						<Private-Package>
 							gov.nih.nci.hpc.dao.mongo.impl,
 							gov.nih.nci.hpc.dao.mongo.codec,
-							gov.nih.nci.hpc.dao.mongo.driver
+							gov.nih.nci.hpc.dao.mongo.driver,
+							gov.nih.nci.hpc.dao.postgresql.impl
 						</Private-Package>
-						<Import-Package>*</Import-Package>
+						<Import-Package>
+							org.postgresql,
+							*
+						</Import-Package>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -60,8 +64,16 @@
 			<artifactId>mongodb-driver-async</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
 		</dependency>
 	</dependencies>
 </project>

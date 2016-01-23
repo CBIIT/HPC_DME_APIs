@@ -22,18 +22,15 @@
 
 	<context:annotation-config />
 	
-	<!-- HPC Encryptor -->
-	<bean id="hpcEncryptor" class="gov.nih.nci.hpc.dao.mongo.codec.HpcEncryptor">
+	<!-- HPC Mongo Encryptor -->
+	<bean id="hpcMongoEncryptor" class="gov.nih.nci.hpc.dao.mongo.codec.HpcEncryptor">
 		<constructor-arg value="${hpc.dao.mongo.encryptor.key}" />
 	</bean>
 
 	<!-- HPC User Codecs -->
 	<bean id="hpcUserCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcUserCodec" />
 	<bean id="hpcNciAccountCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcNciAccountCodec" />
-	<bean id="hpcIntegratedSystemAccountCodec"
-		class="gov.nih.nci.hpc.dao.mongo.codec.HpcIntegratedSystemAccountCodec">
-		<constructor-arg ref="hpcEncryptor" />
-	</bean>
+	<bean id="hpcIntegratedSystemAccountCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcIntegratedSystemAccountCodec" />
 
 	<!-- HPC Codec Provider -->
 	<bean id="hpcCodecProvider" class="gov.nih.nci.hpc.dao.mongo.codec.HpcCodecProvider">
@@ -60,8 +57,27 @@
 			</map>
 		</constructor-arg>
 	</bean>
+	
+	<!-- HPC PostgreSQL DB data source -->
+	<bean id="hpcPostgreSQLDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="org.postgresql.Driver" />
+        <property name="url" value="${hpc.dao.postgresql.url}" />
+        <property name="username" value="${hpc.dao.postgresql.username}" />
+        <property name="password" value="${hpc.dao.postgresql.password}" />
+    </bean>
+    
+    <!-- HPC PostgreSQL Encryptor -->
+	<bean id="hpcPostgreSQLEncryptor" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcEncryptor">
+		<constructor-arg value="${hpc.dao.mongo.encryptor.key}" />
+	</bean>
+    
+    <!-- Spring JDBC Template -->
+    <bean id="hpcJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<constructor-arg ref="hpcPostgreSQLDataSource" />
+	</bean>
 
 	<!-- HPC DAO Implementation Beans -->
-	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.mongo.impl.HpcUserDAOImpl" />
+	<!--  <bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.mongo.impl.HpcUserDAOImpl" />-->
+	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserDAOImpl" />
 
 </beans>

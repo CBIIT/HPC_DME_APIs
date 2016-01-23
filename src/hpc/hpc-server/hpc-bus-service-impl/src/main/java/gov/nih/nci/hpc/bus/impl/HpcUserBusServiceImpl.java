@@ -86,7 +86,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     public void registerUser(HpcUserDTO userRegistrationDTO)  
     		                throws HpcException
     {
-    	logger.info("Invoking registerDataset(HpcDatasetDTO): " + 
+    	logger.info("Invoking registerDataset(HpcUserDTO): " + 
                     userRegistrationDTO);
     	
     	// Input validation.

@@ -20,10 +20,15 @@
 		<bundle>mvn:org.mongodb/bson/${mongodb.version}</bundle>
 	</feature>
 	
+	<!-- PostgreSQL driver -->
+	<feature name="hpc-postgresql-driver" version="${postgresql.version}">
+		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.postgresql/${postgresql.version}_1</bundle>
+		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-dbcp/1.4_3</bundle>
+	</feature>
+	
 	<!-- Spring Security LDAP -->
 	<feature name="hpc-spring-security-ldap" version="${spring-security.version}">
 		<feature version="${spring-security.version}">spring-security</feature>
-		
 		<bundle>mvn:org.springframework.security/spring-security-config/${spring-security.version}</bundle>
 		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-jdbc/3.2.11.RELEASE_2</bundle>
 		<bundle>mvn:org.springframework.data/spring-data-commons-core/1.4.1.RELEASE</bundle>
@@ -54,11 +59,13 @@
 	
 		<!--  Dependent Features / Bundles -->
 		<feature version="${mongodb.version}">hpc-mongo-async-driver</feature>
+		<feature version="${postgresql.version}">hpc-postgresql-driver</feature>
 		<feature version="${spring-security.version}">hpc-spring-security-ldap</feature>
 		<feature version="${amazon-aws.version}">hpc-amazon-aws-sdk</feature>
 		<feature version="${jargon.version}">hpc-jargon-sdk</feature>
 		<bundle>wrap:mvn:com.googlecode.json-simple/json-simple/${google-json-simple.version}</bundle>
-
+		
+		
 		<!-- Config files -->
 		<configfile finalname="/etc/gov.nih.nci.hpc.cfg" override="false">mvn:${project.groupId}/hpc-features/${project.version}/properties/hpc-server</configfile>
 		<configfile finalname="/etc/hpc-server/keystore.jks" override="true">mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}/jks/keystore</configfile>

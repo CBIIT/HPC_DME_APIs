@@ -26,6 +26,16 @@
 		<prop key="hpc.dao.mongo.dbName">hpc</prop>
 		<prop key="hpc.dao.mongo.server.host">localhost</prop>
 		<prop key="hpc.dao.mongo.encryptor.key">***128-bit-key**</prop>
+		
+		<prop key="hpc.dao.postgresql.dbName">postgres</prop>
+		<prop key="hpc.dao.postgresql.host">localhost</prop>
+		<prop key="hpc.dao.postgresql.port">5432</prop>
+		<prop key="hpc.dao.postgresql.username">postgres</prop>
+		<prop key="hpc.dao.postgresql.password">pwd</prop>
+		<prop key="hpc.dao.postgresql.url">jdbc:postgresql://${hpc.dao.postgresql.host}:${hpc.dao.postgresql.port}/${hpc.dao.postgresql.dbName}</prop>
+		<prop key="hpc.dao.postgresql.encryptor.key">***128-bit-key**</prop>
+		
+		<prop key="hpc.dao.user.impl">gov.nih.nci.hpc.dao.mongo.impl.HpcUserDAOImpl</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
