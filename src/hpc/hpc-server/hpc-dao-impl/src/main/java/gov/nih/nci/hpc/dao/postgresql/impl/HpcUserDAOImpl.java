@@ -24,6 +24,8 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -108,9 +110,10 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		                         encryptor.encrypt(user.getDataManagementAccount().getPassword()),
 		                         user.getCreated(),
 		                         user.getLastUpdated());
-		} catch(Throwable t) {
-			    throw new HpcException("Failed to upsert a user: " + t.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, t);
+		     
+		} catch(DataAccessException e) {
+			    throw new HpcException("Failed to upsert a user: " + e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, e);
 		}
     }
 	
@@ -120,9 +123,12 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		try {
 		     return jdbcTemplate.queryForObject(GET_SQL, rowMapper, nciUserId);
 		     
-		} catch(Throwable t) {
-		    throw new HpcException("Failed to get a user: " + t.getMessage(),
-		    		               HpcErrorType.DATABASE_ERROR, t);
+		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get a user: " + e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
 		}
 	}
 	
