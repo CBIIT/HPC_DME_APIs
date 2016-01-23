@@ -12,7 +12,7 @@
 -- @version $Id$
 --
 
-DROP TABLE public."HPC_USER";
+DROP TABLE IF EXISTS public."HPC_USER";
 CREATE TABLE public."HPC_USER"
 (
   "USER_ID" text NOT NULL,
