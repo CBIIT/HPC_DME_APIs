@@ -203,7 +203,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	} else {
     		    // Caller did not provide a path, inject their data-transfer user ID
     		    destinationPath.append('/');
-    		    destinationPath.append(userService.gettRequestInvoker().
+    		    destinationPath.append(userService.getRequestInvoker().
     		    		                           getDataTransferAccount().
     		    		                           getUsername());
     	}

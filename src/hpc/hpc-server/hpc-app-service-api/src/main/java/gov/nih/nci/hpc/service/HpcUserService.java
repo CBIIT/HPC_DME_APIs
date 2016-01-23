@@ -15,8 +15,6 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import java.util.List;
-
 /**
  * <p>
  * HPC User Application Service Interface.
@@ -53,31 +51,11 @@ public interface HpcUserService
     public HpcUser getUser(String nciUserId) throws HpcException;
     
     /**
-     * Get list of users for a given first and last name.
-     *
-     * @param firstName the user first name.
-     * @param lastName the user last name.
-     * @return A list of user(s) if found, or null otherwise.
-     * 
-     * @throws HpcException
-     */
-    public List<HpcUser> getUsers(String firstName, String lastName) throws HpcException;
-    
-    /**
-     * Persist user to the DB.
-     *
-     * @param user The user to be persisted.
-     * 
-     * @throws HpcException
-     */
-    public void persist(HpcUser user) throws HpcException;
-    
-    /**
      * Get the request invoker (user).
      *
      * @return HpcUser
      */
-    public HpcUser gettRequestInvoker();
+    public HpcUser getRequestInvoker();
     
     /**
      * Set the service call invoker (user) in the request context.
