@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -232,6 +233,18 @@ public interface HpcDataManagementProxy
      */
     public String getUserType(HpcIntegratedSystemAccount dataManagementAccount) 
     		                 throws HpcException;   
+    
+    /**
+     * Add a user.
+     *
+     * @param dataManagementAccount The Data Management System account.
+     * @param nciAccount The NCI account of the user to be added to data management.
+     * 
+     * @throws HpcException If it failed to add a user or user already exists.
+     */
+    public void addUser(HpcIntegratedSystemAccount dataManagementAccount,
+    		            HpcNciAccount nciAccount) 
+    		           throws HpcException;
     
     /**
      * Close iRODS connection of an account.

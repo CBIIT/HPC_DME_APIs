@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -201,6 +202,15 @@ public interface HpcDataManagementService
     public String getUserType() throws HpcException;  
     
     /**
+     * Add a user.
+     *
+     * @param nciAccount The NCI account of the user to be added to data management.
+     * 
+     * @throws HpcException
+     */
+    public void addUser(HpcNciAccount nciAccount) throws HpcException;
+    
+    /**
      * Close connection to Data Management system for the current service call.
      */
     public void closeConnection();
@@ -210,7 +220,6 @@ public interface HpcDataManagementService
      *
      * @param path The entity path.
      * @param permissionRequest The permission request.
-     * @return HpcMetadataEntry collection.
      * 
      * @throws HpcException
      */
