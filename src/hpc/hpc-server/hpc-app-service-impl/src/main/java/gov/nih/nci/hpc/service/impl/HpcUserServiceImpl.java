@@ -24,7 +24,6 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
 import java.util.Calendar;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +117,7 @@ public class HpcUserServiceImpl implements HpcUserService
     	user.setDataManagementAccount(dataManagementAccount);
     	user.setCreated(Calendar.getInstance());
     	
-    	// Persist to Mongo.
+    	// Persist to the DB.
     	persist(user);
     	
     	logger.debug("User Created: " + user);
@@ -137,28 +136,7 @@ public class HpcUserServiceImpl implements HpcUserService
     }
     
     @Override
-    public List<HpcUser> getUsers(String firstName, String lastName) throws HpcException
-    {
-    	// Input validation.
-    	if(firstName == null && lastName == null) {
-    	   throw new HpcException("Null user first or last name", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-    	
-    	return userDAO.getUsers(firstName, lastName);
-    }
-    
-    @Override
-    public void persist(HpcUser user) throws HpcException
-    {
-    	if(user != null) {
-    	   user.setLastUpdated(Calendar.getInstance());
-    	   userDAO.upsert(user);
-    	}
-    }
-    
-    @Override
-    public HpcUser gettRequestInvoker()
+    public HpcUser getRequestInvoker()
     {
     	return HpcRequestContext.getRequestInvoker();
     }
@@ -184,6 +162,25 @@ public class HpcUserServiceImpl implements HpcUserService
 		
 		return ldapAuthenticationProxy.authenticate(userName, password);
 	}
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//  
+    
+    /**
+     * Persist user to the DB.
+     *
+     * @param user The user to be persisted.
+     * 
+     * @throws HpcException
+     */
+    private void persist(HpcUser user) throws HpcException
+    {
+    	if(user != null) {
+    	   user.setLastUpdated(Calendar.getInstance());
+    	   userDAO.upsert(user);
+    	}
+    }
 }
 
  

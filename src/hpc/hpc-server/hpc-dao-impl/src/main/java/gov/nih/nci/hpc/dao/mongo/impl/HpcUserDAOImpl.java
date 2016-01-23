@@ -10,9 +10,7 @@
 
 package gov.nih.nci.hpc.dao.mongo.impl;
 
-import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.regex;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.dao.mongo.codec.HpcCodec;
 import gov.nih.nci.hpc.dao.mongo.driver.HpcMongoDB;
@@ -20,11 +18,6 @@ import gov.nih.nci.hpc.dao.mongo.driver.HpcSingleResultCallback;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
-
-import org.bson.conversions.Bson;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.mongodb.async.client.MongoCollection;
@@ -51,16 +44,6 @@ public class HpcUserDAOImpl implements HpcUserDAO
 	public final static String NCI_USER_ID_FIELD_NAME = 
 							       HpcCodec.USER_NCI_ACCOUNT_KEY + "." + 
                                    HpcCodec.NCI_ACCOUNT_USER_ID_KEY;
-	
-    // User first name field name.
-	public final static String FIRST_NAME_FIELD_NAME = 
-							         HpcCodec.USER_NCI_ACCOUNT_KEY + "." + 
-                                     HpcCodec.NCI_ACCOUNT_FIRST_NAME_KEY;
-	
-    // User last name field name.
-	public final static String LAST_NAME_FIELD_NAME = 
-							        HpcCodec.USER_NCI_ACCOUNT_KEY + "." + 
-                                    HpcCodec.NCI_ACCOUNT_LAST_NAME_KEY;
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -108,28 +91,6 @@ public class HpcUserDAOImpl implements HpcUserDAO
                                          new HpcSingleResultCallback<HpcUser>();
 		getCollection().find(
 		   eq(NCI_USER_ID_FIELD_NAME, nciUserId)).first(callback);
-		
-		return callback.getResult();
-	}
-	
-	@Override
-	public List<HpcUser> getUsers(String firstName, String lastName) throws HpcException
-	{
-		List<HpcUser> users = new ArrayList<HpcUser>();
-		HpcSingleResultCallback<List<HpcUser>> callback = 
-                       new HpcSingleResultCallback<List<HpcUser>>();
-		
-		List<Bson> filters = new ArrayList<Bson>();
-    	if(firstName != null && !firstName.isEmpty()) {
-    	   filters.add(regex(FIRST_NAME_FIELD_NAME, 
-	        		         "^" + Pattern.quote(firstName) + "$", "i"));
-    	}
-    	if(lastName != null && !lastName.isEmpty()) {
-     	   filters.add(regex(LAST_NAME_FIELD_NAME, 
- 	        		         "^" + Pattern.quote(lastName) + "$", "i"));
-     	}
-    	
-		getCollection().find(and(filters)).into(users, callback); 
 		
 		return callback.getResult();
 	}

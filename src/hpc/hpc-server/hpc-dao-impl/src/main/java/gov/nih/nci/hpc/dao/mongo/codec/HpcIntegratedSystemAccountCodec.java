@@ -10,7 +10,6 @@
 
 package gov.nih.nci.hpc.dao.mongo.codec;
 
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -21,6 +20,7 @@ import org.bson.Document;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.bson.types.Binary;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -38,6 +38,7 @@ public class HpcIntegratedSystemAccountCodec extends HpcCodec<HpcIntegratedSyste
     //---------------------------------------------------------------------//
 	
 	// Encryptor.
+	@Autowired
 	HpcEncryptor encryptor = null;
 	
     //---------------------------------------------------------------------//
@@ -45,32 +46,13 @@ public class HpcIntegratedSystemAccountCodec extends HpcCodec<HpcIntegratedSyste
     //---------------------------------------------------------------------//
 	
     /**
-     * Default Constructor.
+     * Constructor for Spring Dependency Injection.
      * 
      * @throws HpcException Constructor is disabled.
      */
     private HpcIntegratedSystemAccountCodec() throws HpcException
     {
-    	throw new HpcException("Constructor Disabled",
-                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }   
-    
-    /**
-     * Constructor for Spring Dependency Injection.
-     * 
-     * @param encryptor An encryptor instance.
-     * 
-     * @throws HpcException If an encryptor instance was not provided.
-     */
-    private HpcIntegratedSystemAccountCodec(HpcEncryptor encryptor) throws HpcException
-    {
-    	if(encryptor == null) {
-    	   throw new HpcException("Null Encryptor instance",
-    			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
-    	}
-    	
-    	this.encryptor = encryptor;
-    }
     
     //---------------------------------------------------------------------//
     // Methods
