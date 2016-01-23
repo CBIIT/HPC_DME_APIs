@@ -14,9 +14,11 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
@@ -24,10 +26,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.irods.jargon.core.exception.DataNotFoundException;
+import org.irods.jargon.core.exception.DuplicateDataException;
 import org.irods.jargon.core.exception.InvalidInputParameterException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
@@ -63,6 +66,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     // The iRODS connection.
 	@Autowired
     private HpcIRODSConnection irodsConnection = null;
+	
 	private final Logger logger = 
             LoggerFactory.getLogger(this.getClass().getName());	
     //---------------------------------------------------------------------//
@@ -92,7 +96,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		          throws HpcException
     {
 		try {
-			path = addPath(path);
+			 path = addPath(path);
 			 IRODSFile collectionFile = 
 			      irodsConnection.getIRODSFileFactory(dataManagementAccount).instanceIRODSFile(path);
 			 mkdirs(collectionFile);
@@ -429,7 +433,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 				return null;  
 			 }
 			 
-			 // Bypassing a Jargon defect returning unknow for a groupadmin.
+			 // Bypassing a Jargon defect returning unknown for a groupadmin.
 			 return user.getUserType().equals(UserTypeEnum.RODS_UNKNOWN) ? 
 					"groupadmin" :  user.getUserType().getTextValue();
 	
@@ -439,6 +443,32 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	                                    HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} 
 	}  
+    
+    @Override
+    public void addUser(HpcIntegratedSystemAccount dataManagementAccount,
+                        HpcNciAccount nciAccount) 
+                       throws HpcException
+    {
+    	// Instantiate an iRODS user domain object.
+    	User irodsUser = new User();
+    	irodsUser.setName(nciAccount.getUserId());
+    	irodsUser.setInfo(nciAccount.getFirstName() + " " + nciAccount.getLastName());
+    	irodsUser.setZone(irodsConnection.getZone());
+    	irodsUser.setUserType(UserTypeEnum.RODS_USER);
+    	
+    	// Add the user to iRODS.
+    	try {
+    	     irodsConnection.getUserAO(dataManagementAccount).addUser(irodsUser);
+    	     
+    	} catch(DuplicateDataException ex) {
+    		    throw new HpcException("iRODS account already exists: " + nciAccount.getUserId(), 
+                                       HpcRequestRejectReason.USER_ALREADY_EXISTS, ex);
+    		    
+		} catch(Exception e) {
+                throw new HpcException("Failed add iRODS user: " + e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		}
+    }
     
     @Override
     public void closeConnection(HpcIntegratedSystemAccount dataManagementAccount)

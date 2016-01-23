@@ -95,6 +95,19 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	// Create data management account if not provided.
+    	if(userRegistrationDTO.getDataManagementAccount() == null) {
+    	   // Create a data management account.
+    	   dataManagementService.addUser(userRegistrationDTO.getNciAccount());
+    	   
+    	   // Add the new account to the DTO.
+    	   HpcIntegratedSystemAccount dataManagementAccount = 
+    			                      new HpcIntegratedSystemAccount();
+    	   dataManagementAccount.setUsername(userRegistrationDTO.getNciAccount().getUserId());
+    	   dataManagementAccount.setPassword("N/A - LDAP Authenticated");
+    	   userRegistrationDTO.setDataManagementAccount(dataManagementAccount);
+    	}
+    	
     	// Add the user to the managed collection.
     	userService.addUser(userRegistrationDTO.getNciAccount(), 
     			            userRegistrationDTO.getDataTransferAccount(),
