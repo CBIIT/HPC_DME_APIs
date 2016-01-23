@@ -105,6 +105,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     			                      new HpcIntegratedSystemAccount();
     	   dataManagementAccount.setUsername(userRegistrationDTO.getNciAccount().getUserId());
     	   dataManagementAccount.setPassword("N/A - LDAP Authenticated");
+    	   dataManagementAccount.setIntegratedSystem(HpcIntegratedSystem.IRODS);
     	   userRegistrationDTO.setDataManagementAccount(dataManagementAccount);
     	}
     	
