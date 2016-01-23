@@ -13,8 +13,6 @@ package gov.nih.nci.hpc.dao;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import java.util.List;
-
 /**
  * <p>
  * HPC User DAO Interface.
@@ -44,17 +42,6 @@ public interface HpcUserDAO
      * @throws HpcException
      */
     public HpcUser getUser(String nciUserId) throws HpcException;
-    
-    /**
-     * Get list of users for a given first and last name.
-     *
-     * @param firstName the user first name.
-     * @param lastName the user last name.
-     * @return A list of user(s) if found, or null otherwise.
-     * 
-     * @throws HpcException
-     */
-    public List<HpcUser> getUsers(String firstName, String lastName) throws HpcException;
 }
 
  
