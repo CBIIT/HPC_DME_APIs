@@ -239,11 +239,12 @@ public interface HpcDataManagementProxy
      *
      * @param dataManagementAccount The Data Management System account.
      * @param nciAccount The NCI account of the user to be added to data management.
+     * @param userType The iRODS user type to assign to the new user.
      * 
      * @throws HpcException If it failed to add a user or user already exists.
      */
     public void addUser(HpcIntegratedSystemAccount dataManagementAccount,
-    		            HpcNciAccount nciAccount) 
+    		            HpcNciAccount nciAccount, String userType) 
     		           throws HpcException;
     
     /**

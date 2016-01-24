@@ -205,10 +205,11 @@ public interface HpcDataManagementService
      * Add a user.
      *
      * @param nciAccount The NCI account of the user to be added to data management.
+     * @param userType The iRODS user type to assign to the new user.
      * 
      * @throws HpcException
      */
-    public void addUser(HpcNciAccount nciAccount) throws HpcException;
+    public void addUser(HpcNciAccount nciAccount, String userType) throws HpcException;
     
     /**
      * Close connection to Data Management system for the current service call.

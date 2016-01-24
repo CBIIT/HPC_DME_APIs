@@ -29,6 +29,7 @@
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 				<xsd:element name="dataManagementAccount"
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
+				<xsd:element name="dataManagementUserType" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

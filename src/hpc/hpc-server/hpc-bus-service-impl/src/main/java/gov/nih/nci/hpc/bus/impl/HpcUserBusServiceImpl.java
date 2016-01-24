@@ -45,6 +45,9 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     // Unauthenticated user role.
 	private final static String UNAUTHENTICATED_ROLE = "unauthenticated";
 	
+    // Default user role.
+	private final static String DEFAULT_ROLE = "rodsuser";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -98,7 +101,10 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	// Create data management account if not provided.
     	if(userRegistrationDTO.getDataManagementAccount() == null) {
     	   // Create a data management account.
-    	   dataManagementService.addUser(userRegistrationDTO.getNciAccount());
+    	   dataManagementService.addUser(
+    			         userRegistrationDTO.getNciAccount(),
+    			         userRegistrationDTO.getDataManagementUserType() != null ? 
+    			         userRegistrationDTO.getDataManagementUserType() : DEFAULT_ROLE);
     	   
     	   // Add the new account to the DTO.
     	   HpcIntegratedSystemAccount dataManagementAccount = 
