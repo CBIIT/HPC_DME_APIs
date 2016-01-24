@@ -446,15 +446,16 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     
     @Override
     public void addUser(HpcIntegratedSystemAccount dataManagementAccount,
-                        HpcNciAccount nciAccount) 
+                        HpcNciAccount nciAccount, String userType) 
                        throws HpcException
     {
     	// Instantiate an iRODS user domain object.
     	User irodsUser = new User();
     	irodsUser.setName(nciAccount.getUserId());
     	irodsUser.setInfo(nciAccount.getFirstName() + " " + nciAccount.getLastName());
+    	irodsUser.setComment("Created by " + dataManagementAccount.getUsername() + " via HPC-DM API");
     	irodsUser.setZone(irodsConnection.getZone());
-    	irodsUser.setUserType(UserTypeEnum.RODS_USER);
+    	irodsUser.setUserType(UserTypeEnum.valueOf(userType));
     	
     	// Add the user to iRODS.
     	try {
