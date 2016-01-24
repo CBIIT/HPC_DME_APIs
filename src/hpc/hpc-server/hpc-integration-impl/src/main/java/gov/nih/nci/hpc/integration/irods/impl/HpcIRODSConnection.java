@@ -255,9 +255,7 @@ public class HpcIRODSConnection
     	    		                           dataManagementAccount.getUsername(), 
     	    		                           dataManagementAccount.getPassword(), "", 
 	    	                                   irodsZone, irodsResource);
-    		IRODSFileSystem irodsFileSystem = IRODSFileSystem.instance();
     		irodsAccount.setAuthenticationScheme(irodsAuthentication);
-    		//IRODSSession session = new IRODSSession(new IRODSSimpleProtocolManager());
     		
     		AuthResponse authResponse = irodsFileSystem.getIRODSAccessObjectFactory().
     				                        authenticateIRODSAccount(irodsAccount);
