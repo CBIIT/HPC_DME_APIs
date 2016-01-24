@@ -378,7 +378,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public void addUser(HpcNciAccount nciAccount) throws HpcException
+    public void addUser(HpcNciAccount nciAccount, String userType) throws HpcException
     {
     	// Input validation.
     	if(!isValidNciAccount(nciAccount)) {	
@@ -386,7 +386,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
        	
-    	dataManagementProxy.addUser(getDataManagementAccount(), nciAccount);
+    	dataManagementProxy.addUser(getDataManagementAccount(), nciAccount, userType);
     }
     
     @Override
