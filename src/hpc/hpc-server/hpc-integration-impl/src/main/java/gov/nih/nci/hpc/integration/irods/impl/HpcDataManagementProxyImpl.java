@@ -449,13 +449,20 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                         HpcNciAccount nciAccount, String userType) 
                        throws HpcException
     {
+    	// Input validation
+    	UserTypeEnum userTypeEnum = UserTypeEnum.findTypeByString(userType);
+    	if(userTypeEnum.equals(UserTypeEnum.RODS_UNKNOWN)) {
+    	   throw new HpcException("Invalid Data Management User Type: " + userType,
+                                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
     	// Instantiate an iRODS user domain object.
     	User irodsUser = new User();
     	irodsUser.setName(nciAccount.getUserId());
     	irodsUser.setInfo(nciAccount.getFirstName() + " " + nciAccount.getLastName());
     	irodsUser.setComment("Created by " + dataManagementAccount.getUsername() + " via HPC-DM API");
     	irodsUser.setZone(irodsConnection.getZone());
-    	irodsUser.setUserType(UserTypeEnum.findTypeByString(userType));
+    	irodsUser.setUserType(userTypeEnum);
     	
     	// Add the user to iRODS.
     	try {
