@@ -455,7 +455,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	irodsUser.setInfo(nciAccount.getFirstName() + " " + nciAccount.getLastName());
     	irodsUser.setComment("Created by " + dataManagementAccount.getUsername() + " via HPC-DM API");
     	irodsUser.setZone(irodsConnection.getZone());
-    	irodsUser.setUserType(UserTypeEnum.valueOf(userType));
+    	irodsUser.setUserType(UserTypeEnum.findTypeByString(userType));
     	
     	// Add the user to iRODS.
     	try {
