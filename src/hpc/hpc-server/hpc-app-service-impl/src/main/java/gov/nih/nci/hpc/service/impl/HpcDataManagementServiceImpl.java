@@ -107,7 +107,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	HpcIntegratedSystemAccount dataManagementAccount = getDataManagementAccount();
     	boolean created = !dataManagementProxy.getPathAttributes(dataManagementAccount, path).exists;
 
-    	dataManagementProxy.createCollectionDirectory(getDataManagementAccount(), 
+    	dataManagementProxy.createCollectionDirectory(dataManagementAccount, 
     			                                      path);
     	return created;
     }
