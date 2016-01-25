@@ -35,6 +35,7 @@ import org.irods.jargon.core.exception.InvalidInputParameterException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.protovalues.UserTypeEnum;
+import org.irods.jargon.core.pub.CollectionAO;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.Collection;
 import org.irods.jargon.core.pub.domain.DataObject;
@@ -168,13 +169,13 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     {
 		try {
 			path = addPath(path);
+			CollectionAO collectionAO = irodsConnection.getCollectionAO(dataManagementAccount);
 		     for(HpcMetadataEntry metadataEntry : metadataEntries) {
 			     AvuData avuData = AvuData.instance(metadataEntry.getAttribute(),
 			                                        metadataEntry.getValue(), 
 			                                        metadataEntry.getUnit());
 		         try {
-		              irodsConnection.getCollectionAO(dataManagementAccount).
-		                              modifyAvuValueBasedOnGivenAttributeAndUnit(path, avuData);
+		        	 collectionAO.modifyAvuValueBasedOnGivenAttributeAndUnit(path, avuData);
 		         } catch(DataNotFoundException e) {
 		        	     // Metadata was not found to update. Add it.
 		        	     irodsConnection.getCollectionAO(dataManagementAccount).addAVUMetadata(path, avuData);
