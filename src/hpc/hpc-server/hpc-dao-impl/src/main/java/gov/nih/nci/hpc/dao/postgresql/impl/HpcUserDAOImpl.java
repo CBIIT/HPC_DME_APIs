@@ -53,8 +53,8 @@ public class HpcUserDAOImpl implements HpcUserDAO
                     "\"CREATED\", \"LAST_UPDATED\") " +
                     "values (?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 	
-	/*+
-           "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", " +
+	/* Add this back in when we upgrade to PostgreSQL 9.5
+            + "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", " +
                                                   "\"LAST_NAME\"=excluded.\"LAST_NAME\", " +
                                                   "\"GLOBUS_USERNAME\"=excluded.\"GLOBUS_USERNAME\", " +
                                                   "\"GLOBUS_PASSWORD\"=excluded.\"GLOBUS_PASSWORD\", " +
