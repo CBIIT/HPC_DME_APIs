@@ -51,7 +51,9 @@ public class HpcUserDAOImpl implements HpcUserDAO
                     "\"GLOBUS_USERNAME\", \"GLOBUS_PASSWORD\", " +
                     "\"IRODS_USERNAME\", \"IRODS_PASSWORD\", " +
                     "\"CREATED\", \"LAST_UPDATED\") " +
-                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+	
+	/*+
            "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", " +
                                                   "\"LAST_NAME\"=excluded.\"LAST_NAME\", " +
                                                   "\"GLOBUS_USERNAME\"=excluded.\"GLOBUS_USERNAME\", " +
@@ -59,7 +61,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
                                                   "\"IRODS_USERNAME\"=excluded.\"IRODS_USERNAME\", " +
                                                   "\"IRODS_PASSWORD\"=excluded.\"IRODS_PASSWORD\", " +
                                                   "\"CREATED\"=excluded.\"CREATED\", " +
-                                                  "\"LAST_UPDATED\"=excluded.\"LAST_UPDATED\"";
+                                                  "\"LAST_UPDATED\"=excluded.\"LAST_UPDATED\"";*/
 	public final static String GET_SQL = "select * from public.\"HPC_USER\" where \"USER_ID\" = ?";
 	
     //---------------------------------------------------------------------//
