@@ -256,10 +256,10 @@ public class HpcIRODSConnection
     	    		                           dataManagementAccount.getPassword(), "", 
 	    	                                   irodsZone, irodsResource);
     		irodsAccount.setAuthenticationScheme(irodsAuthentication);
-    		
-    		AuthResponse authResponse = irodsFileSystem.getIRODSAccessObjectFactory().
-    				                        authenticateIRODSAccount(irodsAccount);
-    		return authResponse.getAuthenticatedIRODSAccount();
+    		return irodsAccount;
+    		//AuthResponse authResponse = irodsFileSystem.getIRODSAccessObjectFactory().
+    		//		                        authenticateIRODSAccount(irodsAccount);
+    		//return authResponse.getAuthenticatedIRODSAccount();
     		
     	} catch(JargonException e) {
     		    throw new HpcException("Failed instantiate an iRODS account: " + 
