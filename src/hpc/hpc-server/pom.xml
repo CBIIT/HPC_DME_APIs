@@ -57,6 +57,7 @@
 		<module>hpc-ws-rs-impl</module>
 		<module>hpc-client</module>
 		<module>hpc-features</module>
+		<module>hpc-batch</module>
 	</modules>
 
 	<build>
@@ -186,6 +187,11 @@
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-jdbc</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
 				<version>${spring.version}</version>
 			</dependency>
 			<dependency>
