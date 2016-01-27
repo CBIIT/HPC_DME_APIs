@@ -200,12 +200,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		  destinationPath.append('/'); 
     	   }
     	   destinationPath.append(filePath);
-    	} else {
+/*    	} else {
     		    // Caller did not provide a path, inject their data-transfer user ID
     		    destinationPath.append('/');
     		    destinationPath.append(userService.getRequestInvoker().
     		    		                           getDataTransferAccount().
     		    		                           getUsername());
+ */
     	}
     	destinationPath.append('/');
     	destinationPath.append(path);
@@ -272,10 +273,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Construct the DTO.
     	HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
     	for(HpcDataObject dataObject : dataManagementService.getDataObjects(metadataQueries)) {
+    		List<HpcMetadataEntry> metadataEntries = null;
+    		try
+    		{
     		// Get the metadata for this data object.
-    		List<HpcMetadataEntry> metadataEntries = 
+    		metadataEntries = 
     		dataManagementService.getDataObjectMetadata(dataObject.getAbsolutePath());
-    		
+    		}
+    		catch(HpcException e)
+    		{
+    			//Unable to find metadata for the object
+    			continue;
+    		}
     		// Combine data object attributes and metadata into a single DTO.
     		dataObjectsDTO.getDataObjects().add(toDTO(dataObject, metadataEntries));
     	}
