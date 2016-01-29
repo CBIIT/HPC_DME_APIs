@@ -166,11 +166,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	HpcCollectionListDTO collectionsDTO = new HpcCollectionListDTO();
     	for(HpcCollection collection : dataManagementService.getCollections(metadataQueries)) {
     		// Get the metadata for this collection.
-    		List<HpcMetadataEntry> metadataEntries = 
-    		dataManagementService.getCollectionMetadata(collection.getAbsolutePath());
+    		try
+    		{
+    			List<HpcMetadataEntry> metadataEntries = 
+    					dataManagementService.getCollectionMetadata(collection.getAbsolutePath());
     		
-    		// Combine collection attributes and metadata into a single DTO.
-    		collectionsDTO.getCollections().add(toDTO(collection, metadataEntries));
+    			//Combine collection attributes and metadata into a single DTO.
+    			collectionsDTO.getCollections().add(toDTO(collection, metadataEntries));
+    		}
+    		catch(HpcException e)
+    		{
+    			//Failed to get metadata
+    			logger.error("Failed to fetch metadata for "+collection.getAbsolutePath(), e);
+    			continue;
+    		}
     	}
     	
     	return collectionsDTO;
@@ -219,7 +228,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	dataManagementService.createFile(path, false);
     	
 		// Transfer the file. 
-        dataTransferService.transferData(dataObjectRegistrationDTO.getSource(), 
+        //TODO: Persist data transfer report into database
+    	dataTransferService.transferData(dataObjectRegistrationDTO.getSource(), 
         		                         destination);				 
     	
     	// Attach the user provided metadata.
