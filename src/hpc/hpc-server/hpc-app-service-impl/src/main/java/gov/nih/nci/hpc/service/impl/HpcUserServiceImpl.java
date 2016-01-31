@@ -15,6 +15,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
@@ -136,7 +137,7 @@ public class HpcUserServiceImpl implements HpcUserService
     }
     
     @Override
-    public HpcUser getRequestInvoker()
+    public HpcRequestInvoker getRequestInvoker()
     {
     	return HpcRequestContext.getRequestInvoker();
     }
@@ -144,7 +145,15 @@ public class HpcUserServiceImpl implements HpcUserService
     @Override
     public void setRequestInvoker(HpcUser user)
     {
-    	HpcRequestContext.setRequestInvoker(user);
+    	HpcRequestInvoker invoker = new HpcRequestInvoker();
+    	if(user != null) {
+    	   invoker.setNciAccount(user.getNciAccount());
+    	   invoker.setDataTransferAccount(user.getDataTransferAccount());
+    	   invoker.setDataManagementAccount(user.getDataManagementAccount());
+    	   invoker.setDataManagementAuthenticatedToken(null);
+    	}
+    	
+    	HpcRequestContext.setRequestInvoker(invoker);
     }
     
     @Override
