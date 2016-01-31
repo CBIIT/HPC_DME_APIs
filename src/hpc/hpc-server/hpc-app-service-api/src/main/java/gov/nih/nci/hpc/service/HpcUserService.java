@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.service;
 
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
@@ -53,14 +54,14 @@ public interface HpcUserService
     /**
      * Get the request invoker (user).
      *
-     * @return HpcUser
+     * @return HpcRequestInvoker
      */
-    public HpcUser getRequestInvoker();
+    public HpcRequestInvoker getRequestInvoker();
     
     /**
-     * Set the service call invoker (user) in the request context.
+     * Set the service call invoker in the request context.
      *
-     * @param user The user to set as the service call invoker.
+     * @param user The HPC user to set as the invoker.
      */
     public void setRequestInvoker(HpcUser user);
     
