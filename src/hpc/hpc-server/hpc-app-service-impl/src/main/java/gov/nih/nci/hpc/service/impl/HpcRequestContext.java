@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 
 /**
  * <p>
@@ -27,33 +27,33 @@ public class HpcRequestContext
     // Instance members
     //---------------------------------------------------------------------//
 	
-	private static final ThreadLocal<HpcUser> requestInvoker = 
-			new ThreadLocal<HpcUser>() 
+	private static final ThreadLocal<HpcRequestInvoker> requestInvoker = 
+			new ThreadLocal<HpcRequestInvoker>() 
 			{
-				@Override protected HpcUser initialValue() 
+				@Override protected HpcRequestInvoker initialValue() 
 				{
-					return new HpcUser();
+					return new HpcRequestInvoker();
 				}
 	        };
 	
     /**
-     * Get user who invoked this service-call.
+     * Get the invoker of his service-call.
      *
      * @return The HPC user who invoked this service.
      */
-    public static HpcUser getRequestInvoker() 
+    public static HpcRequestInvoker getRequestInvoker() 
     {
         return requestInvoker.get();
     }
     
     /**
-     * Set the user who invoked this service-call.
+     * Set the invoker who invoked this service-call.
      *
-     * @param user The HPC user who invoked this service.
+     * @param invoker The request invoker.
      */
-    public static void setRequestInvoker(HpcUser user)
+    public static void setRequestInvoker(HpcRequestInvoker invoker)
     {
-        requestInvoker.set(user);
+        requestInvoker.set(invoker);
     }
 }
 
