@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import org.irods.jargon.core.connection.AuthScheme;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.connection.auth.AuthResponse;
+import org.irods.jargon.core.exception.AuthenticationException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.CollectionAO;
 import org.irods.jargon.core.pub.DataObjectAO;
@@ -116,17 +117,16 @@ public class HpcIRODSConnection
     /**
      * Get iRODS file factory instance.
      * 
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      *
      * @throws HpcException
      */
-    public IRODSFileFactory getIRODSFileFactory(
-    		                   HpcIntegratedSystemAccount dataManagementAccount) 
-    		                   throws HpcException
+    public IRODSFileFactory getIRODSFileFactory(Object authenticatedToken) 
+    		                                   throws HpcException
     {
     	try {
 			 return irodsFileSystem.getIRODSFileFactory(
-					                   getIrodsAccount(dataManagementAccount));
+					                   getIrodsAccount(authenticatedToken));
 			 
 		} catch(JargonException e) {
 			    throw new HpcException(
@@ -139,17 +139,16 @@ public class HpcIRODSConnection
     /**
      * Get iRODS Collection AO instance.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      *  
      * @throws HpcException
      */
-    public CollectionAO getCollectionAO(
-    		               HpcIntegratedSystemAccount dataManagementAccount) 
-    		               throws HpcException
+    public CollectionAO getCollectionAO(Object authenticatedToken) 
+    		                           throws HpcException
     {
     	try {
 			 return irodsFileSystem.getIRODSAccessObjectFactory().getCollectionAO(
-					                   getIrodsAccount(dataManagementAccount));
+					                   getIrodsAccount(authenticatedToken));
 			 
 		} catch(JargonException e) {
 			    throw new HpcException(
@@ -162,17 +161,16 @@ public class HpcIRODSConnection
     /**
      * Get iRODS Data Object AO instance.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * 
      * @throws HpcException
      */
-    public DataObjectAO getDataObjectAO(
-    		               HpcIntegratedSystemAccount dataManagementAccount) 
-    		               throws HpcException
+    public DataObjectAO getDataObjectAO(Object authenticatedToken) 
+    		                           throws HpcException
     {
     	try {
 			 return irodsFileSystem.getIRODSAccessObjectFactory().getDataObjectAO(
-					                   getIrodsAccount(dataManagementAccount));
+					                   getIrodsAccount(authenticatedToken));
 			 
 		} catch(JargonException e) {
 			    throw new HpcException(
@@ -185,17 +183,15 @@ public class HpcIRODSConnection
     /**
      * Get iRODS User AO instance.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated Data Management account
      * 
      * @throws HpcException
      */
-    public UserAO getUserAO(
-    		               HpcIntegratedSystemAccount dataManagementAccount) 
-    		               throws HpcException
+    public UserAO getUserAO(Object authenticatedToken) throws HpcException
     {
     	try {
 			 return irodsFileSystem.getIRODSAccessObjectFactory().getUserAO(
-					                   getIrodsAccount(dataManagementAccount));
+					                   getIrodsAccount(authenticatedToken));
 			 
 		} catch(JargonException e) {
 			    throw new HpcException(
@@ -206,15 +202,39 @@ public class HpcIRODSConnection
     }
     
     /**
+     * Authenticate an account.
+     *
+     * @param dataManagementAccount A data management account to authenticate.
+     * @return An authenticated IRODSAccount object, or null if authentication failed.
+     */
+    public IRODSAccount authenticate(HpcIntegratedSystemAccount dataManagementAccount)
+    		                        throws HpcException
+    {
+    	try {
+	    	 AuthResponse authResponse = irodsFileSystem.getIRODSAccessObjectFactory().
+	    				                      authenticateIRODSAccount(getIrodsAccount(dataManagementAccount));
+	         return authResponse != null ? authResponse.getAuthenticatedIRODSAccount() : null;
+			 
+    	} catch(AuthenticationException ae) {
+    		    return null;
+    		    
+    	} catch(JargonException e) {
+		        throw new HpcException("Failed authenticate an iRODS account: " + 
+                                       e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+    	}
+    }  
+    
+    /**
      * Close iRODS connection of an account.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      */
-    public void closeConnection(HpcIntegratedSystemAccount dataManagementAccount)
+    public void disconnect(Object authenticatedToken)
     {
     	try {
 			 irodsFileSystem.getIRODSAccessObjectFactory().closeSessionAndEatExceptions(
-					            getIrodsAccount(dataManagementAccount));
+					            getIrodsAccount(authenticatedToken));
 			 
 		} catch(Exception e) {
 			    logger.error("Failed to close iRODS session: " + e);
@@ -242,7 +262,7 @@ public class HpcIRODSConnection
     /**
      * Get iRODS Account instance for a HPC user.
      * 
-     * @param dataManagementAccount The Data Management System account.
+     * @param dataManagementAccount The Data Management account.
      *
      * @throws HpcException
      */
@@ -257,15 +277,31 @@ public class HpcIRODSConnection
 	    	                                   irodsZone, irodsResource);
     		irodsAccount.setAuthenticationScheme(irodsAuthentication);
     		return irodsAccount;
-    		//AuthResponse authResponse = irodsFileSystem.getIRODSAccessObjectFactory().
-    		//		                        authenticateIRODSAccount(irodsAccount);
-    		//return authResponse.getAuthenticatedIRODSAccount();
     		
     	} catch(JargonException e) {
     		    throw new HpcException("Failed instantiate an iRODS account: " + 
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
     	}
+    }
+    
+    /**
+     * Get iRODS Account instance from an authenticated token.
+     * 
+     * @param authenticatedToken An authenticated token.
+     *
+     * @throws HpcException
+     */
+    private IRODSAccount getIrodsAccount(Object authenticatedToken) 
+    		                            throws HpcException
+    {
+    	if(authenticatedToken == null ||
+    	   !(authenticatedToken instanceof IRODSAccount)) {
+    	   throw new HpcException("Invalid iRODS authentication token",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	return (IRODSAccount) authenticatedToken;
     }
 }
 
