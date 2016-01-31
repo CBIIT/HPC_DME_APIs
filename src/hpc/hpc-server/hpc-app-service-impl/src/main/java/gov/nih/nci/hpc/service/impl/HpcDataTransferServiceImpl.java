@@ -15,7 +15,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
-import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProvider;
@@ -131,14 +131,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      */
     private HpcIntegratedSystemAccount getDataTransferAccount() throws HpcException
     {
-    	HpcUser user = HpcRequestContext.getRequestInvoker();
-    	if(user == null || 
-    	   !isValidIntegratedSystemAccount(user.getDataTransferAccount())) {
+    	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+    	if(invoker == null || 
+    	   !isValidIntegratedSystemAccount(invoker.getDataTransferAccount())) {
 	       throw new HpcException("Unknown user or invalid data transfer account",
 			                      HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
     	}
     	
-    	return user.getDataTransferAccount();
+    	return invoker.getDataTransferAccount();
     }
 }
  

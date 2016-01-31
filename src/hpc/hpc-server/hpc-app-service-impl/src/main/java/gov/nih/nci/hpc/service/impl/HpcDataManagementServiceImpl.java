@@ -11,7 +11,6 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
-import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidIntegratedSystemAccount;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
@@ -23,8 +22,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
-import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
@@ -101,14 +99,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     //---------------------------------------------------------------------//  
 
     @Override
-    public boolean createDirectory(String path) 
-    		                      throws HpcException
+    public boolean createDirectory(String path) throws HpcException
     {
-    	HpcIntegratedSystemAccount dataManagementAccount = getDataManagementAccount();
-    	boolean created = !dataManagementProxy.getPathAttributes(dataManagementAccount, path).exists;
-
-    	dataManagementProxy.createCollectionDirectory(dataManagementAccount, 
-    			                                      path);
+    	Object authenticatedToken = getAuthenticatedToken();
+    	boolean created = !dataManagementProxy.getPathAttributes(authenticatedToken, path).exists;
+    	dataManagementProxy.createCollectionDirectory(authenticatedToken, path);
     	return created;
     }
     
@@ -116,28 +111,28 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public void createFile(String path, boolean createParentPathDirectory) 
     		              throws HpcException
     {
-    	HpcIntegratedSystemAccount dataManagementAccount = getDataManagementAccount();
+    	Object authenticatedToken = getAuthenticatedToken();
     	
     	// Validate the path is available.
-    	if(dataManagementProxy.getPathAttributes(dataManagementAccount, path).exists) {
+    	if(dataManagementProxy.getPathAttributes(authenticatedToken, path).exists) {
     		throw new HpcException("Path already exists: " + path, 
     				               HpcRequestRejectReason.DATA_OBJECT_PATH_ALREADY_EXISTS);
     	}
     	
     	//  Validate the parent directory exists.
     	if(!createParentPathDirectory && 
-    	   !dataManagementProxy.isParentPathDirectory(dataManagementAccount, path)) {
+    	   !dataManagementProxy.isParentPathDirectory(authenticatedToken, path)) {
     		throw new HpcException("Invalid data object path. Directory doesn't exist: " + path, 
-                    HpcRequestRejectReason.INVALID_DATA_OBJECT_PATH);
+                                   HpcRequestRejectReason.INVALID_DATA_OBJECT_PATH);
     	}
     	
     	// Create the parent directory if it doesn't already exist.
     	if(createParentPathDirectory) {
-    	   dataManagementProxy.createParentPathDirectory(dataManagementAccount, path);
+    	   dataManagementProxy.createParentPathDirectory(authenticatedToken, path);
     	}
     	
     	// Create the data object file.
-    	dataManagementProxy.createDataObjectFile(dataManagementAccount, path);
+    	dataManagementProxy.createDataObjectFile(authenticatedToken, path);
     }
 
     @Override
@@ -155,7 +150,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	metadataValidator.validateCollectionMetadata(metadataEntries);
        	
        	// Add Metadata to the DM system.
-       	dataManagementProxy.addMetadataToCollection(getDataManagementAccount(),
+       	dataManagementProxy.addMetadataToCollection(getAuthenticatedToken(),
        			                                    path, metadataEntries);
     }
     
@@ -176,7 +171,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        			                                         COLLECTION_REGISTRAR_NAME_ATTRIBUTE));
        	
        	// Add Metadata to the DM system.
-       	dataManagementProxy.addMetadataToCollection(getDataManagementAccount(), 
+       	dataManagementProxy.addMetadataToCollection(getAuthenticatedToken(), 
        			                                    path, metadataEntries);    	
     }
     
@@ -195,7 +190,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	metadataValidator.validateCollectionMetadata(metadataEntries);
        	
        	// Add Metadata to the DM system.
-       	dataManagementProxy.updateCollectionMetadata(getDataManagementAccount(),
+       	dataManagementProxy.updateCollectionMetadata(getAuthenticatedToken(),
        			                                     path, metadataEntries);
     }
     
@@ -214,7 +209,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	metadataValidator.validateDataObjectMetadata(metadataEntries);
        	
        	// Add Metadata to the DM system.
-       	dataManagementProxy.addMetadataToDataObject(getDataManagementAccount(), 
+       	dataManagementProxy.addMetadataToDataObject(getAuthenticatedToken(), 
        			                                    path, metadataEntries);
     }
     
@@ -266,7 +261,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        			                                         FILE_REGISTRAR_NAME_ATTRIBUTE));
        	
        	// Add Metadata to the DM system.
-       	dataManagementProxy.addMetadataToDataObject(getDataManagementAccount(), 
+       	dataManagementProxy.addMetadataToDataObject(getAuthenticatedToken(), 
        			                                    path, metadataEntries);    	
     }
     
@@ -300,9 +295,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     @Override
     public HpcCollection getCollection(String path) throws HpcException
     {
-    	HpcIntegratedSystemAccount dataManagementAccount = getDataManagementAccount();
-    	if(dataManagementProxy.getPathAttributes(dataManagementAccount, path).isDirectory) {
-    	   return dataManagementProxy.getCollection(getDataManagementAccount(), path);
+    	Object authenticatedToken = getAuthenticatedToken();
+    	if(dataManagementProxy.getPathAttributes(authenticatedToken, path).isDirectory) {
+    	   return dataManagementProxy.getCollection(authenticatedToken, path);
     	}
     	
     	return null;
@@ -317,7 +312,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
         			              HpcErrorType.INVALID_REQUEST_INPUT);
         }
        	
-    	return dataManagementProxy.getCollections(getDataManagementAccount(),
+    	return dataManagementProxy.getCollections(getAuthenticatedToken(),
     			                                  metadataQueries);
     }
     
@@ -330,16 +325,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
-    	return dataManagementProxy.getCollectionMetadata(getDataManagementAccount(),
+    	return dataManagementProxy.getCollectionMetadata(getAuthenticatedToken(),
                                                          path);
     }
     
     @Override
     public HpcDataObject getDataObject(String path) throws HpcException
     {
-    	HpcIntegratedSystemAccount dataManagementAccount = getDataManagementAccount();
-    	if(dataManagementProxy.getPathAttributes(dataManagementAccount, path).isFile) {
-    	   return dataManagementProxy.getDataObject(getDataManagementAccount(), path);
+    	Object authenticatedToken = getAuthenticatedToken();
+    	if(dataManagementProxy.getPathAttributes(authenticatedToken, path).isFile) {
+    	   return dataManagementProxy.getDataObject(authenticatedToken, path);
     	}
     	
     	return null;
@@ -354,7 +349,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
         			              HpcErrorType.INVALID_REQUEST_INPUT);
         }
        	
-    	return dataManagementProxy.getDataObjects(getDataManagementAccount(),
+    	return dataManagementProxy.getDataObjects(getAuthenticatedToken(),
     			                                  metadataQueries);
     }
     
@@ -367,14 +362,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
-    	return dataManagementProxy.getDataObjectMetadata(getDataManagementAccount(),
+    	return dataManagementProxy.getDataObjectMetadata(getAuthenticatedToken(),
                                                          path);
     }
     
     @Override
-    public String getUserType() throws HpcException
+    public String getUserType(String username) throws HpcException
     {
-    	return dataManagementProxy.getUserType(getDataManagementAccount());
+    	return dataManagementProxy.getUserType(getAuthenticatedToken(), username);
     }
     
     @Override
@@ -386,14 +381,15 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
        	
-    	dataManagementProxy.addUser(getDataManagementAccount(), nciAccount, userType);
+    	dataManagementProxy.addUser(getAuthenticatedToken(), 
+    			                    nciAccount, userType);
     }
     
     @Override
     public void closeConnection()
     {
     	try {
-    	     dataManagementProxy.closeConnection(getDataManagementAccount());
+    	     dataManagementProxy.disconnect(getAuthenticatedToken());
     	     
     	} catch(HpcException e) {
     		    // Ignore.
@@ -411,14 +407,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		                          HpcErrorType.INVALID_REQUEST_INPUT);    	   	
     	}
     	
+    	Object authenticatedToken = getAuthenticatedToken();
     	HpcDataManagementPathAttributes pathAttributes = 
-    		   dataManagementProxy.getPathAttributes(getDataManagementAccount(), path);
+    		   dataManagementProxy.getPathAttributes(authenticatedToken, 
+    				                                 path);
     	if(pathAttributes.isDirectory) {
-    	   dataManagementProxy.setCollectionPermission(getDataManagementAccount(), 
+    	   dataManagementProxy.setCollectionPermission(authenticatedToken, 
     			                                       path, 
     			                                       permissionRequest);
     	} else if(pathAttributes.isFile) {
-    		      dataManagementProxy.setDataObjectPermission(getDataManagementAccount(), 
+    		      dataManagementProxy.setDataObjectPermission(authenticatedToken, 
     		    		                                      path, 
                                                               permissionRequest);
     	} else {
@@ -432,20 +430,39 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     //---------------------------------------------------------------------//  
 	
     /**
-     * Get the data management account from the request context.
+     * Get the data management authenticated token from the request context.
+     * If it's not in the context, get a token by authenticating.
      *
-     * @throws HpcException If the account is not set or invalid.
+     * @throws HpcException If it failed to obtain an authentication token.
      */
-    private HpcIntegratedSystemAccount getDataManagementAccount() throws HpcException
+    private Object getAuthenticatedToken() throws HpcException
     {
-    	HpcUser user = HpcRequestContext.getRequestInvoker();
-    	if(user == null || 
-    	   !isValidIntegratedSystemAccount(user.getDataManagementAccount())) {
-	       throw new HpcException("Unknown user or invalid data management account",
+    	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+    	if(invoker == null) {
+	       throw new HpcException("Unknown user",
 			                      HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
     	}
     	
-    	return user.getDataManagementAccount();
+    	if(invoker.getDataManagementAuthenticatedToken() != null) {
+    	   return invoker.getDataManagementAuthenticatedToken();
+    	}
+    	
+    	// No authenticated token found in the request token. Authenticate the invoker.
+    	if(invoker.getDataManagementAccount() == null) {
+    		throw new HpcException("Unknown data management account",
+                                   HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
+    	}
+    	
+    	// Authenticate w/ data management
+    	Object token = dataManagementProxy.authenticate(invoker.getDataManagementAccount());
+    	if(token == null) {
+    	   throw new HpcException("Invalid data management account credentials",
+                                  HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
+    	}
+    	
+    	// Store token on the request context.
+    	invoker.setDataManagementAuthenticatedToken(token);
+    	return token;
     }
     
     /**
@@ -462,8 +479,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		                                        throws HpcException
     {
        	// Get the service invoker.
-       	HpcUser user = HpcRequestContext.getRequestInvoker();
-       	if(user == null) {
+       	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+       	if(invoker == null) {
        	   throw new HpcException("Unknown service invoker", 
 		                          HpcErrorType.UNEXPECTED_ERROR);
        	}	
@@ -473,15 +490,15 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	// Create the registrar user-id metadata.
        	HpcMetadataEntry registrarIdMetadata = new HpcMetadataEntry();
        	registrarIdMetadata.setAttribute(registrarIdAttribute);
-       	registrarIdMetadata.setValue(user.getNciAccount().getUserId());
+       	registrarIdMetadata.setValue(invoker.getNciAccount().getUserId());
        	registrarIdMetadata.setUnit("");
        	metadataEntries.add(registrarIdMetadata);
        	
        	// Create the registrar name metadata.
        	HpcMetadataEntry registrarNameMetadata = new HpcMetadataEntry();
        	registrarNameMetadata.setAttribute(registrarNameAttribute);
-       	registrarNameMetadata.setValue(user.getNciAccount().getFirstName() + " " +
-       			                       user.getNciAccount().getLastName());
+       	registrarNameMetadata.setValue(invoker.getNciAccount().getFirstName() + " " +
+       			                       invoker.getNciAccount().getLastName());
        	registrarNameMetadata.setUnit("");
        	metadataEntries.add(registrarNameMetadata);
        	
