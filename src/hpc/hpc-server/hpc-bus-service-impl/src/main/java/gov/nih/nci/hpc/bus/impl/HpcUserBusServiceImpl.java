@@ -42,8 +42,8 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     // Constants
     //---------------------------------------------------------------------//    
     
-    // Unauthenticated user role.
-	private final static String UNAUTHENTICATED_ROLE = "unauthenticated";
+    // 'Not-Registered' user role.
+	private final static String NOT_REGISTERED_ROLE = "notregistered";
 	
     // Default user role.
 	private final static String DEFAULT_ROLE = "rodsuser";
@@ -206,9 +206,10 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	// Prepare and return a response DTO.
     	HpcAuthenticationResponseDTO authenticationResponse = new HpcAuthenticationResponseDTO();
     	authenticationResponse.setAuthenticated(ldapAuthentication ? userAuthenticated : true);	                
-    	authenticationResponse.setUserRole(user.getDataManagementAccount() != null ? 
-    			                           dataManagementService.getUserType() : 
-    			                           UNAUTHENTICATED_ROLE);
+    	authenticationResponse.setUserRole(
+    			      user.getDataManagementAccount() != null ? 
+    			      dataManagementService.getUserType(user.getDataManagementAccount().getUsername()) : 
+    			      NOT_REGISTERED_ROLE);
     	
     	return authenticationResponse;
     }
