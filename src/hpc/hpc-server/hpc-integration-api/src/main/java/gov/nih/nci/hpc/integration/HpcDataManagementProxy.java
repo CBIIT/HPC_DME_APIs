@@ -32,46 +32,64 @@ import java.util.List;
 
 public interface HpcDataManagementProxy 
 {    
-	class HpcDataManagementPathAttributes {
+	public class HpcDataManagementPathAttributes {
        public boolean exists = false;
        public boolean isFile = false;
        public boolean isDirectory = false;
     }
 	
     /**
+     * Authenticate the invoker w/ iRODS.
+     *
+     * @param dataManagementAccount The Data Management account to authenticate.
+     * @return An authenticated token, to be used in subsequent calls to data management.
+     *         It returns null if the account is not authenticated.
+     * 
+     * @throws HpcException
+     */
+    public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount) 
+    		                  throws HpcException;
+    
+    /**
+     * Close iRODS connection of an account.
+     *
+     * @param authenticatedToken An authenticated token.
+     */
+    public void disconnect(Object authenticatedToken);
+	
+    /**
      * Create a collection's directory.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param path The collection path.
      * 
      * @throws HpcException
      */
-    public void createCollectionDirectory(HpcIntegratedSystemAccount dataManagementAccount, 
-    		                              String path) 
+    public void createCollectionDirectory(Object authenticatedToken, String path) 
     		                             throws HpcException;
     
     /**
      * Create a data object's file.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param path The data object path.
      * 
      * @throws HpcException
      */
-    public void createDataObjectFile(HpcIntegratedSystemAccount dataManagementAccount, 
+    public void createDataObjectFile(Object authenticatedToken, 
     		                         String path) 
     		                        throws HpcException;
 
     /**
      * Add metadata to a collection.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param path The collection path.
      * @param metadataEntries The metadata entries to add.
      * 
      * @throws HpcException
      */
-    public void addMetadataToCollection(HpcIntegratedSystemAccount dataManagementAccount, 
+    public void addMetadataToCollection(Object authenticatedToken, 
     		                            String path,
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException;
@@ -79,13 +97,13 @@ public interface HpcDataManagementProxy
     /**
      * Update collection's metadata.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param path The collection path.
      * @param metadataEntries The metadata entries to update.
      * 
      * @throws HpcException
      */
-    public void updateCollectionMetadata(HpcIntegratedSystemAccount dataManagementAccount, 
+    public void updateCollectionMetadata(Object authenticatedToken, 
     		                             String path,
     		                             List<HpcMetadataEntry> metadataEntries) 
     		                            throws HpcException;
@@ -93,177 +111,168 @@ public interface HpcDataManagementProxy
     /**
      * Add metadata to a data object.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param path The data object path.
      * @param metadataEntries The metadata entries to add.
      * 
      * @throws HpcException
      */
-    public void addMetadataToDataObject(HpcIntegratedSystemAccount dataManagementAccount, 
+    public void addMetadataToDataObject(Object authenticatedToken, 
     		                            String path,
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException;
+    
     /**
      * Check if a parent path is a directory.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param path The path.
      * 
      * @throws HpcException
      */
-    public boolean isParentPathDirectory(HpcIntegratedSystemAccount dataManagementAccount, 
+    public boolean isParentPathDirectory(Object authenticatedToken, 
     		                             String path)
-    		                             throws HpcException;   
+    		                            throws HpcException;   
     
     /**
      * Create a parent directory (if it doesn't exist already).
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param path The data-object path.
      * 
      * @throws HpcException
      */
-    public void createParentPathDirectory(HpcIntegratedSystemAccount dataManagementAccount, 
+    public void createParentPathDirectory(Object authenticatedToken, 
     		                              String path)
     		                             throws HpcException;   
     
     /**
      * Get path attributes (exists, isDirectory, isFile)
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param path The data-object/collection path.
      * @return The path attributes.
      * 
      * @throws HpcException
      */
     public HpcDataManagementPathAttributes getPathAttributes(
-    		                    HpcIntegratedSystemAccount dataManagementAccount, 
-    		                    String path)
-    		                    throws HpcException;  
+    		                                      Object authenticatedToken, 
+    		                                      String path)
+    		                                      throws HpcException;  
     
     /**
      * Get collection by its path.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param path The collection's path.
      * @return HpcCollection.
      * 
      * @throws HpcException
      */
-    public HpcCollection getCollection(HpcIntegratedSystemAccount dataManagementAccount,
+    public HpcCollection getCollection(Object authenticatedToken,
     		                           String path) 
     		                          throws HpcException;
     
     /**
      * Get collections by metadata query.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param metadataQueries The metadata entries to query for.
      * @return HpcCollection list.
      * 
      * @throws HpcException
      */
-    public List<HpcCollection> getCollections(
-    		    HpcIntegratedSystemAccount dataManagementAccount,
-    		    List<HpcMetadataQuery> metadataQueries) 
-    		    throws HpcException;
+    public List<HpcCollection> getCollections(Object authenticatedToken,
+    		                                  List<HpcMetadataQuery> metadataQueries) 
+    		                                 throws HpcException;
     
     /**
      * Get metadata of a collection.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param path The collection path.
      * @return HpcMetadataEntry list.
      * 
      * @throws HpcException
      */
-    public List<HpcMetadataEntry> getCollectionMetadata(
-   		                          HpcIntegratedSystemAccount dataManagementAccount, 
-   		                          String path) 
-   		                          throws HpcException;
+    public List<HpcMetadataEntry> getCollectionMetadata(Object authenticatedToken, 
+   		                                                String path) 
+   		                                               throws HpcException;
     
     /**
      * Get data object by its path.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param path The data object's path.
      * @return HpcDataObject.
      * 
      * @throws HpcException
      */
-    public HpcDataObject getDataObject(HpcIntegratedSystemAccount dataManagementAccount,
+    public HpcDataObject getDataObject(Object authenticatedToken,
     		                           String path) 
     		                          throws HpcException;
     
     /**
      * Get data objects by metadata query.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param metadataQueries The metadata entries to query for.
      * @return HpcDataObject list.
      * 
      * @throws HpcException
      */
-    public List<HpcDataObject> getDataObjects(
-    		    HpcIntegratedSystemAccount dataManagementAccount,
-    		    List<HpcMetadataQuery> metadataQueries) 
-    		    throws HpcException;
+    public List<HpcDataObject> getDataObjects(Object authenticatedToken,
+    		                                  List<HpcMetadataQuery> metadataQueries) 
+    		                                 throws HpcException;
     
     /**
      * Get metadata of a data object.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param path The collection path.
      * @return HpcMetadataEntry list.
      * 
      * @throws HpcException
      */
-    public List<HpcMetadataEntry> getDataObjectMetadata(
-   		                          HpcIntegratedSystemAccount dataManagementAccount, 
-   		                          String path) 
-   		                          throws HpcException;   
+    public List<HpcMetadataEntry> getDataObjectMetadata(Object authenticatedToken, 
+   		                                                String path) 
+   		                                               throws HpcException;   
     
     /**
      * Get the user type.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
+     * @param username The user name of the account to get its type.
      * @return The user's type.
      * 
      * @throws HpcException
      */
-    public String getUserType(HpcIntegratedSystemAccount dataManagementAccount) 
+    public String getUserType(Object authenticatedToken, String username) 
     		                 throws HpcException;   
     
     /**
      * Add a user.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param nciAccount The NCI account of the user to be added to data management.
      * @param userType The iRODS user type to assign to the new user.
      * 
      * @throws HpcException If it failed to add a user or user already exists.
      */
-    public void addUser(HpcIntegratedSystemAccount dataManagementAccount,
+    public void addUser(Object authenticatedToken,
     		            HpcNciAccount nciAccount, String userType) 
     		           throws HpcException;
     
     /**
-     * Close iRODS connection of an account.
-     *
-     * @param dataManagementAccount The Data Management System account.
-     */
-    public void closeConnection(HpcIntegratedSystemAccount dataManagementAccount);
-    
-    /**
      * Set Collection permission.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param path The collection's path.
      * @param permissionRequest The user permission request.
      * 
      * @throws HpcException
      */
-    public void setCollectionPermission(HpcIntegratedSystemAccount dataManagementAccount,
+    public void setCollectionPermission(Object authenticatedToken,
     		                            String path,
     		                            HpcUserPermission permissionRequest) 
     		                           throws HpcException;   
@@ -271,13 +280,13 @@ public interface HpcDataManagementProxy
     /**
      * Set Data Object permission.
      *
-     * @param dataManagementAccount The Data Management System account.
+     * @param authenticatedToken An authenticated token.
      * @param path The data object's path.
      * @param permissionRequest The user permission request.
      * 
      * @throws HpcException
      */
-    public void setDataObjectPermission(HpcIntegratedSystemAccount dataManagementAccount,
+    public void setDataObjectPermission(Object authenticatedToken,
     		                            String path,
     		                            HpcUserPermission permissionRequest) 
     		                           throws HpcException; 
