@@ -224,13 +224,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	destination.setEndpoint(dataTransferDestination.getEndpoint());
     	destination.setPath(destinationPath.toString());
     	
-    	// Create a data object file (in the data management system).
-    	dataManagementService.createFile(path, false);
-    	
-		// Transfer the file. 
+		// Submit a request to transfer the file (this is performed async). 
         //TODO: Persist data transfer report into database
     	dataTransferService.transferData(dataObjectRegistrationDTO.getSource(), 
-        		                         destination);				 
+        		                         destination);		
+    	
+    	// Create a data object file (in the data management system).
+    	dataManagementService.createFile(path, false);
     	
     	// Attach the user provided metadata.
     	dataManagementService.addMetadataToDataObject(
