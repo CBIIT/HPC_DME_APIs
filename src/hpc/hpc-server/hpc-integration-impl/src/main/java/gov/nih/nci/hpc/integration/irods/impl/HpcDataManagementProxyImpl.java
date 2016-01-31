@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.irods.jargon.core.exception.DataNotFoundException;
 import org.irods.jargon.core.exception.DuplicateDataException;
 import org.irods.jargon.core.exception.InvalidInputParameterException;
@@ -68,8 +66,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	@Autowired
     private HpcIRODSConnection irodsConnection = null;
 	
-	private final Logger logger = 
-            LoggerFactory.getLogger(this.getClass().getName());	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -90,16 +86,28 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     // HpcDataManagementProxyImpl Interface Implementation
     //---------------------------------------------------------------------//  
     
+    @Override
+    public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount) 
+		                      throws HpcException
+    {
+    	return irodsConnection.authenticate(dataManagementAccount);
+    }
+    
+    @Override
+    public void disconnect(Object authenticatedToken)
+    {
+    	irodsConnection.disconnect(authenticatedToken);
+    }
+    
     @Override    
-    public void createCollectionDirectory(
-    		          HpcIntegratedSystemAccount dataManagementAccount, 
-    		          String path) 
-    		          throws HpcException
+    public void createCollectionDirectory(Object authenticatedToken, 
+    		                              String path) 
+    		                             throws HpcException
     {
 		try {
 			 path = addPath(path);
 			 IRODSFile collectionFile = 
-			      irodsConnection.getIRODSFileFactory(dataManagementAccount).instanceIRODSFile(path);
+			      irodsConnection.getIRODSFileFactory(authenticatedToken).instanceIRODSFile(path);
 			 mkdirs(collectionFile);
 			 
 		} catch(JargonException e) {
@@ -110,15 +118,15 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override    
-    public void createDataObjectFile(
-    		          HpcIntegratedSystemAccount dataManagementAccount, 
-    		          String path) 
-    		          throws HpcException
+    public void createDataObjectFile(Object authenticatedToken, 
+    		                         String path) 
+    		                        throws HpcException
     {
 		try {
 			 path = addPath(path);
 			 IRODSFile dataObjectFile = 
-			      irodsConnection.getIRODSFileFactory(dataManagementAccount).instanceIRODSFile(path);
+			      irodsConnection.getIRODSFileFactory(authenticatedToken).
+			                      instanceIRODSFile(path);
 			 dataObjectFile.createNewFile();
 			 
 		} catch(JargonException e) {
@@ -133,25 +141,23 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
 
     @Override
-    public void addMetadataToCollection(
-    		       HpcIntegratedSystemAccount dataManagementAccount, 
-    		       String path,
-    		       List<HpcMetadataEntry> metadataEntries) 
-    		       throws HpcException
+    public void addMetadataToCollection(Object authenticatedToken, 
+    		                            String path,
+    		                            List<HpcMetadataEntry> metadataEntries) 
+    		                           throws HpcException
     {
     	path = addPath(path);
 		List<AvuData> avuDatas = new ArrayList<AvuData>();
 
 		try {
-			logger.debug("dataManagementAccount user: " + dataManagementAccount.getUsername());
-			logger.debug("dataManagementAccount metadataEntries: " + metadataEntries.toString());
 		     for(HpcMetadataEntry metadataEntry : metadataEntries) {
 			     avuDatas.add(AvuData.instance(metadataEntry.getAttribute(),
 			                                   metadataEntry.getValue(), 
 			                                   metadataEntry.getUnit()));
 		     }
 
-		     irodsConnection.getCollectionAO(dataManagementAccount).addBulkAVUMetadataToCollection(path, avuDatas);
+		     irodsConnection.getCollectionAO(authenticatedToken).
+		                     addBulkAVUMetadataToCollection(path, avuDatas);
 		     
 		} catch(JargonException e) {
 	            throw new HpcException("Failed to add metadata to a collection: " + 
@@ -161,15 +167,14 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public void updateCollectionMetadata(
-    		          HpcIntegratedSystemAccount dataManagementAccount, 
-    		          String path,
-    		          List<HpcMetadataEntry> metadataEntries) 
-    		          throws HpcException
+    public void updateCollectionMetadata(Object authenticatedToken, 
+    		                             String path,
+    		                             List<HpcMetadataEntry> metadataEntries) 
+    		                            throws HpcException
     {
 		try {
-			path = addPath(path);
-			CollectionAO collectionAO = irodsConnection.getCollectionAO(dataManagementAccount);
+			 path = addPath(path);
+			 CollectionAO collectionAO = irodsConnection.getCollectionAO(authenticatedToken);
 		     for(HpcMetadataEntry metadataEntry : metadataEntries) {
 			     AvuData avuData = AvuData.instance(metadataEntry.getAttribute(),
 			                                        metadataEntry.getValue(), 
@@ -178,7 +183,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		        	 collectionAO.modifyAvuValueBasedOnGivenAttributeAndUnit(path, avuData);
 		         } catch(DataNotFoundException e) {
 		        	     // Metadata was not found to update. Add it.
-		        	     irodsConnection.getCollectionAO(dataManagementAccount).addAVUMetadata(path, avuData);
+		        	     irodsConnection.getCollectionAO(authenticatedToken).
+		        	                     addAVUMetadata(path, avuData);
 		         }
 		     }
 		     
@@ -190,11 +196,10 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public void addMetadataToDataObject(
-    		       HpcIntegratedSystemAccount dataManagementAccount, 
-    		       String path,
-    		       List<HpcMetadataEntry> metadataEntries) 
-    		       throws HpcException
+    public void addMetadataToDataObject(Object authenticatedToken, 
+    		                            String path,
+    		                            List<HpcMetadataEntry> metadataEntries) 
+    		                           throws HpcException
     {
 		List<AvuData> avuDatas = new ArrayList<AvuData>();
 
@@ -205,7 +210,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			                                   metadataEntry.getValue(), 
 			                                   metadataEntry.getUnit()));
 		     }
-		     irodsConnection.getDataObjectAO(dataManagementAccount).addBulkAVUMetadataToDataObject(path, avuDatas);
+		     irodsConnection.getDataObjectAO(authenticatedToken).addBulkAVUMetadataToDataObject(path, avuDatas);
 		     
 		} catch(JargonException e) {
 	            throw new HpcException("Failed to add metadata to a data object: " + 
@@ -215,15 +220,14 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override    
-    public boolean isParentPathDirectory(
-    		                   HpcIntegratedSystemAccount dataManagementAccount, 
-    		                   String path) 
-    		                   throws HpcException
+    public boolean isParentPathDirectory(Object authenticatedToken, 
+    		                             String path) 
+    		                            throws HpcException
     {
 		try {
 			 path = addPath(path);
 			 IRODSFileFactory irodsFileFactory = 
-					          irodsConnection.getIRODSFileFactory(dataManagementAccount);
+			      irodsConnection.getIRODSFileFactory(authenticatedToken);
 			 IRODSFile file = irodsFileFactory.instanceIRODSFile(path);
 			 IRODSFile parentPath = irodsFileFactory.instanceIRODSFile(file.getParent());
 			 return parentPath.isDirectory();
@@ -237,15 +241,14 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override    
-    public void createParentPathDirectory(
-    		          HpcIntegratedSystemAccount dataManagementAccount, 
-    		          String path) 
-    		          throws HpcException
+    public void createParentPathDirectory(Object authenticatedToken, 
+    		                              String path) 
+    		                             throws HpcException
     {
 		try {
 			 path = addPath(path);
 			 IRODSFileFactory irodsFileFactory = 
-					          irodsConnection.getIRODSFileFactory(dataManagementAccount);
+					          irodsConnection.getIRODSFileFactory(authenticatedToken);
 			 IRODSFile file = irodsFileFactory.instanceIRODSFile(path);
 			 IRODSFile parentPath = irodsFileFactory.instanceIRODSFile(file.getParent());
 			 
@@ -270,15 +273,15 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override    
-    public HpcDataManagementPathAttributes getPathAttributes(
-    		                HpcIntegratedSystemAccount dataManagementAccount, 
-    		                String path) 
-    		                throws HpcException
+    public HpcDataManagementPathAttributes getPathAttributes(Object authenticatedToken, 
+    		                                                 String path) 
+    		                                                throws HpcException
     {
 		try {
 			 path = addPath(path);
 			 IRODSFile file = 
-					   irodsConnection.getIRODSFileFactory(dataManagementAccount).instanceIRODSFile(path);
+					   irodsConnection.getIRODSFileFactory(authenticatedToken).
+					                   instanceIRODSFile(path);
 			 HpcDataManagementPathAttributes attributes = new HpcDataManagementPathAttributes();
 			 attributes.exists = file.exists();
 			 attributes.isDirectory = file.isDirectory();
@@ -294,12 +297,12 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public HpcCollection getCollection(HpcIntegratedSystemAccount dataManagementAccount,
-    		                           String path) throws HpcException
+    public HpcCollection getCollection(Object authenticatedToken, String path) 
+    		                          throws HpcException
     {
     	try {
-    		path = addPath(path);
-             return toHpcCollection(irodsConnection.getCollectionAO(dataManagementAccount).
+    		 path = addPath(path);
+             return toHpcCollection(irodsConnection.getCollectionAO(authenticatedToken).
             		                                findByAbsolutePath(path));
              
 		} catch(Exception e) {
@@ -310,15 +313,14 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public List<HpcCollection> getCollections(
-    		    HpcIntegratedSystemAccount dataManagementAccount,
-    		    List<HpcMetadataQuery> metadataQueries) 
-    		    throws HpcException
+    public List<HpcCollection> getCollections(Object authenticatedToken,
+    		                                  List<HpcMetadataQuery> metadataQueries) 
+    		                                 throws HpcException
     {
     	try {
     		 // Execute the query w/ Case insensitive query.
              List<Collection> irodsCollections = 
-             irodsConnection.getCollectionAO(dataManagementAccount).
+             irodsConnection.getCollectionAO(authenticatedToken).
                              findDomainByMetadataQuery(toIRODSQuery(metadataQueries), 0, true);
              
              // Map the query results to a Domain POJO.
@@ -342,14 +344,13 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public List<HpcMetadataEntry> getCollectionMetadata(
-   		        HpcIntegratedSystemAccount dataManagementAccount, 
-   		        String path) 
-   		        throws HpcException
+    public List<HpcMetadataEntry> getCollectionMetadata(Object authenticatedToken, 
+   		                                                String path) 
+   		                                               throws HpcException
     {
 		try {
-			path = addPath(path);
-			 return toHpcMetadata(irodsConnection.getCollectionAO(dataManagementAccount).
+			 path = addPath(path);
+			 return toHpcMetadata(irodsConnection.getCollectionAO(authenticatedToken).
 					              findMetadataValuesForCollection(path));
 
 		} catch(Exception e) {
@@ -360,12 +361,13 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public HpcDataObject getDataObject(HpcIntegratedSystemAccount dataManagementAccount,
-    		                           String path) throws HpcException
+    public HpcDataObject getDataObject(Object authenticatedToken,
+    		                           String path) 
+    	                              throws HpcException
     {
     	try {
-    		path = addPath(path);
-             return toHpcDataObject(irodsConnection.getDataObjectAO(dataManagementAccount).
+    		 path = addPath(path);
+             return toHpcDataObject(irodsConnection.getDataObjectAO(authenticatedToken).
             		                                findByAbsolutePath(path));
              
 		} catch(Exception e) {
@@ -376,14 +378,14 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public List<HpcDataObject> getDataObjects(
-    		    HpcIntegratedSystemAccount dataManagementAccount,
-    		    List<HpcMetadataQuery> metadataQueries) throws HpcException
+    public List<HpcDataObject> getDataObjects(Object authenticatedToken,
+    		                                  List<HpcMetadataQuery> metadataQueries) 
+    		                                 throws HpcException
     {
     	try {
     		 // Execute the query w/ Case insensitive query.
              List<DataObject> irodsDataObjects = 
-             irodsConnection.getDataObjectAO(dataManagementAccount).
+             irodsConnection.getDataObjectAO(authenticatedToken).
                              findDomainByMetadataQuery(toIRODSQuery(metadataQueries), 0, true);
              
              // Map the query results to a Domain POJO.
@@ -407,29 +409,28 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public List<HpcMetadataEntry> getDataObjectMetadata(
-   		                          HpcIntegratedSystemAccount dataManagementAccount, 
-   		                          String path) throws HpcException
+    public List<HpcMetadataEntry> getDataObjectMetadata(Object authenticatedToken, 
+   		                                                String path) 
+   		                                               throws HpcException
     {
 		try {
 			 path = addPath(path);
-			 return toHpcMetadata(irodsConnection.getDataObjectAO(dataManagementAccount).
+			 return toHpcMetadata(irodsConnection.getDataObjectAO(authenticatedToken).
 					              findMetadataValuesForDataObject(path));
 	
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get metadata of a collection: " + 
-	                                     e.getMessage(),
-	                                     HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+	                                   e.getMessage(),
+	                                   HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} 
 	}
     
     @Override
-    public String getUserType(HpcIntegratedSystemAccount dataManagementAccount) 
-                             throws HpcException
+    public String getUserType(Object authenticatedToken, String username) 
+    		                 throws HpcException
     {
 		try {
-			 User user = irodsConnection.getUserAO(dataManagementAccount).
-					                     findByName(dataManagementAccount.getUsername());
+			 User user = irodsConnection.getUserAO(authenticatedToken).findByName(username);
 			 if(user == null) {
 				return null;  
 			 }
@@ -446,7 +447,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	}  
     
     @Override
-    public void addUser(HpcIntegratedSystemAccount dataManagementAccount,
+    public void addUser(Object authenticatedToken,
                         HpcNciAccount nciAccount, String userType) 
                        throws HpcException
     {
@@ -461,13 +462,13 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	User irodsUser = new User();
     	irodsUser.setName(nciAccount.getUserId());
     	irodsUser.setInfo(nciAccount.getFirstName() + " " + nciAccount.getLastName());
-    	irodsUser.setComment("Created by " + dataManagementAccount.getUsername() + " via HPC-DM API");
+    	irodsUser.setComment("Created by HPC-DM API");
     	irodsUser.setZone(irodsConnection.getZone());
     	irodsUser.setUserType(userTypeEnum);
     	
     	// Add the user to iRODS.
     	try {
-    	     irodsConnection.getUserAO(dataManagementAccount).addUser(irodsUser);
+    	     irodsConnection.getUserAO(authenticatedToken).addUser(irodsUser);
     	     
     	} catch(DuplicateDataException ex) {
     		    throw new HpcException("iRODS account already exists: " + nciAccount.getUserId(), 
@@ -480,16 +481,11 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public void closeConnection(HpcIntegratedSystemAccount dataManagementAccount)
-    {
-    	irodsConnection.closeConnection(dataManagementAccount);
-    }
-    
-    @Override
-    public void setCollectionPermission(HpcIntegratedSystemAccount dataManagementAccount,
-                                        String path,
-                                        HpcUserPermission permissionRequest) 
-                                       throws HpcException
+    public void setCollectionPermission(
+    		       Object authenticatedToken,
+                   String path,
+                   HpcUserPermission permissionRequest) 
+                   throws HpcException
     {
     	FilePermissionEnum permission = null;
     	path = addPath(path);
@@ -502,7 +498,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	}
     	
     	try {
-    	     irodsConnection.getCollectionAO(dataManagementAccount).setAccessPermission(
+    	     irodsConnection.getCollectionAO(authenticatedToken).setAccessPermission(
     		     	                         irodsConnection.getZone(), 
     		     	                         path,
     			                             permissionRequest.getUserId(),
@@ -516,10 +512,11 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public void setDataObjectPermission(HpcIntegratedSystemAccount dataManagementAccount,
-                                        String path,
-                                        HpcUserPermission permissionRequest) 
-                                       throws HpcException
+    public void setDataObjectPermission(
+    		       Object authenticatedToken,
+                   String path,
+                   HpcUserPermission permissionRequest) 
+                   throws HpcException
     {
     	path = addPath(path);
     	FilePermissionEnum permission = null;
@@ -532,7 +529,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	}
     	
     	try {
-    	     irodsConnection.getDataObjectAO(dataManagementAccount).setAccessPermission(
+    	     irodsConnection.getDataObjectAO(authenticatedToken).setAccessPermission(
     		     	                         irodsConnection.getZone(), 
     		     	                         path,
     			                             permissionRequest.getUserId(),
