@@ -1,7 +1,6 @@
 package gov.nih.nci.hpc.cli.util;
 
 import gov.nih.nci.hpc.cli.domain.HPCBatchCollection;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferLocations;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
@@ -142,21 +141,15 @@ public class HPCCSVFile {
 //            	batchCollection.setReadLength(record.get(READ_LENGTH));
 //            	collections.add(batchCollection);	
 
-    			HpcDataTransferLocations locations = new HpcDataTransferLocations();
     			HpcFileLocation source = new HpcFileLocation();
     			source.setEndpoint("mahinarra#mahinarraEP2");
     			String filePath = "~/share.txt";
     			source.setPath(filePath);
-    			HpcFileLocation destination = new HpcFileLocation();
-    			destination.setEndpoint("nihfnlcr#gridftp1");
-    			destination.setPath("/mnt/gridftp/narram/");
-    			locations.setDestination(destination);
-    			locations.setSource(source);
     			              	
               	
 				HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationDTO();
 				hpcDataObjectRegistrationDTO.getMetadataEntries().addAll(listOfhpcCollection);
-				hpcDataObjectRegistrationDTO.setLocations(locations);
+				hpcDataObjectRegistrationDTO.setSource(source);
 				
 				RestTemplate restTemplate = new RestTemplate();
 				HttpHeaders headers = new HttpHeaders();
