@@ -2,7 +2,7 @@
    "HpcMetadataValidationRules":{  
       "collectionMetadataValidationRules":[  
          {  
-            "attribute":"Collection type",
+            "attribute":"collection_type",
             "mandatory":true,
             "validValues":[  
                "Project",
@@ -13,14 +13,21 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Project name",
+            "attribute":"name",
             "mandatory":true,
             "collectionType":"Project",
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Project type",
+            "attribute":"description",
+            "mandatory":true,
+            "collectionType":"Project",
+            "ruleEnabled":true,
+            "DOC":"DOC-NAME"
+         },
+         {  
+            "attribute":"project_type",
             "mandatory":true,
             "defaultValue":"Unspecified",
             "collectionType":"Project",
@@ -33,36 +40,30 @@
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
+         
          {  
-            "attribute":"Project description",
+            "attribute":"internal_project_id",
             "mandatory":true,
             "collectionType":"Project",
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Internal Project ID",
+            "attribute":"source_lab_pi",
             "mandatory":true,
             "collectionType":"Project",
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Source Lab PI",
+            "attribute":"lab_branch",
             "mandatory":true,
             "collectionType":"Project",
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Lab / Branch Name",
-            "mandatory":true,
-            "collectionType":"Project",
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"DOC of the PI",
+            "attribute":"pi_doc",
             "mandatory":true,
             "collectionType":"Project",
             "validValues":[  
@@ -73,7 +74,7 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Original Date the Project was created",
+            "attribute":"original_date_created",
             "mandatory":true,
             "collectionType":"Project",
             "defaultValue":"System-Date",
@@ -81,7 +82,14 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"DOC of the Registrar",
+	     "attribute":"registered_by_name",
+	     "mandatory":true,
+	     "collectionType":"Project",
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+         },
+         {  
+            "attribute":"registered_by_doc",
             "mandatory":true,
             "collectionType":"Project",
             "validValues":[  
@@ -92,64 +100,72 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Dataset name",
+            "attribute":"name",
             "mandatory":true,
             "collectionType":"Dataset",
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Dataset description",
+            "attribute":"description",
             "mandatory":true,
             "collectionType":"Dataset",
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Source Lab PI",
-            "mandatory":true,
-            "collectionType":"Dataset",
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
+	     "attribute":"source_lab_pi",
+	     "mandatory":true,
+	     "collectionType":"Project",
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"lab_branch",
+	     "mandatory":true,
+	     "collectionType":"Project",
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"pi_doc",
+	     "mandatory":true,
+	     "collectionType":"Project",
+	     "validValues":[  
+		"FNLCR",
+		"CCBR"
+	     ],
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"original_date_created",
+	     "mandatory":true,
+	     "collectionType":"Project",
+	     "defaultValue":"System-Date",
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"registered_by_name",
+	     "mandatory":true,
+	     "collectionType":"Project",
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"registered_by_doc",
+	     "mandatory":true,
+	     "collectionType":"Project",
+	     "validValues":[  
+		"FNLCR",
+		"CCBR"
+	     ],
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Lab / Branch Name",
-            "mandatory":true,
-            "collectionType":"Dataset",
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"DOC of the PI",
-            "mandatory":true,
-            "collectionType":"Dataset",
-            "validValues":[  
-               "FNLCR",
-               "CCBR"
-            ],
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"Date the Project was created",
-            "mandatory":true,
-            "collectionType":"Dataset",
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"DOC of the Registrar",
-            "mandatory":true,
-            "collectionType":"Dataset",
-            "validValues":[  
-               "FNLCR",
-               "CCBR"
-            ],
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"PHI Content",
+            "attribute":"phi_content",
             "mandatory":true,
             "collectionType":"Dataset",
             "defaultValue":"Unspecified",
@@ -163,7 +179,7 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"PII Content",
+            "attribute":"pii_content",
             "mandatory":true,
             "collectionType":"Dataset",
             "defaultValue":"Unspecified",
@@ -177,7 +193,7 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Data Encryption Status",
+            "attribute":"data_encryption_status",
             "mandatory":true,
             "collectionType":"Dataset",
             "defaultValue":"Unspecified",
@@ -191,7 +207,7 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Data Compression Status",
+            "attribute":"data_compression_status",
             "mandatory":true,
             "collectionType":"Dataset",
             "defaultValue":"Unspecified",
@@ -205,7 +221,7 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Funding Organization",
+            "attribute":"funding_organization",
             "mandatory":false,
             "collectionType":"Dataset",
             "defaultValue":"Unspecified",
@@ -213,28 +229,28 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"FlowCell ID",
+            "attribute":"flow_cell_id",
             "mandatory":true,
             "collectionType":"Dataset",
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Run ID",
+            "attribute":"run_id",
             "mandatory":true,
             "collectionType":"Dataset",
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Run Date",
+            "attribute":"run_date",
             "mandatory":true,
             "collectionType":"Dataset",
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Sequencing Platform",
+            "attribute":"sequencing_platform",
             "mandatory":true,
             "collectionType":"Dataset",
             "defaultValue":"Unspecified",
@@ -252,7 +268,7 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Sequencing Application Type",
+            "attribute":"sequencing_application_type",
             "mandatory":true,
             "collectionType":"Dataset",
             "defaultValue":"Unspecified",
@@ -268,14 +284,14 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Library ID",
+            "attribute":"library_id",
             "mandatory":true,
             "collectionType":"Dataset",
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Library Name",
+            "attribute":"library_name",
             "mandatory":true,
             "collectionType":"Dataset",
             "defaultValue":"Unspecified",
@@ -288,7 +304,7 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Library Type",
+            "attribute":"library_type",
             "mandatory":true,
             "collectionType":"Dataset",
             "defaultValue":"Unspecified",
@@ -301,7 +317,7 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Library Protocol",
+            "attribute":"library_protocol",
             "mandatory":true,
             "collectionType":"Dataset",
             "defaultValue":"Unspecified",
@@ -310,44 +326,37 @@
                "TruSeq ChIP-Seq",
                "Illumina TrueSeq"
             ],
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"MD5SUM of data files",
-            "mandatory":true,
-            "collectionType":"Dataset",
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          }
       ],
       "dataObjectMetadataValidationRules":[  
          {  
-            "attribute":"File name",
+            "attribute":"name",
             "mandatory":true,
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"File description",
+            "attribute":"description",
             "mandatory":true,
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Source Lab PI",
+            "attribute":"source_lab_pi",
             "mandatory":true,
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Lab / Branch Name",
+            "attribute":"lab_branch",
             "mandatory":true,
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"DOC of the PI",
+            "attribute":"pi_doc",
             "mandatory":true,
             "validValues":[  
                "FNLCR",
@@ -357,14 +366,14 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"Original Date the File was created",
+            "attribute":"original_date_created",
             "mandatory":true,
             "defaultValue":"System-Date",
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"DOC of the Registrar",
+            "attribute":"registered_by_doc",
             "mandatory":true,
             "validValues":[  
                "FNLCR",
@@ -374,161 +383,169 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"PHI Content",
-            "mandatory":true,
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "PHI Present",
-               "PHI Not Present",
-               "Not Specified"
-            ],
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"PII Content",
-            "mandatory":true,
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "PII Present",
-               "PII Not Present",
-               "Not Specified"
-            ],
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"Data Encryption Status",
-            "mandatory":true,
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "Encrypted",
-               "Not Encrypted",
-               "Not Specified"
-            ],
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"Data Compression Status",
-            "mandatory":true,
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "Compressed",
-               "Not Compressed",
-               "Not Specified"
-            ],
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"Funding Organization",
-            "mandatory":false,
-            "defaultValue":"Unspecified",
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"FlowCell ID",
-            "mandatory":true,
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"Run ID",
-            "mandatory":true,
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"Run Date",
-            "mandatory":true,
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"Sequencing Platform",
-            "mandatory":true,
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "Illumina-MiSeq",
-               "Illumina-NextSeq",
-               "Illumina-HiSeq",
-               "Illumina-HiSeq X",
-               "Ion-PGM",
-               "Ion-Proton",
-               "PacBio-PacBio RS"
-            ],
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"Sequencing Application Type",
-            "mandatory":true,
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "DNA-Seq (Re-Sequencing)",
-               "DNA-Seq (De novo assembly)",
-               "SNP Analysis / Rearrangement Detection",
-               "Exome",
-               "ChiP-Seq"
-            ],
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"Library ID",
-            "mandatory":true,
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"Library Name",
-            "mandatory":true,
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "TruSeq ChIP-Seq",
-               "Illumina TrueSeq"
-            ],
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"Library Type",
-            "mandatory":true,
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "TruSeq ChIP-Seq",
-               "Illumina TrueSeq"
-            ],
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"Library Protocol",
-            "mandatory":true,
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "TruSeq ChIP-Seq",
-               "Illumina TrueSeq"
-            ],
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"MD5SUM of data files",
-            "mandatory":true,
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
+	     "attribute":"phi_content",
+	     "mandatory":true,
+	     "collectionType":"Dataset",
+	     "defaultValue":"Unspecified",
+	     "validValues":[  
+		"Unspecified",
+		"PHI Present",
+		"PHI Not Present",
+		"Not Specified"
+	     ],
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"pii_content",
+	     "mandatory":true,
+	     "collectionType":"Dataset",
+	     "defaultValue":"Unspecified",
+	     "validValues":[  
+		"Unspecified",
+		"PII Present",
+		"PII Not Present",
+		"Not Specified"
+	     ],
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"data_encryption_status",
+	     "mandatory":true,
+	     "collectionType":"Dataset",
+	     "defaultValue":"Unspecified",
+	     "validValues":[  
+		"Unspecified",
+		"Encrypted",
+		"Not Encrypted",
+		"Not Specified"
+	     ],
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"data_compression_status",
+	     "mandatory":true,
+	     "collectionType":"Dataset",
+	     "defaultValue":"Unspecified",
+	     "validValues":[  
+		"Unspecified",
+		"Compressed",
+		"Not Compressed",
+		"Not Specified"
+	     ],
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"funding_organization",
+	     "mandatory":false,
+	     "collectionType":"Dataset",
+	     "defaultValue":"Unspecified",
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"flow_cell_id",
+	     "mandatory":true,
+	     "collectionType":"Dataset",
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"run_id",
+	     "mandatory":true,
+	     "collectionType":"Dataset",
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"run_date",
+	     "mandatory":true,
+	     "collectionType":"Dataset",
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"sequencing_platform",
+	     "mandatory":true,
+	     "collectionType":"Dataset",
+	     "defaultValue":"Unspecified",
+	     "validValues":[  
+		"Unspecified",
+		"Illumina-MiSeq",
+		"Illumina-NextSeq",
+		"Illumina-HiSeq",
+		"Illumina-HiSeq X",
+		"Ion-PGM",
+		"Ion-Proton",
+		"PacBio-PacBio RS"
+	     ],
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"sequencing_application_type",
+	     "mandatory":true,
+	     "collectionType":"Dataset",
+	     "defaultValue":"Unspecified",
+	     "validValues":[  
+		"Unspecified",
+		"DNA-Seq (Re-Sequencing)",
+		"DNA-Seq (De novo assembly)",
+		"SNP Analysis / Rearrangement Detection",
+		"Exome",
+		"ChiP-Seq"
+	     ],
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"library_id",
+	     "mandatory":true,
+	     "collectionType":"Dataset",
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"library_name",
+	     "mandatory":true,
+	     "collectionType":"Dataset",
+	     "defaultValue":"Unspecified",
+	     "validValues":[  
+		"Unspecified",
+		"TruSeq ChIP-Seq",
+		"Illumina TrueSeq"
+	     ],
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"library_type",
+	     "mandatory":true,
+	     "collectionType":"Dataset",
+	     "defaultValue":"Unspecified",
+	     "validValues":[  
+		"Unspecified",
+		"TruSeq ChIP-Seq",
+		"Illumina TrueSeq"
+	     ],
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
+	  },
+	  {  
+	     "attribute":"library_protocol",
+	     "mandatory":true,
+	     "collectionType":"Dataset",
+	     "defaultValue":"Unspecified",
+	     "validValues":[  
+		"Unspecified",
+		"TruSeq ChIP-Seq",
+		"Illumina TrueSeq"
+	     ],
+	     "ruleEnabled":true,
+	     "DOC":"DOC-NAME"
          }
       ]
    }
