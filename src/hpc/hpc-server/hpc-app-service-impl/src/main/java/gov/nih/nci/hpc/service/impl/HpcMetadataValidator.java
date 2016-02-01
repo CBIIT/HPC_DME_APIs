@@ -43,7 +43,7 @@ public class HpcMetadataValidator
     //---------------------------------------------------------------------//    
     
     // Collection type attribute name.
-	private final static String COLLECTION_TYPE_ATTRIBUTE = "Collection type"; 
+	private final static String COLLECTION_TYPE_ATTRIBUTE = "collection_type"; 
 	
     //---------------------------------------------------------------------//
     // Instance members
