@@ -1,3 +1,5 @@
 Path,UserId,Permission
-/tempZone/home/konkapv/PI_LAB/Project10/Dataset10/55-ae76-a272073ce921,rosenbergea,WRITE
-/tempZone/home/konkapv/PI_LAB/Project11/Dataset11/62-acd0-089ea9370450,rosenbergea,OWN
+/tempZone/home/konkapv/FNLCR_LAB/Project104,godbolesv,WRITE
+/tempZone/home/konkapv/FNLCR_LAB/Project105,zhaoyong,OWN
+/tempZone/home/konkapv/FNLCR_LAB/Project104/Dataset104,godbolesv,READ
+/tempZone/home/konkapv/FNLCR_LAB/Project105/Dataset105,godbolesv,NONE
