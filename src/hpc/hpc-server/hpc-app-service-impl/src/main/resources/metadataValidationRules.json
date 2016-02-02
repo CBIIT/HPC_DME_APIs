@@ -547,6 +547,15 @@
 	     "ruleEnabled":true,
 	     "DOC":"DOC-NAME"
          }
-      ]
+      ],
+      "collectionSystemGeneratedMetadataAttributes" : [ "NCI user-id of the User registering the Collection",
+                                                        "Name of the User registering the Collection (Registrar)" ],
+      "dataObjectSystemGeneratedMetadataAttributes" : [ "Data Location Globus Endpoint",
+                                                        "Data Location Globus Path",
+                                                        "Data Source Globus Endpoint",
+                                                        "Data Source Globus Path",
+                                                        "NCI user-id of the User registering the File",
+                                                        "Name of the User registering the File (Registrar)",
+                                                        "Data Transfer Status" ]
    }
 }
