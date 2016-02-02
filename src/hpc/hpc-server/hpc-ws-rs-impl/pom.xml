@@ -62,11 +62,6 @@
 						<configuration>
 							<artifacts>
 								<artifact>
-									<file>src/main/resources/dynamicfields.json</file>
-									<type>json</type>
-									<classifier>dynamicfields</classifier>
-								</artifact>
-								<artifact>
 									<file>src/main/resources/keystore.jks</file>
 									<type>jks</type>
 									<classifier>keystore</classifier>

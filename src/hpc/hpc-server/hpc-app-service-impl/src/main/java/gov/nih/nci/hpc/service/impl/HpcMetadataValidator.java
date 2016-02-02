@@ -82,15 +82,21 @@ public class HpcMetadataValidator
 	         
 	         if(jsonMetadataValidationRules == null ||
 	        	!jsonMetadataValidationRules.containsKey("collectionMetadataValidationRules") ||
-	            !jsonMetadataValidationRules.containsKey("dataObjectMetadataValidationRules")) {
+	            !jsonMetadataValidationRules.containsKey("dataObjectMetadataValidationRules") ||
+	            !jsonMetadataValidationRules.containsKey("collectionSystemGeneratedMetadataAttributes") ||
+	            !jsonMetadataValidationRules.containsKey("dataObjectSystemGeneratedMetadataAttributes")) {
 	        	 throw new HpcException("Invalid JSON rules: " + jsonMetadataValidationRules,
 		                                HpcErrorType.SPRING_CONFIGURATION_ERROR);	
 	         }
 	         
 	         metadataValidationRules.getCollectionMetadataValidationRules().addAll(
-	        		 fromJSON((JSONArray) jsonMetadataValidationRules.get("collectionMetadataValidationRules")));
+	        		 rulesFromJSON((JSONArray) jsonMetadataValidationRules.get("collectionMetadataValidationRules")));
 	         metadataValidationRules.getDataObjectMetadataValidationRules().addAll(
-	        		 fromJSON((JSONArray) jsonMetadataValidationRules.get("dataObjectMetadataValidationRules")));
+	        		 rulesFromJSON((JSONArray) jsonMetadataValidationRules.get("dataObjectMetadataValidationRules")));
+	         metadataValidationRules.getCollectionSystemGeneratedMetadataAttributes().addAll(
+	        		 stringsFromJSON((JSONArray) jsonMetadataValidationRules.get("collectionSystemGeneratedMetadataAttributes")));
+	         metadataValidationRules.getDataObjectSystemGeneratedMetadataAttributes().addAll(
+	        		 stringsFromJSON((JSONArray) jsonMetadataValidationRules.get("dataObjectSystemGeneratedMetadataAttributes")));
 	         
 		} catch(Exception e) {
 			    throw new HpcException("Could not open or parse: " + metadataValidationRulesPath,
@@ -114,7 +120,8 @@ public class HpcMetadataValidator
     		                              throws HpcException
     {
     	validateMetadata(metadataEntries, 
-    			         metadataValidationRules.getCollectionMetadataValidationRules());
+    			         metadataValidationRules.getCollectionMetadataValidationRules(),
+    			         metadataValidationRules.getCollectionSystemGeneratedMetadataAttributes());
     }
     
     /**
@@ -128,7 +135,8 @@ public class HpcMetadataValidator
     		                              throws HpcException
     {
     	validateMetadata(metadataEntries, 
-    			         metadataValidationRules.getDataObjectMetadataValidationRules());
+    			         metadataValidationRules.getDataObjectMetadataValidationRules(),
+    			         metadataValidationRules.getDataObjectSystemGeneratedMetadataAttributes());
     }
     		                               
     //---------------------------------------------------------------------//
@@ -144,7 +152,8 @@ public class HpcMetadataValidator
      * @throws HpcException If the metadata is invalid.
      */
     private void validateMetadata(List<HpcMetadataEntry> metadataEntries,
-    		                      List<HpcMetadataValidationRule> metadataValidationRules) 
+    		                      List<HpcMetadataValidationRule> metadataValidationRules,
+    		                      List<String> systemGeneratedMetadataAttributes) 
     		                     throws HpcException
     {
     	// Crate a metadata <attribute, value> map.
@@ -157,6 +166,16 @@ public class HpcMetadataValidator
     		}
     	}
     	
+    	// Check that reserved system generated metadata was not included in the caller's list.
+    	for(String metadataAttribue : systemGeneratedMetadataAttributes) {
+    		if(metadataEntriesMap.containsKey(metadataAttribue)) {
+    		   throw new HpcException("System generated metadata can't be set/changed: " + 
+    				                  metadataAttribue, 
+                                      HpcErrorType.INVALID_REQUEST_INPUT);
+    		}
+    	}
+    	
+    	// Execute the validation rules.
 	    for(HpcMetadataValidationRule metadataValidationRule: metadataValidationRules) {
 	    	// Skip disabled rules.
 	    	if(!metadataValidationRule.getRuleEnabled()) {
@@ -216,12 +235,13 @@ public class HpcMetadataValidator
      * Instantiate list metadata validation rules from JSON.
      *
      * @param jsonMetadataValidationRules The validation rules JSON array. 
+     * @return List<HpcMetadataValidationRule> A collection of metadata validation rules.
      * 
      * @throws HpcException If failed to parse the JSON
      */
     @SuppressWarnings("unchecked")
-	private List<HpcMetadataValidationRule> fromJSON(JSONArray jsonMetadataValidationRules) 
-    		                                        throws HpcException
+	private List<HpcMetadataValidationRule> rulesFromJSON(JSONArray jsonMetadataValidationRules) 
+    		                                             throws HpcException
     {
     	List<HpcMetadataValidationRule> metadataValidationRules = 
     			                        new ArrayList<HpcMetadataValidationRule>();
@@ -262,6 +282,25 @@ public class HpcMetadataValidator
     	}
     	
     	return metadataValidationRules;
+    }
+    
+    /**
+     * Map JSON array of strings to List<String>.
+     *
+     * @param jsonStringArray The JSON array of strings
+     * @return List<String> 
+     * @throws HpcException If failed to parse the JSON
+     */
+    @SuppressWarnings("unchecked")
+	private List<String> stringsFromJSON(JSONArray jsonStringArray) throws HpcException
+    {
+    	List<String> values = new ArrayList<String>();
+    	Iterator<String> valuesIterator = jsonStringArray.iterator();
+	    while(valuesIterator.hasNext()) {
+	    	  values.add(valuesIterator.next());
+	    }
+    	
+    	return values;
     }
 }
 

@@ -25,7 +25,9 @@
 	<task:annotation-driven />
 	
 	<!--  Update Data Transfer Status Scheduled task -->
-	<bean id="hpcUpdateDataTransferStatus" class="gov.nih.nci.hpc.batch.HpcScheduledTasks"></bean>
+	<bean id="hpcUpdateDataTransferStatus" class="gov.nih.nci.hpc.batch.HpcScheduledTasks">
+		<constructor-arg value="${gov.nih.nci.hpc.batch.username}" />
+	</bean>
 	
 </beans>
 

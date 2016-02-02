@@ -49,23 +49,25 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     // Constants
     //---------------------------------------------------------------------//    
     
-    // File Location metadata attributes.
-	public final static String FILE_LOCATION_ENDPOINT_ATTRIBUTE = 
-			                   "Data Location Globus Endpoint"; 
-	public final static String FILE_LOCATION_PATH_ATTRIBUTE = 
-			                   "Data Location Globus Path"; 
-	public final static String FILE_SOURCE_ENDPOINT_ATTRIBUTE = 
-			                   "Data Source Globus Endpoint"; 
-	public final static String FILE_SOURCE_PATH_ATTRIBUTE = 
-			                   "Data Source Globus Path"; 
-	public final static String FILE_REGISTRAR_ID_ATTRIBUTE = 
-                               "NCI user-id of the User registering the File"; 
-	public final static String FILE_REGISTRAR_NAME_ATTRIBUTE = 
-                               "Name of the User registering the File (Registrar)"; 
-	public final static String COLLECTION_REGISTRAR_ID_ATTRIBUTE = 
-                               "NCI user-id of the User registering the Collection"; 
-	public final static String COLLECTION_REGISTRAR_NAME_ATTRIBUTE = 
-                               "Name of the User registering the Collection (Registrar)"; 
+    // System generated metadata attributes.
+	private final static String FILE_LOCATION_ENDPOINT_ATTRIBUTE = 
+			                    "Data Location Globus Endpoint"; 
+	private final static String FILE_LOCATION_PATH_ATTRIBUTE = 
+			                    "Data Location Globus Path"; 
+	private final static String FILE_SOURCE_ENDPOINT_ATTRIBUTE = 
+			                    "Data Source Globus Endpoint"; 
+	private final static String FILE_SOURCE_PATH_ATTRIBUTE = 
+			                    "Data Source Globus Path"; 
+	private final static String FILE_REGISTRAR_ID_ATTRIBUTE = 
+                                "NCI user-id of the User registering the File"; 
+	private final static String FILE_REGISTRAR_NAME_ATTRIBUTE = 
+                                "Name of the User registering the File (Registrar)"; 
+	private final static String FILE_DATA_TRANSFER_STATUS_ATTRIBUTE = 
+                                "Data Transfer Status";
+	private final static String COLLECTION_REGISTRAR_ID_ATTRIBUTE = 
+                                "NCI user-id of the User registering the Collection"; 
+	private final static String COLLECTION_REGISTRAR_NAME_ATTRIBUTE = 
+                                "Name of the User registering the Collection (Registrar)"; 
 	
     //---------------------------------------------------------------------//
     // Instance members
