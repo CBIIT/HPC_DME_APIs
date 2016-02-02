@@ -50,7 +50,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     // Instance members
     //---------------------------------------------------------------------//
 
-    // The Collection Business Service instance.
+    // The Data Management Business Service instance.
 	@Autowired
     private HpcDataManagementBusService dataManagementBusService = null;
 	
