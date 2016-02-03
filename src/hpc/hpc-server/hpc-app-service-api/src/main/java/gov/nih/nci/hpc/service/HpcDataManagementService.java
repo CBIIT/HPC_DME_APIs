@@ -108,16 +108,19 @@ public interface HpcDataManagementService
      * 		2. Physical file location.
      * 		3. Registrar user ID.
      * 		4. Registrar name.
+     *      5. Data Transfer Status
      *
      * @param path The data object path.
      * @param fileLocation The physical file location.
      * @param fileSource The source location of the file.
+     * @param dataTransferStatus The data transfer status.
      * 
      * @throws HpcException
      */
     public void addSystemGeneratedMetadataToDataObject(String path, 
     		                                           HpcFileLocation fileLocation,
-    		                                           HpcFileLocation fileSource) 
+    		                                           HpcFileLocation fileSource,
+    		                                           String dataTransferStatus) 
     		                                          throws HpcException; 
     
     /**
