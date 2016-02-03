@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -199,38 +200,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Calculate the data transfer destination absolute path as the following:
-    	// 'base path' / 'caller's data transfer provided path OR account ID' / 'logical path'
-    	StringBuffer destinationPath = new StringBuffer();
-    	destinationPath.append(dataTransferDestination.getPath());
-    	String filePath = dataObjectRegistrationDTO.getFilePath();
-    	if(filePath != null && !filePath.isEmpty()) {
-    	   if(filePath.charAt(0) != '/') {
-    		  destinationPath.append('/'); 
-    	   }
-    	   destinationPath.append(filePath);
-/*    	} else {
-    		    // Caller did not provide a path, inject their data-transfer user ID
-    		    destinationPath.append('/');
-    		    destinationPath.append(userService.getRequestInvoker().
-    		    		                           getDataTransferAccount().
-    		    		                           getUsername());
- */
-    	}
-    	destinationPath.append('/');
-    	destinationPath.append(path);
-    	 
-    	HpcFileLocation destination = new HpcFileLocation();
-    	destination.setEndpoint(dataTransferDestination.getEndpoint());
-    	destination.setPath(destinationPath.toString());
+    	// Create a data object file (in the data management system).
+    	dataManagementService.createFile(path, false);
+    	
+    	// Calculate the data transfer destination.
+    	HpcFileLocation destination = getDestination(path, 
+                                                     dataObjectRegistrationDTO.getFilePath());
     	
 		// Submit a request to transfer the file (this is performed async). 
         //TODO: Persist data transfer report into database
-    	dataTransferService.transferData(dataObjectRegistrationDTO.getSource(), 
-        		                         destination);		
-    	
-    	// Create a data object file (in the data management system).
-    	dataManagementService.createFile(path, false);
+    	HpcDataTransferReport dataTransferReport = 
+    	   dataTransferService.transferData(dataObjectRegistrationDTO.getSource(), destination);	
     	
     	// Attach the user provided metadata.
     	dataManagementService.addMetadataToDataObject(
@@ -465,6 +445,30 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
     }
+	
+	private HpcFileLocation getDestination(String path, String dataTransferPath) 
+	{
+		// Calculate the data transfer destination absolute path as the following:
+		// 'base path' / 'caller's data transfer destination path/ 'logical path'
+		StringBuffer destinationPath = new StringBuffer();
+		destinationPath.append(dataTransferDestination.getPath());
+		
+		if(dataTransferPath != null && !dataTransferPath.isEmpty()) {
+		   if(dataTransferPath.charAt(0) != '/') {
+			  destinationPath.append('/'); 
+		   }
+		   destinationPath.append(dataTransferPath);
+		}
+		
+		destinationPath.append('/');
+		destinationPath.append(path);
+		 
+		HpcFileLocation destination = new HpcFileLocation();
+		destination.setEndpoint(dataTransferDestination.getEndpoint());
+		destination.setPath(destinationPath.toString());
+		
+		return destination;
+	}
 }
 
  
