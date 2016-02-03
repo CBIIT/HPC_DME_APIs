@@ -218,13 +218,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     @Override
     public void addSystemGeneratedMetadataToDataObject(String path, 
                                                        HpcFileLocation fileLocation,
-    		                                           HpcFileLocation fileSource) 
+    		                                           HpcFileLocation fileSource,
+    		                                           String dataTransferStatus) 
                                                       throws HpcException
     {
        	// Input validation.
        	if(path == null || !isValidFileLocation(fileLocation) ||
-       	   !isValidFileLocation(fileSource)) {
-       	   throw new HpcException("Null path or Invalid file location", 
+       	   !isValidFileLocation(fileSource) || dataTransferStatus == null) {
+       	   throw new HpcException("Null path or Invalid file location or null data-transfer-status", 
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
@@ -261,6 +262,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	// Create the registrar ID and name metadata.
        	metadataEntries.addAll(generateRegistrarMetadata(FILE_REGISTRAR_ID_ATTRIBUTE,
        			                                         FILE_REGISTRAR_NAME_ATTRIBUTE));
+       	
+       	// Create the Data Transfer Status metadata.
+       	HpcMetadataEntry dataTransferMetadata = new HpcMetadataEntry();
+       	dataTransferMetadata.setAttribute(FILE_DATA_TRANSFER_STATUS_ATTRIBUTE);
+       	dataTransferMetadata.setValue(dataTransferStatus);
+       	dataTransferMetadata.setUnit("");
+       	metadataEntries.add(dataTransferMetadata);
        	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToDataObject(getAuthenticatedToken(), 
