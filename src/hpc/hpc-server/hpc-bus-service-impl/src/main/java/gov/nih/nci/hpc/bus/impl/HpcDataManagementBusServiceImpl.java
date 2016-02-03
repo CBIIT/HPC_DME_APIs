@@ -200,6 +200,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	// TODO: validate metadata.
+    	
     	// Create a data object file (in the data management system).
     	dataManagementService.createFile(path, false);
     	
@@ -208,20 +210,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                                      dataObjectRegistrationDTO.getFilePath());
     	
 		// Submit a request to transfer the file (this is performed async). 
-        // TODO: Persist data transfer report into database
     	HpcDataTransferReport dataTransferReport = 
     	   dataTransferService.transferData(dataObjectRegistrationDTO.getSource(), destination);	
-    	
-    	// Attach the user provided metadata.
-    	dataManagementService.addMetadataToDataObject(
-    			                 path, 
-    			                 dataObjectRegistrationDTO.getMetadataEntries());
     	
     	// Generate system metadata and attach to the data object.
     	dataManagementService.addSystemGeneratedMetadataToDataObject(
     			                 path, destination,
     			                 dataObjectRegistrationDTO.getSource(),
     			                 dataTransferReport.getStatus()); 
+    	
+    	// Attach the user provided metadata.
+    	dataManagementService.addMetadataToDataObject(
+    			                 path, 
+    			                 dataObjectRegistrationDTO.getMetadataEntries());
     }
     
     @Override
