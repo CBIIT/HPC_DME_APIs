@@ -172,7 +172,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			List<HpcMetadataEntry> metadataEntries = 
     					dataManagementService.getCollectionMetadata(collection.getAbsolutePath());
     		
-    			//Combine collection attributes and metadata into a single DTO.
+    			// Combine collection attributes and metadata into a single DTO.
     			collectionsDTO.getCollections().add(toDTO(collection, metadataEntries));
     		}
     		catch(HpcException e)
@@ -208,7 +208,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                                      dataObjectRegistrationDTO.getFilePath());
     	
 		// Submit a request to transfer the file (this is performed async). 
-        //TODO: Persist data transfer report into database
+        // TODO: Persist data transfer report into database
     	HpcDataTransferReport dataTransferReport = 
     	   dataTransferService.transferData(dataObjectRegistrationDTO.getSource(), destination);	
     	
@@ -220,7 +220,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Generate system metadata and attach to the data object.
     	dataManagementService.addSystemGeneratedMetadataToDataObject(
     			                 path, destination,
-    			                 dataObjectRegistrationDTO.getSource()); 
+    			                 dataObjectRegistrationDTO.getSource(),
+    			                 dataTransferReport.getStatus()); 
     }
     
     @Override
