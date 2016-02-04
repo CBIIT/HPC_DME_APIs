@@ -26,6 +26,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import gov.nih.nci.hpc.cli.util.Constants;
+import gov.nih.nci.hpc.cli.util.HpcBatchException;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
@@ -113,7 +114,17 @@ public class HPCCollections extends HPCBatchClient {
 							addRecordToLog(record, headersMap);
 						}
 					}
-					
+				} catch (HpcBatchException e) {
+					success = false;
+					processedRecordFlag = false;
+					String message = "Failed to process record due to: "+e.getMessage();
+					System.out.println(message);
+					addErrorToLog(message, i+1);
+					StringWriter sw = new StringWriter();
+					e.printStackTrace(new PrintWriter(sw));
+					String exceptionAsString = sw.toString();
+					addErrorToLog(exceptionAsString, i+1);
+					addRecordToLog(record, headersMap);
 				} catch (RestClientException e) {
 					//e.printStackTrace();
 					success = false;

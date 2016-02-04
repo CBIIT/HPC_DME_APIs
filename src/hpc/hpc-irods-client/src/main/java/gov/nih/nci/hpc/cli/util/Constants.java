@@ -10,4 +10,5 @@ public final class Constants {
 	public static final String PATH = "object_path";
 	public static final String PERMISSION = "Permission";
 	public static final String USER_ID = "UserId";
+	public static final String OBJECT_PATH = "object_path";
 }

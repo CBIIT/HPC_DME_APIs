@@ -34,8 +34,10 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import gov.nih.nci.hpc.cli.util.Constants;
+import gov.nih.nci.hpc.cli.util.HpcBatchException;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
+import gov.nih.nci.hpc.cli.util.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
@@ -93,22 +95,19 @@ public class HPCDatafiles extends HPCBatchClient {
 				HpcFileLocation source = new HpcFileLocation();
 				source.setEndpoint(
 						getAttributeValueByName(Constants.FILE_SOURCE_ENDPOINT, hpcDataObjectRegistrationDTO));
-				String filePath = getAttributeValueByName(Constants.FILE_SOURCE_FILE_PATH, hpcDataObjectRegistrationDTO)
-						+ "/" + getAttributeValueByName(Constants.FILE_NAME, hpcDataObjectRegistrationDTO);
+				String filePath = getAttributeValueByName(Constants.FILE_SOURCE_FILE_PATH, hpcDataObjectRegistrationDTO);
+						//+ "/" + getAttributeValueByName(Constants.OBJECT_PATH, hpcDataObjectRegistrationDTO);
 				//String destinationPath = getAttributeValueByName(Constants.DESTINATION_PATH, hpcDataObjectRegistrationDTO);
 				System.out.println("Adding file from " + filePath);
 				source.setPath(filePath);
 				
 				hpcDataObjectRegistrationDTO.setSource(source);
 				hpcDataObjectRegistrationDTO.setFilePath("/");
-				collName = getAttributeValueByName(Constants.FILE_NAME, hpcDataObjectRegistrationDTO);
-				String parentCollection = getAttributeValueByName(Constants.COLLECTION_PATH,
-						hpcDataObjectRegistrationDTO);
-				if (parentCollection != null)
-					collName = parentCollection + "/" + collName;
+				collName = getAttributeValueByName(Constants.OBJECT_PATH, hpcDataObjectRegistrationDTO);
 				// collName = URLEncoder.encode(parentCollection) + "/" +
 				// URLEncoder.encode(collName);
 				RestTemplate restTemplate = HpcClientUtil.getRestTemplate(userId, password,hpcCertPath, hpcCertPassword);
+				restTemplate.setErrorHandler(new HpcResponseErrorHandler());
 				HttpHeaders headers = new HttpHeaders();
 				String token = DatatypeConverter.printBase64Binary((userId + ":" + password).getBytes());
 				headers.add("Authorization", "Basic " + token);
@@ -122,13 +121,15 @@ public class HPCDatafiles extends HPCBatchClient {
 					if (!collName.startsWith("/"))
 						collName = "/" + collName;
 
-					System.out.println(hpcServerURL + "/" + hpcDataService +  "/" + collName);
+					System.out.println(hpcServerURL + "/" + hpcDataService  + collName);
 					response = restTemplate.exchange(
 							hpcServerURL + "/" + hpcDataService + collName, HttpMethod.PUT,
 							entity, HpcExceptionDTO.class);
+					System.out.println("response "+response);
 					if(response != null)
 					{
 						HpcExceptionDTO exception = response.getBody();
+						System.out.println("exception "+exception);
 						if(exception != null)
 						{
 							String message = "Failed to process record due to: "+exception.getMessage() + ": Error Type:"+exception.getErrorType().value() + ": Request reject reason: "+exception.getRequestRejectReason().value();
@@ -144,8 +145,18 @@ public class HPCDatafiles extends HPCBatchClient {
 							addRecordToLog(record, headersMap);
 						}
 					}
+				} catch (HpcBatchException e) {
+					success = false;
+					processedRecordFlag = false;
+					String message = "Failed to process record due to: "+e.getMessage();
+					System.out.println(message);
+					addErrorToLog(message, i+1);
+					StringWriter sw = new StringWriter();
+					e.printStackTrace(new PrintWriter(sw));
+					String exceptionAsString = sw.toString();
+					addErrorToLog(exceptionAsString, i+1);
+					addRecordToLog(record, headersMap);
 				} catch (RestClientException e) {
-					//e.printStackTrace();
 					success = false;
 					processedRecordFlag = false;
 					String message = "Failed to process record due to: "+e.getMessage();
@@ -157,7 +168,6 @@ public class HPCDatafiles extends HPCBatchClient {
 					addErrorToLog(exceptionAsString, i+1);
 					addRecordToLog(record, headersMap);
 				} catch (Exception e) {
-					//e.printStackTrace();
 					success = false;
 					processedRecordFlag = false;
 					String message = "Failed to process record due to: "+e.getMessage();
