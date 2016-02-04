@@ -46,7 +46,7 @@ public abstract class HPCBatchClient {
 		hpcCertPassword = configProperties.getProperty("hpc.ssl.keystore.password");
 		logDir = configProperties.getProperty("hpc.error-log.dir");
 		hpcCollectionService = configProperties.getProperty("hpc.collection.service");
-		logFile = logDir + File.separator + "errorLog" + new SimpleDateFormat("yyyyMMddhhmm'.csv'").format(new Date());
+		logFile = logDir + File.separator + "errorLog" + new SimpleDateFormat("yyyyMMddhhmm'.txt'").format(new Date());
 		logRecordsFile = logDir + File.separator + "errorRecords"
 				+ new SimpleDateFormat("yyyyMMddhhmm'.csv'").format(new Date());
 		File file1 = new File(logFile);
