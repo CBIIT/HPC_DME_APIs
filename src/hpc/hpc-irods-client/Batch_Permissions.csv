@@ -1,5 +1,5 @@
-Path,UserId,Permission
-/tempZone/home/konkapv/FNLCR_LAB/Project104,godbolesv,WRITE
-/tempZone/home/konkapv/FNLCR_LAB/Project105,zhaoyong,OWN
-/tempZone/home/konkapv/FNLCR_LAB/Project104/Dataset104,godbolesv,READ
-/tempZone/home/konkapv/FNLCR_LAB/Project105/Dataset105,godbolesv,NONE
+object_path,UserId,Permission
+/FNL_SF_Archive/Project200,godbolesv,WRITE
+/FNL_SF_Archive/Project201,zhaoyong,OWN
+/FNL_SF_Archive/Project200,konkapv,OWN
+/FNL_SF_Archive/Project201,godbolesv,NONE
