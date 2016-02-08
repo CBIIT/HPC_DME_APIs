@@ -39,8 +39,8 @@
 		<prop key="hpc.ws.rs.ssl.truststore.path">${karaf.base}/etc/hpc-server/keystore.jks</prop>
 		<prop key="hpc.ws.rs.ssl.truststore.type">JKS</prop>
 		<prop key="hpc.ws.rs.ssl.truststore.password">hpc-server-store-pwd</prop>
-		<prop key="hpc.ws.rs.ssl.wantClientAuth">true</prop>
-		<prop key="hpc.ws.rs.ssl.needClientAuth">true</prop>
+		<prop key="hpc.ws.rs.ssl.wantClientAuth">false</prop>
+		<prop key="hpc.ws.rs.ssl.needClientAuth">false</prop>
 		
 		<prop key="hpc.ws.rs.auth.register-user">rodsadmin notregistered</prop>
 		<prop key="hpc.ws.rs.auth.get-user">rodsadmin</prop>

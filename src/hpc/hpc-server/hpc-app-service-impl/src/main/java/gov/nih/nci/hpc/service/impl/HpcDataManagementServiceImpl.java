@@ -17,6 +17,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -50,24 +51,22 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     //---------------------------------------------------------------------//    
     
     // System generated metadata attributes.
-	private final static String FILE_LOCATION_ENDPOINT_ATTRIBUTE = 
-			                    "Data Location Globus Endpoint"; 
-	private final static String FILE_LOCATION_PATH_ATTRIBUTE = 
-			                    "Data Location Globus Path"; 
+	private final static String ID_ATTRIBUTE = "uuid";
+	private final static String REGISTRAR_ID_ATTRIBUTE = "registered_by";
+	private final static String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
+	private final static String REGISTRAR_DOC_ATTRIBUTE = "registered_by_doc";
 	private final static String FILE_SOURCE_ENDPOINT_ATTRIBUTE = 
-			                    "Data Source Globus Endpoint"; 
-	private final static String FILE_SOURCE_PATH_ATTRIBUTE = 
-			                    "Data Source Globus Path"; 
-	private final static String FILE_REGISTRAR_ID_ATTRIBUTE = 
-                                "NCI user-id of the User registering the File"; 
-	private final static String FILE_REGISTRAR_NAME_ATTRIBUTE = 
-                                "Name of the User registering the File (Registrar)"; 
+                                "source_globus_endpoint"; 
+    private final static String FILE_SOURCE_PATH_ATTRIBUTE = 
+                                "source_globus_path"; 
+	private final static String FILE_LOCATION_ENDPOINT_ATTRIBUTE = 
+			                    "data_globus_endpoint"; 
+	private final static String FILE_LOCATION_PATH_ATTRIBUTE = 
+			                    "data_globus_path"; 
+	private final static String FILE_DATA_TRANSFER_ID_ATTRIBUTE = 
+                                "data_globus_id";
 	private final static String FILE_DATA_TRANSFER_STATUS_ATTRIBUTE = 
-                                "Data Transfer Status";
-	private final static String COLLECTION_REGISTRAR_ID_ATTRIBUTE = 
-                                "NCI user-id of the User registering the Collection"; 
-	private final static String COLLECTION_REGISTRAR_NAME_ATTRIBUTE = 
-                                "Name of the User registering the Collection (Registrar)"; 
+                                "data_globus_status";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -80,6 +79,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	// Metadata Validator.
 	@Autowired
 	private HpcMetadataValidator metadataValidator = null;
+	
+	// Key Generator.
+	@Autowired
+	private HpcKeyGenerator keyGenerator = null;
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -168,9 +171,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	
        	List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
        	
-       	// Create the registrar ID and name metadata.
-       	metadataEntries.addAll(generateRegistrarMetadata(COLLECTION_REGISTRAR_ID_ATTRIBUTE,
-       			                                         COLLECTION_REGISTRAR_NAME_ATTRIBUTE));
+       	// Generate a collection ID and add it as metadata.
+       	metadataEntries.add(generateIdMetadata());
+       	
+       	// Create and add the registrar ID, name and DOC metadata.
+       	metadataEntries.addAll(generateRegistrarMetadata());
        	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToCollection(getAuthenticatedToken(), 
@@ -219,31 +224,23 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public void addSystemGeneratedMetadataToDataObject(String path, 
                                                        HpcFileLocation fileLocation,
     		                                           HpcFileLocation fileSource,
-    		                                           String dataTransferStatus) 
+    		                                           String dataTransferRequestId) 
                                                       throws HpcException
     {
        	// Input validation.
        	if(path == null || !isValidFileLocation(fileLocation) ||
-       	   !isValidFileLocation(fileSource) || dataTransferStatus == null) {
-       	   throw new HpcException("Null path or Invalid file location or null data-transfer-status", 
+       	   !isValidFileLocation(fileSource) || dataTransferRequestId == null) {
+       	   throw new HpcException("Null path or Invalid file location or null data-transfer-request-id", 
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
        	List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
        	
-       	// Create the file location endpoint metadata.
-       	HpcMetadataEntry locationEndpointMetadata = new HpcMetadataEntry();
-       	locationEndpointMetadata.setAttribute(FILE_LOCATION_ENDPOINT_ATTRIBUTE);
-       	locationEndpointMetadata.setValue(fileLocation.getEndpoint());
-       	locationEndpointMetadata.setUnit("");
-       	metadataEntries.add(locationEndpointMetadata);
+       	// Generate a data-object ID and add it as metadata.
+       	metadataEntries.add(generateIdMetadata());
        	
-       	// Create the file location path metadata.
-       	HpcMetadataEntry locationPathMetadata = new HpcMetadataEntry();
-       	locationPathMetadata.setAttribute(FILE_LOCATION_PATH_ATTRIBUTE);
-       	locationPathMetadata.setValue(fileLocation.getPath());
-       	locationPathMetadata.setUnit("");
-       	metadataEntries.add(locationPathMetadata);
+       	// Create and add the registrar ID, name and DOC metadata.
+       	metadataEntries.addAll(generateRegistrarMetadata());
        	
        	// Create the file source endpoint metadata.
        	HpcMetadataEntry sourceEndpointMetadata = new HpcMetadataEntry();
@@ -259,16 +256,33 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	sourcePathMetadata.setUnit("");
        	metadataEntries.add(sourcePathMetadata);
        	
-       	// Create the registrar ID and name metadata.
-       	metadataEntries.addAll(generateRegistrarMetadata(FILE_REGISTRAR_ID_ATTRIBUTE,
-       			                                         FILE_REGISTRAR_NAME_ATTRIBUTE));
+       	// Create the file location endpoint metadata.
+       	HpcMetadataEntry locationEndpointMetadata = new HpcMetadataEntry();
+       	locationEndpointMetadata.setAttribute(FILE_LOCATION_ENDPOINT_ATTRIBUTE);
+       	locationEndpointMetadata.setValue(fileLocation.getEndpoint());
+       	locationEndpointMetadata.setUnit("");
+       	metadataEntries.add(locationEndpointMetadata);
+       	
+       	// Create the file location path metadata.
+       	HpcMetadataEntry locationPathMetadata = new HpcMetadataEntry();
+       	locationPathMetadata.setAttribute(FILE_LOCATION_PATH_ATTRIBUTE);
+       	locationPathMetadata.setValue(fileLocation.getPath());
+       	locationPathMetadata.setUnit("");
+       	metadataEntries.add(locationPathMetadata);
+       	
+       	// Create the Data Transfer ID metadata.
+       	HpcMetadataEntry dataTransferIdMetadata = new HpcMetadataEntry();
+       	dataTransferIdMetadata.setAttribute(FILE_DATA_TRANSFER_ID_ATTRIBUTE);
+       	dataTransferIdMetadata.setValue(dataTransferRequestId);
+       	dataTransferIdMetadata.setUnit("");
+       	metadataEntries.add(dataTransferIdMetadata);
        	
        	// Create the Data Transfer Status metadata.
-       	HpcMetadataEntry dataTransferMetadata = new HpcMetadataEntry();
-       	dataTransferMetadata.setAttribute(FILE_DATA_TRANSFER_STATUS_ATTRIBUTE);
-       	dataTransferMetadata.setValue(dataTransferStatus);
-       	dataTransferMetadata.setUnit("");
-       	metadataEntries.add(dataTransferMetadata);
+       	HpcMetadataEntry dataTransferStatusMetadata = new HpcMetadataEntry();
+       	dataTransferStatusMetadata.setAttribute(FILE_DATA_TRANSFER_STATUS_ATTRIBUTE);
+       	dataTransferStatusMetadata.setValue(HpcDataTransferStatus.IN_PROGRESS.value());
+       	dataTransferStatusMetadata.setUnit("");
+       	metadataEntries.add(dataTransferStatusMetadata);
        	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToDataObject(getAuthenticatedToken(), 
@@ -476,17 +490,26 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     /**
-     * Generate registrar ID and name metadata.
-     * 
-     * @param registrarIdAttribute The registrar ID attribute name.
-     * @param registrarNameAttribute The registrar-name attribute name.
+     * Generate ID Metadata.
      *
+     * @return The Generated ID metadata. 
+     */
+    private HpcMetadataEntry generateIdMetadata()
+    {
+       	HpcMetadataEntry idMetadata = new HpcMetadataEntry();
+       	idMetadata.setAttribute(ID_ATTRIBUTE);
+       	idMetadata.setValue(keyGenerator.generateKey());
+       	idMetadata.setUnit("");
+       	return idMetadata;
+    }
+    
+    /**
+     * Generate registrar ID, name and DOC metadata.
+     * 
+     * @return a List of 3 metadata.
      * @throws HpcException if the service invoker is unknown.
      */
-    private List<HpcMetadataEntry> generateRegistrarMetadata(
-    		                                        String registrarIdAttribute,
-    		                                        String registrarNameAttribute)
-    		                                        throws HpcException
+    private List<HpcMetadataEntry> generateRegistrarMetadata() throws HpcException
     {
        	// Get the service invoker.
        	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
@@ -499,18 +522,27 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	
        	// Create the registrar user-id metadata.
        	HpcMetadataEntry registrarIdMetadata = new HpcMetadataEntry();
-       	registrarIdMetadata.setAttribute(registrarIdAttribute);
+       	registrarIdMetadata.setAttribute(REGISTRAR_ID_ATTRIBUTE);
        	registrarIdMetadata.setValue(invoker.getNciAccount().getUserId());
        	registrarIdMetadata.setUnit("");
        	metadataEntries.add(registrarIdMetadata);
        	
        	// Create the registrar name metadata.
        	HpcMetadataEntry registrarNameMetadata = new HpcMetadataEntry();
-       	registrarNameMetadata.setAttribute(registrarNameAttribute);
+       	registrarNameMetadata.setAttribute(REGISTRAR_NAME_ATTRIBUTE);
        	registrarNameMetadata.setValue(invoker.getNciAccount().getFirstName() + " " +
        			                       invoker.getNciAccount().getLastName());
        	registrarNameMetadata.setUnit("");
        	metadataEntries.add(registrarNameMetadata);
+       	
+       	// Create the registrar DOC metadata.
+       	String doc = invoker.getNciAccount().getDOC() != null ? 
+       			     invoker.getNciAccount().getDOC() : "unknown";
+       	HpcMetadataEntry registrarDOCMetadata = new HpcMetadataEntry();
+       	registrarDOCMetadata.setAttribute(REGISTRAR_DOC_ATTRIBUTE);
+       	registrarDOCMetadata.setValue(doc);
+       	registrarDOCMetadata.setUnit("");
+       	metadataEntries.add(registrarIdMetadata);       	
        	
        	return metadataEntries;
     }
