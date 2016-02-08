@@ -68,8 +68,10 @@ public interface HpcDataManagementService
     /**
      * Generate system metadata and attach to a collection.
      * System generated metadata is:
-     * 		1. Registrar user ID.
-     * 		2. Registrar name.
+     * 		1. UUID.
+     * 		2. Registrar user ID.
+     * 		3. Registrar name.
+     * 		4. Registrar DOC.
      *
      * @param path The collection path.
      * 
@@ -104,23 +106,32 @@ public interface HpcDataManagementService
     /**
      * Generate system metadata and attach to the data object.
      * System generated metadata is:
-     * 		1. Physical file source.
+     *      1. UUID.
+     * 		2. Registrar user ID.
+     * 		3. Registrar name.
+     * 		4. Registrar DOC.
+     * 		5. File source endpoint.
+     *      6. File source path.
+     *      7. File location endpoint.
+     *      8. File location path.
+     *      
      * 		2. Physical file location.
      * 		3. Registrar user ID.
      * 		4. Registrar name.
-     *      5. Data Transfer Status
+     *      5. Data Transfer Request ID.
+     *      6. Data Transfer Status
      *
      * @param path The data object path.
      * @param fileLocation The physical file location.
      * @param fileSource The source location of the file.
-     * @param dataTransferStatus The data transfer status.
+     * @param dataTransferRequestId The data transfer request ID.
      * 
      * @throws HpcException
      */
     public void addSystemGeneratedMetadataToDataObject(String path, 
     		                                           HpcFileLocation fileLocation,
     		                                           HpcFileLocation fileSource,
-    		                                           String dataTransferStatus) 
+    		                                           String dataTransferRequestId) 
     		                                          throws HpcException; 
     
     /**

@@ -1,6 +1,7 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -27,6 +28,14 @@ import org.slf4j.LoggerFactory;
 public class HpcDataTransferProxyImpl 
        implements HpcDataTransferProxy, HpcDataTransferAccountValidatorProxy 
 {
+    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//    
+    
+    // Globus transfer status strings
+	private final static String FAILED_STATUS = "FAILED"; 
+	private final static String ARCHIVED_STATUS = "SUCCEEDED";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -75,10 +84,9 @@ public class HpcDataTransferProxyImpl
     //---------------------------------------------------------------------//  
     
     @Override
-    public HpcDataTransferReport transferData(
-    		                             HpcIntegratedSystemAccount dataTransferAccount,
-    		                             HpcFileLocation source, HpcFileLocation destination)
-    		                             throws HpcException
+    public String transferData(HpcIntegratedSystemAccount dataTransferAccount,
+    		                   HpcFileLocation source, HpcFileLocation destination)
+    		                  throws HpcException
     {
     	try {
     	     hpcGOTransfer.setTransferCient(dataTransferAccount.getUsername(), 
@@ -92,6 +100,45 @@ public class HpcDataTransferProxyImpl
     	return transfer(source, destination);
     }
     
+    @Override
+    public HpcDataTransferStatus getDataTransferStatus(HpcIntegratedSystemAccount dataTransferAccount,
+                                                       String dataTransferRequestId) 
+                                                      throws Exception
+    {
+		 HpcDataTransferReport report = getDataTransferReport(dataTransferAccount, 
+				                                              dataTransferRequestId);
+		 if(report.getStatus().equals(ARCHIVED_STATUS)) {
+			return HpcDataTransferStatus.ARCHIVED;
+		 }
+
+		 if(report.getStatus().equals(FAILED_STATUS)) {
+ 			return HpcDataTransferStatus.FAILED;
+ 		 }
+		 
+		 return HpcDataTransferStatus.IN_PROGRESS;
+    }
+    
+    @Override
+    public HpcDataTransferReport getDataTransferReport(HpcIntegratedSystemAccount dataTransferAccount,
+                                                       String dataTransferRequestId) 
+                                                      throws Exception
+    {
+    	try {
+		     hpcGOTransfer.setTransferCient(dataTransferAccount.getUsername(), 
+		    		                        dataTransferAccount.getPassword());	        
+		     return getTaskStatusReport(dataTransferRequestId);
+		     
+        } catch(Exception e) {
+        	    throw new HpcException("Failed to get data transfer report for task-id: " + 
+        	                           dataTransferRequestId, 
+   		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
+        }
+    }
+    
+    //---------------------------------------------------------------------//
+    // HpcDataTransferAccountValidatorProxy Interface Implementation
+    //---------------------------------------------------------------------//  
+      
     @Override
     public boolean validateDataTransferAccount(
                                HpcIntegratedSystemAccount dataTransferAccount) 
@@ -118,9 +165,13 @@ public class HpcDataTransferProxyImpl
     	
     	return true;
     }
-      
-    private HpcDataTransferReport transfer(HpcFileLocation source, HpcFileLocation destination)
-                                          throws HpcException 
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//  
+    
+    private String transfer(HpcFileLocation source, HpcFileLocation destination)
+                           throws HpcException 
     {
     	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();
     	
@@ -146,7 +197,7 @@ public class HpcDataTransferProxyImpl
 	        logger.debug("Transfer task id :"+ taskId );
 	      
 	
-	        return getTaskStatusReport(taskId);
+	        return taskId;
 	        
         } catch(Exception e) {
 	        	throw new HpcException(
@@ -154,24 +205,10 @@ public class HpcDataTransferProxyImpl
        		                 HpcErrorType.DATA_TRANSFER_ERROR, e);
         }
     }
-
-    @Override
-    public HpcDataTransferReport getTaskStatusReport(HpcIntegratedSystemAccount dataTransferAccount,
-    		                                         String taskId)
-    	                                            throws HpcException 
-    {
-    	try {
-		     hpcGOTransfer.setTransferCient(dataTransferAccount.getUsername(), dataTransferAccount.getPassword());	        
-		     return getTaskStatusReport(taskId);
-        } catch(Exception e) {
-        	throw new HpcException(
-   		                 "Failed to get report for task-id: " + taskId, 
-   		                 HpcErrorType.DATA_TRANSFER_ERROR, e);
-        }
-    }
     
     private HpcDataTransferReport getTaskStatusReport(String taskId)
-                                                     throws HpcException {
+                                                     throws HpcException 
+    {
     	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();
     	HpcDataTransferReport hpcDataTransferReport = new HpcDataTransferReport();
     	
@@ -226,15 +263,18 @@ public class HpcDataTransferProxyImpl
 		} 
     }
 
-    private Calendar convertToLexicalTime(String timeStr) {
+    private Calendar convertToLexicalTime(String timeStr) 
+    {
     	if (timeStr == null || "null".equalsIgnoreCase(timeStr))    	
     		return null;     	
     	else
     		return DatatypeConverter.parseDateTime(timeStr.trim().replace(' ', 'T'));
 	}
-
     
-	private JSONObject setJSONItem(HpcFileLocation source, HpcFileLocation destination, JSONTransferAPIClient client)  throws HpcException {
+	private JSONObject setJSONItem(HpcFileLocation source, HpcFileLocation destination, 
+			                       JSONTransferAPIClient client)  
+			                      throws HpcException 
+	{
     	JSONObject item = new JSONObject();
     	try {
 	        item.put("DATA_TYPE", "transfer_item");
@@ -253,8 +293,9 @@ public class HpcDataTransferProxyImpl
 		}    
     }
 
-	public boolean autoActivate(String endpointName, JSONTransferAPIClient client)
-                               throws HpcException {
+	private boolean autoActivate(String endpointName, JSONTransferAPIClient client)
+                                throws HpcException 
+	{
 		try {
              String resource = BaseTransferAPIClient.endpointPath(endpointName)
                                + "/autoactivate?if_expires_in=100";
@@ -273,8 +314,10 @@ public class HpcDataTransferProxyImpl
 		}
     }
 
-    public boolean checkFileDirectoryAndSetRecursive(String endpointName, String path,JSONTransferAPIClient client)
-                                                    throws HpcException {
+    private boolean checkFileDirectoryAndSetRecursive(String endpointName, String path,
+    		                                          JSONTransferAPIClient client)
+                                                     throws HpcException 
+    {
         Map<String, String> params = new HashMap<String, String>();
         if (path != null) {
             params.put("path", path);

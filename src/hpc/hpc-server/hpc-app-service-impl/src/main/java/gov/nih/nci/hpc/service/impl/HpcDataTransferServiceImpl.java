@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidIntegratedSystemAccount;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -67,8 +67,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     //---------------------------------------------------------------------//  
     
     @Override
-    public HpcDataTransferReport 
-                  transferData(HpcFileLocation source, HpcFileLocation destination) 
+    public String transferData(HpcFileLocation source, HpcFileLocation destination) 
 	                          throws HpcException
     {   
     	// Input validation.
@@ -82,10 +81,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
   	    		                              source, destination);
     }
     
+	@Override   
+	public HpcDataTransferStatus getDataTransferStatus(String dataTransferRequestId) 
+                                                      throws Exception
+    {	
+		return dataTransferProxy.getDataTransferStatus(getDataTransferAccount(), 
+           	                                           dataTransferRequestId);
+    }	
+	
 	@Override
-	public boolean validateDataTransferAccount(
-                                       HpcIntegratedSystemAccount dataTransferAccount)
-                                       throws HpcException
+	public boolean validateDataTransferAccount(HpcIntegratedSystemAccount dataTransferAccount)
+                                              throws HpcException
     {
     	// Input validation.
     	if(!HpcDomainValidator.isValidIntegratedSystemAccount(dataTransferAccount)) {	
@@ -105,21 +111,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		return validator.validateDataTransferAccount(dataTransferAccount);
 	}  
 
-	@Override   
-	public HpcDataTransferReport 
-	       getTransferRequestStatus(String dataTransferId) 
-		                           throws HpcException
-    {	
-		try {
-             return dataTransferProxy.getTaskStatusReport(getDataTransferAccount(), 
-            		                                     dataTransferId);
-        	 
-		} catch(Exception ex) {
-    	        throw new HpcException("Error while retriving status",
-    		         		           HpcErrorType.DATA_TRANSFER_ERROR);
-        }
-    }	
-	
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
