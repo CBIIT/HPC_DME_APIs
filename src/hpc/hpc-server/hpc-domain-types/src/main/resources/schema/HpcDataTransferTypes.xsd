@@ -18,6 +18,14 @@
 	targetNamespace="http://hpc.nci.nih.gov/domain/datatransfer"
 	elementFormDefault="unqualified">
 
+	<xsd:simpleType name="HpcDataTransferStatus">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="IN_PROGRESS" />
+			<xsd:enumeration value="ARCHIVED" />
+			<xsd:enumeration value="FAILED" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
 	<xsd:complexType name="HpcDataTransferReport">
 		<xsd:sequence>
 			<xsd:element name="taskID" type="xsd:string" />

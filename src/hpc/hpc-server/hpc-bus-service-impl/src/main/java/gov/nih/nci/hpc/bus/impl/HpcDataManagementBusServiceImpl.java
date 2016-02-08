@@ -14,7 +14,6 @@ import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -210,14 +209,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                                      dataObjectRegistrationDTO.getFilePath());
     	
 		// Submit a request to transfer the file (this is performed async). 
-    	HpcDataTransferReport dataTransferReport = 
-    	   dataTransferService.transferData(dataObjectRegistrationDTO.getSource(), destination);	
+    	String dataTransferRequestId = 
+    	       dataTransferService.transferData(dataObjectRegistrationDTO.getSource(), 
+    	    		                            destination);	
     	
     	// Generate system metadata and attach to the data object.
     	dataManagementService.addSystemGeneratedMetadataToDataObject(
     			                 path, destination,
     			                 dataObjectRegistrationDTO.getSource(),
-    			                 dataTransferReport.getStatus()); 
+    			                 dataTransferRequestId); 
     	
     	// Attach the user provided metadata.
     	dataManagementService.addMetadataToDataObject(
