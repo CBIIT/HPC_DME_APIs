@@ -1,17 +1,12 @@
 {
-"nciAccount": {
-   "userId": "zakigf",
-   "firstName": "George",
-   "lastName": "Zaki"
-},
-   "dataTransferAccount":    {
-     "username": "eranrosenberg",
-      "password": "Magicboots11!",
-      "integratedSystem": "GLOBUS"
-   },
-   "dataManagementAccount":    {
-      "username": "zakigf",
-      "password": "",
-      "integratedSystem": "IRODS"
-   }
+    "nciAccount": {
+        "userId": "zakigf",
+            "firstName": "George",
+            "lastName": "Zaki"
+    },
+        "dataTransferAccount":    {
+            "username": "eranrosenberg",
+            "password": "Magicboots11!",
+            "integratedSystem": "GLOBUS"
+        }
 }
