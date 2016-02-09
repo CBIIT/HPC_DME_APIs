@@ -52,6 +52,14 @@ public interface HpcDataManagementService
      */
     public void createFile(String path, boolean createParentPathDirectory) 
     		              throws HpcException;
+    
+    /**
+     * Delete a data object's file.
+     *
+     * @param path The data object path.
+     * @throws HpcException
+     */
+    public void deleteFile(String path) throws HpcException;
 
     /**
      * Add metadata to a collection.
@@ -71,7 +79,6 @@ public interface HpcDataManagementService
      * 		1. UUID.
      * 		2. Registrar user ID.
      * 		3. Registrar name.
-     * 		4. Registrar DOC.
      *
      * @param path The collection path.
      * 
@@ -109,17 +116,12 @@ public interface HpcDataManagementService
      *      1. UUID.
      * 		2. Registrar user ID.
      * 		3. Registrar name.
-     * 		4. Registrar DOC.
-     * 		5. File source endpoint.
-     *      6. File source path.
-     *      7. File location endpoint.
-     *      8. File location path.
-     *      
-     * 		2. Physical file location.
-     * 		3. Registrar user ID.
-     * 		4. Registrar name.
-     *      5. Data Transfer Request ID.
-     *      6. Data Transfer Status
+     * 		4. File source endpoint.
+     *      5. File source path.
+     *      6. File location endpoint.
+     *      7. File location path.
+     *      8. Data Transfer Request ID.
+     *      9. Data Transfer Status
      *
      * @param path The data object path.
      * @param fileLocation The physical file location.

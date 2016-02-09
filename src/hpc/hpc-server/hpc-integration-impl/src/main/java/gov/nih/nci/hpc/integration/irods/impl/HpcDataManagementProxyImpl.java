@@ -139,6 +139,22 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, ioe);
 		} 
     }
+    
+    @Override    
+    public boolean deleteDataObjectFile(Object authenticatedToken, 
+    		                         String path)
+    {
+		try {
+			 path = addPath(path);
+			 IRODSFile dataObjectFile = 
+			      irodsConnection.getIRODSFileFactory(authenticatedToken).
+			                      instanceIRODSFile(path);
+			 return dataObjectFile.deleteWithForceOption();
+			 
+		} catch(Exception e) {
+		        return false;
+		} 
+    }
 
     @Override
     public void addMetadataToCollection(Object authenticatedToken, 
