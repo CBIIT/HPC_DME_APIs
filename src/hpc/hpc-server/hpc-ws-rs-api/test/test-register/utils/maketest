@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# maketest 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to make  this test
+# Usage: maketest "METADATA_TYPE" "SPECIFIC_TYPE"
+#
+
+
+
+source ../../../utils/functions
+GENERAL_POLICIES_FILE=../../../../../../hpc-server/hpc-app-service-impl/src/main/resources/metadataValidationRules.json
+#METADA_TYPE can be collection of dataObject
+METADATA_TYPE=$1
+SPECIFIC_TYPE=$2
+
+#Extract the MEDATA_TYPE array.
+ONE_LINE=`tr "\n" " " < $GENERAL_POLICIES_FILE`
+METADATA_ARRAY=`get_json_hier_array_value "$ONE_LINE" "$METADATA_TYPE"` 
+
+#Extract the specific group
+METADATA_GROUPS=`echo "$METADATA_ARRAY" | tr "{" "\n"`
+
+if [ -z "$SPECIFIC_TYPE" ]
+then
+    SPECIFIC_ATTRIBUTES="$METADATA_GROUPS"
+else
+    SPECIFIC_ATTRIBUTES=`echo "$METADATA_GROUPS" | grep "\"collectionType\":\"$SPECIFIC_TYPE\""`
+fi
+
+#Write the specific attributes file
+echo "$SPECIFIC_ATTRIBUTES" > policies.json
+
