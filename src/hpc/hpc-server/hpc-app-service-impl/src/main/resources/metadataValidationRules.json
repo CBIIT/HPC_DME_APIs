@@ -548,14 +548,19 @@
 	     "DOC":"DOC-NAME"
          }
       ],
-      "collectionSystemGeneratedMetadataAttributes" : [ "NCI user-id of the User registering the Collection",
-                                                        "Name of the User registering the Collection (Registrar)" ],
-      "dataObjectSystemGeneratedMetadataAttributes" : [ "Data Location Globus Endpoint",
-                                                        "Data Location Globus Path",
-                                                        "Data Source Globus Endpoint",
-                                                        "Data Source Globus Path",
-                                                        "NCI user-id of the User registering the File",
-                                                        "Name of the User registering the File (Registrar)",
-                                                        "Data Transfer Status" ]
+      "collectionSystemGeneratedMetadataAttributes" : [ "uuid",
+                                                        "registered_by",
+                                                        "registered_by_name"
+                                                      ],
+      "dataObjectSystemGeneratedMetadataAttributes" : [ "uuid",
+                                                        "registered_by",
+                                                        "registered_by_name",
+                                                        "source_globus_endpoint",
+                                                        "source_globus_path",
+                                                        "data_globus_endpoint",
+                                                        "data_globus_path",
+                                                        "data_globus_id",
+                                                        "data_globus_status" 
+                                                      ]
    }
 }

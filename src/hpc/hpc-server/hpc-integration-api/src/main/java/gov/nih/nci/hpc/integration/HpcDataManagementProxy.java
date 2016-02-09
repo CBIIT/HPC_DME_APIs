@@ -79,6 +79,17 @@ public interface HpcDataManagementProxy
     public void createDataObjectFile(Object authenticatedToken, 
     		                         String path) 
     		                        throws HpcException;
+    
+    /**
+     * Delete a data object's file.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param path The data object path.
+     * 
+     * @return true if the object file was successfully deleted.
+     */
+    public boolean deleteDataObjectFile(Object authenticatedToken, 
+    		                            String path);
 
     /**
      * Add metadata to a collection.

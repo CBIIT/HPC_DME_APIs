@@ -54,7 +54,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	private final static String ID_ATTRIBUTE = "uuid";
 	private final static String REGISTRAR_ID_ATTRIBUTE = "registered_by";
 	private final static String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
-	private final static String REGISTRAR_DOC_ATTRIBUTE = "registered_by_doc";
 	private final static String FILE_SOURCE_ENDPOINT_ATTRIBUTE = 
                                 "source_globus_endpoint"; 
     private final static String FILE_SOURCE_PATH_ATTRIBUTE = 
@@ -138,6 +137,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	
     	// Create the data object file.
     	dataManagementProxy.createDataObjectFile(authenticatedToken, path);
+    }
+    
+    @Override
+    public void deleteFile(String path) throws HpcException
+    {
+    	// Delete the data object file.
+    	dataManagementProxy.deleteDataObjectFile(getAuthenticatedToken(), path);
     }
 
     @Override
@@ -534,15 +540,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        			                       invoker.getNciAccount().getLastName());
        	registrarNameMetadata.setUnit("");
        	metadataEntries.add(registrarNameMetadata);
-       	
-       	// Create the registrar DOC metadata.
-       	String doc = invoker.getNciAccount().getDOC() != null ? 
-       			     invoker.getNciAccount().getDOC() : "unknown";
-       	HpcMetadataEntry registrarDOCMetadata = new HpcMetadataEntry();
-       	registrarDOCMetadata.setAttribute(REGISTRAR_DOC_ATTRIBUTE);
-       	registrarDOCMetadata.setValue(doc);
-       	registrarDOCMetadata.setUnit("");
-       	metadataEntries.add(registrarIdMetadata);       	
        	
        	return metadataEntries;
     }
