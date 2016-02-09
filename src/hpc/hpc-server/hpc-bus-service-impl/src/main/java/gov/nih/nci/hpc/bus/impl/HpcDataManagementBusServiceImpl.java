@@ -199,30 +199,39 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// TODO: validate metadata.
-    	
     	// Create a data object file (in the data management system).
-    	dataManagementService.createFile(path, false);
-    	
-    	// Calculate the data transfer destination.
-    	HpcFileLocation destination = getDestination(path, 
-                                                     dataObjectRegistrationDTO.getFilePath());
-    	
-		// Submit a request to transfer the file (this is performed async). 
-    	String dataTransferRequestId = 
-    	       dataTransferService.transferData(dataObjectRegistrationDTO.getSource(), 
-    	    		                            destination);	
-    	
-    	// Generate system metadata and attach to the data object.
-    	dataManagementService.addSystemGeneratedMetadataToDataObject(
-    			                 path, destination,
-    			                 dataObjectRegistrationDTO.getSource(),
-    			                 dataTransferRequestId); 
-    	
-    	// Attach the user provided metadata.
-    	dataManagementService.addMetadataToDataObject(
-    			                 path, 
-    			                 dataObjectRegistrationDTO.getMetadataEntries());
+	    dataManagementService.createFile(path, false);
+	    
+    	boolean registrationCompleted = false; 
+    	try {
+		     // Attach the user provided metadata.
+		     dataManagementService.addMetadataToDataObject(
+		    			                      path, 
+		    			                      dataObjectRegistrationDTO.getMetadataEntries());
+		     
+		     // Calculate the data transfer destination.
+		     HpcFileLocation destination = 
+		        getDestination(path, dataObjectRegistrationDTO.getFilePath());
+		     
+			 // Submit a request to transfer the file (this is performed async). 
+		     String dataTransferRequestId = 
+		                dataTransferService.transferData(dataObjectRegistrationDTO.getSource(), 
+		    	    		                             destination);	
+		     
+		     // Generate system metadata and attach to the data object.
+		     dataManagementService.addSystemGeneratedMetadataToDataObject(
+		        		                    path, destination,
+		    			                    dataObjectRegistrationDTO.getSource(),
+		    			                    dataTransferRequestId); 
+
+		     registrationCompleted = true;
+		     
+    	} finally {
+    			   if(!registrationCompleted) {
+    				  // Data object registration failed. Remove it from Data Management.
+    				  dataManagementService.deleteFile(path);
+    			   }
+    	}
     }
     
     @Override
