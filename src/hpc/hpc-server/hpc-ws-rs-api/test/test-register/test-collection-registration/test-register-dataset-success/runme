@@ -10,5 +10,5 @@
 # Script to run this test
 # Usage: runme [no arguments]
 #import common functions
-
-../../utils/registration-runtest INVALID_REQUEST_INPUT tempZone/home/rods/eran-demo 
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+../../utils/registration-runtest collection zakigf/dice-unit-test/test-${NAME} 
