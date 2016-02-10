@@ -82,13 +82,6 @@
             "DOC":"DOC-NAME"
          },
          {  
-	     "attribute":"registered_by_name",
-	     "mandatory":true,
-	     "collectionType":"Project",
-	     "ruleEnabled":true,
-	     "DOC":"DOC-NAME"
-         },
-         {  
             "attribute":"registered_by_doc",
             "mandatory":true,
             "collectionType":"Project",
@@ -143,13 +136,6 @@
 	     "mandatory":true,
 	     "collectionType":"Project",
 	     "defaultValue":"System-Date",
-	     "ruleEnabled":true,
-	     "DOC":"DOC-NAME"
-	  },
-	  {  
-	     "attribute":"registered_by_name",
-	     "mandatory":true,
-	     "collectionType":"Project",
 	     "ruleEnabled":true,
 	     "DOC":"DOC-NAME"
 	  },
