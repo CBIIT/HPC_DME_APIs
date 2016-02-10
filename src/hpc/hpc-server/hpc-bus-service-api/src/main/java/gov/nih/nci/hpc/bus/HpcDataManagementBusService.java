@@ -131,6 +131,13 @@ public interface HpcDataManagementBusService
 	public HpcEntityPermissionResponseListDTO setPermissions(
 			                  List<HpcEntityPermissionRequestDTO> entityPermissionRequests)
 			                  throws HpcException;
+	
+    /**
+     * Update the data transfer status of all data objects that the transfer is 'in progress'.
+     *
+     * @throws HpcException
+     */
+	public void updateDataTransferStatus() throws HpcException;
 }
 
  

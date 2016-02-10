@@ -47,7 +47,7 @@ public interface HpcDataTransferService
      * @throws HpcException
      */
     public HpcDataTransferStatus getDataTransferStatus(String dataTransferRequestId) 
-    		                                          throws Exception;
+    		                                          throws HpcException;
     
     /**
      * Validate a data transfer account.

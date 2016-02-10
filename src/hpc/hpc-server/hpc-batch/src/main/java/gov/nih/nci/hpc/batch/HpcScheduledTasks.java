@@ -12,7 +12,6 @@ package gov.nih.nci.hpc.batch;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcUserBusService;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -37,8 +36,8 @@ public class HpcScheduledTasks
     //---------------------------------------------------------------------//
 
 	// The authentication request for executing the scheduled tasks.
-	private HpcAuthenticationRequestDTO authenticationRequest = 
-			                            new HpcAuthenticationRequestDTO();
+	@Autowired
+	private HpcAuthenticationRequestDTO batchAuthenticationRequest = null;
 	
     // The Data Management Business Service instance.
 	@Autowired
@@ -57,26 +56,12 @@ public class HpcScheduledTasks
     //---------------------------------------------------------------------//
      
     /**
-     * Default Constructor is disabled
-     * 
-     */
-    private HpcScheduledTasks() throws HpcException
-    {
-    	throw new HpcException("Constructor disabled", 
-    			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
-    }
-    
-    /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param scheduledTasksUserName The user name to use for running the scheduled tasks.
-     * 
      */
-    private HpcScheduledTasks(String scheduledTasksUserName) 
+    private HpcScheduledTasks() 
     {
-    	authenticationRequest.setUserName(scheduledTasksUserName);
-        authenticationRequest.setPassword("N/A");
-    }  
+    }
     
     //---------------------------------------------------------------------//
     // Methods
@@ -92,10 +77,11 @@ public class HpcScheduledTasks
         logger.info("Starting Update Data Transfer Status Task...");
         
         try { 
-		     userBusService.authenticate(authenticationRequest, false);
+		     userBusService.authenticate(batchAuthenticationRequest, false);
+		     dataManagementBusService.updateDataTransferStatus();
 		     
         } catch(HpcException e) {
-        	    logger.error("Update Data Transfer Status take failed", e);
+        	    logger.error("Update Data Transfer Status task failed", e);
         	    
         } finally {
         	       dataManagementBusService.closeConnection();

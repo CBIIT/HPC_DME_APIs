@@ -53,7 +53,7 @@ public interface HpcDataTransferProxy
      */
     public HpcDataTransferStatus getDataTransferStatus(HpcIntegratedSystemAccount dataTransferAccount,
     		                                           String dataTransferRequestId) 
-    		                                          throws Exception;
+    		                                          throws HpcException;
     
     /**
      * Get a data transfer report.
@@ -67,7 +67,7 @@ public interface HpcDataTransferProxy
      */
     public HpcDataTransferReport getDataTransferReport(HpcIntegratedSystemAccount dataTransferAccount,
     		                                           String dataTransferRequestId) 
-    		                                          throws Exception;
+    		                                          throws HpcException;
 }
 
  

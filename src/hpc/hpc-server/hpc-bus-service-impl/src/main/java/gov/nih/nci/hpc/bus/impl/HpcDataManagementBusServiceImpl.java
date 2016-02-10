@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -275,17 +276,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
     	for(HpcDataObject dataObject : dataManagementService.getDataObjects(metadataQueries)) {
     		List<HpcMetadataEntry> metadataEntries = null;
-    		try
-    		{
-    		// Get the metadata for this data object.
-    		metadataEntries = 
-    		dataManagementService.getDataObjectMetadata(dataObject.getAbsolutePath());
+    		try {
+    			 // Get the metadata for this data object.
+    		     metadataEntries = 
+    		             dataManagementService.getDataObjectMetadata(dataObject.getAbsolutePath());
+    		} catch(HpcException e) {
+    			    // Unable to find metadata for the object
+    			    continue;
     		}
-    		catch(HpcException e)
-    		{
-    			//Unable to find metadata for the object
-    			continue;
-    		}
+    		
     		// Combine data object attributes and metadata into a single DTO.
     		dataObjectsDTO.getDataObjects().add(toDTO(dataObject, metadataEntries));
     	}
@@ -359,6 +358,36 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	return responses;
     }
     
+    @Override
+    public void updateDataTransferStatus() throws HpcException
+    {
+    	// Iterate through the data objects that their data transfer is in-progress
+    	for(HpcDataObject dataObject : dataManagementService.getDataObjectsInProgress()) {
+    		String path = dataObject.getAbsolutePath();
+    		try {
+    		     // Get current data transfer status.
+    			 HpcDataTransferStatus dataTransferStatus =
+    		        dataTransferService.getDataTransferStatus(
+    		        	dataManagementService.getDataTransferRequestId(path));
+    			 
+    		     if(dataTransferStatus.equals(HpcDataTransferStatus.ARCHIVED)) {
+    		    	// Data transfer completed successfully. Update the metadata.
+    		    	dataManagementService.setDataTransferStatus(path, dataTransferStatus);
+    		    	logger.info("Data transfer completed: " + path);
+    		     } else if(dataTransferStatus.equals(HpcDataTransferStatus.FAILED)) {
+     		    	       // Data transfer failed. Remove the data object
+     		    	       dataManagementService.deleteFile(path);
+     		    	      logger.info("Data transfer failed: " + path);
+    		     }
+    		     
+    		} catch(HpcException e) {
+    			    logger.error("Failed to process data transfer update:" + path);
+    		}
+    	}
+    	
+    }
+    
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
@@ -401,7 +430,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	return dataObjectDTO;
     }
     
-    /** Validate permissions requests list.
+    /** 
+     * Validate permissions requests list.
      * 
      * @param entityPermissionRequests The requests to validate.
      *
@@ -457,6 +487,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
     }
 	
+    /** 
+     * Calculate data transfer destination.
+     * 
+     * @param path The data object (logical) path.
+     * @param dataTransferPath The caller's provided data transfer path.
+     * 
+     * @return HpcFileLocation The data transfer destination.
+     */
 	private HpcFileLocation getDestination(String path, String dataTransferPath) 
 	{
 		// Calculate the data transfer destination absolute path as the following:

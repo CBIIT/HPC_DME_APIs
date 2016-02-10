@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.service;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -31,7 +32,7 @@ import java.util.List;
  */
 
 public interface HpcDataManagementService 
-{         
+{    
     /**
      * Create a collection's directory.
      *
@@ -111,6 +112,18 @@ public interface HpcDataManagementService
     		                           throws HpcException; 
     
     /**
+     * Update a data object's metadata.
+     *
+     * @param path The data object path.
+     * @param metadataEntries The metadata entries to update.
+     * 
+     * @throws HpcException
+     */
+    public void updateDataObjectMetadata(String path, 
+    		                             List<HpcMetadataEntry> metadataEntries) 
+    		                            throws HpcException; 
+    
+    /**
      * Generate system metadata and attach to the data object.
      * System generated metadata is:
      *      1. UUID.
@@ -146,6 +159,28 @@ public interface HpcDataManagementService
      */
     public HpcFileLocation getFileLocation(String path) throws HpcException; 
     
+    /** 
+     * Get a data transfer request ID of a data object.
+     * 
+     * @param path The data object (logical) path.
+     * 
+     * @return The data transfer request ID.
+     * @throws HpcException
+     */
+	public String getDataTransferRequestId(String path) throws HpcException;
+	
+    /** 
+     * Set a data transfer status of a data object.
+     * 
+     * @param path The data object (logical) path.
+     * @param HpcDataTransferStatus The data transfer status to set
+     * 
+     * @throws HpcException
+     */
+	public void setDataTransferStatus(String path, 
+                                      HpcDataTransferStatus dataTransferStatus) 
+                                     throws HpcException;
+	
     /**
      * Get collection by its path.
      *
@@ -197,6 +232,15 @@ public interface HpcDataManagementService
      */
     public List<HpcDataObject> getDataObjects(
     		    List<HpcMetadataQuery> metadataQueries) throws HpcException;
+    
+    /**
+     * Get data objects that have their data transfer in-progress
+     *
+     * @return HpcDataObject list.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcDataObject> getDataObjectsInProgress() throws HpcException;
     
     /**
      * Get metadata of a data object.
