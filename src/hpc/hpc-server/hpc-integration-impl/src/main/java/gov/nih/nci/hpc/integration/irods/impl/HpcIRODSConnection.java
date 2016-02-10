@@ -51,6 +51,7 @@ public class HpcIRODSConnection
 	private String irodsZone = null;
 	private String irodsResource = null;
 	private AuthScheme irodsAuthentication = null;
+	private String basePath = null;
 	
     // The logger instance.
 	private final Logger logger = 
@@ -68,18 +69,20 @@ public class HpcIRODSConnection
      * @param irodsZone The iRODS zone.
      * @param irodsResource The iRODS resource to use.
      * @param irodsAuthentication The iRODS authentication method to use.
+     * @param basePath The iRODS base path.
      * 
      * @throws HpcException If it failed to instantiate the iRODS file system.
      */
     private HpcIRODSConnection(String irodsHost, Integer irodsPort, 
     		                   String irodsZone, String irodsResource,
-    		                   AuthScheme irodsAuthentication) throws HpcException
+    		                   AuthScheme irodsAuthentication, String basePath) 
+    		                  throws HpcException
     {
     	if(irodsHost == null || irodsHost.isEmpty() ||
     	   irodsPort == null ||
     	   irodsZone == null || irodsZone.isEmpty() ||
     	   irodsResource == null || irodsResource.isEmpty() ||
-    	   irodsAuthentication == null) {
+    	   irodsAuthentication == null || basePath == null) {
     	   throw new HpcException("Null or empty iRODS connection attributes",
                                   HpcErrorType.SPRING_CONFIGURATION_ERROR);	
     	}
@@ -88,6 +91,7 @@ public class HpcIRODSConnection
     	this.irodsZone = irodsZone;
     	this.irodsResource = irodsResource;
     	this.irodsAuthentication = irodsAuthentication;
+    	this.basePath = basePath;
     	
 		try {
 		     irodsFileSystem = IRODSFileSystem.instance();
@@ -244,15 +248,21 @@ public class HpcIRODSConnection
     /**
      * Get the iRODS zone.
      *
+     * @return The iRODS zone.
      */
     public String getZone()
     {
     	return irodsZone;
     }
 
+    /**
+     * Get the iRODS base path.
+     *
+     * @return The iRODS base path.
+     */
     public String getBasePath()
     {
-    	return "/" + irodsZone + "/home";
+    	return basePath;
     }
     
     //---------------------------------------------------------------------//
