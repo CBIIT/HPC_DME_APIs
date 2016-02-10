@@ -12,8 +12,9 @@
 function register_project {
 
     source ../../utils/functions
+    USERID=`get_username ../../utils/config`
     PROJECT_DESCRIPTION=$1
-    DESTINATION_PATH="tempZone/home/rods/eran-demo"
+    DESTINATION_PATH="/${USERID}/dice-unit-test/project-search"
     SERVER=`cat ../../utils/server`
     RESPONSE_MSG=registration-response-message.json
     RESPONSE_HEADER=registration-response-header
@@ -26,9 +27,9 @@ function register_project {
 function check_registration {
     #Check that the project was registered correctly
     REG_HTTP_CODE=`get_http_code registration-response-header`
-    if [ "$REG_HTTP_CODE" != "201" ] 
+    if [ "$REG_HTTP_CODE" != "201" ]  && [ "$REG_HTTP_CODE" != "200" ]
     then
-        echo "FAILED TO REGISTER PROJECT BEFORE SEARCH" 1>&2
+        echo "FAILED TO REGISTER PROJECT BEFORE SEARCH. HTTP_CODE = $REG_HTTP_CODE" 1>&2
         exit
     fi
 }
