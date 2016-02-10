@@ -100,6 +100,7 @@
 	      <constructor-arg value="${hpc.integration.irods.zone}" index="2" />
 	      <constructor-arg value="${hpc.integration.irods.resource}" index="3" />
 	      <constructor-arg value="${hpc.integration.irods.authentication}" index="4" />
+	      <constructor-arg value="${hpc.integration.irods.basePath}" index="5" />
 	</bean>
 	
 	<!--  HPC Data Management Proxy -->
