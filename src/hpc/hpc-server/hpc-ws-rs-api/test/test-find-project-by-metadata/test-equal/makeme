@@ -12,4 +12,3 @@
 ./cleanme
 source ../utils/search-functions
 register_project register-project.json 
-

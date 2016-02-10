@@ -28,12 +28,12 @@ echo $HTTP_CODE
 
 #Make sure the response does not include the project named "dxtest-project-name".
 
-ATTRIBUTE="Internal Project ID"
+ATTRIBUTE="internal_project_id"
 VALUE="0123456789"
 
 RESPONSE_GROUPS=`cat $RESPONSE_MSG | tr "{" "\n"`
 PROJECT_GROUPS=`echo "$RESPONSE_GROUPS" | grep "$ATTRIBUTE"`
-ID=`get_json_value "$PROJECT_GROUPS" value`
+ID=`get_json_value " $PROJECT_GROUPS" value`
 
 PROJECT_FOUND="FALSE"
 for id in $ID; do
