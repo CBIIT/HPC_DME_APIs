@@ -4,7 +4,7 @@
 
 	<groupId>gov.nih.nci.hpc.cli</groupId>
 	<artifactId>hpc-cli</artifactId>
-	<version>0.1</version>
+	<version>1.0</version>
 	<packaging>jar</packaging>
 
 	<name>hpc-cli</name>
@@ -107,6 +107,11 @@
 			<artifactId>jline</artifactId>
 			<version>2.12.1</version>
 		</dependency>
+		<dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.5</version>
+        </dependency>
 	</dependencies>
 
 	<build>
