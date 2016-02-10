@@ -23,6 +23,7 @@ public class HpcConfigProperties {
 	@PostConstruct
 	private void init() {
 		try {			
+			/*
 			String filePath = System.getProperty("user.home") + File.separator + ".hpcenv" + File.separator + COFIG_PROPS;
 			File configDir = new File(filePath);
 			if (!configDir.exists())
@@ -40,15 +41,12 @@ public class HpcConfigProperties {
 			FileChangedReloadingStrategy fileChangedReloadingStrategy = new FileChangedReloadingStrategy();
 			fileChangedReloadingStrategy.setRefreshDelay(1000);
 			pConfig.setReloadingStrategy(fileChangedReloadingStrategy);
-			
+			*/
 			configuration = new CompositeConfiguration();
-			configuration.addConfiguration(pConfig);
+			//configuration.addConfiguration(pConfig);
 			configuration.addConfiguration(
 				    new PropertiesConfiguration(HPC_PROPS));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		catch (ConfigurationException e) {
+		} catch (ConfigurationException e) {
 			e.printStackTrace();
 		}
 	}
