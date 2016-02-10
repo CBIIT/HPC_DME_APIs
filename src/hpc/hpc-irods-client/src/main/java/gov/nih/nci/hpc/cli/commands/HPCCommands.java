@@ -2,12 +2,8 @@ package gov.nih.nci.hpc.cli.commands;
 
 import java.util.logging.Logger;
 
-import javax.xml.bind.DatatypeConverter;
-
-import org.irods.jargon.core.exception.JargonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
@@ -15,8 +11,6 @@ import org.springframework.stereotype.Component;
 import gov.nih.nci.hpc.cli.HPCCollections;
 import gov.nih.nci.hpc.cli.HPCDatafiles;
 import gov.nih.nci.hpc.cli.HPCPermissions;
-import gov.nih.nci.hpc.cli.IrodsClient;
-import gov.nih.nci.hpc.cli.domain.HPCDataObject;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
 
 @Component
@@ -26,16 +20,15 @@ public class HPCCommands implements CommandMarker {
 	@Autowired
 	private HpcConfigProperties configProperties;
 	@Autowired
-	private IrodsClient irodsClient;
+	private HPCCollections putCollections;
 	@Autowired
-	private HPCCollections hpcCollections;
+	private HPCDatafiles putDatafiles;
 	@Autowired
-	private HPCDatafiles hpcDatafiles;
-	@Autowired
-	private HPCPermissions hpcPermission;
+	private HPCPermissions putPermissions;
 
 	protected final Logger LOG = Logger.getLogger(getClass().getName());
 
+/*
 	@CliAvailabilityIndicator({ "hpcput" })
 	public boolean isHpcputAvailable() {
 		if (hpcinitCommandExecuted) {
@@ -53,7 +46,7 @@ public class HPCCommands implements CommandMarker {
 			return false;
 		}
 	}
-
+*/
 	/*
 	 * @CliCommand(value = "hpcget", help = "transfer file from irods ") public
 	 * String hpcget(
@@ -65,6 +58,7 @@ public class HPCCommands implements CommandMarker {
 	 * "Location of the file") final String location) { return "file = [" +
 	 * filename + "] Location = [" + location + "]"; }
 	 */
+	/*
 	@CliCommand(value = "hpcput", help = "Create/Add data to HPC Archive")
 	public String hpcput(
 			@CliOption(key = {
@@ -100,23 +94,23 @@ public class HPCCommands implements CommandMarker {
 
 		return "HPC User  [" + configProperties.getProperty("irods.username") + "] initialized ";
 	}
-
-	@CliCommand(value = "hpcCollections", help = "Batch upload Collections to HPC Archive")
-	public String hpcCollections(@CliOption(key = {
-			"source" }, mandatory = false, help = "Source location for collections") final String source) {
-		return hpcCollections.process(source);
+	*/
+	@CliCommand(value = "putCollections", help = "Batch upload Collections to HPC Archive. Usage: putCollections --source <file path>")
+	public String putCollections(@CliOption(key = {
+			"source" }, mandatory = true, help = "Please provide file location for collections. Usage: putCollections --source <file path>") final String source) {
+		return putCollections.process(source);
 	}
 
-	@CliCommand(value = "hpcPermissions", help = "Batch assingment of permissions")
-	public String hpcPermissions(@CliOption(key = {
-			"source" }, mandatory = false, help = "Source location for permissions") final String source) {
-		return hpcPermission.process(source);
+	@CliCommand(value = "putPermissions", help = "Batch assingment of permissions. Usage: putPermissions --source <file path>")
+	public String putPermissions(@CliOption(key = {
+			"source" }, mandatory = true, help = "Please provide file location for permissions. Usage: putPermissions --source <file path>") final String source) {
+		return putPermissions.process(source);
 	}
 
-	@CliCommand(value = "hpcDatafiles", help = "Batch upload Collections to HPC Archive")
-	public String hpcDatafiles(@CliOption(key = {
-			"source" }, mandatory = false, help = "Source location for daatafiles") final String source) {
-		return hpcDatafiles.process(source);
+	@CliCommand(value = "putDatafiles", help = "Batch upload data objects to HPC Archive. Usage: putDatafiles --source <file path>")
+	public String putDatafiles(@CliOption(key = {
+			"source" }, mandatory = true, help = "Please provide file location for daatafiles. Usage: putDatafiles --source <file path>") final String source) {
+		return putDatafiles.process(source);
 	}
 	/*
 	 * @CliCommand(value = "hpc init", help = "Initialize HPC configuration")
