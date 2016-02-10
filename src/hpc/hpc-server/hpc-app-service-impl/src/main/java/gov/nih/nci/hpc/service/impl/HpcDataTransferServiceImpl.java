@@ -83,8 +83,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     
 	@Override   
 	public HpcDataTransferStatus getDataTransferStatus(String dataTransferRequestId) 
-                                                      throws Exception
-    {	
+                                                      throws HpcException
+    {	// Input Validation.
+		if(dataTransferRequestId == null) {
+		   throw new HpcException("Null data transfer request ID", 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
 		return dataTransferProxy.getDataTransferStatus(getDataTransferAccount(), 
            	                                           dataTransferRequestId);
     }	

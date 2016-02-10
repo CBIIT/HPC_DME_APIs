@@ -23,7 +23,8 @@
 
 	<!-- HPC Batch OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
-		<prop key="gov.nih.nci.hpc.batch.username">hpc-system</prop>
+		<prop key="gov.nih.nci.hpc.batch.username">hpc-system-username</prop>
+		<prop key="gov.nih.nci.hpc.batch.password">hpc-system-pwd</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

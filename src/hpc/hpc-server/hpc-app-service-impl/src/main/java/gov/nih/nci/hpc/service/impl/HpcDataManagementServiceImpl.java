@@ -56,7 +56,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	private final static String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
 	private final static String FILE_SOURCE_ENDPOINT_ATTRIBUTE = 
                                 "source_globus_endpoint"; 
-    private final static String FILE_SOURCE_PATH_ATTRIBUTE = 
+	private final static String FILE_SOURCE_PATH_ATTRIBUTE = 
                                 "source_globus_path"; 
 	private final static String FILE_LOCATION_ENDPOINT_ATTRIBUTE = 
 			                    "data_globus_endpoint"; 
@@ -83,6 +83,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	@Autowired
 	private HpcKeyGenerator keyGenerator = null;
 	
+	// Prepared query to get data objects that have their data transfer in-progress.
+	private List<HpcMetadataQuery> dataTransferInProgressQuery = 
+			                       new ArrayList<HpcMetadataQuery>();
+	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -92,6 +96,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
      */
     private HpcDataManagementServiceImpl()
     {
+    	// Populate the query to get data objects in data transfer in-progress state.
+    	HpcMetadataQuery query = new HpcMetadataQuery();
+    	query.setAttribute(FILE_DATA_TRANSFER_STATUS_ATTRIBUTE);
+        query.setOperator("EQUAL");
+        query.setValue(HpcDataTransferStatus.IN_PROGRESS.value());
+        dataTransferInProgressQuery.add(query);
     }   
     
     //---------------------------------------------------------------------//
@@ -227,6 +237,25 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
+    public void updateDataObjectMetadata(String path, 
+    		                             List<HpcMetadataEntry> metadataEntries) 
+    		                            throws HpcException
+    {
+       	// Input validation.
+       	if(path == null || !isValidMetadataEntries(metadataEntries)) {
+       	   throw new HpcException("Null path or Invalid metadata entry", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+       	// Validate Metadata.
+       	metadataValidator.validateDataObjectMetadata(metadataEntries);
+       	
+       	// Add Metadata to the DM system.
+       	dataManagementProxy.updateDataObjectMetadata(getAuthenticatedToken(),
+       			                                     path, metadataEntries);
+    }
+    
+    @Override
     public void addSystemGeneratedMetadataToDataObject(String path, 
                                                        HpcFileLocation fileLocation,
     		                                           HpcFileLocation fileSource,
@@ -306,11 +335,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	HpcFileLocation location = new HpcFileLocation();
     	for(HpcMetadataEntry metadata : getDataObjectMetadata(path)) {
     		if(metadata.getAttribute().equals(FILE_LOCATION_ENDPOINT_ATTRIBUTE)) {
-    			location.setEndpoint(metadata.getValue());	
-    			continue;
+    		   location.setEndpoint(metadata.getValue());	
+    		   continue;
     		}
     		if(metadata.getAttribute().equals(FILE_LOCATION_PATH_ATTRIBUTE)) {
-    		  location.setPath(metadata.getValue());	
+    		   location.setPath(metadata.getValue());
+    		   continue;
     		}
     	}
     	
@@ -320,6 +350,44 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	return location;
+    }
+    
+    @Override
+	public String getDataTransferRequestId(String path) throws HpcException
+	{
+    	// Input validation.
+    	if(getDataObject(path) == null) {
+           throw new HpcException("Data object not found: " + path, 
+		                          HpcErrorType.INVALID_REQUEST_INPUT);
+    	}	
+    	
+		for(HpcMetadataEntry metadataEntry : getDataObjectMetadata(path)) {
+			if(metadataEntry.getAttribute().equals(FILE_DATA_TRANSFER_ID_ATTRIBUTE)) {
+			   return metadataEntry.getValue();	
+			}
+		}
+		
+		return null;
+	}
+    
+	public void setDataTransferStatus(String path, 
+                                      HpcDataTransferStatus dataTransferStatus) 
+                                     throws HpcException
+    {
+    	// Input validation.
+    	if(getDataObject(path) == null) {
+           throw new HpcException("Data object not found: " + path, 
+		                          HpcErrorType.INVALID_REQUEST_INPUT);
+    	}	
+    	
+    	List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
+       	HpcMetadataEntry dataTransferStatusMetadata = new HpcMetadataEntry();
+       	dataTransferStatusMetadata.setAttribute(FILE_DATA_TRANSFER_STATUS_ATTRIBUTE);
+       	dataTransferStatusMetadata.setValue(dataTransferStatus.value());
+       	dataTransferStatusMetadata.setUnit("");
+       	metadataEntries.add(dataTransferStatusMetadata);
+       	
+    	updateDataObjectMetadata(path, metadataEntries); 
     }
     
     @Override
@@ -381,6 +449,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	
     	return dataManagementProxy.getDataObjects(getAuthenticatedToken(),
     			                                  metadataQueries);
+    }
+    
+    @Override
+    public List<HpcDataObject> getDataObjectsInProgress() throws HpcException
+    {
+    	return getDataObjects(dataTransferInProgressQuery);
     }
     
     @Override
