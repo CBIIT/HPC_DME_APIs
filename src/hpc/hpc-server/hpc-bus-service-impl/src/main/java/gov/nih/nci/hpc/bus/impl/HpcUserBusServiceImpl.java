@@ -47,6 +47,13 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
 	
     // Default user role.
 	private final static String DEFAULT_ROLE = "rodsuser";
+	private final static String RODS_USER = "rodsuser";
+	private final static String RODS_GROUP_ADMIN = "groupadmin";
+	private final static String RODS_ADMIN = "rodsadmin";
+	
+	private final static String HPC_USER = "hpcuser";
+	private final static String HPC_GROUP_ADMIN = "hpcgroupadmin";
+	private final static String HPC_ADMIN = "hpcadmin";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -98,13 +105,24 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	String userType = null;
+    	if(userRegistrationDTO.getDataManagementUserType() == null)
+    		userType = DEFAULT_ROLE;
+    	else if (userRegistrationDTO.getDataManagementUserType().equals(HPC_USER))
+			userType = DEFAULT_ROLE;
+		else if (userRegistrationDTO.getDataManagementUserType().equals(HPC_GROUP_ADMIN))
+			userType = RODS_GROUP_ADMIN;
+		else if (userRegistrationDTO.getDataManagementUserType().equals(HPC_ADMIN))
+			userType = RODS_ADMIN;
+		else
+			throw new HpcException("Invalid dataManagementUserType. Valid values are {hpcuser, hpcgroupadmin, hpcadmin}",
+	                  HpcErrorType.INVALID_REQUEST_INPUT);	
+		
     	// Create data management account if not provided.
     	if(userRegistrationDTO.getDataManagementAccount() == null) {
     	   // Create a data management account.
     	   dataManagementService.addUser(
-    			         userRegistrationDTO.getNciAccount(),
-    			         userRegistrationDTO.getDataManagementUserType() != null ? 
-    			         userRegistrationDTO.getDataManagementUserType() : DEFAULT_ROLE);
+    			         userRegistrationDTO.getNciAccount(), userType);
     	   
     	   // Add the new account to the DTO.
     	   HpcIntegratedSystemAccount dataManagementAccount = 
