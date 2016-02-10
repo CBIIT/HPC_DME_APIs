@@ -793,12 +793,13 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 
     private String addPath(String path)
     {
-    	if(path == null)
-    		return irodsConnection.getBasePath();
-    	if(path.startsWith(irodsConnection.getBasePath()))
-    		return path;
-    	else 
-    		return irodsConnection.getBasePath() + (path.startsWith("/") ? "":"/")+ path;
+    	if(path == null) {
+    	   return irodsConnection.getBasePath();
+    	} if(path.startsWith(irodsConnection.getBasePath())) {
+    		 return path;
+        } else { 
+    		    return irodsConnection.getBasePath() + (path.startsWith("/") ? "":"/") + path;
+        }
     }
 
     private String removePath(String path)
