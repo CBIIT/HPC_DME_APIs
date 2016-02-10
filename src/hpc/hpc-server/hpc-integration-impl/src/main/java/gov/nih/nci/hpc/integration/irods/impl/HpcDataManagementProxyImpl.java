@@ -34,6 +34,7 @@ import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.protovalues.UserTypeEnum;
 import org.irods.jargon.core.pub.CollectionAO;
+import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.Collection;
 import org.irods.jargon.core.pub.domain.DataObject;
@@ -196,7 +197,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			                                        metadataEntry.getValue(), 
 			                                        metadataEntry.getUnit());
 		         try {
-		        	 collectionAO.modifyAvuValueBasedOnGivenAttributeAndUnit(path, avuData);
+		        	  collectionAO.modifyAvuValueBasedOnGivenAttributeAndUnit(path, avuData);
+		        	  
 		         } catch(DataNotFoundException e) {
 		        	     // Metadata was not found to update. Add it.
 		        	     irodsConnection.getCollectionAO(authenticatedToken).
@@ -230,6 +232,36 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		     
 		} catch(JargonException e) {
 	            throw new HpcException("Failed to add metadata to a data object: " + 
+                                       e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} 
+    }
+    
+    @Override
+    public void updateDataObjectMetadata(Object authenticatedToken, 
+    		                             String path,
+    		                             List<HpcMetadataEntry> metadataEntries) 
+    		                            throws HpcException
+    {
+		try {
+			 path = addPath(path);
+			 DataObjectAO dataObjectAO = irodsConnection.getDataObjectAO(authenticatedToken);
+		     for(HpcMetadataEntry metadataEntry : metadataEntries) {
+			     AvuData avuData = AvuData.instance(metadataEntry.getAttribute(),
+			                                        metadataEntry.getValue(), 
+			                                        metadataEntry.getUnit());
+		         try {
+		        	  dataObjectAO.modifyAvuValueBasedOnGivenAttributeAndUnit(path, avuData);
+		        	  
+		         } catch(DataNotFoundException e) {
+		        	     // Metadata was not found to update. Add it.
+		        	     irodsConnection.getDataObjectAO(authenticatedToken).
+		        	                     addAVUMetadata(path, avuData);
+		         }
+		     }
+		     
+		} catch(JargonException e) {
+	            throw new HpcException("Failed to update data object metadata: " + 
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} 

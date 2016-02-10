@@ -103,7 +103,7 @@ public class HpcDataTransferProxyImpl
     @Override
     public HpcDataTransferStatus getDataTransferStatus(HpcIntegratedSystemAccount dataTransferAccount,
                                                        String dataTransferRequestId) 
-                                                      throws Exception
+                                                      throws HpcException
     {
 		 HpcDataTransferReport report = getDataTransferReport(dataTransferAccount, 
 				                                              dataTransferRequestId);
@@ -121,7 +121,7 @@ public class HpcDataTransferProxyImpl
     @Override
     public HpcDataTransferReport getDataTransferReport(HpcIntegratedSystemAccount dataTransferAccount,
                                                        String dataTransferRequestId) 
-                                                      throws Exception
+                                                      throws HpcException
     {
     	try {
 		     hpcGOTransfer.setTransferCient(dataTransferAccount.getUsername(), 
