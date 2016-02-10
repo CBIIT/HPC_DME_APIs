@@ -26,7 +26,7 @@ curl -G  -X GET $SERVER/hpc-server/collection --data-urlencode metadataQuery@inp
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 echo $HTTP_CODE
 
-ATTRIBUTE="Project name"
+ATTRIBUTE="name"
 VALUE="dxtest-project-name"
 
 #Make sure the response does not include the project named "dxtest-project-name".
