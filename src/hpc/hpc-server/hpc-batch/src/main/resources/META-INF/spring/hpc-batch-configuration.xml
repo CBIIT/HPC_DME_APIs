@@ -24,10 +24,13 @@
 	<context:annotation-config />
 	<task:annotation-driven />
 	
-	<!--  Update Data Transfer Status Scheduled task -->
-	<bean id="hpcUpdateDataTransferStatus" class="gov.nih.nci.hpc.batch.HpcScheduledTasks">
-		<constructor-arg value="${gov.nih.nci.hpc.batch.username}" />
+	<bean id="hpcBatchAuthenticationRequest" class="gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO">
+	    <property name="userName" value="${gov.nih.nci.hpc.batch.username}" />
+	    <property name="password" value="${gov.nih.nci.hpc.batch.password}" />
 	</bean>
+	
+	<!--  Update Data Transfer Status Scheduled task -->
+	<bean id="hpcUpdateDataTransferStatus" class="gov.nih.nci.hpc.batch.HpcScheduledTasks" />
 	
 </beans>
 

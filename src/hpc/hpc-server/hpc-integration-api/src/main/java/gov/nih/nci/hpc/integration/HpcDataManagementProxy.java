@@ -134,6 +134,20 @@ public interface HpcDataManagementProxy
     		                           throws HpcException;
     
     /**
+     * Update data object's metadata.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param path The data object path.
+     * @param metadataEntries The metadata entries to update.
+     * 
+     * @throws HpcException
+     */
+    public void updateDataObjectMetadata(Object authenticatedToken, 
+    		                             String path,
+    		                             List<HpcMetadataEntry> metadataEntries) 
+    		                            throws HpcException;
+    
+    /**
      * Check if a parent path is a directory.
      *
      * @param authenticatedToken An authenticated token.
