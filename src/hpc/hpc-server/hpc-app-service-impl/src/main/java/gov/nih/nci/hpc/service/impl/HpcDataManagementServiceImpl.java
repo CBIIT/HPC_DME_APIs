@@ -250,7 +250,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	// Validate Metadata.
        	metadataValidator.validateDataObjectMetadata(metadataEntries);
        	
-       	// Add Metadata to the DM system.
+       	// Update Metadata.
        	dataManagementProxy.updateDataObjectMetadata(getAuthenticatedToken(),
        			                                     path, metadataEntries);
     }
@@ -387,7 +387,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	dataTransferStatusMetadata.setUnit("");
        	metadataEntries.add(dataTransferStatusMetadata);
        	
-    	updateDataObjectMetadata(path, metadataEntries); 
+       	dataManagementProxy.updateDataObjectMetadata(getAuthenticatedToken(),
+                                                     path, metadataEntries);
     }
     
     @Override
