@@ -15,8 +15,9 @@
 #Run common script
 ../../../utils/runtest
 
-ERROR_TYPE=$1
+REGISTRATION_TYPE=$1
 DESTINATION_PATH=$2
+ERROR_TYPE=$3
 
 source ../../../utils/functions
 source ../../utils/registration-functions
@@ -42,7 +43,8 @@ SERVER=`cat ../../../utils/server`
 VALID_INPUT=`validate_collection $POLICIES_FILE  input.json`
 #echo "$VALID_INPUT"
 
-if [  "$VALID_INPUT" !=  "PASS" -a "$VALID_INPUT" != "FAIL" ] 
+if [[  "$VALID_INPUT" !=  "PASS" ]] &&  [[ "$VALID_INPUT" != *"FAIL"* ]]
+#if [[  "$VALID_INPUT" != *"FAIL"* ]]
 then
     echo "Validation returned: $VALID_INPUT"
     exit
@@ -52,8 +54,8 @@ fi
 ../../../utils/cleantest
 
 # add -D <filename> to dump the header
-echo "curl -H \"Content-Type: application/json\" -d @input.json -X PUT ${SERVER}/hpc-server/dataObject/${DESTINATION_PATH}  --config ../../../utils/config  -H \"Accept: application/json\" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status"
-curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-server/dataObject/${DESTINATION_PATH}  --config ../../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+#echo "curl -H \"Content-Type: application/json\" -d @input.json -X PUT ${SERVER}/hpc-server/${REGISTRATION_TYPE}/${DESTINATION_PATH}  --config ../../../utils/config  -H \"Accept: application/json\" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status"
+curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-server/${REGISTRATION_TYPE}/${DESTINATION_PATH}  --config ../../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 
 check_connection $RESPONSE_HEADER
 
@@ -70,7 +72,7 @@ fi
 
 
 #If the input is not valide, 400 should be returned
-if [ "$VALID_INPUT" == "FAIL" ] 
+if [[ "$VALID_INPUT" == *"FAIL"* ]] 
 then
     if [ "$RETURN_CODE" != "400" ]
     then

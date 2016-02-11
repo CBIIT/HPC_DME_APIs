@@ -47,7 +47,7 @@ function validate_input {
     #Check 0: Check that all provided attributes have a value 
     VALUES_PRESENT=YES
     for input_attribute  in "${INPUT_ARRAY[@]}"; do
-        input_line=`echo "$INPUT_GROUPS" | grep "$input_attribute" | tr -d "\n"`
+        input_line=`echo "$INPUT_GROUPS" | grep "\"$input_attribute\"" | tr -d "\n"`
         input_value=`get_json_value "$input_line" value`
         if [ -z "$input_value" ]
         then 
@@ -92,10 +92,10 @@ function validate_input {
      
     PASS_RESTRICTED="YES"
     for restricted_attribute in "${RESTRICTED_ARRAY[@]}"; do
-        input_line=`echo "$INPUT_GROUPS" | grep "$restricted_attribute" | tr -d "\n"`
+        input_line=`echo "$INPUT_GROUPS" | grep "\"$restricted_attribute\"" | tr -d "\n"`
         if [ ! -z "$input_line" ]
         then
-            policies_line=`echo "$POLICIES_ATTRIBUTES" | grep "$restricted_attribute"`
+            policies_line=`echo "$POLICIES_ATTRIBUTES" | grep "\"$restricted_attribute\""`
             #echo $policies_line
             valid_values=`get_json_hier_array_value "$policies_line" validValues`
             input_value=`get_json_value "$input_line" value`
@@ -103,6 +103,7 @@ function validate_input {
             #echo $valid_values
             if [[ ! "$valid_values" == *"$input_value"* ]]
             then
+                echo "$restricted_attribute has an invalid value."
                 echo "FAIL2"
                 exit
                 #PASS_RESTRICTED="NO"
@@ -143,9 +144,10 @@ function validate_collection {
     #echo "$COLLECTION_ATTRIBUTES"
    
     CHECK=`validate_input  "$INPUT_FILE" "$COLLECTION_ATTRIBUTES"`
-    if [ "$CHECK" != "PASS" ]
-    then
-        CHECK="FAIL"
-    fi
+    #echo $CHECK
+    #if [ "$CHECK" != "PASS" ]
+    #then
+    #    CHECK="FAIL"
+    #fi
     echo $CHECK
 }
