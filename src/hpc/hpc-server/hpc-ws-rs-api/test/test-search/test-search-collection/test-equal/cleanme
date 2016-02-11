@@ -8,8 +8,9 @@
 # See http://ncip.github.com/HPC/LICENSE.txt for details.
 #
 
-#Clean previous results
-./cleanme
-source ../utils/search-functions
-register_project register-project.json 
 
+# Script to clean the resutls of this test
+# Usage: cleanme [no arguments]
+
+../..//utils/cleantest
+../../../utils/cleantest

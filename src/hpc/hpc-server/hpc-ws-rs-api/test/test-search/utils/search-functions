@@ -11,15 +11,15 @@
 
 function register_project {
 
-    source ../../utils/functions
-    USERID=`get_username ../../utils/config`
+    source ../../../utils/functions
+    USERID=`get_username ../../../utils/config`
     PROJECT_DESCRIPTION=$1
     DESTINATION_PATH="/${USERID}/dice-unit-test/project-search"
-    SERVER=`cat ../../utils/server`
+    SERVER=`cat ../../../utils/server`
     RESPONSE_MSG=registration-response-message.json
     RESPONSE_HEADER=registration-response-header
     
-    curl -H "Content-Type: application/json" -d @$PROJECT_DESCRIPTION -X PUT ${SERVER}/hpc-server/collection/${DESTINATION_PATH}  --config ../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -H "Content-Type: application/json" -d @$PROJECT_DESCRIPTION -X PUT ${SERVER}/hpc-server/collection/${DESTINATION_PATH}  --config ../../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     
     check_connection $RESPONSE_HEADER
 

@@ -10,6 +10,5 @@
 
 #Clean previous results
 ./cleanme
-source ../utils/search-functions
+source ../../utils/search-functions
 register_project register-project.json 
-
