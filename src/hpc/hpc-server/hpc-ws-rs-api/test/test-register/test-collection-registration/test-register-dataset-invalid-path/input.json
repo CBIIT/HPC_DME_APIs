@@ -1,76 +1,45 @@
 {
     "metadataEntries": [
         {
-         "attribute": "NCI user-id of the User registering the File (Registrar)",
-         "value": "rosenbergea"
+         "attribute": "name",
+         "value": "Demo Project Name10"
         },
         {
-         "attribute": "Dataset name",
-         "value": "dataset-name"
+         "attribute": "collection_type",
+         "value": "Project"
         },
         {
-         "attribute": "Collection type",
-         "value": "Dataset"
+         "attribute": "description",
+         "value": "Project desc"
         },
         {
-         "attribute": "Dataset description",
-         "value": "Dataset desc"
-        },
-        {
-         "attribute": "Internal Project ID",
+         "attribute": "internal_project_id",
          "value": "ipi"
         },
         {
-         "attribute": "Source Lab PI",
+         "attribute": "source_lab_pi",
          "value": "Source Lab PI"
         },
         {
-         "attribute": "Lab / Branch Name",
+         "attribute": "lab_branch",
          "value": "Lab / Branch Name"
         },
         {
-         "attribute": "Name of the User registering the Dataset (Registrar)",
-         "value": "me"
-        },
-        {
-         "attribute": "DOC of the PI",
+         "attribute": "pi_doc",
          "value": "FNLCR"
         },
         {
-         "attribute": "NCI user-id of the User registering the Dataset (Registrar)",
-         "value": "uid"
+         "attribute": "original_date_created",
+         "value": "10/25/2006"
         },
         {
-         "attribute": "DOC of the Registrar",
-         "value": "FNLCR"
+         "attribute": "registered_by_doc",
+         "value": "CCBR"
         },
         {
-         "attribute": "Date the Project was created",
-         "value": "11/11/2011"
-        },
-        {
-         "attribute": "Date the Project was created",
-         "value": "11/11/2011"
-        },
-        {
-         "attribute": "FlowCell ID",
-         "value": "flow-cell-ID"
-        },
-        {
-         "attribute": "Run ID",
-         "value": "run-ID"
-        },
-        {
-         "attribute": "Run Date",
-         "value": "9/9/1999"
-        },
-        {
-         "attribute": "Library ID",
-         "value": "lib-ID"
-        },
-        {
-         "attribute": "MD5SUM of data files",
-         "value": "3333333"
-        },
+         "attribute": "registered_by_name",
+         "value": "Prasad Konka"
+        }
     ]
-}   
+}
+   

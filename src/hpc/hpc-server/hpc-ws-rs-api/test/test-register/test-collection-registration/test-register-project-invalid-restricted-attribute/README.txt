@@ -14,5 +14,5 @@
 ******************************/
 
 Register a project with invalid inputs. 
-At the time this test is checked, the input.json gives an ivalid value to the "Doc of the Registrar" attribute. The returned HTTP code should equal 400.
+At the time this test is checked, the input.json gives an ivalid value to the "registered_by_doc" attribute. The returned HTTP code should equal 400.
 

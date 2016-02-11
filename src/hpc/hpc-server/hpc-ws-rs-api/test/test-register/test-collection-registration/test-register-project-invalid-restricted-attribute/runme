@@ -10,5 +10,7 @@
 # Script to run this test
 # Usage: runme [no arguments]
 #import common functions
+source ../../../utils/functions
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
-../../utils/registration-runtest collection zakigf/dice-unit-test/test-${NAME} INVALID_REQUEST_INPUT 
+USERID=`get_username ../../../utils/config`
+../../utils/registration-runtest collection ${USERID}/dice-unit-test/test-${NAME} INVALID_REQUEST_INPUT 
