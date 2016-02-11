@@ -15,6 +15,7 @@ function register_project {
     USERID=`get_username ../../../utils/config`
     PROJECT_DESCRIPTION=$1
     DESTINATION_PATH="/${USERID}/dice-unit-test/project-search"
+    echo "$DESTINATION_PATH" >> registered-project-name
     SERVER=`cat ../../../utils/server`
     RESPONSE_MSG=registration-response-message.json
     RESPONSE_HEADER=registration-response-header
