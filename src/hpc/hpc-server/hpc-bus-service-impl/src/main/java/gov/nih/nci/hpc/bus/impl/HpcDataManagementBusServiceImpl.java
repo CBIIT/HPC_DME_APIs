@@ -381,7 +381,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		     }
     		     
     		} catch(HpcException e) {
-    			    logger.error("Failed to process data transfer update:" + path);
+    			    logger.error("Failed to process data transfer update:" + path, e);
     		}
     	}
     	
