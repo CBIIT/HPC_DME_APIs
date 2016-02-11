@@ -28,7 +28,6 @@
 		<cxf.version>3.0.2</cxf.version>
 		<cxf-xjc.version>3.0.3</cxf-xjc.version>
 		<felix.version>2.5.3</felix.version>
-		<mongodb.version>3.0.1</mongodb.version>
 		<postgresql.version>9.3-1102-jdbc41</postgresql.version>
 		<slf4j.version>1.7.12</slf4j.version>
 		<spring-security.version>3.1.4.RELEASE</spring-security.version>
@@ -143,11 +142,6 @@
 				<groupId>org.apache.cxf.xjc-utils</groupId>
 				<artifactId>cxf-xjc-runtime</artifactId>
 				<version>${cxf-xjc.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.mongodb</groupId>
-				<artifactId>mongodb-driver-async</artifactId>
-				<version>${mongodb.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.postgresql</groupId>

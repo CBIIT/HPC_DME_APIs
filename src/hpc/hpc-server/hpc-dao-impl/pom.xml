@@ -35,9 +35,6 @@
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package />
 						<Private-Package>
-							gov.nih.nci.hpc.dao.mongo.impl,
-							gov.nih.nci.hpc.dao.mongo.codec,
-							gov.nih.nci.hpc.dao.mongo.driver,
 							gov.nih.nci.hpc.dao.postgresql.impl
 						</Private-Package>
 						<Import-Package>
@@ -58,10 +55,6 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongodb-driver-async</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>

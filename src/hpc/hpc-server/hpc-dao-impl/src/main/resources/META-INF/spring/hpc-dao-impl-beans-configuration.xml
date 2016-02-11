@@ -22,42 +22,6 @@
 
 	<context:annotation-config />
 	
-	<!-- HPC Mongo Encryptor -->
-	<bean id="hpcMongoEncryptor" class="gov.nih.nci.hpc.dao.mongo.codec.HpcEncryptor">
-		<constructor-arg value="${hpc.dao.mongo.encryptor.key}" />
-	</bean>
-
-	<!-- HPC User Codecs -->
-	<bean id="hpcUserCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcUserCodec" />
-	<bean id="hpcNciAccountCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcNciAccountCodec" />
-	<bean id="hpcIntegratedSystemAccountCodec" class="gov.nih.nci.hpc.dao.mongo.codec.HpcIntegratedSystemAccountCodec" />
-
-	<!-- HPC Codec Provider -->
-	<bean id="hpcCodecProvider" class="gov.nih.nci.hpc.dao.mongo.codec.HpcCodecProvider">
-		<constructor-arg>
-			<map>
-				<entry key="gov.nih.nci.hpc.domain.model.HpcUser" 
-				       value-ref="hpcUserCodec" />
-				<entry key="gov.nih.nci.hpc.domain.user.HpcNciAccount"
-					   value-ref="hpcNciAccountCodec" />
-				<entry key="gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount"
-					   value-ref="hpcIntegratedSystemAccountCodec" />
-			</map>
-		</constructor-arg>
-	</bean>
-
-	<!-- HPC MongoDB instance -->
-	<bean id="hpcMongoDB" class="gov.nih.nci.hpc.dao.mongo.driver.HpcMongoDB">
-		<constructor-arg value="${hpc.dao.mongo.dbName}" index="0" />
-		<constructor-arg value="${hpc.dao.mongo.server.host}" index="1" />
-		<constructor-arg ref="hpcCodecProvider" index="2" />
-		<constructor-arg index="3">
-			<map>
-				<entry key="gov.nih.nci.hpc.domain.model.HpcUser" value="user" />
-			</map>
-		</constructor-arg>
-	</bean>
-	
 	<!-- HPC PostgreSQL DB data source -->
 	<bean id="hpcPostgreSQLDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="org.postgresql.Driver" />
@@ -77,7 +41,6 @@
 	</bean>
 
 	<!-- HPC DAO Implementation Beans -->
-	<!--  <bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.mongo.impl.HpcUserDAOImpl" />-->
 	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserDAOImpl" />
 
 </beans>

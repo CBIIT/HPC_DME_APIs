@@ -13,13 +13,6 @@
  -->
 <features name="HPC-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.0.0">
 
-	<!-- Mongo DB Async Driver -->
-	<feature name="hpc-mongo-async-driver" version="${mongodb.version}">
-		<bundle>mvn:org.mongodb/mongodb-driver-async/${mongodb.version}</bundle>
-		<bundle>mvn:org.mongodb/mongodb-driver-core/${mongodb.version}</bundle>
-		<bundle>mvn:org.mongodb/bson/${mongodb.version}</bundle>
-	</feature>
-	
 	<!-- PostgreSQL driver -->
 	<feature name="hpc-postgresql-driver" version="${postgresql.version}">
 		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.postgresql/${postgresql.version}_1</bundle>
@@ -58,7 +51,6 @@
 	<feature name="hpc-server" version="${project.version}">
 	
 		<!--  Dependent Features / Bundles -->
-		<feature version="${mongodb.version}">hpc-mongo-async-driver</feature>
 		<feature version="${postgresql.version}">hpc-postgresql-driver</feature>
 		<feature version="${spring-security.version}">hpc-spring-security-ldap</feature>
 		<feature version="${amazon-aws.version}">hpc-amazon-aws-sdk</feature>
