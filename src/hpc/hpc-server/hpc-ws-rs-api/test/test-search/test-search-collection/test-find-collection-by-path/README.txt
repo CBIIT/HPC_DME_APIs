@@ -14,4 +14,4 @@
 ******************************/
 
 Register the project before searching. 
-Search for a project using the "EQUAL" comparator. Should return the HTTP code 200
+Search for a project using its logical path. Should return the HTTP code 200
