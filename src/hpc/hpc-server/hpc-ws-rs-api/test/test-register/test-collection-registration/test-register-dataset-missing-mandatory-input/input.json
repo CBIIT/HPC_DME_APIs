@@ -33,10 +33,6 @@
          "value": "CCBR"
         },
         {
-         "attribute": "registered_by_name",
-         "value": "Prasad Konka"
-        },
-        {
          "attribute":"flow_cell_id",   
          "value": "flow_id"
         },
