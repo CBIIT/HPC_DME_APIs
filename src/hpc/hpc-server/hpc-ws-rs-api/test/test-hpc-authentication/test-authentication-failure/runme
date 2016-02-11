@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source ../../utils/functions
+
+#Run common script
+../../utils/runtest
+
+#Clean previous results
+#./cleanme
+
+RESPONSE_HEADER=response-header
+RESPONSE_MSG=response-message.json
+SERVER=`cat ../../utils/server`
+
+# add -D <filename> to dump the header
+
+
+curl  -k https://fr-s-hpcdm-gp-d.ncifcrf.gov:7738/hpc-server/user -u testhpcdm:password  -H "Accept: application/json" -D response-header -o response-message.json -s 2> curl-status 
+
+check_connection $RESPONSE_HEADER
+ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
+ERROR_CODE=`get_http_code $RESPONSE_HEADER`
+
+echo $ERROR_CODE 1>&2
+echo $ERROR_TYPE 1>&2
