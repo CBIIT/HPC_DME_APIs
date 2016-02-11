@@ -109,4 +109,15 @@ function check_connection {
     fi
 }
 
-
+#Get the username from the config file.
+function get_username {
+    if [ -z "$1" ]
+    then
+        echo "ERROR: using get_username"
+        echo "USAGE: get_username <curl-config-file>"
+        exit
+    fi
+    CURL_CONFIG_FILE="$1"
+    USER_NAME=`grep '\-u' "$CURL_CONFIG_FILE" | sed "s/.*\-u[   ]*\([a-zA-Z]*\).*/\1/"`
+    echo $USER_NAME
+}
