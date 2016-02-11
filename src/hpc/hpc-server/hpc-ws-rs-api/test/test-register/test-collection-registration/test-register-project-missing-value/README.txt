@@ -14,5 +14,5 @@
 ******************************/
 
 Register a project with a misssing medata value. 
-The "Project name" attribute does not have a value. The returned HTTP code should equal 400.
+The attribute "name" does not have a value. The returned HTTP code should equal 400.
 
