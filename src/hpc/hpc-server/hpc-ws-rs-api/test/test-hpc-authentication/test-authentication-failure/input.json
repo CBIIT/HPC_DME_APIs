@@ -1,0 +1,12 @@
+{
+    "nciAccount": {
+        "userId": "zakigf",
+            "firstName": "George",
+            "lastName": "Zaki"
+    },
+        "dataTransferAccount":    {
+            "username": "eranrosenberg",
+            "password": "***REMOVED***",
+            "integratedSystem": "GLOBUS"
+        }
+}
