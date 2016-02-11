@@ -109,7 +109,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	if(userRegistrationDTO.getDataManagementUserType() == null)
     		userType = DEFAULT_ROLE;
     	else if (userRegistrationDTO.getDataManagementUserType().equals(HPC_USER))
-			userType = DEFAULT_ROLE;
+			userType = RODS_USER;
 		else if (userRegistrationDTO.getDataManagementUserType().equals(HPC_GROUP_ADMIN))
 			userType = RODS_GROUP_ADMIN;
 		else if (userRegistrationDTO.getDataManagementUserType().equals(HPC_ADMIN))
