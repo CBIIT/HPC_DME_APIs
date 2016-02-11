@@ -13,6 +13,4 @@
 @ddblock_end copyright
 ******************************/
 
-
-
 Utilities to test this module.
