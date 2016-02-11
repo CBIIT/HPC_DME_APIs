@@ -11,40 +11,39 @@
 # Usage: runme [no arguments]
 
 #import common functions
-source ../../utils/functions
-source ../utils/search-functions
+source ../../../utils/functions
+source ../../utils/search-functions
 
 #Check if the register_project function called in makeme was successful.
 check_registration
 
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
-SERVER=`cat ../../utils/server`
+SERVER=`cat ../../../utils/server`
 
-curl -G  -X GET $SERVER/hpc-server/collection --data-urlencode metadataQuery@input.json  --config ../../utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+curl -G -X GET $SERVER/hpc-server/collection --data-urlencode metadataQuery@input.json  --config ../../../utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 echo $HTTP_CODE
 
+ATTRIBUTE="name"
+VALUE="dxtest-project-name"
+
 #Make sure the response does not include the project named "dxtest-project-name".
-
-ATTRIBUTE="internal_project_id"
-VALUE="0123456789"
-
 RESPONSE_GROUPS=`cat $RESPONSE_MSG | tr "{" "\n"`
 PROJECT_GROUPS=`echo "$RESPONSE_GROUPS" | grep "$ATTRIBUTE"`
-ID=`get_json_value " $PROJECT_GROUPS" value`
+PROJECT_NAMES=`get_json_value "$PROJECT_GROUPS" value`
 
 PROJECT_FOUND="FALSE"
-for id in $ID; do
-    echo $id
-    if [[ "$id" == "$VALUE"  ]]
+for project in $PROJECT_NAMES; do
+    if [[ $project == *"$VALUE"*  ]]
     then
         PROJECT_FOUND="TRUE"
         break
     fi
 done 
+
 if [ "$PROJECT_FOUND" == "FALSE" ] 
 then
-    echo "ERROR: PROJECT WITH \"$ATTRIBUTE\" = \"$VALUE\" IS NOT PART OF THE RESULTS."  1>&2
+    echo "ERROR: PROJECT \"dxtest-project-name\" IS NOT PART OF THE RESULTS."  1>&2
 fi
