@@ -33,6 +33,10 @@
          "value": "10/25/2006"
         },
         {
+         "attribute": "registered_by_doc",
+         "value": "CCBRXXXXXXXXXXXX"
+        },
+        {
          "attribute": "registered_by_name",
          "value": "Prasad Konka"
         }
