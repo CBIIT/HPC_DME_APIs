@@ -11,17 +11,17 @@
 # Usage: runme [no arguments]
 
 #import common functions
-source ../../utils/functions
-source ../utils/search-functions
+source ../../../utils/functions
+source ../../utils/search-functions
 
 #Check if the register_project function called in makeme was successful.
 check_registration
 
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
-SERVER=`cat ../../utils/server`
+SERVER=`cat ../../../utils/server`
 
-curl -G  -X GET $SERVER/hpc-server/collection --data-urlencode metadataQuery@input.json  --config ../../utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+curl -G  -X GET $SERVER/hpc-server/collection --data-urlencode metadataQuery@input.json  --config ../../../utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 echo $HTTP_CODE

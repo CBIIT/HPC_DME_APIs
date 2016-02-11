@@ -11,18 +11,22 @@
 # Usage: runme [no arguments]
 
 #import common functions
-source ../../utils/functions
-source ../utils/search-functions
+source ../../../utils/functions
+source ../../utils/search-functions
 
 ./cleanme
 
 
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
-SERVER=`cat ../../utils/server`
+SERVER=`cat ../../../utils/server`
 
-curl -G  -X GET $SERVER/hpc-server/collection --data-urlencode metadataQuery@input.json  --config ../../utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+curl -G  -X GET $SERVER/hpc-server/collection --data-urlencode metadataQuery@input.json  --config ../../../utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+check_connection $RESPONSE_HEADER
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
-echo $HTTP_CODE
+echo $HTTP_CODE 1>&2
+
+ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
+echo "$ERROR_TYPE" 1>&2
 
