@@ -32,7 +32,7 @@
     
     <!-- HPC PostgreSQL Encryptor -->
 	<bean id="hpcPostgreSQLEncryptor" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcEncryptor">
-		<constructor-arg value="${hpc.dao.mongo.encryptor.key}" />
+		<constructor-arg value="${hpc.dao.postgresql.encryptor.key}" />
 	</bean>
     
     <!-- Spring JDBC Template -->
