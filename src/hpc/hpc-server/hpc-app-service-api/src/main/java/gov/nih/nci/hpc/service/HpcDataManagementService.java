@@ -275,6 +275,15 @@ public interface HpcDataManagementService
     		           throws HpcException;
     
     /**
+     * Delete a user.
+     *
+     * @param nciUserId The user-id to delete.
+     * 
+     * @throws HpcException
+     */
+    public void deleteUser(String nciUserId) throws HpcException;
+    
+    /**
      * Close connection to Data Management system for the current service call.
      */
     public void closeConnection();
