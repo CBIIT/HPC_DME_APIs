@@ -55,6 +55,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	private final static String ID_ATTRIBUTE = "uuid";
 	private final static String REGISTRAR_ID_ATTRIBUTE = "registered_by";
 	private final static String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
+	private final static String REGISTRAR_DOC_ATTRIBUTE = "registered_by_doc";
 	private final static String FILE_SOURCE_ENDPOINT_ATTRIBUTE = 
                                 "source_globus_endpoint"; 
 	private final static String FILE_SOURCE_PATH_ATTRIBUTE = 
@@ -628,6 +629,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        			                       invoker.getNciAccount().getLastName());
        	registrarNameMetadata.setUnit("");
        	metadataEntries.add(registrarNameMetadata);
+       	
+       	// Create the registrar DOC.
+       	HpcMetadataEntry registrarDOCMetadata = new HpcMetadataEntry();
+       	registrarDOCMetadata.setAttribute(REGISTRAR_DOC_ATTRIBUTE);
+       	registrarDOCMetadata.setValue(invoker.getNciAccount().getDOC());
+       	registrarDOCMetadata.setUnit("");
+       	metadataEntries.add(registrarDOCMetadata);
        	
        	return metadataEntries;
     }
