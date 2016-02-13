@@ -30,7 +30,9 @@
 	</bean>
 	
 	<!-- HPC Application Services Beans -->
-	<bean id="hpcUserService" class="gov.nih.nci.hpc.service.impl.HpcUserServiceImpl" />
+	<bean id="hpcUserService" class="gov.nih.nci.hpc.service.impl.HpcUserServiceImpl">
+		<constructor-arg value="${hpc.service.user.DOC}" />
+	</bean>
 	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl" />
 	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl" />
 </beans>

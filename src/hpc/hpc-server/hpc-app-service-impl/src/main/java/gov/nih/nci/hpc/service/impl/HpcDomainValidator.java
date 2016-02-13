@@ -73,7 +73,8 @@ class HpcDomainValidator
     {
     	if(nciAccount == null || nciAccount.getUserId() == null || 
  	       nciAccount.getFirstName() == null || 
- 	       nciAccount.getLastName() == null) {
+ 	       nciAccount.getLastName() == null ||
+ 	       nciAccount.getDOC() == null) {
     	   logger.info("Invalid NCI Account: " + nciAccount);
     	   return false;
     	}
