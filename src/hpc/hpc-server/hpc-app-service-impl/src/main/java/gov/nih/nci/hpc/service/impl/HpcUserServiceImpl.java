@@ -114,7 +114,7 @@ public class HpcUserServiceImpl implements HpcUserService
     	}
     	if(!docValues.contains(nciAccount.getDOC())) {
     	   throw new HpcException("Invalid DOC: " + nciAccount.getDOC() +
-    			                  ", valid values: " + docValues, 
+    			                  ". Valid values: " + docValues, 
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	

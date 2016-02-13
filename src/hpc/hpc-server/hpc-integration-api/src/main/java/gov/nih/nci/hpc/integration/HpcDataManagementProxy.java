@@ -290,6 +290,17 @@ public interface HpcDataManagementProxy
     		           throws HpcException;
     
     /**
+     * Delete a user.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param nciUserId The user name.
+     * 
+     * @throws HpcException If it failed to delete the user.
+     */
+    public void deleteUser(Object authenticatedToken, String nciUserId)
+                          throws HpcException;
+    
+    /**
      * Set Collection permission.
      *
      * @param authenticatedToken An authenticated token.
