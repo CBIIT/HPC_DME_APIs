@@ -24,7 +24,10 @@ import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +59,9 @@ public class HpcUserServiceImpl implements HpcUserService
 	@Autowired
 	HpcLdapAuthenticationProxy ldapAuthenticationProxy = null;
 	
+	// The valid DOC values.
+	Set<String> docValues = new HashSet<String>();
+	
     // The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -67,10 +73,22 @@ public class HpcUserServiceImpl implements HpcUserService
     /**
      * Constructor for Spring Dependency Injection.
      * 
+     * @param docValues A whitespace separated list of valid DOC values.
+     */
+    private HpcUserServiceImpl(String docValues)
+    {
+    	this.docValues.addAll(Arrays.asList(docValues.split("\\s+")));
+    }   
+    
+    /**
+     * Default constructor disabled.
+     * 
      * @throws HpcException Constructor is disabled.
      */
     private HpcUserServiceImpl() throws HpcException
     {
+    	throw new HpcException("Constructor disabled", 
+    			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }   
     
     //---------------------------------------------------------------------//
@@ -93,6 +111,11 @@ public class HpcUserServiceImpl implements HpcUserService
     	   !isValidIntegratedSystemAccount(dataManagementAccount)) {	
     	   throw new HpcException("Invalid add user input", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	if(!docValues.contains(nciAccount.getDOC())) {
+    	   throw new HpcException("Invalid DOC: " + nciAccount.getDOC() +
+    			                  ", valid values: " + docValues, 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
     	// Check if the user already exists.

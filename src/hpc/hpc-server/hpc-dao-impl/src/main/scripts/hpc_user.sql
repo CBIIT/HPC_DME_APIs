@@ -18,6 +18,7 @@ CREATE TABLE public."HPC_USER"
   "USER_ID" text NOT NULL,
   "FIRST_NAME" text,
   "LAST_NAME" text,
+  "DOC" text,
   "GLOBUS_USERNAME" text,
   "IRODS_USERNAME" text,
   "CREATED" date,
