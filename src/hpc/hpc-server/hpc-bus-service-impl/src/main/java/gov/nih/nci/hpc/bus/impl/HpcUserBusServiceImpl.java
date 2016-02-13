@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcUserBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -22,6 +23,7 @@ import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
 import org.slf4j.Logger;
@@ -50,6 +52,10 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
 	
 	@Autowired
     private HpcDataManagementService dataManagementService = null;
+	
+    // The Data Transfer Service instance.
+	@Autowired
+    private HpcDataTransferService dataTransferService = null;
 	
     // The logger instance.
 	private final Logger logger = 
@@ -87,6 +93,13 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	if(userRegistrationDTO == null) {
     	   throw new HpcException("Null HpcUserRegistrationDTO",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Validate the data transfer account.
+    	if(!dataTransferService.validateDataTransferAccount(
+    			                        userRegistrationDTO.getDataTransferAccount())) {
+    	   throw new HpcException("Invalid Data Transfer Account", 
+                                  HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);	
     	}
     	
     	// Create data management account if not provided.
