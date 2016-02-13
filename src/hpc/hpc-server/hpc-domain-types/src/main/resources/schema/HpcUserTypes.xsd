@@ -24,6 +24,15 @@
 			<xsd:enumeration value="IRODS" />
 		</xsd:restriction>
 	</xsd:simpleType>
+	
+	<xsd:simpleType name="HpcUserRole">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="USER" />
+			<xsd:enumeration value="GROUP_ADMIN" />
+			<xsd:enumeration value="SYSTEM_ADMIN" />
+			<xsd:enumeration value="NOT_REGISTERED" />
+		</xsd:restriction>
+	</xsd:simpleType>
 
 	<xsd:complexType name="HpcIntegratedSystemAccount">
 		<xsd:sequence>
