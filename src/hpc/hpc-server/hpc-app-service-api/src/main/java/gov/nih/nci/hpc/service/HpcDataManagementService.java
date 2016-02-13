@@ -81,6 +81,7 @@ public interface HpcDataManagementService
      * 		1. UUID.
      * 		2. Registrar user ID.
      * 		3. Registrar name.
+     *      4. Registrar DOC.
      *
      * @param path The collection path.
      * 
@@ -130,12 +131,13 @@ public interface HpcDataManagementService
      *      1. UUID.
      * 		2. Registrar user ID.
      * 		3. Registrar name.
-     * 		4. File source endpoint.
-     *      5. File source path.
-     *      6. File location endpoint.
-     *      7. File location path.
-     *      8. Data Transfer Request ID.
-     *      9. Data Transfer Status
+     *      4. Registrar DOC.
+     * 		5. File source endpoint.
+     *      6. File source path.
+     *      7. File location endpoint.
+     *      8. File location path.
+     *      9. Data Transfer Request ID.
+     *      10. Data Transfer Status
      *
      * @param path The data object path.
      * @param fileLocation The physical file location.
