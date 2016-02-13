@@ -521,6 +521,20 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
+    public void deleteUser(Object authenticatedToken, String nciUserId)
+                          throws HpcException
+    {
+    	// Delete the user in iRODS.
+    	try {
+    	     irodsConnection.getUserAO(authenticatedToken).deleteUser(nciUserId);
+    	     
+		} catch(Exception e) {
+                throw new HpcException("Failed delete iRODS user: " + e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		}
+    }
+    
+    @Override
     public void setCollectionPermission(
     		       Object authenticatedToken,
                    String path,

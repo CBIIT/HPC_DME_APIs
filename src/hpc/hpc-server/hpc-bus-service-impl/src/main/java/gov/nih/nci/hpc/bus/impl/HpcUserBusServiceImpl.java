@@ -106,10 +106,21 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	   userRegistrationDTO.setDataManagementAccount(dataManagementAccount);
     	}
     	
-    	// Add the user to the managed collection.
-    	userService.addUser(userRegistrationDTO.getNciAccount(), 
-    			            userRegistrationDTO.getDataTransferAccount(),
-    			            userRegistrationDTO.getDataManagementAccount());
+    	boolean registrationCompleted = false;
+    	try {
+    	     // Add the user to the managed collection.
+    	     userService.addUser(userRegistrationDTO.getNciAccount(), 
+    		                     userRegistrationDTO.getDataTransferAccount(),
+    			                 userRegistrationDTO.getDataManagementAccount());
+    	     registrationCompleted = true;
+    	     
+    	} finally {
+    		       if(!registrationCompleted) {
+    		    	  // Registration failed. Remove the data management account.
+    		    	  dataManagementService.deleteUser(
+    		    		  userRegistrationDTO.getNciAccount().getUserId());
+    		       }
+    	}
     }
     
     @Override

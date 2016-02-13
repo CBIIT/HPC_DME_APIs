@@ -492,6 +492,18 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
+    public void deleteUser(String nciUserId) throws HpcException
+    {
+    	// Input validation.
+    	if(nciUserId == null) {	
+    	   throw new HpcException("Invalid NCI user ID", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+       	
+    	dataManagementProxy.deleteUser(getAuthenticatedToken(), nciUserId);
+    }
+    
+    @Override
     public void closeConnection()
     {
     	try {
