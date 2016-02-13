@@ -21,7 +21,6 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
-import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
 import java.util.Arrays;
@@ -51,10 +50,6 @@ public class HpcUserServiceImpl implements HpcUserService
 	@Autowired
     private HpcUserDAO userDAO = null;
     
-    // The Data Transfer Service instance.
-	@Autowired
-    private HpcDataTransferService dataTransferService = null;
-	
 	// The LDAP authenticator instance.
 	@Autowired
 	HpcLdapAuthenticationProxy ldapAuthenticationProxy = null;
@@ -123,14 +118,6 @@ public class HpcUserServiceImpl implements HpcUserService
     	   throw new HpcException("User already exists: nciUserId = " + 
     	                          nciAccount.getUserId(), 
     	                          HpcRequestRejectReason.USER_ALREADY_EXISTS);	
-    	}
-    	
-    	// Validate the data transfer account.
-    	if(!dataTransferService.validateDataTransferAccount(dataTransferAccount)) {
-    	   throw new HpcException(
-    			        "Invalid Data Transfer Account: username = " + 
-    			        dataTransferAccount.getUsername(), 
-                        HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);	
     	}
     	
     	// Create the User domain object.
