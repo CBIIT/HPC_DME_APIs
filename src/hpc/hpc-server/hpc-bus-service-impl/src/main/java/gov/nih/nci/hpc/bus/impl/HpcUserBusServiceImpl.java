@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
+import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
@@ -38,23 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class HpcUserBusServiceImpl implements HpcUserBusService
 {      
-    //---------------------------------------------------------------------//
-    // Constants
-    //---------------------------------------------------------------------//    
-    
-    // 'Not-Registered' user role.
-	private final static String NOT_REGISTERED_ROLE = "notregistered";
-	
-    // Default user role.
-	private final static String DEFAULT_ROLE = "rodsuser";
-	private final static String RODS_USER = "rodsuser";
-	private final static String RODS_GROUP_ADMIN = "groupadmin";
-	private final static String RODS_ADMIN = "rodsadmin";
-	
-	private final static String HPC_USER = "hpcuser";
-	private final static String HPC_GROUP_ADMIN = "hpcgroupadmin";
-	private final static String HPC_ADMIN = "hpcadmin";
-	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -105,24 +89,13 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	String userType = null;
-    	if(userRegistrationDTO.getDataManagementUserType() == null)
-    		userType = DEFAULT_ROLE;
-    	else if (userRegistrationDTO.getDataManagementUserType().equals(HPC_USER))
-			userType = RODS_USER;
-		else if (userRegistrationDTO.getDataManagementUserType().equals(HPC_GROUP_ADMIN))
-			userType = RODS_GROUP_ADMIN;
-		else if (userRegistrationDTO.getDataManagementUserType().equals(HPC_ADMIN))
-			userType = RODS_ADMIN;
-		else
-			throw new HpcException("Invalid dataManagementUserType. Valid values are {hpcuser, hpcgroupadmin, hpcadmin}",
-	                  HpcErrorType.INVALID_REQUEST_INPUT);	
-		
     	// Create data management account if not provided.
     	if(userRegistrationDTO.getDataManagementAccount() == null) {
     	   // Create a data management account.
+    	   HpcUserRole role = userRegistrationDTO.getUserRole() != null ?
+    			              userRegistrationDTO.getUserRole() : HpcUserRole.USER;
     	   dataManagementService.addUser(
-    			         userRegistrationDTO.getNciAccount(), userType);
+    			         userRegistrationDTO.getNciAccount(), role);
     	   
     	   // Add the new account to the DTO.
     	   HpcIntegratedSystemAccount dataManagementAccount = 
@@ -226,8 +199,8 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	authenticationResponse.setAuthenticated(ldapAuthentication ? userAuthenticated : true);	                
     	authenticationResponse.setUserRole(
     			      user.getDataManagementAccount() != null ? 
-    			      dataManagementService.getUserType(user.getDataManagementAccount().getUsername()) : 
-    			      NOT_REGISTERED_ROLE);
+    			      dataManagementService.getUserRole(user.getDataManagementAccount().getUsername()) : 
+    			      HpcUserRole.NOT_REGISTERED);
     	
     	return authenticationResponse;
     }

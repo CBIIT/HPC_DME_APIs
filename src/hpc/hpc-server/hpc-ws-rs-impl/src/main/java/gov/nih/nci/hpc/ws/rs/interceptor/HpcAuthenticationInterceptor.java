@@ -108,7 +108,7 @@ public class HpcAuthenticationInterceptor
              }
              
              // Set a security context with the user's role.
-             HpcSecurityContext sc = new HpcSecurityContext(authenticationResponse.getUserRole());
+             HpcSecurityContext sc = new HpcSecurityContext(authenticationResponse.getUserRole().value());
              message.put(SecurityContext.class, sc);
              
         } catch(HpcException e) {

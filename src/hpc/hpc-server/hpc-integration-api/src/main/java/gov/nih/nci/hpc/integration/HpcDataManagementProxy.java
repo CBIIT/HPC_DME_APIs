@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
+import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -264,28 +265,28 @@ public interface HpcDataManagementProxy
    		                                               throws HpcException;   
     
     /**
-     * Get the user type.
+     * Get the user's role.
      *
      * @param authenticatedToken An authenticated token.
      * @param username The user name of the account to get its type.
-     * @return The user's type.
+     * @return HpcUserRole The user's type.
      * 
      * @throws HpcException
      */
-    public String getUserType(Object authenticatedToken, String username) 
-    		                 throws HpcException;   
+    public HpcUserRole getUserRole(Object authenticatedToken, String username) 
+    		                      throws HpcException;   
     
     /**
      * Add a user.
      *
      * @param authenticatedToken An authenticated token.
      * @param nciAccount The NCI account of the user to be added to data management.
-     * @param userType The iRODS user type to assign to the new user.
+     * @param userRole The HPC user role to assign to the new user.
      * 
      * @throws HpcException If it failed to add a user or user already exists.
      */
     public void addUser(Object authenticatedToken,
-    		            HpcNciAccount nciAccount, String userType) 
+    		            HpcNciAccount nciAccount, HpcUserRole userRole) 
     		           throws HpcException;
     
     /**

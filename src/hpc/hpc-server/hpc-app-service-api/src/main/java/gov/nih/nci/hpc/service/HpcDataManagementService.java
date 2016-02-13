@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
+import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -253,24 +254,25 @@ public interface HpcDataManagementService
     public List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException;
     
     /**
-     * Get the user type of a given user's name.
+     * Get the role of a given user's name.
      *
      * @param username The user's name.
-     * @return The user's type
+     * @return HpcUserRole The user's role.
      * 
      * @throws HpcException
      */
-    public String getUserType(String username) throws HpcException;  
+    public HpcUserRole getUserRole(String username) throws HpcException;  
     
     /**
      * Add a user.
      *
      * @param nciAccount The NCI account of the user to be added to data management.
-     * @param userType The iRODS user type to assign to the new user.
+     * @param userRole The HPC user role to assign to the new user.
      * 
      * @throws HpcException
      */
-    public void addUser(HpcNciAccount nciAccount, String userType) throws HpcException;
+    public void addUser(HpcNciAccount nciAccount, HpcUserRole userRole) 
+    		           throws HpcException;
     
     /**
      * Close connection to Data Management system for the current service call.

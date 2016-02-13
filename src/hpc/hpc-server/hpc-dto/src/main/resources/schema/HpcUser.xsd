@@ -29,7 +29,7 @@
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 				<xsd:element name="dataManagementAccount"
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
-				<xsd:element name="dataManagementUserType" type="xsd:string" />
+				<xsd:element name="userRole" type="hpc-domain-user:HpcUserRole" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -48,7 +48,7 @@
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="authenticated" type="xsd:boolean" />
-				<xsd:element name="userRole" type="xsd:string" />
+				<xsd:element name="userRole" type="hpc-domain-user:HpcUserRole" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
