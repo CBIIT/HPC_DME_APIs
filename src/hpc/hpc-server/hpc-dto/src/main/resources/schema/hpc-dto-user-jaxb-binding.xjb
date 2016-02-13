@@ -38,6 +38,9 @@
 			<jxb:bindings node="//xsd:simpleType[@name='HpcIntegratedSystem']">
                 <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.user.HpcIntegratedSystem"/>
             </jxb:bindings>
+            <jxb:bindings node="//xsd:simpleType[@name='HpcUserRole']">
+                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.user.HpcUserRole"/>
+            </jxb:bindings>
 		    <jxb:bindings node="//xsd:complexType[@name='HpcIntegratedSystemAccount']">
                 <jxb:class ref="gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount"/>
             </jxb:bindings>
