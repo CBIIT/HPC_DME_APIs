@@ -47,14 +47,14 @@ public class HpcUserDAOImpl implements HpcUserDAO
     // SQL Queries.
 	public final static String UPSERT_SQL = 
 		   "insert into public.\"HPC_USER\" ( " +
-                    "\"USER_ID\", \"FIRST_NAME\", \"LAST_NAME\", " +
+                    "\"USER_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"DOC\", " +
                     "\"GLOBUS_USERNAME\", \"GLOBUS_PASSWORD\", " +
                     "\"IRODS_USERNAME\", \"IRODS_PASSWORD\", " +
                     "\"CREATED\", \"LAST_UPDATED\") " +
-                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 	
 	/* Add this back in when we upgrade to PostgreSQL 9.5
-            + "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", " +
+            + "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", \"DOC\", " +
                                                   "\"LAST_NAME\"=excluded.\"LAST_NAME\", " +
                                                   "\"GLOBUS_USERNAME\"=excluded.\"GLOBUS_USERNAME\", " +
                                                   "\"GLOBUS_PASSWORD\"=excluded.\"GLOBUS_PASSWORD\", " +
@@ -106,6 +106,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		                         user.getNciAccount().getUserId(),
 		                         user.getNciAccount().getFirstName(),
 		                         user.getNciAccount().getLastName(),
+		                         user.getNciAccount().getDOC(),
 		                         user.getDataTransferAccount().getUsername(),
 		                         encryptor.encrypt(user.getDataTransferAccount().getPassword()),
 		                         user.getDataManagementAccount().getUsername(),
@@ -147,6 +148,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 			nciAccount.setUserId(rs.getString("USER_ID"));
 			nciAccount.setFirstName(rs.getString("FIRST_NAME"));
 			nciAccount.setLastName(rs.getString("LAST_NAME"));
+			nciAccount.setDOC(rs.getString("DOC"));
 			
 			HpcIntegratedSystemAccount dataTransferAccount = new HpcIntegratedSystemAccount();
 			dataTransferAccount.setIntegratedSystem(HpcIntegratedSystem.GLOBUS);

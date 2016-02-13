@@ -24,6 +24,7 @@
 	<!-- HPC Application Services OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		<prop key="hpc.service.metadataValidationRulesPath">${karaf.base}/etc/hpc-server/metadataValidationRules.json</prop>
+		<prop key="hpc.service.user.DOC">FNLCR CCBR</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
