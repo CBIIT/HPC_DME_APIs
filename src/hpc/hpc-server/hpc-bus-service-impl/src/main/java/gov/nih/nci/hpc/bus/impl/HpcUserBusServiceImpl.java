@@ -134,6 +134,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	userDTO.setNciAccount(user.getNciAccount());
     	userDTO.setDataTransferAccount(user.getDataTransferAccount());
     	userDTO.setDataManagementAccount(user.getDataManagementAccount());
+    	userDTO.setUserRole(dataManagementService.getUserRole(nciUserId));
     	
     	// Mask passwords.
     	maskPasswords(userDTO);
