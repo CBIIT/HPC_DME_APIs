@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
+import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
@@ -474,8 +475,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	}
     
     @Override
-    public String getUserType(Object authenticatedToken, String username) 
-    		                 throws HpcException
+    public HpcUserRole getUserRole(Object authenticatedToken, String username) 
+    		                      throws HpcException
     {
 		try {
 			 User user = irodsConnection.getUserAO(authenticatedToken).findByName(username);
@@ -483,9 +484,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 				return null;  
 			 }
 			 
-			 // Bypassing a Jargon defect returning unknown for a groupadmin.
-			 return user.getUserType().equals(UserTypeEnum.RODS_UNKNOWN) ? 
-					"groupadmin" :  user.getUserType().getTextValue();
+			 return toHpcUserRole(user.getUserType());
 	
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get user type: " + 
@@ -496,23 +495,16 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     
     @Override
     public void addUser(Object authenticatedToken,
-                        HpcNciAccount nciAccount, String userType) 
+                        HpcNciAccount nciAccount, HpcUserRole userRole) 
                        throws HpcException
     {
-    	// Input validation
-    	UserTypeEnum userTypeEnum = UserTypeEnum.findTypeByString(userType);
-    	if(userTypeEnum.equals(UserTypeEnum.RODS_UNKNOWN)) {
-    	   throw new HpcException("Invalid Data Management User Type: " + userType,
-                                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-    	
     	// Instantiate an iRODS user domain object.
     	User irodsUser = new User();
     	irodsUser.setName(nciAccount.getUserId());
     	irodsUser.setInfo(nciAccount.getFirstName() + " " + nciAccount.getLastName());
     	irodsUser.setComment("Created by HPC-DM API");
     	irodsUser.setZone(irodsConnection.getZone());
-    	irodsUser.setUserType(userTypeEnum);
+    	irodsUser.setUserType(toIRODSUserType(userRole));
     	
     	// Add the user to iRODS.
     	try {
@@ -791,6 +783,12 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	    return hpcDataObject;
     }
 
+    /**
+     * Append the base path to the user's provided path.
+     *
+     * @param path The user's path.
+     * @return An absolute iRODS path
+     */
     private String addPath(String path)
     {
     	if(path == null) {
@@ -802,6 +800,12 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
         }
     }
 
+    /**
+     * Extract user's path from an absolute path.
+     *
+     * @param path The absolute path.
+     * @return The user's path
+     */
     private String removePath(String path)
     {
     	if(path == null)
@@ -813,6 +817,47 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		return path;
     }
 
+    /**
+     * Convert an iRODS user type to HPC user role.
+     *
+     * @param userType The absolute path.
+     * @return The user's path
+     */
+    private HpcUserRole toHpcUserRole(UserTypeEnum irodsUserType)
+    {
+    	switch(irodsUserType) {
+    	       case RODS_ADMIN:
+    		        return HpcUserRole.SYSTEM_ADMIN;
+    	       case RODS_USER:
+    	    	    return HpcUserRole.USER;
+    	       case RODS_UNKNOWN: 
+    	    	    // Current Jargon API doesn't support GROUP_ADMIN. This is a workaround 
+    	    	    return HpcUserRole.GROUP_ADMIN;
+    	       default:
+    	    	    return HpcUserRole.NOT_REGISTERED;
+    	}
+    }
+    
+    /**
+     * Convert an HPC user role to iRODS user type.
+     *
+     * @param userType The absolute path.
+     * @return The user's path
+     */
+    private UserTypeEnum toIRODSUserType(HpcUserRole userRole)
+    {
+    	switch(userRole) {
+    	       case SYSTEM_ADMIN:
+    		        return UserTypeEnum.RODS_ADMIN;
+    	       case USER:
+    	    	    return UserTypeEnum.RODS_USER;
+    	       case GROUP_ADMIN: 
+    	    	    // Current Jargon API doesn't support GROUP_ADMIN. This is a workaround.
+    	    	    return UserTypeEnum.RODS_USER;
+    	       default:
+    	    	    return UserTypeEnum.RODS_UNKNOWN;
+    	}
+    }
 }
 
  
