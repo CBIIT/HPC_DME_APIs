@@ -82,17 +82,6 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"registered_by_doc",
-            "mandatory":true,
-            "collectionType":"Project",
-            "validValues":[  
-               "FNLCR",
-               "CCBR"
-            ],
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
             "attribute":"name",
             "mandatory":true,
             "collectionType":"Dataset",
@@ -139,30 +128,19 @@
 	     "ruleEnabled":true,
 	     "DOC":"DOC-NAME"
 	  },
-	  {  
-	     "attribute":"registered_by_doc",
-	     "mandatory":true,
-	     "collectionType":"Project",
-	     "validValues":[  
-		"FNLCR",
-		"CCBR"
-	     ],
-	     "ruleEnabled":true,
-	     "DOC":"DOC-NAME"
-         },
-         {  
-            "attribute":"phi_content",
-            "mandatory":true,
-            "collectionType":"Dataset",
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "PHI Present",
-               "PHI Not Present",
-               "Not Specified"
-            ],
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
+      {  
+	        "attribute":"phi_content",
+	        "mandatory":true,
+	        "collectionType":"Dataset",
+	        "defaultValue":"Unspecified",
+	        "validValues":[  
+	           "Unspecified",
+	           "PHI Present",
+	           "PHI Not Present",
+	           "Not Specified"
+	        ],
+	        "ruleEnabled":true,
+	        "DOC":"DOC-NAME"
          },
          {  
             "attribute":"pii_content",
@@ -359,16 +337,6 @@
             "DOC":"DOC-NAME"
          },
          {  
-            "attribute":"registered_by_doc",
-            "mandatory":true,
-            "validValues":[  
-               "FNLCR",
-               "CCBR"
-            ],
-            "ruleEnabled":true,
-            "DOC":"DOC-NAME"
-         },
-         {  
 	     "attribute":"phi_content",
 	     "mandatory":true,
 	     "collectionType":"Dataset",
@@ -536,11 +504,13 @@
       ],
       "collectionSystemGeneratedMetadataAttributes" : [ "uuid",
                                                         "registered_by",
-                                                        "registered_by_name"
+                                                        "registered_by_name",
+                                                        "registered_by_doc"
                                                       ],
       "dataObjectSystemGeneratedMetadataAttributes" : [ "uuid",
                                                         "registered_by",
                                                         "registered_by_name",
+                                                        "registered_by_doc",
                                                         "source_globus_endpoint",
                                                         "source_globus_path",
                                                         "data_globus_endpoint",
