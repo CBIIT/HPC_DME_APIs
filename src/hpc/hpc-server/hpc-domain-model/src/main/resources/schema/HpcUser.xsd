@@ -41,9 +41,11 @@
 				<xsd:element name="nciAccount" type="hpc-domain-user:HpcNciAccount" />
 				<xsd:element name="dataTransferAccount"
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
+			    <xsd:element name="dataTransferAuthenticatedToken" type="xsd:anyType" />
 				<xsd:element name="dataManagementAccount"
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 				<xsd:element name="dataManagementAuthenticatedToken" type="xsd:anyType" />
+				
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

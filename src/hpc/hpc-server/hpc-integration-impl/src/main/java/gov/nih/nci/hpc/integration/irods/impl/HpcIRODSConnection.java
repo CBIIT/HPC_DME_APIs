@@ -299,7 +299,7 @@ public class HpcIRODSConnection
      * Get iRODS Account instance from an authenticated token.
      * 
      * @param authenticatedToken An authenticated token.
-     *
+     * @return An authenticated iRODS account object.
      * @throws HpcException
      */
     private IRODSAccount getIrodsAccount(Object authenticatedToken) 

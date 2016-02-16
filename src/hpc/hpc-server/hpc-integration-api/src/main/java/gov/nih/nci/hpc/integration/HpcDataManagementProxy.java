@@ -40,7 +40,7 @@ public interface HpcDataManagementProxy
     }
 	
     /**
-     * Authenticate the invoker w/ iRODS.
+     * Authenticate the invoker w/ the data management system.
      *
      * @param dataManagementAccount The Data Management account to authenticate.
      * @return An authenticated token, to be used in subsequent calls to data management.

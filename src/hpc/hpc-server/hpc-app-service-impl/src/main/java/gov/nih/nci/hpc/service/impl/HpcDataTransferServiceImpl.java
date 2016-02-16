@@ -10,7 +10,6 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -77,7 +76,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
         	
-  	    return dataTransferProxy.transferData(getDataTransferAccount(), 
+  	    return dataTransferProxy.transferData(getAuthenticatedToken(), 
   	    		                              source, destination);
     }
     
@@ -90,7 +89,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		
-		return dataTransferProxy.getDataTransferStatus(getDataTransferAccount(), 
+		return dataTransferProxy.getDataTransferStatus(getAuthenticatedToken(), 
            	                                           dataTransferRequestId);
     }	
 	
@@ -121,20 +120,39 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     //---------------------------------------------------------------------//  
 	
     /**
-     * Get the data transfer account from the request context.
+     * Get the data transfer authenticated token from the request context.
+     * If it's not in the context, get a token by authenticating.
      *
-     * @throws HpcException If the account is not set or invalid.
+     * @throws HpcException If it failed to obtain an authentication token.
      */
-    private HpcIntegratedSystemAccount getDataTransferAccount() throws HpcException
+    private Object getAuthenticatedToken() throws HpcException
     {
     	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
-    	if(invoker == null || 
-    	   !isValidIntegratedSystemAccount(invoker.getDataTransferAccount())) {
-	       throw new HpcException("Unknown user or invalid data transfer account",
-			                      HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
+    	if(invoker == null) {
+	       throw new HpcException("Unknown user",
+			                      HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);
     	}
     	
-    	return invoker.getDataTransferAccount();
+    	if(invoker.getDataTransferAuthenticatedToken() != null) {
+    	   return invoker.getDataTransferAuthenticatedToken();
+    	}
+    	
+    	// No authenticated token found in the request token. Authenticate the invoker.
+    	if(invoker.getDataTransferAccount() == null) {
+    		throw new HpcException("Unknown data transfer account",
+                                   HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);
+    	}
+    	
+    	// Authenticate w/ data management
+    	Object token = dataTransferProxy.authenticate(invoker.getDataTransferAccount());
+    	if(token == null) {
+    	   throw new HpcException("Invalid data transfer account credentials",
+                                  HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);
+    	}
+    	
+    	// Store token on the request context.
+    	invoker.setDataTransferAuthenticatedToken(token);
+    	return token;
     }
 }
  
