@@ -78,6 +78,7 @@ public class HPCDatafiles extends HPCBatchClient {
 			for (int i = 0; i < csvRecords.size(); i++) {
 				CSVRecord record = csvRecords.get(i);
             	boolean processedRecordFlag = true;
+				HpcFileLocation source = new HpcFileLocation();
 
 				List<HpcMetadataEntry> listOfhpcCollection = new ArrayList<HpcMetadataEntry>();
 				for (Entry<String, Integer> entry : headersMap.entrySet()) {
@@ -85,6 +86,22 @@ public class HPCDatafiles extends HPCBatchClient {
 					HpcMetadataEntry hpcMetadataEntry = new HpcMetadataEntry();
 					hpcMetadataEntry.setAttribute(entry.getKey());
 					hpcMetadataEntry.setValue(cellVal);
+					if(entry.getKey().equals("source_globus_endpoint"))
+					{
+						source.setEndpoint(cellVal);
+						continue;
+					}
+					else if(entry.getKey().equals("source_globus_path"))
+					{
+						source.setPath(cellVal);
+						continue;
+					}
+					else if(entry.getKey().equals("object_path"))
+					{
+						collName = cellVal;
+						continue;
+					}
+						
 					if (StringUtils.isNotBlank(cellVal))
 						listOfhpcCollection.add(hpcMetadataEntry);
 				}
@@ -92,20 +109,11 @@ public class HPCDatafiles extends HPCBatchClient {
 				HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationDTO();
 				hpcDataObjectRegistrationDTO.getMetadataEntries().addAll(listOfhpcCollection);
 
-				HpcFileLocation source = new HpcFileLocation();
-				source.setEndpoint(
-						getAttributeValueByName(Constants.FILE_SOURCE_ENDPOINT, hpcDataObjectRegistrationDTO));
-				String filePath = getAttributeValueByName(Constants.FILE_SOURCE_FILE_PATH, hpcDataObjectRegistrationDTO);
-						//+ "/" + getAttributeValueByName(Constants.OBJECT_PATH, hpcDataObjectRegistrationDTO);
-				//String destinationPath = getAttributeValueByName(Constants.DESTINATION_PATH, hpcDataObjectRegistrationDTO);
-				System.out.println("Adding file from " + filePath);
-				source.setPath(filePath);
+				System.out.println("Adding file from " + source.getPath());
+				
 				
 				hpcDataObjectRegistrationDTO.setSource(source);
 				hpcDataObjectRegistrationDTO.setFilePath("/");
-				collName = getAttributeValueByName(Constants.OBJECT_PATH, hpcDataObjectRegistrationDTO);
-				// collName = URLEncoder.encode(parentCollection) + "/" +
-				// URLEncoder.encode(collName);
 				RestTemplate restTemplate = HpcClientUtil.getRestTemplate(userId, password,hpcCertPath, hpcCertPassword);
 				restTemplate.setErrorHandler(new HpcResponseErrorHandler());
 				HttpHeaders headers = new HttpHeaders();
@@ -129,7 +137,6 @@ public class HPCDatafiles extends HPCBatchClient {
 					if(response != null)
 					{
 						HpcExceptionDTO exception = response.getBody();
-						System.out.println("exception "+exception);
 						if(exception != null)
 						{
 							String message = "Failed to process record due to: "+exception.getMessage() + ": Error Type:"+exception.getErrorType().value() + ": Request reject reason: "+exception.getRequestRejectReason().value();

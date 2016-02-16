@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.ResponseErrorHandler;
 
@@ -27,6 +28,8 @@ public class HpcResponseErrorHandler implements ResponseErrorHandler {
 	public void handleError(ClientHttpResponse response) throws IOException {
 			String body = IOUtils.toString(response.getBody());
 			
+			if(response.getStatusCode().equals(HttpStatus.CREATED) || response.getStatusCode().equals(HttpStatus.OK))
+				return;
 			//InputStream stream = response.getBody();
 			JsonObjectMapper mapper = new JsonObjectMapper();
 			HpcExceptionDTO dto = mapper.readValue(body, HpcExceptionDTO.class);
