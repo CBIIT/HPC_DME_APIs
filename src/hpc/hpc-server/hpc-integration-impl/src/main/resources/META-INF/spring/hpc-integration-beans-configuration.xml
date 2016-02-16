@@ -31,18 +31,6 @@
 	<bean id="hpcDataTransferProxy" 
 	      class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl" />
 	
-	<!--  HPC Data Transfer Account Validators -->
-	<bean id="hpcDataTransferAccountValidatorProvider" class="gov.nih.nci.hpc.integration.impl.HpcDataTransferAccountValidatorProviderImpl">
-		<constructor-arg>
-			<map>
-				<entry key="GLOBUS" value-ref="hpcGlobusDataTransferAccountValidatorProxy" />
-			</map>
-		</constructor-arg>
-	</bean>
-
-	<bean id="hpcGlobusDataTransferAccountValidatorProxy"
-		class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl" />
-	
 	<!-- HPC LDAP Authentication Proxy -->
 	<bean id="hpcLdapAuthenticationProxy"
 		class="gov.nih.nci.hpc.integration.ldap.authentication.HpcLdapAuthenticationProxyImpl">

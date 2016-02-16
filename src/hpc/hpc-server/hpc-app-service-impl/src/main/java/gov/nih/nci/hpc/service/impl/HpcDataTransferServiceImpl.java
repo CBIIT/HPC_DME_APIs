@@ -17,8 +17,6 @@ import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProvider;
-import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 
@@ -42,11 +40,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     // The Data Transfer Proxy.
 	@Autowired
     private HpcDataTransferProxy dataTransferProxy = null;
-    
-    // The Data Transfer Account Validator Provider.
-	@Autowired
-    private HpcDataTransferAccountValidatorProvider 
-                                  dataTransferAccountValidatorProvider = null;
     
     //---------------------------------------------------------------------//
     // Constructors
@@ -103,16 +96,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}	
     	
-    	// Get the validator for this account type.
-    	HpcDataTransferAccountValidatorProxy validator = 
-    	   dataTransferAccountValidatorProvider.get(
-    			                       dataTransferAccount.getIntegratedSystem());
-    	if(validator == null) {
-    	   throw new HpcException("Could not locate a validator for: " +
-    			                  dataTransferAccount.getIntegratedSystem(), 
-	                              HpcErrorType.UNEXPECTED_ERROR);
-    	}
-		return validator.validateDataTransferAccount(dataTransferAccount);
+		return (dataTransferProxy.authenticate(dataTransferAccount) != null);
 	}  
 
     //---------------------------------------------------------------------//

@@ -41,8 +41,6 @@
 		          interface="gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy" />
 	<osgi:service ref="hpcDataTransferProxy"
 		          interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
-	<osgi:service ref="hpcDataTransferAccountValidatorProvider"
-		          interface="gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProvider" />
 	<osgi:service ref="hpcDataManagementProxy"
 		          interface="gov.nih.nci.hpc.integration.HpcDataManagementProxy" />
 
