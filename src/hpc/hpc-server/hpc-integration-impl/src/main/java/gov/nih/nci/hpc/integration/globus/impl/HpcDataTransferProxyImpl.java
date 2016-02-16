@@ -6,7 +6,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 
 import java.util.Calendar;
@@ -15,8 +14,6 @@ import java.util.Map;
 
 import javax.xml.bind.DatatypeConverter;
 
-import org.globusonline.nexus.GoauthClient;
-import org.globusonline.nexus.exception.InvalidCredentialsException;
 import org.globusonline.transfer.APIError;
 import org.globusonline.transfer.BaseTransferAPIClient;
 import org.globusonline.transfer.JSONTransferAPIClient;
@@ -25,8 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class HpcDataTransferProxyImpl 
-       implements HpcDataTransferProxy, HpcDataTransferAccountValidatorProxy 
+public class HpcDataTransferProxyImpl implements HpcDataTransferProxy 
 {
     //---------------------------------------------------------------------//
     // Constants
@@ -189,37 +185,6 @@ public class HpcDataTransferProxyImpl
 	        		     "Failed to get task report for task: " + dataTransferRequestId, 
 	        		     HpcErrorType.DATA_TRANSFER_ERROR, e);
 		} 
-    }
-    
-    //---------------------------------------------------------------------//
-    // HpcDataTransferAccountValidatorProxy Interface Implementation
-    //---------------------------------------------------------------------//  
-      
-    @Override
-    public boolean validateDataTransferAccount(
-                               HpcIntegratedSystemAccount dataTransferAccount) 
-                        	   throws HpcException
-    {
-    	try
-    	{    	
-            GoauthClient cli = new GoauthClient("nexus.api.globusonline.org", "www.globusonline.org", 
-            		                            dataTransferAccount.getUsername(), 
-            		                            dataTransferAccount.getPassword());
-    		JSONObject accessTokenJSON = cli.getClientOnlyAccessToken();
-    		String accessToken = accessTokenJSON.getString("access_token");
-    		logger.debug("Client only access token: " + accessToken);
-    		cli.validateAccessToken(accessToken);
-    		
-    	} catch(InvalidCredentialsException ice) {
-    		    return false;
-    		    
-	    } catch(Exception e) {
-	    	    throw new HpcException("Failed to invoke GLOBUS account validation",
-	    	    		               HpcErrorType.DATA_TRANSFER_ERROR);
-	        	
-	    }
-    	
-    	return true;
     }
     
     //---------------------------------------------------------------------//
