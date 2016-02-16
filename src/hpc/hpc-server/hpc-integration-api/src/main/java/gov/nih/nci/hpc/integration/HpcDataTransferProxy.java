@@ -26,46 +26,59 @@ import gov.nih.nci.hpc.exception.HpcException;
  */
 
 public interface HpcDataTransferProxy 
-{         
+{    
+    /**
+     * Authenticate the invoker w/ the data transfer system.
+     *
+     * @param dataTransferAccount The Data Transfer account to authenticate.
+     * @return An authenticated token, to be used in subsequent calls to data transfer.
+     *         It returns null if the account is not authenticated.
+     * 
+     * @throws HpcException
+     */
+    public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount) 
+    		                  throws HpcException;
+    
     /**
      * Transfer a data file.
      *
-     * @param dataTransferAccount The data transfer account.
-     * @param dataTransferLocations The file source/destination.
+     * @param authenticatedToken An authenticated token.
+     * @param source The transfer source.
+     * @param destination The transfer destination.
      * 
      * @return A data transfer request ID.
      * 
      * @throws HpcException
      */
-    public String transferData(HpcIntegratedSystemAccount dataTransferAccount,
+    public String transferData(Object authenticatedToken,
     		                   HpcFileLocation source, HpcFileLocation destination) 
     		                  throws HpcException;
 
     /**
      * Get a data transfer request status.
      *
-     * @param dataTransferAccount The data transfer account.
+     * @param authenticatedToken An authenticated token.
      * @param dataTransferRequestId The data transfer request ID.
      * 
      * @return HpcDataTransferStatus the data transfer request status.
      * 
      * @throws HpcException
      */
-    public HpcDataTransferStatus getDataTransferStatus(HpcIntegratedSystemAccount dataTransferAccount,
+    public HpcDataTransferStatus getDataTransferStatus(Object authenticatedToken,
     		                                           String dataTransferRequestId) 
     		                                          throws HpcException;
     
     /**
      * Get a data transfer report.
      *
-    * @param dataTransferAccount The data transfer account.
+     * @param authenticatedToken An authenticated token.
      * @param dataTransferRequestId The data transfer request ID.
      * 
      * @return HpcDataTransferReport the data transfer report for the request.
      * 
      * @throws HpcException
      */
-    public HpcDataTransferReport getDataTransferReport(HpcIntegratedSystemAccount dataTransferAccount,
+    public HpcDataTransferReport getDataTransferReport(Object authenticatedToken,
     		                                           String dataTransferRequestId) 
     		                                          throws HpcException;
 }

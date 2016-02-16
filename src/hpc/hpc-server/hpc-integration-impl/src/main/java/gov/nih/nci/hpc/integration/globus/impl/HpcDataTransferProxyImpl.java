@@ -8,7 +8,6 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferAccountValidatorProxy;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
-import gov.nih.nci.hpc.integration.globus.driver.HpcGOTransfer;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -24,6 +23,7 @@ import org.globusonline.transfer.JSONTransferAPIClient;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class HpcDataTransferProxyImpl 
        implements HpcDataTransferProxy, HpcDataTransferAccountValidatorProxy 
@@ -40,8 +40,9 @@ public class HpcDataTransferProxyImpl
     // Instance members
     //---------------------------------------------------------------------//
 	
-	// The Globus Online transfer instance.
-    private HpcGOTransfer hpcGOTransfer = null;
+	// The Globus connection instance.
+	@Autowired
+    private HpcGlobusConnection globusConnection = null;
     
 	// The Logger instance.
 	private final Logger logger = 
@@ -51,28 +52,12 @@ public class HpcDataTransferProxyImpl
     // Constructors
     //---------------------------------------------------------------------//
 	
-    public HpcDataTransferProxyImpl() throws HpcException
-    {
-    	throw new HpcException("Constructor Disabled",
-                HpcErrorType.SPRING_CONFIGURATION_ERROR);
-    }
-
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param HpcGOTransfer instance.
-     * 
-     * @throws HpcException If a HpcGOTransfer instance was not provided.
      */
-    @SuppressWarnings("unused")
-	private HpcDataTransferProxyImpl(HpcGOTransfer hpcGOTransfer) throws HpcException
+	private HpcDataTransferProxyImpl()
     {
-    	if(hpcGOTransfer == null) {
-    	   throw new HpcException("Null HpcGOTransfer instance",
-    			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
-    	}
-    	
-    	this.hpcGOTransfer = hpcGOTransfer;
     }
     
     //---------------------------------------------------------------------//
@@ -84,96 +69,19 @@ public class HpcDataTransferProxyImpl
     //---------------------------------------------------------------------//  
     
     @Override
-    public String transferData(HpcIntegratedSystemAccount dataTransferAccount,
+    public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount) 
+		                      throws HpcException
+    {
+    	return globusConnection.authenticate(dataTransferAccount);
+    }
+    
+    @Override
+    public String transferData(Object authenticatedToken,
     		                   HpcFileLocation source, HpcFileLocation destination)
     		                  throws HpcException
     {
-    	try {
-    	     hpcGOTransfer.setTransferCient(dataTransferAccount.getUsername(), 
-    	    		                        dataTransferAccount.getPassword());
-    	     
-    	} catch(Exception e) {
-    		    throw new HpcException("Failed to create Globus transfer client",
-		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
-    	}
-    	
-    	return transfer(source, destination);
-    }
-    
-    @Override
-    public HpcDataTransferStatus getDataTransferStatus(HpcIntegratedSystemAccount dataTransferAccount,
-                                                       String dataTransferRequestId) 
-                                                      throws HpcException
-    {
-		 HpcDataTransferReport report = getDataTransferReport(dataTransferAccount, 
-				                                              dataTransferRequestId);
-		 if(report.getStatus().equals(ARCHIVED_STATUS)) {
-			return HpcDataTransferStatus.ARCHIVED;
-		 }
-
-		 if(report.getStatus().equals(FAILED_STATUS)) {
- 			return HpcDataTransferStatus.FAILED;
- 		 }
-		 
-		 return HpcDataTransferStatus.IN_PROGRESS;
-    }
-    
-    @Override
-    public HpcDataTransferReport getDataTransferReport(HpcIntegratedSystemAccount dataTransferAccount,
-                                                       String dataTransferRequestId) 
-                                                      throws HpcException
-    {
-    	try {
-		     hpcGOTransfer.setTransferCient(dataTransferAccount.getUsername(), 
-		    		                        dataTransferAccount.getPassword());	        
-		     return getTaskStatusReport(dataTransferRequestId);
-		     
-        } catch(Exception e) {
-        	    throw new HpcException("Failed to get data transfer report for task-id: " + 
-        	                           dataTransferRequestId, 
-   		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
-        }
-    }
-    
-    //---------------------------------------------------------------------//
-    // HpcDataTransferAccountValidatorProxy Interface Implementation
-    //---------------------------------------------------------------------//  
-      
-    @Override
-    public boolean validateDataTransferAccount(
-                               HpcIntegratedSystemAccount dataTransferAccount) 
-                        	   throws HpcException
-    {
-    	try
-    	{    	
-            GoauthClient cli = new GoauthClient("nexus.api.globusonline.org", "www.globusonline.org", 
-            		                            dataTransferAccount.getUsername(), 
-            		                            dataTransferAccount.getPassword());
-    		JSONObject accessTokenJSON = cli.getClientOnlyAccessToken();
-    		String accessToken = accessTokenJSON.getString("access_token");
-    		logger.debug("Client only access token: " + accessToken);
-    		cli.validateAccessToken(accessToken);
-    		
-    	} catch(InvalidCredentialsException ice) {
-    		    return false;
-    		    
-	    } catch(Exception e) {
-	    	    throw new HpcException("Failed to invoke GLOBUS account validation",
-	    	    		               HpcErrorType.DATA_TRANSFER_ERROR);
-	        	
-	    }
-    	
-    	return true;
-    }
-    
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-    
-    private String transfer(HpcFileLocation source, HpcFileLocation destination)
-                           throws HpcException 
-    {
-    	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();
+    	JSONTransferAPIClient client = 
+    			       globusConnection.getTransferClient(authenticatedToken);
     	
         if (!autoActivate(source.getEndpoint(), client) || 
         	!autoActivate(destination.getEndpoint(), client)) {
@@ -206,20 +114,40 @@ public class HpcDataTransferProxyImpl
         }
     }
     
-    private HpcDataTransferReport getTaskStatusReport(String taskId)
-                                                     throws HpcException 
+    @Override
+    public HpcDataTransferStatus getDataTransferStatus(Object authenticatedToken,
+                                                       String dataTransferRequestId) 
+                                                      throws HpcException
     {
-    	JSONTransferAPIClient client = hpcGOTransfer.getTransferClient();
+		 HpcDataTransferReport report = getDataTransferReport(authenticatedToken, 
+				                                              dataTransferRequestId);
+		 if(report.getStatus().equals(ARCHIVED_STATUS)) {
+			return HpcDataTransferStatus.ARCHIVED;
+		 }
+
+		 if(report.getStatus().equals(FAILED_STATUS)) {
+ 			return HpcDataTransferStatus.FAILED;
+ 		 }
+		 
+		 return HpcDataTransferStatus.IN_PROGRESS;
+    }
+    
+    @Override
+    public HpcDataTransferReport getDataTransferReport(Object authenticatedToken,
+                                                       String dataTransferRequestId) 
+                                                      throws HpcException
+    {
+    	JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
     	HpcDataTransferReport hpcDataTransferReport = new HpcDataTransferReport();
     	
         JSONTransferAPIClient.Result r;
-        String resource = "/task/" +  taskId;
+        String resource = "/task/" +  dataTransferRequestId;
        // Map<String, String> params = new HashMap<String, String>();
     //    params.put("fields", "status");
         try {
 	        r = client.getResult(resource);
 	        r.document.getString("status");
-	        hpcDataTransferReport.setTaskID(taskId);
+	        hpcDataTransferReport.setTaskID(dataTransferRequestId);
 			hpcDataTransferReport.setTaskType(r.document.getString("type"));
 	        hpcDataTransferReport.setStatus(r.document.getString("status"));
 	        if (r.document.has("request_time") && !r.document.isNull("request_time"))
@@ -258,11 +186,46 @@ public class HpcDataTransferProxyImpl
 			
 		} catch(Exception e) {
 	        throw new HpcException(
-	        		     "Failed to get task report for task: " + taskId, 
+	        		     "Failed to get task report for task: " + dataTransferRequestId, 
 	        		     HpcErrorType.DATA_TRANSFER_ERROR, e);
 		} 
     }
-
+    
+    //---------------------------------------------------------------------//
+    // HpcDataTransferAccountValidatorProxy Interface Implementation
+    //---------------------------------------------------------------------//  
+      
+    @Override
+    public boolean validateDataTransferAccount(
+                               HpcIntegratedSystemAccount dataTransferAccount) 
+                        	   throws HpcException
+    {
+    	try
+    	{    	
+            GoauthClient cli = new GoauthClient("nexus.api.globusonline.org", "www.globusonline.org", 
+            		                            dataTransferAccount.getUsername(), 
+            		                            dataTransferAccount.getPassword());
+    		JSONObject accessTokenJSON = cli.getClientOnlyAccessToken();
+    		String accessToken = accessTokenJSON.getString("access_token");
+    		logger.debug("Client only access token: " + accessToken);
+    		cli.validateAccessToken(accessToken);
+    		
+    	} catch(InvalidCredentialsException ice) {
+    		    return false;
+    		    
+	    } catch(Exception e) {
+	    	    throw new HpcException("Failed to invoke GLOBUS account validation",
+	    	    		               HpcErrorType.DATA_TRANSFER_ERROR);
+	        	
+	    }
+    	
+    	return true;
+    }
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//  
+    
     private Calendar convertToLexicalTime(String timeStr) 
     {
     	if (timeStr == null || "null".equalsIgnoreCase(timeStr))    	
