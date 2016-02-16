@@ -21,22 +21,16 @@
 	                       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 	<context:annotation-config />
 	
+	<!--  HPC Globus Connection  -->
+	<bean id="hpcGlobusConnection" class="gov.nih.nci.hpc.integration.globus.impl.HpcGlobusConnection">
+		<constructor-arg value="${hpc.integration.globus.nexusAPIURL}" index="0" />
+		<constructor-arg value="${hpc.integration.globus.globusURL}" index="1" />
+	</bean>
+	
 	<!-- HPC Data Transfer Proxy -->
-	<bean id="hpcDataTransferProxy"
-		class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl">
-		<constructor-arg ref="hpcGOTransfer" />
-	</bean>
+	<bean id="hpcDataTransferProxy" 
+	      class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl" />
 	
-	<bean id="hpcGOTransfer" class="gov.nih.nci.hpc.integration.globus.driver.HpcGOTransfer">
-		<constructor-arg value="/mnt/gridftp" index="0" />
-		<!--<constructor-arg value="/GridFTP/GridFTP_t3" index="0" />-->
-	</bean>
-	
-	<bean id="hpcLdapAuthenticationProxy"
-		class="gov.nih.nci.hpc.integration.ldap.authentication.HpcLdapAuthenticationProxyImpl">
-		<constructor-arg ref="ldapAuthProvider" />
-	</bean>
-
 	<!--  HPC Data Transfer Account Validators -->
 	<bean id="hpcDataTransferAccountValidatorProvider" class="gov.nih.nci.hpc.integration.impl.HpcDataTransferAccountValidatorProviderImpl">
 		<constructor-arg>
@@ -47,8 +41,12 @@
 	</bean>
 
 	<bean id="hpcGlobusDataTransferAccountValidatorProxy"
-		class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl">
-		<constructor-arg ref="hpcGOTransfer" />
+		class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl" />
+	
+	<!-- HPC LDAP Authentication Proxy -->
+	<bean id="hpcLdapAuthenticationProxy"
+		class="gov.nih.nci.hpc.integration.ldap.authentication.HpcLdapAuthenticationProxyImpl">
+		<constructor-arg ref="ldapAuthProvider" />
 	</bean>
 	
 	<bean id="contextSource"
@@ -92,7 +90,7 @@
 	    <property name="rolePrefix" value="" />
 	</bean>		
 	
-	<!--  HPC iRODS Conenction -->
+	<!--  HPC iRODS Connection -->
 	<bean id="hpcIRODSConnection" 
 	      class="gov.nih.nci.hpc.integration.irods.impl.HpcIRODSConnection" >
 	      <constructor-arg value="${hpc.integration.irods.host}" index="0" />
