@@ -185,9 +185,9 @@ public class HpcMetadataValidator
 	        // Skip rules for other collection types.
 	    	String collectionType = metadataEntriesMap.get(COLLECTION_TYPE_ATTRIBUTE);
 	    	if(collectionType != null &&
-	    	   metadataValidationRule.getCollectionType() != null &&
-	    	   !metadataValidationRule.getCollectionType().isEmpty() &&
-	    	   !metadataValidationRule.getCollectionType().equals(collectionType)) {
+	    	   metadataValidationRule.getCollectionTypes() != null &&
+	    	   !metadataValidationRule.getCollectionTypes().isEmpty() &&
+	    	   !metadataValidationRule.getCollectionTypes().contains(collectionType)) {
 	    	   continue;
 	    	}
 	    	
@@ -267,7 +267,13 @@ public class HpcMetadataValidator
 	    	  metadataValidationRule.setDOC((String) jsonMetadataValidationRule.get("DOC"));
 	    	  metadataValidationRule.setDefaultValue((String) jsonMetadataValidationRule.get("defaultValue"));
 	    	  metadataValidationRule.setDefaultUnit((String) jsonMetadataValidationRule.get("defaultUnit"));
-	    	  metadataValidationRule.setCollectionType((String) jsonMetadataValidationRule.get("collectionType"));
+	    	  JSONArray jsonCollectionTypes = (JSONArray) jsonMetadataValidationRule.get("collectionTypes");
+	    	  if(jsonCollectionTypes != null) {
+		    	     Iterator<String> collectionTypeIterator = jsonCollectionTypes.iterator();
+		    	     while(collectionTypeIterator.hasNext()) {
+		    	    	   metadataValidationRule.getCollectionTypes().add(collectionTypeIterator.next());
+		    	     }
+	    	  }
 	    	  
 	    	  // Extract the valid values.
 	    	  JSONArray jsonValidValues = (JSONArray) jsonMetadataValidationRule.get("validValues");

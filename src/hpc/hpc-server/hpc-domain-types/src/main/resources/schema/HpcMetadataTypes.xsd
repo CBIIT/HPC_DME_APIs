@@ -42,7 +42,8 @@
 			             minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element name="defaultValue" type="xsd:string" />
 			<xsd:element name="defaultUnit" type="xsd:string" />
-			<xsd:element name="collectionType" type="xsd:string" />
+			<xsd:element name="collectionTypes" type="xsd:string" 
+			             minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element name="ruleEnabled" type="xsd:boolean" />
 			<xsd:element name="DOC" type="xsd:string" />
 		</xsd:sequence>

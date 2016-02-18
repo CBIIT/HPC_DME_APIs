@@ -15,14 +15,14 @@
          {  
             "attribute":"name",
             "mandatory":true,
-            "collectionType":"Project",
+            "collectionTypes":["Project"],
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
             "attribute":"description",
             "mandatory":true,
-            "collectionType":"Project",
+            "collectionTypes":["Project"],
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
@@ -30,7 +30,7 @@
             "attribute":"project_type",
             "mandatory":true,
             "defaultValue":"Unspecified",
-            "collectionType":"Project",
+            "collectionTypes":["Project"],
             "validValues":[  
                "Unspecified",
                "Umbrella Project",
@@ -44,28 +44,28 @@
          {  
             "attribute":"internal_project_id",
             "mandatory":true,
-            "collectionType":"Project",
+            "collectionTypes":["Project"],
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
             "attribute":"source_lab_pi",
             "mandatory":true,
-            "collectionType":"Project",
+            "collectionTypes":["Project"],
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
             "attribute":"lab_branch",
             "mandatory":true,
-            "collectionType":"Project",
+            "collectionTypes":["Project"],
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
             "attribute":"pi_doc",
             "mandatory":true,
-            "collectionType":"Project",
+            "collectionTypes":["Project"],
             "validValues":[  
                "FNLCR",
                "CCBR"
@@ -76,7 +76,7 @@
          {  
             "attribute":"original_date_created",
             "mandatory":true,
-            "collectionType":"Project",
+            "collectionTypes":["Project"],
             "defaultValue":"System-Date",
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
@@ -84,35 +84,35 @@
          {  
             "attribute":"name",
             "mandatory":true,
-            "collectionType":"Dataset",
+            "collectionTypes":["Dataset"],
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
             "attribute":"description",
             "mandatory":true,
-            "collectionType":"Dataset",
+            "collectionTypes":["Dataset"],
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
 	     "attribute":"source_lab_pi",
 	     "mandatory":true,
-	     "collectionType":"Project",
+	     "collectionTypes":["Project"],
 	     "ruleEnabled":true,
 	     "DOC":"DOC-NAME"
 	  },
 	  {  
 	     "attribute":"lab_branch",
 	     "mandatory":true,
-	     "collectionType":"Project",
+	     "collectionTypes":["Project"],
 	     "ruleEnabled":true,
 	     "DOC":"DOC-NAME"
 	  },
 	  {  
 	     "attribute":"pi_doc",
 	     "mandatory":true,
-	     "collectionType":"Project",
+	     "collectionTypes":["Project"],
 	     "validValues":[  
 		"FNLCR",
 		"CCBR"
@@ -123,7 +123,7 @@
 	  {  
 	     "attribute":"original_date_created",
 	     "mandatory":true,
-	     "collectionType":"Project",
+	     "collectionTypes":["Project"],
 	     "defaultValue":"System-Date",
 	     "ruleEnabled":true,
 	     "DOC":"DOC-NAME"
@@ -131,7 +131,7 @@
       {  
 	        "attribute":"phi_content",
 	        "mandatory":true,
-	        "collectionType":"Dataset",
+	        "collectionTypes":["Dataset"],
 	        "defaultValue":"Unspecified",
 	        "validValues":[  
 	           "Unspecified",
@@ -145,7 +145,7 @@
          {  
             "attribute":"pii_content",
             "mandatory":true,
-            "collectionType":"Dataset",
+            "collectionTypes":["Dataset"],
             "defaultValue":"Unspecified",
             "validValues":[  
                "Unspecified",
@@ -159,7 +159,7 @@
          {  
             "attribute":"data_encryption_status",
             "mandatory":true,
-            "collectionType":"Dataset",
+            "collectionTypes":["Dataset"],
             "defaultValue":"Unspecified",
             "validValues":[  
                "Unspecified",
@@ -173,7 +173,7 @@
          {  
             "attribute":"data_compression_status",
             "mandatory":true,
-            "collectionType":"Dataset",
+            "collectionTypes":["Dataset"],
             "defaultValue":"Unspecified",
             "validValues":[  
                "Unspecified",
@@ -187,7 +187,7 @@
          {  
             "attribute":"funding_organization",
             "mandatory":false,
-            "collectionType":"Dataset",
+            "collectionTypes":["Dataset"],
             "defaultValue":"Unspecified",
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
@@ -195,28 +195,28 @@
          {  
             "attribute":"flow_cell_id",
             "mandatory":true,
-            "collectionType":"Dataset",
+            "collectionTypes":["Dataset"],
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
             "attribute":"run_id",
             "mandatory":true,
-            "collectionType":"Dataset",
+            "collectionTypes":["Dataset"],
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
             "attribute":"run_date",
             "mandatory":true,
-            "collectionType":"Dataset",
+            "collectionTypes":["Dataset"],
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
             "attribute":"sequencing_platform",
             "mandatory":true,
-            "collectionType":"Dataset",
+            "collectionTypes":["Dataset"],
             "defaultValue":"Unspecified",
             "validValues":[  
                "Unspecified",
@@ -234,7 +234,7 @@
          {  
             "attribute":"sequencing_application_type",
             "mandatory":true,
-            "collectionType":"Dataset",
+            "collectionTypes":["Dataset"],
             "defaultValue":"Unspecified",
             "validValues":[  
                "Unspecified",
@@ -250,14 +250,14 @@
          {  
             "attribute":"library_id",
             "mandatory":true,
-            "collectionType":"Dataset",
+            "collectionTypes":["Dataset"],
             "ruleEnabled":true,
             "DOC":"DOC-NAME"
          },
          {  
             "attribute":"library_name",
             "mandatory":true,
-            "collectionType":"Dataset",
+            "collectionTypes":["Dataset"],
             "defaultValue":"Unspecified",
             "validValues":[  
                "Unspecified",
@@ -270,7 +270,7 @@
          {  
             "attribute":"library_type",
             "mandatory":true,
-            "collectionType":"Dataset",
+            "collectionTypes":["Dataset"],
             "defaultValue":"Unspecified",
             "validValues":[  
                "Unspecified",
@@ -283,7 +283,7 @@
          {  
             "attribute":"library_protocol",
             "mandatory":true,
-            "collectionType":"Dataset",
+            "collectionTypes":["Dataset"],
             "defaultValue":"Unspecified",
             "validValues":[  
                "Unspecified",
@@ -339,7 +339,7 @@
          {  
 	     "attribute":"phi_content",
 	     "mandatory":true,
-	     "collectionType":"Dataset",
+	     "collectionTypes": ["Dataset"],
 	     "defaultValue":"Unspecified",
 	     "validValues":[  
 		"Unspecified",
@@ -353,7 +353,7 @@
 	  {  
 	     "attribute":"pii_content",
 	     "mandatory":true,
-	     "collectionType":"Dataset",
+	     "collectionTypes":["Dataset"],
 	     "defaultValue":"Unspecified",
 	     "validValues":[  
 		"Unspecified",
@@ -367,7 +367,7 @@
 	  {  
 	     "attribute":"data_encryption_status",
 	     "mandatory":true,
-	     "collectionType":"Dataset",
+	     "collectionTypes":["Dataset"],
 	     "defaultValue":"Unspecified",
 	     "validValues":[  
 		"Unspecified",
@@ -381,7 +381,7 @@
 	  {  
 	     "attribute":"data_compression_status",
 	     "mandatory":true,
-	     "collectionType":"Dataset",
+	     "collectionTypes":["Dataset"],
 	     "defaultValue":"Unspecified",
 	     "validValues":[  
 		"Unspecified",
@@ -395,7 +395,7 @@
 	  {  
 	     "attribute":"funding_organization",
 	     "mandatory":false,
-	     "collectionType":"Dataset",
+	     "collectionTypes":["Dataset"],
 	     "defaultValue":"Unspecified",
 	     "ruleEnabled":true,
 	     "DOC":"DOC-NAME"
@@ -403,28 +403,28 @@
 	  {  
 	     "attribute":"flow_cell_id",
 	     "mandatory":true,
-	     "collectionType":"Dataset",
+	     "collectionTypes":["Dataset"],
 	     "ruleEnabled":true,
 	     "DOC":"DOC-NAME"
 	  },
 	  {  
 	     "attribute":"run_id",
 	     "mandatory":true,
-	     "collectionType":"Dataset",
+	     "collectionTypes":["Dataset"],
 	     "ruleEnabled":true,
 	     "DOC":"DOC-NAME"
 	  },
 	  {  
 	     "attribute":"run_date",
 	     "mandatory":true,
-	     "collectionType":"Dataset",
+	     "collectionTypes":["Dataset"],
 	     "ruleEnabled":true,
 	     "DOC":"DOC-NAME"
 	  },
 	  {  
 	     "attribute":"sequencing_platform",
 	     "mandatory":true,
-	     "collectionType":"Dataset",
+	     "collectionTypes":["Dataset"],
 	     "defaultValue":"Unspecified",
 	     "validValues":[  
 		"Unspecified",
@@ -442,7 +442,7 @@
 	  {  
 	     "attribute":"sequencing_application_type",
 	     "mandatory":true,
-	     "collectionType":"Dataset",
+	     "collectionTypes":["Dataset"],
 	     "defaultValue":"Unspecified",
 	     "validValues":[  
 		"Unspecified",
@@ -458,14 +458,14 @@
 	  {  
 	     "attribute":"library_id",
 	     "mandatory":true,
-	     "collectionType":"Dataset",
+	     "collectionTypes":["Dataset"],
 	     "ruleEnabled":true,
 	     "DOC":"DOC-NAME"
 	  },
 	  {  
 	     "attribute":"library_name",
 	     "mandatory":true,
-	     "collectionType":"Dataset",
+	     "collectionTypes":["Dataset"],
 	     "defaultValue":"Unspecified",
 	     "validValues":[  
 		"Unspecified",
@@ -478,7 +478,7 @@
 	  {  
 	     "attribute":"library_type",
 	     "mandatory":true,
-	     "collectionType":"Dataset",
+	     "collectionTypes":["Dataset"],
 	     "defaultValue":"Unspecified",
 	     "validValues":[  
 		"Unspecified",
@@ -491,7 +491,7 @@
 	  {  
 	     "attribute":"library_protocol",
 	     "mandatory":true,
-	     "collectionType":"Dataset",
+	     "collectionTypes":["Dataset"],
 	     "defaultValue":"Unspecified",
 	     "validValues":[  
 		"Unspecified",
