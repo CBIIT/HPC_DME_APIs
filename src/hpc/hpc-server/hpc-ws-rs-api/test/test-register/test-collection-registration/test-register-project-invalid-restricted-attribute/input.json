@@ -6,7 +6,7 @@
         },
         {
          "attribute": "collection_type",
-         "value": "Project"
+         "value": "Projectxxx"
         },
         {
          "attribute": "description",
@@ -31,10 +31,6 @@
         {
          "attribute": "original_date_created",
          "value": "10/25/2006"
-        },
-        {
-         "attribute": "registered_by_doc",
-         "value": "CCBRXXXXXXXXXXXX"
         }
     ]
 }
