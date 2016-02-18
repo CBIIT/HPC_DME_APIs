@@ -484,7 +484,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	// Input validation.
     	if(!isValidNciAccount(nciAccount)) {	
-    	   throw new HpcException("Invalid NCI Account", 
+    	   throw new HpcException("Invalid NCI Account: Null user ID or name or DOC", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
        	
