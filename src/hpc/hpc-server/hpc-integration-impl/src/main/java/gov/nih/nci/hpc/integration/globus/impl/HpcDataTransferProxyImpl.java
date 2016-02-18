@@ -266,6 +266,5 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         }
                 
         return true;
-
     }	
 }
