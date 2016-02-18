@@ -1,6 +1,8 @@
 package gov.nih.nci.hpc.cli;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -20,19 +22,20 @@ import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
 @Component
 public abstract class HPCBatchClient {
 	@Autowired
-	private HpcConfigProperties configProperties;
-	String hpcServerURL;
-	String hpcCertPath;
-	String hpcCertPassword;
-	String hpcDataService;
-	String hpcCollectionService;
-	String logDir;
-	FileWriter fileLogWriter = null;
-	FileWriter fileRecordWriter = null;
-	CSVPrinter csvFilePrinter = null;
-	String logFile = null;
-	String logRecordsFile = null;
-	boolean headerAdded = false;
+	protected HpcConfigProperties configProperties;
+	protected String hpcServerURL;
+	protected String hpcCertPath;
+	protected String hpcCertPassword;
+	protected String hpcDataService;
+	protected String hpcCollectionService;
+	protected String logDir;
+	protected FileWriter fileLogWriter = null;
+	protected FileWriter fileRecordWriter = null;
+	protected CSVPrinter csvFilePrinter = null;
+	protected String loginFile = null;
+	protected String logFile = null;
+	protected String logRecordsFile = null;
+	protected boolean headerAdded = false;
 
 	public HPCBatchClient() {
 
@@ -45,41 +48,43 @@ public abstract class HPCBatchClient {
 		hpcCertPath = configProperties.getProperty("hpc.ssl.keystore.path");
 		hpcCertPassword = configProperties.getProperty("hpc.ssl.keystore.password");
 		logDir = configProperties.getProperty("hpc.error-log.dir");
+		loginFile = configProperties.getProperty("hpc.login.credentials");
 		hpcCollectionService = configProperties.getProperty("hpc.collection.service");
-		logFile = logDir + File.separator + "errorLog" + new SimpleDateFormat("yyyyMMddhhmm'.txt'").format(new Date());
-		logRecordsFile = logDir + File.separator + "errorRecords"
-				+ new SimpleDateFormat("yyyyMMddhhmm'.csv'").format(new Date());
-		File file1 = new File(logFile);
-		File file2 = new File(logRecordsFile);
-		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator("\n");
-		try {
-			if (!file1.exists()) {
-				file1.createNewFile();
-			}
-			fileLogWriter = new FileWriter(file1, true);
-
-			if (!file2.exists()) {
-				file2.createNewFile();
-			}
-			fileRecordWriter = new FileWriter(file2, true);
-			csvFilePrinter = new CSVPrinter(fileRecordWriter, csvFileFormat);
-		} catch (IOException e) {
-			System.out.println("Failed to initialize Batch process: " + e.getMessage());
-			e.printStackTrace();
-		}
-		
+		initializeLog();
 	}
+	
+	protected abstract void initializeLog();
+	
 	public String process(String fileName) {
+		preprocess();
+		BufferedReader bufferedReader = null;
 		try {
-			jline.console.ConsoleReader reader = new jline.console.ConsoleReader();
-			reader.setExpandEvents(false);
-			System.out.println("Enter NCI Login UserId:");
-			String userId = reader.readLine();
-
-			System.out.println("Enter NCI Login password:");
-			String password = reader.readLine(new Character('*'));
-			System.out.println("Initiating batch process as NCI Login UserId:" + userId);
-			preprocess();
+			String userId = null;
+			String password = null;
+			if(loginFile == null)
+			{
+				jline.console.ConsoleReader reader = new jline.console.ConsoleReader();
+				reader.setExpandEvents(false);
+				System.out.println("Enter NCI Login UserId:");
+				userId = reader.readLine();
+	
+				System.out.println("Enter NCI Login password:");
+				password = reader.readLine(new Character('*'));
+				System.out.println("Initiating batch process as NCI Login UserId:" + userId);
+			}
+			else
+			{
+				bufferedReader = new BufferedReader(new FileReader(loginFile));
+				String line = bufferedReader.readLine();
+				if(line.indexOf(":") == -1)
+					return "Invalid Login credentials in "+loginFile;
+				else
+				{
+					userId = line.substring(0,  line.indexOf(":"));
+					password = line.substring(line.indexOf(":")+1);
+				}
+			}
+			
 			boolean success = processFile(fileName, userId, password);
 			if (success)
 				return "Batch process Successful";
@@ -89,6 +94,15 @@ public abstract class HPCBatchClient {
 			e.printStackTrace();
 			return "Failed to run batch registration";
 		} finally {
+			if(bufferedReader != null)
+			{
+				try {
+					bufferedReader.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 			postProcess();
 		}
 	}
