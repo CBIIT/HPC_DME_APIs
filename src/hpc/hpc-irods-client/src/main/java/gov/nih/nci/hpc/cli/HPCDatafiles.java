@@ -52,6 +52,32 @@ public class HPCDatafiles extends HPCBatchClient {
 		super();
 	}
 
+	protected void initializeLog()
+	{
+		logFile = logDir + File.separator + "putDatafiles_errorLog" + new SimpleDateFormat("yyyyMMddhhmm'.txt'").format(new Date());
+		logRecordsFile = logDir + File.separator + "putDatafiles_errorRecords"
+				+ new SimpleDateFormat("yyyyMMddhhmm'.csv'").format(new Date());
+		File file1 = new File(logFile);
+		File file2 = new File(logRecordsFile);
+		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator("\n");
+		try {
+			if (!file1.exists()) {
+				file1.createNewFile();
+			}
+			fileLogWriter = new FileWriter(file1, true);
+
+			if (!file2.exists()) {
+				file2.createNewFile();
+			}
+			fileRecordWriter = new FileWriter(file2, true);
+			csvFilePrinter = new CSVPrinter(fileRecordWriter, csvFileFormat);
+		} catch (IOException e) {
+			System.out.println("Failed to initialize Batch process: " + e.getMessage());
+			e.printStackTrace();
+		}
+		
+	}	
+	
 	protected boolean processFile(String fileName, String userId, String password) {
 		boolean success = true;
 		FileReader fileReader = null;
@@ -114,7 +140,7 @@ public class HPCDatafiles extends HPCBatchClient {
 				
 				hpcDataObjectRegistrationDTO.setSource(source);
 				hpcDataObjectRegistrationDTO.setFilePath("/");
-				RestTemplate restTemplate = HpcClientUtil.getRestTemplate(userId, password,hpcCertPath, hpcCertPassword);
+				RestTemplate restTemplate = HpcClientUtil.getRestTemplate(hpcCertPath, hpcCertPassword);
 				restTemplate.setErrorHandler(new HpcResponseErrorHandler());
 				HttpHeaders headers = new HttpHeaders();
 				String token = DatatypeConverter.printBase64Binary((userId + ":" + password).getBytes());

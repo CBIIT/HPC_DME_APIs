@@ -33,7 +33,14 @@ public class HpcResponseErrorHandler implements ResponseErrorHandler {
 			//InputStream stream = response.getBody();
 			JsonObjectMapper mapper = new JsonObjectMapper();
 			HpcExceptionDTO dto = mapper.readValue(body, HpcExceptionDTO.class);
-			String message = "Failed to process record due to: "+dto.getMessage() + ": Error Type:"+dto.getErrorType().value() + ": Request reject reason: "+dto.getRequestRejectReason().value();
+			
+			String message = "Failed to process record due to: "+dto.getMessage();
+			if(dto.getErrorType() != null)
+				message = message + ": Error Type:"+dto.getErrorType().value();
+			if(dto.getRequestRejectReason() != null)
+				message = message + ": Request reject reason: "+dto.getRequestRejectReason().value();
+			if(dto.getStackTrace() != null)
+				message = message + ": Stacktrace: "+dto.getStackTrace();
 			
 			HpcBatchException exception = new HpcBatchException(
 					"Error Code: " + response.getStatusCode() + " Reason: " + message);

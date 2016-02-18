@@ -1,10 +1,14 @@
 package gov.nih.nci.hpc.cli;
 
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +18,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -44,6 +49,32 @@ public class HPCPermissions extends HPCBatchClient {
 		super();
 	}
 
+	protected void initializeLog()
+	{
+		logFile = logDir + File.separator + "putPermissions_errorLog" + new SimpleDateFormat("yyyyMMddhhmm'.txt'").format(new Date());
+		logRecordsFile = logDir + File.separator + "putPermissions_errorRecords"
+				+ new SimpleDateFormat("yyyyMMddhhmm'.csv'").format(new Date());
+		File file1 = new File(logFile);
+		File file2 = new File(logRecordsFile);
+		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator("\n");
+		try {
+			if (!file1.exists()) {
+				file1.createNewFile();
+			}
+			fileLogWriter = new FileWriter(file1, true);
+
+			if (!file2.exists()) {
+				file2.createNewFile();
+			}
+			fileRecordWriter = new FileWriter(file2, true);
+			csvFilePrinter = new CSVPrinter(fileRecordWriter, csvFileFormat);
+		} catch (IOException e) {
+			System.out.println("Failed to initialize Batch process: " + e.getMessage());
+			e.printStackTrace();
+		}
+		
+	}	
+	
 	protected boolean processFile(String fileName, String userId, String password) {
 		boolean success = true;
 		FileReader fileReader = null;
@@ -82,7 +113,7 @@ public class HPCPermissions extends HPCBatchClient {
 				hpcPermissionDTO.getUserPermissions().addAll(permissions.get(path));
 				dtos.add(hpcPermissionDTO);
 				//System.out.println(dtos);
-				RestTemplate restTemplate = HpcClientUtil.getRestTemplate(userId, password, hpcCertPath, hpcCertPassword);
+				RestTemplate restTemplate = HpcClientUtil.getRestTemplate(hpcCertPath, hpcCertPassword);
 				HttpHeaders headers = new HttpHeaders();
 				String token = DatatypeConverter.printBase64Binary((userId + ":" + password).getBytes());
 				headers.add("Authorization", "Basic " + token);
