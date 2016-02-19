@@ -190,8 +190,9 @@ public class HpcUserDAOImpl implements HpcUserDAO
     	     jdbcTemplate.getDataSource().getConnection();
     	     
     	} catch(Exception e) {
-    		    throw new HpcException("Failed to connect to DB", 
-    		    		               HpcErrorType.DATABASE_ERROR, e);
+    		    throw new HpcException(
+    		    		     "Failed to connect to PostgreSQL DB. Check credentials config", 
+    		    		     HpcErrorType.DATABASE_ERROR, e);
     	}
     } 
 }
