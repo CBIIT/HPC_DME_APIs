@@ -85,8 +85,9 @@ public class HpcUserDAOImpl implements HpcUserDAO
 	
     /**
      * Constructor for Spring Dependency Injection. 
+     * 
      */
-    private HpcUserDAOImpl() throws HpcException
+    private HpcUserDAOImpl()
     {
     }   
     
@@ -176,6 +177,23 @@ public class HpcUserDAOImpl implements HpcUserDAO
             return user;
 		}
 	}
+	
+    /**
+     * Verify connection to DB. (Invoked by spring init-method).
+     * 
+     * Throws HpcException If it failed to connect to the database.
+     */
+    @SuppressWarnings("unused")
+	private void dbConnect() throws HpcException
+    {
+    	try {
+    	     jdbcTemplate.getDataSource().getConnection();
+    	     
+    	} catch(Exception e) {
+    		    throw new HpcException("Failed to connect to DB", 
+    		    		               HpcErrorType.DATABASE_ERROR, e);
+    	}
+    } 
 }
 
  
