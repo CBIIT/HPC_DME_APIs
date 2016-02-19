@@ -27,6 +27,6 @@
 
 	<modules>
 		<module>hpc-server</module>
-		<module>hpc-web</module>
+		<module>hpc-irods-client</module>
 	</modules>
 </project>
