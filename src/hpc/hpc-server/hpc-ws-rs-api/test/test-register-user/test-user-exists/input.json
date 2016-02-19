@@ -2,7 +2,8 @@
     "nciAccount": {
         "userId": "zakigf",
             "firstName": "George",
-            "lastName": "Zaki"
+            "lastName": "Zaki",
+            "DOC": "FNLCR"
     },
         "dataTransferAccount":    {
             "username": "eranrosenberg",
