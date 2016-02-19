@@ -151,3 +151,4 @@ function validate_collection {
     #fi
     echo $CHECK
 }
+
