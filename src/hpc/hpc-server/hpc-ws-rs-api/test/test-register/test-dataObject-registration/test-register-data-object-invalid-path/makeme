@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+# Script to make this test
+# Usage: makeme [no arguments]
+
+
+#Clean previous files 
+../../utils/cleantest
+
+#Common maketest
+../../../utils/maketest
+
+#Create policies file
+../../utils/maketest dataObjectMetadataValidationRules
+#Put the anme of an invalid path.
+echo "/FNL_SF_Archive/dxtest/dxtest/dxtest/"  >  registered-project-path.tmp
+#Let the test path collection registration check
+echo "HTTP/1.1 200 OK" > collection-registration-response-header.tmp
