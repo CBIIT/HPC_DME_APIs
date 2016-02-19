@@ -79,14 +79,13 @@ function get_json_array_value {
 #Limited to two levels of hierarchy. Example "Attribute":[ []   []  ] 
 #Inputs: "Input string"  "attribute-name" 
 function get_json_hier_array_value {
+    INPUT="$1"
+    ATTRIBUTE="$2"
 
-INPUT="$1"
-ATTRIBUTE="$2"
-
-#First define the regex 'a': <text>[<text>]
-#Then generalize 'a' to define 'b': \(a\)*
-#Then define the matched string as: "attribute":['b'<text>]
-echo "$INPUT" | sed "s/\(.*\)\(\"$ATTRIBUTE\"[  ]*:[ 	]*\[\([^][]*\[[^][]*\]\)*[^][]*\]\)\(.*\)/\2/" 
+    #First define the regex 'a': <text>[<text>]
+    #Then generalize 'a' to define 'b': \(a\)*
+    #Then define the matched string as: "attribute":['b'<text>]
+    echo "$INPUT" | sed "s/\(.*\)\(\"$ATTRIBUTE\"[  ]*:[ 	]*\[\([^][]*\[[^][]*\]\)*[^][]*\]\)\(.*\)/\2/" 
 }
 
 #Checks that the response header file has information.
@@ -121,3 +120,48 @@ function get_username {
     USER_NAME=`grep '\-u' "$CURL_CONFIG_FILE" | sed "s/.*\-u[   ]*\([a-zA-Z]*\).*/\1/"`
     echo $USER_NAME
 }
+
+
+#Verify that a collection or a dataObject  was registered correctly
+#Input  registration-response-header
+function verify_registration {
+
+    if [ -z "$1" ]
+    then
+        echo "ERROR: using check_registration"
+        echo "USAGE: check_registration <registration-response-header-file>"
+        exit
+    fi
+
+    RESPONSE_HEADER="$1"
+    REG_HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+    if [ "$REG_HTTP_CODE" != "201" ]  && [ "$REG_HTTP_CODE" != "200" ]
+    then
+        echo "FAILED TO REGISTER, HTTP_CODE = $REG_HTTP_CODE" 1>&2
+        exit
+    fi
+}
+
+#Register a collection
+#Inputs collection-description.json destinaton-path 
+function register_collection {
+
+    if [ -z "$1" ] || [ -z "$2" ]
+    then
+        echo "ERROR: using register-collection"
+        echo "USAGE: register_collection <collection-description.json> destination-path"
+        exit
+    fi
+
+    USERID=`get_username ../../../utils/config`
+    PROJECT_DESCRIPTION="$1"
+    DESTINATION_PATH="$2"
+    SERVER=`cat ../../../utils/server`
+
+    RESPONSE_MSG=collection-registration-response-message.json.tmp
+    RESPONSE_HEADER=collection-registration-response-header.tmp
+    
+    curl -H "Content-Type: application/json" -d @$PROJECT_DESCRIPTION -X PUT ${SERVER}/hpc-server/collection/${DESTINATION_PATH}  --config ../../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    check_connection $RESPONSE_HEADER
+}
+
