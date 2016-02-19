@@ -17,7 +17,8 @@
 
 REGISTRATION_TYPE=$1
 DESTINATION_PATH=$2
-ERROR_TYPE=$3
+ERROR_TYPE="$3"
+ERROR_REASON="$4"
 
 source ../../../utils/functions
 source ../../utils/registration-functions
@@ -56,13 +57,12 @@ fi
 # add -D <filename> to dump the header
 #echo "curl -H \"Content-Type: application/json\" -d @input.json -X PUT ${SERVER}/hpc-server/${REGISTRATION_TYPE}/${DESTINATION_PATH}  --config ../../../utils/config  -H \"Accept: application/json\" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status"
 curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-server/${REGISTRATION_TYPE}/${DESTINATION_PATH}  --config ../../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
-
 check_connection $RESPONSE_HEADER
 
 RETURN_CODE=`get_http_code $RESPONSE_HEADER`
 
 #If the input is valide, 201 should be returned
-if [ "$VALID_INPUT" == "PASS" ]
+if [ "$VALID_INPUT" == "PASS" ] && [ -z "$ERROR_TYPE" ]
 then 
     if [ "$RETURN_CODE" != "201" ] 
     then
@@ -71,10 +71,10 @@ then
 fi
 
 
-#If the input is not valide, 400 should be returned
-if [[ "$VALID_INPUT" == *"FAIL"* ]] 
+#If an error is expected, 400 should be returned
+if [[ "$VALID_INPUT" == *"FAIL"* ]] || [ -n "$ERROR_TYPE" ]
 then
-    if [ "$RETURN_CODE" != "400" ]
+    if [ "$RETURN_CODE" != "400" ]  && [ "$RETURN_CODE" != "500" ]
     then
         echo "Invalid input returned code: $RETURN_CODE"
     fi
@@ -83,5 +83,13 @@ then
     then
         echo "Invalid error type. Expected: $ERROR_TYPE, received: $RETURNED_ERROR_TYPE"
     fi
-    #ERROR_REASON=`get_json_value $RESPONSE_MSG requestRejectReason`
+    
+    if [ -n "$ERROR_REASON" ]
+    then
+        RETURNED_ERROR_REASON=`get_json_value $RESPONSE_MSG requestRejectReason`
+        if [ "$RETURNED_ERROR_REASON" != "$ERROR_REASON" ]
+        then
+            echo "Invalid error reason. Expected: $ERROR_REASON, received: $RETURNED_ERROR_REASON"
+        fi
+    fi
 fi
