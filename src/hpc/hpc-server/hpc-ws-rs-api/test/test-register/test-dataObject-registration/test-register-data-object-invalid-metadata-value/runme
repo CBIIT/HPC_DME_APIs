@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+#import common functions
+
+
+
+source ../../../utils/functions
+
+#Check if collection registration went through:
+verify_registration collection-registration-response-header.tmp
+
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username ../../../utils/config`
+PROJECT_PATH=`cat registered-project-path.tmp`
+../../utils/registration-runtest dataObject $PROJECT_PATH/object-${NAME}.txt INVALID_REQUEST_INPUT

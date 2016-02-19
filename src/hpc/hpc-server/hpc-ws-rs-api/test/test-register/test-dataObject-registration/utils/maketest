@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# maketest 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to make  this test
+# Usage: maketest "METADATA_TYPE" "SPECIFIC_TYPE"
+
+
+source ../../../utils/functions
+USERID=`get_username ../../../utils/config`
+DESTINATION_PATH="/FNL_SF_Archive/${USERID}/dice-unit-test/project-add-dataobject"
+echo "$DESTINATION_PATH" >> registered-project-path.tmp
+register_collection ../utils/project-description.json "$DESTINATION_PATH"
