@@ -11,5 +11,4 @@
 # Usage: maketest "METADATA_TYPE" "SPECIFIC_TYPE"
 #
 
-
-rm policies.json   2>/dev/null
+rm policies.json *.tmp  2>/dev/null
