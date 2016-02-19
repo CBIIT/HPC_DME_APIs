@@ -41,6 +41,7 @@
 	</bean>
 
 	<!-- HPC DAO Implementation Beans -->
-	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserDAOImpl" />
+	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserDAOImpl" 
+	      init-method="dbConnect"/>
 
 </beans>
