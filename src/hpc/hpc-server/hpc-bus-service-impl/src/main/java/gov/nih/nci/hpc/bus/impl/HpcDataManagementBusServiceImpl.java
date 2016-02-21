@@ -387,7 +387,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		     } else if(dataTransferStatus.equals(HpcDataTransferStatus.FAILED)) {
      		    	       // Data transfer failed. Remove the data object
      		    	       dataManagementService.deleteFile(path);
-     		    	      logger.info("Data transfer failed: " + path);
+     		    	       logger.info("Data transfer failed: " + path);
     		     }
     		     
     		} catch(HpcException e) {
