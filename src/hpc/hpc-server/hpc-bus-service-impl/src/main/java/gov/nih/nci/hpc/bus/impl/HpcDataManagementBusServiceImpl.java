@@ -34,6 +34,7 @@ import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,6 +54,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusService
 {  
+    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//    
+    
+    // Data transfer status check timeout, in days. If these many days pass 
+	// after the data registration date, and we still can't get a data transfer 
+	// status, then the state will move to UNKNOWN.
+	private final static int DATA_TRANSFER_STATUS_CHECK_TIMEOUT_PERIOD = 1;
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -382,11 +392,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		     
     		} catch(HpcException e) {
     			    logger.error("Failed to process data transfer update:" + path, e);
+    			    
+    			    // If timeout occurred, move the status to unknown.
+    			    if(isDataTransferStatusCheckTimedOut(dataObject)) {
+    			       dataManagementService.setDataTransferStatus(
+    			    	                        path, 
+    			    	                        HpcDataTransferStatus.UNKNOWN);
+        		       logger.error("Unknown data transfer status: " + path);
+    			    }
     		}
     	}
-    	
     }
-    
     
     //---------------------------------------------------------------------//
     // Helper Methods
@@ -517,6 +533,24 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		destination.setPath(destinationPath.toString());
 		
 		return destination;
+	}
+	
+    /** 
+     * Determine if data transfer status check timed out..
+     * 
+     * @param dataObject The data object to check the timeout for.
+     * 
+     * @return true if status check timeout occurred. 
+     */
+	private boolean isDataTransferStatusCheckTimedOut(HpcDataObject dataObject) 
+	{
+		// Calculate the timeout.
+		Calendar timeout = Calendar.getInstance();
+	    timeout.setTime(dataObject.getCreatedAt().getTime());
+	    timeout.add(Calendar.DATE, DATA_TRANSFER_STATUS_CHECK_TIMEOUT_PERIOD);
+	    
+	    // Compare to now.
+	    return Calendar.getInstance().after(timeout);
 	}
 }
 
