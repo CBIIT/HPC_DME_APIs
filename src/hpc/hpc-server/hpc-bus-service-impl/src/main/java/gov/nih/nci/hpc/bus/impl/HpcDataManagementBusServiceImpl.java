@@ -544,6 +544,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      */
 	private boolean isDataTransferStatusCheckTimedOut(HpcDataObject dataObject) 
 	{
+		if(dataObject.getCreatedAt() == null) {
+		   // Creation time unknown.
+		   return true;	
+		}
+		
 		// Calculate the timeout.
 		Calendar timeout = Calendar.getInstance();
 	    timeout.setTime(dataObject.getCreatedAt().getTime());
