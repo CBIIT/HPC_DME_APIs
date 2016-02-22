@@ -15,4 +15,4 @@ source ../../../utils/functions
 USERID=`get_username ../../../utils/config`
 DESTINATION_PATH="/FNL_SF_Archive/${USERID}/dice-unit-test/project-add-dataobject"
 echo "$DESTINATION_PATH" >> registered-project-path.tmp
-register_collection ../utils/project-description.json "$DESTINATION_PATH"
+curl_register ../utils/project-description.json "$DESTINATION_PATH" collection
