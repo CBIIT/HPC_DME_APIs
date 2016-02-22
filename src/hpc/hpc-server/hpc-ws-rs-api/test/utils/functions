@@ -142,26 +142,28 @@ function verify_registration {
     fi
 }
 
-#Register a collection
-#Inputs collection-description.json destinaton-path 
-function register_collection {
+#Register a collection or a dataObject 
+#Inputs description.json destinaton-path type 
+function curl_register {
 
-    if [ -z "$1" ] || [ -z "$2" ]
+    if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
     then
-        echo "ERROR: using register-collection"
-        echo "USAGE: register_collection <collection-description.json> destination-path"
+        echo "ERROR: using curl_register"
+        echo "USAGE: curl_register <collection-description.json> destination-path <[colleciton|dataObject]>"
         exit
     fi
 
-    USERID=`get_username ../../../utils/config`
-    PROJECT_DESCRIPTION="$1"
+    DESCRIPTION="$1"
     DESTINATION_PATH="$2"
+    TYPE="$3"
+    USERID=`get_username ../../../utils/config`
     SERVER=`cat ../../../utils/server`
 
-    RESPONSE_MSG=collection-registration-response-message.json.tmp
-    RESPONSE_HEADER=collection-registration-response-header.tmp
+    RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
+    RESPONSE_HEADER=${TYPE}-registration-response-header.tmp
     
-    curl -H "Content-Type: application/json" -d @$PROJECT_DESCRIPTION -X PUT ${SERVER}/hpc-server/collection/${DESTINATION_PATH}  --config ../../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -H "Content-Type: application/json" -d @$DESCRIPTION -X PUT ${SERVER}/hpc-server/${TYPE}/${DESTINATION_PATH}  --config ../../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     check_connection $RESPONSE_HEADER
 }
+
 
