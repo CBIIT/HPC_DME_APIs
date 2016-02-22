@@ -439,7 +439,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
              
              // Map the query results to a Domain POJO.
              List<HpcDataObject> hpcDataObjects = new ArrayList<HpcDataObject>();
-             if(hpcDataObjects != null) {
+             if(irodsDataObjects != null) {
                 for(DataObject irodsDataObject : irodsDataObjects) {
                 	hpcDataObjects.add(toHpcDataObject(irodsDataObject));
                 }
