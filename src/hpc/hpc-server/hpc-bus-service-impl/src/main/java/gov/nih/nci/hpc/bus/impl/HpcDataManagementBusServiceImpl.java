@@ -395,9 +395,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			    
     			    // If timeout occurred, move the status to unknown.
     			    if(isDataTransferStatusCheckTimedOut(dataObject)) {
-    			       dataManagementService.setDataTransferStatus(
-    			    	                        path, 
-    			    	                        HpcDataTransferStatus.UNKNOWN);
+    			       try {
+    			            dataManagementService.setDataTransferStatus(
+    			    	                             path, 
+    			    	                             HpcDataTransferStatus.UNKNOWN);
+    			       } catch(Exception ex) {
+    			    	       logger.error("failed to set data transfer status to unknown: " + 
+    			                            path, ex);
+    			       }
         		       logger.error("Unknown data transfer status: " + path);
     			    }
     		}
