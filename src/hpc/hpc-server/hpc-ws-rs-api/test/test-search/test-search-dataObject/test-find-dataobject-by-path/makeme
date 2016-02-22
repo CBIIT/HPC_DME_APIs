@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+#Clean previous results
+
+../../../utils/maketest
+./cleanme
+
+source ../../../utils/functions
+source ../../utils/search-functions
+
+register_project ../utils/register-project.json 
+
+
+#Give a unique name for the dataObject 
+
+PREFIX="dxtest-data-name"
+SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+VALUE=$PREFIX-$SUFFIX
+echo "$VALUE" > value.tmp
+DESCRIPTION=`cat ../utils/register-dataobject.json | sed "s/dxtest-data-name/$VALUE/"`
+
+echo "$DESCRIPTION" >  register-dataobject.json.tmp
+register_dataobject register-dataobject.json.tmp
+
