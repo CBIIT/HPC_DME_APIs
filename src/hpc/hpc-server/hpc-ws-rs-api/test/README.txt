@@ -21,13 +21,17 @@ To download and install DICE, please follow the documentation at:
 http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
 
 -Configuration:
-  Edit two configuration files in the ./utils subdirectory:
+  I-Edit two configuration files in the ./utils subdirectory:
     1- ./utils/config
         Add you username after the option "-u <username>[:password]"
         Note: Do not check in the config file in the repository with your NCI password.
         For that, the config file is checked in as a dynamic link.
     2. ./utils/server
         Edit the server name and port number for the server to be tested.
+
+  II- Add at test.txt empyt file to this Globus endpoint:
+        "endpoint": "nihnci#NIH-NCI-TRANSFER1",
+        "path": "/GridFTP/GridFTP_t3/<nciID>/test.txt"
 
 -Execution:
   Every leaf directory includes two scripts: makeme and runme.
