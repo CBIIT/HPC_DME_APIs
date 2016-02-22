@@ -12,24 +12,38 @@
 function register_project {
 
     source ../../../utils/functions
-    USERID=`get_username ../../../utils/config`
     PROJECT_DESCRIPTION=$1
-    DESTINATION_PATH="/${USERID}/dice-unit-test/project-search"
-    echo "$DESTINATION_PATH" >> registered-project-name
-    SERVER=`cat ../../../utils/server`
-    RESPONSE_MSG=registration-response-message.json
-    RESPONSE_HEADER=registration-response-header
-    
-    curl -H "Content-Type: application/json" -d @$PROJECT_DESCRIPTION -X PUT ${SERVER}/hpc-server/collection/${DESTINATION_PATH}  --config ../../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
-    check_connection $RESPONSE_HEADER
-}
-function check_registration {
-    #Check that the project was registered correctly
-    REG_HTTP_CODE=`get_http_code registration-response-header`
-    if [ "$REG_HTTP_CODE" != "201" ]  && [ "$REG_HTTP_CODE" != "200" ]
-    then
-        echo "FAILED TO REGISTER PROJECT BEFORE SEARCH. HTTP_CODE = $REG_HTTP_CODE" 1>&2
-        exit
-    fi
+    USERID=`get_username ../../../utils/config`
+    DESTINATION_PATH="/FNL_SF_Archive/${USERID}/dice-unit-test/project-search"
+    echo "$DESTINATION_PATH" > registered-project-path.tmp
+    curl_register "$PROJECT_DESCRIPTION" "$DESTINATION_PATH" collection
+
 }
 
+
+function register_dataobject {
+
+    source ../../../utils/functions
+
+    DATAOBJECT_DESCRIPTION=$1
+    PROJECT_PATH=`cat registered-project-path.tmp`
+
+    NAME=`date +"%b-%d-%G-%H-%M-%S"`
+    DESTINATION_PATH=${PROJECT_PATH}/object-${NAME}.txt
+    echo "$DESTINATION_PATH" > registered-dataobject-name.tmp
+
+    curl_register "$DATAOBJECT_DESCRIPTION" "$DESTINATION_PATH" dataObject
+}
+
+
+
+function check_registration {
+    #Check that the collection was registered correctly
+    verify_registration  collection-registration-response-header.tmp
+}
+
+
+function check_dataobject_registration {
+    #Check that the collection was registered correctly
+    verify_registration  dataObject-registration-response-header.tmp
+}
