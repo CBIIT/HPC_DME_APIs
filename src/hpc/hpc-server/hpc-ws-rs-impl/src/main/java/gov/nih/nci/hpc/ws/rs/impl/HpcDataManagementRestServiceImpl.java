@@ -179,7 +179,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null , true);
+		return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null, true);
     }
     
     @Override
@@ -198,7 +198,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return okResponse(dataObjects, true);
+		return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null, true);
     }
     
     @Override
