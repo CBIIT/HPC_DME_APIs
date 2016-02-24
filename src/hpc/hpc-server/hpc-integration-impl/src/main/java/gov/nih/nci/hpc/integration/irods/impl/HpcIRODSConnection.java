@@ -50,7 +50,6 @@ public class HpcIRODSConnection
 	private Integer irodsPort = null;
 	private String irodsZone = null;
 	private String irodsResource = null;
-	private AuthScheme irodsAuthentication = null;
 	private String basePath = null;
 	
     // The logger instance.
@@ -68,21 +67,20 @@ public class HpcIRODSConnection
      * @param irodsPort The iRODS server port.
      * @param irodsZone The iRODS zone.
      * @param irodsResource The iRODS resource to use.
-     * @param irodsAuthentication The iRODS authentication method to use.
      * @param basePath The iRODS base path.
      * 
      * @throws HpcException If it failed to instantiate the iRODS file system.
      */
     private HpcIRODSConnection(String irodsHost, Integer irodsPort, 
     		                   String irodsZone, String irodsResource,
-    		                   AuthScheme irodsAuthentication, String basePath) 
+    		                   String basePath) 
     		                  throws HpcException
     {
     	if(irodsHost == null || irodsHost.isEmpty() ||
     	   irodsPort == null ||
     	   irodsZone == null || irodsZone.isEmpty() ||
     	   irodsResource == null || irodsResource.isEmpty() ||
-    	   irodsAuthentication == null || basePath == null) {
+    	   basePath == null || basePath.isEmpty()) {
     	   throw new HpcException("Null or empty iRODS connection attributes",
                                   HpcErrorType.SPRING_CONFIGURATION_ERROR);	
     	}
@@ -90,7 +88,6 @@ public class HpcIRODSConnection
     	this.irodsPort = irodsPort;
     	this.irodsZone = irodsZone;
     	this.irodsResource = irodsResource;
-    	this.irodsAuthentication = irodsAuthentication;
     	this.basePath = basePath;
     	
 		try {
@@ -209,14 +206,22 @@ public class HpcIRODSConnection
      * Authenticate an account.
      *
      * @param dataManagementAccount A data management account to authenticate.
+     * @param ldapAuthenticated An indicator if the user was authenticated via LDAP. 
+     *                          This determines the authentication scheme to use w/ Data Management. 
      * @return An authenticated IRODSAccount object, or null if authentication failed.
      */
-    public IRODSAccount authenticate(HpcIntegratedSystemAccount dataManagementAccount)
+    public IRODSAccount authenticate(HpcIntegratedSystemAccount dataManagementAccount,
+    		                         boolean ldapAuthenticated)
     		                        throws HpcException
     {
+    	// Set the Authentication Scheme. PAM if the caller was authenticated via LDAP, 
+    	// or STANDARD otherwise.
+    	AuthScheme authScheme = ldapAuthenticated ? AuthScheme.PAM : AuthScheme.STANDARD;
+    	
     	try {
 	    	 AuthResponse authResponse = irodsFileSystem.getIRODSAccessObjectFactory().
-	    				                      authenticateIRODSAccount(getIrodsAccount(dataManagementAccount));
+	    				                      authenticateIRODSAccount(toIrodsAccount(dataManagementAccount,
+	    				                    		                   authScheme));
 	         return authResponse != null ? authResponse.getAuthenticatedIRODSAccount() : null;
 			 
     	} catch(AuthenticationException ae) {
@@ -270,14 +275,16 @@ public class HpcIRODSConnection
     //---------------------------------------------------------------------//  
     
     /**
-     * Get iRODS Account instance for a HPC user.
+     * Instantiate an IRODSAccount from HpcIntegratedSystemAccount.
      * 
      * @param dataManagementAccount The Data Management account.
+     * @param authScheme The iRODS authentication scheme (PAM or STANDARD).
      *
      * @throws HpcException
      */
-    private IRODSAccount getIrodsAccount(HpcIntegratedSystemAccount dataManagementAccount) 
-    		                            throws HpcException
+    private IRODSAccount toIrodsAccount(HpcIntegratedSystemAccount dataManagementAccount,
+    		                            AuthScheme authScheme) 
+    		                           throws HpcException
     {
     	try {
     		IRODSAccount irodsAccount = 
@@ -285,7 +292,7 @@ public class HpcIRODSConnection
     	    		                           dataManagementAccount.getUsername(), 
     	    		                           dataManagementAccount.getPassword(), "", 
 	    	                                   irodsZone, irodsResource);
-    		irodsAccount.setAuthenticationScheme(irodsAuthentication);
+    		irodsAccount.setAuthenticationScheme(authScheme);
     		return irodsAccount;
     		
     	} catch(JargonException e) {

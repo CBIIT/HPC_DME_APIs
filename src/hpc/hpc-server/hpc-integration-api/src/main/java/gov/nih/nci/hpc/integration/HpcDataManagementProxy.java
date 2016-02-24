@@ -43,12 +43,15 @@ public interface HpcDataManagementProxy
      * Authenticate the invoker w/ the data management system.
      *
      * @param dataManagementAccount The Data Management account to authenticate.
+     * @param ldapAuthenticated An indicator if the user was authenticated via LDAP. 
+     *                          This determines the authentication scheme to use w/ Data Management. 
      * @return An authenticated token, to be used in subsequent calls to data management.
      *         It returns null if the account is not authenticated.
      * 
      * @throws HpcException
      */
-    public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount) 
+    public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount,
+    		                   boolean ldapAuthenticated) 
     		                  throws HpcException;
     
     /**
