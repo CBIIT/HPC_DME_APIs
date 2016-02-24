@@ -9,6 +9,32 @@
          "value": "Updating system metadata"
         },
         {
+         "attribute": "registered_by_doc",
+         "value": "Updating system metadata"
+        },
+
+        {
+         "attribute": "Id",
+         "value": "Updating system metadata"
+        },
+        {
+         "attribute": "uuid",
+         "value": "Updating system metadata"
+        },
+        {
+         "attribute": "create_date",
+         "value": "Updating system metadata"
+        },
+        {
+         "attribute": "update_date",
+         "value": "Updating system metadata"
+        },
+
+        {
+         "attribute": "registered_by",
+         "value": "Updating system metadata"
+        },
+        {
          "attribute": "collection_type",
          "value": "Project"
         },
