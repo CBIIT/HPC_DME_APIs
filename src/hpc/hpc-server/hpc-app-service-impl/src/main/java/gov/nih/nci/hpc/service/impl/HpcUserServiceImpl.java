@@ -153,7 +153,7 @@ public class HpcUserServiceImpl implements HpcUserService
     }
     
     @Override
-    public void setRequestInvoker(HpcUser user)
+    public void setRequestInvoker(HpcUser user, boolean ldapAuthenticated)
     {
     	HpcRequestInvoker invoker = new HpcRequestInvoker();
     	if(user != null) {
@@ -161,6 +161,7 @@ public class HpcUserServiceImpl implements HpcUserService
     	   invoker.setDataTransferAccount(user.getDataTransferAccount());
     	   invoker.setDataManagementAccount(user.getDataManagementAccount());
     	   invoker.setDataManagementAuthenticatedToken(null);
+    	   invoker.setLdapAuthenticated(ldapAuthenticated);
     	}
     	
     	HpcRequestContext.setRequestInvoker(invoker);
