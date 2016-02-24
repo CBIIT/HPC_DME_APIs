@@ -45,7 +45,7 @@
 				<xsd:element name="dataManagementAccount"
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 				<xsd:element name="dataManagementAuthenticatedToken" type="xsd:anyType" />
-				
+				<xsd:element name="ldapAuthenticated" type="xsd:boolean" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

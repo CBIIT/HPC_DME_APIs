@@ -62,8 +62,9 @@ public interface HpcUserService
      * Set the service call invoker in the request context.
      *
      * @param user The HPC user to set as the invoker.
+     * @param ldapAuthenticated An indicator whether the user was authenticated via LDAP
      */
-    public void setRequestInvoker(HpcUser user);
+    public void setRequestInvoker(HpcUser user, boolean ldapAuthenticated);
     
     /**
      * Authenticate a user (via LDAP).
