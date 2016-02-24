@@ -217,7 +217,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	}
     	
     	// Populate the request context with the HPC user.
-    	userService.setRequestInvoker(user);
+    	userService.setRequestInvoker(user, userAuthenticated);
     	
     	// Prepare and return a response DTO.
     	HpcAuthenticationResponseDTO authenticationResponse = new HpcAuthenticationResponseDTO();

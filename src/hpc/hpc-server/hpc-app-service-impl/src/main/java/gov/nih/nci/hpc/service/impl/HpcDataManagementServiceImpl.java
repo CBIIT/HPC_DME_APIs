@@ -573,7 +573,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	// Authenticate w/ data management
-    	Object token = dataManagementProxy.authenticate(invoker.getDataManagementAccount());
+    	Object token = dataManagementProxy.authenticate(invoker.getDataManagementAccount(),
+    			                                        invoker.getLdapAuthenticated());
     	if(token == null) {
     	   throw new HpcException("Invalid data management account credentials",
                                   HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);

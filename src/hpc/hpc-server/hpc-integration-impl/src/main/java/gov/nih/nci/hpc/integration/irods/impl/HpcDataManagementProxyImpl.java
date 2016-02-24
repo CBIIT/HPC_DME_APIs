@@ -89,10 +89,12 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     //---------------------------------------------------------------------//  
     
     @Override
-    public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount) 
+    public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount,
+    		                   boolean ldapAuthenticated) 
 		                      throws HpcException
     {
-    	return irodsConnection.authenticate(dataManagementAccount);
+    	return irodsConnection.authenticate(dataManagementAccount, 
+    			                            ldapAuthenticated);
     }
     
     @Override
