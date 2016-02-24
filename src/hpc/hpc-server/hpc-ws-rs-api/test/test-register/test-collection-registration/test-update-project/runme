@@ -68,7 +68,6 @@ ATTRIBUTE="\"description\""
 #Make sure the response does include the object
 RESPONSE_GROUPS=`cat $RESPONSE_MSG | tr "{" "\n"`
 OBJECT_GROUPS=`echo "$RESPONSE_GROUPS" | grep "$ATTRIBUTE"`
-echo "$OBJECT_GROUPS"
 UPDATED_VALUE=`get_json_value "$OBJECT_GROUPS" "value"`
 echo $UPDATED_VALUE
 
