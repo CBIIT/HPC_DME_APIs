@@ -93,9 +93,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	        JSONObject transfer = new JSONObject();
 	        transfer.put("DATA_TYPE", "transfer");
 	        transfer.put("submission_id", submissionId);
+	        transfer.put("verify_checksum", true);
+	        transfer.put("delete_destination_extra", false);
+	        transfer.put("preserve_timestamp", false);
+	        transfer.put("encrypt_data", false);
+
 	        JSONObject item = setJSONItem(source, destination, client);
 	        transfer.append("DATA", item);
-
+	        
 	        r = client.postResult("/transfer", transfer, null);
 	        String taskId = r.document.getString("task_id");
 	        logger.debug("Transfer task id :"+ taskId );
@@ -205,7 +210,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	{
     	JSONObject item = new JSONObject();
     	try {
-	        item.put("DATA_TYPE", "transfer_item");
+	        item.put("DATA_TYPE", "transfer");
 	        item.put("source_endpoint", source.getEndpoint());
 	        item.put("source_path", source.getPath());
 	        item.put("destination_endpoint", destination.getEndpoint());
