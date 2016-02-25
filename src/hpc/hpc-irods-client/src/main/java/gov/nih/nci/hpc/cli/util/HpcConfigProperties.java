@@ -42,12 +42,19 @@ public class HpcConfigProperties {
 			fileChangedReloadingStrategy.setRefreshDelay(1000);
 			pConfig.setReloadingStrategy(fileChangedReloadingStrategy);
 			*/
+			String properties = HPC_PROPS;
+			String filePath = System.getProperty("hpc.client.properties");
+			if(filePath != null)
+				properties = filePath;
+			
+			System.out.println("filePath "+filePath);
 			configuration = new CompositeConfiguration();
 			//configuration.addConfiguration(pConfig);
 			configuration.addConfiguration(
-				    new PropertiesConfiguration(HPC_PROPS));
+				    new PropertiesConfiguration(properties));
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 
