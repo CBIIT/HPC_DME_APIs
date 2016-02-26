@@ -15,7 +15,7 @@
 
 Unit tests root directory for the High Performance Conputing Data Management HPCDM REST APIs.
 
-These unit tests are organized using the DICE cross platform unit testing framework. 
+These unit tests are organized according to the DICE cross platform unit testing framework. 
 
 To download and install DICE, please follow the documentation at:
 http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
@@ -29,9 +29,14 @@ http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
     2. ./utils/server
         Edit the server name and port number for the server to be tested.
 
-  II- Add at test.txt empyt file to this Globus endpoint:
+  II- Add a test.txt empty file to this Globus endpoint:
         "endpoint": "nihnci#NIH-NCI-TRANSFER1",
-        "path": "/GridFTP/GridFTP_t3/<nciID>/test.txt"
+        "path": "/GridFTP/GridFTP_t3/<nciID>/dice-tests/test.txt"
+
+  III- Define the environment variable HPC_DM_TEST and let it point to the directory where this README.txt is located.
+        For example:
+           $export HPC_DM_TEST=/path/to/README.txt
+
 
 -Execution:
   Every leaf directory includes two scripts: makeme and runme.
