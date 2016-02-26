@@ -14,4 +14,4 @@
 ******************************/
 
 Update a registered project with valid inputs. 
-The correcto output should be 201 for successful registraion, 200 for successful update and the new updated value for the attribute "description"
+The correct output should be 201 for successful registraion, 200 for successful update and the new updated value for the attribute "description"
