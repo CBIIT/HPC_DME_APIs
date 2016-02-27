@@ -112,17 +112,18 @@ public class HpcMetadataValidator
     /**
      * Validate collection metadata. Null unit values are converted to empty strings.
      *
-     * @param metadataEntries The metadata entries collection to validate.
+     * @param existingMetadataEntries Optional (can be null). The metadata entries currently associated 
+     *                                with the collection or data object.
      * @param addUpdateMetadataEntries Optional (can be null) A list of metadata entries
-     *                                 that are being added or updated to 'metadataEntries'. 
+     *                                 that are being added or updated to 'metadataEntries'.
      * 
      * @throws HpcException If the metadata is invalid.
      */
-    public void validateCollectionMetadata(List<HpcMetadataEntry> metadataEntries,
+    public void validateCollectionMetadata(List<HpcMetadataEntry> existingMetadataEntries,
     		                               List<HpcMetadataEntry> addUpdateMetadataEntries) 
     		                              throws HpcException
     {
-    	validateMetadata(metadataEntries, 
+    	validateMetadata(existingMetadataEntries, 
     			         addUpdateMetadataEntries,
     			         metadataValidationRules.getCollectionMetadataValidationRules(),
     			         metadataValidationRules.getCollectionSystemGeneratedMetadataAttributes());
@@ -131,17 +132,18 @@ public class HpcMetadataValidator
     /**
      * Validate data object metadata. Null unit values are converted to empty strings.
      *
-     * @param metadataEntries The metadata entries collection to validate.
-     * @param addUpdateMetadataEntries Optional (can be null). A list of metadata entries
+     * @param existingMetadataEntries Optional (can be null). The metadata entries currently associated 
+     *                                with the collection or data object.
+     * @param addUpdateMetadataEntries Optional (can be null) A list of metadata entries
      *                                 that are being added or updated to 'metadataEntries'. 
      * 
      * @throws HpcException If the metadata is invalid.
      */
-    public void validateDataObjectMetadata(List<HpcMetadataEntry> metadataEntries,
+    public void validateDataObjectMetadata(List<HpcMetadataEntry> existingMetadataEntries,
     		                               List<HpcMetadataEntry> addUpdateMetadataEntries) 
     		                              throws HpcException
     {
-    	validateMetadata(metadataEntries, 
+    	validateMetadata(existingMetadataEntries, 
     			         addUpdateMetadataEntries,
     			         metadataValidationRules.getDataObjectMetadataValidationRules(),
     			         metadataValidationRules.getDataObjectSystemGeneratedMetadataAttributes());
@@ -154,43 +156,46 @@ public class HpcMetadataValidator
     /**
      * Validate metadata. Null unit values are converted to empty strings.
      *
-     * @param metadataEntries The metadata entries collection to validate.
+     * @param existingMetadataEntries Optional (can be null). The metadata entries currently associated 
+     *                                with the collection or data object.
      * @param addUpdateMetadataEntries Optional (can be null) A list of metadata entries
      *                                 that are being added or updated to 'metadataEntries'. 
      * @param metadataValidationRules Validation rules to apply.
      * 
      * @throws HpcException If the metadata is invalid.
      */
-    private void validateMetadata(List<HpcMetadataEntry> metadataEntries,
+    private void validateMetadata(List<HpcMetadataEntry> existingMetadataEntries,
     		                      List<HpcMetadataEntry> addUpdateMetadataEntries,
     		                      List<HpcMetadataValidationRule> metadataValidationRules,
     		                      List<String> systemGeneratedMetadataAttributes) 
     		                     throws HpcException
     {
-    	// Crate a metadata <attribute, value> map.
+    	// Crate a metadata <attribute, value> map. Put exisiting entries first.
     	Map<String, String> metadataEntriesMap = new HashMap<String, String>();
-    	for(HpcMetadataEntry metadataEntry : metadataEntries) {
+    	if(existingMetadataEntries != null) {
+    	   for(HpcMetadataEntry metadataEntry : existingMetadataEntries) {
+    		   metadataEntriesMap.put(metadataEntry.getAttribute(), metadataEntry.getValue());
+    		   // Default null unit values to empty string (This is an iRODS expectation).
+    		   if(metadataEntry.getUnit() == null) {
+    		      metadataEntry.setUnit("");	
+    		   }
+    	   }
+    	}
+    	
+    	// Add Add/Update metadata entries to the map.
+    	Map<String, String> addUpdateMetadataEntriesMap = new HashMap<String, String>();
+    	for(HpcMetadataEntry metadataEntry : addUpdateMetadataEntries) {
     		metadataEntriesMap.put(metadataEntry.getAttribute(), metadataEntry.getValue());
+    		addUpdateMetadataEntriesMap.put(metadataEntry.getAttribute(), metadataEntry.getValue());
     		// Default null unit values to empty string (This is an iRODS expectation).
     		if(metadataEntry.getUnit() == null) {
     		   metadataEntry.setUnit("");	
     		}
     	}
     	
-    	// Add/Update entries from the add/update list.
-    	if(addUpdateMetadataEntries != null) {
-        	for(HpcMetadataEntry metadataEntry : addUpdateMetadataEntries) {
-        		metadataEntriesMap.put(metadataEntry.getAttribute(), metadataEntry.getValue());
-        		// Default null unit values to empty string (This is an iRODS expectation).
-        		if(metadataEntry.getUnit() == null) {
-        		   metadataEntry.setUnit("");	
-        		}
-        	}
-    	}
-    	
-    	// Check that reserved system generated metadata was not included in the caller's list.
+    	// Validate the add/update metadata entries don't include reserved system generated metadata.
     	for(String metadataAttribue : systemGeneratedMetadataAttributes) {
-    		if(metadataEntriesMap.containsKey(metadataAttribue)) {
+    		if(addUpdateMetadataEntriesMap.containsKey(metadataAttribue)) {
     		   throw new HpcException("System generated metadata can't be set/changed: " + 
     				                  metadataAttribue, 
                                       HpcErrorType.INVALID_REQUEST_INPUT);
@@ -222,7 +227,7 @@ public class HpcMetadataValidator
 				  defaultMetadataEntry.setValue(metadataValidationRule.getDefaultValue());
 				  defaultMetadataEntry.setUnit(metadataValidationRule.getDefaultUnit() != null ?
 						                       metadataValidationRule.getDefaultUnit() : "");
-				  metadataEntries.add(defaultMetadataEntry);
+				  addUpdateMetadataEntries.add(defaultMetadataEntry);
 				  metadataEntriesMap.put(defaultMetadataEntry.getAttribute(), defaultMetadataEntry.getValue());
 			   }
 	    	}
