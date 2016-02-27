@@ -170,7 +170,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	}	
        	
        	// Validate Metadata.
-       	metadataValidator.validateCollectionMetadata(metadataEntries);
+       	metadataValidator.validateCollectionMetadata(metadataEntries, null);
        	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToCollection(getAuthenticatedToken(),
@@ -212,7 +212,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	}	
        	
        	// Validate Metadata.
-       	metadataValidator.validateCollectionMetadata(metadataEntries);
+       	metadataValidator.validateCollectionMetadata(getCollectionMetadata(path),
+       			                                     metadataEntries);
        	
        	// Add Metadata to the DM system.
        	dataManagementProxy.updateCollectionMetadata(getAuthenticatedToken(),
@@ -231,7 +232,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	}	
        	
        	// Validate Metadata.
-       	metadataValidator.validateDataObjectMetadata(metadataEntries);
+       	metadataValidator.validateDataObjectMetadata(metadataEntries, null);
        	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToDataObject(getAuthenticatedToken(), 
@@ -250,7 +251,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	}	
        	
        	// Validate Metadata.
-       	metadataValidator.validateDataObjectMetadata(metadataEntries);
+       	metadataValidator.validateDataObjectMetadata(getDataObjectMetadata(path),
+       			                                     metadataEntries);
        	
        	// Update Metadata.
        	dataManagementProxy.updateDataObjectMetadata(getAuthenticatedToken(),

@@ -113,13 +113,17 @@ public class HpcMetadataValidator
      * Validate collection metadata. Null unit values are converted to empty strings.
      *
      * @param metadataEntries The metadata entries collection to validate.
+     * @param addUpdateMetadataEntries Optional (can be null) A list of metadata entries
+     *                                 that are being added or updated to 'metadataEntries'. 
      * 
      * @throws HpcException If the metadata is invalid.
      */
-    public void validateCollectionMetadata(List<HpcMetadataEntry> metadataEntries) 
+    public void validateCollectionMetadata(List<HpcMetadataEntry> metadataEntries,
+    		                               List<HpcMetadataEntry> addUpdateMetadataEntries) 
     		                              throws HpcException
     {
     	validateMetadata(metadataEntries, 
+    			         addUpdateMetadataEntries,
     			         metadataValidationRules.getCollectionMetadataValidationRules(),
     			         metadataValidationRules.getCollectionSystemGeneratedMetadataAttributes());
     }
@@ -128,13 +132,17 @@ public class HpcMetadataValidator
      * Validate data object metadata. Null unit values are converted to empty strings.
      *
      * @param metadataEntries The metadata entries collection to validate.
+     * @param addUpdateMetadataEntries Optional (can be null). A list of metadata entries
+     *                                 that are being added or updated to 'metadataEntries'. 
      * 
      * @throws HpcException If the metadata is invalid.
      */
-    public void validateDataObjectMetadata(List<HpcMetadataEntry> metadataEntries) 
+    public void validateDataObjectMetadata(List<HpcMetadataEntry> metadataEntries,
+    		                               List<HpcMetadataEntry> addUpdateMetadataEntries) 
     		                              throws HpcException
     {
     	validateMetadata(metadataEntries, 
+    			         addUpdateMetadataEntries,
     			         metadataValidationRules.getDataObjectMetadataValidationRules(),
     			         metadataValidationRules.getDataObjectSystemGeneratedMetadataAttributes());
     }
@@ -147,11 +155,14 @@ public class HpcMetadataValidator
      * Validate metadata. Null unit values are converted to empty strings.
      *
      * @param metadataEntries The metadata entries collection to validate.
+     * @param addUpdateMetadataEntries Optional (can be null) A list of metadata entries
+     *                                 that are being added or updated to 'metadataEntries'. 
      * @param metadataValidationRules Validation rules to apply.
      * 
      * @throws HpcException If the metadata is invalid.
      */
     private void validateMetadata(List<HpcMetadataEntry> metadataEntries,
+    		                      List<HpcMetadataEntry> addUpdateMetadataEntries,
     		                      List<HpcMetadataValidationRule> metadataValidationRules,
     		                      List<String> systemGeneratedMetadataAttributes) 
     		                     throws HpcException
@@ -164,6 +175,17 @@ public class HpcMetadataValidator
     		if(metadataEntry.getUnit() == null) {
     		   metadataEntry.setUnit("");	
     		}
+    	}
+    	
+    	// Add/Update entries from the add/update list.
+    	if(addUpdateMetadataEntries != null) {
+        	for(HpcMetadataEntry metadataEntry : addUpdateMetadataEntries) {
+        		metadataEntriesMap.put(metadataEntry.getAttribute(), metadataEntry.getValue());
+        		// Default null unit values to empty string (This is an iRODS expectation).
+        		if(metadataEntry.getUnit() == null) {
+        		   metadataEntry.setUnit("");	
+        		}
+        	}
     	}
     	
     	// Check that reserved system generated metadata was not included in the caller's list.
