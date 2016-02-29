@@ -197,9 +197,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public void registerDataObject(String path,
-    		                       HpcDataObjectRegistrationDTO dataObjectRegistrationDTO)  
-    		                      throws HpcException
+    public boolean registerDataObject(String path,
+    		                          HpcDataObjectRegistrationDTO dataObjectRegistrationDTO)  
+    		                         throws HpcException
     {
     	logger.info("Invoking registerDataObject(HpcDataObjectRegistrationDTO): " + 
     			    dataObjectRegistrationDTO);
@@ -211,38 +211,48 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Create a data object file (in the data management system).
-	    dataManagementService.createFile(path, false);
+	    boolean created = dataManagementService.createFile(path, false);
 	    
-    	boolean registrationCompleted = false; 
-    	try {
-		     // Attach the user provided metadata.
-		     dataManagementService.addMetadataToDataObject(
-		    			                      path, 
-		    			                      dataObjectRegistrationDTO.getMetadataEntries());
+	    if(created) {
+    	   boolean registrationCompleted = false; 
+    	   try {
+		        // Attach the user provided metadata.
+		        dataManagementService.addMetadataToDataObject(
+		    	   		                 path, 
+		    			                 dataObjectRegistrationDTO.getMetadataEntries());
 		     
-		     // Calculate the data transfer destination.
-		     HpcFileLocation destination = 
-		        getDestination(path, dataObjectRegistrationDTO.getFilePath());
-		     
-			 // Submit a request to transfer the file (this is performed async). 
-		     String dataTransferRequestId = 
-		                dataTransferService.transferData(dataObjectRegistrationDTO.getSource(), 
-		    	    		                             destination);	
-		     
-		     // Generate system metadata and attach to the data object.
-		     dataManagementService.addSystemGeneratedMetadataToDataObject(
-		        		                    path, destination,
-		    			                    dataObjectRegistrationDTO.getSource(),
-		    			                    dataTransferRequestId); 
-
-		     registrationCompleted = true;
-		     
-    	} finally {
-    			   if(!registrationCompleted) {
-    				  // Data object registration failed. Remove it from Data Management.
-    				  dataManagementService.deleteFile(path);
-    			   }
-    	}
+			     // Calculate the data transfer destination.
+			     HpcFileLocation destination = 
+			        getDestination(path, dataObjectRegistrationDTO.getFilePath());
+			     
+				 // Submit a request to transfer the file (this is performed async). 
+			     String dataTransferRequestId = 
+			                dataTransferService.transferData(dataObjectRegistrationDTO.getSource(), 
+			    	    		                             destination);	
+			     
+			     // Generate system metadata and attach to the data object.
+			     dataManagementService.addSystemGeneratedMetadataToDataObject(
+			        		                    path, destination,
+			    			                    dataObjectRegistrationDTO.getSource(),
+			    			                    dataTransferRequestId); 
+	
+			     registrationCompleted = true;
+			     
+	    	} finally {
+	    			   if(!registrationCompleted) {
+	    				  // Data object registration failed. Remove it from Data Management.
+	    				  dataManagementService.deleteFile(path);
+	    			   }
+	    	}
+    	   
+	    } else {
+	    	    // Attach the user provided metadata.
+	            dataManagementService.updateDataObjectMetadata(
+	    	   	    	                    path, 
+	    			                        dataObjectRegistrationDTO.getMetadataEntries());
+	    }
+	    
+	    return created;
     }
     
     @Override
