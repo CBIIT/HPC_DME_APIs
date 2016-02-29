@@ -210,7 +210,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	{
     	JSONObject item = new JSONObject();
     	try {
-	        item.put("DATA_TYPE", "transfer");
+	        item.put("DATA_TYPE", "transfer_item");
 	        item.put("source_endpoint", source.getEndpoint());
 	        item.put("source_path", source.getPath());
 	        item.put("destination_endpoint", destination.getEndpoint());
