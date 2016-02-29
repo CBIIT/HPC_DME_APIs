@@ -75,7 +75,7 @@ public class HpcScheduledTasks
     private void updateDataTransferStatusTask()
     {
         logger.info("Starting Update Data Transfer Status Task...");
-        
+        /*
         try { 
 		     userBusService.authenticate(batchAuthenticationRequest, false);
 		     dataManagementBusService.updateDataTransferStatus();
@@ -86,7 +86,7 @@ public class HpcScheduledTasks
         } finally {
         	       dataManagementBusService.closeConnection();
         	       logger.info("Completed Update Data Transfer Status Task...");	
-        }
+        }*/
     }
 }
 
