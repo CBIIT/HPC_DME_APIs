@@ -49,11 +49,12 @@ public interface HpcDataManagementService
      *
      * @param path The data object path.
      * @param createParentPathDirectory If set to true, create the directory for the file.
+     * @return true if the data object file was created, or false if it already exists.
      * 
      * @throws HpcException
      */
-    public void createFile(String path, boolean createParentPathDirectory) 
-    		              throws HpcException;
+    public boolean createFile(String path, boolean createParentPathDirectory) 
+    		                 throws HpcException;
     
     /**
      * Delete a data object's file.

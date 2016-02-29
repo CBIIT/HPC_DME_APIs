@@ -118,21 +118,44 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public boolean createDirectory(String path) throws HpcException
     {
     	Object authenticatedToken = getAuthenticatedToken();
-    	boolean created = !dataManagementProxy.getPathAttributes(authenticatedToken, path).exists;
+    	
+    	// Validate the directory path.
+    	HpcDataManagementPathAttributes pathAttributes = 
+    	   dataManagementProxy.getPathAttributes(authenticatedToken, path);
+    	if(pathAttributes.exists) {
+    	   if(pathAttributes.isDirectory) {
+    		  // Directory already exists.
+    		  return false;
+    	   }
+    	   if(pathAttributes.isFile) {
+    		  throw new HpcException("Path already exists as a file: " + path, 
+    				                 HpcErrorType.INVALID_REQUEST_INPUT); 
+    	   }
+    	}
+    	
+    	// Create the directory.
     	dataManagementProxy.createCollectionDirectory(authenticatedToken, path);
-    	return created;
+    	return true;
     }
     
     @Override
-    public void createFile(String path, boolean createParentPathDirectory) 
-    		              throws HpcException
+    public boolean createFile(String path, boolean createParentPathDirectory) 
+    		                 throws HpcException
     {
     	Object authenticatedToken = getAuthenticatedToken();
     	
-    	// Validate the path is available.
-    	if(dataManagementProxy.getPathAttributes(authenticatedToken, path).exists) {
-    		throw new HpcException("Path already exists: " + path, 
-    				               HpcRequestRejectReason.DATA_OBJECT_PATH_ALREADY_EXISTS);
+    	// Validate the file path.
+    	HpcDataManagementPathAttributes pathAttributes = 
+    	   dataManagementProxy.getPathAttributes(authenticatedToken, path);
+    	if(pathAttributes.exists) {
+    	   if(pathAttributes.isFile) {
+    		  // File already exists.
+    		  return false;
+    	   }
+    	   if(pathAttributes.isDirectory) {
+    		  throw new HpcException("Path already exists as a directory: " + path, 
+    				                 HpcErrorType.INVALID_REQUEST_INPUT); 
+    	   }
     	}
     	
     	//  Validate the parent directory exists.
@@ -149,6 +172,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	
     	// Create the data object file.
     	dataManagementProxy.createDataObjectFile(authenticatedToken, path);
+    	return true;
     }
     
     @Override
