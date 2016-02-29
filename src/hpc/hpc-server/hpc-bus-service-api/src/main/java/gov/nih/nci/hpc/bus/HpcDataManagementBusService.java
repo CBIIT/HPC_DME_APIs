@@ -75,12 +75,14 @@ public interface HpcDataManagementBusService
      *
      * @param path The data object's path.
      * @param dataObjectRegistrationDTO A DTO contains the metadata and data transfer locations.
-     * 
+     * @return true if a new data object was registered, false if the collection already exists
+     *         and its metadata got updated.
+     *         
      * @throws HpcException
      */
-    public void registerDataObject(String path,
-    		                       HpcDataObjectRegistrationDTO dataObjectRegistrationDTO) 
-    		                      throws HpcException;
+    public boolean registerDataObject(String path,
+    		                          HpcDataObjectRegistrationDTO dataObjectRegistrationDTO) 
+    		                         throws HpcException;
     
     /**
      * Get Data Object.
