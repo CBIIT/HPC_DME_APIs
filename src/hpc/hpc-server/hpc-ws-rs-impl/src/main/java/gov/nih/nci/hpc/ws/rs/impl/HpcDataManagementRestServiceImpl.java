@@ -149,15 +149,21 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	path = toAbsolutePath(path);
 		logger.info("Invoking RS: PUT /dataObject" + path);
 		
+		boolean created = true;
 		try {
-			 dataManagementBusService.registerDataObject(path, dataObjectRegistrationDTO);
+			 created = dataManagementBusService.registerDataObject(path, 
+					                                               dataObjectRegistrationDTO);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: PUT /dataObject" + path + " failed:", e);
 			    return errorResponse(e);
 		}
-    	
-		return createdResponse(null);
+		
+		if(created) {
+		   return createdResponse(null);
+		} else {
+				return okResponse(null, false);
+		}
 	}
     
     @Override
