@@ -44,8 +44,8 @@ public interface HpcUserService
     /**
      * Get a user.
      *
-     * @param nciUserId The managed user NCI ID.
-     * @return The managed user.
+     * @param nciUserId The registered user NCI ID.
+     * @return The registered user.
      * 
      * @throws HpcException
      */
