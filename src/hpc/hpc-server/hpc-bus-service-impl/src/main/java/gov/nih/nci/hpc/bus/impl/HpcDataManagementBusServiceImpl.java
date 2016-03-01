@@ -393,8 +393,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			 
     			 // Use the registrar data transfer account to check for transfer status.
     			 HpcUser registrar = userService.getUser(dataTransferRequestInfo.registrarId);
-    			 userService.getRequestInvoker().setDataTransferAuthenticatedToken(null);
-    			 userService.getRequestInvoker().setDataTransferAccount(registrar.getDataTransferAccount());
+    			 if(registrar != null) {
+    			    userService.getRequestInvoker().setDataTransferAuthenticatedToken(null);
+    			    userService.getRequestInvoker().setDataTransferAccount(registrar.getDataTransferAccount());
+    			 }
     			 
     			 // Get the data transfer request status.
     			 HpcDataTransferStatus dataTransferStatus =
