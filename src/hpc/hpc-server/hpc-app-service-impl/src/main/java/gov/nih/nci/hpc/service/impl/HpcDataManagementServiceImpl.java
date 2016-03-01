@@ -381,7 +381,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-	public String getDataTransferRequestId(String path) throws HpcException
+	public HpcDataTransferRequestInfo getDataTransferRequestInfo(String path) 
+			                                                    throws HpcException
 	{
     	// Input validation.
     	if(getDataObject(path) == null) {
@@ -389,9 +390,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		                          HpcErrorType.INVALID_REQUEST_INPUT);
     	}	
     	
+    	HpcDataTransferRequestInfo requestInfo = new HpcDataTransferRequestInfo();
 		for(HpcMetadataEntry metadataEntry : getDataObjectMetadata(path)) {
 			if(metadataEntry.getAttribute().equals(FILE_DATA_TRANSFER_ID_ATTRIBUTE)) {
-			   return metadataEntry.getValue();	
+				requestInfo.requestId = metadataEntry.getValue();	
+				break;
+			}
+			if(metadataEntry.getAttribute().equals(REGISTRAR_ID_ATTRIBUTE)) {
+				requestInfo.registrarId = metadataEntry.getValue();	
 			}
 		}
 		
