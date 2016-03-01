@@ -34,6 +34,11 @@ import java.util.List;
 
 public interface HpcDataManagementService 
 {    
+	public class HpcDataTransferRequestInfo {
+	       public String requestId = null;
+	       public String registrarId = null;
+	}
+	
     /**
      * Create a collection's directory.
      *
@@ -168,10 +173,11 @@ public interface HpcDataManagementService
      * 
      * @param path The data object (logical) path.
      * 
-     * @return The data transfer request ID.
+     * @return HpcDataTransferRequestInfo The data transfer info.
      * @throws HpcException
      */
-	public String getDataTransferRequestId(String path) throws HpcException;
+	public HpcDataTransferRequestInfo getDataTransferRequestInfo(String path) 
+			                                                    throws HpcException;
 	
     /** 
      * Set a data transfer status of a data object.

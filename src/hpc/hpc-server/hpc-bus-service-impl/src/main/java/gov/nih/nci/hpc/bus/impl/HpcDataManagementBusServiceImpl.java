@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
@@ -31,6 +32,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcDataManagementService.HpcDataTransferRequestInfo;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
@@ -385,10 +387,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	for(HpcDataObject dataObject : dataManagementService.getDataObjectsInProgress()) {
     		String path = dataObject.getAbsolutePath();
     		try {
-    		     // Get current data transfer status.
+    		     // Get current data transfer Request Info.
+    			 HpcDataTransferRequestInfo dataTransferRequestInfo = 
+    			    dataManagementService.getDataTransferRequestInfo(path);
+    			 
+    			 // Use the registrar data transfer account to check for transfer status.
+    			 HpcUser registrar = userService.getUser(dataTransferRequestInfo.registrarId);
+    			 userService.getRequestInvoker().setDataTransferAuthenticatedToken(null);
+    			 userService.getRequestInvoker().setDataTransferAccount(registrar.getDataTransferAccount());
+    			 
+    			 // Get the data transfer request status.
     			 HpcDataTransferStatus dataTransferStatus =
-    		        dataTransferService.getDataTransferStatus(
-    		        	dataManagementService.getDataTransferRequestId(path));
+    		        dataTransferService.getDataTransferStatus(dataTransferRequestInfo.requestId);
     			 
     		     if(dataTransferStatus.equals(HpcDataTransferStatus.ARCHIVED)) {
     		    	// Data transfer completed successfully. Update the metadata.
