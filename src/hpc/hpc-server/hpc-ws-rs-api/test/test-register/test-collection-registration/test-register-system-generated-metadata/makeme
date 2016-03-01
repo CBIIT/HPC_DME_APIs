@@ -23,4 +23,3 @@
 #Clean previous parsed policies file
 ../../utils/cleantest
 ../../utils/maketest collectionMetadataValidationRules Project
-

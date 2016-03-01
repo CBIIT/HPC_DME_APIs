@@ -30,7 +30,7 @@ if [ -z "$SPECIFIC_TYPE" ]
 then
     SPECIFIC_ATTRIBUTES="$METADATA_GROUPS"
 else
-    SPECIFIC_ATTRIBUTES=`echo "$METADATA_GROUPS" | grep "\"collectionType\":\"$SPECIFIC_TYPE\""`
+    SPECIFIC_ATTRIBUTES=`echo "$METADATA_GROUPS" | grep "\"collectionTypes\":\[\"$SPECIFIC_TYPE\"\]"`
 fi
 
 #Write the specific attributes file
