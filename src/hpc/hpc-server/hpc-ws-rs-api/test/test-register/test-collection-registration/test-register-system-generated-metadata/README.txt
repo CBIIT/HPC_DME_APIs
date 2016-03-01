@@ -13,5 +13,5 @@
 @ddblock_end copyright
 ******************************/
 
-Register a project while trying to overwrite the system generated metadat "registered_by_name",
+Register a project while trying to overwrite the system generated metadata "registered_by_name",
 Should return the error code 400. 
