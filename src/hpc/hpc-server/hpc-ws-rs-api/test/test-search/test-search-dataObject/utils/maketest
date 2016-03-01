@@ -18,22 +18,19 @@ source ../../../utils/functions
 source ../../utils/search-functions
 
 
-
+USERNAME=`get_username $HPC_DM_TEST/utils/config` 
 #Give a unique name for the dataObject 
 
 PREFIX="dxtest-data-name"
 SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
 VALUE=$PREFIX-$SUFFIX
 echo "$VALUE" > value.tmp
-DESCRIPTION=`cat ../utils/register-dataobject.json | sed "s/dxtest-data-name/$VALUE/"`
+DESCRIPTION=`cat ../utils/register-dataobject.json | sed "s/dxtest-data-name/$VALUE/" | sed "s/username/$USERNAME/"`
 INPUT=`cat input.json | sed "s/dxtest-data-name/$VALUE/"`
 
 echo "$DESCRIPTION" >  register-dataobject.json.tmp
 echo "$INPUT" > input.json.tmp
 
-
 register_project ../utils/register-project.json 
 register_dataobject register-dataobject.json.tmp
-
-
 
