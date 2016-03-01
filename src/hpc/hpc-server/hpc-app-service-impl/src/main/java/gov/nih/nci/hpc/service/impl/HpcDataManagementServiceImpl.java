@@ -401,7 +401,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 			}
 		}
 		
-		return null;
+		return requestInfo;
 	}
     
 	public void setDataTransferStatus(String path, 
