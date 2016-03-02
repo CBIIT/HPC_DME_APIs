@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Readme.txt
+# runme
 # @author: George Zaki 
 # 
 # Copyright Leidos Biomedical Research, Inc
@@ -14,20 +14,23 @@
 source $HPC_DM_TEST/utils/functions
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username "$HPC_DM_TEST/utils/config"`
+SERVER=`cat $HPC_DM_TEST/utils/server`
+
 COLLECTION_PREFIX="/FNL_SF_Archive/${USERID}/dice-unit-test/test-batch-${NAME}"
 
 PROJECT_PATH="$COLLECTION_PREFIX-project/"
 DATASET_PATH="$COLLECTION_PREFIX-dataset/"
 FOLDER_PATH="$COLLECTION_PREFIX-folder/"
 
-UPDATED_PROJECT=`cat input.csv | sed "s#\<project-path\>#$PROJECT_PATH#"`
-UPDATED_DATASET=`echo "$UPDATED_PROJECT" | sed "s#\<dataset-path\>#$DATASET_PATH#"`
-UPDATED_FOLDER=`echo "$UPDATED_DATASET" | sed "s#\<folder-path\>#$FOLDER_PATH#"`
+UPDATED_PROJECT=`cat input.csv | sed "s#\"project-path\"#$PROJECT_PATH#"`
+UPDATED_DATASET=`echo "$UPDATED_PROJECT" | sed "s#\"dataset-path\"#$DATASET_PATH#"`
+UPDATED_FOLDER=`echo "$UPDATED_DATASET" | sed "s#\"folder-path\"#$FOLDER_PATH#"`
 
 echo "$UPDATED_FOLDER" > input.csv.tmp
 
 #Register the collection in a batch mode 
-java  -Dhpc.client.properties=$HPC_DM_TEST/test-hpc-client/utils/hpc-client/hpc.properties -jar $HPC_DM_CLIENT --cmdfile ./batch_cmd.txt >batch-log.tmp 2>batch-error-log.tmp
+java  -Dhpc.client.properties=$HPC_DM_TEST/test-hpc-client/utils/hpc-client/hpc.properties -jar $HPC_DM_CLIENT --cmdfile ./batch_cmd.txt 
+#java  -Dhpc.client.properties=$HPC_DM_TEST/test-hpc-client/utils/hpc-client/hpc.properties -jar $HPC_DM_CLIENT --cmdfile ./batch_cmd.txt >batch-log.tmp 2>batch-error-log.tmp
 
 
 REGISTERED_COLLECTIONS="$PROJECT_PATH $DATASET_PATH $FOLDER_PATH"
