@@ -49,4 +49,5 @@ for collection in $REGISTERED_COLLECTIONS; do
             echo "FAILED TO GET $collection, HTTP_CODE = $GET_HTTP_CODE" 1>&2
         exit
     fi
+    echo $GET_HTTP_CODE
 done
