@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# runme 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+
+#verify registration
+verify_registration  collection-registration-response-header.tmp
+
+
+PROJECT_PATH=`cat registered-folder-path.tmp`
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username "$HPC_DM_TEST/utils/config"`
+
+
+OBJECT1_PATH=${PROJECT_PATH}/object-${NAME}-1.txt
+OBJECT2_PATH=${PROJECT_PATH}/object-${NAME}-2.txt
+echo "$OBJECT1_PATH" > registered-dataobject-name.tmp
+
+
+# Set the source path as:
+SOURCE_PATH="/GridFTP/GridFTP_t3/$USERID/test.txt"
+
+
+UPDATED_OBJECT1=`cat input.csv | sed "s#\"object1-path\"#$OBJECT1_PATH#"`
+UPDATED_OBJECT2=`echo "$UPDATED_OBJECT1" | sed "s#\"object2-path\"#$OBJECT2_PATH#"`
+UPDATED_SOURCE=`echo "$UPDATED_OBJECT2" | sed "s#\"source-path\"#$SOURCE_PATH#"`
+
+echo "$UPDATED_SOURCE" > input.csv.tmp
+
+#Register the collection in a batch mode 
+java  -Dhpc.client.properties=$HPC_DM_TEST/test-hpc-client/utils/hpc-client/hpc.properties -jar $HPC_DM_CLIENT --cmdfile ./batch_cmd.txt >batch-log.tmp 2>batch-error-log.tmp
+
+
+REGISTERED_DATAOBJECTS="$OBJECT1_PATH $OBJECT2_PATH"
+
+for dataobject in $REGISTERED_DATAOBJECTS; do
+
+    RESPONSE_HEADER=response-header.tmp
+    RESPONSE_MSG=response-message.json.tmp
+    #Get the registered collection by path
+
+    curl -G -X GET $SERVER/hpc-server/dataObject/${dataobject}  --config $HPC_DM_TEST/utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+
+    GET_HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+    if [ "$GET_HTTP_CODE" != "200" ]  
+        then
+            echo "FAILED TO GET $dataobject, HTTP_CODE = $GET_HTTP_CODE" 1>&2
+        exit
+    fi
+done
