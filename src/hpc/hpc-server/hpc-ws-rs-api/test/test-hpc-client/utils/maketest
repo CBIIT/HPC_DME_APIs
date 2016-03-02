@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# maketest 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: maketest [no arguments]
+
+if [ ! -e "$HPC_DM_CLIENT" ]
+    then
+        echo "The jar client is not defined. Read $HPC_DM_TEST/test-hpc-client/README.txt for more instructions" 1>&2
+        exit
+fi
