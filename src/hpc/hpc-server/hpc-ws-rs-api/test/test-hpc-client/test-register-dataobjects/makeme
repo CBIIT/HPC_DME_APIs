@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# makeme
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+# Script to make this test
+# Usage: makeme [no arguments]
+
+../../utils/maketest
+../utils/maketest
+./cleanme
+
+source $HPC_DM_TEST/utils/functions
+
+#Register a project at path 
+FOLDER_DESCRIPTION=folder.json
+USERID=`get_username ../../../utils/config`
+FOLDER_PATH="/FNL_SF_Archive/${USERID}/dice-unit-test/project-batch"
+echo "$FOLDER_PATH" > registered-folder-path.tmp
+curl_register "$FOLDER_DESCRIPTION" "$FOLDER_PATH" collection
+
