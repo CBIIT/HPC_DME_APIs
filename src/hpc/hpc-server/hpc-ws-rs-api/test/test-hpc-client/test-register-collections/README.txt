@@ -14,3 +14,4 @@
 ******************************/
 
 Register three collection using the hpc-client tool
+runme return the http code for searching the three collections.
