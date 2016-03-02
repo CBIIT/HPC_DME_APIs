@@ -156,14 +156,13 @@ function curl_register {
     DESCRIPTION="$1"
     DESTINATION_PATH="$2"
     TYPE="$3"
-    USERID=`get_username ../../../utils/config`
-    SERVER=`cat ../../../utils/server`
+    USERID=`get_username $HPC_DM_TEST/utils/config`
+    SERVER=`cat $HPC_DM_TEST/utils/server`
 
     RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
     RESPONSE_HEADER=${TYPE}-registration-response-header.tmp
     
-    curl -H "Content-Type: application/json" -d @$DESCRIPTION -X PUT ${SERVER}/hpc-server/${TYPE}/${DESTINATION_PATH}  --config ../../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -H "Content-Type: application/json" -d @$DESCRIPTION -X PUT ${SERVER}/hpc-server/${TYPE}/${DESTINATION_PATH}  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     check_connection $RESPONSE_HEADER
 }
-
 
