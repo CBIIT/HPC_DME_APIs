@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Readme.txt
+# makeme 
 # @author: George Zaki 
 # 
 # Copyright Leidos Biomedical Research, Inc
@@ -12,5 +12,6 @@
 # Script to make this test
 # Usage: makeme [no arguments]
 
-../../utils/maketest
 ./cleanme
+../../utils/maketest
+../utils/maketest
