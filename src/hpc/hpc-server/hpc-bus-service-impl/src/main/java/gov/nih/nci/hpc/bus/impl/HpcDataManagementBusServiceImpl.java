@@ -223,9 +223,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		    	   		                 path, 
 		    			                 dataObjectRegistrationDTO.getMetadataEntries());
 		     
-			     // Calculate the data transfer destination.
+			     // Calculate the data transfer destination to deposit the data object.
 			     HpcFileLocation destination = 
-			        getDestination(path, dataObjectRegistrationDTO.getFilePath());
+			        getDataObjectRegistrationDestination(path, 
+			        		                             dataObjectRegistrationDTO.getFilePath());
 			     
 				 // Submit a request to transfer the file (this is performed async). 
 			     String dataTransferRequestId = 
@@ -328,9 +329,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	// Calculate the data object download destination.
+    	HpcFileLocation source = dataManagementService.getFileLocation(path);
+    	HpcFileLocation destination = 
+    	   getDataObjectDownloadDestination(source, downloadRequest.getDestination());
+    	
 		// Transfer the file.
-        dataTransferService.transferData(dataManagementService.getFileLocation(path),
-        		                         downloadRequest.getDestination());	
+        dataTransferService.transferData(source, destination);	
     }
     
     @Override
@@ -531,14 +536,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 	
     /** 
-     * Calculate data transfer destination.
+     * Calculate data transfer destination to deposit a data object
      * 
      * @param path The data object (logical) path.
      * @param dataTransferPath The caller's provided data transfer path.
      * 
-     * @return HpcFileLocation The data transfer destination.
+     * @return HpcFileLocation The data transfer deposit destination.
      */
-	private HpcFileLocation getDestination(String path, String dataTransferPath) 
+	private HpcFileLocation getDataObjectRegistrationDestination(String path, 
+			                                                     String dataTransferPath) 
 	{
 		// Calculate the data transfer destination absolute path as the following:
 		// 'base path' / 'caller's data transfer destination path/ 'logical path'
@@ -560,6 +566,33 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		destination.setPath(destinationPath.toString());
 		
 		return destination;
+	}
+	
+    /** 
+     * Calculate data transfer destination to download a data object.
+     * 
+     * @param source The source file location
+     * @param destination The user requested file destination
+     * 
+     * @return HpcFileLocation The data transfer download destination.
+     * @throws HpcException
+     */
+	private HpcFileLocation getDataObjectDownloadDestination(HpcFileLocation source, 
+			                                                 HpcFileLocation destination) 
+			                                                throws HpcException
+	{
+		if(!dataTransferService.isDirectory(destination)) {
+		   // The user requested destination is NOT a directory, transfer to it.
+		   return destination;
+		}
+		
+		// User requested to download to a directory. Append the source file name.
+		HpcFileLocation downloadDestination = new HpcFileLocation();
+		downloadDestination.setEndpoint(destination.getEndpoint());
+		String path = destination.getPath();
+		downloadDestination.setPath(path.substring(path.lastIndexOf('/')));
+		
+		return downloadDestination;
 	}
 	
     /** 
