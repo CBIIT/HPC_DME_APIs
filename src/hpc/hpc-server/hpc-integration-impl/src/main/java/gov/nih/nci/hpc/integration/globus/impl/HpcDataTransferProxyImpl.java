@@ -270,8 +270,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         	client.getResult(resource, params);
         	
         } catch(APIError error) {
-        	if("ExternalError.DirListingFailed.NotDirectory".equals(error.code))
+        	if("ExternalError.DirListingFailed.NotDirectory".equals(error.code) ||
+        	   "ClientError.NotFound".equals(error.code)) {
         		return false;
+        	}
         } catch(Exception e) {
 	        throw new HpcException(
        		     "Failed to check file directory: " + endpointName + ":" + path, 
