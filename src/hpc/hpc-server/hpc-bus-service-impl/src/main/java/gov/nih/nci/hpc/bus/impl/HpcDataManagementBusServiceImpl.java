@@ -589,8 +589,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// User requested to download to a directory. Append the source file name.
 		HpcFileLocation downloadDestination = new HpcFileLocation();
 		downloadDestination.setEndpoint(destination.getEndpoint());
-		String path = destination.getPath();
-		downloadDestination.setPath(path.substring(path.lastIndexOf('/')));
+		String sourcePath = source.getPath();
+		downloadDestination.setPath(destination.getPath() + 
+				                    sourcePath.substring(sourcePath.lastIndexOf('/')));
 		
 		return downloadDestination;
 	}
