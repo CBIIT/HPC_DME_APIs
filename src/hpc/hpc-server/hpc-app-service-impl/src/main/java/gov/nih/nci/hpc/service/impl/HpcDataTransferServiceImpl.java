@@ -98,6 +98,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	
 		return (dataTransferProxy.authenticate(dataTransferAccount) != null);
 	}  
+	
+	public boolean isDirectory(HpcFileLocation fileLocation) 
+                              throws HpcException
+    {
+    	// Input validation.
+    	if(!HpcDomainValidator.isValidFileLocation(fileLocation)) {	
+    	   throw new HpcException("Invalid file location", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}	
+    	
+    	return dataTransferProxy.isDirectory(getAuthenticatedToken(), 
+    			                             fileLocation);
+    }
 
     //---------------------------------------------------------------------//
     // Helper Methods

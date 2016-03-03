@@ -81,6 +81,19 @@ public interface HpcDataTransferProxy
     public HpcDataTransferReport getDataTransferReport(Object authenticatedToken,
     		                                           String dataTransferRequestId) 
     		                                          throws HpcException;
+    
+    /**
+     * Check if a path on an endpoint is a directory.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param fileLocation The endpoint/path to check.
+     * @return True if the file location is a directory, and false otherwise.
+     * 
+     * @throws HpcException
+     */
+    public boolean isDirectory(Object authenticatedToken, 
+    		                   HpcFileLocation fileLocation) 
+    		                  throws HpcException;
 }
 
  

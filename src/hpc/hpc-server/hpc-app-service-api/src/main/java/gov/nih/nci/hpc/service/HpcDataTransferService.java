@@ -58,6 +58,17 @@ public interface HpcDataTransferService
     public boolean validateDataTransferAccount(
     		               HpcIntegratedSystemAccount dataTransferAccount)
     		               throws HpcException;
+    
+    /**
+     * Check if a path on an endpoint is a directory.
+     *
+     * @param fileLocation The endpoint/path to check.
+     * @return True if the file location is a directory, and false otherwise.
+     * 
+     * @throws HpcException
+     */
+    public boolean isDirectory(HpcFileLocation fileLocation) 
+    		                  throws HpcException;
 }
 
  
