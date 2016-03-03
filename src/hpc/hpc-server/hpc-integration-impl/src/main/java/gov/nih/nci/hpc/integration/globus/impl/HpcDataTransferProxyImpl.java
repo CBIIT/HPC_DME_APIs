@@ -197,7 +197,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
                                HpcFileLocation fileLocation) 
                               throws HpcException
     {
-    	return isDirectory(fileLocation.getPath(), fileLocation.getEndpoint(), 
+    	return isDirectory(fileLocation.getEndpoint(), fileLocation.getPath(), 
     			           globusConnection.getTransferClient(authenticatedToken));
     }
     
