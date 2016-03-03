@@ -192,6 +192,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		} 
     }
     
+    @Override
+    public boolean isDirectory(Object authenticatedToken, 
+                               HpcFileLocation fileLocation) 
+                              throws HpcException
+    {
+    	return isDirectory(fileLocation.getPath(), fileLocation.getEndpoint(), 
+    			           globusConnection.getTransferClient(authenticatedToken));
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -215,8 +224,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	        item.put("source_path", source.getPath());
 	        item.put("destination_endpoint", destination.getEndpoint());
 	        item.put("destination_path", destination.getPath());
-	        item.put("recursive", checkFileDirectoryAndSetRecursive(source.getEndpoint(),
-	        		                                                source.getPath(), client));
+	        item.put("recursive", isDirectory(source.getEndpoint(), source.getPath(), client));
 	        return item;
 	        
 		} catch(Exception e) {
@@ -247,9 +255,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		}
     }
 
-    private boolean checkFileDirectoryAndSetRecursive(String endpointName, String path,
-    		                                          JSONTransferAPIClient client)
-                                                     throws HpcException 
+    private boolean isDirectory(String endpointName, String path,
+    		                    JSONTransferAPIClient client)
+                               throws HpcException 
     {
         Map<String, String> params = new HashMap<String, String>();
         if (path != null) {
