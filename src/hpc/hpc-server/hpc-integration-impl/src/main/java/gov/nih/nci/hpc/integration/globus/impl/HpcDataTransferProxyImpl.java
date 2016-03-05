@@ -1,5 +1,6 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -17,6 +18,8 @@ import javax.xml.bind.DatatypeConverter;
 import org.globusonline.transfer.APIError;
 import org.globusonline.transfer.BaseTransferAPIClient;
 import org.globusonline.transfer.JSONTransferAPIClient;
+import org.globusonline.transfer.JSONTransferAPIClient.Result;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +31,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     // Constants
     //---------------------------------------------------------------------//    
     
-    // Globus transfer status strings
+    // Globus transfer status strings.
 	private final static String FAILED_STATUS = "FAILED"; 
 	private final static String ARCHIVED_STATUS = "SUCCEEDED";
+	
+	// Globus error codes.
+	private final static String NOT_DIRECTORY_GLOBUS_CODE = 
+			                    "ExternalError.DirListingFailed.NotDirectory";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -193,12 +200,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     }
     
     @Override
-    public boolean isDirectory(Object authenticatedToken, 
-                               HpcFileLocation fileLocation) 
-                              throws HpcException
+    public HpcPathAttributes getPathAttributes(Object authenticatedToken, 
+                                               HpcFileLocation fileLocation) 
+                                              throws HpcException
     {
-    	return isDirectory(fileLocation.getEndpoint(), fileLocation.getPath(), 
-    			           globusConnection.getTransferClient(authenticatedToken));
+    	return getPathAttributes(fileLocation, 
+    			                 globusConnection.getTransferClient(authenticatedToken));
     }
     
     //---------------------------------------------------------------------//
@@ -224,7 +231,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	        item.put("source_path", source.getPath());
 	        item.put("destination_endpoint", destination.getEndpoint());
 	        item.put("destination_path", destination.getPath());
-	        item.put("recursive", isDirectory(source.getEndpoint(), source.getPath(), client));
+	        item.put("recursive", getPathAttributes(source, client).getIsDirectory());
 	        return item;
 	        
 		} catch(Exception e) {
@@ -254,32 +261,161 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		        		     HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
     }
-
-    private boolean isDirectory(String endpointName, String path,
-    		                    JSONTransferAPIClient client)
-                               throws HpcException 
+	
+    /**
+     * Get attributes of a file/directory.
+     *
+     * @param fileLocation The endpoint/path to check.
+     * @param client Globus client API instance.
+     * @return HpcDataTransferPathAttributes The path attributes.
+     * 
+     * @throws HpcException
+     */
+    private HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation,
+                                                JSONTransferAPIClient client) 
+                                               throws HpcException
     {
-        Map<String, String> params = new HashMap<String, String>();
-        if (path != null) {
-            params.put("path", path);
-        }
-        try
-        {
-        	String resource = BaseTransferAPIClient.endpointPath(endpointName)
-                          + "/ls";
-        	client.getResult(resource, params);
+    	HpcPathAttributes pathAttributes = new HpcPathAttributes();
+    	pathAttributes.setExists(false);
+    	pathAttributes.setIsDirectory(false);
+    	pathAttributes.setIsFile(false);
+    	pathAttributes.setSize(0);
+    	
+    	// Invoke the Globus directory listing service.
+        try {
+        	 Result dirContent = listDirectoryContent(fileLocation, client);
+        	 pathAttributes.setExists(true);
+        	 pathAttributes.setIsDirectory(true);
+        	 pathAttributes.setSize(getDirectorySize(dirContent, client));
         	
         } catch(APIError error) {
-        	if("ExternalError.DirListingFailed.NotDirectory".equals(error.code) ||
-        	   "ClientError.NotFound".equals(error.code)) {
-        		return false;
-        	}
+        	    if(error.code.equals(NOT_DIRECTORY_GLOBUS_CODE)) {
+        	       // Path exists as a single file
+        	       pathAttributes.setExists(true);
+        	       pathAttributes.setIsFile(true);
+        	       pathAttributes.setSize(getFileSize(fileLocation, client));
+        	    } // else path was not found. 
+        	    
         } catch(Exception e) {
-	        throw new HpcException(
-       		     "Failed to check file directory: " + endpointName + ":" + path, 
-       		     HpcErrorType.DATA_TRANSFER_ERROR, e);
+	            throw new HpcException("Failed to get path attributes: " + fileLocation, 
+       		                           HpcErrorType.DATA_TRANSFER_ERROR, e);
         }
-                
-        return true;
+        
+    	return pathAttributes;
+    }
+    
+    /**
+     * Get file size.
+     *
+     * @param fileLocation The file endpoint/path.
+     * @param client Globus client API instance.
+     * @return The file size in bytes.
+     */
+    private int getFileSize(HpcFileLocation fileLocation, JSONTransferAPIClient client)
+    {
+    	// Get the directory location of the file.
+    	HpcFileLocation dirLocation = new HpcFileLocation();
+    	dirLocation.setEndpoint(fileLocation.getEndpoint());
+    	int fileNameIndex = fileLocation.getPath().lastIndexOf('/');
+    	dirLocation.setPath(fileLocation.getPath().substring(0, fileNameIndex - 1));
+    	
+    	// Extract the file name from the path.
+    	String fileName = fileLocation.getPath().substring(fileNameIndex + 1);
+    	
+    	// List the directory content.
+    	try {
+             Result dirContent = listDirectoryContent(dirLocation, client);  
+             JSONArray jsonFiles = dirContent.document.getJSONArray("DATA");
+             if(jsonFiles != null) {
+                // Iterate through the directory files, and locate the file we look for.
+            	int filesNum = jsonFiles.length();
+                for(int i = 0; i < filesNum; i++) {
+                	JSONObject jsonFile = jsonFiles.getJSONObject(i);
+                	String jsonFileName = jsonFile.getString("name");
+                	if(jsonFileName != null && jsonFileName.equals(fileName)) {
+                	   // The file was found. Return its size
+                	   return jsonFile.getInt("size");
+                	}
+                }
+             }
+             
+    	} catch(Exception e) {
+    		    // Unexpected error. Eat this.
+    	}
+    	
+    	// File not found, or exception was caught.
+    	return 0;
     }	
+    
+    /**
+     * Get directory size. Sums up the size of all the files in this directory recursively.
+     *
+     * @param dirContent The directory content.
+     * @param client Globus client API instance.
+     * @return The directory size in bytes.
+     */
+    private int getDirectorySize(Result dirContent, JSONTransferAPIClient client)
+    {
+    	int size = 0;
+    	try {
+             JSONArray jsonFiles = dirContent.document.getJSONArray("DATA");
+             if(jsonFiles != null) {
+                // Iterate through the directory files, and sum up the files size.
+            	int filesNum = jsonFiles.length();
+                for(int i = 0; i < filesNum; i++) {
+                	JSONObject jsonFile = jsonFiles.getJSONObject(i);
+                	String jsonFileType = jsonFile.getString("DATA_TYPE");
+                	if(jsonFileType != null) {
+                	   if(jsonFileType.equals("file")) {
+                		  // This is a file. Add its size to the total;
+                	      size += jsonFile.getInt("size");
+                	      continue;
+                	   } else if(jsonFileType.equals("file_list")) {
+                		         // It's a sub directory. Make a recursive call, to add its size.
+                		         HpcFileLocation subDirLocation = new HpcFileLocation();
+                		         subDirLocation.setEndpoint(jsonFile.getString("endpoint"));
+                		         subDirLocation.setPath(jsonFile.getString("path"));
+                		         
+                		         size += getDirectorySize(listDirectoryContent(subDirLocation, 
+                		        		                                       client), 
+                		        		                  client);
+                	   }
+                	}
+                }
+             }
+             
+    	} catch(Exception e) {
+    		    // Unexpected error. Eat this.
+    	}
+    	
+    	// File not found, or exception was caught.
+    	return size;
+    }	
+    
+    /**
+     * Call the Globus list directory content service.
+     * See: https://docs.globus.org/api/transfer/file_operations/#list_directory_contents
+     *
+     * @param dirLocation The directory endpoint/path.
+     * @param client Globus client API instance.
+     * @return The file size in bytes.
+     */
+    private Result listDirectoryContent(HpcFileLocation dirLocation, 
+    		                            JSONTransferAPIClient client)
+    		                           throws APIError, HpcException
+    {
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("path", dirLocation.getPath());
+	    try {
+		     String resource = BaseTransferAPIClient.endpointPath(dirLocation.getEndpoint()) + "/ls";
+		     return client.getResult(resource, params);
+		
+	    } catch(APIError apiError) {
+	    	    throw apiError;
+	    } catch(Exception e) {
+		        throw new HpcException("Failed to invoke list directory content service: " + 
+	                                   dirLocation, 
+		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
+		}
+    }
 }

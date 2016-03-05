@@ -65,5 +65,5 @@
 			<xsd:element name="path" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-
+	
 </xsd:schema>

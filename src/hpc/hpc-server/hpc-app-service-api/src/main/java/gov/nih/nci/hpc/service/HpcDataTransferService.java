@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.service;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -60,15 +61,15 @@ public interface HpcDataTransferService
     		               throws HpcException;
     
     /**
-     * Check if a path on an endpoint is a directory.
+     * Get endpoint/path attributes .
      *
-     * @param fileLocation The endpoint/path to check.
-     * @return True if the file location is a directory, and false otherwise.
+     * @param fileLocation The endpoint/path to get attributes for.
+     * @return HpcPathAttributes 
      * 
      * @throws HpcException
      */
-    public boolean isDirectory(HpcFileLocation fileLocation) 
-    		                  throws HpcException;
+    public HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation) 
+    		                                  throws HpcException;
 }
 
  
