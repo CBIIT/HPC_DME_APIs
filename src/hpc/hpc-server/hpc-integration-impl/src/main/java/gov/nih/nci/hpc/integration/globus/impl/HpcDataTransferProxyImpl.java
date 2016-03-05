@@ -317,7 +317,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	HpcFileLocation dirLocation = new HpcFileLocation();
     	dirLocation.setEndpoint(fileLocation.getEndpoint());
     	int fileNameIndex = fileLocation.getPath().lastIndexOf('/');
-    	dirLocation.setPath(fileLocation.getPath().substring(0, fileNameIndex - 1));
+    	dirLocation.setPath(fileLocation.getPath().substring(0, fileNameIndex));
     	
     	// Extract the file name from the path.
     	String fileName = fileLocation.getPath().substring(fileNameIndex + 1);
