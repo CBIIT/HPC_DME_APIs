@@ -581,7 +581,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			                                                 HpcFileLocation destination) 
 			                                                throws HpcException
 	{
-		if(!dataTransferService.isDirectory(destination)) {
+		if(!dataTransferService.getPathAttributes(destination).getIsDirectory()) {
 		   // The user requested destination is NOT a directory, transfer to it.
 		   return destination;
 		}
