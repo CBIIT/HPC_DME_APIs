@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -99,8 +100,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		return (dataTransferProxy.authenticate(dataTransferAccount) != null);
 	}  
 	
-	public boolean isDirectory(HpcFileLocation fileLocation) 
-                              throws HpcException
+	@Override
+	public HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation) 
+                                              throws HpcException
     {
     	// Input validation.
     	if(!HpcDomainValidator.isValidFileLocation(fileLocation)) {	
@@ -108,8 +110,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}	
     	
-    	return dataTransferProxy.isDirectory(getAuthenticatedToken(), 
-    			                             fileLocation);
+    	return dataTransferProxy.getPathAttributes(getAuthenticatedToken(), 
+    			                                   fileLocation);
     }
 
     //---------------------------------------------------------------------//
