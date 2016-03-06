@@ -368,13 +368,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
             	int filesNum = jsonFiles.length();
                 for(int i = 0; i < filesNum; i++) {
                 	JSONObject jsonFile = jsonFiles.getJSONObject(i);
-                	String jsonFileType = jsonFile.getString("DATA_TYPE");
+                	String jsonFileType = jsonFile.getString("type");
                 	if(jsonFileType != null) {
                 	   if(jsonFileType.equals("file")) {
                 		  // This is a file. Add its size to the total;
                 	      size += jsonFile.getInt("size");
                 	      continue;
-                	   } else if(jsonFileType.equals("file_list")) {
+                	   } else if(jsonFileType.equals("dir")) {
                 		         // It's a sub directory. Make a recursive call, to add its size.
                 		         HpcFileLocation subDirLocation = new HpcFileLocation();
                 		         subDirLocation.setEndpoint(jsonFile.getString("endpoint"));
@@ -392,7 +392,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		    // Unexpected error. Eat this.
     	}
     	
-    	// File not found, or exception was caught.
     	return size;
     }	
     
