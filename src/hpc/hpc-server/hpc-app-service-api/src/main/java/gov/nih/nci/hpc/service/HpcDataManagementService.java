@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.service;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequestInfo;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -34,11 +35,6 @@ import java.util.List;
 
 public interface HpcDataManagementService 
 {    
-	public class HpcDataTransferRequestInfo {
-	       public String requestId = null;
-	       public String registrarId = null;
-	}
-	
     /**
      * Create a collection's directory.
      *
@@ -143,7 +139,8 @@ public interface HpcDataManagementService
      *      7. File location endpoint.
      *      8. File location path.
      *      9. Data Transfer Request ID.
-     *      10. Data Transfer Status
+     *      10. Data Transfer Status.
+     *      11. Data Object File(s) size.
      *
      * @param path The data object path.
      * @param fileLocation The physical file location.
@@ -155,7 +152,8 @@ public interface HpcDataManagementService
     public void addSystemGeneratedMetadataToDataObject(String path, 
     		                                           HpcFileLocation fileLocation,
     		                                           HpcFileLocation fileSource,
-    		                                           String dataTransferRequestId) 
+    		                                           String dataTransferRequestId,
+    		                                           int size) 
     		                                          throws HpcException; 
     
     /**

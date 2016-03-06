@@ -201,11 +201,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     
     @Override
     public HpcPathAttributes getPathAttributes(Object authenticatedToken, 
-                                               HpcFileLocation fileLocation) 
+                                               HpcFileLocation fileLocation,
+                                               boolean getSize) 
                                               throws HpcException
     {
     	return getPathAttributes(fileLocation, 
-    			                 globusConnection.getTransferClient(authenticatedToken));
+    			                 globusConnection.getTransferClient(authenticatedToken),
+    			                 getSize);
     }
     
     //---------------------------------------------------------------------//
@@ -231,7 +233,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	        item.put("source_path", source.getPath());
 	        item.put("destination_endpoint", destination.getEndpoint());
 	        item.put("destination_path", destination.getPath());
-	        item.put("recursive", getPathAttributes(source, client).getIsDirectory());
+	        item.put("recursive", getPathAttributes(source, client, false).getIsDirectory());
 	        return item;
 	        
 		} catch(Exception e) {
@@ -267,12 +269,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
      *
      * @param fileLocation The endpoint/path to check.
      * @param client Globus client API instance.
+     * @param getSize If set to true, the file/directory size will be returned. 
      * @return HpcDataTransferPathAttributes The path attributes.
      * 
      * @throws HpcException
      */
     private HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation,
-                                                JSONTransferAPIClient client) 
+                                                JSONTransferAPIClient client,
+                                                boolean getSize) 
                                                throws HpcException
     {
     	HpcPathAttributes pathAttributes = new HpcPathAttributes();
@@ -286,14 +290,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         	 Result dirContent = listDirectoryContent(fileLocation, client);
         	 pathAttributes.setExists(true);
         	 pathAttributes.setIsDirectory(true);
-        	 pathAttributes.setSize(getDirectorySize(dirContent, client));
+        	 pathAttributes.setSize(getSize ? getDirectorySize(dirContent, client) : -1);
         	
         } catch(APIError error) {
         	    if(error.code.equals(NOT_DIRECTORY_GLOBUS_CODE)) {
         	       // Path exists as a single file
         	       pathAttributes.setExists(true);
         	       pathAttributes.setIsFile(true);
-        	       pathAttributes.setSize(getFileSize(fileLocation, client));
+        	       pathAttributes.setSize(getSize ? getFileSize(fileLocation, client) : -1);
         	    } // else path was not found. 
         	    
         } catch(Exception e) {

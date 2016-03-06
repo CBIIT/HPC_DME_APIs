@@ -88,12 +88,14 @@ public interface HpcDataTransferProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param fileLocation The endpoint/path to check.
+     * @param getSize If set to true, the file/directory size will be returned. 
      * @return HpcDataTransferPathAttributes The path attributes.
      * 
      * @throws HpcException
      */
     public HpcPathAttributes getPathAttributes(Object authenticatedToken, 
-    		                                   HpcFileLocation fileLocation) 
+    		                                   HpcFileLocation fileLocation,
+    		                                   boolean getSize) 
     		                                  throws HpcException;
 }
 

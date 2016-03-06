@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.integration;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -33,12 +34,6 @@ import java.util.List;
 
 public interface HpcDataManagementProxy 
 {    
-	public class HpcDataManagementPathAttributes {
-       public boolean exists = false;
-       public boolean isFile = false;
-       public boolean isDirectory = false;
-    }
-	
     /**
      * Authenticate the invoker w/ the data management system.
      *
@@ -184,10 +179,9 @@ public interface HpcDataManagementProxy
      * 
      * @throws HpcException
      */
-    public HpcDataManagementPathAttributes getPathAttributes(
-    		                                      Object authenticatedToken, 
-    		                                      String path)
-    		                                      throws HpcException;  
+    public HpcPathAttributes getPathAttributes(Object authenticatedToken, 
+    		                                   String path)
+    		                                  throws HpcException;  
     
     /**
      * Get collection by its path.
