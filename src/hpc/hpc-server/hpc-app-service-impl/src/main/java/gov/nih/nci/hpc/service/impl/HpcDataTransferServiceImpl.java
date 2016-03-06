@@ -101,7 +101,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	}  
 	
 	@Override
-	public HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation) 
+	public HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation,
+			                                   boolean getSize) 
                                               throws HpcException
     {
     	// Input validation.
@@ -111,7 +112,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}	
     	
     	return dataTransferProxy.getPathAttributes(getAuthenticatedToken(), 
-    			                                   fileLocation);
+    			                                   fileLocation, getSize);
     }
 
     //---------------------------------------------------------------------//
