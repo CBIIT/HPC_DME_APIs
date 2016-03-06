@@ -380,7 +380,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
                 		         HpcFileLocation subDirLocation = new HpcFileLocation();
                 		         subDirLocation.setEndpoint(dirContent.document.getString("endpoint"));
                 		         subDirLocation.setPath(dirContent.document.getString("path") +
-                		        		                '/' + jsonFile.getInt("name"));
+                		        		                '/' + jsonFile.getString("name"));
                 		         
                 		         size += getDirectorySize(listDirectoryContent(subDirLocation, 
                 		        		                                       client), 
