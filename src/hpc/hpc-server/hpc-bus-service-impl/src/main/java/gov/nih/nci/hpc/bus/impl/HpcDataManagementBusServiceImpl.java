@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequestInfo;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -32,7 +33,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
-import gov.nih.nci.hpc.service.HpcDataManagementService.HpcDataTransferRequestInfo;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
@@ -227,17 +227,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			     HpcFileLocation destination = 
 			        getDataObjectRegistrationDestination(path, 
 			        		                             dataObjectRegistrationDTO.getFilePath());
+			     HpcFileLocation source = dataObjectRegistrationDTO.getSource(); 
 			     
 				 // Submit a request to transfer the file (this is performed async). 
 			     String dataTransferRequestId = 
-			                dataTransferService.transferData(dataObjectRegistrationDTO.getSource(), 
-			    	    		                             destination);	
+			                dataTransferService.transferData(source, destination);	
+			     
+			     // Get the data object file(s) size.
+			     int size = dataTransferService.getPathAttributes(source, true).getSize();
 			     
 			     // Generate system metadata and attach to the data object.
 			     dataManagementService.addSystemGeneratedMetadataToDataObject(
 			        		                    path, destination,
 			    			                    dataObjectRegistrationDTO.getSource(),
-			    			                    dataTransferRequestId); 
+			    			                    dataTransferRequestId, size); 
 	
 			     registrationCompleted = true;
 			     
@@ -397,7 +400,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			    dataManagementService.getDataTransferRequestInfo(path);
     			 
     			 // Use the registrar data transfer account to check for transfer status.
-    			 HpcUser registrar = userService.getUser(dataTransferRequestInfo.registrarId);
+    			 HpcUser registrar = userService.getUser(dataTransferRequestInfo.getRegistrarId());
     			 if(registrar != null) {
     			    userService.getRequestInvoker().setDataTransferAuthenticatedToken(null);
     			    userService.getRequestInvoker().setDataTransferAccount(registrar.getDataTransferAccount());
@@ -405,7 +408,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			 
     			 // Get the data transfer request status.
     			 HpcDataTransferStatus dataTransferStatus =
-    		        dataTransferService.getDataTransferStatus(dataTransferRequestInfo.requestId);
+    		        dataTransferService.getDataTransferStatus(dataTransferRequestInfo.getRequestId());
     			 
     		     if(dataTransferStatus.equals(HpcDataTransferStatus.ARCHIVED)) {
     		    	// Data transfer completed successfully. Update the metadata.
@@ -581,7 +584,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			                                                 HpcFileLocation destination) 
 			                                                throws HpcException
 	{
-		if(!dataTransferService.getPathAttributes(destination).getIsDirectory()) {
+		if(!dataTransferService.getPathAttributes(destination, false).getIsDirectory()) {
 		   // The user requested destination is NOT a directory, transfer to it.
 		   return destination;
 		}

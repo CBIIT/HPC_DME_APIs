@@ -64,11 +64,13 @@ public interface HpcDataTransferService
      * Get endpoint/path attributes .
      *
      * @param fileLocation The endpoint/path to get attributes for.
+     * @param getSize If set to true, the file/directory size will be returned. 
      * @return HpcPathAttributes 
      * 
      * @throws HpcException
      */
-    public HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation) 
+    public HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation,
+    		                                   boolean getSize) 
     		                                  throws HpcException;
 }
 

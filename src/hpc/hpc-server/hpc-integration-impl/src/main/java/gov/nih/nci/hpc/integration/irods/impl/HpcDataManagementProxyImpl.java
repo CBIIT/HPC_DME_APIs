@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.integration.irods.impl;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -324,19 +325,20 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override    
-    public HpcDataManagementPathAttributes getPathAttributes(Object authenticatedToken, 
-    		                                                 String path) 
-    		                                                throws HpcException
+    public HpcPathAttributes getPathAttributes(Object authenticatedToken, 
+    		                                   String path) 
+    		                                  throws HpcException
     {
 		try {
 			 path = addPath(path);
 			 IRODSFile file = 
 					   irodsConnection.getIRODSFileFactory(authenticatedToken).
 					                   instanceIRODSFile(path);
-			 HpcDataManagementPathAttributes attributes = new HpcDataManagementPathAttributes();
-			 attributes.exists = file.exists();
-			 attributes.isDirectory = file.isDirectory();
-			 attributes.isFile = file.isFile();
+			 HpcPathAttributes attributes = new HpcPathAttributes();
+			 attributes.setExists(file.exists());
+			 attributes.setIsDirectory(file.isDirectory());
+			 attributes.setIsFile(file.isFile());
+			 attributes.setSize(-1);
 			 
 			 return attributes;
 			 
