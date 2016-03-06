@@ -345,6 +345,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
              
     	} catch(Exception e) {
     		    // Unexpected error. Eat this.
+    		    logger.error("Failed to calculate file size", e); 
     	}
     	
     	// File not found, or exception was caught.
@@ -360,12 +361,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
      */
     private int getDirectorySize(Result dirContent, JSONTransferAPIClient client)
     {
-    	int size = 0;
     	try {
              JSONArray jsonFiles = dirContent.document.getJSONArray("DATA");
              if(jsonFiles != null) {
                 // Iterate through the directory files, and sum up the files size.
             	int filesNum = jsonFiles.length();
+            	int size = 0;
                 for(int i = 0; i < filesNum; i++) {
                 	JSONObject jsonFile = jsonFiles.getJSONObject(i);
                 	String jsonFileType = jsonFile.getString("type");
@@ -377,8 +378,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
                 	   } else if(jsonFileType.equals("dir")) {
                 		         // It's a sub directory. Make a recursive call, to add its size.
                 		         HpcFileLocation subDirLocation = new HpcFileLocation();
-                		         subDirLocation.setEndpoint(jsonFile.getString("endpoint"));
-                		         subDirLocation.setPath(jsonFile.getString("path"));
+                		         subDirLocation.setEndpoint(dirContent.document.getString("endpoint"));
+                		         subDirLocation.setPath(dirContent.document.getString("path") +
+                		        		                '/' + jsonFile.getInt("name"));
                 		         
                 		         size += getDirectorySize(listDirectoryContent(subDirLocation, 
                 		        		                                       client), 
@@ -386,13 +388,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
                 	   }
                 	}
                 }
+                return size;
              }
              
     	} catch(Exception e) {
     		    // Unexpected error. Eat this.
+    		    logger.error("Failed to calculate directory size", e);
     	}
     	
-    	return size;
+    	// Directory not found, or exception was caught. 
+    	return 0;
     }	
     
     /**
