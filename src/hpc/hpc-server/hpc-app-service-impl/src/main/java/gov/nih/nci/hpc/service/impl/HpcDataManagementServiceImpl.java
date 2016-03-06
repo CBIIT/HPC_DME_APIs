@@ -16,7 +16,9 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQue
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequestInfo;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -28,7 +30,6 @@ import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
-import gov.nih.nci.hpc.integration.HpcDataManagementProxy.HpcDataManagementPathAttributes;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 
 import java.util.ArrayList;
@@ -68,6 +69,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
                                 "data_globus_id";
 	private final static String FILE_DATA_TRANSFER_STATUS_ATTRIBUTE = 
                                 "data_globus_status";
+	private final static String FILE_SIZE_ATTRIBUTE = 
+                                "data_globus_size";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -120,14 +123,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	Object authenticatedToken = getAuthenticatedToken();
     	
     	// Validate the directory path.
-    	HpcDataManagementPathAttributes pathAttributes = 
+    	HpcPathAttributes pathAttributes = 
     	   dataManagementProxy.getPathAttributes(authenticatedToken, path);
-    	if(pathAttributes.exists) {
-    	   if(pathAttributes.isDirectory) {
+    	if(pathAttributes.getExists()) {
+    	   if(pathAttributes.getIsDirectory()) {
     		  // Directory already exists.
     		  return false;
     	   }
-    	   if(pathAttributes.isFile) {
+    	   if(pathAttributes.getIsFile()) {
     		  throw new HpcException("Path already exists as a file: " + path, 
     				                 HpcErrorType.INVALID_REQUEST_INPUT); 
     	   }
@@ -145,14 +148,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	Object authenticatedToken = getAuthenticatedToken();
     	
     	// Validate the file path.
-    	HpcDataManagementPathAttributes pathAttributes = 
+    	HpcPathAttributes pathAttributes = 
     	   dataManagementProxy.getPathAttributes(authenticatedToken, path);
-    	if(pathAttributes.exists) {
-    	   if(pathAttributes.isFile) {
+    	if(pathAttributes.getExists()) {
+    	   if(pathAttributes.getIsFile()) {
     		  // File already exists.
     		  return false;
     	   }
-    	   if(pathAttributes.isDirectory) {
+    	   if(pathAttributes.getIsDirectory()) {
     		  throw new HpcException("Path already exists as a directory: " + path, 
     				                 HpcErrorType.INVALID_REQUEST_INPUT); 
     	   }
@@ -287,7 +290,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public void addSystemGeneratedMetadataToDataObject(String path, 
                                                        HpcFileLocation fileLocation,
     		                                           HpcFileLocation fileSource,
-    		                                           String dataTransferRequestId) 
+    		                                           String dataTransferRequestId,
+    		                                           int size) 
                                                       throws HpcException
     {
        	// Input validation.
@@ -347,6 +351,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	dataTransferStatusMetadata.setUnit("");
        	metadataEntries.add(dataTransferStatusMetadata);
        	
+       	// Create the File Sizes metadata.
+       	HpcMetadataEntry dataSizeMetadata = new HpcMetadataEntry();
+       	dataSizeMetadata.setAttribute(FILE_SIZE_ATTRIBUTE);
+       	dataSizeMetadata.setValue(String.valueOf(size));
+       	dataSizeMetadata.setUnit("");
+       	metadataEntries.add(dataSizeMetadata);
+       	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToDataObject(getAuthenticatedToken(), 
        			                                    path, metadataEntries);    	
@@ -393,11 +404,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	HpcDataTransferRequestInfo requestInfo = new HpcDataTransferRequestInfo();
 		for(HpcMetadataEntry metadataEntry : getDataObjectMetadata(path)) {
 			if(metadataEntry.getAttribute().equals(FILE_DATA_TRANSFER_ID_ATTRIBUTE)) {
-				requestInfo.requestId = metadataEntry.getValue();	
+				requestInfo.setRequestId(metadataEntry.getValue());	
 				break;
 			}
 			if(metadataEntry.getAttribute().equals(REGISTRAR_ID_ATTRIBUTE)) {
-				requestInfo.registrarId = metadataEntry.getValue();	
+				requestInfo.setRegistrarId(metadataEntry.getValue());	
 			}
 		}
 		
@@ -429,7 +440,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public HpcCollection getCollection(String path) throws HpcException
     {
     	Object authenticatedToken = getAuthenticatedToken();
-    	if(dataManagementProxy.getPathAttributes(authenticatedToken, path).isDirectory) {
+    	if(dataManagementProxy.getPathAttributes(authenticatedToken, path).getIsDirectory()) {
     	   return dataManagementProxy.getCollection(authenticatedToken, path);
     	}
     	
@@ -466,7 +477,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public HpcDataObject getDataObject(String path) throws HpcException
     {
     	Object authenticatedToken = getAuthenticatedToken();
-    	if(dataManagementProxy.getPathAttributes(authenticatedToken, path).isFile) {
+    	if(dataManagementProxy.getPathAttributes(authenticatedToken, path).getIsFile()) {
     	   return dataManagementProxy.getDataObject(authenticatedToken, path);
     	}
     	
@@ -559,14 +570,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	Object authenticatedToken = getAuthenticatedToken();
-    	HpcDataManagementPathAttributes pathAttributes = 
+    	HpcPathAttributes pathAttributes = 
     		   dataManagementProxy.getPathAttributes(authenticatedToken, 
     				                                 path);
-    	if(pathAttributes.isDirectory) {
+    	if(pathAttributes.getIsDirectory()) {
     	   dataManagementProxy.setCollectionPermission(authenticatedToken, 
     			                                       path, 
     			                                       permissionRequest);
-    	} else if(pathAttributes.isFile) {
+    	} else if(pathAttributes.getIsFile()) {
     		      dataManagementProxy.setDataObjectPermission(authenticatedToken, 
     		    		                                      path, 
                                                               permissionRequest);
