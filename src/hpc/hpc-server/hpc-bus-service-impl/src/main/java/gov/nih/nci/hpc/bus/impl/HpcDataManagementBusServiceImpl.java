@@ -39,6 +39,7 @@ import gov.nih.nci.hpc.service.HpcUserService;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -234,7 +235,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			                dataTransferService.transferData(source, destination);	
 			     
 			     // Get the data object file(s) size.
-			     int size = dataTransferService.getPathAttributes(source, true).getSize();
+			     long size = dataTransferService.getPathAttributes(source, true).getSize();
 			     
 			     // Generate system metadata and attach to the data object.
 			     dataManagementService.addSystemGeneratedMetadataToDataObject(
@@ -282,7 +283,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	List<HpcMetadataEntry> metadataEntries = 
     		                   dataManagementService.getDataObjectMetadata(path);
     		
-    	return toDTO(dataObject, metadataEntries);
+    	return toDTO(dataObject, metadataEntries, 
+    			     getDataTransferPercentCompletion(metadataEntries));
     }
     
     @Override
@@ -312,7 +314,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		}
     		
     		// Combine data object attributes and metadata into a single DTO.
-    		dataObjectsDTO.getDataObjects().add(toDTO(dataObject, metadataEntries));
+    		dataObjectsDTO.getDataObjects().add(toDTO(dataObject, metadataEntries,
+    				                                  getDataTransferPercentCompletion(metadataEntries)));
     	}
     	
     	return dataObjectsDTO;
@@ -467,16 +470,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * 
      * @param data object The data object domain object.
      * @param metadataEntries The list of metadata domain objects.
+     * transferPercentCompletion The data transfer % completion.
      *
      * @return The DTO.
      */
-    private HpcDataObjectDTO toDTO(HpcDataObject dataObject, List<HpcMetadataEntry> metadataEntries) 
+    private HpcDataObjectDTO toDTO(HpcDataObject dataObject, 
+    		                       List<HpcMetadataEntry> metadataEntries,
+    		                       String transferPercentCompletion) 
     {
     	HpcDataObjectDTO dataObjectDTO = new HpcDataObjectDTO();
     	dataObjectDTO.setDataObject(dataObject);
     	if(metadataEntries != null) {
     	   dataObjectDTO.getMetadataEntries().addAll(metadataEntries);
     	}
+    	dataObjectDTO.setTransferPercentCompletion(transferPercentCompletion);
     	
     	return dataObjectDTO;
     }
@@ -600,7 +607,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 	
     /** 
-     * Determine if data transfer status check timed out..
+     * Determine if data transfer status check timed out.
      * 
      * @param dataObject The data object to check the timeout for.
      * 
@@ -620,6 +627,42 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    
 	    // Compare to now.
 	    return Calendar.getInstance().after(timeout);
+	}
+	
+    /** 
+     * Calculate the data transfer % completion if transfer is in progress
+     * 
+     * @param dataObject The data object to check the timeout for.
+     * 
+     * @return The transfer % completion if transfer is in progress, or null otherwise.
+     *         e.g 86%.
+     */
+	private String getDataTransferPercentCompletion(List<HpcMetadataEntry> metadataEntries)
+	{
+		// Get the transfer status, transfer request id and data-object size from the metadata entries.
+		Map<String, String> metadataMap = dataManagementService.toMap(metadataEntries);
+		HpcDataTransferStatus transferStatus = 
+		   HpcDataTransferStatus.fromValue(metadataMap.get(
+				  HpcDataManagementService.FILE_DATA_TRANSFER_STATUS_ATTRIBUTE));
+		String dataTransferRequestId = metadataMap.get(
+				                       HpcDataManagementService.FILE_DATA_TRANSFER_ID_ATTRIBUTE);
+		Long dataObjectSize = Long.valueOf(metadataMap.get(
+				                           HpcDataManagementService.FILE_SIZE_ATTRIBUTE));
+		if(transferStatus == null || dataTransferRequestId == null ||
+		   dataObjectSize == null || dataObjectSize == 0) {
+		   return null;	
+		}
+		
+		// Get the size of the data transferred so far.
+		long transferSize = 0;
+		try {
+		     transferSize = dataTransferService.getDataTransferSize(dataTransferRequestId);
+		} catch(HpcException e) {
+			    logger.error("Failed to get data transfer size: " + dataTransferRequestId);
+			    return "Unknown";
+		}
+		
+		return String.valueOf((transferSize * 100L) / dataObjectSize) + '%';
 	}
 }
 
