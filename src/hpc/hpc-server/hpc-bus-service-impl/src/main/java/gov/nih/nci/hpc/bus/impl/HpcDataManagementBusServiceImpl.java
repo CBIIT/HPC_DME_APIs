@@ -648,9 +648,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				                       HpcDataManagementService.FILE_DATA_TRANSFER_ID_ATTRIBUTE);
 		Long dataObjectSize = Long.valueOf(metadataMap.get(
 				                           HpcDataManagementService.FILE_SIZE_ATTRIBUTE));
-		if(transferStatus == null || dataTransferRequestId == null ||
+		
+		if(transferStatus == null || !transferStatus.equals(HpcDataTransferStatus.IN_PROGRESS)) {
+		   // data transfer not in progress.
+		   return null;
+		}
+		
+		if(dataTransferRequestId == null ||
 		   dataObjectSize == null || dataObjectSize == 0) {
-		   return null;	
+		   return "Unknown";	
 		}
 		
 		// Get the size of the data transferred so far.
