@@ -33,7 +33,9 @@ import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -48,30 +50,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class HpcDataManagementServiceImpl implements HpcDataManagementService
 {    
-    //---------------------------------------------------------------------//
-    // Constants
-    //---------------------------------------------------------------------//    
-    
-    // System generated metadata attributes.
-	private final static String ID_ATTRIBUTE = "uuid";
-	private final static String REGISTRAR_ID_ATTRIBUTE = "registered_by";
-	private final static String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
-	private final static String REGISTRAR_DOC_ATTRIBUTE = "registered_by_doc";
-	private final static String FILE_SOURCE_ENDPOINT_ATTRIBUTE = 
-                                "source_globus_endpoint"; 
-	private final static String FILE_SOURCE_PATH_ATTRIBUTE = 
-                                "source_globus_path"; 
-	private final static String FILE_LOCATION_ENDPOINT_ATTRIBUTE = 
-			                    "data_globus_endpoint"; 
-	private final static String FILE_LOCATION_PATH_ATTRIBUTE = 
-			                    "data_globus_path"; 
-	private final static String FILE_DATA_TRANSFER_ID_ATTRIBUTE = 
-                                "data_globus_id";
-	private final static String FILE_DATA_TRANSFER_STATUS_ATTRIBUTE = 
-                                "data_globus_status";
-	private final static String FILE_SIZE_ATTRIBUTE = 
-                                "data_globus_size";
-	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -291,7 +269,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
                                                        HpcFileLocation fileLocation,
     		                                           HpcFileLocation fileSource,
     		                                           String dataTransferRequestId,
-    		                                           int size) 
+    		                                           long size) 
                                                       throws HpcException
     {
        	// Input validation.
@@ -371,17 +349,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		                          HpcErrorType.INVALID_REQUEST_INPUT);
     	}	
     	
+    	// Get the data-object metadata entries.
     	HpcFileLocation location = new HpcFileLocation();
-    	for(HpcMetadataEntry metadata : getDataObjectMetadata(path)) {
-    		if(metadata.getAttribute().equals(FILE_LOCATION_ENDPOINT_ATTRIBUTE)) {
-    		   location.setEndpoint(metadata.getValue());	
-    		   continue;
-    		}
-    		if(metadata.getAttribute().equals(FILE_LOCATION_PATH_ATTRIBUTE)) {
-    		   location.setPath(metadata.getValue());
-    		   continue;
-    		}
-    	}
+    	Map<String, String> metadataMap = toMap(getDataObjectMetadata(path));
+    	
+    	// Extract the file location from the data-object metadata
+    	location.setEndpoint(metadataMap.get(FILE_LOCATION_ENDPOINT_ATTRIBUTE));
+    	location.setPath(metadataMap.get(FILE_LOCATION_PATH_ATTRIBUTE));
     	
     	if(location.getEndpoint() == null || location.getPath() == null) {
     	   throw new HpcException("File location not found: " + path, 
@@ -401,17 +375,17 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		                          HpcErrorType.INVALID_REQUEST_INPUT);
     	}	
     	
+    	// Extract the data transfer request info from the data-object metadata entries.
+    	Map<String, String> metadataMap = toMap(getDataObjectMetadata(path));
     	HpcDataTransferRequestInfo requestInfo = new HpcDataTransferRequestInfo();
-		for(HpcMetadataEntry metadataEntry : getDataObjectMetadata(path)) {
-			if(metadataEntry.getAttribute().equals(FILE_DATA_TRANSFER_ID_ATTRIBUTE)) {
-				requestInfo.setRequestId(metadataEntry.getValue());	
-				break;
-			}
-			if(metadataEntry.getAttribute().equals(REGISTRAR_ID_ATTRIBUTE)) {
-				requestInfo.setRegistrarId(metadataEntry.getValue());	
-			}
-		}
+    	requestInfo.setRequestId(metadataMap.get(FILE_DATA_TRANSFER_ID_ATTRIBUTE));
+    	requestInfo.setRegistrarId(metadataMap.get(REGISTRAR_ID_ATTRIBUTE));
 		
+    	if(requestInfo.getRequestId() == null || requestInfo.getRegistrarId() == null) {
+     	   throw new HpcException("Data Tranfer Info not found: " + path, 
+     			                  HpcErrorType.UNEXPECTED_ERROR);
+     	}
+    	
 		return requestInfo;
 	}
     
@@ -585,6 +559,17 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		    throw new HpcException("Entity path doesn't exist", 
                                        HpcErrorType.INVALID_REQUEST_INPUT);   
     	}
+    }
+    
+    @Override
+    public Map<String, String> toMap(List<HpcMetadataEntry> metadataEntries)
+    {
+    	Map<String, String> metadataMap = new HashMap<String, String>();
+    	for(HpcMetadataEntry metadataEntry : metadataEntries) {
+    		metadataMap.put(metadataEntry.getAttribute(), metadataEntry.getValue());
+    	}
+    	
+    	return metadataMap;
     }
     
     //---------------------------------------------------------------------//
