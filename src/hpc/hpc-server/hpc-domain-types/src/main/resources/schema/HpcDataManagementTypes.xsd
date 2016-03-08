@@ -77,7 +77,7 @@
 			<xsd:element name="exists" type="xsd:boolean" />
 			<xsd:element name="isFile" type="xsd:boolean" />
 			<xsd:element name="isDirectory" type="xsd:boolean" />
-			<xsd:element name="size" type="xsd:int" />
+			<xsd:element name="size" type="xsd:long" />
 		</xsd:sequence>
 	</xsd:complexType>
 

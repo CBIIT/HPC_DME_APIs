@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -34,7 +35,27 @@ import java.util.List;
  */
 
 public interface HpcDataManagementService 
-{    
+{   
+    // System generated metadata attributes.
+	public final static String ID_ATTRIBUTE = "uuid";
+	public final static String REGISTRAR_ID_ATTRIBUTE = "registered_by";
+	public final static String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
+	public final static String REGISTRAR_DOC_ATTRIBUTE = "registered_by_doc";
+	public final static String FILE_SOURCE_ENDPOINT_ATTRIBUTE = 
+                               "source_globus_endpoint"; 
+	public final static String FILE_SOURCE_PATH_ATTRIBUTE = 
+                               "source_globus_path"; 
+	public final static String FILE_LOCATION_ENDPOINT_ATTRIBUTE = 
+			                   "data_globus_endpoint"; 
+	public final static String FILE_LOCATION_PATH_ATTRIBUTE = 
+			                   "data_globus_path"; 
+	public final static String FILE_DATA_TRANSFER_ID_ATTRIBUTE = 
+                               "data_globus_id";
+	public final static String FILE_DATA_TRANSFER_STATUS_ATTRIBUTE = 
+                               "data_globus_status";
+	public final static String FILE_SIZE_ATTRIBUTE = 
+                               "data_globus_size";
+	
     /**
      * Create a collection's directory.
      *
@@ -153,7 +174,7 @@ public interface HpcDataManagementService
     		                                           HpcFileLocation fileLocation,
     		                                           HpcFileLocation fileSource,
     		                                           String dataTransferRequestId,
-    		                                           int size) 
+    		                                           long size) 
     		                                          throws HpcException; 
     
     /**
@@ -305,6 +326,16 @@ public interface HpcDataManagementService
      */
     public void setPermission(String path, HpcUserPermission permissionRequest) 
     		                 throws HpcException;
+    
+    /**
+     * convert a list of metadata entries to Map<attribute, value>
+     *
+     * @param metadataEntries The list of metadata entries
+     * @return Map<String, String>
+     * 
+     * @throws HpcException
+     */
+    public Map<String, String> toMap(List<HpcMetadataEntry> metadataEntries);
 }
 
  

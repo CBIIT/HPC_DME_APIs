@@ -11,7 +11,6 @@
 package gov.nih.nci.hpc.integration;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -70,18 +69,18 @@ public interface HpcDataTransferProxy
     		                                          throws HpcException;
     
     /**
-     * Get a data transfer report.
+     * Get the size of the data transferred of a specific request.
      *
      * @param authenticatedToken An authenticated token.
      * @param dataTransferRequestId The data transfer request ID.
      * 
-     * @return HpcDataTransferReport the data transfer report for the request.
+     * @return The size of the data transferred in bytes.
      * 
      * @throws HpcException
      */
-    public HpcDataTransferReport getDataTransferReport(Object authenticatedToken,
-    		                                           String dataTransferRequestId) 
-    		                                          throws HpcException;
+    public long getDataTransferSize(Object authenticatedToken,
+    		                        String dataTransferRequestId) 
+    		                       throws HpcException;
     
     /**
      * Get attributes of a file/directory.
