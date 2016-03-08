@@ -87,6 +87,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
            	                                           dataTransferRequestId);
     }	
 	
+	@Override   
+	public long getDataTransferSize(String dataTransferRequestId) 
+                                   throws HpcException
+    {	// Input Validation.
+		if(dataTransferRequestId == null) {
+		   throw new HpcException("Null data transfer request ID", 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		return dataTransferProxy.getDataTransferSize(getAuthenticatedToken(), 
+           	                                         dataTransferRequestId);
+    }	
+	
 	@Override
 	public boolean validateDataTransferAccount(HpcIntegratedSystemAccount dataTransferAccount)
                                               throws HpcException

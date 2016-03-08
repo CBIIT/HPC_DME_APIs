@@ -51,6 +51,18 @@ public interface HpcDataTransferService
     		                                          throws HpcException;
     
     /**
+     * Get the size of the data transferred of a specific request.
+     *
+     * @param dataTransferRequestId The data transfer request ID.
+     * 
+     * @return The size of the data transferred in bytes.
+     * 
+     * @throws HpcException
+     */
+    public long getDataTransferSize(String dataTransferRequestId) 
+    		                       throws HpcException;
+    
+    /**
      * Validate a data transfer account.
      *
      * @param dataTransferAccount The account to validate.

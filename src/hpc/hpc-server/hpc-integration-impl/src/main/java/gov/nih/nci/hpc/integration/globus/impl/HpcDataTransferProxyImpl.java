@@ -141,62 +141,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     }
     
     @Override
-    public HpcDataTransferReport getDataTransferReport(Object authenticatedToken,
-                                                       String dataTransferRequestId) 
-                                                      throws HpcException
+    public long getDataTransferSize(Object authenticatedToken,
+                                    String dataTransferRequestId) 
+                                   throws HpcException
     {
-    	JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
-    	HpcDataTransferReport hpcDataTransferReport = new HpcDataTransferReport();
-    	
-        JSONTransferAPIClient.Result r;
-        String resource = "/task/" +  dataTransferRequestId;
-       // Map<String, String> params = new HashMap<String, String>();
-    //    params.put("fields", "status");
-        try {
-	        r = client.getResult(resource);
-	        r.document.getString("status");
-	        hpcDataTransferReport.setTaskID(dataTransferRequestId);
-			hpcDataTransferReport.setTaskType(r.document.getString("type"));
-	        hpcDataTransferReport.setStatus(r.document.getString("status"));
-	        if (r.document.has("request_time") && !r.document.isNull("request_time"))
-	        	hpcDataTransferReport.setRequestTime(convertToLexicalTime(r.document.getString("request_time")));
-	        else
-	        	hpcDataTransferReport.setRequestTime(null);  
-	        if (r.document.has("deadline") && !r.document.isNull("deadline"))
-	        	hpcDataTransferReport.setDeadline(convertToLexicalTime(r.document.getString("deadline")));
-	        else
-	        	hpcDataTransferReport.setDeadline(null);     
-	        if (r.document.has("completion_time") && !r.document.isNull("completion_time"))
-	        	hpcDataTransferReport.setCompletionTime(convertToLexicalTime(r.document.getString("completion_time")));
-	        else
-	        	hpcDataTransferReport.setCompletionTime(null);
-	        hpcDataTransferReport.setTotalTasks(r.document.getInt("subtasks_total"));
-	        hpcDataTransferReport.setTasksSuccessful(r.document.getInt("subtasks_succeeded"));
-	        hpcDataTransferReport.setTasksExpired(r.document.getInt("subtasks_expired"));
-	        hpcDataTransferReport.setTasksCanceled(r.document.getInt("subtasks_canceled"));
-	        hpcDataTransferReport.setTasksPending(r.document.getInt("subtasks_pending"));
-	        hpcDataTransferReport.setTasksRetrying(r.document.getInt("subtasks_retrying"));
-	        hpcDataTransferReport.setCommand(r.document.getString("command"));
-	        hpcDataTransferReport.setSourceEndpoint(r.document.getString("source_endpoint"));
-	        hpcDataTransferReport.setDestinationEndpoint(r.document.getString("destination_endpoint"));
-	        hpcDataTransferReport.setDataEncryption(r.document.getBoolean("encrypt_data"));
-	        hpcDataTransferReport.setChecksumVerification(r.document.getBoolean("verify_checksum"));
-	        hpcDataTransferReport.setDelete(r.document.getBoolean("delete_destination_extra"));
-	        hpcDataTransferReport.setFiles(r.document.getInt("files"));
-	        hpcDataTransferReport.setFilesSkipped(r.document.getInt("files_skipped"));
-	        hpcDataTransferReport.setDirectories(r.document.getInt("directories"));
-	        hpcDataTransferReport.setBytesTransferred(r.document.getLong("bytes_transferred"));
-	        hpcDataTransferReport.setBytesChecksummed(r.document.getLong("bytes_checksummed"));
-	        hpcDataTransferReport.setEffectiveMbitsPerSec(r.document.getDouble("effective_bytes_per_second"));
-	        hpcDataTransferReport.setFaults(r.document.getInt("faults"));
-	        
-			return hpcDataTransferReport;
-			
-		} catch(Exception e) {
-	        throw new HpcException(
-	        		     "Failed to get task report for task: " + dataTransferRequestId, 
-	        		     HpcErrorType.DATA_TRANSFER_ERROR, e);
-		} 
+    	return getDataTransferReport(authenticatedToken, dataTransferRequestId).getBytesTransferred();
     }
     
     @Override
@@ -252,8 +201,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
              JSONTransferAPIClient.Result r = client.postResult(resource, null,
                                                                 null);
              String code = r.document.getString("code");
-             if (code.startsWith("AutoActivationFailed")) {
-            	 return false;
+             if(code.startsWith("AutoActivationFailed")) {
+            	return false;
              }
              return true;
              
@@ -264,6 +213,74 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		}
     }
 	
+    /**
+     * Get a data transfer report.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param dataTransferRequestId The data transfer request ID.
+     * 
+     * @return HpcDataTransferReport the data transfer report for the request.
+     * 
+     * @throws HpcException
+     */
+    private HpcDataTransferReport getDataTransferReport(Object authenticatedToken,
+                              String dataTransferRequestId) 
+           throws HpcException
+    {
+		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
+		HpcDataTransferReport hpcDataTransferReport = new HpcDataTransferReport();
+		
+		JSONTransferAPIClient.Result r;
+		String resource = "/task/" +  dataTransferRequestId;
+		// Map<String, String> params = new HashMap<String, String>();
+		//    params.put("fields", "status");
+		try {
+		r = client.getResult(resource);
+		r.document.getString("status");
+		hpcDataTransferReport.setTaskID(dataTransferRequestId);
+		hpcDataTransferReport.setTaskType(r.document.getString("type"));
+		hpcDataTransferReport.setStatus(r.document.getString("status"));
+		if (r.document.has("request_time") && !r.document.isNull("request_time"))
+		hpcDataTransferReport.setRequestTime(convertToLexicalTime(r.document.getString("request_time")));
+		else
+		hpcDataTransferReport.setRequestTime(null);  
+		if (r.document.has("deadline") && !r.document.isNull("deadline"))
+		hpcDataTransferReport.setDeadline(convertToLexicalTime(r.document.getString("deadline")));
+		else
+		hpcDataTransferReport.setDeadline(null);     
+		if (r.document.has("completion_time") && !r.document.isNull("completion_time"))
+		hpcDataTransferReport.setCompletionTime(convertToLexicalTime(r.document.getString("completion_time")));
+		else
+		hpcDataTransferReport.setCompletionTime(null);
+		hpcDataTransferReport.setTotalTasks(r.document.getInt("subtasks_total"));
+		hpcDataTransferReport.setTasksSuccessful(r.document.getInt("subtasks_succeeded"));
+		hpcDataTransferReport.setTasksExpired(r.document.getInt("subtasks_expired"));
+		hpcDataTransferReport.setTasksCanceled(r.document.getInt("subtasks_canceled"));
+		hpcDataTransferReport.setTasksPending(r.document.getInt("subtasks_pending"));
+		hpcDataTransferReport.setTasksRetrying(r.document.getInt("subtasks_retrying"));
+		hpcDataTransferReport.setCommand(r.document.getString("command"));
+		hpcDataTransferReport.setSourceEndpoint(r.document.getString("source_endpoint"));
+		hpcDataTransferReport.setDestinationEndpoint(r.document.getString("destination_endpoint"));
+		hpcDataTransferReport.setDataEncryption(r.document.getBoolean("encrypt_data"));
+		hpcDataTransferReport.setChecksumVerification(r.document.getBoolean("verify_checksum"));
+		hpcDataTransferReport.setDelete(r.document.getBoolean("delete_destination_extra"));
+		hpcDataTransferReport.setFiles(r.document.getInt("files"));
+		hpcDataTransferReport.setFilesSkipped(r.document.getInt("files_skipped"));
+		hpcDataTransferReport.setDirectories(r.document.getInt("directories"));
+		hpcDataTransferReport.setBytesTransferred(r.document.getLong("bytes_transferred"));
+		hpcDataTransferReport.setBytesChecksummed(r.document.getLong("bytes_checksummed"));
+		hpcDataTransferReport.setEffectiveMbitsPerSec(r.document.getDouble("effective_bytes_per_second"));
+		hpcDataTransferReport.setFaults(r.document.getInt("faults"));
+		
+		return hpcDataTransferReport;
+		
+		} catch(Exception e) {
+		throw new HpcException(
+		"Failed to get task report for task: " + dataTransferRequestId, 
+		HpcErrorType.DATA_TRANSFER_ERROR, e);
+		} 
+    }
+    
     /**
      * Get attributes of a file/directory.
      *
@@ -315,7 +332,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
      * @param client Globus client API instance.
      * @return The file size in bytes.
      */
-    private int getFileSize(HpcFileLocation fileLocation, JSONTransferAPIClient client)
+    private long getFileSize(HpcFileLocation fileLocation, JSONTransferAPIClient client)
     {
     	// Get the directory location of the file.
     	HpcFileLocation dirLocation = new HpcFileLocation();
@@ -338,7 +355,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
                 	String jsonFileName = jsonFile.getString("name");
                 	if(jsonFileName != null && jsonFileName.equals(fileName)) {
                 	   // The file was found. Return its size
-                	   return jsonFile.getInt("size");
+                	   return jsonFile.getLong("size");
                 	}
                 }
              }
@@ -359,21 +376,21 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
      * @param client Globus client API instance.
      * @return The directory size in bytes.
      */
-    private int getDirectorySize(Result dirContent, JSONTransferAPIClient client)
+    private long getDirectorySize(Result dirContent, JSONTransferAPIClient client)
     {
     	try {
              JSONArray jsonFiles = dirContent.document.getJSONArray("DATA");
              if(jsonFiles != null) {
                 // Iterate through the directory files, and sum up the files size.
             	int filesNum = jsonFiles.length();
-            	int size = 0;
+            	long size = 0;
                 for(int i = 0; i < filesNum; i++) {
                 	JSONObject jsonFile = jsonFiles.getJSONObject(i);
                 	String jsonFileType = jsonFile.getString("type");
                 	if(jsonFileType != null) {
                 	   if(jsonFileType.equals("file")) {
                 		  // This is a file. Add its size to the total;
-                	      size += jsonFile.getInt("size");
+                	      size += jsonFile.getLong("size");
                 	      continue;
                 	   } else if(jsonFileType.equals("dir")) {
                 		         // It's a sub directory. Make a recursive call, to add its size.
