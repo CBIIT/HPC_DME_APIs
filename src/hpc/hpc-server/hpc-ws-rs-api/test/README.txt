@@ -33,11 +33,15 @@ http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
         "endpoint": "nihnci#NIH-NCI-TRANSFER1",
         "path": "/GridFTP/GridFTP_t3/<nci-userid>/test.txt"
 
-  III- Define the environment variable HPC_DM_TEST and let it point to the directory where this README.txt is located.
+  III- Add a dice-download empty folder to this  Globus endpoint:
+        "endpoint": "nihnci#NIH-NCI-TRANSFER1",
+        "path": "/GridFTP/GridFTP_t3/<nci-userid>/dice-download/"
+  
+  IV- Define the environment variable HPC_DM_TEST and let it point to the directory where this README.txt is located.
         For example:
            $export HPC_DM_TEST=/path/to/test/
 
-  IV- To run test-hpc-client units tests, please follow the setup steps shown in ./test-hpc-client/README.txt 
+  V- To run test-hpc-client units tests, please follow the setup steps shown in ./test-hpc-client/README.txt 
 
 
 -Execution:

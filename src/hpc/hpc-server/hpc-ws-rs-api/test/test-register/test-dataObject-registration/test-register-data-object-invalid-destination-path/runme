@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source ../../../utils/functions
+
+#Check if the collection and the dataObject registration functions called in makeme were successful.
+verify_registration collection-registration-response-header.tmp
+
+SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+OBJECT_PATH=`cat path.tmp`
+OBJECT_PATH="$OBJECT_PATH-$SUFFIX"
+curl_register input.json  "$OBJECT_PATH" dataObject
+
+RESPONSE_HEADER=dataObject-registration-response-header.tmp
+RESPONSE_MSG=dataObject-registration-response-message.json.tmp
+
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+echo $HTTP_CODE
+
