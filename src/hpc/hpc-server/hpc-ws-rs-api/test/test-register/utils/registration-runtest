@@ -52,7 +52,7 @@ then
 fi
 
 #Clean previous curl results
-../../../utils/cleantest
+rm $RESPONSE_HEADER $RESPONSE_MSG  2>/dev/null
 
 # add -D <filename> to dump the header
 #echo "curl -H \"Content-Type: application/json\" -d @input.json -X PUT ${SERVER}/hpc-server/${REGISTRATION_TYPE}/${DESTINATION_PATH}  --config ../../../utils/config  -H \"Accept: application/json\" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status"
