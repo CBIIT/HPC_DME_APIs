@@ -1,6 +1,7 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -24,6 +25,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.sun.security.ntlm.Client;
 
 public class HpcDataTransferProxyImpl implements HpcDataTransferProxy 
 {
@@ -157,6 +160,36 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	return getPathAttributes(fileLocation, 
     			                 globusConnection.getTransferClient(authenticatedToken),
     			                 getSize);
+    }
+    
+    @Override
+    public void setPermission(Object authenticatedToken,
+                              HpcFileLocation fileLocation,
+                              HpcUserPermission permissionRequest) 
+                             throws HpcException
+    {
+    	JSONTransferAPIClient client = 
+			        globusConnection.getTransferClient(authenticatedToken);
+    	
+		try {
+             String resource = BaseTransferAPIClient.endpointPath(fileLocation.getEndpoint()) +
+                               "/access";
+             JSONObject accessRequest = new JSONObject();
+             accessRequest.put("DATA_TYPE", "access");
+             accessRequest.put("principal_type", "user");
+             accessRequest.put("principal", permissionRequest.getUserId());
+             accessRequest.put("path", fileLocation.getPath());
+             accessRequest.put("permissions", "r");
+
+             JSONTransferAPIClient.Result r = client.postResult(resource, accessRequest,
+                                                                 null);
+             String code = r.document.getString("code");
+            
+		} catch(Exception e) {
+		        throw new HpcException(
+		        		     "Failed to activate endpoint: " + fileLocation.getEndpoint(), 
+		        		     HpcErrorType.DATA_TRANSFER_ERROR, e);
+		}
     }
     
     //---------------------------------------------------------------------//
