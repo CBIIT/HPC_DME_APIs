@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.integration;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -96,6 +97,20 @@ public interface HpcDataTransferProxy
     		                                   HpcFileLocation fileLocation,
     		                                   boolean getSize) 
     		                                  throws HpcException;
+    
+    /**
+     * Set permission.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param fileLocation The endpoint/path to set permission
+     * @param permissionRequest The user permission request.
+     * 
+     * @throws HpcException
+     */
+    public void setPermission(Object authenticatedToken,
+    		                  HpcFileLocation fileLocation,
+    		                  HpcUserPermission permissionRequest) 
+    		                 throws HpcException; 
 }
 
  
