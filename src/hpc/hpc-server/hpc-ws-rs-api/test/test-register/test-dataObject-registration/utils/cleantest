@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# cleanme
+# cleantest
 # @author: George Zaki 
 # 
 # Copyright Leidos Biomedical Research, Inc
@@ -12,6 +12,4 @@
 # Script to clean the resutls of this test
 # Usage: cleanme [no arguments]
 
-../../../utils/cleantest
-../../utils/cleantest
-../utils/cleantest
+rm input.json 2> /dev/null
