@@ -94,7 +94,7 @@ public class HpcClientUtil {
 			messageConverters.add(new MappingJackson2HttpMessageConverter());
 
 			restTemplate.setMessageConverters(messageConverters);
-			
+			restTemplate.setErrorHandler(new HpcResponseErrorHandler());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
