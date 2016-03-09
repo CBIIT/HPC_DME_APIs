@@ -148,7 +148,7 @@ public class HPCCollections extends HPCBatchClient {
 					success = false;
 					processedRecordFlag = false;
 					String message = "Failed to process record due to: "+e.getMessage();
-					System.out.println(message);
+					//System.out.println(message);
 					addErrorToLog(message, i+1);
 					StringWriter sw = new StringWriter();
 					e.printStackTrace(new PrintWriter(sw));
@@ -160,7 +160,7 @@ public class HPCCollections extends HPCBatchClient {
 					success = false;
 					processedRecordFlag = false;
 					String message = "Failed to process record due to: "+e.getMessage();
-					System.out.println(message);
+					//System.out.println(message);
 					addErrorToLog(message, i+1);	
 					StringWriter sw = new StringWriter();
 					e.printStackTrace(new PrintWriter(sw));
@@ -172,7 +172,7 @@ public class HPCCollections extends HPCBatchClient {
 					success = false;
 					processedRecordFlag = false;
 					String message = "Failed to process record due to: "+e.getMessage();
-					System.out.println(message);
+					//System.out.println(message);
 					addErrorToLog(message, i+1);	
 					StringWriter sw = new StringWriter();
 					e.printStackTrace(new PrintWriter(sw));
