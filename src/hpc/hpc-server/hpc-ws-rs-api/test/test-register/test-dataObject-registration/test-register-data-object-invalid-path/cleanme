@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Readme.txt
+# cleanme
 # @author: George Zaki 
 # 
 # Copyright Leidos Biomedical Research, Inc
@@ -14,3 +14,4 @@
 
 ../../../utils/cleantest
 ../../utils/cleantest
+../utils/cleantest

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# cleanme
+# runtest
 # @author: George Zaki 
 # 
 # Copyright Leidos Biomedical Research, Inc
@@ -7,11 +7,11 @@
 # Distributed under the OSI-approved BSD 3-Clause License.
 # See http://ncip.github.com/HPC/LICENSE.txt for details.
 #
+# Script for common run
+# Usage: runtest 
 
-
-# Script to clean the resutls of this test
-# Usage: cleanme [no arguments]
-
-../../../utils/cleantest
-../../utils/cleantest
-../utils/cleantest
+source $HPC_DM_TEST/utils/functions
+if [ -e input-template.json ] 
+then 
+    update_uid input-template.json input.json
+fi
