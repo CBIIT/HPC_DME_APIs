@@ -1,10 +1,14 @@
 { 
     "source": {
         "endpoint": "nihnci#NIH-NCI-TRANSFER1",
-        "path": "/GridFTP/GridFTP_t3/zakigf/test.txt"
+        "path": "/GridFTP/GridFTP_t3/dxtestuid/test.txt"
     },
     "filePath" :  "/",
     "metadataEntries": [
+    {
+        "attribute": "name",
+        "value": "data-file"
+    },
     {
         "attribute": "description",
         "value": "file-description"
@@ -26,7 +30,7 @@
         "value":"System-Date"
     },
     {
-        "attribute": "old_doc_attribute",
+        "attribute": "xxxold_doc_attribute",
         "value": "FNLCR"
     },
     {

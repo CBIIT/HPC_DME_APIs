@@ -11,7 +11,8 @@
 # Usage: runme [no arguments]
 
 #import common functions
-source ../../../utils/functions
+source $HPC_DM_TEST/utils/functions
+../utils/runtest
 
 #Check if the collection and the dataObject registration functions called in makeme were successful.
 verify_registration collection-registration-response-header.tmp
