@@ -1,7 +1,7 @@
 { 
     "source": {
         "endpoint": "nihnci#NIH-NCI-TRANSFER1",
-        "path": "/GridFTP/GridFTP_t3/zakigf/test.txt"
+        "path": "/GridFTP/GridFTP_t3/dxtestuid/test.txt"
     },
     "filePath" :  "/",
     "metadataEntries": [
