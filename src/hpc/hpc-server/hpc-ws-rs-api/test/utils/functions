@@ -166,3 +166,19 @@ function curl_register {
     check_connection $RESPONSE_HEADER
 }
 
+#Substitute the "dxtestuid" string  with the actual username
+#Inputs: input_file  output_file
+function update_uid {
+
+    if [ -z "$1" ] || [ -z "$2" ]
+    then
+        echo "ERROR: using update_uid"
+        echo "USAGE: update_uid <input-file> <output-file>"
+        exit
+    fi
+    INPUT_FILE="$1"
+    OUTPUT_FILE="$2"
+    USERID=`get_username $HPC_DM_TEST/utils/config`
+    OUT=`cat "$INPUT_FILE" | sed "s/dxtestuid/$USERID/"`
+    echo "$OUT" > $OUTPUT_FILE
+}
