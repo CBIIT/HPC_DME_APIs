@@ -12,7 +12,7 @@
 
 #import common functions
 source $HPC_DM_TEST/utils/functions
-
+../utils/runtest
 
 #Check if collection registration went through:
 verify_registration collection-registration-response-header.tmp
