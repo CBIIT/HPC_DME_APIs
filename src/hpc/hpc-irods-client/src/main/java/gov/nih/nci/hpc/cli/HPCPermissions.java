@@ -127,7 +127,7 @@ public class HPCPermissions extends HPCBatchClient {
 				} catch (HttpStatusCodeException e) {
 					success = false;
 					String message = "Failed to process record due to: " + e.getMessage();
-					System.out.println(message);
+					//System.out.println(message);
 					addErrorToLog(message, i + 1);
 					StringWriter sw = new StringWriter();
 					e.printStackTrace(new PrintWriter(sw));
@@ -138,7 +138,7 @@ public class HPCPermissions extends HPCBatchClient {
 				} catch (RestClientException e) {
 					success = false;
 					String message = "Failed to process record due to: " + e.getMessage();
-					System.out.println(message);
+					//System.out.println(message);
 					addErrorToLog(message, i + 1);
 					StringWriter sw = new StringWriter();
 					e.printStackTrace(new PrintWriter(sw));
@@ -148,7 +148,7 @@ public class HPCPermissions extends HPCBatchClient {
 				} catch (Exception e) {
 					success = false;
 					String message = "Failed to process record due to: " + e.getMessage();
-					System.out.println(message);
+					//System.out.println(message);
 					addErrorToLog(message, i + 1);
 					StringWriter sw = new StringWriter();
 					e.printStackTrace(new PrintWriter(sw));

@@ -141,7 +141,7 @@ public class HPCDatafiles extends HPCBatchClient {
 				hpcDataObjectRegistrationDTO.setSource(source);
 				hpcDataObjectRegistrationDTO.setFilePath("/");
 				RestTemplate restTemplate = HpcClientUtil.getRestTemplate(hpcCertPath, hpcCertPassword);
-				restTemplate.setErrorHandler(new HpcResponseErrorHandler());
+				
 				HttpHeaders headers = new HttpHeaders();
 				String token = DatatypeConverter.printBase64Binary((userId + ":" + password).getBytes());
 				headers.add("Authorization", "Basic " + token);
@@ -159,7 +159,6 @@ public class HPCDatafiles extends HPCBatchClient {
 					response = restTemplate.exchange(
 							hpcServerURL + "/" + hpcDataService + collName, HttpMethod.PUT,
 							entity, HpcExceptionDTO.class);
-					System.out.println("response "+response);
 					if(response != null)
 					{
 						HpcExceptionDTO exception = response.getBody();
@@ -182,7 +181,7 @@ public class HPCDatafiles extends HPCBatchClient {
 					success = false;
 					processedRecordFlag = false;
 					String message = "Failed to process record due to: "+e.getMessage();
-					System.out.println(message);
+					//System.out.println(message);
 					addErrorToLog(message, i+1);
 					StringWriter sw = new StringWriter();
 					e.printStackTrace(new PrintWriter(sw));
@@ -193,7 +192,7 @@ public class HPCDatafiles extends HPCBatchClient {
 					success = false;
 					processedRecordFlag = false;
 					String message = "Failed to process record due to: "+e.getMessage();
-					System.out.println(message);
+					//System.out.println(message);
 					addErrorToLog(message, i+1);
 					StringWriter sw = new StringWriter();
 					e.printStackTrace(new PrintWriter(sw));
@@ -204,7 +203,7 @@ public class HPCDatafiles extends HPCBatchClient {
 					success = false;
 					processedRecordFlag = false;
 					String message = "Failed to process record due to: "+e.getMessage();
-					System.out.println(message);
+					//System.out.println(message);
 					addErrorToLog(message, i+1);	
 					StringWriter sw = new StringWriter();
 					e.printStackTrace(new PrintWriter(sw));
