@@ -12,6 +12,8 @@
 
 #import common functions
 source $HPC_DM_TEST/utils/functions
+source ../../utils/registration-functions
+
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username "$HPC_DM_TEST/utils/config"`
 COLLECTION_PATH="${USERID}/dice-unit-test/test-${NAME}"
@@ -42,29 +44,6 @@ then
         echo "FAILED TO GET, HTTP_CODE = $GET_HTTP_CODE" 1>&2
         exit
 fi
-
-
-#Make sure the attribute exists in the response header
-function check_attribute {
-    RETURNED_MSG=$1
-    ATTRIBUTE=$2
-
-    RESPONSE_GROUPS=`cat $RETURNED_MSG | tr "{" "\n"`
-    OBJECT_GROUPS=`echo "$RESPONSE_GROUPS" | grep "$ATTRIBUTE"`
-    if [ -z "$OBJECT_GROUPS"  ]
-    then 
-        echo "ERROR: No $ATTRIBUTE is returned" 1>&2
-        exit
-    fi
-
-    VALUE=`get_json_value "$OBJECT_GROUPS" "value"`
-    if [ -z "$VALUE" ]
-    then
-        echo "ERROR: No $ATTRIBUTE is returned" 1>&2
-    exit
-    fi
-}
-
 
 ATTRIBUTE="\"uuid\""
 check_attribute "$RESPONSE_MSG" "$ATTRIBUTE"
