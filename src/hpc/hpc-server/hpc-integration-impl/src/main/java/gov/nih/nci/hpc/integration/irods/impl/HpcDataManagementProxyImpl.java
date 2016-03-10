@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -497,6 +498,26 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		} 
 	}  
     
+    @Override
+    public HpcIntegratedSystemAccount getUser(Object authenticatedToken, String username) 
+    		                      throws HpcException
+    {
+		try {
+			 User user = irodsConnection.getUserAO(authenticatedToken).findByName(username);
+			 if(user != null)
+			 {
+				 HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
+				 account.setUsername(user.getName());
+				 account.setIntegratedSystem(HpcIntegratedSystem.IRODS);
+				 return account;
+			 }
+		} catch(Exception e) {
+	            throw new HpcException("Failed to get user type: " + 
+	                                    e.getMessage(),
+	                                    HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} 
+		return null;
+	}      
     @Override
     public void addUser(Object authenticatedToken,
                         HpcNciAccount nciAccount, HpcUserRole userRole) 

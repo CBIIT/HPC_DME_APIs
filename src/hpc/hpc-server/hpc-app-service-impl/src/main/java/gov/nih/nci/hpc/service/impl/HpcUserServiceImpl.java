@@ -129,9 +129,52 @@ public class HpcUserServiceImpl implements HpcUserService
     	user.setCreated(Calendar.getInstance());
     	
     	// Persist to the DB.
-    	persist(user);
+    	insert(user);
     	
     	logger.debug("User Created: " + user);
+    }
+    
+    @Override
+    public void updateUser(HpcNciAccount nciAccount, 
+	                    HpcIntegratedSystemAccount dataTransferAccount,
+	                    HpcIntegratedSystemAccount dataManagementAccount) 
+	                   throws HpcException
+    {
+    	// Input validation.
+    	if(!isValidNciAccount(nciAccount) ||
+    	   !isValidIntegratedSystemAccount(dataTransferAccount)) {
+    	   throw new HpcException("Invalid add user input", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	if(dataManagementAccount != null && !isValidIntegratedSystemAccount(dataManagementAccount))
+        	   throw new HpcException("Invalid Data management account input", 
+		                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	
+    	if(!docValues.contains(nciAccount.getDOC())) {
+    	   throw new HpcException("Invalid DOC: " + nciAccount.getDOC() +
+    			                  ". Valid values: " + docValues, 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	// Check if the user already exists.
+    	if(getUser(nciAccount.getUserId()) == null) {
+    	   throw new HpcException("User does not exists: nciUserId = " + 
+    	                          nciAccount.getUserId(), 
+    	                          HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
+    	}
+    	
+    	// Create the User domain object.
+    	HpcUser user = new HpcUser();
+
+    	user.setNciAccount(nciAccount);
+    	user.setDataTransferAccount(dataTransferAccount);
+    	user.setDataManagementAccount(dataManagementAccount);
+    	user.setCreated(Calendar.getInstance());
+    	
+    	// Persist to the DB.
+    	update(user);
+    	
+    	logger.debug("User Updated: " + user);
     }
     
     @Override
@@ -194,13 +237,22 @@ public class HpcUserServiceImpl implements HpcUserService
      * 
      * @throws HpcException
      */
-    private void persist(HpcUser user) throws HpcException
+    private void insert(HpcUser user) throws HpcException
     {
     	if(user != null) {
     	   user.setLastUpdated(Calendar.getInstance());
-    	   userDAO.upsert(user);
+    	   userDAO.insert(user);
     	}
     }
+
+    private void update(HpcUser user) throws HpcException
+    {
+    	if(user != null) {
+    	   user.setLastUpdated(Calendar.getInstance());
+    	   userDAO.update(user);
+    	}
+    }
+
 }
 
  

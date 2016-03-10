@@ -26,6 +26,7 @@ import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -497,6 +498,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
+    public HpcIntegratedSystemAccount getUser(String username) throws HpcException
+    {
+    	return dataManagementProxy.getUser(getAuthenticatedToken(), username);
+    }
+        
+    @Override
     public void addUser(HpcNciAccount nciAccount, HpcUserRole userRole) throws HpcException
     {
     	// Input validation.
@@ -508,7 +515,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	dataManagementProxy.addUser(getAuthenticatedToken(), 
     			                    nciAccount, userRole);
     }
-    
+        
     @Override
     public void deleteUser(String nciUserId) throws HpcException
     {

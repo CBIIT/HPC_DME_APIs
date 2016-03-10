@@ -35,7 +35,7 @@ import javax.ws.rs.core.Response;
 public interface HpcUserRestService
 {    
     /**
-     * GET user by ID.
+     * Register user.
      *
      * @param userRegistrationDTO The user DTO to register.
      */
@@ -43,6 +43,16 @@ public interface HpcUserRestService
     @Path("/user")
     @Consumes("application/json,application/xml")
     public Response registerUser(HpcUserDTO userRegistrationDTO);
+    
+    /**
+     * Update an existing user.
+     *
+     * @param userDTO The user DTO to update.
+     */
+    @POST
+    @Path("/user")
+    @Consumes("application/json,application/xml")
+    public Response updateUser(HpcUserDTO userDTO);
     
     /**
      * Get user by NCI User ID.
