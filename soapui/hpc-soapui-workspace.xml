@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <con:soapui-workspace name="hpc-soapui" soapui-version="5.2.1" xmlns:con="http://eviware.com/soapui/config">
   <con:settings/>
-  <con:project name="iRODS REST API">/Users/eran/Development/HPC/hpc-prototype-dev/soapui/iRODS-REST-API-soapui-project.xml</con:project>
-  <con:project name="hpc-server">/Users/eran/Development/HPC/hpc-prototype-dev/soapui/hpc-soapui-project.xml</con:project>
+  <con:project status="CLOSED" name="iRODS REST API">/Users/eran/Development/HPC/hpc-prototype-dev/soapui/iRODS-REST-API-soapui-project.xml</con:project>
+  <con:project name="hpc-server">C:/Development/HPC/soapui/hpc-soapui-project.xml</con:project>
   <con:collectInfoForSupport>false</con:collectInfoForSupport>
 </con:soapui-workspace>
