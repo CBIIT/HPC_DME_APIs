@@ -137,6 +137,45 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     }
     
     @Override
+    public void updateUser(HpcUserDTO userDTO)  
+    		                throws HpcException
+    {
+    	logger.info("Invoking updateUser(HpcUserDTO): " + 
+    			userDTO);
+    	
+    	// Input validation.
+    	if(userDTO == null) {
+    	   throw new HpcException("Null HpcUserDTO",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Validate the data transfer account if given.
+    	if(userDTO.getDataTransferAccount() != null)
+    	{
+	    	if(!dataTransferService.validateDataTransferAccount(
+	    			userDTO.getDataTransferAccount())) {
+	    	   throw new HpcException("Invalid Data Transfer Account", 
+	                                  HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);	
+	    	}
+    	}
+    	
+    	// Create data management account if not provided.
+    	if(userDTO.getDataManagementAccount() != null) {
+    	   // Create a data management account.
+    	   if(dataManagementService.getUser(
+    			   userDTO.getDataManagementAccount().getUsername()) == null)
+	    	   throw new HpcException("Invalid Data Management Account", 
+                       HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);	
+    	}
+    	
+	     // Update User
+	     userService.updateUser(userDTO.getNciAccount(), 
+	    		 userDTO.getDataTransferAccount(),
+	    		 userDTO.getDataManagementAccount());
+	     
+    }
+    
+    @Override
     public HpcUserDTO getUser(String nciUserId) throws HpcException
     {
     	logger.info("Invoking getDataset(String nciUserId): " + nciUserId);

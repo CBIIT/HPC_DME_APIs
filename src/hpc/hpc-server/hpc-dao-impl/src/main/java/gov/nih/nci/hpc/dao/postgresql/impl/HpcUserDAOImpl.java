@@ -45,7 +45,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
     //---------------------------------------------------------------------//    
     
     // SQL Queries.
-	public final static String UPSERT_SQL = 
+	public final static String INSERT_SQL = 
 		   "insert into public.\"HPC_USER\" ( " +
                     "\"USER_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"DOC\", " +
                     "\"GLOBUS_USERNAME\", \"GLOBUS_PASSWORD\", " +
@@ -62,6 +62,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
                                                   "\"IRODS_PASSWORD\"=excluded.\"IRODS_PASSWORD\", " +
                                                   "\"CREATED\"=excluded.\"CREATED\", " +
                                                   "\"LAST_UPDATED\"=excluded.\"LAST_UPDATED\"";*/
+
 	public final static String GET_SQL = "select * from public.\"HPC_USER\" where \"USER_ID\" = ?";
 	
     //---------------------------------------------------------------------//
@@ -100,10 +101,10 @@ public class HpcUserDAOImpl implements HpcUserDAO
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void upsert(HpcUser user) throws HpcException
+	public void insert(HpcUser user) throws HpcException
     {
 		try {
-		     jdbcTemplate.update(UPSERT_SQL,
+		     jdbcTemplate.update(INSERT_SQL,
 		                         user.getNciAccount().getUserId(),
 		                         user.getNciAccount().getFirstName(),
 		                         user.getNciAccount().getLastName(),
@@ -121,6 +122,47 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		}
     }
 	
+	@Override
+	public void update(HpcUser user) throws HpcException
+    {
+		try {
+			String UPDATE_SQL = 
+					   "update public.\"HPC_USER\" set " +
+			                    "\"FIRST_NAME\"=?, \"LAST_NAME\"=?, \"DOC\"=?, " +
+			                    "\"GLOBUS_USERNAME\"=?, \"GLOBUS_PASSWORD\"=?, ";
+			if(user.getDataManagementAccount() != null)
+				UPDATE_SQL = UPDATE_SQL + "\"IRODS_USERNAME\"=?, \"IRODS_PASSWORD\"=?, ";
+			UPDATE_SQL = UPDATE_SQL + "\"LAST_UPDATED\" =? " +
+				"WHERE \"USER_ID\"=?";
+			
+			if(user.getDataManagementAccount() != null)
+		     jdbcTemplate.update(UPDATE_SQL,
+		                         
+		                         user.getNciAccount().getFirstName(),
+		                         user.getNciAccount().getLastName(),
+		                         user.getNciAccount().getDOC(),
+		                         user.getDataTransferAccount().getUsername(),
+		                         encryptor.encrypt(user.getDataTransferAccount().getPassword()),
+		                         user.getDataManagementAccount().getUsername(),
+		                         encryptor.encrypt(user.getDataManagementAccount().getPassword()),
+		                         user.getLastUpdated(),
+		                         user.getNciAccount().getUserId());
+			else
+			     jdbcTemplate.update(UPDATE_SQL,
+                         user.getNciAccount().getFirstName(),
+                         user.getNciAccount().getLastName(),
+                         user.getNciAccount().getDOC(),
+                         user.getDataTransferAccount().getUsername(),
+                         encryptor.encrypt(user.getDataTransferAccount().getPassword()),
+                         user.getLastUpdated(),
+                         user.getNciAccount().getUserId());
+				
+		} catch(DataAccessException e) {
+			    throw new HpcException("Failed to upsert a user: " + e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, e);
+		}
+    }
+
 	@Override 
 	public HpcUser getUser(String nciUserId) throws HpcException
 	{

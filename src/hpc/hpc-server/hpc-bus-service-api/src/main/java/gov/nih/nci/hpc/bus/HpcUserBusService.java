@@ -37,6 +37,16 @@ public interface HpcUserBusService
     		                throws HpcException;
     
     /**
+     * Update a User.
+     *
+     * @param userDTO The user DTO.
+     * 
+     * @throws HpcException
+     */
+    public void updateUser(HpcUserDTO userDTO) 
+    		                throws HpcException;
+
+    /**
      * Get a user by its NCI user id.
      *
      * @param nciUserId The user's NCI user id.
