@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# makeme
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+# Script to clean the resutls of this test
+# Usage: cleanme [no arguments]
+
+
+
+
+# Script to build the executable for this test
+# Usage: makeme [no arguments]
+
+#Clean previous results
+./cleanme
+
+../../utils/maketest
+SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+UPDATED_FIRST=`cat input.json | sed "s/testfirst/testfirst-$SUFFIX/"`
+UPDATED_LAST=`echo "$UPDATED_FIRST" | sed "s/testlast/testlast-$SUFFIX/"`
+echo "$UPDATED_LAST" > input.json.tmp
