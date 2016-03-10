@@ -274,6 +274,18 @@ public interface HpcDataManagementProxy
     		                      throws HpcException;   
     
     /**
+     * Get the user.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param username The user name of the account to get its type.
+     * @return User The user.
+     * 
+     * @throws HpcException
+     */
+    public HpcIntegratedSystemAccount getUser(Object authenticatedToken, String username) 
+    		                      throws HpcException;   
+
+    /**
      * Add a user.
      *
      * @param authenticatedToken An authenticated token.

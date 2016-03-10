@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -290,6 +291,16 @@ public interface HpcDataManagementService
      * @throws HpcException
      */
     public HpcUserRole getUserRole(String username) throws HpcException;  
+    
+    /**
+     * Get User.
+     *
+     * @param username The user's name.
+     * @return User The user.
+     * 
+     * @throws HpcException
+     */
+    public HpcIntegratedSystemAccount getUser(String username) throws HpcException;  
     
     /**
      * Add a user.

@@ -71,19 +71,34 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response registerUser(HpcUserDTO userRegistrationDTO)
     {	
-		logger.info("Invoking RS: POST /user: " + userRegistrationDTO);
+		logger.info("Invoking RS: PUT /user: " + userRegistrationDTO);
 		
 		try {
 			 userBusService.registerUser(userRegistrationDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /user failed:", e);
+			    logger.error("RS: PUT /user failed:", e);
 			    return errorResponse(e);
 		}
 		
 		return createdResponse(userRegistrationDTO.getNciAccount().getUserId());
 	}
     
+    @Override
+    public Response updateUser(HpcUserDTO userDTO)
+    {	
+		logger.info("Invoking RS: POST /user: " + userDTO);
+		
+		try {
+			 userBusService.updateUser(userDTO);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /user failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(userDTO.getNciAccount().getUserId(), false);
+	}    
     @Override
     public Response getUser(String nciUserId)
     {
