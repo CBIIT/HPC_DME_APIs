@@ -15,7 +15,7 @@
 source ../../../utils/functions
 
 USER=`get_username ../../../utils/config`
-DESTINATION_PATH="/$USER/random/path"
-curl_register ../utils/project-description.json "$DESTINATION_PATH" collection
+SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+DESTINATION_PATH="/$USER/random-$SUFFIX/path"
 
 echo "$DESTINATION_PATH" > path.tmp

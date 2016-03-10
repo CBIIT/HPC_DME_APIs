@@ -14,12 +14,11 @@
 source $HPC_DM_TEST/utils/functions
 ../utils/runtest
 
-#Check if the collection and the dataObject registration functions called in makeme were successful.
-verify_registration collection-registration-response-header.tmp
 
 SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
 OBJECT_PATH=`cat path.tmp`
 OBJECT_PATH="$OBJECT_PATH-$SUFFIX"
+echo $OBJECT_PATH
 curl_register input.json  "$OBJECT_PATH" dataObject
 
 RESPONSE_HEADER=dataObject-registration-response-header.tmp
