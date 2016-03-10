@@ -42,6 +42,20 @@ public interface HpcUserService
     		           throws HpcException;
     
     /**
+     * Update user.
+     *
+     * @param nciAccount The user's NCI account.
+     * @param dataTransferAccount The user's data transfer account.
+     * @param dataTransferAccount The user's data management account.
+     * 
+     * @throws HpcException
+     */
+    public void updateUser(HpcNciAccount nciAccount, 
+    		            HpcIntegratedSystemAccount dataTransferAccount,
+    		            HpcIntegratedSystemAccount dataManagementAccount) 
+    		           throws HpcException;
+
+    /**
      * Get a user.
      *
      * @param nciUserId The registered user NCI ID.
