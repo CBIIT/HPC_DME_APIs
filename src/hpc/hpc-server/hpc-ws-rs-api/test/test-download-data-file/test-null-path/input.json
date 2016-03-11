@@ -1,0 +1,6 @@
+{
+        "destination": {
+               "endpoint": "xxxnihnci#NIH-NCI-TRANSFER1",
+               "path": "/GridFTP/GridFTP_t3/userid"
+          },
+}
