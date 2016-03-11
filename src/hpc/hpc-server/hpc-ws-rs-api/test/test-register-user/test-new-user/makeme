@@ -25,4 +25,5 @@
 SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
 UPDATED_FIRST=`cat input.json | sed "s/testfirst/testfirst-$SUFFIX/"`
 UPDATED_LAST=`echo "$UPDATED_FIRST" | sed "s/testlast/testlast-$SUFFIX/"`
-echo "$UPDATED_LAST" > input.json.tmp
+UPDATED_ID=`echo "$UPDATED_LAST" | sed "s/testid/testid-$SUFFIX/"`
+echo "$UPDATED_ID" > input.json.tmp
