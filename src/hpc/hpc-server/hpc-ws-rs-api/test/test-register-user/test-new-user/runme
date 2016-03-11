@@ -23,13 +23,6 @@ RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
 SERVER=`cat ../../utils/server`
 
-# add -D <filename> to dump the header
-#SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
-#TEMP1=`sed "s/testid/testid$SUFFIX/" input.json`
-#TEMP2=`echo "$TEMP1" | sed "s/testfirst/testfirst$SUFFIX/"`
-#INPUT=`echo "$TEMP2" | sed "s/testlast/testlast$SUFFIX/"`
-#echo "$INPUT" >  test-input.json
-
 curl -H "Content-Type: application/json" -d @input.json.tmp -X PUT ${SERVER}/hpc-server/user  --config ../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 #echo "curl -H \"Content-Type: application/json\" -d @test-input.json -X PUT ${SERVER}/hpc-server/user  --config ../../utils/config  -H \"Accept: application/json\" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status"
 

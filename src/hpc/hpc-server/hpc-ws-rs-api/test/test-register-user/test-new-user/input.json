@@ -5,9 +5,10 @@
             "lastName": "testlast",
             "DOC":"FNLCR"
     },
-        "dataTransferAccount":    {
-            "username": "georgefzakinih",
-            "password": "***REMOVED***",
-            "integratedSystem": "GLOBUS"
-        }
+    "dataTransferAccount":    {
+     "username": "testhpcdm",
+      "password": "***REMOVED***",
+      "integratedSystem": "GLOBUS"
+   }
+
 }
