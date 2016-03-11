@@ -24,16 +24,10 @@ RESPONSE_MSG=response-message.json
 SERVER=`cat ../../utils/server`
 
 curl -H "Content-Type: application/json" -d @input.json.tmp -X PUT ${SERVER}/hpc-server/user  --config ../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
-#echo "curl -H \"Content-Type: application/json\" -d @test-input.json -X PUT ${SERVER}/hpc-server/user  --config ../../utils/config  -H \"Accept: application/json\" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status"
+#echo "curl -H \"Content-Type: application/json\" -d @input.json.tmp -X PUT ${SERVER}/hpc-server/user  --config ../../utils/config  -H \"Accept: application/json\" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status "
 
 check_connection $RESPONSE_HEADER
 
-#ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
-#ERROR_REASON=`get_json_value $RESPONSE_MSG requestRejectReason`
-#ERROR_TYPE=`grep errorType $RESPONSE_MSG | sed 's/.*errorType":"\([^"]*\)".*/\1/'`
-#ERROR_CODE=`grep 'HTTP' $RESPONSE_HEADER  | grep '[02-9][0-9][0-9]' | sed 's/.*\([0-9][0-9][0-9]\).*/\1/'`
 RESPONSE_CODE=`get_http_code $RESPONSE_HEADER`
 
 echo $RESPONSE_CODE 1>&2
-#echo $ERROR_TYPE 1>&2
-#echo $ERROR_REASON 1>&2
