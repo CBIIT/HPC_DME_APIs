@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -84,6 +85,18 @@ public interface HpcDataTransferService
     public HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation,
     		                                   boolean getSize) 
     		                                  throws HpcException;
+    
+    /**
+     * Set file permission.
+     *
+     * @param fileLocation The endpoint/path to set permission
+     * @param permissionRequest The user permission request.
+     * 
+     * @throws HpcException
+     */
+    public void setPermission(HpcFileLocation fileLocation,
+    		                  HpcUserPermission permissionRequest) 
+    		                 throws HpcException; 
 }
 
  

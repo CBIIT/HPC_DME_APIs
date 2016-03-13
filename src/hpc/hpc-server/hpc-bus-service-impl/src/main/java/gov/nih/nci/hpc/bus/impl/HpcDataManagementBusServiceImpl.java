@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.bus.impl;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequestInfo;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
@@ -370,8 +371,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			userPermissionResponse.setUserId(userPermissionRequest.getUserId());
     			userPermissionResponse.setResult(true);
     		    try {
-    			     dataManagementService.setPermission(entityPermissionRequest.getPath(), 
-    			    		                             userPermissionRequest);
+    		    	 // Set the data management permission.
+    		    	 HpcPathAttributes pathAttributes =
+    		    		dataManagementService.setPermission(entityPermissionRequest.getPath(), 
+    			    	                                    userPermissionRequest);
+    			     
+    			     // Set the physical file permission (if the path is a file).
+    		    	 if(pathAttributes.getIsFile()) {
+    		    	   dataTransferService.setPermission(
+    		    		   dataManagementService.getFileLocation(entityPermissionRequest.getPath()), 
+    		    		   userPermissionRequest);
+    		    	}
     			     
     		    } catch(HpcException e) {
     		    	    // Request failed. Record the message and keep going.

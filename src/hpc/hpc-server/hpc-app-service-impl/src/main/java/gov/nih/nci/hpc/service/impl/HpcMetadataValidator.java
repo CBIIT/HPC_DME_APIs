@@ -170,7 +170,7 @@ public class HpcMetadataValidator
     		                      List<String> systemGeneratedMetadataAttributes) 
     		                     throws HpcException
     {
-    	// Crate a metadata <attribute, value> map. Put exisiting entries first.
+    	// Crate a metadata <attribute, value> map. Put existing entries first.
     	Map<String, String> metadataEntriesMap = new HashMap<String, String>();
     	if(existingMetadataEntries != null) {
     	   for(HpcMetadataEntry metadataEntry : existingMetadataEntries) {
