@@ -81,12 +81,12 @@ public interface HpcDataManagementService
     		                 throws HpcException;
     
     /**
-     * Delete a data object's file.
+     * Delete a path (data object or directory).
      *
-     * @param path The data object path.
+     * @param path The path to delete.
      * @throws HpcException
      */
-    public void deleteFile(String path) throws HpcException;
+    public void delete(String path) throws HpcException;
 
     /**
      * Add metadata to a collection.

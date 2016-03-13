@@ -80,15 +80,14 @@ public interface HpcDataManagementProxy
     		                        throws HpcException;
     
     /**
-     * Delete a data object's file.
+     * Delete a path (data object or directory).
      *
      * @param authenticatedToken An authenticated token.
-     * @param path The data object path.
+     * @param path The path to delete.
      * 
      * @return true if the object file was successfully deleted.
      */
-    public boolean deleteDataObjectFile(Object authenticatedToken, 
-    		                            String path);
+    public boolean delete(Object authenticatedToken, String path);
 
     /**
      * Add metadata to a collection.

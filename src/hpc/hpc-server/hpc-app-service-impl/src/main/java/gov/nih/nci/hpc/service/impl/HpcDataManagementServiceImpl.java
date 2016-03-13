@@ -158,10 +158,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public void deleteFile(String path) throws HpcException
+    public void delete(String path) throws HpcException
     {
     	// Delete the data object file.
-    	dataManagementProxy.deleteDataObjectFile(getAuthenticatedToken(), path);
+    	dataManagementProxy.delete(getAuthenticatedToken(), path);
     }
 
     @Override
