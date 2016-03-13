@@ -147,8 +147,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override    
-    public boolean deleteDataObjectFile(Object authenticatedToken, 
-    		                         String path)
+    public boolean delete(Object authenticatedToken, String path)
     {
 		try {
 			 path = addPath(path);
