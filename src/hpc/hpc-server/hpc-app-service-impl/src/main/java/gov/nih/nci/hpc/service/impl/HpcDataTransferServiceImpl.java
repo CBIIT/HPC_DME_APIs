@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -126,6 +127,20 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	
     	return dataTransferProxy.getPathAttributes(getAuthenticatedToken(), 
     			                                   fileLocation, getSize);
+    }
+	
+	public void setPermission(HpcFileLocation fileLocation,
+                              HpcUserPermission permissionRequest) 
+                             throws HpcException
+    {
+    	// Input validation.
+    	if(!HpcDomainValidator.isValidFileLocation(fileLocation)) {	
+    	   throw new HpcException("Invalid file location", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}	
+    	
+    	dataTransferProxy.setPermission(getAuthenticatedToken(), 
+                                        fileLocation, permissionRequest);
     }
 
     //---------------------------------------------------------------------//
