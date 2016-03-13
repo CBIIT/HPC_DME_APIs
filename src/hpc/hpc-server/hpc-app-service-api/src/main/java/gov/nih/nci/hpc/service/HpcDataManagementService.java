@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequestInfo;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
@@ -332,11 +333,13 @@ public interface HpcDataManagementService
      *
      * @param path The entity path.
      * @param permissionRequest The permission request.
+     * @return HpcPathAttributes of the path.
      * 
-     * @throws HpcException
+     * @throws HpcException If it failed to set the entity permission.
      */
-    public void setPermission(String path, HpcUserPermission permissionRequest) 
-    		                 throws HpcException;
+    public HpcPathAttributes setPermission(String path,
+    		                               HpcUserPermission permissionRequest) 
+    		                              throws HpcException;
     
     /**
      * convert a list of metadata entries to Map<attribute, value>

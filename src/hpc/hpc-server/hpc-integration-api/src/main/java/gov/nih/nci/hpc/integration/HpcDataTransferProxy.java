@@ -99,7 +99,7 @@ public interface HpcDataTransferProxy
     		                                  throws HpcException;
     
     /**
-     * Set permission.
+     * Set file permission.
      *
      * @param authenticatedToken An authenticated token.
      * @param fileLocation The endpoint/path to set permission
