@@ -170,21 +170,17 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 			        globusConnection.getTransferClient(authenticatedToken);
     	
 		try {
-             //String resource = BaseTransferAPIClient.endpointPath(fileLocation.getEndpoint()) +
-               //                "/access";
 			 String resource = BaseTransferAPIClient.endpointPath("eranrosenberg#hpc-test") +
-                            "/access";
+                               "/access";
              JSONObject accessRequest = new JSONObject();
              accessRequest.put("DATA_TYPE", "access");
              accessRequest.put("principal_type", "user");
              accessRequest.put("principal", permissionRequest.getUserId());
              accessRequest.put("path", fileLocation.getPath());
-             accessRequest.put("path", "/~/Development/Tools/globus/drop/");
-             
              accessRequest.put("permissions", "r");
 
              JSONTransferAPIClient.Result r = client.postResult(resource, accessRequest,
-                                                                 null);
+                                                                null);
              String code = r.document.getString("code");
             
 		} catch(Exception e) {
