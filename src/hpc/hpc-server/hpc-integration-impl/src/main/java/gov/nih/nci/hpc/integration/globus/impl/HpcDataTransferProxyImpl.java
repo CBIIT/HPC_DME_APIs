@@ -170,13 +170,17 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 			        globusConnection.getTransferClient(authenticatedToken);
     	
 		try {
-             String resource = BaseTransferAPIClient.endpointPath(fileLocation.getEndpoint()) +
-                               "/access";
+             //String resource = BaseTransferAPIClient.endpointPath(fileLocation.getEndpoint()) +
+               //                "/access";
+			 String resource = BaseTransferAPIClient.endpointPath("eranrosenberg#hpc-test") +
+                            "/access";
              JSONObject accessRequest = new JSONObject();
              accessRequest.put("DATA_TYPE", "access");
              accessRequest.put("principal_type", "user");
              accessRequest.put("principal", permissionRequest.getUserId());
              accessRequest.put("path", fileLocation.getPath());
+             accessRequest.put("path", "/~/Development/Tools/globus/drop/");
+             
              accessRequest.put("permissions", "r");
 
              JSONTransferAPIClient.Result r = client.postResult(resource, accessRequest,
@@ -185,7 +189,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
             
 		} catch(Exception e) {
 		        throw new HpcException(
-		        		     "Failed to activate endpoint: " + fileLocation.getEndpoint(), 
+		        		     "Failed to set permission: " + 
+		                     fileLocation.getEndpoint() + ":" + fileLocation.getPath(), 
 		        		     HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
     }
