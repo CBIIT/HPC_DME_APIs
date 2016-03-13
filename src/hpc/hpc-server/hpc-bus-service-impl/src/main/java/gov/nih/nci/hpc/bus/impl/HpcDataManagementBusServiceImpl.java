@@ -128,10 +128,22 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Attach the metadata.
     	if(created) {
-    	   dataManagementService.addMetadataToCollection(path, metadataEntries);
+    	   boolean registrationCompleted = false; 
+    	   try {
+    		    // Add user provided metadata.
+    	        dataManagementService.addMetadataToCollection(path, metadataEntries);
        	   
-    	   // Generate system metadata and attach to the collection.
-       	   dataManagementService.addSystemGeneratedMetadataToCollection(path);
+    	        // Generate system metadata and attach to the collection.
+       	        dataManagementService.addSystemGeneratedMetadataToCollection(path);
+       	        
+       	        registrationCompleted = true;
+       	        
+    	   } finally {
+			          if(!registrationCompleted) {
+				         // Collection registration failed. Remove it from Data Management.
+				         dataManagementService.deleteFile(path);
+			          }
+	       }
        	   
     	} else {
     		    dataManagementService.updateCollectionMetadata(path, metadataEntries);
