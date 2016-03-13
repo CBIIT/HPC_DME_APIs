@@ -141,7 +141,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   } finally {
 			          if(!registrationCompleted) {
 				         // Collection registration failed. Remove it from Data Management.
-				         dataManagementService.deleteFile(path);
+				         dataManagementService.delete(path);
 			          }
 	       }
        	   
@@ -261,7 +261,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    	} finally {
 	    			   if(!registrationCompleted) {
 	    				  // Data object registration failed. Remove it from Data Management.
-	    				  dataManagementService.deleteFile(path);
+	    				  dataManagementService.delete(path);
 	    			   }
 	    	}
     	   
@@ -443,7 +443,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		    	logger.info("Data transfer completed: " + path);
     		     } else if(dataTransferStatus.equals(HpcDataTransferStatus.FAILED)) {
      		    	       // Data transfer failed. Remove the data object
-     		    	       dataManagementService.deleteFile(path);
+     		    	       dataManagementService.delete(path);
      		    	       logger.info("Data transfer failed: " + path);
     		     }
     		     
