@@ -545,6 +545,33 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
+    public void updateUser(Object authenticatedToken,
+    		            HpcNciAccount nciAccount, HpcIntegratedSystemAccount dataManagementAccount,
+    		            HpcUserRole userRole) 
+    		           throws HpcException
+    {
+    	// Add the user to iRODS.
+    	User irodsUser = new User();
+    	irodsUser.setName(nciAccount.getUserId());
+    	irodsUser.setInfo(nciAccount.getFirstName() + " " + nciAccount.getLastName());
+    	irodsUser.setComment("Updated by HPC-DM API");
+    	irodsUser.setZone(irodsConnection.getZone());
+    	irodsUser.setUserType(toIRODSUserType(userRole));
+    	
+    	try {
+    	     irodsConnection.getUserAO(authenticatedToken).updateUser(irodsUser);
+    	     
+    	} catch(DataNotFoundException  ex) {
+    		    throw new HpcException("iRODS account does not exist: " + nciAccount.getUserId(), 
+                                       HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT, ex);
+    		    
+		} catch(Exception e) {
+                throw new HpcException("Failed to update iRODS user: " + e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		}    	
+    }
+  
+    @Override
     public void deleteUser(Object authenticatedToken, String nciUserId)
                           throws HpcException
     {
