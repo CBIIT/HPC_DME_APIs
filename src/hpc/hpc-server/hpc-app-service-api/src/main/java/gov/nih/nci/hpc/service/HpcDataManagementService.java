@@ -315,6 +315,18 @@ public interface HpcDataManagementService
     		           throws HpcException;
     
     /**
+     * Update user.
+     *
+     * @param nciAccount The NCI account of the user to update.
+     * @param userRole The HPC user role to assign to the new user.
+     * 
+     * @throws HpcException
+     */
+    public void updateUser(HpcNciAccount nciAccount, HpcIntegratedSystemAccount dataManagementAccount,
+    		HpcUserRole userRole) 
+    		           throws HpcException;
+    
+    /**
      * Delete a user.
      *
      * @param nciUserId The user-id to delete.
