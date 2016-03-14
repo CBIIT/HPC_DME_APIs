@@ -168,6 +168,15 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
                        HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);	
     	}
     	
+    	if(userDTO.getDataManagementAccount() == null) {
+     	   // Create a data management account.
+     	   HpcUserRole role = userDTO.getUserRole() != null ?
+     			  userDTO.getUserRole() : HpcUserRole.USER;
+     	   dataManagementService.updateUser(
+     			  userDTO.getNciAccount(),userDTO.getDataManagementAccount(), role);
+     	   
+     	}
+    	
 	     // Update User
 	     userService.updateUser(userDTO.getNciAccount(), 
 	    		 userDTO.getDataTransferAccount(),
