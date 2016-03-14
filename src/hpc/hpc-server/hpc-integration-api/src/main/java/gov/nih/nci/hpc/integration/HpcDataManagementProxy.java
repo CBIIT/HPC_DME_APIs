@@ -298,6 +298,20 @@ public interface HpcDataManagementProxy
     		           throws HpcException;
     
     /**
+     * Update user.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param nciAccount The NCI account of the user to be updated
+     * @param userRole The HPC user role to assign to the new user.
+     * 
+     * @throws HpcException If it failed to update user.
+     */
+    public void updateUser(Object authenticatedToken,
+    		            HpcNciAccount nciAccount, HpcIntegratedSystemAccount dataManagementAccount,
+    		            HpcUserRole userRole) 
+    		           throws HpcException;
+
+    /**
      * Delete a user.
      *
      * @param authenticatedToken An authenticated token.

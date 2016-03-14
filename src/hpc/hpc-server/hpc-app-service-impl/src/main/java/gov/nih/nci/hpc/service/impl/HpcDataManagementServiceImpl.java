@@ -515,7 +515,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	dataManagementProxy.addUser(getAuthenticatedToken(), 
     			                    nciAccount, userRole);
     }
-        
+     
+    @Override
+    public void updateUser(HpcNciAccount nciAccount, HpcIntegratedSystemAccount dataManagementAccount, HpcUserRole userRole) throws HpcException
+    {
+    	// Input validation.
+    	if(!isValidNciAccount(nciAccount)) {	
+    	   throw new HpcException("Invalid NCI Account: Null user ID or name or DOC", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+       	
+    	dataManagementProxy.updateUser(getAuthenticatedToken(), 
+    			                    nciAccount, dataManagementAccount, userRole);
+    }    
     @Override
     public void deleteUser(String nciUserId) throws HpcException
     {
