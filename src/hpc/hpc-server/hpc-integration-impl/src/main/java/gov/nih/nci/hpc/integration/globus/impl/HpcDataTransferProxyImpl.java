@@ -170,7 +170,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 			        globusConnection.getTransferClient(authenticatedToken);
     	
 		try {
-			 String resource = BaseTransferAPIClient.endpointPath("eranrosenberg#hpc-test") +
+			 String resource = BaseTransferAPIClient.endpointPath(fileLocation.getEndpoint()) +
                                "/access";
              JSONObject accessRequest = new JSONObject();
              accessRequest.put("DATA_TYPE", "access");
