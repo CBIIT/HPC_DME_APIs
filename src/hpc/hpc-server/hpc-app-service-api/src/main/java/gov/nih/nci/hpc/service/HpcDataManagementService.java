@@ -344,7 +344,7 @@ public interface HpcDataManagementService
      * Set permission of an entity (collection or data object) for a user. 
      *
      * @param path The entity path.
-     * @param permissionRequest The permission request.
+     * @param permissionRequest The permission request (NCI user ID and permission).
      * @return HpcPathAttributes of the path.
      * 
      * @throws HpcException If it failed to set the entity permission.
