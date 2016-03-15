@@ -14,15 +14,20 @@
 source $HPC_DM_TEST/utils/functions
 ../utils/runtest
 
+
 verify_registration  collection-registration-response-header.tmp
 verify_registration  dataObject-registration-response-header.tmp
+
+OBJECT_PATH=`cat registered-dataobject-path.tmp`
+
+FILE_NAME=$(basename $OBJECT_PATH)
+INPUT_JSON=$(cat input.json | sed "s/dxfilename/$FILE_NAME/")
+echo "$INPUT_JSON" > input.json
 
 
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
 SERVER=`cat $HPC_DM_TEST/utils/server`
-OBJECT_PATH=`cat registered-dataobject-path.tmp`
-
 
 curl -H "Content-Type: application/json" -d @input.json -X POST ${SERVER}/hpc-server/dataObject/$OBJECT_PATH/download  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 #echo "curl -H \"Content-Type: application/json\" -d @input.json -X POST ${SERVER}/hpc-server/dataObject/$OBJECT_PATH/download  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status"
@@ -31,3 +36,11 @@ check_connection $RESPONSE_HEADER
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 echo $HTTP_CODE
 
+#Do not check the file is the code is not 200
+if [ $HTTP_CODE != 200 ] 
+then
+    exit
+fi
+
+GLOBUS_PATH=$(get_json_value input.json path)
+verify_globus_file  $GLOBUS_PATH
