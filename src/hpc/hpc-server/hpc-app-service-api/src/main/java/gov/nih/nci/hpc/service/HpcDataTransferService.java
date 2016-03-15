@@ -91,11 +91,15 @@ public interface HpcDataTransferService
      *
      * @param fileLocation The endpoint/path to set permission
      * @param permissionRequest The user permission request.
+     * @param dataTransferAccount Optional (can be null). If specified, the user ID to set 
+     *                            the permission for is taken from this account instead of the 
+     *                            permission request.
      * 
      * @throws HpcException
      */
     public void setPermission(HpcFileLocation fileLocation,
-    		                  HpcUserPermission permissionRequest) 
+    		                  HpcUserPermission permissionRequest,
+    		                  HpcIntegratedSystemAccount dataTransferAccount) 
     		                 throws HpcException; 
 }
 
