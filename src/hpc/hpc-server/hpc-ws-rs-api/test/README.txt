@@ -21,12 +21,16 @@ To download and install DICE, please follow the documentation at:
 http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
 
 -Configuration:
-  I-Edit two configuration files in the ./utils subdirectory:
+  I-Edit three configuration files in the ./utils subdirectory:
     1- ./utils/config
         Add you username after the option "-u <username>[:password]"
         Note: Do not check in the config file in the repository with your NCI password.
         For that, the config file is checked in as a dynamic link.
-    2. ./utils/server
+    2- ./utils/globus-config
+        Add you username after the option "-u <username>[:password]"
+        Note: Do not check in the globus-config file in the repository with your GlobusID password.
+        For that, the globus-config file is checked in as a dynamic link.
+    3. ./utils/server
         Edit the server name and port number for the server to be tested.
 
   II- Add a test.txt empty file to this Globus endpoint:

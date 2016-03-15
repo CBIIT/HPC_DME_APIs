@@ -182,3 +182,51 @@ function update_uid {
     OUT=`cat "$INPUT_FILE" | sed "s/dxtestuid/$USERID/"`
     echo "$OUT" > $OUTPUT_FILE
 }
+
+
+#Verify the existance of a file in the Globus nihnci#NIH-NCI-TRANSFER1 endpoint
+#Inputs: <file path on the endpoint>
+function verify_globus_file {
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR: using verify_globus_file"
+        echo "USAGE: verify_globus_file <file-path-on-nihnci#NIH-NCI-TRANSFER1>"
+        exit
+    fi
+
+    FILE_PATH="$1"
+    ENDPOINT_ID="e1c6b3bd-6d04-11e5-ba46-22000b92c6ec"
+    GLOBUS_CREDENTIALS=$HPC_DM_TEST/utils/globus-config
+
+    #Verify the existance of the credentials file
+    if [ ! -e  "$GLOBUS_CREDENTIALS" ]
+    then 
+        echo "ERROR: Can not find $GLOBUS_CREDENTIALS"
+        exit
+    fi
+
+    #Get a Globus token
+    curl --config $GLOBUS_CREDENTIALS 'https://nexus.api.globusonline.org/goauth/token?grant_type=client_credentials' -s > globus-token.tmp 
+    TOKEN=$(get_json_value globus-token.tmp access_token)
+    if [ -z "$TOKEN" ]
+    then 
+        echo "ERROR: Can not get Globus token. Check connection and credentials in $GLOBUS_CREDENTIALS"
+        exit
+    fi
+
+    #List the files in the path
+    PARENT_DIR=$(dirname "$FILE_PATH") 
+    curl -H "Authorization : Bearer $TOKEN" "https://transfer.api.globusonline.org/v0.10/operation/endpoint/$ENDPOINT_ID/ls?path=$PARENT_DIR" -s > directory-list.tmp
+
+    FILE_NAME=$(basename $FILE_PATH)
+    EXISTS=$(grep  "\"$FILE_NAME\"" directory-list.tmp)
+    if [ -z "$EXISTS" ]
+    then
+        echo "ERROR: Can not find the file $FILE_PATH in the nihnci#NIH-NCI-TRANSFER1 Globus endpoint"
+        exit
+    fi
+    
+}
+
+

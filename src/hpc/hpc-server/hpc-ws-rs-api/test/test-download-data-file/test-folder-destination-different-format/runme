@@ -31,3 +31,14 @@ check_connection $RESPONSE_HEADER
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 echo $HTTP_CODE
 
+#Do not check the file is the code is not 200
+if [ $HTTP_CODE != 200 ] 
+then
+    exit
+fi
+
+FILE_NAME=$(basename $OBJECT_PATH)
+GLOBUS_DIR=$(get_json_value input.json path)
+GLOBUS_PATH="${GLOBUS_DIR}/${FILE_NAME}"
+verify_globus_file  "$GLOBUS_PATH"
+

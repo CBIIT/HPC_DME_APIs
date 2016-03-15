@@ -13,10 +13,8 @@
 #import common functions
 source $HPC_DM_TEST/utils/functions
 
-source $HPC_DM_TEST/utils/functions
 if [ -e input-template.json ] 
 then 
     update_uid input-template.json input.json
 fi
-
 
