@@ -389,13 +389,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			    	                                    userPermissionRequest);
     			     
     			     // Set the physical file permission (if the path is a file).
-    		    	 /*
+    		    	 
     		    	 if(pathAttributes.getIsFile()) {
     		    	   dataTransferService.setPermission(
     		    		   dataManagementService.getFileLocation(entityPermissionRequest.getPath()), 
     		    		   userPermissionRequest);
     		    	 }
-    		    	 */
+    		    	 
     			     
     		    } catch(HpcException e) {
     		    	    // Request failed. Record the message and keep going.
