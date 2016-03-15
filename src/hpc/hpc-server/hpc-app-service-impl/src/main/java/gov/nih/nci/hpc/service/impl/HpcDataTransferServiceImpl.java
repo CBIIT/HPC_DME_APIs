@@ -130,17 +130,26 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     }
 	
 	public void setPermission(HpcFileLocation fileLocation,
-                              HpcUserPermission permissionRequest) 
+                              HpcUserPermission permissionRequest,
+                              HpcIntegratedSystemAccount dataTransferAccount) 
                              throws HpcException
     {
     	// Input validation.
     	if(!HpcDomainValidator.isValidFileLocation(fileLocation)) {	
     	   throw new HpcException("Invalid file location", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}	
+    	}
+    	
+    	// Determine the user ID to use on the permission request.
+    	HpcUserPermission request = permissionRequest;
+    	if(dataTransferAccount != null) {
+    	   request = new HpcUserPermission();
+    	   request.setPermission(permissionRequest.getPermission());
+    	   request.setUserId(dataTransferAccount.getUsername());
+    	}
     	
     	dataTransferProxy.setPermission(getAuthenticatedToken(), 
-                                        fileLocation, permissionRequest);
+                                        fileLocation, request);
     }
 
     //---------------------------------------------------------------------//

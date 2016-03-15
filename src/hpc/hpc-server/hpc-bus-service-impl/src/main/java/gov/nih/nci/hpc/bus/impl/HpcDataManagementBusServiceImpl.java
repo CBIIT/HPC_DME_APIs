@@ -22,6 +22,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
@@ -388,14 +389,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		    		dataManagementService.setPermission(entityPermissionRequest.getPath(), 
     			    	                                    userPermissionRequest);
     			     
-    			     // Set the physical file permission (if the path is a file).
-    		    	 
+    			     // Set the physical file permission (if the path is of a file).
+    		    	 /*
     		    	 if(pathAttributes.getIsFile()) {
-    		    	   dataTransferService.setPermission(
-    		    		   dataManagementService.getFileLocation(entityPermissionRequest.getPath()), 
-    		    		   userPermissionRequest);
+    		    		// Get the data transfer account of this user.
+    		    		HpcUser user = userService.getUser(userPermissionRequest.getUserId());
+    		    		HpcIntegratedSystemAccount dataTransferAccount = 
+    		    				                   user != null ? user.getDataTransferAccount() : null;
+    		    	    // Set the data transfer permission.
+    		    	    dataTransferService.setPermission(
+    		    		    dataManagementService.getFileLocation(entityPermissionRequest.getPath()), 
+    		    		    userPermissionRequest,
+    		    		    dataTransferAccount);
     		    	 }
-    		    	 
+    		    	 */
     			     
     		    } catch(HpcException e) {
     		    	    // Request failed. Record the message and keep going.
