@@ -31,6 +31,8 @@
 	      
 	      <prop key="hpc.integration.globus.nexusAPIURL">nexus.api.globusonline.org</prop>
 	      <prop key="hpc.integration.globus.globusURL">www.globusonline.org</prop>
+	      
+	      <prop key="hpc.integration.ldap.URL">ldaps://nci-ldap-prod.nci.nih.gov:636</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
