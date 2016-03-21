@@ -10,6 +10,8 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
+import java.util.Arrays;
+
 import gov.nih.nci.hpc.bus.HpcUserBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -104,9 +106,20 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	
     	// Create data management account if not provided.
     	if(userRegistrationDTO.getDataManagementAccount() == null) {
-    	   // Create a data management account.
+    	   // Determine the user role to create. If not provided, default to USER.
     	   HpcUserRole role = userRegistrationDTO.getUserRole() != null ?
-    			              userRegistrationDTO.getUserRole() : HpcUserRole.USER;
+    			              roleFromString(userRegistrationDTO.getUserRole()) : 
+    			              HpcUserRole.USER;
+    			              
+           // GROUP_ADMIN not supported by current Jargon API version. Respond with a workaround.
+    	   if(role == HpcUserRole.GROUP_ADMIN) {
+    		  throw new HpcException("GROUP_ADMIN currently not supported by the API. " +
+    	                             "Create the account with a USER role, and then run " +
+    				                 "'iadmin moduser' command to change the user's role to GROUP_ADMIN",
+    				                 HpcRequestRejectReason.API_NOT_SUPPORTED);
+    	   }
+    			           
+    	   // Create the data management account.
     	   dataManagementService.addUser(
     			         userRegistrationDTO.getNciAccount(), role);
     	   
@@ -171,7 +184,8 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	if(userDTO.getDataManagementAccount() == null) {
      	   // Create a data management account.
      	   HpcUserRole role = userDTO.getUserRole() != null ?
-     			  userDTO.getUserRole() : HpcUserRole.USER;
+     			              roleFromString(userDTO.getUserRole()) : 
+     			              HpcUserRole.USER;
      	   dataManagementService.updateUser(
      			  userDTO.getNciAccount(),userDTO.getDataManagementAccount(), role);
      	   
@@ -206,7 +220,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	userDTO.setNciAccount(user.getNciAccount());
     	userDTO.setDataTransferAccount(user.getDataTransferAccount());
     	userDTO.setDataManagementAccount(user.getDataManagementAccount());
-    	userDTO.setUserRole(dataManagementService.getUserRole(nciUserId));
+    	userDTO.setUserRole(dataManagementService.getUserRole(nciUserId).value());
     	
     	// Mask passwords.
     	maskPasswords(userDTO);
@@ -283,11 +297,10 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     //---------------------------------------------------------------------//
     
     /**
-     * Mask account passwords
+     * Mask account passwords.
      * 
      * @param userDTO the user DTO to have passwords masked.
      */
-    
     private void maskPasswords(HpcUserDTO userDTO)
     {
     	if(userDTO.getDataManagementAccount() != null) {
@@ -295,6 +308,25 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	}
     	if(userDTO.getDataTransferAccount() != null) {
     	   userDTO.getDataTransferAccount().setPassword("*****");
+    	}
+    }
+    
+    /**
+     * Convert a user role from string to enum.
+     * 
+     * @param roleStr The role string.
+     * @return The enum value.
+     * @throws HpcException If the enum value is invalid
+     */
+    private HpcUserRole roleFromString(String roleStr) throws HpcException
+    {
+    	try {
+    	     return HpcUserRole.fromValue(roleStr);
+    	     
+    	} catch(IllegalArgumentException e) {
+    		    throw new HpcException("Invalid user role: " + roleStr + 
+    		    		               ". Valid values: " +  Arrays.asList(HpcUserRole.values()),
+    		    		               HpcErrorType.INVALID_REQUEST_INPUT, e);
     	}
     }
 }
