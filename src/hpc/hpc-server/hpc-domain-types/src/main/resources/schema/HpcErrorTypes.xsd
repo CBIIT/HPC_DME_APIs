@@ -43,6 +43,7 @@
 
 			<!-- User Service Request Reject Reasons -->
 			<xsd:enumeration value="USER_ALREADY_EXISTS" />
+			<xsd:enumeration value="API_NOT_SUPPORTED" />
 
 			<!-- Dataset Service Request Reject Reasons -->
 			<xsd:enumeration value="INVALID_NCI_ACCOUNT" />
