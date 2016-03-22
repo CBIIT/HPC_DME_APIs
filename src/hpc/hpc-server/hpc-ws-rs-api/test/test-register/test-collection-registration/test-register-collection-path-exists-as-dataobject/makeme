@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+# Script to make this test
+# Usage: makeme [no arguments]
+
+
+#Clean previous parsed policies file
+../../utils/cleantest
+
+# Script to build the executable for this test
+# Usage: makeme [no arguments]
+../../../utils/maketest
+
+#Register a collection
+source ../../../utils/functions
+USERID=`get_username ../../../utils/config`
+COLLECTION_PATH="/FNL_SF_Archive/${USERID}/dice-unit-test/project-add-dataobject"
+echo "$COLLECTION_PATH" >> registered-project-path.tmp
+curl_register project-description.json "$COLLECTION_PATH" collection
+
+verify_registration collection-registration-response-header.tmp
+mv collection-registration-response-header.tmp original-collection-registration-response-header.tmp
+
+#Register a dataOjbect
+SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username $HPC_DM_TEST/utils/config`
+DATAOBJECT_PATH="${COLLECTION_PATH}/object-${SUFFIX}.txt"
+echo "$DATAOBJECT_PATH" > registered-data-object-path.tmp
+
+
+update_uid input-template.json input.json
+curl_register input.json  "$DATAOBJECT_PATH" dataObject 
+
