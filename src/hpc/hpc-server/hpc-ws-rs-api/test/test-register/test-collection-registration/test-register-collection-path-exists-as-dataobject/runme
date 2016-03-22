@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+#Check if dataObject registration went through:
+verify_registration dataObject-registration-response-header.tmp
+
+DATAOBJECT_PATH=$(cat registered-data-object-path.tmp)
+
+#Register the collection 
+curl_register project-description.json "$DATAOBJECT_PATH" collection 
+
+REG_HTTP_CODE=`get_http_code collection-registration-response-header.tmp`
+
+echo $REG_HTTP_CODE 1>&2  
+
+ERROR_TYPE=$(get_json_value collection-registration-response-message.json.tmp errorType)
+echo $ERROR_TYPE 1>&2
