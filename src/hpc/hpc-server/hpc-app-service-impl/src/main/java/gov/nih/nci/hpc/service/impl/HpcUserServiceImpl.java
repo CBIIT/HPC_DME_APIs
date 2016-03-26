@@ -28,8 +28,6 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
  * <p>
@@ -56,10 +54,6 @@ public class HpcUserServiceImpl implements HpcUserService
 	
 	// The valid DOC values.
 	Set<String> docValues = new HashSet<String>();
-	
-    // The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -130,51 +124,42 @@ public class HpcUserServiceImpl implements HpcUserService
     	
     	// Persist to the DB.
     	insert(user);
-    	
-    	logger.debug("User Created: " + user);
     }
     
     @Override
-    public void updateUser(HpcNciAccount nciAccount, 
-	                    HpcIntegratedSystemAccount dataTransferAccount,
-	                    HpcIntegratedSystemAccount dataManagementAccount) 
-	                   throws HpcException
+    public void updateUser(String nciUserId, String firstName, String lastName,
+                           String DOC, HpcIntegratedSystemAccount dataTransferAccount) 
+	                      throws HpcException
     {
     	// Input validation.
-    	if(!isValidNciAccount(nciAccount) ||
+    	if(nciUserId == null || firstName == null || lastName == null || DOC == null ||
     	   !isValidIntegratedSystemAccount(dataTransferAccount)) {
-    	   throw new HpcException("Invalid add user input", 
+    	   throw new HpcException("Invalid update user input", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
-    	if(dataManagementAccount != null && !isValidIntegratedSystemAccount(dataManagementAccount))
-        	   throw new HpcException("Invalid Data management account input", 
-		                  HpcErrorType.INVALID_REQUEST_INPUT);
     	
-    	if(!docValues.contains(nciAccount.getDOC())) {
-    	   throw new HpcException("Invalid DOC: " + nciAccount.getDOC() +
+    	if(!docValues.contains(DOC)) {
+    	   throw new HpcException("Invalid DOC: " + DOC +
     			                  ". Valid values: " + docValues, 
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
-    	// Check if the user already exists.
-    	if(getUser(nciAccount.getUserId()) == null) {
-    	   throw new HpcException("User does not exists: nciUserId = " + 
-    	                          nciAccount.getUserId(), 
+    	// Get the user.
+    	HpcUser user = getUser(nciUserId);
+    	if(user == null) {
+    	   throw new HpcException("User not found: " + nciUserId,
     	                          HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
     	}
     	
     	// Create the User domain object.
-    	HpcUser user = new HpcUser();
-
-    	user.setNciAccount(nciAccount);
+    	user.getNciAccount().setFirstName(firstName);
+    	user.getNciAccount().setLastName(lastName);
+    	user.getNciAccount().setDOC(DOC);
     	user.setDataTransferAccount(dataTransferAccount);
-    	user.setDataManagementAccount(dataManagementAccount);
-    	user.setCreated(Calendar.getInstance());
+    	user.setLastUpdated(Calendar.getInstance());
     	
     	// Persist to the DB.
     	update(user);
-    	
-    	logger.debug("User Updated: " + user);
     }
     
     @Override

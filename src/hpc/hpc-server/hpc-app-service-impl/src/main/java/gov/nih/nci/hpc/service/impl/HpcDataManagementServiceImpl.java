@@ -26,7 +26,6 @@ import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -498,12 +497,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public HpcIntegratedSystemAccount getUser(String username) throws HpcException
-    {
-    	return dataManagementProxy.getUser(getAuthenticatedToken(), username);
-    }
-        
-    @Override
     public void addUser(HpcNciAccount nciAccount, HpcUserRole userRole) throws HpcException
     {
     	// Input validation.
@@ -517,17 +510,20 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
      
     @Override
-    public void updateUser(HpcNciAccount nciAccount, HpcIntegratedSystemAccount dataManagementAccount, HpcUserRole userRole) throws HpcException
+    public void updateUser(String nciUserId, String firstName, String lastName,
+                           HpcUserRole userRole) throws HpcException
     {
     	// Input validation.
-    	if(!isValidNciAccount(nciAccount)) {	
-    	   throw new HpcException("Invalid NCI Account: Null user ID or name or DOC", 
+    	if(nciUserId == null || firstName == null || lastName == null ||
+    	   userRole == null) {	
+    	   throw new HpcException("Invalid update user input", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
-       	
-    	dataManagementProxy.updateUser(getAuthenticatedToken(), 
-    			                    nciAccount, dataManagementAccount, userRole);
+    	
+    	dataManagementProxy.updateUser(getAuthenticatedToken(), nciUserId,
+    			                       firstName, lastName, userRole);
     }    
+    
     @Override
     public void deleteUser(String nciUserId) throws HpcException
     {

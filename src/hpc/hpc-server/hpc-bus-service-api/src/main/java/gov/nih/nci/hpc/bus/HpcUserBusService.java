@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
+import gov.nih.nci.hpc.dto.user.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -39,12 +40,14 @@ public interface HpcUserBusService
     /**
      * Update a User.
      *
-     * @param userDTO The user DTO.
+     * @param nciUserId The user ID to update.
+     * @param updateUserRequestDTO The update request DTO.
      * 
      * @throws HpcException
      */
-    public void updateUser(HpcUserDTO userDTO) 
-    		                throws HpcException;
+    public void updateUser(String nciUserId, 
+    		               HpcUpdateUserRequestDTO updateUserRequestDTO)  
+    		              throws HpcException;
 
     /**
      * Get a user by its NCI user id.
