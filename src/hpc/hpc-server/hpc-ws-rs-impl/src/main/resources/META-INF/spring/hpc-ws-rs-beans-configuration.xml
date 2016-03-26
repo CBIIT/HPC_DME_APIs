@@ -114,6 +114,7 @@
       		<map>
       			<!-- User Service Authorizations -->
       			<entry key="registerUser" value="${hpc.ws.rs.auth.register-user}"/>
+      			<entry key="updateUser" value="${hpc.ws.rs.auth.update-user}"/>
         		<entry key="getUser" value="${hpc.ws.rs.auth.get-user}"/>
         		<entry key="authenticateUser" value="${hpc.ws.rs.auth.authenticate-user}"/>
         		

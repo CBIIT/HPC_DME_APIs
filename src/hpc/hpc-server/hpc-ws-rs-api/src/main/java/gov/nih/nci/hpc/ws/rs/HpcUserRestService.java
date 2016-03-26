@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
+import gov.nih.nci.hpc.dto.user.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 
 import javax.ws.rs.Consumes;
@@ -47,12 +48,14 @@ public interface HpcUserRestService
     /**
      * Update an existing user.
      *
-     * @param userDTO The user DTO to update.
+     * @param nciUserId The user ID to update.
+     * @param updateUserRequestDTO The update request DTO.
      */
     @POST
-    @Path("/user")
+    @Path("/user/{nciUserId}")
     @Consumes("application/json,application/xml")
-    public Response updateUser(HpcUserDTO userDTO);
+    public Response updateUser(@PathParam("nciUserId") String nciUserId,
+    		                   HpcUpdateUserRequestDTO updateUserRequestDTO);
     
     /**
      * Get user by NCI User ID.

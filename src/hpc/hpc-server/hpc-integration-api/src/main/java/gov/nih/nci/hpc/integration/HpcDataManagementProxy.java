@@ -273,18 +273,6 @@ public interface HpcDataManagementProxy
     		                      throws HpcException;   
     
     /**
-     * Get the user.
-     *
-     * @param authenticatedToken An authenticated token.
-     * @param username The user name of the account to get its type.
-     * @return User The user.
-     * 
-     * @throws HpcException
-     */
-    public HpcIntegratedSystemAccount getUser(Object authenticatedToken, String username) 
-    		                      throws HpcException;   
-
-    /**
      * Add a user.
      *
      * @param authenticatedToken An authenticated token.
@@ -298,18 +286,20 @@ public interface HpcDataManagementProxy
     		           throws HpcException;
     
     /**
-     * Update user.
+     * Update a user.
      *
      * @param authenticatedToken An authenticated token.
-     * @param nciAccount The NCI account of the user to be updated
-     * @param userRole The HPC user role to assign to the new user.
+     * @param username The user name of the account to update
+     * @param firstName The user first name.
+     * @param lastName The user last name. 
+     * @param userRole The HPC user role to update for the user.
      * 
-     * @throws HpcException If it failed to update user.
+     * @throws HpcException If it failed to update user, or the user doesn't exist.
      */
     public void updateUser(Object authenticatedToken,
-    		            HpcNciAccount nciAccount, HpcIntegratedSystemAccount dataManagementAccount,
-    		            HpcUserRole userRole) 
-    		           throws HpcException;
+    		               String username, String firstName, String lastName,
+                           HpcUserRole userRole) 
+    		              throws HpcException;
 
     /**
      * Delete a user.

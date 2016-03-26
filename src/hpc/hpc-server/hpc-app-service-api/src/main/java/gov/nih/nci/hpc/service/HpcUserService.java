@@ -42,18 +42,19 @@ public interface HpcUserService
     		           throws HpcException;
     
     /**
-     * Update user.
+     * Update a user.
      *
-     * @param nciAccount The user's NCI account.
-     * @param dataTransferAccount The user's data transfer account.
-     * @param dataTransferAccount The user's data management account.
+     * @param nciUserId The NCI user ID of the user to update.
+     * @param firstName The user first name.
+     * @param lastName The user last name. 
+     * @param DOC The user DOC.
+     * @param dataTransferAccount The data transfer account to update.
      * 
      * @throws HpcException
      */
-    public void updateUser(HpcNciAccount nciAccount, 
-    		            HpcIntegratedSystemAccount dataTransferAccount,
-    		            HpcIntegratedSystemAccount dataManagementAccount) 
-    		           throws HpcException;
+    public void updateUser(String nciUserId, String firstName, String lastName,
+    		               String DOC, HpcIntegratedSystemAccount dataTransferAccount) 
+    		              throws HpcException;
 
     /**
      * Get a user.
