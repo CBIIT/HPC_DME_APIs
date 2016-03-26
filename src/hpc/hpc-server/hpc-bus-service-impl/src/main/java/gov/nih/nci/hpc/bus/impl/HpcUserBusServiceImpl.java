@@ -22,6 +22,7 @@ import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
+import gov.nih.nci.hpc.dto.user.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -150,52 +151,59 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     }
     
     @Override
-    public void updateUser(HpcUserDTO userDTO)  
-    		                throws HpcException
+    public void updateUser(String nciUserId, 
+                           HpcUpdateUserRequestDTO updateUserRequestDTO) 
+                          throws HpcException
     {
-    	logger.info("Invoking updateUser(HpcUserDTO): " + 
-    			userDTO);
+    	logger.info("Invoking updateUser(HpcUserDTO): " + updateUserRequestDTO);
     	
     	// Input validation.
-    	if(userDTO == null) {
-    	   throw new HpcException("Null HpcUserDTO",
+    	if(updateUserRequestDTO == null) {
+    	   throw new HpcException("Null HpcUpdateUserRequestDTO",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Validate the data transfer account if given.
-    	if(userDTO.getDataTransferAccount() != null)
-    	{
-	    	if(!dataTransferService.validateDataTransferAccount(
-	    			userDTO.getDataTransferAccount())) {
-	    	   throw new HpcException("Invalid Data Transfer Account", 
-	                                  HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);	
+    	// Get the user.
+    	HpcUser user = userService.getUser(nciUserId);
+    	if(user == null) {
+    	   throw new HpcException("User not found: " + nciUserId, 
+    			                  HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
+    	}
+    	
+    	// Validate the data transfer account if provided.
+    	HpcIntegratedSystemAccount updateDataTransferAccount = 
+    			                   updateUserRequestDTO.getDataTransferAccount();
+    	if(updateDataTransferAccount != null) {
+	       if(!dataTransferService.validateDataTransferAccount(updateDataTransferAccount)) {
+	    	  throw new HpcException("Invalid Data Transfer Account", 
+	                                 HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);	
 	    	}
+    	} else {
+    		    updateDataTransferAccount = user.getDataTransferAccount();
     	}
     	
-    	// Create data management account if not provided.
-    	if(userDTO.getDataManagementAccount() != null) {
-    	   // Create a data management account.
-    	   if(dataManagementService.getUser(
-    			   userDTO.getDataManagementAccount().getUsername()) == null)
-	    	   throw new HpcException("Invalid Data Management Account", 
-                       HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);	
-    	}
+
     	
-    	if(userDTO.getDataManagementAccount() == null) {
-     	   // Create a data management account.
-     	   HpcUserRole role = userDTO.getUserRole() != null ?
-     			              roleFromString(userDTO.getUserRole()) : 
-     			              HpcUserRole.USER;
-     	   dataManagementService.updateUser(
-     			  userDTO.getNciAccount(),userDTO.getDataManagementAccount(), role);
-     	   
-     	}
+    	// Determine update values.
+    	String updateFirstName = updateUserRequestDTO.getFirstName() != null ?
+    			                 updateUserRequestDTO.getFirstName() :
+    			                 user.getNciAccount().getFirstName();
+        String updateLastName = updateUserRequestDTO.getLastName() != null ?
+    	    			        updateUserRequestDTO.getLastName() :
+    	    			        user.getNciAccount().getLastName();
+    	String updateDOC = updateUserRequestDTO.getDOC() != null ?
+    	    	           updateUserRequestDTO.getDOC() :
+    	    	    	   user.getNciAccount().getDOC();
+    	HpcUserRole updateRole = updateUserRequestDTO.getUserRole() != null ?
+    		                     roleFromString(updateUserRequestDTO.getUserRole()) : 
+    		                     dataManagementService.getUserRole(nciUserId);
+     	dataManagementService.updateUser(nciUserId, updateFirstName,
+     			                         updateLastName, updateRole);
     	
-	     // Update User
-	     userService.updateUser(userDTO.getNciAccount(), 
-	    		 userDTO.getDataTransferAccount(),
-	    		 userDTO.getDataManagementAccount());
-	     
+	     // Update User.
+	     userService.updateUser(nciUserId, updateFirstName, 
+	    		                updateLastName, updateDOC,
+	    		                updateUserRequestDTO.getDataTransferAccount());
     }
     
     @Override

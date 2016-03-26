@@ -34,6 +34,20 @@
 		</xsd:complexType>
 	</xsd:element>
 	
+	<!-- Update User Request -->
+	<xsd:element name="HpcUpdateUserRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="firstName" type="xsd:string" />
+				<xsd:element name="lastName" type="xsd:string" />
+				<xsd:element name="DOC" type="xsd:string" />
+				<xsd:element name="userRole" type="xsd:string" />
+				<xsd:element name="dataTransferAccount"
+					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
 	<!--  Authentication Request / Response -->
 	<xsd:element name="HpcAuthenticationRequestDTO">
 		<xsd:complexType>

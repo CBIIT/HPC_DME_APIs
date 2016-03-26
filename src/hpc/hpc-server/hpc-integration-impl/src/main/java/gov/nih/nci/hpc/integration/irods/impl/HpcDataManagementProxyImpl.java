@@ -18,7 +18,6 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -482,41 +481,17 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     public HpcUserRole getUserRole(Object authenticatedToken, String username) 
     		                      throws HpcException
     {
-		try {
-			 User user = irodsConnection.getUserAO(authenticatedToken).findByName(username);
-			 if(user == null) {
-				return null;  
-			 }
-			 
-			 return toHpcUserRole(user.getUserType());
+		
+		 User irodsUser = getUser(authenticatedToken, username);
+		 if(irodsUser == null) {
+			return null;  
+		 }
+		 
+		 return toHpcUserRole(irodsUser.getUserType());
 	
-		} catch(Exception e) {
-	            throw new HpcException("Failed to get user type: " + 
-	                                    e.getMessage(),
-	                                    HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} 
+		
 	}  
-    
-    @Override
-    public HpcIntegratedSystemAccount getUser(Object authenticatedToken, String username) 
-    		                      throws HpcException
-    {
-		try {
-			 User user = irodsConnection.getUserAO(authenticatedToken).findByName(username);
-			 if(user != null)
-			 {
-				 HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
-				 account.setUsername(user.getName());
-				 account.setIntegratedSystem(HpcIntegratedSystem.IRODS);
-				 return account;
-			 }
-		} catch(Exception e) {
-	            throw new HpcException("Failed to get user type: " + 
-	                                    e.getMessage(),
-	                                    HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} 
-		return null;
-	}      
+
     @Override
     public void addUser(Object authenticatedToken,
                         HpcNciAccount nciAccount, HpcUserRole userRole) 
@@ -546,25 +521,25 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     
     @Override
     public void updateUser(Object authenticatedToken,
-    		            HpcNciAccount nciAccount, HpcIntegratedSystemAccount dataManagementAccount,
-    		            HpcUserRole userRole) 
-    		           throws HpcException
+                           String username, String firstName, String lastName,
+                           HpcUserRole userRole) 
+                          throws HpcException
     {
-    	// Add the user to iRODS.
-    	User irodsUser = new User();
-    	irodsUser.setName(nciAccount.getUserId());
-    	irodsUser.setInfo(nciAccount.getFirstName() + " " + nciAccount.getLastName());
+    	// Get the iRODS user
+    	User irodsUser = getUser(authenticatedToken, username);
+    	if(irodsUser == null) {
+    	   throw new HpcException("iRODS account does not exist: " + username, 
+                                  HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);  
+		}
+    	
+    	// Update the iRODS user.
+    	irodsUser.setInfo(firstName + " " + lastName);
     	irodsUser.setComment("Updated by HPC-DM API");
-    	irodsUser.setZone(irodsConnection.getZone());
     	irodsUser.setUserType(toIRODSUserType(userRole));
     	
     	try {
     	     irodsConnection.getUserAO(authenticatedToken).updateUser(irodsUser);
     	     
-    	} catch(DataNotFoundException  ex) {
-    		    throw new HpcException("iRODS account does not exist: " + nciAccount.getUserId(), 
-                                       HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT, ex);
-    		    
 		} catch(Exception e) {
                 throw new HpcException("Failed to update iRODS user: " + e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
@@ -923,6 +898,30 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	    	    return UserTypeEnum.RODS_UNKNOWN;
     	}
     }
+    
+    /**
+     * Get an iRODS user by account name
+     *
+     * @param username The iRODS account name.
+     * @return User or null if not found.
+     * 
+     * @throws HpcException
+     */
+    private User getUser(Object authenticatedToken, String username) 
+                        throws HpcException
+	{
+		try {
+			 return irodsConnection.getUserAO(authenticatedToken).findByName(username);
+			
+		} catch(DataNotFoundException dnf) {
+	            // User not found.
+			    return null;
+		} catch(Exception e) {
+			    throw new HpcException("Failed to get user: " + username + ". " + 
+			                           e.getMessage(),
+			                           HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} 
+	}
 }
 
  

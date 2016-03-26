@@ -19,7 +19,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -294,16 +293,6 @@ public interface HpcDataManagementService
     public HpcUserRole getUserRole(String username) throws HpcException;  
     
     /**
-     * Get User.
-     *
-     * @param username The user's name.
-     * @return User The user.
-     * 
-     * @throws HpcException
-     */
-    public HpcIntegratedSystemAccount getUser(String username) throws HpcException;  
-    
-    /**
      * Add a user.
      *
      * @param nciAccount The NCI account of the user to be added to data management.
@@ -315,16 +304,18 @@ public interface HpcDataManagementService
     		           throws HpcException;
     
     /**
-     * Update user.
+     * Update a user.
      *
-     * @param nciAccount The NCI account of the user to update.
-     * @param userRole The HPC user role to assign to the new user.
+     * @param nciUserId The NCI user ID of the user to update.
+     * @param firstName The user first name.
+     * @param lastName The user last name. 
+     * @param userRole The HPC user role to update for the user.
      * 
      * @throws HpcException
      */
-    public void updateUser(HpcNciAccount nciAccount, HpcIntegratedSystemAccount dataManagementAccount,
-    		HpcUserRole userRole) 
-    		           throws HpcException;
+    public void updateUser(String nciUserId, String firstName, String lastName,
+                           HpcUserRole userRole) 
+    		              throws HpcException;
     
     /**
      * Delete a user.

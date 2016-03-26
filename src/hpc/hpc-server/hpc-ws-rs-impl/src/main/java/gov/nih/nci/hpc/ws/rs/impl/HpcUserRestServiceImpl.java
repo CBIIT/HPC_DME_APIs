@@ -13,10 +13,12 @@ package gov.nih.nci.hpc.ws.rs.impl;
 import gov.nih.nci.hpc.bus.HpcUserBusService;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
+import gov.nih.nci.hpc.dto.user.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcUserRestService;
 
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
@@ -85,19 +87,20 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response updateUser(HpcUserDTO userDTO)
+    public Response updateUser(String nciUserId,
+                               HpcUpdateUserRequestDTO updateUserRequestDTO)
     {	
-		logger.info("Invoking RS: POST /user: " + userDTO);
+		logger.info("Invoking RS: POST /user: " + updateUserRequestDTO);
 		
 		try {
-			 userBusService.updateUser(userDTO);
+			 userBusService.updateUser(nciUserId, updateUserRequestDTO);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /user failed:", e);
 			    return errorResponse(e);
 		}
 		
-		return okResponse(userDTO.getNciAccount().getUserId(), false);
+		return okResponse(nciUserId, false);
 	}    
     @Override
     public Response getUser(String nciUserId)
