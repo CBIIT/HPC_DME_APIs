@@ -134,6 +134,7 @@ public interface HpcDataManagementRestService
      */
 	@POST
 	@Path("/acl")
+	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")
 	public Response setPermissions(List<HpcEntityPermissionRequestDTO> entityPermissionRequests);
 }

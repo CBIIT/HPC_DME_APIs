@@ -42,8 +42,9 @@
 		<prop key="hpc.ws.rs.ssl.wantClientAuth">false</prop>
 		<prop key="hpc.ws.rs.ssl.needClientAuth">false</prop>
 		
-		<prop key="hpc.ws.rs.auth.register-user">SYSTEM_ADMIN NOT_REGISTERED</prop>
+		<prop key="hpc.ws.rs.auth.register-user">SYSTEM_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.get-user">SYSTEM_ADMIN</prop>
+		<prop key="hpc.ws.rs.auth.update-user">SYSTEM_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.authenticate-user">SYSTEM_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.register-collection">SYSTEM_ADMIN GROUP_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.get-collection">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
