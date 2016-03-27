@@ -100,7 +100,8 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		return okResponse(null, false);
-	}    
+	}   
+    
     @Override
     public Response getUser(String nciUserId)
     {
