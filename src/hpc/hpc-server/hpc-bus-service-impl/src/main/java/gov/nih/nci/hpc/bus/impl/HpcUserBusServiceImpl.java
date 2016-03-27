@@ -182,8 +182,6 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     		    updateDataTransferAccount = user.getDataTransferAccount();
     	}
     	
-
-    	
     	// Determine update values.
     	String updateFirstName = updateUserRequestDTO.getFirstName() != null ?
     			                 updateUserRequestDTO.getFirstName() :
@@ -197,6 +195,13 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	HpcUserRole updateRole = updateUserRequestDTO.getUserRole() != null ?
     		                     roleFromString(updateUserRequestDTO.getUserRole()) : 
     		                     dataManagementService.getUserRole(nciUserId);
+        // GROUP_ADMIN not supported by current Jargon API version. Respond with a workaround.
+  	    if(updateRole == HpcUserRole.GROUP_ADMIN) {
+  		   throw new HpcException("GROUP_ADMIN currently not supported by the API. " +
+  	                              "Run 'iadmin moduser' command to change the user's role to GROUP_ADMIN",
+  				                  HpcRequestRejectReason.API_NOT_SUPPORTED);
+  	    }
+    		                     
      	dataManagementService.updateUser(nciUserId, updateFirstName,
      			                         updateLastName, updateRole);
     	
