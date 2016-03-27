@@ -203,7 +203,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
 	     // Update User.
 	     userService.updateUser(nciUserId, updateFirstName, 
 	    		                updateLastName, updateDOC,
-	    		                updateUserRequestDTO.getDataTransferAccount());
+	    		                updateDataTransferAccount);
     }
     
     @Override
