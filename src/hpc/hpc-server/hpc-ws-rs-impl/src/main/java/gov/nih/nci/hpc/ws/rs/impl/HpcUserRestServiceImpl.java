@@ -18,7 +18,6 @@ import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcUserRestService;
 
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
@@ -100,7 +99,7 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return okResponse(nciUserId, false);
+		return okResponse(null, false);
 	}    
     @Override
     public Response getUser(String nciUserId)
