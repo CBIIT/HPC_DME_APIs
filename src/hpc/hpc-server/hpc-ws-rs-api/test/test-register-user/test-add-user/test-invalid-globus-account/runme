@@ -13,21 +13,21 @@
 # Usage: runme [no arguments]
 
 #import common functions
-source ../../utils/functions
+source $HPC_DM_TEST/utils/functions
 
 #Run common script
-../../utils/runtest
+$HPC_DM_TEST/utils/runtest
 
 #Clean previous results
 ./cleanme
 
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
-SERVER=`cat ../../utils/server`
+SERVER=`cat $HPC_DM_TEST/utils/server`
 
 # add -D <filename> to dump the header
 
-curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-server/user  --config ../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/hpc-server/user  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 
 check_connection $RESPONSE_HEADER
 ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
