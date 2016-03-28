@@ -12,4 +12,4 @@
 # Script to clean the resutls of this test
 # Usage: cleanme [no arguments]
 
-../../utils/cleantest
+$HPC_DM_TEST/utils/cleantest
