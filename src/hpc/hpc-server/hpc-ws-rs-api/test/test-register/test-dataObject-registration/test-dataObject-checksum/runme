@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+#Update the userid
+../utils/runtest
+
+#Check if collection registration went through:
+verify_registration collection-registration-response-header.tmp
+
+SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username $HPC_DM_TEST/utils/config`
+PROJECT_PATH=`cat registered-project-path.tmp`
+
+DATAOBJECT_PATH="${PROJECT_PATH}/object-${SUFFIX}.txt"
+
+#Register the dataOjbect 
+curl_register input.json  "$DATAOBJECT_PATH" dataObject 
+
+#Check the returned code is 201
+REG_HTTP_CODE=`get_http_code dataObject-registration-response-header.tmp`
+if [ "$REG_HTTP_CODE" != "201" ]  
+then
+        echo "FAILED TO REGISTER DATAOBJECT, HTTP_CODE = $REG_HTTP_CODE" 1>&2
+        exit
+fi
+
+mv dataObject-registration-response-header.tmp original-registration-header.tmp
+echo $REG_HTTP_CODE
+
+RESPONSE_HEADER=response-header
+RESPONSE_MSG=response-message.json
+
+#Get the registered dataObject by path
+curl -G -X GET $SERVER/hpc-server/dataObject/${DATAOBJECT_PATH}  --config $HPC_DM_TEST/utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+
+GET_HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+if [ "$GET_HTTP_CODE" != "200" ]  
+then
+        echo "FAILED TO GET, HTTP_CODE = $GET_HTTP_CODE" 1>&2
+        exit
+fi
+
+exit
+#TODO  See what is meant by checksum
+ATTRIBUTE="\"description\""
+#VALUE=`cat value.tmp`
+
+#Make sure the response does include the object
+RESPONSE_GROUPS=`cat $RESPONSE_MSG | tr "{" "\n"`
+OBJECT_GROUPS=`echo "$RESPONSE_GROUPS" | grep "$ATTRIBUTE"`
+UPDATED_VALUE=`get_json_value "$OBJECT_GROUPS" "value"`
+echo $UPDATED_VALUE
+
