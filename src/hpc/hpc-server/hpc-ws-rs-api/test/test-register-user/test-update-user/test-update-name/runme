@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# makeme 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+
+#import common functions
+source ../utils/functions
+
+#Run common script
+$HPC_DM_TEST/utils/runtest
+
+update_user
+
+RESPONSE_CODE=`get_http_code $RESPONSE_HEADER`
+echo $RESPONSE_CODE 
