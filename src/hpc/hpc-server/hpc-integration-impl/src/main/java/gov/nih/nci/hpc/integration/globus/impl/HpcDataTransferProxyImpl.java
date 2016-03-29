@@ -166,6 +166,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
                               HpcUserPermission permissionRequest) 
                              throws HpcException
     {
+    	// TODO: This implementation is not complete. This is just initial code to test Globus ACL.
+    	// This implementation creates an ACL, but a complete impl needs to check if ACL rule already
+    	// exists for the user and update it, otherwise create a new ACL.
+    	
     	JSONTransferAPIClient client = 
 			        globusConnection.getTransferClient(authenticatedToken);
     	
@@ -179,9 +183,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
              accessRequest.put("path", fileLocation.getPath());
              accessRequest.put("permissions", "r");
 
-             JSONTransferAPIClient.Result r = client.postResult(resource, accessRequest,
-                                                                null);
-             String code = r.document.getString("code");
+             client.postResult(resource, accessRequest, null);
             
 		} catch(Exception e) {
 		        throw new HpcException(
