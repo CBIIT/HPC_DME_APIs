@@ -20,6 +20,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -140,6 +142,16 @@ public interface HpcDataManagementBusService
      * @throws HpcException
      */
 	public void updateDataTransferStatus() throws HpcException;
+	
+    /**
+     * Set (create or update) a group and assign/remove users.
+     *
+     * @param groupRequest The request DTO to create/update a group.
+     * @return A list of result for each user.
+     * 
+     * @throws HpcException
+     */
+	public HpcGroupResponseDTO setGroup(HpcGroupRequestDTO groupRequest) throws HpcException;
 }
 
  
