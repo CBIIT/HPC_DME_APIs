@@ -21,6 +21,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupResponseDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
@@ -144,7 +146,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     
     @Override
     public Response registerDataObject(String path, 
-    		                           HpcDataObjectRegistrationDTO dataObjectRegistrationDTO)
+    		                           HpcDataObjectRegistrationDTO dataObjectRegistration)
     {	
     	path = toAbsolutePath(path);
 		logger.info("Invoking RS: PUT /dataObject" + path);
@@ -152,7 +154,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		boolean created = true;
 		try {
 			 created = dataManagementBusService.registerDataObject(path, 
-					                                               dataObjectRegistrationDTO);
+					                                               dataObjectRegistration);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: PUT /dataObject" + path + " failed:", e);
@@ -226,6 +228,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		return okResponse(null, false);
     	
     }
+    
     @Override
     public Response setPermissions(List<HpcEntityPermissionRequestDTO> entityPermissionRequests)
     {
@@ -243,6 +246,23 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		return okResponse(permissionResponseList, false);
+    }
+    
+    @Override
+    public Response setGroup(HpcGroupRequestDTO groupRequest)
+    {
+    	logger.info("Invoking RS: POST /group: " + groupRequest);
+    	
+    	HpcGroupResponseDTO groupResponse = null;
+		try {
+			 groupResponse = dataManagementBusService.setGroup(groupRequest);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /group: " + groupResponse + " failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(groupResponse, false);
     }
     
     //---------------------------------------------------------------------//

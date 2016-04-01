@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 
 import java.util.List;
@@ -81,7 +82,7 @@ public interface HpcDataManagementRestService
      * PUT Data object registration request.
      *
      * @param path The data object path.
-     * @param dataObjectRegistrationDTO A DTO contains the metadata and data transfer locations.
+     * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
      */
 	@PUT
 	@Path("/dataObject/{path:.*}")
@@ -89,7 +90,7 @@ public interface HpcDataManagementRestService
 	@Produces("application/json,application/xml")
 	public Response registerDataObject(
 			           @PathParam("path") String path,
-			           HpcDataObjectRegistrationDTO dataObjectRegistrationDTO);
+			           HpcDataObjectRegistrationDTO dataObjectRegistration);
 	
     /**
      * GET Data Object.
@@ -137,6 +138,17 @@ public interface HpcDataManagementRestService
 	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")
 	public Response setPermissions(List<HpcEntityPermissionRequestDTO> entityPermissionRequests);
+	
+    /**
+     * POST Set (create or update) a group and assign/remove users.
+     *
+     * @param groupRequest The request DTO to create/update a group.
+     */
+	@POST
+	@Path("/group")
+	@Consumes("application/json,application/xml")
+	@Produces("application/json,application/xml")
+	public Response setGroup(HpcGroupRequestDTO groupRequest);
 }
 
  
