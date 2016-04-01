@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--  
- * hpc-batch-bundle-context-osgi.xml
+ * hpc-scheduler-bundle-context-osgi.xml
  *
  * Copyright SVG,  Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -21,9 +21,9 @@
                         http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd
                         http://www.springframework.org/schema/osgi-compendium http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd">
 
-	<!-- HPC Batch OSGi Properties -->
+	<!-- HPC Scheduler OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
-		<prop key="gov.nih.nci.hpc.batch.username">hpc-system-username</prop>
+		<prop key="gov.nih.nci.hpc.scheduler.username">hpc-system-username</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
