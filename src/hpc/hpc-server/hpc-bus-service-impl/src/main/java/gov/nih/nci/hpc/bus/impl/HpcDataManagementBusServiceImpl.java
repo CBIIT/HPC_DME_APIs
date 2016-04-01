@@ -31,6 +31,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -417,7 +419,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		responses.getEntityPermissionResponses().add(entityPermissionResponse);
     	}
     	
-    	
     	return responses;
     }
     
@@ -470,6 +471,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			    }
     		}
     	}
+    }
+    
+    @Override
+    public HpcGroupResponseDTO setGroup(HpcGroupRequestDTO groupRequest) 
+    		                           throws HpcException
+    {
+    	return null;
     }
     
     //---------------------------------------------------------------------//
