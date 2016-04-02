@@ -333,33 +333,33 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	
         try {
         	 // Put an object.
-             System.out.println("Uploading a new object to S3 from a file\n");
+             logger.error("Uploading a new object to S3 from a file\n");
              File file = new File(path);
              //PutObjectResult result = s3client.putObject(new PutObjectRequest(
               	//	                                    "CJ090115", "HPC-generated-key", file));
              PutObjectResult result = s3client.putObject(new PutObjectRequest(
                                                          "DSE-TestVault1", "HPC-generated-key", file));
             
-             System.out.println("Upload result md5: " + result.getContentMd5());
+             logger.error("Upload result md5: " + result.getContentMd5());
             
          } catch(AmazonServiceException ase) {
-                 System.out.println("Caught an AmazonServiceException, which " +
+                 logger.error("Caught an AmazonServiceException, which " +
             	                    "means your request made it " +
                                     "to Amazon S3, but was rejected with an error response" +
                                     " for some reason.");
-                 System.out.println("Error Message:    " + ase.getMessage());
-                 System.out.println("HTTP Status Code: " + ase.getStatusCode());
-                 System.out.println("AWS Error Code:   " + ase.getErrorCode());
-                 System.out.println("Error Type:       " + ase.getErrorType());
-                 System.out.println("Request ID:       " + ase.getRequestId());
+                 logger.error("Error Message:    " + ase.getMessage());
+                 logger.error("HTTP Status Code: " + ase.getStatusCode());
+                 logger.error("AWS Error Code:   " + ase.getErrorCode());
+                 logger.error("Error Type:       " + ase.getErrorType());
+                 logger.error("Request ID:       " + ase.getRequestId());
                  
          } catch(AmazonClientException ace) {
-                 System.out.println("Caught an AmazonClientException, which " +
+                 logger.error("Caught an AmazonClientException, which " +
             	 "means the client encountered " +
                  "an internal error while trying to " +
                  "communicate with S3, " +
                  "such as not being able to access the network.");
-                 System.out.println("Error Message: " + ace.getMessage());
+                 logger.error("Error Message: " + ace.getMessage());
         } 
     }
     
@@ -375,7 +375,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	tm.getAmazonS3Client().setEndpoint("https://8.40.18.82");
     	
     	// Create an upload request
-    	System.out.println("Multipart Uploading a new object to S3 from a file\n");
+    	logger.error("Multipart Uploading a new object to S3 from a file\n");
         File file = new File(path);
         PutObjectRequest request = new PutObjectRequest("CJ011916", "HPC-generated-key3", file);
         
@@ -383,7 +383,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
         request.setGeneralProgressListener(new ProgressListener() {
 			@Override
 			public void progressChanged(ProgressEvent progressEvent) {
-				System.out.println("Progress Event: " + progressEvent.getEventType() +
+				logger.error("Progress Event: " + progressEvent.getEventType() +
 				                   "    ***   Transferred bytes: " + 
 						           progressEvent.getBytesTransferred());
 			}
@@ -396,13 +396,13 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
         try {
         	 upload.waitForCompletion();
         	 
-        	 System.out.println("Async upload completed");
+        	 logger.error("Async upload completed");
         	
         } catch(AmazonClientException amazonClientException) {
-        	    System.out.println("Unable to upload file, upload was aborted.");
+        	    logger.error("Unable to upload file, upload was aborted.");
         	    amazonClientException.printStackTrace();
         } catch(Exception ioex) {
-        	    System.out.println("Interupted exception: " + ioex);
+        	    logger.error("Interupted exception: " + ioex);
         }
     }
 }
