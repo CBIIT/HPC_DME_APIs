@@ -323,17 +323,22 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     private void s3SimpleUpload(String path)
     {
     	// Instantiate S3 Client and set the Cleversafe endpoint URL.
-    	BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials("vDZGQHw6OgBBpeI4D1CA", 
-    			                                                            "OVDNthOhfl5npqdSfAD8T9FsIcJlsCJsmuRdfanr");
+    	//BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials("vDZGQHw6OgBBpeI4D1CA", 
+    		//	                                                            "OVDNthOhfl5npqdSfAD8T9FsIcJlsCJsmuRdfanr");
+    	BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials("rhwXa402NFW1OwxqY6Xb", 
+                                                                            "Y3U4GPAZPKZL7z5Sb71R5fFU0I88gFYswS0U8uxA");
     	AmazonS3 s3client = new AmazonS3Client(cleversafeCredentials);
-    	s3client.setEndpoint("https://8.40.18.82");
+    	//s3client.setEndpoint("https://8.40.18.82");
+    	s3client.setEndpoint("https://fr-s-clvrsf-01.ncifcrf.gov");
     	
         try {
         	 // Put an object.
              System.out.println("Uploading a new object to S3 from a file\n");
              File file = new File(path);
+             //PutObjectResult result = s3client.putObject(new PutObjectRequest(
+              	//	                                    "CJ090115", "HPC-generated-key", file));
              PutObjectResult result = s3client.putObject(new PutObjectRequest(
-              		                                    "CJ090115", "HPC-generated-key", file));
+                                                         "DSE-TestVault1", "HPC-generated-key", file));
             
              System.out.println("Upload result md5: " + result.getContentMd5());
             
