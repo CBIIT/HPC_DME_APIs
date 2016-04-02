@@ -149,6 +149,12 @@ public interface HpcDataManagementRestService
 	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")
 	public Response setGroup(HpcGroupRequestDTO groupRequest);
+	
+    // S3 prototype
+    @POST
+    @Path("/s3/{path}")
+    @Produces("application/json,application/xml")
+    public Response s3Upload(@PathParam("path") String path);
 }
 
  
