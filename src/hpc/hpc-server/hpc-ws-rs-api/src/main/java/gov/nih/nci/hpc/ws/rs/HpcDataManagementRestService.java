@@ -159,8 +159,8 @@ public interface HpcDataManagementRestService
     @Path("/s3/{sync}/{path:.*}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces("application/json,application/xml")
-    public Response s3UploadFile(@PathParam("path") String path,
-    		                     @PathParam("sync") String sync,
+    public Response s3UploadFile(@PathParam("sync") String sync,
+    		                     @PathParam("path") String path,
                                  @Multipart(value = "dataObjectRegistration") 
                                  HpcDataObjectRegistrationDTO dataObjectRegistration,
                                  @Multipart(value = "dataObject", required = false) 
