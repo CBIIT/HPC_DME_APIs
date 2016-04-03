@@ -30,7 +30,7 @@
 	</bean>
 	
 	<!--  Update Data Transfer Status Scheduled task -->
-	<bean id="hpcUpdateDataTransferStatus" class="gov.nih.nci.hpc.batch.HpcScheduledTasks" />
+	<bean id="hpcUpdateDataTransferStatus" class="gov.nih.nci.hpc.scheduler.HpcScheduledTasks" />
 	
 </beans>
 
