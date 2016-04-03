@@ -71,6 +71,9 @@ public class HpcScheduledTasks
      * Update Data Transfer Status Task
      * 
      */
+    
+    /* Disabled until iRODS system account has full access to all objects 
+     *
     @Scheduled(fixedDelay = 30000)
     private void updateDataTransferStatusTask()
     {
@@ -87,7 +90,7 @@ public class HpcScheduledTasks
         	       dataManagementBusService.closeConnection();
         	       logger.info("Completed Update Data Transfer Status Task...");	
         }
-    }
+    }*/
 }
 
  

@@ -27,7 +27,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
 /**
  * <p>
@@ -151,10 +155,16 @@ public interface HpcDataManagementRestService
 	public Response setGroup(HpcGroupRequestDTO groupRequest);
 	
     // S3 prototype
-    @POST
-    @Path("/s3/{path}")
+    @PUT
+    @Path("/s3/{sync}/{path:.*}")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces("application/json,application/xml")
-    public Response s3Upload(@PathParam("path") String path);
+    public Response s3UploadFile(@PathParam("path") String path,
+    		                     @PathParam("sync") String sync,
+                                 @Multipart(value = "dataObjectRegistration") 
+                                 HpcDataObjectRegistrationDTO dataObjectRegistration,
+                                 @Multipart(value = "dataObject", required = false) 
+    		                     Attachment dataObject);
 }
 
  
