@@ -388,7 +388,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	
     	TransferManager tm = new TransferManager(cleversafeCredentials);
     	//tm.getAmazonS3Client().setEndpoint("https://8.40.18.82");
-    	tm.getAmazonS3Client().setEndpoint("https://fr-s-clvrsf-01.ncifcrf.gov");
+    	tm.getAmazonS3Client().setEndpoint("http://fr-s-clvrsf-01.ncifcrf.gov");
     	
     	// Create an upload request
     	String id = "HPC-Generated-" + inputStream.hashCode();
