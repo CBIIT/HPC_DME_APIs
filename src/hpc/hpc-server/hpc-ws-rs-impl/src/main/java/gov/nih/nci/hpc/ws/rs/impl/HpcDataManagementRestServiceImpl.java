@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
@@ -27,25 +28,23 @@ import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
 
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.event.ProgressEvent;
 import com.amazonaws.event.ProgressListener;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.Upload;
 
@@ -313,13 +312,29 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//
     
     @Override
-    public Response s3Upload(String path)
+    public Response s3UploadFile(String sync, String path, 
+    		                     HpcDataObjectRegistrationDTO dataObjectRegistration,
+    		                     Attachment dataObject)
     {
-    	//s3SimpleUpload(path);
-    	s3MultipartUpload(path);
-    	return okResponse(null, false);
+    	if(dataObject == null) {
+    		HpcException e = new HpcException("No attached data file found", HpcErrorType.INVALID_REQUEST_INPUT);
+    	    return errorResponse(e);
+    	}
+    	
+    	String id = null;
+    	try {
+    	     id = s3MultipartUpload(dataObject.getDataHandler().getInputStream(), sync.equals("sync"));
+    	
+    	}catch(IOException e) {
+    		   HpcException he = new HpcException("Failed to get input stream: " + e.getMessage(), 
+    				                              HpcErrorType.DATA_TRANSFER_ERROR, e);
+    		   return errorResponse(he);
+    	}
+    	
+    	return createdResponse(id);
     }
     
+    /*
     private void s3SimpleUpload(String path)
     {
     	// Instantiate S3 Client and set the Cleversafe endpoint URL.
@@ -361,23 +376,27 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
                  "such as not being able to access the network.");
                  logger.error("Error Message: " + ace.getMessage());
         } 
-    }
+    }*/
     
-    private void s3MultipartUpload(String path)
+    private String s3MultipartUpload(InputStream inputStream, boolean sync)
     {
     	// Instantiate a Transfer Manager using Cleversafe AWS credentials
-    	//BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials("vDZGQHw6OgBBpeI4D1CA", 
-    		//	                                                            "OVDNthOhfl5npqdSfAD8T9FsIcJlsCJsmuRdfanr");
-    	BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials("rQ5sO4vedFMpCJrbEBqA", 
-                                                                            "J7aNcIKXmJUDm5NUN70wVQq4zyv0WaMdykpBASEh");
+    	BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials("vDZGQHw6OgBBpeI4D1CA", 
+    			                                                            "OVDNthOhfl5npqdSfAD8T9FsIcJlsCJsmuRdfanr");
+    	//BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials("rQ5sO4vedFMpCJrbEBqA", 
+        //                                                                    "J7aNcIKXmJUDm5NUN70wVQq4zyv0WaMdykpBASEh");
     	
     	TransferManager tm = new TransferManager(cleversafeCredentials);
-    	tm.getAmazonS3Client().setEndpoint("https://8.40.18.82");
+    	//tm.getAmazonS3Client().setEndpoint("https://8.40.18.82");
+    	tm.getAmazonS3Client().setEndpoint("https://fr-s-clvrsf-01.ncifcrf.gov");
     	
     	// Create an upload request
-    	logger.error("Multipart Uploading a new object to S3 from a file\n");
-        File file = new File(path);
-        PutObjectRequest request = new PutObjectRequest("CJ011916", "HPC-generated-key3", file);
+    	String id = "HPC-Generated-" + inputStream.hashCode();
+    	//String vault = "CJ011916";
+    	String vault = "DSE-TestVault1";
+    	
+    	logger.error("Multipart Uploading a new object to S3 from input stream\n");
+        PutObjectRequest request = new PutObjectRequest(vault, id, inputStream, null);
         
         // Attach a progress listener.
         request.setGeneralProgressListener(new ProgressListener() {
@@ -392,18 +411,21 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
         // Invoke the asynchrnous upload.
         Upload upload = tm.upload(request);
 
-        // For a demo we'll block and wait for the upload to complete.
-        try {
-        	 upload.waitForCompletion();
-        	 
-        	 logger.error("Async upload completed");
+        // Wait for completion if requested.
+        if(sync) {
+           try {
+        	    upload.waitForCompletion();
+        	    logger.error("S3 upload completed");
         	
-        } catch(AmazonClientException amazonClientException) {
-        	    logger.error("Unable to upload file, upload was aborted.");
-        	    amazonClientException.printStackTrace();
-        } catch(Exception ioex) {
-        	    logger.error("Interupted exception: " + ioex);
+           } catch(AmazonClientException amazonClientException) {
+        	       logger.error("Unable to upload file, upload was aborted.");
+        	       amazonClientException.printStackTrace();
+           } catch(Exception ioex) {
+        	       logger.error("Interupted exception: " + ioex);
+           }
         }
+        
+         return id;
     }
 }
 
