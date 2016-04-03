@@ -70,27 +70,24 @@ public class HpcScheduledTasks
     /**
      * Update Data Transfer Status Task
      * 
-     */
-    
-    /* Disabled until iRODS system account has full access to all objects 
-     *
+     */    
     @Scheduled(fixedDelay = 30000)
     private void updateDataTransferStatusTask()
     {
         logger.info("Starting Update Data Transfer Status Task...");
 
-        try { 
-		     userBusService.authenticate(batchAuthenticationRequest, false);
-		     dataManagementBusService.updateDataTransferStatus();
+        //try { 
+		     //userBusService.authenticate(batchAuthenticationRequest, false);
+		     //dataManagementBusService.updateDataTransferStatus();
 		     
-        } catch(HpcException e) {
-        	    logger.error("Update Data Transfer Status task failed", e);
+        //} catch(HpcException e) {
+        	//    logger.error("Update Data Transfer Status task failed", e);
         	    
-        } finally {
-        	       dataManagementBusService.closeConnection();
-        	       logger.info("Completed Update Data Transfer Status Task...");	
-        }
-    }*/
+        //} finally {
+        	//       dataManagementBusService.closeConnection();
+        	  //     logger.info("Completed Update Data Transfer Status Task...");	
+        //}
+    }
 }
 
  
