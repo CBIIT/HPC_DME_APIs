@@ -381,20 +381,20 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     private String s3MultipartUpload(InputStream inputStream, boolean sync)
     {
     	// Instantiate a Transfer Manager using Cleversafe AWS credentials
-    	BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials("vDZGQHw6OgBBpeI4D1CA", 
-    			                                                            "OVDNthOhfl5npqdSfAD8T9FsIcJlsCJsmuRdfanr");
-    	//BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials("rQ5sO4vedFMpCJrbEBqA", 
-        //                                                                    "J7aNcIKXmJUDm5NUN70wVQq4zyv0WaMdykpBASEh");
+    	//BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials("vDZGQHw6OgBBpeI4D1CA", 
+                //"OVDNthOhfl5npqdSfAD8T9FsIcJlsCJsmuRdfanr");
+    	BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials("rQ5sO4vedFMpCJrbEBqA", 
+                                                                            "J7aNcIKXmJUDm5NUN70wVQq4zyv0WaMdykpBASEh");
     	
     	TransferManager tm = new TransferManager(cleversafeCredentials);
-    	//tm.getAmazonS3Client().setEndpoint("https://8.40.18.82");
-    	tm.getAmazonS3Client().setEndpoint("http://fr-s-clvrsf-01.ncifcrf.gov");
+    	//tm.getAmazonS3Client().setEndpoint("https://fr-s-clvrsf-01.ncifcrf.gov");
+    	tm.getAmazonS3Client().setEndpoint("https://8.40.18.82");
     	
     	// Create an upload request
     	String id = "HPC-Generated-" + inputStream.hashCode();
-    	//String vault = "CJ011916";
-    	String vault = "DSE-TestVault1";
-    	
+    	//String vault = "DSE-TestVault1";
+    	String vault = "CJ011916";
+
     	logger.error("Multipart Uploading a new object to S3 from input stream\n");
         PutObjectRequest request = new PutObjectRequest(vault, id, inputStream, null);
         
