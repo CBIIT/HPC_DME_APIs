@@ -78,7 +78,7 @@
 		<bundle>mvn:${project.groupId}/hpc-bus-service-impl/${project.version}</bundle>
 		<bundle>mvn:${project.groupId}/hpc-ws-rs-api/${project.version}</bundle>
 		<bundle>mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}</bundle>
-		<bundle>mvn:${project.groupId}/hpc-batch/${project.version}</bundle>
+		<bundle>mvn:${project.groupId}/hpc-scheduler/${project.version}</bundle>
 
 	</feature>
 
