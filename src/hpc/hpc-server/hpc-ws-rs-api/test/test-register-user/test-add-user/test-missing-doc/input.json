@@ -1,0 +1,13 @@
+{
+    "nciAccount": {
+        "userId": "testid",
+            "firstName": "testfirst",
+            "lastName": "testlast",
+    },
+    "dataTransferAccount":    {
+     "username": "testhpcdm",
+      "password": "HpCTest2016!@",
+      "integratedSystem": "GLOBUS"
+   }
+
+}
