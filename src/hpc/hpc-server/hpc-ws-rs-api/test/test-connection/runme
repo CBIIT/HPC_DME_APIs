@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+
+if [ -z "$HPC_DM_TEST" ]
+then
+    echo "ERROR: The HPC_DM_TEST variable is not defined"
+    echo "Check /path-to-test/README.txt for more information"
+fi
+
+SERVER_PATH="$HPC_DM_TEST/utils/server"
+if [ ! -e "$SERVER_PATH" ]
+then
+    echo "ERROR: the server file \"$SERVER_PATH\" does not exist "
+    echo "Check /path-to-test/README.txt for more information"
+fi
+
+CONFIG_PATH="$HPC_DM_TEST/utils/config"
+if [ ! -e "$CONFIG_PATH" ]
+then
+    echo "ERROR: the config file \"$CONFIG_PATH\" does not exist "
+    echo "Check /path-to-test/README.txt for more information"
+fi
+
+
+
+SERVER=`cat $HPC_DM_TEST/utils/server`
+curl -X POST ${SERVER}/hpc-server/dataObject/download  --config $CONFIG_PATH
