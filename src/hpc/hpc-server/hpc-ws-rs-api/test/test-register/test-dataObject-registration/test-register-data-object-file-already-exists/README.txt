@@ -14,4 +14,4 @@
 ******************************/
 
 Register a dataObject twice. 
-Sould retrun error code 400 with a REQUEST_REJECTED errorType.
+Should retrun error code 400 with a REQUEST_REJECTED errorType.
