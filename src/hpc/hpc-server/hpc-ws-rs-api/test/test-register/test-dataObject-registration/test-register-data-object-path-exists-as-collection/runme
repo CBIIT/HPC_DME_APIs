@@ -26,7 +26,23 @@ curl_register input.json  "$DATAOBJECT_PATH" dataObject
 #Check the returned 
 REG_HTTP_CODE=`get_http_code dataObject-registration-response-header.tmp`
 
-echo $REG_HTTP_CODE 1>&2  
+RESPONSE_MSG=dataObject-registration-response-message.json.tmp 
 
-ERROR_TYPE=$(get_json_value dataObject-registration-response-message.json.tmp errorType)
+
+
+ERROR_TYPE=$(get_json_value "$RESPONSE_MSG" errorType)
+
+EXPECTED_MSG="Path already exists as a directory"
+ERROR_MSG=$(get_json_value "$RESPONSE_MSG" message)
+CLEANED_MSG=$(echo $ERROR_MSG | sed "s#$EXPECTED_MSG.*#$EXPECTED_MSG#")
+
+
+echo $REG_HTTP_CODE 1>&2  
 echo $ERROR_TYPE 1>&2
+echo $CLEANED_MSG 1>&2
+
+
+
+
+
+
