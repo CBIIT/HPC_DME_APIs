@@ -1,6 +1,0 @@
-HTTP/1.1 415 Unsupported Media Type
-HPC-API-Version: 1.0.0
-Date: Wed, 06 Apr 2016 15:13:16 GMT
-Content-Length: 0
-Server: Jetty(8.1.17.v20150415)
-
