@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# runme 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+source $HPC_DM_TEST/test-permission/utils/functions
+
+#Run the common runtest
+$HPC_DM_TEST/test-permission/utils/runtest
+
+#Check correct behavior
+
+#Update the input template with the new collection and user values  
+COLLECTION_PATH="/dxinvalid/path"
+NEW_USER_ID=$(cat new-user-id.tmp)
+UPDATED_PATH=$(cat input.json | sed "s#dxcollectionpath#$COLLECTION_PATH#")
+UPDATED_USER=$(echo "$UPDATED_PATH" | sed "s#dxnewuserid#$NEW_USER_ID#")
+echo "$UPDATED_USER" > input.json.tmp
+
+#Submit the request to change permission
+RESPONSE_HEADER=permission-response-header.tmp
+RESPONSE_MSG=permission-response-message.json.tmp 
+update_permission "input.json.tmp" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+ 
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+
+ERROR_TYPE=$(get_json_value $RESPONSE_MSG errorType)
+ERROR_MESSAGE=$(get_json_value $RESPONSE_MSG message)
+
+echo $HTTP_CODE 1>&2
+echo $ERROR_TYPE 1>&2
+echo $ERROR_MESSAGE 1>&2
+
+
