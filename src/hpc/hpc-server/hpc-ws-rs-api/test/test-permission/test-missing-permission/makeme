@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# maketest
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+#Register a project and a dataObject to be downloaded
+
+
+#Clean previous results
+./cleanme
+$HPC_DM_TEST/test-permission/utils/maketest
+
+
+source $HPC_DM_TEST/utils/functions
+source $HPC_DM_TEST/test-permission/utils/functions
+register_permission_collection 

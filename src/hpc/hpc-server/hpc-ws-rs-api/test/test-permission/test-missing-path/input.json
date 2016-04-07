@@ -1,0 +1,12 @@
+{
+    "entityPermissionRequests": [
+        {
+            "userPermissions": [
+                {
+                        "userId": "dxnewuserid",
+                        "permission": "READ"
+                }
+            ]
+        }
+    ]
+}
