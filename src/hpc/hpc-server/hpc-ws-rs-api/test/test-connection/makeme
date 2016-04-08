@@ -15,6 +15,3 @@
 ./cleanme
 ../utils/maketest
 
-SERVER
-if [ ! -e "$HPC_DM_TEST/utils/server" ]
-    echo "ERROR: the "
