@@ -53,8 +53,8 @@ public interface HpcDataManagementRestService
      */
 	@PUT
 	@Path("/collection/{path:.*}")
-	@Consumes("application/json,application/xml")
-	@Produces("application/json,application/xml")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response registerCollection(
 			           @PathParam("path") String path,
 			           List<HpcMetadataEntry> metadataEntries);
@@ -66,8 +66,8 @@ public interface HpcDataManagementRestService
      */
 	@GET
 	@Path("/collection/{path:.*}")
-	@Consumes("application/json,application/xml")
-	@Produces("application/json,application/xml")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getCollection(@PathParam("path") String path);
 	
     /**
@@ -77,7 +77,7 @@ public interface HpcDataManagementRestService
      */
 	@GET
 	@Path("/collection")
-	@Produces("application/json,application/xml")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getCollections(
 			           @QueryParam("metadataQuery")
 			           List<HpcMetadataQueryParam> metadataQueries);
@@ -90,11 +90,14 @@ public interface HpcDataManagementRestService
      */
 	@PUT
 	@Path("/dataObject/{path:.*}")
-	@Consumes("application/json,application/xml")
-	@Produces("application/json,application/xml")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response registerDataObject(
 			           @PathParam("path") String path,
-			           HpcDataObjectRegistrationDTO dataObjectRegistration);
+			           @Multipart(value = "dataObjectRegistration")
+			           HpcDataObjectRegistrationDTO dataObjectRegistration,
+			           @Multipart(value = "dataObject", required = false) 
+	                   Attachment dataObject);
 	
     /**
      * GET Data Object.
@@ -103,8 +106,8 @@ public interface HpcDataManagementRestService
      */
 	@GET
 	@Path("/dataObject/{path:.*}")
-	@Consumes("application/json,application/xml")
-	@Produces("application/json,application/xml")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getDataObject(@PathParam("path") String path);
 	
     /**
@@ -114,7 +117,7 @@ public interface HpcDataManagementRestService
      */
 	@GET
 	@Path("/dataObject")
-	@Produces("application/json,application/xml")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getDataObjects(
 			           @QueryParam("metadataQuery")
 			           List<HpcMetadataQueryParam> metadataQueries);
@@ -127,8 +130,8 @@ public interface HpcDataManagementRestService
      */
 	@POST
 	@Path("/dataObject/{path:.*}/download")
-	@Consumes("application/json,application/xml")
-	@Produces("application/json,application/xml")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response downloadDataObject(@PathParam("path") String path,
 			                           HpcDataObjectDownloadDTO downloadRequest);
 	
@@ -139,8 +142,8 @@ public interface HpcDataManagementRestService
      */
 	@POST
 	@Path("/acl")
-	@Consumes("application/json,application/xml")
-	@Produces("application/json,application/xml")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response setPermissions(List<HpcEntityPermissionRequestDTO> entityPermissionRequests);
 	
     /**
@@ -150,15 +153,15 @@ public interface HpcDataManagementRestService
      */
 	@POST
 	@Path("/group")
-	@Consumes("application/json,application/xml")
-	@Produces("application/json,application/xml")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response setGroup(HpcGroupRequestDTO groupRequest);
 	
     // S3 prototype
     @PUT
     @Path("/s3/{sync}/{path:.*}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces("application/json,application/xml")
+    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response s3UploadFile(@PathParam("sync") String sync,
     		                     @PathParam("path") String path,
                                  @Multipart(value = "dataObjectRegistration") 

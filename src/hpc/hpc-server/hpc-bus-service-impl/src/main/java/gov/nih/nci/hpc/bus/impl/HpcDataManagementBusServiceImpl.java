@@ -13,7 +13,6 @@ package gov.nih.nci.hpc.bus.impl;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
-import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequestInfo;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
@@ -242,7 +241,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			     // Calculate the data transfer destination to deposit the data object.
 			     HpcFileLocation destination = 
 			        getDataObjectRegistrationDestination(path, 
-			        		                             dataObjectRegistrationDTO.getFilePath());
+			        		                             dataObjectRegistrationDTO.getCallerObjectId());
 			     HpcFileLocation source = dataObjectRegistrationDTO.getSource(); 
 			     
 				 // Submit a request to transfer the file (this is performed async). 
@@ -386,7 +385,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			userPermissionResponse.setResult(true);
     		    try {
     		    	 // Set the data management permission.
-    		    	 HpcPathAttributes pathAttributes =
+    		    	 //HpcPathAttributes pathAttributes =
     		    		dataManagementService.setPermission(entityPermissionRequest.getPath(), 
     			    	                                    userPermissionRequest);
     			     
