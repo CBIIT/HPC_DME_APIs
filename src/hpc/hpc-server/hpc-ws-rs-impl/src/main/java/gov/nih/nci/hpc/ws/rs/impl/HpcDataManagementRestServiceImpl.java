@@ -158,7 +158,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     
     @Override
     public Response registerDataObject(String path, 
-    		                           HpcDataObjectRegistrationDTO dataObjectRegistration)
+    		                           HpcDataObjectRegistrationDTO dataObjectRegistration,
+    		                           Attachment dataObject)
     {	
     	path = toAbsolutePath(path);
 		logger.info("Invoking RS: PUT /dataObject" + path);
