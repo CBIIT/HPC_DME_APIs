@@ -139,7 +139,7 @@ public class HPCDatafiles extends HPCBatchClient {
 				
 				
 				hpcDataObjectRegistrationDTO.setSource(source);
-				hpcDataObjectRegistrationDTO.setFilePath("/");
+				hpcDataObjectRegistrationDTO.setCallerObjectId("/");
 				RestTemplate restTemplate = HpcClientUtil.getRestTemplate(hpcCertPath, hpcCertPassword);
 				
 				HttpHeaders headers = new HttpHeaders();
