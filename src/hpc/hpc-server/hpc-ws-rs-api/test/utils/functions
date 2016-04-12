@@ -143,7 +143,7 @@ function verify_registration {
 }
 
 #Register a collection or a dataObject 
-#Inputs description.json destinaton-path type 
+#Inputs: description.json destinaton-path type  [data-object-file]
 function curl_register {
 
     if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
@@ -153,6 +153,17 @@ function curl_register {
         exit
     fi
 
+
+    if [ ! -z "$4" ]
+    then
+        DATAOBJECT_FILE="$4"
+        if [ ! -e "$DATAOBJECT_FILE" ]
+        then 
+            echo "ERROR: The data-object-file:$DATAOBJECT_FILE does not exist "
+            exit
+        fi
+    fi
+        
     DESCRIPTION="$1"
     DESTINATION_PATH="$2"
     TYPE="$3"
@@ -161,8 +172,25 @@ function curl_register {
 
     RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
     RESPONSE_HEADER=${TYPE}-registration-response-header.tmp
-    
-    curl -H "Content-Type: application/json" -d @$DESCRIPTION -X PUT ${SERVER}/hpc-server/${TYPE}/${DESTINATION_PATH}  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+
+    CURL_FLAGS="-X PUT ${SERVER}/hpc-server/${TYPE}/${DESTINATION_PATH}  --config $HPC_DM_TEST/utils/config  -H \"Accept: application/json\" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status"
+   
+    if [ "$TYPE" == "dataObject" ]
+    then
+        if [ -z "$DATAOBJECT_FILE" ]
+        then
+            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" $CURL_FLAGS 
+        else
+            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" –F dataObject=@"$DATAOBJECT_FILE" $CURL_FLAGS
+        fi
+    elif [ "$TYPE" == "collection" ]
+    then
+           curl -H "Content-Type: application/json" -d @$DESCRIPTION $CURL_FLAGS
+    else
+        echo "ERROR: Unsupported registration type:$TYPE"
+        exit
+    fi
+
     check_connection $RESPONSE_HEADER
 }
 
