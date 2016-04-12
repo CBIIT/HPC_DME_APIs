@@ -9,28 +9,6 @@
 #
 # Common functions used by the permission unit tests
 
-#Register a new test user 
-#Inputs description.json destinaton-path type 
-function register_user {
-
-    SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
-    NEW_USER_ID=testid-$SUFFIX
-    UPDATED_FIRST=`cat $HPC_DM_TEST/test-permission/utils/register-user-template.json | sed "s/testfirst/testfirst-$SUFFIX/"`
-    UPDATED_LAST=`echo "$UPDATED_FIRST" | sed "s/testlast/testlast-$SUFFIX/"`
-    UPDATED_ID=`echo "$UPDATED_LAST" | sed "s/testid/$NEW_USER_ID/"`
-    echo "$UPDATED_ID" > register-user.json.tmp
-    echo "$NEW_USER_ID" > new-user-id.tmp 
-    
-    RESPONSE_HEADER=user-registration-response-header.tmp
-    RESPONSE_MSG=user-registration-response-message.json.tmp
-    SERVER=`cat $HPC_DM_TEST/utils/server`
-    
-    curl -H "Content-Type: application/json" -d @register-user.json.tmp -X PUT ${SERVER}/hpc-server/user  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
-    check_connection $RESPONSE_HEADER
-    RESPONSE_CODE=`get_http_code $RESPONSE_HEADER`
-    echo $RESPONSE_CODE
-}
-
 #Submit a request to change permission
 #Input: permission-file
 #Input: response-header-file
@@ -137,10 +115,13 @@ function register_new_project_and_user {
     register_permission_collection
    
     #Register a user
-    RESPONSE_CODE=$(register_user)
-    if [ $RESPONSE_CODE !=  "201" ] 
+
+    TEMPLATE=$HPC_DM_TEST/test-permission/utils/register-user-template.json
+    RESPONSE_CODE=$( create_new_user $TEMPLATE)
+    if [ "$RESPONSE_CODE" !=  "201" ] 
     then 
         echo "ERROR: Failed to register new user"
+        echo "Response code:$RESPONSE_CODE "
         exit
     fi
 }
