@@ -18,4 +18,5 @@ $HPC_DM_TEST/test-permission/utils/maketest
 
 source $HPC_DM_TEST/utils/functions
 source $HPC_DM_TEST/test-permission/utils/functions
+
 register_new_project_and_user

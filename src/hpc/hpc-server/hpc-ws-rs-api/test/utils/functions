@@ -258,3 +258,43 @@ function verify_globus_file {
 }
 
 
+#Register a new test user 
+#Inputs registration-template.json 
+function create_new_user {
+
+    echo "Here" > here
+    if [ -z "$1" ] 
+    then
+        echo "ERROR: using create_new_user"
+        echo "USAGE: create_new_user  <registration-template.json>"
+        exit
+    fi
+
+    REGISTRATION_TEMPLATE="$1"
+
+    if [ ! -e $REGISTRATION_TEMPLATE ] 
+    then
+        echo "ERROR: The registration template file:$REGISTRATION_TEMPLATE does not exist "
+        exit
+    fi  
+
+    SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+    NEW_USER_ID=testid-$SUFFIX
+    UPDATED_FIRST=`cat $REGISTRATION_TEMPLATE | sed "s/testfirst/testfirst-$SUFFIX/"`
+    UPDATED_LAST=`echo "$UPDATED_FIRST" | sed "s/testlast/testlast-$SUFFIX/"`
+    UPDATED_ID=`echo "$UPDATED_LAST" | sed "s/testid/$NEW_USER_ID/"`
+    echo "$UPDATED_ID" > register-user.json.tmp
+    echo "$NEW_USER_ID" > new-user-id.tmp 
+    
+    RESPONSE_HEADER=user-registration-response-header.tmp
+    RESPONSE_MSG=user-registration-response-message.json.tmp
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+    
+    curl -H "Content-Type: application/json" -d @register-user.json.tmp -X PUT ${SERVER}/hpc-server/user  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
+    check_connection $RESPONSE_HEADER
+    RESPONSE_CODE=`get_http_code $RESPONSE_HEADER`
+    echo $RESPONSE_CODE
+}
+
+
+
