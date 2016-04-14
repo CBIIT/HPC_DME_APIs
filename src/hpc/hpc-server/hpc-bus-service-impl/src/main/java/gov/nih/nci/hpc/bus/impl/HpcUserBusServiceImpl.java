@@ -172,17 +172,26 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	
     	HpcUserRole requestUserRole = dataManagementService.getUserRole(nciUserId);
     	
-    	if(!requestUserRole.equals(HpcUserRole.SYSTEM_ADMIN))
+    	if(requestUserRole.equals(HpcUserRole.SYSTEM_ADMIN))
+    	{
+    		if(updateUserRequestDTO.getUserRole() != null && !updateUserRequestDTO.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN.value()))
+           			throw new HpcException("Not authorizated to downgrade self role. Please contact system administrator",
+         	                  HpcRequestRejectReason.NOT_AUTHORIZED);
+    				
+    	}
+    	else
     	{
     		if(updateUserRequestDTO.getFirstName() != null ||
-    			 updateUserRequestDTO.getLastName() != null ||
-    			 updateUserRequestDTO.getDOC() != null ||
-    			 updateUserRequestDTO.getUserRole() != null)
-    		{
-    			throw new HpcException("Not authorizated to update frist name, last name, DOC, role. Please contact system administrator",
-	                  HpcRequestRejectReason.NOT_AUTHORIZED);
-    		}
+       			 updateUserRequestDTO.getLastName() != null ||
+       			 updateUserRequestDTO.getDOC() != null ||
+       			 updateUserRequestDTO.getUserRole() != null)
+       		{
+       			throw new HpcException("Not authorizated to update frist name, last name, DOC, role. Please contact system administrator",
+   	                  HpcRequestRejectReason.NOT_AUTHORIZED);
+       		}
+
     	}
+    	
     	    	
     	// Validate the data transfer account if provided.
     	HpcIntegratedSystemAccount updateDataTransferAccount = 
