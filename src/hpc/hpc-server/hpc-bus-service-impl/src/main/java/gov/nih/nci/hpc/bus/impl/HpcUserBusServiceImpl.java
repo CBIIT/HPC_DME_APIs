@@ -170,6 +170,20 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     			                  HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
     	}
     	
+    	HpcUserRole requestUserRole = dataManagementService.getUserRole(nciUserId);
+    	
+    	if(!requestUserRole.equals(HpcUserRole.SYSTEM_ADMIN))
+    	{
+    		if(updateUserRequestDTO.getFirstName() != null ||
+    			 updateUserRequestDTO.getLastName() != null ||
+    			 updateUserRequestDTO.getDOC() != null ||
+    			 updateUserRequestDTO.getUserRole() != null)
+    		{
+    			throw new HpcException("Not authorizated to update frist name, last name, DOC, role. Please contact system administrator",
+	                  HpcRequestRejectReason.NOT_AUTHORIZED);
+    		}
+    	}
+    	    	
     	// Validate the data transfer account if provided.
     	HpcIntegratedSystemAccount updateDataTransferAccount = 
     			                   updateUserRequestDTO.getDataTransferAccount();
@@ -194,7 +208,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     	    	    	   user.getNciAccount().getDOC();
     	HpcUserRole updateRole = updateUserRequestDTO.getUserRole() != null ?
     		                     roleFromString(updateUserRequestDTO.getUserRole()) : 
-    		                     dataManagementService.getUserRole(nciUserId);
+    		                     requestUserRole;
         // GROUP_ADMIN not supported by current Jargon API version. Respond with a workaround.
   	    if(updateRole == HpcUserRole.GROUP_ADMIN) {
   		   throw new HpcException("GROUP_ADMIN currently not supported by the API. " +
