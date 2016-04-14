@@ -52,6 +52,8 @@
 			<xsd:enumeration value="DATA_OBJECT_PATH_ALREADY_EXISTS" />
 			<xsd:enumeration value="INVALID_DATA_OBJECT_PATH" />
 			<xsd:enumeration value="FILE_NOT_FOUND" />
+			<!-- Security Reject Reasons -->
+			<xsd:enumeration value="NOT_AUTHORIZED" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
