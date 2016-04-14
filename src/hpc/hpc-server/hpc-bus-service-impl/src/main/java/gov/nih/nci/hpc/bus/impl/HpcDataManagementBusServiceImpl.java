@@ -348,6 +348,30 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   throw new HpcException("Null path or download request",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
+     	
+     	// Get the data object.
+     	HpcDataObject dataObject = dataManagementService.getDataObject(path);
+     	if(dataObject == null) {
+     	   throw new HpcException("Unknown data object",
+	                  HpcErrorType.INVALID_REQUEST_INPUT);	
+     	}
+    	updateDataTransferStatus(dataObject);
+     		
+     	// Get the metadata for this data object.
+     	List<HpcMetadataEntry> metadataEntries = 
+     		                   dataManagementService.getDataObjectMetadata(path);
+
+    	
+		Map<String, String> metadataMap = dataManagementService.toMap(metadataEntries);
+		HpcDataTransferStatus transferStatus = 
+		   HpcDataTransferStatus.fromValue(metadataMap.get(
+				  HpcDataManagementService.FILE_DATA_TRANSFER_STATUS_ATTRIBUTE));
+		
+		if(transferStatus == null || !transferStatus.equals(HpcDataTransferStatus.ARCHIVED)) {
+		   // data transfer not in archive state.
+	     	   throw new HpcException("Object is not in archive state yet. It is in " + transferStatus + " state",
+		                  HpcErrorType.DATA_TRANSFER_ERROR);	
+		}
     	
     	// Calculate the data object download destination.
     	HpcFileLocation source = dataManagementService.getFileLocation(path);
@@ -427,49 +451,59 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Iterate through the data objects that their data transfer is in-progress
     	for(HpcDataObject dataObject : dataManagementService.getDataObjectsInProgress()) {
     		String path = dataObject.getAbsolutePath();
-    		try {
-    		     // Get current data transfer Request Info.
-    			 HpcDataTransferRequestInfo dataTransferRequestInfo = 
-    			    dataManagementService.getDataTransferRequestInfo(path);
-    			 
-    			 // Use the registrar data transfer account to check for transfer status.
-    			 HpcUser registrar = userService.getUser(dataTransferRequestInfo.getRegistrarId());
-    			 if(registrar != null) {
-    			    userService.getRequestInvoker().setDataTransferAuthenticatedToken(null);
-    			    userService.getRequestInvoker().setDataTransferAccount(registrar.getDataTransferAccount());
-    			 }
-    			 
-    			 // Get the data transfer request status.
-    			 HpcDataTransferStatus dataTransferStatus =
-    		        dataTransferService.getDataTransferStatus(dataTransferRequestInfo.getRequestId());
-    			 
-    		     if(dataTransferStatus.equals(HpcDataTransferStatus.ARCHIVED)) {
-    		    	// Data transfer completed successfully. Update the metadata.
-    		    	dataManagementService.setDataTransferStatus(path, dataTransferStatus);
-    		    	logger.info("Data transfer completed: " + path);
-    		     } else if(dataTransferStatus.equals(HpcDataTransferStatus.FAILED)) {
-     		    	       // Data transfer failed. Remove the data object
-     		    	       dataManagementService.delete(path);
-     		    	       logger.info("Data transfer failed: " + path);
-    		     }
-    		     
-    		} catch(HpcException e) {
-    			    logger.error("Failed to process data transfer update:" + path, e);
-    			    
-    			    // If timeout occurred, move the status to unknown.
-    			    if(isDataTransferStatusCheckTimedOut(dataObject)) {
-    			       try {
-    			            dataManagementService.setDataTransferStatus(
-    			    	                             path, 
-    			    	                             HpcDataTransferStatus.UNKNOWN);
-    			       } catch(Exception ex) {
-    			    	       logger.error("failed to set data transfer status to unknown: " + 
-    			                            path, ex);
-    			       }
-        		       logger.error("Unknown data transfer status: " + path);
-    			    }
-    		}
+    		updateDataTransferStatus(dataObject);
     	}
+    }
+    
+    private void updateDataTransferStatus(HpcDataObject dataObject) throws HpcException
+    {
+    	String path = dataObject.getAbsolutePath();
+    	if(path == null || path.trim().length() == 0)
+     	   throw new HpcException("Null or invalaid path",
+	                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    		
+		try {
+		     // Get current data transfer Request Info.
+			 HpcDataTransferRequestInfo dataTransferRequestInfo = 
+			    dataManagementService.getDataTransferRequestInfo(path);
+			 
+			 // Use the registrar data transfer account to check for transfer status.
+			 HpcUser registrar = userService.getUser(dataTransferRequestInfo.getRegistrarId());
+			 if(registrar != null) {
+			    userService.getRequestInvoker().setDataTransferAuthenticatedToken(null);
+			    userService.getRequestInvoker().setDataTransferAccount(registrar.getDataTransferAccount());
+			 }
+			 
+			 // Get the data transfer request status.
+			 HpcDataTransferStatus dataTransferStatus =
+		        dataTransferService.getDataTransferStatus(dataTransferRequestInfo.getRequestId());
+			 
+		     if(dataTransferStatus.equals(HpcDataTransferStatus.ARCHIVED)) {
+		    	// Data transfer completed successfully. Update the metadata.
+		    	dataManagementService.setDataTransferStatus(path, dataTransferStatus);
+		    	logger.info("Data transfer completed: " + path);
+		     } else if(dataTransferStatus.equals(HpcDataTransferStatus.FAILED)) {
+ 		    	       // Data transfer failed. Remove the data object
+ 		    	       dataManagementService.delete(path);
+ 		    	       logger.info("Data transfer failed: " + path);
+		     }
+		     
+		} catch(HpcException e) {
+			    logger.error("Failed to process data transfer update:" + path, e);
+			    
+			    // If timeout occurred, move the status to unknown.
+			    if(isDataTransferStatusCheckTimedOut(dataObject)) {
+			       try {
+			            dataManagementService.setDataTransferStatus(
+			    	                             path, 
+			    	                             HpcDataTransferStatus.UNKNOWN);
+			       } catch(Exception ex) {
+			    	       logger.error("failed to set data transfer status to unknown: " + 
+			                            path, ex);
+			       }
+    		       logger.error("Unknown data transfer status: " + path);
+			    }
+		}    	
     }
     
     @Override
@@ -683,7 +717,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				  HpcDataManagementService.FILE_DATA_TRANSFER_STATUS_ATTRIBUTE));
 		String dataTransferRequestId = metadataMap.get(
 				                       HpcDataManagementService.FILE_DATA_TRANSFER_ID_ATTRIBUTE);
-		Long dataObjectSize = Long.valueOf(metadataMap.get(
+		String fileSize = metadataMap.get(
+                HpcDataManagementService.FILE_SIZE_ATTRIBUTE);
+		Long dataObjectSize = 0L;
+		if(fileSize != null)
+			dataObjectSize = Long.valueOf(metadataMap.get(
 				                           HpcDataManagementService.FILE_SIZE_ATTRIBUTE));
 		
 		if(transferStatus == null || !transferStatus.equals(HpcDataTransferStatus.IN_PROGRESS)) {
@@ -692,7 +730,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		
 		if(dataTransferRequestId == null ||
-		   dataObjectSize == null || dataObjectSize == 0) {
+		   dataObjectSize == null || dataObjectSize == 0L) {
 		   return "Unknown";	
 		}
 		
