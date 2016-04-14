@@ -712,7 +712,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	{
 		// Get the transfer status, transfer request id and data-object size from the metadata entries.
 		Map<String, String> metadataMap = dataManagementService.toMap(metadataEntries);
-		HpcDataTransferStatus transferStatus = 
+		String statusAttr = metadataMap.get(
+				  HpcDataManagementService.FILE_DATA_TRANSFER_STATUS_ATTRIBUTE);
+		HpcDataTransferStatus transferStatus = null;
+		if(statusAttr != null)
+			transferStatus = 
 		   HpcDataTransferStatus.fromValue(metadataMap.get(
 				  HpcDataManagementService.FILE_DATA_TRANSFER_STATUS_ATTRIBUTE));
 		String dataTransferRequestId = metadataMap.get(
