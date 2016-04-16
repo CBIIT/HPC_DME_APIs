@@ -69,8 +69,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
                                                        throws HpcException
     {
     	// Input validation.
-    	if(uploadRequest.getSource() == null || uploadRequest.getPath() == null ||
-    	   uploadRequest.getTransferType() == null) {
+    	Object source = uploadRequest.getSource();
+    	if(source == null || uploadRequest.getPath() == null ||
+    	   uploadRequest.getTransferType() == null ||
+    	   ((source instanceof HpcFileLocation) && !isValidFileLocation((HpcFileLocation)source))) {
     	   throw new HpcException("Invalid data object upload request", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
