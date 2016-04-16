@@ -52,7 +52,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     private HpcGlobusConnection globusConnection = null;
 	
 	@Autowired
-	HpcFileLocation baseArchiveDestination = null;
+	private HpcFileLocation baseArchiveDestination = null;
     
 	// The Logger instance.
 	private final Logger logger = 
