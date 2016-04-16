@@ -14,11 +14,14 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
+	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
 	targetNamespace="http://hpc.nci.nih.gov/domain/model"
 	elementFormDefault="unqualified">
 
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
 		        schemaLocation="HpcMetadataTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datatransfer"
+		        schemaLocation="HpcDataTransferTypes.xsd" />
 		
 	<xsd:element name="HpcMetadataValidationRules">
 		<xsd:complexType>
@@ -33,6 +36,23 @@
 			                 minOccurs="0" maxOccurs="unbounded" />
 			    <xsd:element name="dataObjectSystemGeneratedMetadataAttributes" type="xsd:string"
 			                 minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="HpcDataObjectSystemGeneratedMetadata">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="dataObjectId" type="xsd:string" />
+				<xsd:element name="registrarId" type="xsd:string" />
+				<xsd:element name="registrarName" type="xsd:string" />
+				<xsd:element name="registrarDOC" type="xsd:string" />
+				<xsd:element name="archiveLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="sourceLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="dataTransferRequestId" type="xsd:string" />
+				<xsd:element name="dataTransferStatus" type="hpc-domain-datatransfer:HpcDataTransferStatus" />
+				<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
+				<xsd:element name="size" type="xsd:long" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
