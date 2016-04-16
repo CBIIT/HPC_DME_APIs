@@ -14,11 +14,11 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequestInfo;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -179,26 +179,16 @@ public interface HpcDataManagementService
     		                                          throws HpcException; 
     
     /**
-     * Get the physical file location of a data object.
+     * Get the system generated metadata of a data object.
      *
      * @param path The data object path.
-     * @return HpcFileLocation
+     * @return HpcDataObjectSystemGeneratedMetadata The system generated metadata
      * 
      * @throws HpcException
      */
-    public HpcFileLocation getFileLocation(String path) throws HpcException; 
+    public HpcDataObjectSystemGeneratedMetadata 
+              getDataObjectSystemGeneratedMetadata(String path) throws HpcException; 
     
-    /** 
-     * Get a data transfer request ID of a data object.
-     * 
-     * @param path The data object (logical) path.
-     * 
-     * @return HpcDataTransferRequestInfo The data transfer info.
-     * @throws HpcException
-     */
-	public HpcDataTransferRequestInfo getDataTransferRequestInfo(String path) 
-			                                                    throws HpcException;
-	
     /** 
      * Set a data transfer status of a data object.
      * 

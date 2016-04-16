@@ -18,13 +18,13 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequestInfo;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -290,28 +290,28 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	// Create the file source endpoint metadata.
        	HpcMetadataEntry sourceEndpointMetadata = new HpcMetadataEntry();
        	sourceEndpointMetadata.setAttribute(FILE_SOURCE_ENDPOINT_ATTRIBUTE);
-       	sourceEndpointMetadata.setValue(fileSource.getEndpoint());
+       	sourceEndpointMetadata.setValue(fileSource.getFileContainerId());
        	sourceEndpointMetadata.setUnit("");
        	metadataEntries.add(sourceEndpointMetadata);
        	
        	// Create the file source path metadata.
        	HpcMetadataEntry sourcePathMetadata = new HpcMetadataEntry();
        	sourcePathMetadata.setAttribute(FILE_SOURCE_PATH_ATTRIBUTE);
-       	sourcePathMetadata.setValue(fileSource.getPath());
+       	sourcePathMetadata.setValue(fileSource.getFileId());
        	sourcePathMetadata.setUnit("");
        	metadataEntries.add(sourcePathMetadata);
        	
        	// Create the file location endpoint metadata.
        	HpcMetadataEntry locationEndpointMetadata = new HpcMetadataEntry();
        	locationEndpointMetadata.setAttribute(FILE_LOCATION_ENDPOINT_ATTRIBUTE);
-       	locationEndpointMetadata.setValue(fileLocation.getEndpoint());
+       	locationEndpointMetadata.setValue(fileLocation.getFileContainerId());
        	locationEndpointMetadata.setUnit("");
        	metadataEntries.add(locationEndpointMetadata);
        	
        	// Create the file location path metadata.
        	HpcMetadataEntry locationPathMetadata = new HpcMetadataEntry();
        	locationPathMetadata.setAttribute(FILE_LOCATION_PATH_ATTRIBUTE);
-       	locationPathMetadata.setValue(fileLocation.getPath());
+       	locationPathMetadata.setValue(fileLocation.getFileId());
        	locationPathMetadata.setUnit("");
        	metadataEntries.add(locationPathMetadata);
        	
@@ -341,33 +341,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        			                                    path, metadataEntries);    	
     }
     
-    public HpcFileLocation getFileLocation(String path) throws HpcException
-    {
-    	// Input validation.
-    	if(getDataObject(path) == null) {
-           throw new HpcException("Data object not found: " + path, 
-		                          HpcErrorType.INVALID_REQUEST_INPUT);
-    	}	
-    	
-    	// Get the data-object metadata entries.
-    	HpcFileLocation location = new HpcFileLocation();
-    	Map<String, String> metadataMap = toMap(getDataObjectMetadata(path));
-    	
-    	// Extract the file location from the data-object metadata
-    	location.setEndpoint(metadataMap.get(FILE_LOCATION_ENDPOINT_ATTRIBUTE));
-    	location.setPath(metadataMap.get(FILE_LOCATION_PATH_ATTRIBUTE));
-    	
-    	if(location.getEndpoint() == null || location.getPath() == null) {
-    	   throw new HpcException("File location not found: " + path, 
-    			                  HpcRequestRejectReason.FILE_NOT_FOUND);
-    	}
-    	
-    	return location;
-    }
-    
     @Override
-	public HpcDataTransferRequestInfo getDataTransferRequestInfo(String path) 
-			                                                    throws HpcException
+    public HpcDataObjectSystemGeneratedMetadata 
+              getDataObjectSystemGeneratedMetadata(String path) throws HpcException
 	{
     	// Input validation.
     	if(getDataObject(path) == null) {
@@ -375,18 +351,20 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		                          HpcErrorType.INVALID_REQUEST_INPUT);
     	}	
     	
-    	// Extract the data transfer request info from the data-object metadata entries.
+    	// Extract the system generated data-object metadata entries from the entire set.
     	Map<String, String> metadataMap = toMap(getDataObjectMetadata(path));
-    	HpcDataTransferRequestInfo requestInfo = new HpcDataTransferRequestInfo();
-    	requestInfo.setRequestId(metadataMap.get(FILE_DATA_TRANSFER_ID_ATTRIBUTE));
-    	requestInfo.setRegistrarId(metadataMap.get(REGISTRAR_ID_ATTRIBUTE));
+    	HpcDataObjectSystemGeneratedMetadata systemGeneratedMetadata = new HpcDataObjectSystemGeneratedMetadata();
+    	systemGeneratedMetadata.setDataTransferRequestId(metadataMap.get(FILE_DATA_TRANSFER_ID_ATTRIBUTE));
+    	systemGeneratedMetadata.setRegistrarId(metadataMap.get(REGISTRAR_ID_ATTRIBUTE));
 		
-    	if(requestInfo.getRequestId() == null || requestInfo.getRegistrarId() == null) {
-     	   throw new HpcException("Data Tranfer Info not found: " + path, 
-     			                  HpcErrorType.UNEXPECTED_ERROR);
-     	}
+    	HpcFileLocation archiveLocation = new HpcFileLocation();
+    	archiveLocation.setFileContainerId(metadataMap.get(FILE_LOCATION_ENDPOINT_ATTRIBUTE));
+    	archiveLocation.setFileId(metadataMap.get(FILE_LOCATION_PATH_ATTRIBUTE));
+    	if(archiveLocation.getFileContainerId() != null || archiveLocation.getFileId() != null) {
+    		systemGeneratedMetadata.setArchiveLocation(archiveLocation);
+    	}
     	
-		return requestInfo;
+		return systemGeneratedMetadata;
 	}
     
 	public void setDataTransferStatus(String path, 

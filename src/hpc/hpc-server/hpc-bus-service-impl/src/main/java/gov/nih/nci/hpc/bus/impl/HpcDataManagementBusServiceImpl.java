@@ -14,12 +14,16 @@ import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferRequestInfo;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
@@ -38,6 +42,7 @@ import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
+import java.io.InputStream;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
@@ -82,9 +87,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	
 	@Autowired
     private HpcDataManagementService dataManagementService = null;
-	
-	@Autowired
-	HpcFileLocation dataTransferDestination = null;
 	
     // The logger instance.
 	private final Logger logger = 
@@ -215,7 +217,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     
     @Override
     public boolean registerDataObject(String path,
-    		                          HpcDataObjectRegistrationDTO dataObjectRegistrationDTO)  
+    		                          HpcDataObjectRegistrationDTO dataObjectRegistrationDTO,
+    		                          InputStream dataObjectStream)  
     		                         throws HpcException
     {
     	logger.info("Invoking registerDataObject(HpcDataObjectRegistrationDTO): " + 
@@ -237,25 +240,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		        dataManagementService.addMetadataToDataObject(
 		    	   		                 path, 
 		    			                 dataObjectRegistrationDTO.getMetadataEntries());
+		       
+		        // Transfer the data file.
+		        HpcFileLocation source = dataObjectRegistrationDTO.getSource();
+		        HpcDataObjectUploadResponse uploadResponse = 
+		           uploadData(source, dataObjectStream, path, 
+		        		      dataObjectRegistrationDTO.getCallerObjectId());
+		        long sourceSize = source != null ? 
+		        		          dataTransferService.getPathAttributes(source, true).getSize() : -1;
 		     
-			     // Calculate the data transfer destination to deposit the data object.
-			     HpcFileLocation destination = 
-			        getDataObjectRegistrationDestination(path, 
-			        		                             dataObjectRegistrationDTO.getCallerObjectId());
-			     HpcFileLocation source = dataObjectRegistrationDTO.getSource(); 
-			     
-				 // Submit a request to transfer the file (this is performed async). 
-			     String dataTransferRequestId = 
-			                dataTransferService.transferData(source, destination);	
-			     
-			     // Get the data object file(s) size.
-			     long size = dataTransferService.getPathAttributes(source, true).getSize();
-			     
-			     // Generate system metadata and attach to the data object.
-			     dataManagementService.addSystemGeneratedMetadataToDataObject(
-			        		                    path, destination,
-			    			                    dataObjectRegistrationDTO.getSource(),
-			    			                    dataTransferRequestId, size); 
+			    // Generate system metadata and attach to the data object.
+			    dataManagementService.addSystemGeneratedMetadataToDataObject(
+			        		                   path, uploadResponse.getArchiveLocation(),
+			    			                   dataObjectRegistrationDTO.getSource(),
+			    			                   uploadResponse.getRequestId(), sourceSize); 
 	
 			     registrationCompleted = true;
 			     
@@ -336,50 +334,29 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     @Override
     public void downloadDataObject(String path,
-                                   HpcDataObjectDownloadDTO downloadRequest)
+                                   HpcDataObjectDownloadDTO downloadRequestDTO)
                                   throws HpcException
     {
     	logger.info("Invoking downloadDataObject(path, downloadReqest): " + path + ", " + 
-                    downloadRequest);
+                    downloadRequestDTO);
     	
     	// Input validation.
-    	if(path == null || downloadRequest == null || 
-    	   downloadRequest.getDestination() == null) {
+    	if(path == null || downloadRequestDTO == null || 
+    	   downloadRequestDTO.getDestination() == null) {
     	   throw new HpcException("Null path or download request",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
-     	
-     	// Get the data object.
-     	HpcDataObject dataObject = dataManagementService.getDataObject(path);
-     	if(dataObject == null) {
-     	   throw new HpcException("Unknown data object",
-	                  HpcErrorType.INVALID_REQUEST_INPUT);	
-     	}
-    	updateDataTransferStatus(dataObject);
-     		
-     	// Get the metadata for this data object.
-     	List<HpcMetadataEntry> metadataEntries = 
-     		                   dataManagementService.getDataObjectMetadata(path);
-
-    	
-		Map<String, String> metadataMap = dataManagementService.toMap(metadataEntries);
-		HpcDataTransferStatus transferStatus = 
-		   HpcDataTransferStatus.fromValue(metadataMap.get(
-				  HpcDataManagementService.FILE_DATA_TRANSFER_STATUS_ATTRIBUTE));
-		
-		if(transferStatus == null || !transferStatus.equals(HpcDataTransferStatus.ARCHIVED)) {
-		   // data transfer not in archive state.
-	     	   throw new HpcException("Object is not in archive state yet. It is in " + transferStatus + " state",
-		                  HpcErrorType.DATA_TRANSFER_ERROR);	
-		}
     	
     	// Calculate the data object download destination.
-    	HpcFileLocation source = dataManagementService.getFileLocation(path);
+    	HpcFileLocation archiveLocation = 
+    	   dataManagementService.getDataObjectSystemGeneratedMetadata(path).getArchiveLocation();
     	HpcFileLocation destination = 
-    	   getDataObjectDownloadDestination(source, downloadRequest.getDestination());
+    	   getDataObjectDownloadDestination(archiveLocation, downloadRequestDTO.getDestination());
     	
-		// Transfer the file.
-        dataTransferService.transferData(source, destination);	
+		// Download the data object file.
+    	HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
+    	downloadRequest.setDestination(destination);
+        dataTransferService.downloadDataObject(downloadRequest);	
     }
     
     @Override
@@ -451,59 +428,49 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Iterate through the data objects that their data transfer is in-progress
     	for(HpcDataObject dataObject : dataManagementService.getDataObjectsInProgress()) {
     		String path = dataObject.getAbsolutePath();
-    		updateDataTransferStatus(dataObject);
+    		try {
+    		     // Get current data transfer Request Info.
+    			 HpcDataObjectSystemGeneratedMetadata systemGeneratedMetadata = 
+    			    dataManagementService.getDataObjectSystemGeneratedMetadata(path);
+    			 
+    			 // Use the registrar data transfer account to check for transfer status.
+    			 HpcUser registrar = userService.getUser(systemGeneratedMetadata.getRegistrarId());
+    			 if(registrar != null) {
+    			    userService.getRequestInvoker().setDataTransferAuthenticatedToken(null);
+    			    userService.getRequestInvoker().setDataTransferAccount(registrar.getDataTransferAccount());
+    			 }
+    			 
+    			 // Get the data transfer request status.
+    			 HpcDataTransferStatus dataTransferStatus =
+    		        dataTransferService.getDataTransferStatus(systemGeneratedMetadata.getDataTransferRequestId());
+    			 
+    		     if(dataTransferStatus.equals(HpcDataTransferStatus.ARCHIVED)) {
+    		    	// Data transfer completed successfully. Update the metadata.
+    		    	dataManagementService.setDataTransferStatus(path, dataTransferStatus);
+    		    	logger.info("Data transfer completed: " + path);
+    		     } else if(dataTransferStatus.equals(HpcDataTransferStatus.FAILED)) {
+     		    	       // Data transfer failed. Remove the data object
+     		    	       dataManagementService.delete(path);
+     		    	       logger.info("Data transfer failed: " + path);
+    		     }
+    		     
+    		} catch(HpcException e) {
+    			    logger.error("Failed to process data transfer update:" + path, e);
+    			    
+    			    // If timeout occurred, move the status to unknown.
+    			    if(isDataTransferStatusCheckTimedOut(dataObject)) {
+    			       try {
+    			            dataManagementService.setDataTransferStatus(
+    			    	                             path, 
+    			    	                             HpcDataTransferStatus.UNKNOWN);
+    			       } catch(Exception ex) {
+    			    	       logger.error("failed to set data transfer status to unknown: " + 
+    			                            path, ex);
+    			       }
+        		       logger.error("Unknown data transfer status: " + path);
+    			    }
+    		}
     	}
-    }
-    
-    private void updateDataTransferStatus(HpcDataObject dataObject) throws HpcException
-    {
-    	String path = dataObject.getAbsolutePath();
-    	if(path == null || path.trim().length() == 0)
-     	   throw new HpcException("Null or invalaid path",
-	                  HpcErrorType.INVALID_REQUEST_INPUT);	
-    		
-		try {
-		     // Get current data transfer Request Info.
-			 HpcDataTransferRequestInfo dataTransferRequestInfo = 
-			    dataManagementService.getDataTransferRequestInfo(path);
-			 
-			 // Use the registrar data transfer account to check for transfer status.
-			 HpcUser registrar = userService.getUser(dataTransferRequestInfo.getRegistrarId());
-			 if(registrar != null) {
-			    userService.getRequestInvoker().setDataTransferAuthenticatedToken(null);
-			    userService.getRequestInvoker().setDataTransferAccount(registrar.getDataTransferAccount());
-			 }
-			 
-			 // Get the data transfer request status.
-			 HpcDataTransferStatus dataTransferStatus =
-		        dataTransferService.getDataTransferStatus(dataTransferRequestInfo.getRequestId());
-			 
-		     if(dataTransferStatus.equals(HpcDataTransferStatus.ARCHIVED)) {
-		    	// Data transfer completed successfully. Update the metadata.
-		    	dataManagementService.setDataTransferStatus(path, dataTransferStatus);
-		    	logger.info("Data transfer completed: " + path);
-		     } else if(dataTransferStatus.equals(HpcDataTransferStatus.FAILED)) {
- 		    	       // Data transfer failed. Remove the data object
- 		    	       dataManagementService.delete(path);
- 		    	       logger.info("Data transfer failed: " + path);
-		     }
-		     
-		} catch(HpcException e) {
-			    logger.error("Failed to process data transfer update:" + path, e);
-			    
-			    // If timeout occurred, move the status to unknown.
-			    if(isDataTransferStatusCheckTimedOut(dataObject)) {
-			       try {
-			            dataManagementService.setDataTransferStatus(
-			    	                             path, 
-			    	                             HpcDataTransferStatus.UNKNOWN);
-			       } catch(Exception ex) {
-			    	       logger.error("failed to set data transfer status to unknown: " + 
-			                            path, ex);
-			       }
-    		       logger.error("Unknown data transfer status: " + path);
-			    }
-		}    	
     }
     
     @Override
@@ -617,39 +584,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 	
     /** 
-     * Calculate data transfer destination to deposit a data object
-     * 
-     * @param path The data object (logical) path.
-     * @param dataTransferPath The caller's provided data transfer path.
-     * 
-     * @return HpcFileLocation The data transfer deposit destination.
-     */
-	private HpcFileLocation getDataObjectRegistrationDestination(String path, 
-			                                                     String dataTransferPath) 
-	{
-		// Calculate the data transfer destination absolute path as the following:
-		// 'base path' / 'caller's data transfer destination path/ 'logical path'
-		StringBuffer destinationPath = new StringBuffer();
-		destinationPath.append(dataTransferDestination.getPath());
-		
-		if(dataTransferPath != null && !dataTransferPath.isEmpty()) {
-		   if(dataTransferPath.charAt(0) != '/') {
-			  destinationPath.append('/'); 
-		   }
-		   destinationPath.append(dataTransferPath);
-		}
-		
-		destinationPath.append('/');
-		destinationPath.append(path);
-		 
-		HpcFileLocation destination = new HpcFileLocation();
-		destination.setEndpoint(dataTransferDestination.getEndpoint());
-		destination.setPath(destinationPath.toString());
-		
-		return destination;
-	}
-	
-    /** 
      * Calculate data transfer destination to download a data object.
      * 
      * @param source The source file location
@@ -669,10 +603,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		
 		// User requested to download to a directory. Append the source file name.
 		HpcFileLocation downloadDestination = new HpcFileLocation();
-		downloadDestination.setEndpoint(destination.getEndpoint());
-		String sourcePath = source.getPath();
-		downloadDestination.setPath(destination.getPath() + 
-				                    sourcePath.substring(sourcePath.lastIndexOf('/')));
+		downloadDestination.setFileContainerId(destination.getFileContainerId());
+		String sourcePath = source.getFileId();
+		downloadDestination.setFileId(destination.getFileId() + 
+				                      sourcePath.substring(sourcePath.lastIndexOf('/')));
 		
 		return downloadDestination;
 	}
@@ -712,20 +646,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	{
 		// Get the transfer status, transfer request id and data-object size from the metadata entries.
 		Map<String, String> metadataMap = dataManagementService.toMap(metadataEntries);
-		String statusAttr = metadataMap.get(
-				  HpcDataManagementService.FILE_DATA_TRANSFER_STATUS_ATTRIBUTE);
-		HpcDataTransferStatus transferStatus = null;
-		if(statusAttr != null)
-			transferStatus = 
+		HpcDataTransferStatus transferStatus = 
 		   HpcDataTransferStatus.fromValue(metadataMap.get(
 				  HpcDataManagementService.FILE_DATA_TRANSFER_STATUS_ATTRIBUTE));
 		String dataTransferRequestId = metadataMap.get(
 				                       HpcDataManagementService.FILE_DATA_TRANSFER_ID_ATTRIBUTE);
-		String fileSize = metadataMap.get(
-                HpcDataManagementService.FILE_SIZE_ATTRIBUTE);
-		Long dataObjectSize = 0L;
-		if(fileSize != null)
-			dataObjectSize = Long.valueOf(metadataMap.get(
+		Long dataObjectSize = Long.valueOf(metadataMap.get(
 				                           HpcDataManagementService.FILE_SIZE_ATTRIBUTE));
 		
 		if(transferStatus == null || !transferStatus.equals(HpcDataTransferStatus.IN_PROGRESS)) {
@@ -734,7 +660,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		
 		if(dataTransferRequestId == null ||
-		   dataObjectSize == null || dataObjectSize == 0L) {
+		   dataObjectSize == null || dataObjectSize == 0) {
 		   return "Unknown";	
 		}
 		
@@ -748,6 +674,41 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		
 		return String.valueOf((transferSize * 100L) / dataObjectSize) + '%';
+	}
+	
+    /** 
+     * Upload data. Either upload from the input stream or submit a transfer request for the source.
+     * 
+     * @param source The source for data transfer.
+     * @param dataObjectStream The data input stream to upload.
+     * @param path The registration path.
+     * @param callerObjectId The caller's provided data object ID.
+     * @return HpcDataObjectUploadResponse
+     * 
+     * @throws HpcException
+     */
+	private HpcDataObjectUploadResponse uploadData(HpcFileLocation source, InputStream dataObjectStream, 
+			                                       String path, String callerObjectId)
+	                                              throws HpcException
+	{
+    	// Validate one and only one data source is provided.
+    	if(source == null && dataObjectStream == null) {
+    	   throw new HpcException("No data transfer source or data attachment provided",
+	                              HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	if(source != null && dataObjectStream != null) {
+     	   throw new HpcException("Both data transfer source and data attachment provided",
+ 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
+     	}
+    	
+    	// Create an upload request.
+    	HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
+    	uploadRequest.setTransferType(source != null ? 
+    			                      HpcDataTransferType.GLOBUS : 
+    			                      HpcDataTransferType.S_3);
+    	
+		// Upload the data object file.
+	    return dataTransferService.uploadDataObject(uploadRequest);	
 	}
 }
 
