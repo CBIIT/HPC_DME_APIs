@@ -12,6 +12,9 @@ package gov.nih.nci.hpc.integration;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -41,20 +44,30 @@ public interface HpcDataTransferProxy
     		                  throws HpcException;
     
     /**
-     * Transfer a data file.
+     * Upload a data object file.
      *
-     * @param authenticatedToken An authenticated token.
-     * @param source The transfer source.
-     * @param destination The transfer destination.
-     * 
-     * @return A data transfer request ID.
+      *@param authenticatedToken An authenticated token.
+     * @param dataUploadRequest The data upload request
+     * @return HpcDataObjectUploadResponse A data object upload response.
      * 
      * @throws HpcException
      */
-    public String transferData(Object authenticatedToken,
-    		                   HpcFileLocation source, HpcFileLocation destination) 
-    		                  throws HpcException;
-
+    public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
+    		                                            HpcDataObjectUploadRequest uploadRequest) 
+    		                                           throws HpcException;
+    
+    /**
+     * Download a data object file.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param dataDownloadRequest The data object download request.
+     * 
+     * @throws HpcException
+     */
+    public void downloadDataObject(Object authenticatedToken,
+    		                       HpcDataObjectDownloadRequest downloadRequest) 
+    		                      throws HpcException;
+    
     /**
      * Get a data transfer request status.
      *

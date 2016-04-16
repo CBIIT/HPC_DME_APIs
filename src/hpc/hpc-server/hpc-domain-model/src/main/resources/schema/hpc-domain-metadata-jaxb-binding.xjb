@@ -47,5 +47,29 @@
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule"/>
 		</jxb:bindings>
     </jxb:bindings>
+    
+    <jxb:bindings schemaLocation="HpcDataTransferTypes.xsd">
+		<jxb:bindings node="//xsd:complexType[@name='HpcGlobusDataTransferReport']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDataTransferReport"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcFileLocation']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectUploadRequest']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectUploadResponse']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadRequest']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferStatus']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferType']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType"/>
+		</jxb:bindings>
+    </jxb:bindings>
 
 </jxb:bindings>

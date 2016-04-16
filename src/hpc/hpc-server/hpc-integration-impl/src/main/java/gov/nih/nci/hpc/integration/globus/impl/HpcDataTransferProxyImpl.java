@@ -2,9 +2,12 @@ package gov.nih.nci.hpc.integration.globus.impl;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferReport;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDataTransferReport;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -47,6 +50,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	// The Globus connection instance.
 	@Autowired
     private HpcGlobusConnection globusConnection = null;
+	
+	@Autowired
+	HpcFileLocation baseArchiveDestination = null;
     
 	// The Logger instance.
 	private final Logger logger = 
@@ -79,48 +85,66 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	return globusConnection.authenticate(dataTransferAccount);
     }
     
-    @Override
-    public String transferData(Object authenticatedToken,
-    		                   HpcFileLocation source, HpcFileLocation destination)
-    		                  throws HpcException
-    {
-    	JSONTransferAPIClient client = 
-    			       globusConnection.getTransferClient(authenticatedToken);
+    /**
+     * Upload a data object file.
+     *
+      *@param authenticatedToken An authenticated token.
+     * @param dataUploadRequest The data upload request
+     * @return HpcDataObjectUploadResponse A data object upload response.
+     * 
+     * @throws HpcException
+     */
+    public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
+    		                                            HpcDataObjectUploadRequest uploadRequest) 
+    		                                           throws HpcException
+   {
+    	// Input validation.
+    	if(!(uploadRequest.getSource() instanceof HpcFileLocation)) {
+    	   throw new HpcException("Invalid source type: " + 
+    	                          uploadRequest.getSource().getClass().getName(),
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
     	
-        if (!autoActivate(source.getEndpoint(), client) || 
-        	!autoActivate(destination.getEndpoint(), client)) {
-            logger.error("Unable to auto activate go tutorial endpoints, exiting");
-            // throw ENDPOINT NOT ACTIVATED HPCException
-            //return false;
-        }
-        
-        try {
-	        JSONTransferAPIClient.Result r;
-	        r = client.getResult("/transfer/submission_id");
-	        String submissionId = r.document.getString("value");
-	        JSONObject transfer = new JSONObject();
-	        transfer.put("DATA_TYPE", "transfer");
-	        transfer.put("submission_id", submissionId);
-	        transfer.put("verify_checksum", true);
-	        transfer.put("delete_destination_extra", false);
-	        transfer.put("preserve_timestamp", false);
-	        transfer.put("encrypt_data", false);
-
-	        JSONObject item = setJSONItem(source, destination, client);
-	        transfer.append("DATA", item);
-	        
-	        r = client.postResult("/transfer", transfer, null);
-	        String taskId = r.document.getString("task_id");
-	        logger.debug("Transfer task id :"+ taskId );
-	      
-	
-	        return taskId;
-	        
-        } catch(Exception e) {
-	        	throw new HpcException(
-       		                 "Failed to transfer: " + source + ", " + destination, 
-       		                 HpcErrorType.DATA_TRANSFER_ERROR, e);
-        }
+    	// Calculate the archive destination.
+    	HpcFileLocation archiveDestination = 
+    	   getArchiveDestination(uploadRequest.getPath(),
+    		                     uploadRequest.getCallerObjectId());
+    	
+    	// Submit a request to Globus to transfer the data.
+    	String requestId = transferData(globusConnection.getTransferClient(authenticatedToken),
+    			                        (HpcFileLocation) uploadRequest.getSource(),
+    			                        archiveDestination);
+    	
+    	// Package and return the response.
+    	HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
+    	uploadResponse.setArchiveLocation(archiveDestination);
+    	uploadResponse.setRequestId(requestId);
+    	return uploadResponse;
+   }
+    
+    /**
+     * Download a data object file.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param dataDownloadRequest The data object download request.
+     * 
+     * @throws HpcException
+     */
+    public void downloadDataObject(Object authenticatedToken,
+    		                       HpcDataObjectDownloadRequest downloadRequest) 
+    		                      throws HpcException
+    {
+    	// Input validation.
+    	if(!(downloadRequest.getDestination() instanceof HpcFileLocation)) {
+    	   throw new HpcException("Invalid destination type: " + 
+    			                  downloadRequest.getDestination().getClass().getName(),
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	// Submit a request to Globus to transfer the data.
+    	transferData(globusConnection.getTransferClient(authenticatedToken),
+    			     downloadRequest.getArchiveLocation(),
+    			     (HpcFileLocation) downloadRequest.getDestination());
     }
     
     @Override
@@ -128,8 +152,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
                                                        String dataTransferRequestId) 
                                                       throws HpcException
     {
-		 HpcDataTransferReport report = getDataTransferReport(authenticatedToken, 
-				                                              dataTransferRequestId);
+		 HpcGlobusDataTransferReport report = getDataTransferReport(authenticatedToken, 
+				                                                    dataTransferRequestId);
 		 if(report.getStatus().equals(ARCHIVED_STATUS)) {
 			return HpcDataTransferStatus.ARCHIVED;
 		 }
@@ -174,13 +198,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 			        globusConnection.getTransferClient(authenticatedToken);
     	
 		try {
-			 String resource = BaseTransferAPIClient.endpointPath(fileLocation.getEndpoint()) +
+			 String resource = BaseTransferAPIClient.endpointPath(fileLocation.getFileContainerId()) +
                                "/access";
              JSONObject accessRequest = new JSONObject();
              accessRequest.put("DATA_TYPE", "access");
              accessRequest.put("principal_type", "user");
              accessRequest.put("principal", permissionRequest.getUserId());
-             accessRequest.put("path", fileLocation.getPath());
+             accessRequest.put("path", fileLocation.getFileId());
              accessRequest.put("permissions", "r");
 
              client.postResult(resource, accessRequest, null);
@@ -188,7 +212,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		} catch(Exception e) {
 		        throw new HpcException(
 		        		     "Failed to set permission: " + 
-		                     fileLocation.getEndpoint() + ":" + fileLocation.getPath(), 
+		                     fileLocation.getFileContainerId() + ":" + fileLocation.getFileId(), 
 		        		     HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
     }
@@ -196,6 +220,57 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
+    
+    /**
+     * Submit a data transfer request
+     *
+     * @param client Client API instance.
+     * @param source The source endpoint.
+     * @param destination The destination endpoint.
+     * 
+     * @return The data transfer request ID.
+     * 
+     * @throws HpcException
+     */
+    private String transferData(JSONTransferAPIClient client,
+                                HpcFileLocation source, HpcFileLocation destination)
+                               throws HpcException
+	{
+		if (!autoActivate(source.getFileContainerId(), client) || 
+		!autoActivate(destination.getFileContainerId(), client)) {
+		logger.error("Unable to auto activate go tutorial endpoints, exiting");
+		// throw ENDPOINT NOT ACTIVATED HPCException
+		//return false;
+		}
+		
+		try {
+		JSONTransferAPIClient.Result r;
+		r = client.getResult("/transfer/submission_id");
+		String submissionId = r.document.getString("value");
+		JSONObject transfer = new JSONObject();
+		transfer.put("DATA_TYPE", "transfer");
+		transfer.put("submission_id", submissionId);
+		transfer.put("verify_checksum", true);
+		transfer.put("delete_destination_extra", false);
+		transfer.put("preserve_timestamp", false);
+		transfer.put("encrypt_data", false);
+		
+		JSONObject item = setJSONItem(source, destination, client);
+		transfer.append("DATA", item);
+		
+		r = client.postResult("/transfer", transfer, null);
+		String taskId = r.document.getString("task_id");
+		logger.debug("Transfer task id :"+ taskId );
+		
+		
+		return taskId;
+		
+		} catch(Exception e) {
+		throw new HpcException(
+		             "Failed to transfer: " + source + ", " + destination, 
+		             HpcErrorType.DATA_TRANSFER_ERROR, e);
+		}
+	}
     
     private Calendar convertToLexicalTime(String timeStr) 
     {
@@ -212,10 +287,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	JSONObject item = new JSONObject();
     	try {
 	        item.put("DATA_TYPE", "transfer_item");
-	        item.put("source_endpoint", source.getEndpoint());
-	        item.put("source_path", source.getPath());
-	        item.put("destination_endpoint", destination.getEndpoint());
-	        item.put("destination_path", destination.getPath());
+	        item.put("source_endpoint", source.getFileContainerId());
+	        item.put("source_path", source.getFileId());
+	        item.put("destination_endpoint", destination.getFileContainerId());
+	        item.put("destination_path", destination.getFileId());
 	        item.put("recursive", getPathAttributes(source, client, false).getIsDirectory());
 	        return item;
 	        
@@ -253,60 +328,60 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
      * @param authenticatedToken An authenticated token.
      * @param dataTransferRequestId The data transfer request ID.
      * 
-     * @return HpcDataTransferReport the data transfer report for the request.
+     * @return HpcGlobusDataTransferReport the data transfer report for the request.
      * 
      * @throws HpcException
      */
-    private HpcDataTransferReport getDataTransferReport(Object authenticatedToken,
-                              String dataTransferRequestId) 
+    private HpcGlobusDataTransferReport getDataTransferReport(Object authenticatedToken,
+                                                              String dataTransferRequestId) 
            throws HpcException
     {
 		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
-		HpcDataTransferReport hpcDataTransferReport = new HpcDataTransferReport();
+		HpcGlobusDataTransferReport hpcDataTransferReport = new HpcGlobusDataTransferReport();
 		
 		JSONTransferAPIClient.Result r;
 		String resource = "/task/" +  dataTransferRequestId;
 		// Map<String, String> params = new HashMap<String, String>();
 		//    params.put("fields", "status");
 		try {
-		r = client.getResult(resource);
-		r.document.getString("status");
-		hpcDataTransferReport.setTaskID(dataTransferRequestId);
-		hpcDataTransferReport.setTaskType(r.document.getString("type"));
-		hpcDataTransferReport.setStatus(r.document.getString("status"));
-		if (r.document.has("request_time") && !r.document.isNull("request_time"))
-		hpcDataTransferReport.setRequestTime(convertToLexicalTime(r.document.getString("request_time")));
-		else
-		hpcDataTransferReport.setRequestTime(null);  
-		if (r.document.has("deadline") && !r.document.isNull("deadline"))
-		hpcDataTransferReport.setDeadline(convertToLexicalTime(r.document.getString("deadline")));
-		else
-		hpcDataTransferReport.setDeadline(null);     
-		if (r.document.has("completion_time") && !r.document.isNull("completion_time"))
-		hpcDataTransferReport.setCompletionTime(convertToLexicalTime(r.document.getString("completion_time")));
-		else
-		hpcDataTransferReport.setCompletionTime(null);
-		hpcDataTransferReport.setTotalTasks(r.document.getInt("subtasks_total"));
-		hpcDataTransferReport.setTasksSuccessful(r.document.getInt("subtasks_succeeded"));
-		hpcDataTransferReport.setTasksExpired(r.document.getInt("subtasks_expired"));
-		hpcDataTransferReport.setTasksCanceled(r.document.getInt("subtasks_canceled"));
-		hpcDataTransferReport.setTasksPending(r.document.getInt("subtasks_pending"));
-		hpcDataTransferReport.setTasksRetrying(r.document.getInt("subtasks_retrying"));
-		hpcDataTransferReport.setCommand(r.document.getString("command"));
-		hpcDataTransferReport.setSourceEndpoint(r.document.getString("source_endpoint"));
-		hpcDataTransferReport.setDestinationEndpoint(r.document.getString("destination_endpoint"));
-		hpcDataTransferReport.setDataEncryption(r.document.getBoolean("encrypt_data"));
-		hpcDataTransferReport.setChecksumVerification(r.document.getBoolean("verify_checksum"));
-		hpcDataTransferReport.setDelete(r.document.getBoolean("delete_destination_extra"));
-		hpcDataTransferReport.setFiles(r.document.getInt("files"));
-		hpcDataTransferReport.setFilesSkipped(r.document.getInt("files_skipped"));
-		hpcDataTransferReport.setDirectories(r.document.getInt("directories"));
-		hpcDataTransferReport.setBytesTransferred(r.document.getLong("bytes_transferred"));
-		hpcDataTransferReport.setBytesChecksummed(r.document.getLong("bytes_checksummed"));
-		hpcDataTransferReport.setEffectiveMbitsPerSec(r.document.getDouble("effective_bytes_per_second"));
-		hpcDataTransferReport.setFaults(r.document.getInt("faults"));
+			r = client.getResult(resource);
+			r.document.getString("status");
+			hpcDataTransferReport.setTaskID(dataTransferRequestId);
+			hpcDataTransferReport.setTaskType(r.document.getString("type"));
+			hpcDataTransferReport.setStatus(r.document.getString("status"));
+			if (r.document.has("request_time") && !r.document.isNull("request_time"))
+			hpcDataTransferReport.setRequestTime(convertToLexicalTime(r.document.getString("request_time")));
+			else
+			hpcDataTransferReport.setRequestTime(null);  
+			if (r.document.has("deadline") && !r.document.isNull("deadline"))
+			hpcDataTransferReport.setDeadline(convertToLexicalTime(r.document.getString("deadline")));
+			else
+			hpcDataTransferReport.setDeadline(null);     
+			if (r.document.has("completion_time") && !r.document.isNull("completion_time"))
+			hpcDataTransferReport.setCompletionTime(convertToLexicalTime(r.document.getString("completion_time")));
+			else
+			hpcDataTransferReport.setCompletionTime(null);
+			hpcDataTransferReport.setTotalTasks(r.document.getInt("subtasks_total"));
+			hpcDataTransferReport.setTasksSuccessful(r.document.getInt("subtasks_succeeded"));
+			hpcDataTransferReport.setTasksExpired(r.document.getInt("subtasks_expired"));
+			hpcDataTransferReport.setTasksCanceled(r.document.getInt("subtasks_canceled"));
+			hpcDataTransferReport.setTasksPending(r.document.getInt("subtasks_pending"));
+			hpcDataTransferReport.setTasksRetrying(r.document.getInt("subtasks_retrying"));
+			hpcDataTransferReport.setCommand(r.document.getString("command"));
+			hpcDataTransferReport.setSourceEndpoint(r.document.getString("source_endpoint"));
+			hpcDataTransferReport.setDestinationEndpoint(r.document.getString("destination_endpoint"));
+			hpcDataTransferReport.setDataEncryption(r.document.getBoolean("encrypt_data"));
+			hpcDataTransferReport.setChecksumVerification(r.document.getBoolean("verify_checksum"));
+			hpcDataTransferReport.setDelete(r.document.getBoolean("delete_destination_extra"));
+			hpcDataTransferReport.setFiles(r.document.getInt("files"));
+			hpcDataTransferReport.setFilesSkipped(r.document.getInt("files_skipped"));
+			hpcDataTransferReport.setDirectories(r.document.getInt("directories"));
+			hpcDataTransferReport.setBytesTransferred(r.document.getLong("bytes_transferred"));
+			hpcDataTransferReport.setBytesChecksummed(r.document.getLong("bytes_checksummed"));
+			hpcDataTransferReport.setEffectiveMbitsPerSec(r.document.getDouble("effective_bytes_per_second"));
+			hpcDataTransferReport.setFaults(r.document.getInt("faults"));
 		
-		return hpcDataTransferReport;
+			return hpcDataTransferReport;
 		
 		} catch(Exception e) {
 		throw new HpcException(
@@ -370,12 +445,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     {
     	// Get the directory location of the file.
     	HpcFileLocation dirLocation = new HpcFileLocation();
-    	dirLocation.setEndpoint(fileLocation.getEndpoint());
-    	int fileNameIndex = fileLocation.getPath().lastIndexOf('/');
-    	dirLocation.setPath(fileLocation.getPath().substring(0, fileNameIndex));
+    	dirLocation.setFileContainerId(fileLocation.getFileContainerId());
+    	int fileNameIndex = fileLocation.getFileId().lastIndexOf('/');
+    	dirLocation.setFileId(fileLocation.getFileId().substring(0, fileNameIndex));
     	
     	// Extract the file name from the path.
-    	String fileName = fileLocation.getPath().substring(fileNameIndex + 1);
+    	String fileName = fileLocation.getFileId().substring(fileNameIndex + 1);
     	
     	// List the directory content.
     	try {
@@ -429,8 +504,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
                 	   } else if(jsonFileType.equals("dir")) {
                 		         // It's a sub directory. Make a recursive call, to add its size.
                 		         HpcFileLocation subDirLocation = new HpcFileLocation();
-                		         subDirLocation.setEndpoint(dirContent.document.getString("endpoint"));
-                		         subDirLocation.setPath(dirContent.document.getString("path") +
+                		         subDirLocation.setFileContainerId(dirContent.document.getString("endpoint"));
+                		         subDirLocation.setFileId(dirContent.document.getString("path") +
                 		        		                '/' + jsonFile.getString("name"));
                 		         
                 		         size += getDirectorySize(listDirectoryContent(subDirLocation, 
@@ -464,9 +539,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		                           throws APIError, HpcException
     {
 		Map<String, String> params = new HashMap<String, String>();
-		params.put("path", dirLocation.getPath());
+		params.put("path", dirLocation.getFileId());
 	    try {
-		     String resource = BaseTransferAPIClient.endpointPath(dirLocation.getEndpoint()) + "/ls";
+		     String resource = BaseTransferAPIClient.endpointPath(dirLocation.getFileContainerId()) + "/ls";
 		     return client.getResult(resource, params);
 		
 	    } catch(APIError apiError) {
@@ -477,4 +552,36 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
     }
+    
+    /** 
+     * Calculate data transfer destination to deposit a data object
+     * 
+     * @param path The data object (logical) path.
+     * @param callerObjectId The caller's objectId.
+     * 
+     * @return HpcFileLocation The calculated data transfer deposit destination.
+     */
+	private HpcFileLocation getArchiveDestination(String path, String callerObjectId) 
+	{
+		// Calculate the data transfer destination absolute path as the following:
+		// 'base path' / 'caller's data transfer destination path/ 'logical path'
+		StringBuffer destinationPath = new StringBuffer();
+		destinationPath.append(baseArchiveDestination.getFileId());
+		
+		if(callerObjectId != null && !callerObjectId.isEmpty()) {
+		   if(callerObjectId.charAt(0) != '/') {
+			  destinationPath.append('/'); 
+		   }
+		   destinationPath.append(callerObjectId);
+		}
+		
+		destinationPath.append('/');
+		destinationPath.append(path);
+		 
+		HpcFileLocation archiveDestination = new HpcFileLocation();
+		archiveDestination.setFileContainerId(baseArchiveDestination.getFileContainerId());
+		archiveDestination.setFileId(destinationPath.toString());
+		
+		return archiveDestination;
+	}
 }

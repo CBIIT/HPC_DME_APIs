@@ -112,8 +112,8 @@ class HpcDomainValidator
      */
     public static boolean isValidFileLocation(HpcFileLocation location) 
     {
-    	if(location == null || location.getEndpoint() == null ||
-    	   location.getPath() == null) {
+    	if(location == null || location.getFileContainerId() == null ||
+    	   location.getFileId() == null) {
      	   logger.info("Invalid File Location: " + location);
      	   return false;
     	}

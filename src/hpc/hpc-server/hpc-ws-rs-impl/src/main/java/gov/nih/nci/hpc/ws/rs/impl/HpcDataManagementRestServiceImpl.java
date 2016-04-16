@@ -164,10 +164,22 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	path = toAbsolutePath(path);
 		logger.info("Invoking RS: PUT /dataObject" + path);
 		
+		// Extract the data object input stream from the attachment.
+		InputStream dataObjectStream = null;
+		if(dataObject != null) { 
+    	   try {
+    	        dataObjectStream = dataObject.getDataHandler().getInputStream();
+    	
+    	   }catch(IOException e) {
+    		      logger.error("Failed to extract input stream from attachment", e);
+    	   }
+		}
+		
 		boolean created = true;
 		try {
 			 created = dataManagementBusService.registerDataObject(path, 
-					                                               dataObjectRegistration);
+					                                               dataObjectRegistration,
+					                                               dataObjectStream);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: PUT /dataObject" + path + " failed:", e);

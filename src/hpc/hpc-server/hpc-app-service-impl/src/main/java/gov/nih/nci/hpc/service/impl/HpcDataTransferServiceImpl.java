@@ -10,8 +10,12 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -61,18 +65,32 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     //---------------------------------------------------------------------//  
     
     @Override
-    public String transferData(HpcFileLocation source, HpcFileLocation destination) 
-	                          throws HpcException
-    {   
+    public HpcDataObjectUploadResponse uploadDataObject(HpcDataObjectUploadRequest uploadRequest) 
+                                                       throws HpcException
+    {
     	// Input validation.
-    	if(!HpcDomainValidator.isValidFileLocation(source) || 
-    	   !HpcDomainValidator.isValidFileLocation(destination)	) {	
-    	   throw new HpcException("Invalid data transfer request input", 
+    	if(uploadRequest.getSource() == null || uploadRequest.getPath() == null ||
+    	   uploadRequest.getTransferType() == null) {
+    	   throw new HpcException("Invalid data object upload request", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
         	
-  	    return dataTransferProxy.transferData(getAuthenticatedToken(), 
-  	    		                              source, destination);
+  	    return dataTransferProxy.uploadDataObject(getAuthenticatedToken(), uploadRequest);
+    }
+    
+    @Override
+    public void downloadDataObject(HpcDataObjectDownloadRequest downloadRequest) 
+                                  throws HpcException
+    {
+    	// Input validation.
+    	if(!isValidFileLocation(downloadRequest.getArchiveLocation()) || 
+    	   downloadRequest.getDestination() == null || 
+    	   downloadRequest.getTransferType() == null) {
+    	   throw new HpcException("Invalid data object download request", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+        	
+  	    dataTransferProxy.downloadDataObject(getAuthenticatedToken(), downloadRequest);	
     }
     
 	@Override   
