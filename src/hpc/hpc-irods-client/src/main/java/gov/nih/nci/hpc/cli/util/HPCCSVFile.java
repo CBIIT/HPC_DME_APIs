@@ -142,9 +142,9 @@ public class HPCCSVFile {
 //            	collections.add(batchCollection);	
 
     			HpcFileLocation source = new HpcFileLocation();
-    			source.setEndpoint("mahinarra#mahinarraEP2");
+    			source.setFileContainerId("mahinarra#mahinarraEP2");
     			String filePath = "~/share.txt";
-    			source.setPath(filePath);
+    			source.setFileId(filePath);
     			              	
               	
 				HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationDTO();
