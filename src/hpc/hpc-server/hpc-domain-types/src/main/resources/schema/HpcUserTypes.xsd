@@ -22,6 +22,7 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="GLOBUS" />
 			<xsd:enumeration value="IRODS" />
+			<xsd:enumeration value="S3" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
