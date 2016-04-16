@@ -114,12 +114,12 @@ public class HPCDatafiles extends HPCBatchClient {
 					hpcMetadataEntry.setValue(cellVal);
 					if(entry.getKey().equals("source_globus_endpoint"))
 					{
-						source.setEndpoint(cellVal);
+						source.setFileContainerId(cellVal);
 						continue;
 					}
 					else if(entry.getKey().equals("source_globus_path"))
 					{
-						source.setPath(cellVal);
+						source.setFileId(cellVal);
 						continue;
 					}
 					else if(entry.getKey().equals("object_path"))
@@ -135,7 +135,7 @@ public class HPCDatafiles extends HPCBatchClient {
 				HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationDTO();
 				hpcDataObjectRegistrationDTO.getMetadataEntries().addAll(listOfhpcCollection);
 
-				System.out.println("Adding file from " + source.getPath());
+				System.out.println("Adding file from " + source.getFileId());
 				
 				
 				hpcDataObjectRegistrationDTO.setSource(source);
