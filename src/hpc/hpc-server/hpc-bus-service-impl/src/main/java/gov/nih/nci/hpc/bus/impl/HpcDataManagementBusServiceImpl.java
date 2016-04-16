@@ -355,7 +355,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
 		// Download the data object file.
     	HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
+    	downloadRequest.setArchiveLocation(archiveLocation);
     	downloadRequest.setDestination(destination);
+    	downloadRequest.setTransferType(HpcDataTransferType.GLOBUS);
         dataTransferService.downloadDataObject(downloadRequest);	
     }
     
@@ -596,6 +598,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			                                                 HpcFileLocation destination) 
 			                                                throws HpcException
 	{
+		if(destination.getFileContainerId() == null || destination.getFileId() == null) {
+		   throw new HpcException("Invalid download destination", 
+				                  HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
 		if(!dataTransferService.getPathAttributes(destination, false).getIsDirectory()) {
 		   // The user requested destination is NOT a directory, transfer to it.
 		   return destination;
