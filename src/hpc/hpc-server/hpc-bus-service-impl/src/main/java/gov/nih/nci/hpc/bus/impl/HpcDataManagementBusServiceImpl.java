@@ -703,9 +703,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Create an upload request.
     	HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
-    	uploadRequest.setTransferType(source != null ? 
-    			                      HpcDataTransferType.GLOBUS : 
-    			                      HpcDataTransferType.S_3);
+    	uploadRequest.setPath(path);
+    	uploadRequest.setCallerObjectId(callerObjectId);
+    	if(source != null) {
+    	   // Globus upload request.
+    	   uploadRequest.setTransferType(HpcDataTransferType.GLOBUS);
+    	   uploadRequest.setSource(source);
+    	} else {
+    		    // S3 Attachment upload request.
+     	        uploadRequest.setTransferType(HpcDataTransferType.S_3);
+     	        uploadRequest.setSource(dataObjectStream);
+    	}
     	
 		// Upload the data object file.
 	    return dataTransferService.uploadDataObject(uploadRequest);	
