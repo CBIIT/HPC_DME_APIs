@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -25,6 +26,10 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
+
+import java.util.Map;
+
+import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -43,9 +48,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     // Instance members
     //---------------------------------------------------------------------//
 	
-    // The Data Transfer Proxy.
-	@Autowired
-    private HpcDataTransferProxy dataTransferProxy = null;
+    // The Data Transfer Proxies. Mapped by type.
+	// @Autowired did not work for a map with an enum key. This explicitly wired instead.
+    private Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies = null;
     
     //---------------------------------------------------------------------//
     // Constructors
@@ -77,7 +82,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
         	
-  	    return dataTransferProxy.uploadDataObject(getAuthenticatedToken(), uploadRequest);
+    	// Upload the data object using the appropriate data transfer proxy.
+    	HpcDataTransferType dataTransferType = uploadRequest.getTransferType();
+  	    return dataTransferProxies.get(dataTransferType).
+  	    		                   uploadDataObject(getAuthenticatedToken(dataTransferType), 
+  	    		                		            uploadRequest);
     }
     
     @Override
@@ -92,7 +101,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
         	
-  	    dataTransferProxy.downloadDataObject(getAuthenticatedToken(), downloadRequest);	
+    	// Download the data object using the appropriate data transfer proxy.
+    	HpcDataTransferType dataTransferType = downloadRequest.getTransferType();
+  	    dataTransferProxies.get(dataTransferType).
+  	                        downloadDataObject(getAuthenticatedToken(dataTransferType), 
+  	                        		           downloadRequest);	
     }
     
 	@Override   
@@ -104,8 +117,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		
-		return dataTransferProxy.getDataTransferStatus(getAuthenticatedToken(), 
-           	                                           dataTransferRequestId);
+		//TODO: Fix API instead of defaulting to Globus
+		HpcDataTransferType dataTransferType = HpcDataTransferType.GLOBUS;
+		return dataTransferProxies.get(dataTransferType).
+				                   getDataTransferStatus(getAuthenticatedToken(dataTransferType), 
+           	                                             dataTransferRequestId);
     }	
 	
 	@Override   
@@ -117,8 +133,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		
-		return dataTransferProxy.getDataTransferSize(getAuthenticatedToken(), 
-           	                                         dataTransferRequestId);
+		//TODO: Fix API instead of defaulting to Globus
+		HpcDataTransferType dataTransferType = HpcDataTransferType.GLOBUS;
+		return dataTransferProxies.get(dataTransferType).
+				                   getDataTransferSize(getAuthenticatedToken(dataTransferType), 
+           	                                           dataTransferRequestId);
     }	
 	
 	@Override
@@ -131,7 +150,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}	
     	
-		return (dataTransferProxy.authenticate(dataTransferAccount) != null);
+		//TODO: Fix API instead of defaulting to Globus
+		HpcDataTransferType dataTransferType = HpcDataTransferType.GLOBUS;
+		return (dataTransferProxies.get(dataTransferType).authenticate(dataTransferAccount) != null);
 	}  
 	
 	@Override
@@ -145,8 +166,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}	
     	
-    	return dataTransferProxy.getPathAttributes(getAuthenticatedToken(), 
-    			                                   fileLocation, getSize);
+		//TODO: Fix API instead of defaulting to Globus
+		HpcDataTransferType dataTransferType = HpcDataTransferType.GLOBUS;
+    	return dataTransferProxies.get(dataTransferType).
+    			                   getPathAttributes(getAuthenticatedToken(dataTransferType), 
+    			                                     fileLocation, getSize);
     }
 	
 	public void setPermission(HpcFileLocation fileLocation,
@@ -168,8 +192,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	   request.setUserId(dataTransferAccount.getUsername());
     	}
     	
-    	dataTransferProxy.setPermission(getAuthenticatedToken(), 
-                                        fileLocation, request);
+		//TODO: Fix API instead of defaulting to Globus
+		HpcDataTransferType dataTransferType = HpcDataTransferType.GLOBUS;
+		dataTransferProxies.get(dataTransferType).
+		                    setPermission(getAuthenticatedToken(dataTransferType), 
+                                          fileLocation, request);
+    }
+	
+	public void setDataTransferProxies(Map<HpcDataTransferType, HpcDataTransferProxy>  dataTransferProxies)
+    {
+    	this.dataTransferProxies = dataTransferProxies;
     }
 
     //---------------------------------------------------------------------//
@@ -179,15 +211,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     /**
      * Get the data transfer authenticated token from the request context.
      * If it's not in the context, get a token by authenticating.
+     * 
+     * @param dataTransferType The data transfer type.
      *
      * @throws HpcException If it failed to obtain an authentication token.
      */
-    private Object getAuthenticatedToken() throws HpcException
+    private Object getAuthenticatedToken(HpcDataTransferType dataTransferType) throws HpcException
     {
     	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
     	if(invoker == null) {
 	       throw new HpcException("Unknown user",
 			                      HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);
+    	}
+    	
+    	// TODO - Rework this when refactoring to a system account.
+    	if(dataTransferType.equals(HpcDataTransferType.S_3)) {
+    	   return dataTransferProxies.get(dataTransferType).authenticate(invoker.getDataTransferAccount());
     	}
     	
     	if(invoker.getDataTransferAuthenticatedToken() != null) {
@@ -201,7 +240,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
     	
     	// Authenticate w/ data management
-    	Object token = dataTransferProxy.authenticate(invoker.getDataTransferAccount());
+    	Object token = dataTransferProxies.get(dataTransferType).authenticate(invoker.getDataTransferAccount());
     	if(token == null) {
     	   throw new HpcException("Invalid data transfer account credentials",
                                   HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);

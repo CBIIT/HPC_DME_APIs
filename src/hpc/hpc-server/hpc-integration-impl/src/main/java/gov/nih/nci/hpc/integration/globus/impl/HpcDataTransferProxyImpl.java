@@ -28,6 +28,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 public class HpcDataTransferProxyImpl implements HpcDataTransferProxy 
 {
@@ -52,7 +53,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     private HpcGlobusConnection globusConnection = null;
 	
 	@Autowired
-	private HpcFileLocation baseArchiveDestination = null;
+	@Qualifier("hpcGlobusArchiveDestination")
+	HpcFileLocation baseArchiveDestination = null;
     
 	// The Logger instance.
 	private final Logger logger = 
