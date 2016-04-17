@@ -29,10 +29,20 @@
 		<constructor-arg value="${hpc.service.metadataValidationRulesPath}" />
 	</bean>
 	
+	<!--  HPC Map of Data Transfer Proxies -->
+	<util:map id="hpcDataTransferProxies" 
+	          key-type="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType"
+	          value-type="gov.nih.nci.hpc.integration.HpcDataTransferProxy">
+  		<entry key="GLOBUS" value-ref="hpcGlobusDataTransferProxy" />
+  		<entry key="S_3" value-ref="hpcS3DataTransferProxy" />
+	</util:map>
+	
 	<!-- HPC Application Services Beans -->
 	<bean id="hpcUserService" class="gov.nih.nci.hpc.service.impl.HpcUserServiceImpl">
 		<constructor-arg value="${hpc.service.user.DOC}" />
 	</bean>
-	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl" />
+	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl" >
+		<property name="dataTransferProxies" ref="hpcDataTransferProxies"/>
+	</bean>
 	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl" />
 </beans>
