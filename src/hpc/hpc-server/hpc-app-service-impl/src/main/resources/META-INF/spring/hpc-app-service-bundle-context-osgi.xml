@@ -40,7 +40,9 @@
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcUserDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcUserDAO" />
-	<osgi:reference id="hpcDataTransferProxy"
+	<osgi:reference id="hpcGlobusDataTransferProxy"
+		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
+	<osgi:reference id="hpcS3DataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
 	<osgi:reference id="hpcLdapAuthenticationProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy" />

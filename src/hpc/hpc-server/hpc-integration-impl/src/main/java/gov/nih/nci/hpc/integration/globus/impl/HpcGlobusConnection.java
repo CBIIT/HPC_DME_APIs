@@ -47,10 +47,8 @@ public class HpcGlobusConnection
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param nexusAPIURL The Nexus API URL endpoint.
-     * @param globusURL The Globus Online URL endpoint.
-     * 
-     * @throws HpcException.
+     * @param nexusAPIURL The Nexus API endpoint URL.
+     * @param globusURL The Globus Online endpoint URL.
      */
     private HpcGlobusConnection(String nexusAPIURL, String globusURL)
     {

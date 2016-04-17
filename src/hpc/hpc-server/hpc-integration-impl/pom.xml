@@ -40,9 +40,8 @@
 							org.json.*
 						</Export-Package>
 						<Private-Package>
-							gov.nih.nci.hpc.integration.impl,
 							gov.nih.nci.hpc.integration.globus.impl,
-							gov.nih.nci.hpc.integration.globus.driver,
+							gov.nih.nci.hpc.integration.s3.impl,
 							gov.nih.nci.hpc.integration.ldap.authentication,
 							gov.nih.nci.hpc.integration.irods.impl
 						</Private-Package>
@@ -105,6 +104,10 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-s3</artifactId>
 		</dependency>
 	</dependencies>
 </project>
