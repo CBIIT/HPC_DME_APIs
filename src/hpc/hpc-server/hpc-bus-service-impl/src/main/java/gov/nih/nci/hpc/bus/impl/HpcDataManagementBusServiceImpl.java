@@ -658,18 +658,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDataTransferStatus transferStatus = 
 		   HpcDataTransferStatus.fromValue(metadataMap.get(
 				  HpcDataManagementService.DATA_TRANSFER_STATUS_ATTRIBUTE));
-		String dataTransferRequestId = metadataMap.get(
-				                       HpcDataManagementService.DATA_TRANSFER_REQUEST_ID_ATTRIBUTE);
-		Long sourceSize = Long.valueOf(metadataMap.get(
-				                       HpcDataManagementService.SOURCE_FILE_SIZE_ATTRIBUTE));
-		
 		if(transferStatus == null || !transferStatus.equals(HpcDataTransferStatus.IN_PROGRESS)) {
 		   // data transfer not in progress.
 		   return null;
 		}
 		
-		if(dataTransferRequestId == null ||
-		   sourceSize == null || sourceSize <= 0) {
+		String dataTransferRequestId = metadataMap.get(
+				                       HpcDataManagementService.DATA_TRANSFER_REQUEST_ID_ATTRIBUTE);
+		Long sourceSize = metadataMap.get(HpcDataManagementService.SOURCE_FILE_SIZE_ATTRIBUTE) != null ?
+	    		          Long.valueOf(metadataMap.get(HpcDataManagementService.SOURCE_FILE_SIZE_ATTRIBUTE)) : null;
+		
+		if(dataTransferRequestId == null || sourceSize == null || sourceSize <= 0) {
 		   return "Unknown";	
 		}
 		
