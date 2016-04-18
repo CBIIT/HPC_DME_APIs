@@ -6,6 +6,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -107,10 +108,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		                           HpcErrorType.DATA_TRANSFER_ERROR, ie);   
         }
     	
-    	HpcDataObjectUploadResponse response = new HpcDataObjectUploadResponse();
-    	response.setArchiveLocation(archiveDestination);
+    	HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
+    	uploadResponse.setArchiveLocation(archiveDestination);
+    	uploadResponse.setDataTransferStatus(HpcDataTransferStatus.ARCHIVED);
+    	uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
         
-        return response;
+        return uploadResponse;
    }
     
     /**

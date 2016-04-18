@@ -28,6 +28,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 
+import java.io.InputStream;
 import java.util.Map;
 
 /**
@@ -72,15 +73,30 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     {
     	// Input validation.
     	Object source = uploadRequest.getSource();
-    	if(source == null || uploadRequest.getPath() == null ||
-    	   uploadRequest.getTransferType() == null ||
-    	   ((source instanceof HpcFileLocation) && !isValidFileLocation((HpcFileLocation)source))) {
+    	if(source == null || uploadRequest.getPath() == null) {
     	   throw new HpcException("Invalid data object upload request", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
         	
+    	// Determine the data transfer type.
+    	HpcDataTransferType dataTransferType = null;
+    	if(source instanceof HpcFileLocation) {
+    	   if(!isValidFileLocation((HpcFileLocation) source)) {
+    	      throw new HpcException("Invalid upload file location", 
+    	    	                     HpcErrorType.INVALID_REQUEST_INPUT);
+    	   }
+    	   dataTransferType = HpcDataTransferType.GLOBUS;
+    	   
+    	} else if(source instanceof InputStream) {
+    		      dataTransferType = HpcDataTransferType.S_3;
+    		      
+    	} else {
+    		    // Could not determine data transfer type.
+    		    throw new HpcException("Could not determine data transfer type",
+    		    		               HpcErrorType.UNEXPECTED_ERROR);
+    	}
+    	   
     	// Upload the data object using the appropriate data transfer proxy.
-    	HpcDataTransferType dataTransferType = uploadRequest.getTransferType();
   	    return dataTransferProxies.get(dataTransferType).
   	    		                   uploadDataObject(getAuthenticatedToken(dataTransferType), 
   	    		                		            uploadRequest);
