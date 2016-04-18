@@ -41,9 +41,11 @@
 	<osgi:reference id="hpcUserDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcUserDAO" />
 	<osgi:reference id="hpcGlobusDataTransferProxy"
-		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
+		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
+		            bean-name="hpcGlobusDataTransferProxy"/>
 	<osgi:reference id="hpcS3DataTransferProxy"
-		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
+		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
+		            bean-name="hpcS3DataTransferProxy"/>
 	<osgi:reference id="hpcLdapAuthenticationProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy" />
 	<osgi:reference id="hpcDataManagementProxy"

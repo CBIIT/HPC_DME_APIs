@@ -22,16 +22,13 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 
 import java.util.Map;
-
-import javax.annotation.Resource;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -226,7 +223,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	
     	// TODO - Rework this when refactoring to a system account.
     	if(dataTransferType.equals(HpcDataTransferType.S_3)) {
-    	   return dataTransferProxies.get(dataTransferType).authenticate(invoker.getDataTransferAccount());
+    	   HpcIntegratedSystemAccount s3Account = new HpcIntegratedSystemAccount();
+    	   s3Account.setUsername("rhwXa402NFW1OwxqY6Xb");
+    	   s3Account.setPassword("Y3U4GPAZPKZL7z5Sb71R5fFU0I88gFYswS0U8uxA");
+    	   
+    	   s3Account.setIntegratedSystem(HpcIntegratedSystem.S_3);
+    	   return dataTransferProxies.get(dataTransferType).authenticate(s3Account);
     	}
     	
     	if(invoker.getDataTransferAuthenticatedToken() != null) {
