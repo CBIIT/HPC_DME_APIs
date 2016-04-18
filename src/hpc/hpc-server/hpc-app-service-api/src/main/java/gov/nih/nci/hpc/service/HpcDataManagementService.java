@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -42,20 +43,22 @@ public interface HpcDataManagementService
 	public final static String REGISTRAR_ID_ATTRIBUTE = "registered_by";
 	public final static String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
 	public final static String REGISTRAR_DOC_ATTRIBUTE = "registered_by_doc";
-	public final static String FILE_SOURCE_ENDPOINT_ATTRIBUTE = 
-                               "source_globus_endpoint"; 
-	public final static String FILE_SOURCE_PATH_ATTRIBUTE = 
-                               "source_globus_path"; 
-	public final static String FILE_LOCATION_ENDPOINT_ATTRIBUTE = 
-			                   "data_globus_endpoint"; 
-	public final static String FILE_LOCATION_PATH_ATTRIBUTE = 
-			                   "data_globus_path"; 
-	public final static String FILE_DATA_TRANSFER_ID_ATTRIBUTE = 
-                               "data_globus_id";
-	public final static String FILE_DATA_TRANSFER_STATUS_ATTRIBUTE = 
-                               "data_globus_status";
-	public final static String FILE_SIZE_ATTRIBUTE = 
-                               "data_globus_size";
+	public final static String SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
+                               "source_file_container_id"; 
+	public final static String SOURCE_LOCATION_FILE_ID_ATTRIBUTE = 
+                               "source_file_id"; 
+	public final static String ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
+			                   "archive_file_container_id"; 
+	public final static String ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE = 
+			                   "archve_file_id"; 
+	public final static String DATA_TRANSFER_REQUEST_ID_ATTRIBUTE = 
+                               "data_transfer_request_id";
+	public final static String DATA_TRANSFER_STATUS_ATTRIBUTE = 
+                               "data_transfer_status";
+	public final static String DATA_TRANSFER_TYPE_ATTRIBUTE = 
+                               "data_transfer_type";
+	public final static String SOURCE_FILE_SIZE_ATTRIBUTE = 
+                               "source_file_size";
 	
     /**
      * Create a collection's directory.
@@ -156,26 +159,31 @@ public interface HpcDataManagementService
      * 		2. Registrar user ID.
      * 		3. Registrar name.
      *      4. Registrar DOC.
-     * 		5. File source endpoint.
-     *      6. File source path.
-     *      7. File location endpoint.
-     *      8. File location path.
-     *      9. Data Transfer Request ID.
+     * 		5. Source location (file-container-id and file-id). (Optional)
+     *      6. Archive location (file-container-id and file-id).
+     *      9. Data Transfer Request ID. (Optional)
      *      10. Data Transfer Status.
-     *      11. Data Object File(s) size.
+     *      11. Data Transfer Type.
+     *      11. Data Object File(s) size. (Optional)
      *
      * @param path The data object path.
-     * @param fileLocation The physical file location.
-     * @param fileSource The source location of the file.
-     * @param dataTransferRequestId The data transfer request ID.
+     * @param archiveLocation The physical file archive location.
+     * @param sourceLocation (Optional) The source location of the file.
+     * @param dataTransferRequestId (Optional) The data transfer request ID.
+     * @param dataTransferStatus The data transfer status.
+     * @param dataTransferType The data transfer type.
+     * @param dataTransferRequestId (Optional) The data transfer request ID.
+     * 
      * 
      * @throws HpcException
      */
     public void addSystemGeneratedMetadataToDataObject(String path, 
-    		                                           HpcFileLocation fileLocation,
-    		                                           HpcFileLocation fileSource,
+    		                                           HpcFileLocation archiveLocation,
+    		                                           HpcFileLocation sourceLocation,
     		                                           String dataTransferRequestId,
-    		                                           long size) 
+    		                                           HpcDataTransferStatus dataTransferStatus,
+    		                                           HpcDataTransferType dataTransferType,
+    		                                           Long sourceSize) 
     		                                          throws HpcException; 
     
     /**

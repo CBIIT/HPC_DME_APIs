@@ -52,7 +52,7 @@
 				<xsd:element name="dataTransferRequestId" type="xsd:string" />
 				<xsd:element name="dataTransferStatus" type="hpc-domain-datatransfer:HpcDataTransferStatus" />
 				<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
-				<xsd:element name="size" type="xsd:long" />
+				<xsd:element name="sourceSize" type="xsd:long" minOccurs="0" maxOccurs="1"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
