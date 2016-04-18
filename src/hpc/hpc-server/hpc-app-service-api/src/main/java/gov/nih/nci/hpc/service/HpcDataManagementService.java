@@ -50,7 +50,7 @@ public interface HpcDataManagementService
 	public final static String ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
 			                   "archive_file_container_id"; 
 	public final static String ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE = 
-			                   "archve_file_id"; 
+			                   "archive_file_id"; 
 	public final static String DATA_TRANSFER_REQUEST_ID_ATTRIBUTE = 
                                "data_transfer_request_id";
 	public final static String DATA_TRANSFER_STATUS_ATTRIBUTE = 
