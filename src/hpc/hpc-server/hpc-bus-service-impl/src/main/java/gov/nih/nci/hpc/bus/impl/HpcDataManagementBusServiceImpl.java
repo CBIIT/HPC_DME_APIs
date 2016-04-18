@@ -246,14 +246,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		        HpcDataObjectUploadResponse uploadResponse = 
 		           uploadData(source, dataObjectStream, path, 
 		        		      dataObjectRegistrationDTO.getCallerObjectId());
-		        long sourceSize = source != null ? 
-		        		          dataTransferService.getPathAttributes(source, true).getSize() : -1;
+		        Long sourceSize = source != null ? 
+		        		          dataTransferService.getPathAttributes(source, true).getSize() : null;
 		     
 			    // Generate system metadata and attach to the data object.
 			    dataManagementService.addSystemGeneratedMetadataToDataObject(
 			        		                   path, uploadResponse.getArchiveLocation(),
-			    			                   dataObjectRegistrationDTO.getSource(),
-			    			                   uploadResponse.getRequestId(), sourceSize); 
+			    			                   source, uploadResponse.getRequestId(), 
+			    			                   uploadResponse.getDataTransferStatus(),
+			    			                   uploadResponse.getDataTransferType(),
+			    			                   sourceSize); 
 	
 			     registrationCompleted = true;
 			     
@@ -655,11 +657,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		Map<String, String> metadataMap = dataManagementService.toMap(metadataEntries);
 		HpcDataTransferStatus transferStatus = 
 		   HpcDataTransferStatus.fromValue(metadataMap.get(
-				  HpcDataManagementService.FILE_DATA_TRANSFER_STATUS_ATTRIBUTE));
+				  HpcDataManagementService.DATA_TRANSFER_STATUS_ATTRIBUTE));
 		String dataTransferRequestId = metadataMap.get(
-				                       HpcDataManagementService.FILE_DATA_TRANSFER_ID_ATTRIBUTE);
-		Long dataObjectSize = Long.valueOf(metadataMap.get(
-				                           HpcDataManagementService.FILE_SIZE_ATTRIBUTE));
+				                       HpcDataManagementService.DATA_TRANSFER_REQUEST_ID_ATTRIBUTE);
+		Long sourceSize = Long.valueOf(metadataMap.get(
+				                       HpcDataManagementService.SOURCE_FILE_SIZE_ATTRIBUTE));
 		
 		if(transferStatus == null || !transferStatus.equals(HpcDataTransferStatus.IN_PROGRESS)) {
 		   // data transfer not in progress.
@@ -667,7 +669,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		
 		if(dataTransferRequestId == null ||
-		   dataObjectSize == null || dataObjectSize == 0) {
+		   sourceSize == null || sourceSize <= 0) {
 		   return "Unknown";	
 		}
 		
@@ -680,7 +682,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			    return "Unknown";
 		}
 		
-		return String.valueOf((transferSize * 100L) / dataObjectSize) + '%';
+		return String.valueOf((transferSize * 100L) / sourceSize) + '%';
 	}
 	
     /** 
@@ -712,15 +714,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
     	uploadRequest.setPath(path);
     	uploadRequest.setCallerObjectId(callerObjectId);
-    	if(source != null) {
-    	   // Globus upload request.
-    	   uploadRequest.setTransferType(HpcDataTransferType.GLOBUS);
-    	   uploadRequest.setSource(source);
-    	} else {
-    		    // S3 Attachment upload request.
-     	        uploadRequest.setTransferType(HpcDataTransferType.S_3);
-     	        uploadRequest.setSource(dataObjectStream);
-    	}
+    	uploadRequest.setSource(source != null ? source : dataObjectStream);
     	
 		// Upload the data object file.
 	    return dataTransferService.uploadDataObject(uploadRequest);	
