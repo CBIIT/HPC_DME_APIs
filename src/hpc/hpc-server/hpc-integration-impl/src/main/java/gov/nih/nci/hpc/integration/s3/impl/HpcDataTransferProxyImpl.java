@@ -110,7 +110,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	HpcDataObjectUploadResponse response = new HpcDataObjectUploadResponse();
     	response.setArchiveLocation(archiveDestination);
         
-         return response;
+        return response;
    }
     
     /**
