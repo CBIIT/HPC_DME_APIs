@@ -75,7 +75,6 @@
 	
 	<xsd:complexType name="HpcDataObjectUploadRequest">
 		<xsd:sequence>
-			<xsd:element name="transferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="source" type="xsd:anyType" />
 			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
@@ -86,6 +85,8 @@
 		<xsd:sequence>
 			<xsd:element name="requestId" type="xsd:string" />
 			<xsd:element name="archiveLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="dataTransferStatus" type="hpc-domain-datatransfer:HpcDataTransferStatus" />
+			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
