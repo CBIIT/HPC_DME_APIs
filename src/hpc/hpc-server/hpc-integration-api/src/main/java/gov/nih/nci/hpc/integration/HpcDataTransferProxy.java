@@ -124,6 +124,40 @@ public interface HpcDataTransferProxy
     		                  HpcFileLocation fileLocation,
     		                  HpcUserPermission permissionRequest) 
     		                 throws HpcException; 
+    
+    /** 
+     * Calculate data transfer destination to deposit a data object
+     * 
+     * @param baseArchiveDestination The base (archive specific) destination.
+     * @param path The data object (logical) path.
+     * @param callerObjectId The caller's objectId.
+     * 
+     * @return HpcFileLocation The calculated data transfer deposit destination.
+     */
+	public static HpcFileLocation getArchiveDestination(HpcFileLocation baseArchiveDestination,
+			                                            String path, String callerObjectId) 
+	{
+		// Calculate the data transfer destination absolute path as the following:
+		// 'base path' / 'caller's data transfer destination path/ 'logical path'
+		StringBuffer destinationPath = new StringBuffer();
+		destinationPath.append(baseArchiveDestination.getFileId());
+		
+		if(callerObjectId != null && !callerObjectId.isEmpty()) {
+		   if(callerObjectId.charAt(0) != '/') {
+			  destinationPath.append('/'); 
+		   }
+		   destinationPath.append(callerObjectId);
+		}
+		
+		destinationPath.append('/');
+		destinationPath.append(path);
+		 
+		HpcFileLocation archiveDestination = new HpcFileLocation();
+		archiveDestination.setFileContainerId(baseArchiveDestination.getFileContainerId());
+		archiveDestination.setFileId(destinationPath.toString());
+		
+		return archiveDestination;
+	}
 }
 
  
