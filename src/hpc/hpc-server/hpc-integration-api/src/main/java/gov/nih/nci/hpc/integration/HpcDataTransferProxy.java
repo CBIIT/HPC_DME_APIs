@@ -149,7 +149,9 @@ public interface HpcDataTransferProxy
 		   destinationPath.append(callerObjectId);
 		}
 		
-		destinationPath.append('/');
+		if(path.charAt(0) != '/') {
+		   destinationPath.append('/');
+		}
 		destinationPath.append(path);
 		 
 		HpcFileLocation archiveDestination = new HpcFileLocation();
