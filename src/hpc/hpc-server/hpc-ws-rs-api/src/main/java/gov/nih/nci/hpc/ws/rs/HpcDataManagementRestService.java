@@ -156,18 +156,6 @@ public interface HpcDataManagementRestService
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response setGroup(HpcGroupRequestDTO groupRequest);
-	
-    // S3 prototype
-    @PUT
-    @Path("/s3/{sync}/{path:.*}")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-    public Response s3UploadFile(@PathParam("sync") String sync,
-    		                     @PathParam("path") String path,
-                                 @Multipart(value = "dataObjectRegistration") 
-                                 HpcDataObjectRegistrationDTO dataObjectRegistration,
-                                 @Multipart(value = "dataObject", required = false) 
-    		                     Attachment dataObject);
 }
 
  

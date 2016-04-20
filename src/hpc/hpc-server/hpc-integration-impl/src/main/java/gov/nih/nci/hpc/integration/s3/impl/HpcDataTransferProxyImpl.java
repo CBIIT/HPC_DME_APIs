@@ -1,5 +1,6 @@
 package gov.nih.nci.hpc.integration.s3.impl;
 
+import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestination;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
@@ -85,8 +86,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	
     	// Calculate the archive destination.
     	InputStream inputStream = (InputStream) uploadRequest.getSource();
+       	// Calculate the archive destination.
     	HpcFileLocation archiveDestination = 
-    	   getArchiveDestination(inputStream, uploadRequest.getCallerObjectId());
+    	   getArchiveDestination(baseArchiveDestination, uploadRequest.getPath(),
+    		                     uploadRequest.getCallerObjectId());
     	
     	// Create a metadata to associate the data management path.
     	ObjectMetadata metadata = new ObjectMetadata();
@@ -180,37 +183,4 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
        	throw new HpcException("setPermission() not supported by S3",
                                HpcErrorType.UNEXPECTED_ERROR); 
     }
-    
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-    
-    /** 
-     * Calculate data transfer destination to deposit a data object
-     * 
-     * @param path The data object (logical) path.
-     * @param callerObjectId The caller's objectId.
-     * 
-     * @return HpcFileLocation The calculated data transfer deposit destination.
-     */
-	private HpcFileLocation getArchiveDestination(InputStream inputStream, String callerObjectId) 
-	{
-		// Calculate the data transfer destination absolute path as the following:
-		// 'base path' / 'caller's data transfer destination path/ 'logical path'
-		StringBuffer fileId = new StringBuffer();
-		fileId.append(baseArchiveDestination.getFileId());
-		
-		if(callerObjectId != null && !callerObjectId.isEmpty()) {
-			fileId.append("-" + callerObjectId);
-		}
-		
-		fileId.append('-');
-		fileId.append(inputStream.hashCode());
-		 
-		HpcFileLocation archiveDestination = new HpcFileLocation();
-		archiveDestination.setFileContainerId(baseArchiveDestination.getFileContainerId());
-		archiveDestination.setFileId(fileId.toString());
-		
-		return archiveDestination;
-	}
 }

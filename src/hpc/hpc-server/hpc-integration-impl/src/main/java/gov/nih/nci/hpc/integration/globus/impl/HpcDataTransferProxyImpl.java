@@ -1,5 +1,6 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
+import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestination;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
@@ -110,7 +111,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	
     	// Calculate the archive destination.
     	HpcFileLocation archiveDestination = 
-    	   getArchiveDestination(uploadRequest.getPath(),
+    	   getArchiveDestination(baseArchiveDestination, uploadRequest.getPath(),
     		                     uploadRequest.getCallerObjectId());
     	
     	// Submit a request to Globus to transfer the data.
@@ -557,36 +558,4 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
     }
-    
-    /** 
-     * Calculate data transfer destination to deposit a data object
-     * 
-     * @param path The data object (logical) path.
-     * @param callerObjectId The caller's objectId.
-     * 
-     * @return HpcFileLocation The calculated data transfer deposit destination.
-     */
-	private HpcFileLocation getArchiveDestination(String path, String callerObjectId) 
-	{
-		// Calculate the data transfer destination absolute path as the following:
-		// 'base path' / 'caller's data transfer destination path/ 'logical path'
-		StringBuffer destinationPath = new StringBuffer();
-		destinationPath.append(baseArchiveDestination.getFileId());
-		
-		if(callerObjectId != null && !callerObjectId.isEmpty()) {
-		   if(callerObjectId.charAt(0) != '/') {
-			  destinationPath.append('/'); 
-		   }
-		   destinationPath.append(callerObjectId);
-		}
-		
-		destinationPath.append('/');
-		destinationPath.append(path);
-		 
-		HpcFileLocation archiveDestination = new HpcFileLocation();
-		archiveDestination.setFileContainerId(baseArchiveDestination.getFileContainerId());
-		archiveDestination.setFileId(destinationPath.toString());
-		
-		return archiveDestination;
-	}
 }
