@@ -36,7 +36,7 @@
 		  
 		  <prop key="hpc.integration.cleversafe.URL">http://fr-s-clvrsf-01.ncifcrf.gov</prop>
 	      <prop key="hpc.integration.cleversafe.archive.vault">DSE-TestVault1</prop>
-		  <prop key="hpc.integration.cleversafe.archive.objectId">HPC</prop>
+		  <prop key="hpc.integration.cleversafe.archive.objectId">HPC-ARCHIVE</prop>
 	      
 	      <prop key="hpc.integration.ldap.URL">ldaps://nci-ldap-prod.nci.nih.gov:636</prop>
 	</osgix:cm-properties>
