@@ -511,12 +511,14 @@
                                                         "registered_by",
                                                         "registered_by_name",
                                                         "registered_by_doc",
-                                                        "source_globus_endpoint",
-                                                        "source_globus_path",
-                                                        "data_globus_endpoint",
-                                                        "data_globus_path",
-                                                        "data_globus_id",
-                                                        "data_globus_status" 
+                                                        "source_file_container_id",
+                                                        "source_file_id",
+                                                        "archive_file_container_id",
+                                                        "archive_file_id",
+                                                        "data_transfer_request_id",
+                                                        "data_transfer_status",
+                                                        "data_transfer_type",
+                                                        "source_file_size"
                                                       ]
    }
 }
