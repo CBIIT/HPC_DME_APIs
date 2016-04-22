@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.interceptor.HpcAPIVersionInterceptor;
 import gov.nih.nci.hpc.ws.rs.provider.HpcExceptionMapper;
 
+import java.io.File;
 import java.net.URI;
 
 import javax.ws.rs.core.Context;
@@ -89,6 +90,21 @@ public abstract class HpcRestServiceImpl
 		} else {
 			    return Response.ok().build();
 		}
+    }
+    
+    /**
+     * Build an 'ok' (HTTP 200) REST response instance.
+     *
+     * @param file The file to attach to the response.
+     * @param fileName The file name attached.
+     * @return The REST response object.
+     */
+    protected Response okResponse(File file)
+    {
+    	return Response.ok(file).
+    			           header("Content-Disposition", "attachment; filename=" + file.getName()).
+        		           header("Access-Control-Allow-Origin", "*").
+        		           header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
     }
     
     /**

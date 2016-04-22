@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 
+import java.io.File;
 import java.io.InputStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,19 +132,25 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		                       HpcDataObjectDownloadRequest downloadRequest) 
     		                      throws HpcException
     {
-    	/*
+    	
     	// Input validation.
-    	if(!(downloadRequest.getDestination() instanceof HpcFileLocation)) {
+    	if(!(downloadRequest.getDestination() instanceof File)) {
     	   throw new HpcException("Invalid destination type: " + 
     			                  downloadRequest.getDestination().getClass().getName(),
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
-    	// Submit a request to Globus to transfer the data.
-    	transferData(globusConnection.getTransferClient(authenticatedToken),
-    			     downloadRequest.getArchiveLocation(),
-    			     (HpcFileLocation) downloadRequest.getDestination());
-    			     */
+    	// Download the file via S3.
+    	try {
+    	     s3Connection.getTransferManager(authenticatedToken).download(
+    		         	     downloadRequest.getArchiveLocation().getFileContainerId(),
+    			             downloadRequest.getArchiveLocation().getFileId(), 
+    			             (File) downloadRequest.getDestination());
+    	     
+        } catch(AmazonClientException ace) {
+    	        throw new HpcException("Failed to upload file via S3", 
+    	    	     	               HpcErrorType.DATA_TRANSFER_ERROR, ace);
+        }
     }
     
     @Override
