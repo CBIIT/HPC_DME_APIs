@@ -356,10 +356,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   dataManagementService.getDataObjectSystemGeneratedMetadata(path);
     	
     	// Validate the file is archived.
+    	// TODO: Enable this after completing system account change for iRODS
+    	/*
     	if(!metadata.getDataTransferStatus().equals(HpcDataTransferStatus.ARCHIVED)) {
     	   throw new HpcException("Data object not archived", 
     			                  HpcRequestRejectReason.FILE_NOT_ARCHIVED);
-    	}
+    	}*/
     	
     	HpcFileLocation archiveLocation = metadata.getArchiveLocation();
     	Object destination = 
