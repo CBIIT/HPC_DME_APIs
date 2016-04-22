@@ -130,6 +130,6 @@ public class HpcExceptionMapper
                    Response.status(Response.Status.INTERNAL_SERVER_ERROR);
 		}
 		
-    	return responseBuilder.entity(exceptionDTO);
+    	return responseBuilder.entity(exceptionDTO).type(getAcceptedMediaType());
     }
 }
