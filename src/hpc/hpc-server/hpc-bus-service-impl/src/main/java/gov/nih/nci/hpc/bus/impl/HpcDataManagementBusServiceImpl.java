@@ -18,9 +18,9 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
@@ -349,9 +349,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Calculate the data object download destination.
-    	HpcFileLocation archiveLocation = 
-    	   dataManagementService.getDataObjectSystemGeneratedMetadata(path).getArchiveLocation();
+    	// Get the System generated metadata.
+    	HpcDataObjectSystemGeneratedMetadata metadata = 
+    	   dataManagementService.getDataObjectSystemGeneratedMetadata(path);
+    	
+    	// Validate the file is archived.
+    	if(!metadata.getDataTransferStatus().equals(HpcDataTransferStatus.ARCHIVED)) {
+    	   throw new HpcException("Data object not archived", 
+    			                  HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+    	}
+    	
+    	HpcFileLocation archiveLocation = metadata.getArchiveLocation();
     	HpcFileLocation destination = 
     	   getDataObjectDownloadDestination(archiveLocation, downloadRequestDTO.getDestination());
     	
@@ -359,7 +367,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
     	downloadRequest.setArchiveLocation(archiveLocation);
     	downloadRequest.setDestination(destination);
-    	downloadRequest.setTransferType(HpcDataTransferType.GLOBUS);
+    	downloadRequest.setTransferType(metadata.getDataTransferType());
+    	
         dataTransferService.downloadDataObject(downloadRequest);	
     }
     

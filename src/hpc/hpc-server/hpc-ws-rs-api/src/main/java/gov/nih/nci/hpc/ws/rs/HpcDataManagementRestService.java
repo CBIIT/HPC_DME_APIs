@@ -135,6 +135,12 @@ public interface HpcDataManagementRestService
 	public Response downloadDataObject(@PathParam("path") String path,
 			                           HpcDataObjectDownloadDTO downloadRequest);
 	
+	@GET
+	@Path("/downloadFile")
+	//@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	public Response getFile();
+	
     /**
      * POST Set permissions.
      *
