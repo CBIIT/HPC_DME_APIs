@@ -27,7 +27,6 @@ import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -309,12 +308,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		 }
 		 
 		 return queries;
-    }
-    
-    public Response getFile()
-    {
-    	File file = new File("/Users/eran/hpc-client.p12");
-        return okResponse(file);
     }
 }
 

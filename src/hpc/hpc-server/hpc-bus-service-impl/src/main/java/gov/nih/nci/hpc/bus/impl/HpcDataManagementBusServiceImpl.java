@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -42,6 +43,8 @@ import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -343,8 +346,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                     downloadRequestDTO);
     	
     	// Input validation.
-    	if(path == null || downloadRequestDTO == null || 
-    	   downloadRequestDTO.getDestination() == null) {
+    	if(path == null || downloadRequestDTO == null) {
     	   throw new HpcException("Null path or download request",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
@@ -360,8 +362,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	HpcFileLocation archiveLocation = metadata.getArchiveLocation();
-    	HpcFileLocation destination = 
-    	   getDataObjectDownloadDestination(archiveLocation, downloadRequestDTO.getDestination());
+    	Object destination = 
+    	       getDataObjectDownloadDestination(archiveLocation, 
+    	    		                            downloadRequestDTO.getDestination(),
+    			                                metadata.getDataTransferType());
     	
 		// Download the data object file.
     	HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
@@ -599,34 +603,50 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     /** 
      * Calculate data transfer destination to download a data object.
      * 
-     * @param source The source file location
-     * @param destination The user requested file destination
+     * @param source The source file location.
+     * @param destination The user requested file destination.
+     * @param dataTransferType The data transfer type.
      * 
      * @return HpcFileLocation The data transfer download destination.
      * @throws HpcException
      */
-	private HpcFileLocation getDataObjectDownloadDestination(HpcFileLocation source, 
-			                                                 HpcFileLocation destination) 
-			                                                throws HpcException
+	private Object getDataObjectDownloadDestination(HpcFileLocation source, 
+			                                        HpcFileLocation destination,
+			                                        HpcDataTransferType dataTransferType) 
+			                                        throws HpcException
 	{
-		if(destination.getFileContainerId() == null || destination.getFileId() == null) {
-		   throw new HpcException("Invalid download destination", 
-				                  HpcErrorType.INVALID_REQUEST_INPUT);
+		if(dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+		   if(destination == null || 
+			  destination.getFileContainerId() == null || 
+			  destination.getFileId() == null) {
+			  throw new HpcException("Invalid download destination", 
+			                         HpcErrorType.INVALID_REQUEST_INPUT);
+		   }
+			
+		   if(!dataTransferService.getPathAttributes(destination, false).getIsDirectory()) {
+			  // The user requested destination is NOT a directory, transfer to it.
+			  return destination;
+		   }
+			
+		   // User requested to download to a directory. Append the source file name.
+		   HpcFileLocation downloadDestination = new HpcFileLocation();
+		   downloadDestination.setFileContainerId(destination.getFileContainerId());
+		   String sourcePath = source.getFileId();
+		   downloadDestination.setFileId(destination.getFileId() + 
+			                             sourcePath.substring(sourcePath.lastIndexOf('/')));
+			
+		   return downloadDestination;
+		} else {
+			    // S3 request.
+			   String sourcePath = source.getFileId();
+			   try {
+			        return File.createTempFile(sourcePath.substring(sourcePath.lastIndexOf('/')), "");
+			        
+			   } catch(IOException ioe) {
+				       throw new HpcException("Failed to create a temp file", 
+				    		                  HpcErrorType.UNEXPECTED_ERROR, ioe);
+			   }
 		}
-		
-		if(!dataTransferService.getPathAttributes(destination, false).getIsDirectory()) {
-		   // The user requested destination is NOT a directory, transfer to it.
-		   return destination;
-		}
-		
-		// User requested to download to a directory. Append the source file name.
-		HpcFileLocation downloadDestination = new HpcFileLocation();
-		downloadDestination.setFileContainerId(destination.getFileContainerId());
-		String sourcePath = source.getFileId();
-		downloadDestination.setFileId(destination.getFileId() + 
-				                      sourcePath.substring(sourcePath.lastIndexOf('/')));
-		
-		return downloadDestination;
 	}
 	
     /** 
