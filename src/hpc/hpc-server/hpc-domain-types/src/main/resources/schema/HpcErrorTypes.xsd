@@ -45,13 +45,15 @@
 			<xsd:enumeration value="USER_ALREADY_EXISTS" />
 			<xsd:enumeration value="API_NOT_SUPPORTED" />
 
-			<!-- Dataset Service Request Reject Reasons -->
+			<!-- Data Management Request Reject Reasons -->
 			<xsd:enumeration value="INVALID_NCI_ACCOUNT" />
 			<xsd:enumeration value="INVALID_DATA_TRANSFER_ACCOUNT" />
 			<xsd:enumeration value="INVALID_DATA_MANAGEMENT_ACCOUNT" />
 			<xsd:enumeration value="DATA_OBJECT_PATH_ALREADY_EXISTS" />
 			<xsd:enumeration value="INVALID_DATA_OBJECT_PATH" />
 			<xsd:enumeration value="FILE_NOT_FOUND" />
+			<xsd:enumeration value="FILE_NOT_ARCHIVED" />
+			
 			<!-- Security Reject Reasons -->
 			<xsd:enumeration value="NOT_AUTHORIZED" />
 		</xsd:restriction>
