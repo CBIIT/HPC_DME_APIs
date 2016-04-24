@@ -125,11 +125,23 @@
 	</xsd:element>	
 	
 	<!-- Data Object Download DTO -->
-	<xsd:element name="HpcDataObjectDownloadDTO">
+	<xsd:element name="HpcDataObjectDownloadRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="destination"
 				             type="hpc-domain-datatransfer:HpcFileLocation" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
+	<!-- Data Object Download DTO -->
+	<xsd:element name="HpcDataObjectDownloadResponseDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+			    <xsd:element name="requestId" type="xsd:string" />
+				<xsd:element name="destination"
+				             type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="inputStream" type="hpc-domain-datatransfer:HpcInputStream" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	

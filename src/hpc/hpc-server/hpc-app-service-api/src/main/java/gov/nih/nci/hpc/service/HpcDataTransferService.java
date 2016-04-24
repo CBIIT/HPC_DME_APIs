@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.service;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
@@ -46,11 +47,12 @@ public interface HpcDataTransferService
      * Download a data object file.
      *
      * @param dataDownloadRequest The data object download request.
+     * @return HpcDataObjectDownloadResponse A data object download response.
      * 
      * @throws HpcException
      */
-    public void downloadDataObject(HpcDataObjectDownloadRequest downloadRequest) 
-    		                      throws HpcException;
+    public HpcDataObjectDownloadResponse downloadDataObject(HpcDataObjectDownloadRequest downloadRequest) 
+    		                                               throws HpcException;
 
     /**
      * Get a data transfer request status.

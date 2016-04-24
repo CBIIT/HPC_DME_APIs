@@ -15,13 +15,13 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
@@ -29,7 +29,8 @@ import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
@@ -43,8 +44,6 @@ import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcUserService;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -338,9 +337,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	return dataObjectsDTO;
     }
     @Override
-    public void downloadDataObject(String path,
-                                   HpcDataObjectDownloadDTO downloadRequestDTO)
-                                  throws HpcException
+    public HpcDataObjectDownloadResponseDTO 
+              downloadDataObject(String path,
+                                 HpcDataObjectDownloadRequestDTO downloadRequestDTO)
+                                throws HpcException
     {
     	logger.info("Invoking downloadDataObject(path, downloadReqest): " + path + ", " + 
                     downloadRequestDTO);
@@ -363,19 +363,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcRequestRejectReason.FILE_NOT_ARCHIVED);
     	}*/
     	
-    	HpcFileLocation archiveLocation = metadata.getArchiveLocation();
-    	Object destination = 
-    	       getDataObjectDownloadDestination(archiveLocation, 
-    	    		                            downloadRequestDTO.getDestination(),
-    			                                metadata.getDataTransferType());
-    	
-		// Download the data object file.
-    	HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
-    	downloadRequest.setArchiveLocation(archiveLocation);
-    	downloadRequest.setDestination(destination);
-    	downloadRequest.setTransferType(metadata.getDataTransferType());
-    	
-        dataTransferService.downloadDataObject(downloadRequest);	
+    	// Download the data object.
+    	HpcDataObjectDownloadRequest downloadRequest = 
+    	   getDataObjectDownloadRequest(metadata.getArchiveLocation(), 
+                                        downloadRequestDTO.getDestination(),
+                                        metadata.getDataTransferType());
+    	HpcDataObjectDownloadResponse downloadResponse = 
+    	   dataTransferService.downloadDataObject(downloadRequest);
+        
+        // Construct and return download response DTO.
+        HpcDataObjectDownloadResponseDTO downloadResponseDTO = new HpcDataObjectDownloadResponseDTO();
+        downloadResponseDTO.setDestination(downloadRequest.getDestinationLocation());
+        downloadResponseDTO.setRequestId(downloadResponse.getRequestId());
+        downloadResponseDTO.setInputStream(downloadResponse.getInputStream());
+        return downloadResponseDTO;
     }
     
     @Override
@@ -603,52 +604,49 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 	
     /** 
-     * Calculate data transfer destination to download a data object.
+     * Create a data object download request object.
      * 
-     * @param source The source file location.
-     * @param destination The user requested file destination.
+     * @param archiveLocation The archive file location.
+     * @param destinationLocation The user requested file destination.
      * @param dataTransferType The data transfer type.
      * 
      * @return HpcFileLocation The data transfer download destination.
      * @throws HpcException
      */
-	private Object getDataObjectDownloadDestination(HpcFileLocation source, 
-			                                        HpcFileLocation destination,
-			                                        HpcDataTransferType dataTransferType) 
-			                                        throws HpcException
+	private HpcDataObjectDownloadRequest getDataObjectDownloadRequest(
+			                                HpcFileLocation archiveLocation, 
+			                                HpcFileLocation destinationLocation,
+			                                HpcDataTransferType dataTransferType) 
+			                                throws HpcException
 	{
+		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
+		downloadRequest.setTransferType(dataTransferType);
+		downloadRequest.setArchiveLocation(archiveLocation);
+		
 		if(dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
-		   if(destination == null || 
-			  destination.getFileContainerId() == null || 
-			  destination.getFileId() == null) {
+		   if(destinationLocation == null || 
+			  destinationLocation.getFileContainerId() == null || 
+		      destinationLocation.getFileId() == null) {
 			  throw new HpcException("Invalid download destination", 
 			                         HpcErrorType.INVALID_REQUEST_INPUT);
 		   }
 			
-		   if(!dataTransferService.getPathAttributes(destination, false).getIsDirectory()) {
+		   if(!dataTransferService.getPathAttributes(destinationLocation, false).getIsDirectory()) {
 			  // The user requested destination is NOT a directory, transfer to it.
-			  return destination;
+			  downloadRequest.setDestinationLocation(destinationLocation);
+			  
+		   } else {
+		           // User requested to download to a directory. Append the source file name.
+		           HpcFileLocation calcDestination = new HpcFileLocation();
+		           calcDestination.setFileContainerId(destinationLocation.getFileContainerId());
+		           String sourcePath = archiveLocation.getFileId();
+		           calcDestination.setFileId(destinationLocation.getFileId() + 
+			                                 sourcePath.substring(sourcePath.lastIndexOf('/')));
+		           downloadRequest.setDestinationLocation(calcDestination);
 		   }
-			
-		   // User requested to download to a directory. Append the source file name.
-		   HpcFileLocation downloadDestination = new HpcFileLocation();
-		   downloadDestination.setFileContainerId(destination.getFileContainerId());
-		   String sourcePath = source.getFileId();
-		   downloadDestination.setFileId(destination.getFileId() + 
-			                             sourcePath.substring(sourcePath.lastIndexOf('/')));
-			
-		   return downloadDestination;
-		} else {
-			    // S3 request.
-			   String sourcePath = source.getFileId();
-			   try {
-			        return File.createTempFile(sourcePath.substring(sourcePath.lastIndexOf('/')), "");
-			        
-			   } catch(IOException ioe) {
-				       throw new HpcException("Failed to create a temp file", 
-				    		                  HpcErrorType.UNEXPECTED_ERROR, ioe);
-			   }
 		}
+		
+		return downloadRequest;
 	}
 	
     /** 
@@ -726,16 +724,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * 
      * @throws HpcException
      */
-	private HpcDataObjectUploadResponse uploadData(HpcFileLocation source, InputStream dataObjectStream, 
+	private HpcDataObjectUploadResponse uploadData(HpcFileLocation sourceLocation, 
+			                                       InputStream sourceInputStream, 
 			                                       String path, String callerObjectId)
 	                                              throws HpcException
 	{
     	// Validate one and only one data source is provided.
-    	if(source == null && dataObjectStream == null) {
+    	if(sourceLocation == null && sourceInputStream == null) {
     	   throw new HpcException("No data transfer source or data attachment provided",
 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
-    	if(source != null && dataObjectStream != null) {
+    	if(sourceLocation != null && sourceInputStream != null) {
      	   throw new HpcException("Both data transfer source and data attachment provided",
  	                              HpcErrorType.INVALID_REQUEST_INPUT);	
      	}
@@ -744,7 +743,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
     	uploadRequest.setPath(path);
     	uploadRequest.setCallerObjectId(callerObjectId);
-    	uploadRequest.setSource(source != null ? source : dataObjectStream);
+    	uploadRequest.setSourceLocation(sourceLocation);
+    	uploadRequest.setSourceInputStream(sourceInputStream);
     	
 		// Upload the data object file.
 	    return dataTransferService.uploadDataObject(uploadRequest);	

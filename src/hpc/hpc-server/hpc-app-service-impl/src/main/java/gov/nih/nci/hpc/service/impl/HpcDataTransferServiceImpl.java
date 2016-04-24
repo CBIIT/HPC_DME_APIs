@@ -14,6 +14,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocatio
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
@@ -28,7 +29,6 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 
-import java.io.InputStream;
 import java.util.Map;
 
 /**
@@ -72,22 +72,21 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
                                                        throws HpcException
     {
     	// Input validation.
-    	Object source = uploadRequest.getSource();
-    	if(source == null || uploadRequest.getPath() == null) {
-    	   throw new HpcException("Invalid data object upload request", 
+    	if(uploadRequest.getPath() == null) {
+    	   throw new HpcException("Null data object path", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
         	
     	// Determine the data transfer type.
     	HpcDataTransferType dataTransferType = null;
-    	if(source instanceof HpcFileLocation) {
-    	   if(!isValidFileLocation((HpcFileLocation) source)) {
+    	if(uploadRequest.getSourceLocation() != null) {
+    	   if(!isValidFileLocation(uploadRequest.getSourceLocation())) {
     	      throw new HpcException("Invalid upload file location", 
     	    	                     HpcErrorType.INVALID_REQUEST_INPUT);
     	   }
     	   dataTransferType = HpcDataTransferType.GLOBUS;
     	   
-    	} else if(source instanceof InputStream) {
+    	} else if(uploadRequest.getSourceInputStream() != null) {
     		      dataTransferType = HpcDataTransferType.S_3;
     		      
     	} else {
@@ -103,22 +102,23 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     }
     
     @Override
-    public void downloadDataObject(HpcDataObjectDownloadRequest downloadRequest) 
-                                  throws HpcException
+    public HpcDataObjectDownloadResponse 
+              downloadDataObject(HpcDataObjectDownloadRequest downloadRequest) 
+                                throws HpcException
     {
-    	// Input validation.
-    	if(!isValidFileLocation(downloadRequest.getArchiveLocation()) || 
-    	   downloadRequest.getDestination() == null || 
-    	   downloadRequest.getTransferType() == null) {
-    	   throw new HpcException("Invalid data object download request", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-        	
-    	// Download the data object using the appropriate data transfer proxy.
+    	// Input Validation.
     	HpcDataTransferType dataTransferType = downloadRequest.getTransferType();
-  	    dataTransferProxies.get(dataTransferType).
-  	                        downloadDataObject(getAuthenticatedToken(dataTransferType), 
-  	                        		           downloadRequest);	
+    	if(dataTransferType == null ||
+    	   (dataTransferType.equals(HpcDataTransferType.GLOBUS) && 
+    	    !isValidFileLocation(downloadRequest.getDestinationLocation()))) {
+  	       throw new HpcException("Invalid data transfer type or upload file location", 
+  	    	                      HpcErrorType.INVALID_REQUEST_INPUT);
+  	   }
+    	
+    	// Download the data object using the appropriate data transfer proxy.
+  	    return dataTransferProxies.get(dataTransferType).
+  	               downloadDataObject(getAuthenticatedToken(dataTransferType), 
+  	                                  downloadRequest);	
     }
     
 	@Override   

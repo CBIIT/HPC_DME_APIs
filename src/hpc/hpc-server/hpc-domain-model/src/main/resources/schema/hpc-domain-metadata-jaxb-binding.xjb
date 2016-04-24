@@ -55,6 +55,9 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcFileLocation']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcInputStream']">
+        	<jxb:class ref="java.io.InputStream"/>
+		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectUploadRequest']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest"/>
 		</jxb:bindings>
@@ -63,6 +66,9 @@
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadRequest']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadResponse']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse"/>
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferStatus']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus"/>

@@ -15,7 +15,8 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
@@ -117,12 +118,14 @@ public interface HpcDataManagementBusService
      *
      * @param path The data object path.
      * @param downloadRequest The download request.
+     * @return The downloaded file if this is 
      * 
      * @throws HpcException
      */
-	public void downloadDataObject(String path,
-			                       HpcDataObjectDownloadDTO downloadRequest)
-			                      throws HpcException;
+	public HpcDataObjectDownloadResponseDTO 
+	          downloadDataObject(String path,
+			                     HpcDataObjectDownloadRequestDTO downloadRequest)
+			                    throws HpcException;
     
     /**
      * Close connection to Data Management system for the current service call.
