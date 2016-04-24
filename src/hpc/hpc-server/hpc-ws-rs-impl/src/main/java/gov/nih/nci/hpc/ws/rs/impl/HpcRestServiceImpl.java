@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.ws.rs.provider.HpcExceptionMapper;
 import java.net.URI;
 
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
@@ -89,6 +90,20 @@ public abstract class HpcRestServiceImpl
 		} else {
 			    return Response.ok().build();
 		}
+    }
+    
+    /**
+     * Build an 'ok' (HTTP 200) REST response instance.
+     *
+     * @param entity The entity to attach to the response.
+     * @param mimeType The response's mime type.
+     * @return The REST response object.
+     */
+    protected Response okResponse(Object entity, MediaType mediaType)
+    {
+    	return Response.ok(entity, mediaType).
+        		           header("Access-Control-Allow-Origin", "*").
+        		           header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
     }
     
     /**

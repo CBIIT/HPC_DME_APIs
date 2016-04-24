@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
@@ -243,11 +244,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		Object entity = downloadResponse.getInputStream() != null ? 
-				        downloadResponse.getInputStream() : downloadResponse;
-			
-		return okResponse(entity, false);
-    	
+		if(downloadResponse.getInputStream() != null) {
+		   return okResponse(downloadResponse.getInputStream(), 
+				             MediaType.APPLICATION_OCTET_STREAM_TYPE);
+		} else {
+			    return okResponse(downloadResponse, false);
+		}
     }
     
     @Override
