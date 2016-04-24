@@ -4,6 +4,7 @@ import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestina
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
@@ -13,9 +14,6 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
-
-import java.io.File;
-import java.io.InputStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -65,28 +63,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	return s3Connection.authenticate(dataTransferAccount);
     }
     
-    /**
-     * Upload a data object file.
-     *
-      *@param authenticatedToken An authenticated token.
-     * @param dataUploadRequest The data upload request
-     * @return HpcDataObjectUploadResponse A data object upload response.
-     * 
-     * @throws HpcException
-     */
+    @Override
     public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
     		                                            HpcDataObjectUploadRequest uploadRequest) 
     		                                           throws HpcException
    {
-    	// Input validation.
-    	if(!(uploadRequest.getSource() instanceof InputStream)) {
-    	   throw new HpcException("Invalid source type: " + 
-    	                          uploadRequest.getSource().getClass().getName(),
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-    	
-    	// Calculate the archive destination.
-    	InputStream inputStream = (InputStream) uploadRequest.getSource();
        	// Calculate the archive destination.
     	HpcFileLocation archiveDestination = 
     	   getArchiveDestination(baseArchiveDestination, uploadRequest.getPath(),
@@ -98,7 +79,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	
     	// Create a S3 upload request.
     	PutObjectRequest request = new PutObjectRequest(archiveDestination.getFileContainerId(), 
-    			                                        archiveDestination.getFileId(), inputStream, 
+    			                                        archiveDestination.getFileId(), 
+    			                                        uploadRequest.getSourceInputStream(), 
     			                                        metadata);
     	
     	try {
@@ -120,32 +102,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         return uploadResponse;
    }
     
-    /**
-     * Download a data object file.
-     *
-     * @param authenticatedToken An authenticated token.
-     * @param dataDownloadRequest The data object download request.
-     * 
-     * @throws HpcException
-     */
-    public void downloadDataObject(Object authenticatedToken,
-    		                       HpcDataObjectDownloadRequest downloadRequest) 
-    		                      throws HpcException
+    @Override
+    public HpcDataObjectDownloadResponse 
+              downloadDataObject(Object authenticatedToken,
+    		                     HpcDataObjectDownloadRequest downloadRequest) 
+    		                    throws HpcException
     {
+    	HpcDataObjectDownloadResponse response = new HpcDataObjectDownloadResponse();
     	
-    	// Input validation.
-    	if(!(downloadRequest.getDestination() instanceof File)) {
-    	   throw new HpcException("Invalid destination type: " + 
-    			                  downloadRequest.getDestination().getClass().getName(),
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-    	
-    	// Download the file via S3.
+    	// Download the file via S3. 
+    	// Note: TransferManager currently not supporting download w/ an InputStream. 
+    	//       We use the Client API until this is added.
     	try {
-    	     s3Connection.getTransferManager(authenticatedToken).download(
-    		         	     downloadRequest.getArchiveLocation().getFileContainerId(),
-    			             downloadRequest.getArchiveLocation().getFileId(), 
-    			             (File) downloadRequest.getDestination());
+    		 response.setInputStream(
+    		 s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client().
+    		   getObject(downloadRequest.getArchiveLocation().getFileContainerId(),
+    			         downloadRequest.getArchiveLocation().getFileId()).getObjectContent());
+    			             
+    	     return response;
     	     
         } catch(AmazonClientException ace) {
     	        throw new HpcException("Failed to upload file via S3", 
