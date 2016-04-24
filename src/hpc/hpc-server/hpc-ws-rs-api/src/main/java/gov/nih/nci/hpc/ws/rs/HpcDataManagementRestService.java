@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
@@ -133,7 +133,7 @@ public interface HpcDataManagementRestService
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadDataObject(@PathParam("path") String path,
-			                           HpcDataObjectDownloadDTO downloadRequest);
+			                           HpcDataObjectDownloadRequestDTO downloadRequest);
 	
     /**
      * POST Set permissions.
