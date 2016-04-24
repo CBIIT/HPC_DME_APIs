@@ -22,6 +22,15 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 
+/**
+ * <p>
+ * HPC Data Transfer Proxy S3 Implementation.
+ * </p>
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id:$
+ */
+
 public class HpcDataTransferProxyImpl implements HpcDataTransferProxy 
 {
     //---------------------------------------------------------------------//
