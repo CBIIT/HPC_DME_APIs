@@ -33,6 +33,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+/**
+ * <p>
+ * HPC Data Transfer Proxy Globus Implementation.
+ * </p>
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id:$
+ */
+
 public class HpcDataTransferProxyImpl implements HpcDataTransferProxy 
 {
     //---------------------------------------------------------------------//
