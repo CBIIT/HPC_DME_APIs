@@ -23,7 +23,7 @@ import com.amazonaws.services.s3.transfer.TransferManager;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
+ * @version $Id:$
  */
 
 public class HpcS3Connection 
