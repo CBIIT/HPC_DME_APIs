@@ -4,6 +4,7 @@ import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestina
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
@@ -89,26 +90,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	return globusConnection.authenticate(dataTransferAccount);
     }
     
-    /**
-     * Upload a data object file.
-     *
-      *@param authenticatedToken An authenticated token.
-     * @param dataUploadRequest The data upload request
-     * @return HpcDataObjectUploadResponse A data object upload response.
-     * 
-     * @throws HpcException
-     */
+    @Override
     public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
     		                                            HpcDataObjectUploadRequest uploadRequest) 
     		                                           throws HpcException
-   {
-    	// Input validation.
-    	if(!(uploadRequest.getSource() instanceof HpcFileLocation)) {
-    	   throw new HpcException("Invalid source type: " + 
-    	                          uploadRequest.getSource().getClass().getName(),
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-    	
+    {
     	// Calculate the archive destination.
     	HpcFileLocation archiveDestination = 
     	   getArchiveDestination(baseArchiveDestination, uploadRequest.getPath(),
@@ -116,7 +102,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	
     	// Submit a request to Globus to transfer the data.
     	String requestId = transferData(globusConnection.getTransferClient(authenticatedToken),
-    			                        (HpcFileLocation) uploadRequest.getSource(),
+    			                        uploadRequest.getSourceLocation(),
     			                        archiveDestination);
     	
     	// Package and return the response.
@@ -126,31 +112,22 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	uploadResponse.setDataTransferStatus(HpcDataTransferStatus.IN_PROGRESS);
     	uploadResponse.setDataTransferType(HpcDataTransferType.GLOBUS);
     	return uploadResponse;
-   }
+    }
     
-    /**
-     * Download a data object file.
-     *
-     * @param authenticatedToken An authenticated token.
-     * @param dataDownloadRequest The data object download request.
-     * 
-     * @throws HpcException
-     */
-    public void downloadDataObject(Object authenticatedToken,
-    		                       HpcDataObjectDownloadRequest downloadRequest) 
-    		                      throws HpcException
+    @Override
+    public HpcDataObjectDownloadResponse 
+              downloadDataObject(Object authenticatedToken,
+    		                     HpcDataObjectDownloadRequest downloadRequest) 
+    		                    throws HpcException
     {
-    	// Input validation.
-    	if(!(downloadRequest.getDestination() instanceof HpcFileLocation)) {
-    	   throw new HpcException("Invalid destination type: " + 
-    			                  downloadRequest.getDestination().getClass().getName(),
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
+    	HpcDataObjectDownloadResponse response = new HpcDataObjectDownloadResponse();
     	
     	// Submit a request to Globus to transfer the data.
-    	transferData(globusConnection.getTransferClient(authenticatedToken),
-    			     downloadRequest.getArchiveLocation(),
-    			     (HpcFileLocation) downloadRequest.getDestination());
+    	response.setRequestId(transferData(globusConnection.getTransferClient(authenticatedToken),
+    			                           downloadRequest.getArchiveLocation(),
+    			                           downloadRequest.getDestinationLocation()));
+    	
+    	return response;
     }
     
     @Override

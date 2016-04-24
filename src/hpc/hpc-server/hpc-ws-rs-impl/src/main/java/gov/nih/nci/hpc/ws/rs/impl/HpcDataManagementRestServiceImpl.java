@@ -16,7 +16,8 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
@@ -227,13 +228,14 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     
     @Override
 	public Response downloadDataObject(String path,
-                                       HpcDataObjectDownloadDTO downloadRequest)
+                                       HpcDataObjectDownloadRequestDTO downloadRequest)
     {
     	path = toAbsolutePath(path);
     	logger.info("Invoking RS: POST /dataObject/" + path + "/download: " + downloadRequest);
     	
+    	HpcDataObjectDownloadResponseDTO downloadResponse = null;
 		try {
-			 dataManagementBusService.downloadDataObject(path, downloadRequest);
+			 downloadResponse = dataManagementBusService.downloadDataObject(path, downloadRequest);
 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /dataObject/" + path + "/download: " + downloadRequest + 
@@ -241,7 +243,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return okResponse(null, false);
+		Object entity = downloadResponse.getInputStream() != null ? 
+				        downloadResponse.getInputStream() : downloadResponse;
+			
+		return okResponse(entity, false);
     	
     }
     

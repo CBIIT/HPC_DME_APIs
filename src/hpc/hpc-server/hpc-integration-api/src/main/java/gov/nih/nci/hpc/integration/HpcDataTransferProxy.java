@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.integration;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
@@ -46,7 +47,7 @@ public interface HpcDataTransferProxy
     /**
      * Upload a data object file.
      *
-      *@param authenticatedToken An authenticated token.
+     * @param authenticatedToken An authenticated token.
      * @param dataUploadRequest The data upload request
      * @return HpcDataObjectUploadResponse A data object upload response.
      * 
@@ -61,12 +62,13 @@ public interface HpcDataTransferProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param dataDownloadRequest The data object download request.
+     * @return HpcDataObjectDownloadResponse A data object download response.
      * 
      * @throws HpcException
      */
-    public void downloadDataObject(Object authenticatedToken,
-    		                       HpcDataObjectDownloadRequest downloadRequest) 
-    		                      throws HpcException;
+    public HpcDataObjectDownloadResponse downloadDataObject(Object authenticatedToken,
+    		                                                HpcDataObjectDownloadRequest downloadRequest) 
+    		                                               throws HpcException;
     
     /**
      * Get a data transfer request status.
