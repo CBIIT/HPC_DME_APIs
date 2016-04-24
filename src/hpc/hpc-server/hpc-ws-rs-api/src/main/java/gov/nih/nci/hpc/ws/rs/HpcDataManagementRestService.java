@@ -131,7 +131,8 @@ public interface HpcDataManagementRestService
 	@POST
 	@Path("/dataObject/{path:.*}/download")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Produces(MediaType.APPLICATION_OCTET_STREAM + "," + 
+	          MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response downloadDataObject(@PathParam("path") String path,
 			                           HpcDataObjectDownloadRequestDTO downloadRequest);
 	
