@@ -50,6 +50,7 @@ public interface HpcDataManagementRestService
      *
      * @param path The collection path.
      * @param metadataEntries A list of metadata entries to attach to the collection.
+     * @return Response The REST service response.
      */
 	@PUT
 	@Path("/collection/{path:.*}")
@@ -63,6 +64,7 @@ public interface HpcDataManagementRestService
      * GET Collection.
      *
      * @param path The collection path.
+     * @return Response The REST service response.
      */
 	@GET
 	@Path("/collection/{path:.*}")
@@ -74,6 +76,7 @@ public interface HpcDataManagementRestService
      * GET Collections by metadata query.
      *
      * @param metadataEntryQueries A list of metadata entries to query for.
+     * @return Response The REST service response.
      */
 	@GET
 	@Path("/collection")
@@ -87,6 +90,7 @@ public interface HpcDataManagementRestService
      *
      * @param path The data object path.
      * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
+     * @return Response The REST service response.
      */
 	@PUT
 	@Path("/dataObject/{path:.*}")
@@ -103,6 +107,7 @@ public interface HpcDataManagementRestService
      * GET Data Object.
      *
      * @param path The data object path.
+     * @return Response The REST service response.
      */
 	@GET
 	@Path("/dataObject/{path:.*}")
@@ -127,6 +132,7 @@ public interface HpcDataManagementRestService
      *
      * @param path The data object path.
      * @param downloadRequest The download request.
+     * @return Response The REST service response.
      */
 	@POST
 	@Path("/dataObject/{path:.*}/download")
@@ -140,6 +146,7 @@ public interface HpcDataManagementRestService
      * POST Set permissions.
      *
      * @param entityPermissionRequests Requests to set entities (Collections or Data Objects) permissions.
+     * @return Response The REST service response.
      */
 	@POST
 	@Path("/acl")
@@ -151,6 +158,7 @@ public interface HpcDataManagementRestService
      * POST Set (create or update) a group and assign/remove users.
      *
      * @param groupRequest The request DTO to create/update a group.
+     * @return Response The REST service response.
      */
 	@POST
 	@Path("/group")
