@@ -315,7 +315,6 @@ function get_item {
 
     TOTAL_PATH="hpc-server/$ITEM_PATH"
     TOTAL_PATH=$(echo "$TOTAL_PATH" | sed "s#\/\/*#\/#g")
-    echo "$TOTAL_PATH" 
    
     curl -G -X GET "$SERVER/$TOTAL_PATH"  --config $HPC_DM_TEST/utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     check_connection $RESPONSE_HEADER
