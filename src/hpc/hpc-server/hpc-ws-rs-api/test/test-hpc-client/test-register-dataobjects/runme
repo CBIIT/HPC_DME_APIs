@@ -51,7 +51,7 @@ for dataobject in $REGISTERED_DATAOBJECTS; do
     RESPONSE_MSG=response-message.json.tmp
     #Get the registered collection by path
 
-    curl -G -X GET $SERVER/hpc-server/dataObject/${dataobject}  --config $HPC_DM_TEST/utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+get_item "/dataObject/${dataobject}" "$RESPONSE_HEADER" "$RESPONSE_MSG"
 
     GET_HTTP_CODE=`get_http_code $RESPONSE_HEADER`
     if [ "$GET_HTTP_CODE" != "200" ]  
