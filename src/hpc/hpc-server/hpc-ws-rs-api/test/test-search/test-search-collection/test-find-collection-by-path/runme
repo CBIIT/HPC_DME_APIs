@@ -26,7 +26,7 @@ SERVER=`cat ../../../utils/server`
 
 REGISTERED_PROJECT=`cat registered-project-path.tmp`
 
-curl -G -X GET $SERVER/hpc-server/collection/${REGISTERED_PROJECT} --data-urlencode metadataQuery@input.json  --config ../../../utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+get_item "/collection/${REGISTERED_PROJECT}" "$RESPONSE_HEADER" "$RESPONSE_MSG"
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 echo $HTTP_CODE
