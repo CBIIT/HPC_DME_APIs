@@ -1,5 +1,5 @@
 /**
- * HpcUserServiceImpl.java
+ * HpcSecurityServiceImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -21,7 +21,7 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
-import gov.nih.nci.hpc.service.HpcUserService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -35,10 +35,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
+ * @version $Id: HpcSecurityServiceImpl.java 1013 2016-03-26 23:06:30Z rosenbergea $
  */
 
-public class HpcUserServiceImpl implements HpcUserService
+public class HpcSecurityServiceImpl implements HpcSecurityService
 {         
     //---------------------------------------------------------------------//
     // Instance members
@@ -64,7 +64,7 @@ public class HpcUserServiceImpl implements HpcUserService
      * 
      * @param docValues A whitespace separated list of valid DOC values.
      */
-    private HpcUserServiceImpl(String docValues)
+    private HpcSecurityServiceImpl(String docValues)
     {
     	this.docValues.addAll(Arrays.asList(docValues.split("\\s+")));
     }   
@@ -74,7 +74,7 @@ public class HpcUserServiceImpl implements HpcUserService
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcUserServiceImpl() throws HpcException
+    private HpcSecurityServiceImpl() throws HpcException
     {
     	throw new HpcException("Constructor disabled", 
     			               HpcErrorType.SPRING_CONFIGURATION_ERROR);

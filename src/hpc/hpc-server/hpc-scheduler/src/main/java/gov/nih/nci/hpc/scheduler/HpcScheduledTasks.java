@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.scheduler;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
-import gov.nih.nci.hpc.bus.HpcUserBusService;
+import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -43,9 +43,9 @@ public class HpcScheduledTasks
 	@Autowired
     private HpcDataManagementBusService dataManagementBusService = null;
 	
-    // The User Business Service instance.
+    // The Security Business Service instance.
 	@Autowired
-    private HpcUserBusService userBusService = null;
+    private HpcSecurityBusService securityBusService = null;
 	
 	// The Logger instance.
 	private final Logger logger = 

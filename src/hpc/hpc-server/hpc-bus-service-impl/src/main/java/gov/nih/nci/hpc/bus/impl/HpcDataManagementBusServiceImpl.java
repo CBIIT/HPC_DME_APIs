@@ -42,7 +42,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
-import gov.nih.nci.hpc.service.HpcUserService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.io.InputStream;
 import java.util.Calendar;
@@ -82,7 +82,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // Application service instances.
 	
 	@Autowired
-    private HpcUserService userService = null;
+    private HpcSecurityService userService = null;
 	
 	@Autowired
     private HpcDataTransferService dataTransferService = null;
@@ -245,6 +245,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		       
 		        // Transfer the data file.
 		        HpcFileLocation source = dataObjectRegistrationDTO.getSource();
+		        //DTO transformation sets source object with null attribute values
+				if(source != null && (source.getFileContainerId() == null && source.getFileId() == null))
+					source = null;
+		        
 		        HpcDataObjectUploadResponse uploadResponse = 
 		           uploadData(source, dataObjectStream, path, 
 		        		      dataObjectRegistrationDTO.getCallerObjectId());
@@ -491,13 +495,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			    }
     		}
     	}
-    }
-    
-    @Override
-    public HpcGroupResponseDTO setGroup(HpcGroupRequestDTO groupRequest) 
-    		                           throws HpcException
-    {
-    	return null;
     }
     
     //---------------------------------------------------------------------//

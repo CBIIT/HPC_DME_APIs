@@ -10,16 +10,21 @@
 
 package gov.nih.nci.hpc.ws.rs.interceptor;
 
-import gov.nih.nci.hpc.bus.HpcUserBusService;
+import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.exception.HpcAuthenticationException;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Set;
+
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.interceptor.security.SecureAnnotationsInterceptor;
 import org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
@@ -44,7 +49,7 @@ public class HpcAuthenticationInterceptor
 
     // The User Business Service instance.
 	@Autowired
-    private HpcUserBusService userBusService = null;
+    private HpcSecurityBusService userBusService = null;
 	
 	// LDAP authentication on/off switch.
 	private boolean ldapAuthentication = true;
@@ -92,6 +97,7 @@ public class HpcAuthenticationInterceptor
     {
     	// Get and validate the authorization policy set by the caller.
     	HpcAuthenticationRequestDTO authenticationRequest = null;
+    	
     	AuthorizationPolicy policy = message.get(AuthorizationPolicy.class);
     	if(policy != null) {
     	   authenticationRequest = new HpcAuthenticationRequestDTO();

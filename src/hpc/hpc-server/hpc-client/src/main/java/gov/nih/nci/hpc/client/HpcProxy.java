@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.client;
 
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
-import gov.nih.nci.hpc.ws.rs.HpcUserRestService;
+import gov.nih.nci.hpc.ws.rs.HpcSecurityRestService;
 
 /**
  * <p>
@@ -29,7 +29,7 @@ public interface HpcProxy
      *
      * @return A user rest service proxy instance.
      */
-    public HpcUserRestService getUserRestServiceProxy();
+    public HpcSecurityRestService getUserRestServiceProxy();
     
     /**
      * Get the data management service.

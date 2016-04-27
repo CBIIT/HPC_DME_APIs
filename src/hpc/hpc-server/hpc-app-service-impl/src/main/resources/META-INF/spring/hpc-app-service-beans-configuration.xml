@@ -38,7 +38,7 @@
 	</util:map>
 	
 	<!-- HPC Application Services Beans -->
-	<bean id="hpcUserService" class="gov.nih.nci.hpc.service.impl.HpcUserServiceImpl">
+	<bean id="hpcSecurityService" class="gov.nih.nci.hpc.service.impl.HpcSecurityServiceImpl">
 		<constructor-arg value="${hpc.service.user.DOC}" />
 	</bean>
 	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl" >
