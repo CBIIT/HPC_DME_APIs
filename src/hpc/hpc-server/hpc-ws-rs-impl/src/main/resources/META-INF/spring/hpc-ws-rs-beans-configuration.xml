@@ -141,13 +141,13 @@
 	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcCleanupInterceptor" />
 	
 	<!-- JAX-RS Service Beans -->
-	<bean id="hpcUserRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcUserRestServiceImpl" />
+	<bean id="hpcSecurityRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcSecurityRestServiceImpl" />
 	<bean id="hpcDataManagementRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl" />
 	
 	<!-- CXF JAX-RS Server Config -->
 	<jaxrs:server id="hpc-server" address="${hpc.ws.rs.url}" bus="cxf">
 		<jaxrs:serviceBeans>
-			<ref bean="hpcUserRestService" />
+			<ref bean="hpcSecurityRestService" />
 			<ref bean="hpcDataManagementRestService" />
 		</jaxrs:serviceBeans>
 		<jaxrs:providers>
@@ -169,7 +169,7 @@
 	<!-- CXF JAX-RS Secured Server Config -->
 	<jaxrs:server id="hpc-secured-server" address="${hpc.ws.rs.secured-url}" bus="cxf">
 		<jaxrs:serviceBeans>
-			<ref bean="hpcUserRestService" />
+			<ref bean="hpcSecurityRestService" />
 			<ref bean="hpcDataManagementRestService" />
 		</jaxrs:serviceBeans>
 		<jaxrs:providers>

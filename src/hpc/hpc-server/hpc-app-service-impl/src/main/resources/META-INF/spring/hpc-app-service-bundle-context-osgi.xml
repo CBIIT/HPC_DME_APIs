@@ -30,8 +30,8 @@
 	<ctx:property-placeholder properties-ref="preProps" />
 
 	<!-- OSGi beans export -->
-	<osgi:service ref="hpcUserService" 
-	              interface="gov.nih.nci.hpc.service.HpcUserService" />
+	<osgi:service ref="hpcSecurityService" 
+	              interface="gov.nih.nci.hpc.service.HpcSecurityService" />
 	<osgi:service ref="hpcDataTransferService"
 		          interface="gov.nih.nci.hpc.service.HpcDataTransferService" />
 	<osgi:service ref="hpcDataManagementService"
