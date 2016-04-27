@@ -1,18 +1,25 @@
 package gov.nih.nci.hpc.cli;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.csv.CSVFormat;
@@ -20,24 +27,22 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang.StringUtils;
+import org.apache.cxf.jaxrs.client.WebClient;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
-import gov.nih.nci.hpc.cli.util.Constants;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
+
 import gov.nih.nci.hpc.cli.util.HpcBatchException;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
-import gov.nih.nci.hpc.cli.util.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
@@ -52,9 +57,9 @@ public class HPCDatafiles extends HPCBatchClient {
 		super();
 	}
 
-	protected void initializeLog()
-	{
-		logFile = logDir + File.separator + "putDatafiles_errorLog" + new SimpleDateFormat("yyyyMMddhhmm'.txt'").format(new Date());
+	protected void initializeLog() {
+		logFile = logDir + File.separator + "putDatafiles_errorLog"
+				+ new SimpleDateFormat("yyyyMMddhhmm'.txt'").format(new Date());
 		logRecordsFile = logDir + File.separator + "putDatafiles_errorRecords"
 				+ new SimpleDateFormat("yyyyMMddhhmm'.csv'").format(new Date());
 		File file1 = new File(logFile);
@@ -75,17 +80,22 @@ public class HPCDatafiles extends HPCBatchClient {
 			System.out.println("Failed to initialize Batch process: " + e.getMessage());
 			e.printStackTrace();
 		}
-		
-	}	
-	
+
+	}
+
 	protected boolean processFile(String fileName, String userId, String password) {
 		boolean success = true;
 		FileReader fileReader = null;
 
+		if(userId == null || userId.trim().length() == 0 || password == null || password.trim().length() == 0)
+		{
+			System.out.println("Invalid login credentials");
+			return false;
+		}
 		CSVParser csvFileParser = null;
 		// Create the CSVFormat object with the header mapping
 		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withHeader();
-		ResponseEntity<HpcExceptionDTO> response = null;
+		HpcExceptionDTO response = null;
 		try {
 
 			// initialize FileReader object
@@ -103,31 +113,26 @@ public class HPCDatafiles extends HPCBatchClient {
 			// the header
 			for (int i = 0; i < csvRecords.size(); i++) {
 				CSVRecord record = csvRecords.get(i);
-            	boolean processedRecordFlag = true;
+				boolean processedRecordFlag = true;
 				HpcFileLocation source = new HpcFileLocation();
-
+				InputStream inputStream = null;
 				List<HpcMetadataEntry> listOfhpcCollection = new ArrayList<HpcMetadataEntry>();
 				for (Entry<String, Integer> entry : headersMap.entrySet()) {
 					String cellVal = record.get(entry.getKey());
 					HpcMetadataEntry hpcMetadataEntry = new HpcMetadataEntry();
 					hpcMetadataEntry.setAttribute(entry.getKey());
 					hpcMetadataEntry.setValue(cellVal);
-					if(entry.getKey().equals("source_globus_endpoint"))
-					{
+					if (entry.getKey().equals("fileContainerId")) {
 						source.setFileContainerId(cellVal);
 						continue;
-					}
-					else if(entry.getKey().equals("source_globus_path"))
-					{
+					} else if (entry.getKey().equals("fileId")) {
 						source.setFileId(cellVal);
 						continue;
-					}
-					else if(entry.getKey().equals("object_path"))
-					{
+					} else if (entry.getKey().equals("object_path")) {
 						collName = cellVal;
 						continue;
 					}
-						
+
 					if (StringUtils.isNotBlank(cellVal))
 						listOfhpcCollection.add(hpcMetadataEntry);
 				}
@@ -136,42 +141,85 @@ public class HPCDatafiles extends HPCBatchClient {
 				hpcDataObjectRegistrationDTO.getMetadataEntries().addAll(listOfhpcCollection);
 
 				System.out.println("Adding file from " + source.getFileId());
-				
-				
+				if (!collName.startsWith("/"))
+					collName = "/" + collName;
+
 				hpcDataObjectRegistrationDTO.setSource(source);
 				hpcDataObjectRegistrationDTO.setCallerObjectId("/");
-				RestTemplate restTemplate = HpcClientUtil.getRestTemplate(hpcCertPath, hpcCertPassword);
-				
-				HttpHeaders headers = new HttpHeaders();
-				String token = DatatypeConverter.printBase64Binary((userId + ":" + password).getBytes());
-				headers.add("Authorization", "Basic " + token);
-				List<MediaType> mediaTypeList = new ArrayList<MediaType>();
-				mediaTypeList.add(MediaType.APPLICATION_JSON);
-				headers.setAccept(mediaTypeList);
+				WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/" + hpcDataService + collName, hpcCertPath, hpcCertPassword);
+				List<Attachment> atts = new LinkedList<Attachment>();
+				if (hpcDataObjectRegistrationDTO.getSource().getFileContainerId() == null) {
+					if (hpcDataObjectRegistrationDTO.getSource().getFileId() == null) {
+						addErrorToLog("Invalid or missing file source location ", i + 1);
+						success = false;
+						processedRecordFlag = false;
+						addRecordToLog(record, headersMap);
+						continue;
+					} else {
 
-				HttpEntity<HpcDataObjectRegistrationDTO> entity = new HttpEntity<HpcDataObjectRegistrationDTO>(
-						hpcDataObjectRegistrationDTO, headers);
-				try {
-					if (!collName.startsWith("/"))
-						collName = "/" + collName;
-
-					System.out.println(hpcServerURL + "/" + hpcDataService  + collName);
-					response = restTemplate.exchange(
-							hpcServerURL + "/" + hpcDataService + collName, HttpMethod.PUT,
-							entity, HpcExceptionDTO.class);
-					if(response != null)
-					{
-						HpcExceptionDTO exception = response.getBody();
-						if(exception != null)
+						try
 						{
-							String message = "Failed to process record due to: "+exception.getMessage() + ": Error Type:"+exception.getErrorType().value() + ": Request reject reason: "+exception.getRequestRejectReason().value();
-							addErrorToLog(message, i+1);
+							inputStream = new BufferedInputStream(
+								new FileInputStream(hpcDataObjectRegistrationDTO.getSource().getFileId()));
+						ContentDisposition cd2 = new ContentDisposition("attachment;filename="+hpcDataObjectRegistrationDTO.getSource().getFileId());
+						atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObject", inputStream, cd2));
+						System.out.println("Setting source to null");
+						hpcDataObjectRegistrationDTO.setSource(null);
+						}
+						catch(FileNotFoundException e)
+						{
+							addErrorToLog("Invalid or missing file source location ", i + 1);
 							success = false;
 							processedRecordFlag = false;
 							addRecordToLog(record, headersMap);
-						}else if(!(response.getStatusCode().equals(HttpStatus.CREATED) || response.getStatusCode().equals(HttpStatus.OK)))
+							continue;
+						}
+						catch(IOException e)
 						{
-							addErrorToLog("Failed to process record due to unknown error. Return code: " + response.getStatusCode(), i+1);
+							addErrorToLog("Invalid or missing file source location ", i + 1);
+							success = false;
+							processedRecordFlag = false;
+							addRecordToLog(record, headersMap);
+							continue;
+						}
+					}
+				}
+				atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration", "application/json",
+						hpcDataObjectRegistrationDTO));
+
+				String token = DatatypeConverter.printBase64Binary((userId + ":" + password).getBytes());
+				client.header("Authorization", "Basic " + token);
+				client.type("multipart/mixed").accept(MediaType.APPLICATION_JSON);
+
+				try {
+					System.out.println(hpcServerURL + "/" + hpcDataService + collName);
+					Response restResponse = client.put(new MultipartBody(atts));
+					System.out.println(restResponse.getStatus());
+					if (!(restResponse.getStatus() == 201 || restResponse.getStatus() == 200)) {
+						MappingJsonFactory factory = new MappingJsonFactory();
+						JsonParser parser = factory.createJsonParser((InputStream) restResponse.getEntity());
+						response = parser.readValueAs(HpcExceptionDTO.class);
+
+						if (response != null) {
+							// System.out.println(response);
+							StringBuffer buffer = new StringBuffer();
+							if (response.getMessage() != null)
+								buffer.append("Failed to process record due to: " + response.getMessage());
+							else
+								buffer.append("Failed to process record due to unkown reason");
+							if (response.getErrorType() != null)
+								buffer.append(" Error Type:" + response.getErrorType().value());
+
+							if (response.getRequestRejectReason() != null)
+								buffer.append(" Request reject reason:" + response.getRequestRejectReason().value());
+
+							addErrorToLog(buffer.toString(), i + 1);
+							success = false;
+							processedRecordFlag = false;
+							addRecordToLog(record, headersMap);
+						} else {
+							addErrorToLog("Failed to process record due to unknown error. Return code: "
+									+ restResponse.getStatus(), i + 1);
 							success = false;
 							processedRecordFlag = false;
 							addRecordToLog(record, headersMap);
@@ -180,43 +228,47 @@ public class HPCDatafiles extends HPCBatchClient {
 				} catch (HpcBatchException e) {
 					success = false;
 					processedRecordFlag = false;
-					String message = "Failed to process record due to: "+e.getMessage();
-					//System.out.println(message);
-					addErrorToLog(message, i+1);
+					String message = "Failed to process record due to: " + e.getMessage();
+					// System.out.println(message);
+					addErrorToLog(message, i + 1);
 					StringWriter sw = new StringWriter();
 					e.printStackTrace(new PrintWriter(sw));
 					String exceptionAsString = sw.toString();
-					addErrorToLog(exceptionAsString, i+1);
+					addErrorToLog(exceptionAsString, i + 1);
 					addRecordToLog(record, headersMap);
 				} catch (RestClientException e) {
 					success = false;
 					processedRecordFlag = false;
-					String message = "Failed to process record due to: "+e.getMessage();
-					//System.out.println(message);
-					addErrorToLog(message, i+1);
+					String message = "Failed to process record due to: " + e.getMessage();
+					// System.out.println(message);
+					addErrorToLog(message, i + 1);
 					StringWriter sw = new StringWriter();
 					e.printStackTrace(new PrintWriter(sw));
 					String exceptionAsString = sw.toString();
-					addErrorToLog(exceptionAsString, i+1);
+					addErrorToLog(exceptionAsString, i + 1);
 					addRecordToLog(record, headersMap);
 				} catch (Exception e) {
 					success = false;
 					processedRecordFlag = false;
-					String message = "Failed to process record due to: "+e.getMessage();
-					//System.out.println(message);
-					addErrorToLog(message, i+1);	
+					String message = "Failed to process record due to: " + e.getMessage();
+					// System.out.println(message);
+					addErrorToLog(message, i + 1);
 					StringWriter sw = new StringWriter();
 					e.printStackTrace(new PrintWriter(sw));
 					String exceptionAsString = sw.toString();
-					addErrorToLog(exceptionAsString, i+1);
+					addErrorToLog(exceptionAsString, i + 1);
 					addRecordToLog(record, headersMap);
 				}
-              	if(processedRecordFlag)
-              		System.out.println("Success!");
-              	else
-              		System.out.println("Failure!");
-          		System.out.println("---------------------------------");
-          		
+				finally{
+					if(inputStream != null)
+						inputStream.close();
+				}
+				if (processedRecordFlag)
+					System.out.println("Success!");
+				else
+					System.out.println("Failure!");
+				System.out.println("---------------------------------");
+
 			}
 
 		} catch (Exception e) {
@@ -242,22 +294,6 @@ public class HPCDatafiles extends HPCBatchClient {
 
 	}
 
-	/*
-	 * private RestTemplate getRestTemplate(String userId, String password) {
-	 * CloseableHttpClient httpClient = HttpClients.custom()
-	 * .setSSLHostnameVerifier(new NoopHostnameVerifier()) .build();
-	 * HttpComponentsClientHttpRequestFactory requestFactory = new
-	 * HttpComponentsClientHttpRequestFactory();
-	 * requestFactory.setHttpClient(httpClient); RestTemplate restTemplate = new
-	 * RestTemplate(requestFactory); List<HttpMessageConverter<?>>
-	 * messageConverters = new ArrayList<HttpMessageConverter<?>>();
-	 * messageConverters.add(new FormHttpMessageConverter());
-	 * messageConverters.add(new StringHttpMessageConverter());
-	 * messageConverters.add(new MappingJackson2HttpMessageConverter());
-	 * 
-	 * restTemplate.setMessageConverters(messageConverters); return
-	 * restTemplate; }
-	 */
 	private void addToErrorCollection(String message, CSVRecord record, Map<String, Integer> headers) {
 		String logDir = configProperties.getProperty("hpc.error-log.dir");
 
