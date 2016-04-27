@@ -28,7 +28,6 @@ public class HpcConfigProperties {
 			if(filePath != null)
 				properties = filePath;
 			
-			System.out.println("filePath "+filePath);
 			configuration = new CompositeConfiguration();
 			//configuration.addConfiguration(pConfig);
 			configuration.addConfiguration(
