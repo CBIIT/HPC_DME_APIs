@@ -58,8 +58,8 @@
 	<ctx:property-placeholder properties-ref="preProps" />
 
 	<!-- OSGi beans import -->
-	<osgi:reference id="hpcUserBusService"
-		interface="gov.nih.nci.hpc.bus.HpcUserBusService" />
+	<osgi:reference id="hpcSecurityBusService"
+		interface="gov.nih.nci.hpc.bus.HpcSecurityBusService" />
 	<osgi:reference id="hpcDataManagementnBusService"
 		interface="gov.nih.nci.hpc.bus.HpcDataManagementBusService" />
 </beans>

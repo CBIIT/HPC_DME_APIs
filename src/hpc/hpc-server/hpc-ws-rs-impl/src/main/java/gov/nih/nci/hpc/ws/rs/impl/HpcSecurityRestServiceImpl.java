@@ -1,5 +1,5 @@
 /**
- * HpcUserRestServiceImpl.java
+ * HpcSecurityRestServiceImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,13 +10,15 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
-import gov.nih.nci.hpc.bus.HpcUserBusService;
+import gov.nih.nci.hpc.bus.HpcSecurityBusService;
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupResponseDTO;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.user.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.ws.rs.HpcUserRestService;
+import gov.nih.nci.hpc.ws.rs.HpcSecurityRestService;
 
 import javax.ws.rs.core.Response;
 
@@ -30,11 +32,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
+ * @version $Id: HpcSecurityRestServiceImpl.java 1015 2016-03-27 14:44:36Z rosenbergea $
  */
 
-public class HpcUserRestServiceImpl extends HpcRestServiceImpl
-             implements HpcUserRestService
+public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
+             implements HpcSecurityRestService
 {   
     //---------------------------------------------------------------------//
     // Instance members
@@ -42,7 +44,7 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 
     // The User Business Service instance.
 	@Autowired
-    private HpcUserBusService userBusService = null;
+    private HpcSecurityBusService securityBusService = null;
     
 	// The Logger instance.
 	private final Logger logger = 
@@ -57,7 +59,7 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcUserRestServiceImpl() throws HpcException
+    private HpcSecurityRestServiceImpl() throws HpcException
     {
     }  
     
@@ -75,7 +77,7 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 		logger.info("Invoking RS: PUT /user: " + userRegistrationDTO);
 		
 		try {
-			 userBusService.registerUser(userRegistrationDTO);
+			securityBusService.registerUser(userRegistrationDTO);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: PUT /user failed:", e);
@@ -92,7 +94,7 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 		logger.info("Invoking RS: POST /user: " + updateUserRequestDTO);
 		
 		try {
-			 userBusService.updateUser(nciUserId, updateUserRequestDTO);
+			securityBusService.updateUser(nciUserId, updateUserRequestDTO);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /user failed:", e);
@@ -109,7 +111,7 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 		
 		HpcUserDTO userDTO = null;
 		try {
-			 userDTO = userBusService.getUser(nciUserId);
+			 userDTO = securityBusService.getUser(nciUserId);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /user/{nciUserId} failed:", e);
@@ -126,7 +128,7 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 		
 		HpcAuthenticationResponseDTO authenticationResponse = null;
 		try {
-			 authenticationResponse = userBusService.authenticate(authenticationRequest, true); 
+			 authenticationResponse = securityBusService.authenticate(authenticationRequest, true); 
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /user/authenticate failed: " + 
@@ -136,6 +138,23 @@ public class HpcUserRestServiceImpl extends HpcRestServiceImpl
 		
 		return okResponse(authenticationResponse, false);
 	}    
+
+    @Override
+    public Response setGroup(HpcGroupRequestDTO groupRequest)
+    {
+    	logger.info("Invoking RS: POST /group: " + groupRequest);
+    	
+    	HpcGroupResponseDTO groupResponse = null;
+		try {
+			 groupResponse = securityBusService.setGroup(groupRequest);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /group: " + groupResponse + " failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(groupResponse, false);
+    }    
 }
 
  

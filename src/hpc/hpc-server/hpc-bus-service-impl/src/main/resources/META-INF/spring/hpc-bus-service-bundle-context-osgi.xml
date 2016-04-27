@@ -28,14 +28,14 @@
 	<ctx:property-placeholder properties-ref="preProps" />
 
 	<!-- OSGi beans export -->
-	<osgi:service ref="hpcUserBusService" 
-	              interface="gov.nih.nci.hpc.bus.HpcUserBusService" />
+	<osgi:service ref="hpcSecurityBusService" 
+	              interface="gov.nih.nci.hpc.bus.HpcSecurityBusService" />
 	<osgi:service ref="hpcDataManagementBusService"
 		          interface="gov.nih.nci.hpc.bus.HpcDataManagementBusService" />
 
 	<!-- OSGi beans import -->
-	<osgi:reference id="hpcUserService"
-		            interface="gov.nih.nci.hpc.service.HpcUserService" />
+	<osgi:reference id="hpcSecurityService"
+		            interface="gov.nih.nci.hpc.service.HpcSecurityService" />
 	<osgi:reference id="hpcDataTransferService"
 		            interface="gov.nih.nci.hpc.service.HpcDataTransferService" />
 	<osgi:reference id="hpcDataManagementService"

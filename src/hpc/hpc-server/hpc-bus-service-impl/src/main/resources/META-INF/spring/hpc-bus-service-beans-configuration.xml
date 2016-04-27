@@ -20,7 +20,7 @@
 	<context:annotation-config />
 
 	<!-- HPC Business Services Beans -->
-	<bean id="hpcUserBusService" class="gov.nih.nci.hpc.bus.impl.HpcUserBusServiceImpl" />
+	<bean id="hpcSecurityBusService" class="gov.nih.nci.hpc.bus.impl.HpcSecurityBusServiceImpl" />
 	<bean id="hpcDataManagementBusService" class="gov.nih.nci.hpc.bus.impl.HpcDataManagementBusServiceImpl" />
 
 </beans>

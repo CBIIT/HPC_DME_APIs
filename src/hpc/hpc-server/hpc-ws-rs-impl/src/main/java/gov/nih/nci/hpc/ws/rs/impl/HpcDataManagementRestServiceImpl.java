@@ -271,22 +271,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		return okResponse(permissionResponseList, false);
     }
     
-    @Override
-    public Response setGroup(HpcGroupRequestDTO groupRequest)
-    {
-    	logger.info("Invoking RS: POST /group: " + groupRequest);
-    	
-    	HpcGroupResponseDTO groupResponse = null;
-		try {
-			 groupResponse = dataManagementBusService.setGroup(groupRequest);
-			 
-		} catch(HpcException e) {
-			    logger.error("RS: POST /group: " + groupResponse + " failed:", e);
-			    return errorResponse(e);
-		}
-		
-		return okResponse(groupResponse, false);
-    }
+ 
     
     //---------------------------------------------------------------------//
     // Helper Methods
