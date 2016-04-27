@@ -42,5 +42,5 @@ then
     exit
 fi
 
-GLOBUS_PATH=$(get_json_value input.json path)
+GLOBUS_PATH=$(get_json_value input.json fileId)
 verify_globus_file  $GLOBUS_PATH
