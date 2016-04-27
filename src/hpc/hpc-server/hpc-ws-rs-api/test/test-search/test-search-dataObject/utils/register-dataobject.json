@@ -1,7 +1,7 @@
 { 
     "source": {
-        "endpoint": "nihnci#NIH-NCI-TRANSFER1",
-        "path": "/GridFTP/GridFTP_t3/username/test.txt"
+        "fileContainerId": "nihnci#NIH-NCI-TRANSFER1",
+        "fileId": "/GridFTP/GridFTP_t3/username/test.txt"
     },
     "filePath" :  "/",
     "metadataEntries": [
