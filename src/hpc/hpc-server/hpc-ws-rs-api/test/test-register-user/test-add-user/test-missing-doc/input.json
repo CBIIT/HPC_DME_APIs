@@ -3,6 +3,8 @@
         "userId": "testid",
             "firstName": "testfirst",
             "lastName": "testlast",
+            "DOC":"FNLCR",
+            "Test1":"OK"
     },
     "dataTransferAccount":    {
      "username": "testhpcdm",

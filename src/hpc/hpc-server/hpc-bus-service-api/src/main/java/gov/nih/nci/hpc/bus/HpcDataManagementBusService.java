@@ -151,15 +151,6 @@ public interface HpcDataManagementBusService
      */
 	public void updateDataTransferStatus() throws HpcException;
 	
-    /**
-     * Set (create or update) a group and assign/remove users.
-     *
-     * @param groupRequest The request DTO to create/update a group.
-     * @return A list of result for each user.
-     * 
-     * @throws HpcException
-     */
-	public HpcGroupResponseDTO setGroup(HpcGroupRequestDTO groupRequest) throws HpcException;
 }
 
  

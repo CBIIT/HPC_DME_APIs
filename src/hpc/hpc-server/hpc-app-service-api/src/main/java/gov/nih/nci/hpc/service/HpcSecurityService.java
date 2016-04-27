@@ -1,5 +1,5 @@
 /**
- * HpcUserService.java
+ * HpcSecurityService.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -22,10 +22,10 @@ import gov.nih.nci.hpc.exception.HpcException;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
+ * @version $Id: HpcSecurityService.java 1013 2016-03-26 23:06:30Z rosenbergea $
  */
 
-public interface HpcUserService 
+public interface HpcSecurityService 
 {         
     /**
      * Add a user.

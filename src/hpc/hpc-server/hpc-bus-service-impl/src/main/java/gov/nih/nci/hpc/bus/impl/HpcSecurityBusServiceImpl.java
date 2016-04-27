@@ -1,5 +1,5 @@
 /**
- * HpcUserBusServiceImpl.java
+ * HpcSecurityBusServiceImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -12,7 +12,7 @@ package gov.nih.nci.hpc.bus.impl;
 
 import java.util.Arrays;
 
-import gov.nih.nci.hpc.bus.HpcUserBusService;
+import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcUser;
@@ -20,6 +20,8 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupResponseDTO;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.user.HpcUpdateUserRequestDTO;
@@ -27,7 +29,7 @@ import gov.nih.nci.hpc.dto.user.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
-import gov.nih.nci.hpc.service.HpcUserService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,10 +41,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
+ * @version $Id: HpcSecurityBusServiceImpl.java 1064 2016-04-14 19:43:41Z konkapv $
  */
 
-public class HpcUserBusServiceImpl implements HpcUserBusService
+public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 {      
     //---------------------------------------------------------------------//
     // Instance members
@@ -51,7 +53,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     // Application service instances.
 	
 	@Autowired
-    private HpcUserService userService = null;
+    private HpcSecurityService userService = null;
 	
 	@Autowired
     private HpcDataManagementService dataManagementService = null;
@@ -73,7 +75,7 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcUserBusServiceImpl() throws HpcException
+    private HpcSecurityBusServiceImpl() throws HpcException
     {
     }   
     
@@ -365,6 +367,17 @@ public class HpcUserBusServiceImpl implements HpcUserBusService
     		    		               HpcErrorType.INVALID_REQUEST_INPUT, e);
     	}
     }
+    
+    @Override
+    public HpcGroupResponseDTO setGroup(HpcGroupRequestDTO groupRequest) 
+    		                           throws HpcException
+    {
+    	if(groupRequest == null || groupRequest.getGroup() == null)
+     	   throw new HpcException("Null Group request",
+	                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	
+    	return null;
+    }    
 }
 
  

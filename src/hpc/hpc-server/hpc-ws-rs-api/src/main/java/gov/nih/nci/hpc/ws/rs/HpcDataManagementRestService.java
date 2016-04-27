@@ -3,7 +3,7 @@
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
- * 
+ *
  * Distributed under the OSI-approved BSD 3-Clause License.
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  */
@@ -44,7 +44,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
 @Path("/")
 public interface HpcDataManagementRestService
-{   
+{
     /**
      * PUT Collection registration request.
      *
@@ -59,7 +59,7 @@ public interface HpcDataManagementRestService
 	public Response registerCollection(
 			           @PathParam("path") String path,
 			           List<HpcMetadataEntry> metadataEntries);
-	
+
     /**
      * GET Collection.
      *
@@ -71,7 +71,7 @@ public interface HpcDataManagementRestService
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getCollection(@PathParam("path") String path);
-	
+
     /**
      * GET Collections by metadata query.
      *
@@ -84,7 +84,7 @@ public interface HpcDataManagementRestService
 	public Response getCollections(
 			           @QueryParam("metadataQuery")
 			           List<HpcMetadataQueryParam> metadataQueries);
-	
+
     /**
      * PUT Data object registration request.
      *
@@ -98,11 +98,11 @@ public interface HpcDataManagementRestService
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response registerDataObject(
 			           @PathParam("path") String path,
-			           @Multipart(value = "dataObjectRegistration")
+			           @Multipart(value = "dataObjectRegistration", type = "application/json")
 			           HpcDataObjectRegistrationDTO dataObjectRegistration,
-			           @Multipart(value = "dataObject", required = false) 
+			           @Multipart(value = "dataObject", type = "application/octet-stream", required = false)
 	                   Attachment dataObject);
-	
+
     /**
      * GET Data Object.
      *
@@ -114,7 +114,7 @@ public interface HpcDataManagementRestService
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getDataObject(@PathParam("path") String path);
-	
+
     /**
      * GET Data objects by metadata query.
      *
@@ -126,7 +126,7 @@ public interface HpcDataManagementRestService
 	public Response getDataObjects(
 			           @QueryParam("metadataQuery")
 			           List<HpcMetadataQueryParam> metadataQueries);
-	
+
     /**
      * POST Download Data Object.
      *
@@ -137,11 +137,11 @@ public interface HpcDataManagementRestService
 	@POST
 	@Path("/dataObject/{path:.*}/download")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML + "," + 
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML + "," +
 			  MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadDataObject(@PathParam("path") String path,
 			                           HpcDataObjectDownloadRequestDTO downloadRequest);
-	
+
     /**
      * POST Set permissions.
      *
@@ -153,18 +153,5 @@ public interface HpcDataManagementRestService
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response setPermissions(List<HpcEntityPermissionRequestDTO> entityPermissionRequests);
-	
-    /**
-     * POST Set (create or update) a group and assign/remove users.
-     *
-     * @param groupRequest The request DTO to create/update a group.
-     * @return Response The REST service response.
-     */
-	@POST
-	@Path("/group")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response setGroup(HpcGroupRequestDTO groupRequest);
 }
 
- 

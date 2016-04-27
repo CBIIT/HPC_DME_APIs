@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcUserDTO;
@@ -21,6 +22,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
@@ -29,11 +31,11 @@ import javax.ws.rs.core.Response;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
+ * @version $Id: HpcSecurityRestService.java 1013 2016-03-26 23:06:30Z rosenbergea $
  */
 
 @Path("/")
-public interface HpcUserRestService
+public interface HpcSecurityRestService
 {    
     /**
      * Register user.
@@ -78,6 +80,17 @@ public interface HpcUserRestService
     @Path("/user/authenticate")
     @Consumes("application/json,application/xml")
     public Response authenticateUser(HpcAuthenticationRequestDTO authenticationRequest);
+    
+    /**
+     * POST Set (create or update) a group and assign/remove users.
+     *
+     * @param groupRequest The request DTO to create/update a group.
+     */
+	@POST
+	@Path("/group")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response setGroup(HpcGroupRequestDTO groupRequest);    
 }
 
  

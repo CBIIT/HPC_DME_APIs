@@ -1,5 +1,5 @@
 /**
- * HpcUserBusService.java
+ * HpcSecurityBusService.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,6 +10,8 @@
 
 package gov.nih.nci.hpc.bus;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupResponseDTO;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.user.HpcUpdateUserRequestDTO;
@@ -22,10 +24,10 @@ import gov.nih.nci.hpc.exception.HpcException;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
+ * @version $Id: HpcSecurityBusService.java 1013 2016-03-26 23:06:30Z rosenbergea $
  */
 
-public interface HpcUserBusService 
+public interface HpcSecurityBusService 
 {         
     /**
      * Register a User.
@@ -73,6 +75,17 @@ public interface HpcUserBusService
     		                            HpcAuthenticationRequestDTO authenticationRequest,
     		                            boolean ldapAuthentication) 
     		                            throws HpcException;  
+    
+    /**
+     * Set (create or update) a group and assign/remove users.
+     *
+     * @param groupRequest The request DTO to create/update a group.
+     * @return A list of result for each user.
+     * 
+     * @throws HpcException
+     */
+	public HpcGroupResponseDTO setGroup(HpcGroupRequestDTO groupRequest) throws HpcException;
+
 }
 
  
