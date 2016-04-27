@@ -132,7 +132,7 @@ public abstract class HPCBatchClient {
 	}
 
 	protected void addErrorToLog(String error, int recordLineNumber) throws IOException {
-		fileLogWriter.write(recordLineNumber + ":" + error);
+		fileLogWriter.write(recordLineNumber + ": " + error);
 		fileLogWriter.write("\n");
 	}
 
