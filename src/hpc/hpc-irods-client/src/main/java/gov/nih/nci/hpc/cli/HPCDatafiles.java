@@ -163,7 +163,6 @@ public class HPCDatafiles extends HPCBatchClient {
 								new FileInputStream(hpcDataObjectRegistrationDTO.getSource().getFileId()));
 						ContentDisposition cd2 = new ContentDisposition("attachment;filename="+hpcDataObjectRegistrationDTO.getSource().getFileId());
 						atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObject", inputStream, cd2));
-						System.out.println("Setting source to null");
 						hpcDataObjectRegistrationDTO.setSource(null);
 						}
 						catch(FileNotFoundException e)
@@ -189,16 +188,29 @@ public class HPCDatafiles extends HPCBatchClient {
 
 				String token = DatatypeConverter.printBase64Binary((userId + ":" + password).getBytes());
 				client.header("Authorization", "Basic " + token);
-				client.type("multipart/mixed").accept(MediaType.APPLICATION_JSON);
+				client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
 
 				try {
 					System.out.println(hpcServerURL + "/" + hpcDataService + collName);
 					Response restResponse = client.put(new MultipartBody(atts));
-					System.out.println(restResponse.getStatus());
+					System.out.println("Status: " + restResponse.getStatus());
 					if (!(restResponse.getStatus() == 201 || restResponse.getStatus() == 200)) {
 						MappingJsonFactory factory = new MappingJsonFactory();
 						JsonParser parser = factory.createJsonParser((InputStream) restResponse.getEntity());
-						response = parser.readValueAs(HpcExceptionDTO.class);
+						try
+						{
+							response = parser.readValueAs(HpcExceptionDTO.class);
+						}
+						catch(com.fasterxml.jackson.databind.JsonMappingException e)
+						{
+							if(restResponse.getStatus() == 401)
+								addErrorToLog("Unauthorized access: response status is: "
+									+ restResponse.getStatus(), i + 1);
+							else
+								addErrorToLog("Unalbe process error response: response status is: "
+										+ restResponse.getStatus(), i + 1);
+								
+						}
 
 						if (response != null) {
 							// System.out.println(response);
