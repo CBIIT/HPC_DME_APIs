@@ -50,7 +50,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
                     "\"USER_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"DOC\", " +
                     "\"IRODS_USERNAME\", \"IRODS_PASSWORD\", " +
                     "\"CREATED\", \"LAST_UPDATED\") " +
-                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+                    "values (?, ?, ?, ?, ?, ?, ?, ?) ";
 	
 	/* Add this back in when we upgrade to PostgreSQL 9.5
             + "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", \"DOC\", " +
@@ -131,7 +131,6 @@ public class HpcUserDAOImpl implements HpcUserDAO
 			
 			if(user.getDataManagementAccount() != null)
 		     jdbcTemplate.update(UPDATE_SQL,
-		                         
 		                         user.getNciAccount().getFirstName(),
 		                         user.getNciAccount().getLastName(),
 		                         user.getNciAccount().getDOC(),
