@@ -21,8 +21,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcGroupResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.io.InputStream;

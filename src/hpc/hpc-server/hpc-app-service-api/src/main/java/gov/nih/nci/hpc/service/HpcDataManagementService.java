@@ -38,27 +38,7 @@ import java.util.Map;
 
 public interface HpcDataManagementService 
 {   
-    // System generated metadata attributes.
-	public final static String ID_ATTRIBUTE = "uuid";
-	public final static String REGISTRAR_ID_ATTRIBUTE = "registered_by";
-	public final static String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
-	public final static String REGISTRAR_DOC_ATTRIBUTE = "registered_by_doc";
-	public final static String SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
-                               "source_file_container_id"; 
-	public final static String SOURCE_LOCATION_FILE_ID_ATTRIBUTE = 
-                               "source_file_id"; 
-	public final static String ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
-			                   "archive_file_container_id"; 
-	public final static String ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE = 
-			                   "archive_file_id"; 
-	public final static String DATA_TRANSFER_REQUEST_ID_ATTRIBUTE = 
-                               "data_transfer_request_id";
-	public final static String DATA_TRANSFER_STATUS_ATTRIBUTE = 
-                               "data_transfer_status";
-	public final static String DATA_TRANSFER_TYPE_ATTRIBUTE = 
-                               "data_transfer_type";
-	public final static String SOURCE_FILE_SIZE_ATTRIBUTE = 
-                               "source_file_size";
+
 	
     /**
      * Create a collection's directory.
@@ -196,6 +176,17 @@ public interface HpcDataManagementService
      */
     public HpcDataObjectSystemGeneratedMetadata 
               getDataObjectSystemGeneratedMetadata(String path) throws HpcException; 
+    
+    /**
+     * Get the system generated metadata of a data object.
+     *
+     * @param dataObjectMetadata The data object metadata.
+     * 
+     * @throws HpcException
+     */
+    public HpcDataObjectSystemGeneratedMetadata 
+              getDataObjectSystemGeneratedMetadata(List<HpcMetadataEntry> dataObjectMetadata) 
+            		                              throws HpcException; 
     
     /** 
      * Set a data transfer status of a data object.

@@ -31,14 +31,12 @@ public interface HpcSecurityService
      * Add a user.
      *
      * @param nciAccount The user's NCI account.
-     * @param dataTransferAccount The user's data transfer account.
      * @param dataTransferAccount The user's data management account.
      * 
      * @throws HpcException
      */
     public void addUser(HpcNciAccount nciAccount, 
-    		            HpcIntegratedSystemAccount dataTransferAccount,
-    		            HpcIntegratedSystemAccount dataManagementAccount) 
+    		            HpcIntegratedSystemAccount dataTransferAccount) 
     		           throws HpcException;
     
     /**
@@ -48,12 +46,10 @@ public interface HpcSecurityService
      * @param firstName The user first name.
      * @param lastName The user last name. 
      * @param DOC The user DOC.
-     * @param dataTransferAccount The data transfer account to update.
      * 
      * @throws HpcException
      */
-    public void updateUser(String nciUserId, String firstName, String lastName,
-    		               String DOC, HpcIntegratedSystemAccount dataTransferAccount) 
+    public void updateUser(String nciUserId, String firstName, String lastName, String DOC) 
     		              throws HpcException;
 
     /**
