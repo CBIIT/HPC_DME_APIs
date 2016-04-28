@@ -29,20 +29,40 @@
 		<constructor-arg value="${hpc.service.metadataValidationRulesPath}" />
 	</bean>
 	
-	<!--  HPC Map of Data Transfer Proxies -->
+	<!--  Data Transfer System Accounts -->
+	<bean id="hpcGlobusAccount" class="gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount" >
+		<property name="username" value="${hpc.service.datatransfer.globus.username}" />
+		<property name="password" value="${hpc.service.datatransfer.globus.password}" />
+		<property name="integratedSystem" value="GLOBUS" />
+	</bean>
+	<bean id="hpcS3Account" class="gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount" >
+		<property name="username" value="${hpc.service.datatransfer.s3.username}" />
+		<property name="password" value="${hpc.service.datatransfer.s3.password}" />
+		<property name="integratedSystem" value="S_3" />
+	</bean>
+	
+	<util:map id="hpcDataTransferAccounts" 
+	          key-type="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType"
+	          value-type="gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount">
+  		<entry key="GLOBUS" value-ref="hpcS3Account" />
+  		<entry key="S_3" value-ref="hpcS3Account" />
+	</util:map>
+	
+	<!--  Map of HPC Data Transfer Proxies -->
 	<util:map id="hpcDataTransferProxies" 
 	          key-type="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType"
 	          value-type="gov.nih.nci.hpc.integration.HpcDataTransferProxy">
   		<entry key="GLOBUS" value-ref="hpcGlobusDataTransferProxy" />
   		<entry key="S_3" value-ref="hpcS3DataTransferProxy" />
 	</util:map>
-	
+		
 	<!-- HPC Application Services Beans -->
 	<bean id="hpcSecurityService" class="gov.nih.nci.hpc.service.impl.HpcSecurityServiceImpl">
 		<constructor-arg value="${hpc.service.user.DOC}" />
 	</bean>
 	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl" >
-		<property name="dataTransferProxies" ref="hpcDataTransferProxies"/>
+		<constructor-arg ref="hpcDataTransferProxies" index="0" />
+		<constructor-arg ref="hpcDataTransferAccounts" index="1" />
 	</bean>
 	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl" />
 </beans>

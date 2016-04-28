@@ -1,8 +1,6 @@
 package gov.nih.nci.hpc.integration.s3.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestination;
-import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
@@ -28,7 +26,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id:$
+ * @version $Id$
  */
 
 public class HpcDataTransferProxyImpl implements HpcDataTransferProxy 
@@ -134,43 +132,5 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	        throw new HpcException("Failed to upload file via S3", 
     	    	     	               HpcErrorType.DATA_TRANSFER_ERROR, ace);
         }
-    }
-    
-    @Override
-    public HpcDataTransferStatus getDataTransferStatus(Object authenticatedToken,
-                                                       String dataTransferRequestId) 
-                                                      throws HpcException
-    {
-    	throw new HpcException("getDataTransferStatus() not supported by S3",
-    			               HpcErrorType.UNEXPECTED_ERROR);
-    }
-    
-    @Override
-    public long getDataTransferSize(Object authenticatedToken,
-                                    String dataTransferRequestId) 
-                                   throws HpcException
-    {
-    	throw new HpcException("getDataTransferSize() not supported by S3",
-	                           HpcErrorType.UNEXPECTED_ERROR);
-    }
-    
-    @Override
-    public HpcPathAttributes getPathAttributes(Object authenticatedToken, 
-                                               HpcFileLocation fileLocation,
-                                               boolean getSize) 
-                                              throws HpcException
-    {
-       	throw new HpcException("getPathAttributes() not supported by S3",
-                HpcErrorType.UNEXPECTED_ERROR);
-    }
-    
-    @Override
-    public void setPermission(Object authenticatedToken,
-                              HpcFileLocation fileLocation,
-                              HpcUserPermission permissionRequest) 
-                             throws HpcException
-    {
-       	throw new HpcException("setPermission() not supported by S3",
-                               HpcErrorType.UNEXPECTED_ERROR); 
     }
 }

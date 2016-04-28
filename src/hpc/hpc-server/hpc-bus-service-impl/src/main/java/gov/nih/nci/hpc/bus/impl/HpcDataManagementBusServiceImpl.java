@@ -25,7 +25,6 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
-import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
@@ -36,8 +35,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcGroupResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -48,7 +45,6 @@ import java.io.InputStream;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -253,7 +249,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		           uploadData(source, dataObjectStream, path, 
 		        		      dataObjectRegistrationDTO.getCallerObjectId());
 		        Long sourceSize = source != null ? 
-		        		          dataTransferService.getPathAttributes(source, true).getSize() : null;
+		        		          dataTransferService.getPathAttributes(uploadResponse.getDataTransferType(), 
+		        		        		                                source, true).getSize() : 
+		        		          null;
 		     
 			    // Generate system metadata and attach to the data object.
 			    dataManagementService.addSystemGeneratedMetadataToDataObject(
@@ -304,7 +302,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		                   dataManagementService.getDataObjectMetadata(path);
     		
     	return toDTO(dataObject, metadataEntries, 
-    			     getDataTransferPercentCompletion(metadataEntries));
+    			     getDataTransferPercentCompletion(
+    			        dataManagementService.getDataObjectSystemGeneratedMetadata(metadataEntries)));
     }
     
     @Override
@@ -334,8 +333,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		}
     		
     		// Combine data object attributes and metadata into a single DTO.
-    		dataObjectsDTO.getDataObjects().add(toDTO(dataObject, metadataEntries,
-    				                                  getDataTransferPercentCompletion(metadataEntries)));
+    		dataObjectsDTO.getDataObjects().add(
+    			toDTO(dataObject, metadataEntries,
+    			      getDataTransferPercentCompletion(
+    			       	 dataManagementService.getDataObjectSystemGeneratedMetadata(metadataEntries))));
     	}
     	
     	return dataObjectsDTO;
@@ -457,16 +458,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			 HpcDataObjectSystemGeneratedMetadata systemGeneratedMetadata = 
     			    dataManagementService.getDataObjectSystemGeneratedMetadata(path);
     			 
-    			 // Use the registrar data transfer account to check for transfer status.
-    			 HpcUser registrar = userService.getUser(systemGeneratedMetadata.getRegistrarId());
-    			 if(registrar != null) {
-    			    userService.getRequestInvoker().setDataTransferAuthenticatedToken(null);
-    			    userService.getRequestInvoker().setDataTransferAccount(registrar.getDataTransferAccount());
-    			 }
-    			 
     			 // Get the data transfer request status.
     			 HpcDataTransferStatus dataTransferStatus =
-    		        dataTransferService.getDataTransferStatus(systemGeneratedMetadata.getDataTransferRequestId());
+    		        dataTransferService.getDataTransferStatus(systemGeneratedMetadata.getDataTransferType(),
+    		        		                                  systemGeneratedMetadata.getDataTransferRequestId());
     			 
     		     if(dataTransferStatus.equals(HpcDataTransferStatus.ARCHIVED)) {
     		    	// Data transfer completed successfully. Update the metadata.
@@ -628,7 +623,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			                         HpcErrorType.INVALID_REQUEST_INPUT);
 		   }
 			
-		   if(!dataTransferService.getPathAttributes(destinationLocation, false).getIsDirectory()) {
+		   if(!dataTransferService.getPathAttributes(dataTransferType, 
+				                                     destinationLocation, false).getIsDirectory()) {
 			  // The user requested destination is NOT a directory, transfer to it.
 			  downloadRequest.setDestinationLocation(destinationLocation);
 			  
@@ -677,22 +673,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * @return The transfer % completion if transfer is in progress, or null otherwise.
      *         e.g 86%.
      */
-	private String getDataTransferPercentCompletion(List<HpcMetadataEntry> metadataEntries)
+	private String getDataTransferPercentCompletion(
+			          HpcDataObjectSystemGeneratedMetadata systemGeneratedMetadata)
 	{
 		// Get the transfer status, transfer request id and data-object size from the metadata entries.
-		Map<String, String> metadataMap = dataManagementService.toMap(metadataEntries);
-		HpcDataTransferStatus transferStatus = 
-		   HpcDataTransferStatus.fromValue(metadataMap.get(
-				  HpcDataManagementService.DATA_TRANSFER_STATUS_ATTRIBUTE));
+		HpcDataTransferStatus transferStatus = systemGeneratedMetadata.getDataTransferStatus();
 		if(transferStatus == null || !transferStatus.equals(HpcDataTransferStatus.IN_PROGRESS)) {
 		   // data transfer not in progress.
 		   return null;
 		}
 		
-		String dataTransferRequestId = metadataMap.get(
-				                       HpcDataManagementService.DATA_TRANSFER_REQUEST_ID_ATTRIBUTE);
-		Long sourceSize = metadataMap.get(HpcDataManagementService.SOURCE_FILE_SIZE_ATTRIBUTE) != null ?
-	    		          Long.valueOf(metadataMap.get(HpcDataManagementService.SOURCE_FILE_SIZE_ATTRIBUTE)) : null;
+		String dataTransferRequestId = systemGeneratedMetadata.getDataTransferRequestId();
+		Long sourceSize = systemGeneratedMetadata.getSourceSize();
 		
 		if(dataTransferRequestId == null || sourceSize == null || sourceSize <= 0) {
 		   return "Unknown";	
@@ -701,7 +693,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Get the size of the data transferred so far.
 		long transferSize = 0;
 		try {
-		     transferSize = dataTransferService.getDataTransferSize(dataTransferRequestId);
+		     transferSize = dataTransferService.getDataTransferSize(
+		    		                    systemGeneratedMetadata.getDataTransferType(),
+		    		                    dataTransferRequestId);
 		} catch(HpcException e) {
 			    logger.error("Failed to get data transfer size: " + dataTransferRequestId);
 			    return "Unknown";

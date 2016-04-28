@@ -15,18 +15,20 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	        xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	        xmlns:hpc-domain-user="http://hpc.nci.nih.gov/domain/user"
+	        xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
+	        xmlns:hpc-domain-model="http://hpc.nci.nih.gov/domain/model"
 	        targetNamespace="http://hpc.nci.nih.gov/domain/model"
 	        elementFormDefault="unqualified">
 
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/user"
 		        schemaLocation="HpcUserTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datatransfer"
+		        schemaLocation="HpcDataTransferTypes.xsd" />
       
 	<xsd:element name="HpcUser">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="nciAccount" type="hpc-domain-user:HpcNciAccount" />
-				<xsd:element name="dataTransferAccount"
-					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 				<xsd:element name="dataManagementAccount"
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 				<xsd:element name="created" type="xsd:dateTime" />
@@ -35,13 +37,20 @@
 		</xsd:complexType>
 	</xsd:element>
 	
+	<xsd:complexType name="HpcDataTransferAuthenticatedToken">
+			<xsd:sequence>
+				<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
+				<xsd:element name="dataTransferAuthenticatedToken" type="xsd:anyType" />
+			</xsd:sequence>
+	</xsd:complexType>
+	
 	<xsd:element name="HpcRequestInvoker">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="nciAccount" type="hpc-domain-user:HpcNciAccount" />
-				<xsd:element name="dataTransferAccount"
-					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
-			    <xsd:element name="dataTransferAuthenticatedToken" type="xsd:anyType" />
+			    <xsd:element name="dataTransferAuthenticatedTokens" 
+			                 type="hpc-domain-model:HpcDataTransferAuthenticatedToken" 
+			                 minOccurs="0" maxOccurs="unbounded"/>
 				<xsd:element name="dataManagementAccount"
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 				<xsd:element name="dataManagementAuthenticatedToken" type="xsd:anyType" />
