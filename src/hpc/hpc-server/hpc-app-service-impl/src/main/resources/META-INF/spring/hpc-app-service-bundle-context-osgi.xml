@@ -25,6 +25,10 @@
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		<prop key="hpc.service.metadataValidationRulesPath">${karaf.base}/etc/hpc-server/metadataValidationRules.json</prop>
 		<prop key="hpc.service.user.DOC">FNLCR CCBR</prop>
+		<prop key="hpc.service.datatransfer.globus.username">globus-account</prop>
+		<prop key="hpc.service.datatransfer.globus.password">globus-pwd</prop>
+		<prop key="hpc.service.datatransfer.s3.username">rhwXa402NFW1OwxqY6Xb</prop>
+		<prop key="hpc.service.datatransfer.s3.password">Y3U4GPAZPKZL7z5Sb71R5fFU0I88gFYswS0U8uxA</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

@@ -17,14 +17,9 @@ import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.exception.HpcAuthenticationException;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
-
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.interceptor.security.SecureAnnotationsInterceptor;
 import org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;

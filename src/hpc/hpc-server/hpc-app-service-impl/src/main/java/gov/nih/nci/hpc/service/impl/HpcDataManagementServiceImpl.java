@@ -50,7 +50,33 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 
 public class HpcDataManagementServiceImpl implements HpcDataManagementService
-{    
+{   
+    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//
+	
+    // System generated metadata attributes.
+	private final static String ID_ATTRIBUTE = "uuid";
+	private final static String REGISTRAR_ID_ATTRIBUTE = "registered_by";
+	private final static String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
+	private final static String REGISTRAR_DOC_ATTRIBUTE = "registered_by_doc";
+	private final static String SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
+                                "source_file_container_id"; 
+	private final static String SOURCE_LOCATION_FILE_ID_ATTRIBUTE = 
+                                "source_file_id"; 
+	private final static String ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
+			                    "archive_file_container_id"; 
+	private final static String ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE = 
+			                    "archive_file_id"; 
+	private final static String DATA_TRANSFER_REQUEST_ID_ATTRIBUTE = 
+                                "data_transfer_request_id";
+	private final static String DATA_TRANSFER_STATUS_ATTRIBUTE = 
+                                "data_transfer_status";
+	private final static String DATA_TRANSFER_TYPE_ATTRIBUTE = 
+                                "data_transfer_type";
+	private final static String SOURCE_FILE_SIZE_ATTRIBUTE = 
+                                "source_file_size";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -367,8 +393,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		                          HpcErrorType.INVALID_REQUEST_INPUT);
     	}	
     	
+    	return getDataObjectSystemGeneratedMetadata(getDataObjectMetadata(path));
+	}
+    
+    @Override
+    public HpcDataObjectSystemGeneratedMetadata 
+              getDataObjectSystemGeneratedMetadata(List<HpcMetadataEntry> dataObjectMetadata) 
+            		                              throws HpcException
+	{
     	// Extract the system generated data-object metadata entries from the entire set.
-    	Map<String, String> metadataMap = toMap(getDataObjectMetadata(path));
+    	Map<String, String> metadataMap = toMap(dataObjectMetadata);
     	HpcDataObjectSystemGeneratedMetadata systemGeneratedMetadata = new HpcDataObjectSystemGeneratedMetadata();
     	systemGeneratedMetadata.setDataObjectId(metadataMap.get(ID_ATTRIBUTE));
     	systemGeneratedMetadata.setRegistrarId(metadataMap.get(REGISTRAR_ID_ATTRIBUTE));

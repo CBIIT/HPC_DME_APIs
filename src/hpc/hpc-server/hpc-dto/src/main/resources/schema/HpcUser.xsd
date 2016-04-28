@@ -25,8 +25,6 @@
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="nciAccount" type="hpc-domain-user:HpcNciAccount" />
-				<xsd:element name="dataTransferAccount"
-					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 				<xsd:element name="dataManagementAccount"
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 				<xsd:element name="userRole" type="xsd:string" />
@@ -42,8 +40,6 @@
 				<xsd:element name="lastName" type="xsd:string" />
 				<xsd:element name="DOC" type="xsd:string" />
 				<xsd:element name="userRole" type="xsd:string" />
-				<xsd:element name="dataTransferAccount"
-					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

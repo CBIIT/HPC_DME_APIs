@@ -100,13 +100,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Validate the data transfer account.
-    	if(!dataTransferService.validateDataTransferAccount(
-    			                        userRegistrationDTO.getDataTransferAccount())) {
-    	   throw new HpcException("Invalid Data Transfer Account", 
-                                  HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);	
-    	}
-    	
     	// Create data management account if not provided.
     	if(userRegistrationDTO.getDataManagementAccount() == null) {
     	   // Determine the user role to create. If not provided, default to USER.
@@ -139,7 +132,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	try {
     	     // Add the user to the managed collection.
     	     userService.addUser(userRegistrationDTO.getNciAccount(), 
-    		                     userRegistrationDTO.getDataTransferAccount(),
     			                 userRegistrationDTO.getDataManagementAccount());
     	     registrationCompleted = true;
     	     
@@ -194,19 +186,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 
     	}
     	
-    	    	
-    	// Validate the data transfer account if provided.
-    	HpcIntegratedSystemAccount updateDataTransferAccount = 
-    			                   updateUserRequestDTO.getDataTransferAccount();
-    	if(updateDataTransferAccount != null) {
-	       if(!dataTransferService.validateDataTransferAccount(updateDataTransferAccount)) {
-	    	  throw new HpcException("Invalid Data Transfer Account", 
-	                                 HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);	
-	    	}
-    	} else {
-    		    updateDataTransferAccount = user.getDataTransferAccount();
-    	}
-    	
     	// Determine update values.
     	String updateFirstName = updateUserRequestDTO.getFirstName() != null ?
     			                 updateUserRequestDTO.getFirstName() :
@@ -232,8 +211,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	
 	     // Update User.
 	     userService.updateUser(nciUserId, updateFirstName, 
-	    		                updateLastName, updateDOC,
-	    		                updateDataTransferAccount);
+	    		                updateLastName, updateDOC);
     }
     
     @Override
@@ -256,7 +234,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	// Map it to the DTO.
     	HpcUserDTO userDTO = new HpcUserDTO();
     	userDTO.setNciAccount(user.getNciAccount());
-    	userDTO.setDataTransferAccount(user.getDataTransferAccount());
     	userDTO.setDataManagementAccount(user.getDataManagementAccount());
     	userDTO.setUserRole(dataManagementService.getUserRole(nciUserId).value());
     	
@@ -303,7 +280,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
  		   nciAccount.setUserId("Unknown-NCI-User-ID");
      	   user.setNciAccount(nciAccount);
      	   user.setDataManagementAccount(null);
-     	   user.setDataTransferAccount(null);
         }
     	
     	// If the user was authenticated w/ LDAP, then we use the NCI credentials to access
@@ -343,9 +319,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     {
     	if(userDTO.getDataManagementAccount() != null) {
     	   userDTO.getDataManagementAccount().setPassword("*****");
-    	}
-    	if(userDTO.getDataTransferAccount() != null) {
-    	   userDTO.getDataTransferAccount().setPassword("*****");
     	}
     }
     
