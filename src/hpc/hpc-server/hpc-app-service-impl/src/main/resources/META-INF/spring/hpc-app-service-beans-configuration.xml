@@ -44,7 +44,7 @@
 	<util:map id="hpcDataTransferAccounts" 
 	          key-type="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType"
 	          value-type="gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount">
-  		<entry key="GLOBUS" value-ref="hpcS3Account" />
+  		<entry key="GLOBUS" value-ref="hpcGlobusAccount" />
   		<entry key="S_3" value-ref="hpcS3Account" />
 	</util:map>
 	
