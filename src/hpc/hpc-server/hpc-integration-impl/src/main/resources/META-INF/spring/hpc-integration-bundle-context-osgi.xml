@@ -32,7 +32,7 @@
 	      <prop key="hpc.integration.globus.nexusAPIURL">nexus.api.globusonline.org</prop>
 	      <prop key="hpc.integration.globus.globusURL">www.globusonline.org</prop>
 	      <prop key="hpc.integration.globus.archive.endpoint">nihfnlcr#gridftp1</prop>
-		  <prop key="hpc.integration.globus.archive.path">/mnt/IRODsTest</prop>
+		  <prop key="hpc.integration.globus.archive.path">/mnt/IRODsTest/FNL_SF_Archive</prop>
 		  
 		  <prop key="hpc.integration.cleversafe.URL">http://fr-s-clvrsf-01.ncifcrf.gov</prop>
 	      <prop key="hpc.integration.cleversafe.archive.vault">DSE-TestVault1</prop>
