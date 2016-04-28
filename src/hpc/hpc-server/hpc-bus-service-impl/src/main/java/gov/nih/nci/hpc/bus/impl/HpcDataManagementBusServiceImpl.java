@@ -364,7 +364,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// TODO: Enable this after completing system account change for iRODS
     	/*
     	if(!metadata.getDataTransferStatus().equals(HpcDataTransferStatus.ARCHIVED)) {
-    	   throw new HpcException("Data object not archived", 
+    	   throw new HpcException("Object is not in archive state yet. It is in " +
+    			                  metadata.getDataTransferStatus().value() + " state",
     			                  HpcRequestRejectReason.FILE_NOT_ARCHIVED);
     	}*/
     	
