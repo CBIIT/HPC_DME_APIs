@@ -48,7 +48,6 @@ public class HpcUserDAOImpl implements HpcUserDAO
 	public final static String INSERT_SQL = 
 		   "insert into public.\"HPC_USER\" ( " +
                     "\"USER_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"DOC\", " +
-                    "\"GLOBUS_USERNAME\", \"GLOBUS_PASSWORD\", " +
                     "\"IRODS_USERNAME\", \"IRODS_PASSWORD\", " +
                     "\"CREATED\", \"LAST_UPDATED\") " +
                     "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
@@ -56,8 +55,6 @@ public class HpcUserDAOImpl implements HpcUserDAO
 	/* Add this back in when we upgrade to PostgreSQL 9.5
             + "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", \"DOC\", " +
                                                   "\"LAST_NAME\"=excluded.\"LAST_NAME\", " +
-                                                  "\"GLOBUS_USERNAME\"=excluded.\"GLOBUS_USERNAME\", " +
-                                                  "\"GLOBUS_PASSWORD\"=excluded.\"GLOBUS_PASSWORD\", " +
                                                   "\"IRODS_USERNAME\"=excluded.\"IRODS_USERNAME\", " +
                                                   "\"IRODS_PASSWORD\"=excluded.\"IRODS_PASSWORD\", " +
                                                   "\"CREATED\"=excluded.\"CREATED\", " +
@@ -109,8 +106,6 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		                         user.getNciAccount().getFirstName(),
 		                         user.getNciAccount().getLastName(),
 		                         user.getNciAccount().getDOC(),
-		                         user.getDataTransferAccount().getUsername(),
-		                         encryptor.encrypt(user.getDataTransferAccount().getPassword()),
 		                         user.getDataManagementAccount().getUsername(),
 		                         encryptor.encrypt(user.getDataManagementAccount().getPassword()),
 		                         user.getCreated(),
@@ -128,8 +123,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		try {
 			String UPDATE_SQL = 
 					   "update public.\"HPC_USER\" set " +
-			                    "\"FIRST_NAME\"=?, \"LAST_NAME\"=?, \"DOC\"=?, " +
-			                    "\"GLOBUS_USERNAME\"=?, \"GLOBUS_PASSWORD\"=?, ";
+			                    "\"FIRST_NAME\"=?, \"LAST_NAME\"=?, \"DOC\"=?, ";
 			if(user.getDataManagementAccount() != null)
 				UPDATE_SQL = UPDATE_SQL + "\"IRODS_USERNAME\"=?, \"IRODS_PASSWORD\"=?, ";
 			UPDATE_SQL = UPDATE_SQL + "\"LAST_UPDATED\" =? " +
@@ -141,8 +135,6 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		                         user.getNciAccount().getFirstName(),
 		                         user.getNciAccount().getLastName(),
 		                         user.getNciAccount().getDOC(),
-		                         user.getDataTransferAccount().getUsername(),
-		                         encryptor.encrypt(user.getDataTransferAccount().getPassword()),
 		                         user.getDataManagementAccount().getUsername(),
 		                         encryptor.encrypt(user.getDataManagementAccount().getPassword()),
 		                         user.getLastUpdated(),
@@ -152,8 +144,6 @@ public class HpcUserDAOImpl implements HpcUserDAO
                          user.getNciAccount().getFirstName(),
                          user.getNciAccount().getLastName(),
                          user.getNciAccount().getDOC(),
-                         user.getDataTransferAccount().getUsername(),
-                         encryptor.encrypt(user.getDataTransferAccount().getPassword()),
                          user.getLastUpdated(),
                          user.getNciAccount().getUserId());
 				
@@ -193,11 +183,6 @@ public class HpcUserDAOImpl implements HpcUserDAO
 			nciAccount.setLastName(rs.getString("LAST_NAME"));
 			nciAccount.setDOC(rs.getString("DOC"));
 			
-			HpcIntegratedSystemAccount dataTransferAccount = new HpcIntegratedSystemAccount();
-			dataTransferAccount.setIntegratedSystem(HpcIntegratedSystem.GLOBUS);
-			dataTransferAccount.setUsername(rs.getString("GLOBUS_USERNAME"));
-			dataTransferAccount.setPassword(encryptor.decrypt(rs.getBytes(("GLOBUS_PASSWORD"))));
-			
 			HpcIntegratedSystemAccount dataManagementAccount = new HpcIntegratedSystemAccount();
 			dataManagementAccount.setIntegratedSystem(HpcIntegratedSystem.IRODS);
 			dataManagementAccount.setUsername(rs.getString("IRODS_USERNAME"));
@@ -213,7 +198,6 @@ public class HpcUserDAOImpl implements HpcUserDAO
         	user.setLastUpdated(lastUpdated);
         	
         	user.setNciAccount(nciAccount);
-        	user.setDataTransferAccount(dataTransferAccount);
         	user.setDataManagementAccount(dataManagementAccount);
             
             return user;

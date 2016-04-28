@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -80,9 +81,13 @@ public interface HpcDataTransferProxy
      * 
      * @throws HpcException
      */
-    public HpcDataTransferStatus getDataTransferStatus(Object authenticatedToken,
-    		                                           String dataTransferRequestId) 
-    		                                          throws HpcException;
+    default HpcDataTransferStatus getDataTransferStatus(Object authenticatedToken,
+    		                                            String dataTransferRequestId) 
+    		                                           throws HpcException
+    {
+    	throw new HpcException("getDataTransferStatus() not supported by S3",
+	               HpcErrorType.UNEXPECTED_ERROR);
+    }
     
     /**
      * Get the size of the data transferred of a specific request.
@@ -94,9 +99,13 @@ public interface HpcDataTransferProxy
      * 
      * @throws HpcException
      */
-    public long getDataTransferSize(Object authenticatedToken,
-    		                        String dataTransferRequestId) 
-    		                       throws HpcException;
+    default long getDataTransferSize(Object authenticatedToken,
+    		                         String dataTransferRequestId) 
+    		                        throws HpcException
+    {
+    	throw new HpcException("getDataTransferStatus() not supported by S3",
+	               HpcErrorType.UNEXPECTED_ERROR);
+    }
     
     /**
      * Get attributes of a file/directory.
@@ -108,10 +117,14 @@ public interface HpcDataTransferProxy
      * 
      * @throws HpcException
      */
-    public HpcPathAttributes getPathAttributes(Object authenticatedToken, 
-    		                                   HpcFileLocation fileLocation,
-    		                                   boolean getSize) 
-    		                                  throws HpcException;
+    default HpcPathAttributes getPathAttributes(Object authenticatedToken, 
+    		                                    HpcFileLocation fileLocation,
+    		                                    boolean getSize) 
+    		                                   throws HpcException
+    {
+    	throw new HpcException("getDataTransferStatus() not supported by S3",
+                               HpcErrorType.UNEXPECTED_ERROR);
+    }
     
     /**
      * Set file permission.
@@ -122,10 +135,14 @@ public interface HpcDataTransferProxy
      * 
      * @throws HpcException
      */
-    public void setPermission(Object authenticatedToken,
-    		                  HpcFileLocation fileLocation,
-    		                  HpcUserPermission permissionRequest) 
-    		                 throws HpcException; 
+    default void setPermission(Object authenticatedToken,
+    		                   HpcFileLocation fileLocation,
+    		                   HpcUserPermission permissionRequest) 
+    		                  throws HpcException
+    {
+	  	throw new HpcException("getDataTransferStatus() not supported by S3",
+	               HpcErrorType.UNEXPECTED_ERROR);
+    }
     
     /** 
      * Calculate data transfer destination to deposit a data object

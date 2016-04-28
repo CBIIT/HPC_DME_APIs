@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -57,53 +58,50 @@ public interface HpcDataTransferService
     /**
      * Get a data transfer request status.
      *
+     * @param dataTransferType The data transfer type.
      * @param dataTransferRequestId The data transfer request ID.
      * 
      * @return HpcDataTransferStatus the data transfer request status.
      * 
      * @throws HpcException
      */
-    public HpcDataTransferStatus getDataTransferStatus(String dataTransferRequestId) 
+    public HpcDataTransferStatus getDataTransferStatus(HpcDataTransferType dataTransferType,
+    		                                           String dataTransferRequestId) 
     		                                          throws HpcException;
     
     /**
      * Get the size of the data transferred of a specific request.
      *
+     * @param dataTransferType The data transfer type.
      * @param dataTransferRequestId The data transfer request ID.
      * 
      * @return The size of the data transferred in bytes.
      * 
      * @throws HpcException
      */
-    public long getDataTransferSize(String dataTransferRequestId) 
+    public long getDataTransferSize(HpcDataTransferType dataTransferType,
+    		                        String dataTransferRequestId) 
     		                       throws HpcException;
-    
-    /**
-     * Validate a data transfer account.
-     *
-     * @param dataTransferAccount The account to validate.
-     * @return True if the account is valid, or false otherwise.
-     */
-    public boolean validateDataTransferAccount(
-    		               HpcIntegratedSystemAccount dataTransferAccount)
-    		               throws HpcException;
     
     /**
      * Get endpoint/path attributes .
      *
+     * @param dataTransferType The data transfer type.
      * @param fileLocation The endpoint/path to get attributes for.
      * @param getSize If set to true, the file/directory size will be returned. 
      * @return HpcPathAttributes 
      * 
      * @throws HpcException
      */
-    public HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation,
+    public HpcPathAttributes getPathAttributes(HpcDataTransferType dataTransferType,
+    		                                   HpcFileLocation fileLocation,
     		                                   boolean getSize) 
     		                                  throws HpcException;
     
     /**
      * Set file permission.
      *
+     * @param dataTransferType The data transfer type.
      * @param fileLocation The endpoint/path to set permission
      * @param permissionRequest The user permission request.
      * @param dataTransferAccount Optional (can be null). If specified, the user ID to set 
@@ -112,7 +110,8 @@ public interface HpcDataTransferService
      * 
      * @throws HpcException
      */
-    public void setPermission(HpcFileLocation fileLocation,
+    public void setPermission(HpcDataTransferType dataTransferType,
+    		                  HpcFileLocation fileLocation,
     		                  HpcUserPermission permissionRequest,
     		                  HpcIntegratedSystemAccount dataTransferAccount) 
     		                 throws HpcException; 

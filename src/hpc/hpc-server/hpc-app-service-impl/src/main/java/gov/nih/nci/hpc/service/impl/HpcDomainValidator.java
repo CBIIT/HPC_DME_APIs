@@ -55,7 +55,6 @@ class HpcDomainValidator
     {
     	if(user == null || 
     	   !isValidNciAccount(user.getNciAccount()) ||
-    	   !isValidIntegratedSystemAccount(user.getDataTransferAccount()) ||
     	   !isValidIntegratedSystemAccount(user.getDataManagementAccount())) {
     	   logger.info("Invalid User: " + user);
     	   return false;

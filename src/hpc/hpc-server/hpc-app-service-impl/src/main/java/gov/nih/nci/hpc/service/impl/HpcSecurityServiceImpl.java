@@ -90,13 +90,11 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     
     @Override
     public void addUser(HpcNciAccount nciAccount, 
-	                    HpcIntegratedSystemAccount dataTransferAccount,
 	                    HpcIntegratedSystemAccount dataManagementAccount) 
 	                   throws HpcException
     {
     	// Input validation.
     	if(!isValidNciAccount(nciAccount) ||
-    	   !isValidIntegratedSystemAccount(dataTransferAccount) ||
     	   !isValidIntegratedSystemAccount(dataManagementAccount)) {	
     	   throw new HpcException("Invalid add user input", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
@@ -118,7 +116,6 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	HpcUser user = new HpcUser();
 
     	user.setNciAccount(nciAccount);
-    	user.setDataTransferAccount(dataTransferAccount);
     	user.setDataManagementAccount(dataManagementAccount);
     	user.setCreated(Calendar.getInstance());
     	
@@ -127,13 +124,11 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     }
     
     @Override
-    public void updateUser(String nciUserId, String firstName, String lastName,
-                           String DOC, HpcIntegratedSystemAccount dataTransferAccount) 
+    public void updateUser(String nciUserId, String firstName, String lastName, String DOC) 
 	                      throws HpcException
     {
     	// Input validation.
-    	if(nciUserId == null || firstName == null || lastName == null || DOC == null ||
-    	   !isValidIntegratedSystemAccount(dataTransferAccount)) {
+    	if(nciUserId == null || firstName == null || lastName == null || DOC == null) {
     	   throw new HpcException("Invalid update user input", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
@@ -155,7 +150,6 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	user.getNciAccount().setFirstName(firstName);
     	user.getNciAccount().setLastName(lastName);
     	user.getNciAccount().setDOC(DOC);
-    	user.setDataTransferAccount(dataTransferAccount);
     	user.setLastUpdated(Calendar.getInstance());
     	
     	// Persist to the DB.
@@ -186,7 +180,6 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	HpcRequestInvoker invoker = new HpcRequestInvoker();
     	if(user != null) {
     	   invoker.setNciAccount(user.getNciAccount());
-    	   invoker.setDataTransferAccount(user.getDataTransferAccount());
     	   invoker.setDataManagementAccount(user.getDataManagementAccount());
     	   invoker.setDataManagementAuthenticatedToken(null);
     	   invoker.setLdapAuthenticated(ldapAuthenticated);
