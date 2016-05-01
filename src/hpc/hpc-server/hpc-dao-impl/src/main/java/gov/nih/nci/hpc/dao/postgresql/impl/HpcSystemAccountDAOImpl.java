@@ -99,7 +99,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
 		    		             account.getUsername(),
 		    		             encryptor.encrypt(account.getPassword()),
 		                         account.getIntegratedSystem().value(),
-		                         dataTransferType);
+		                         dataTransferType != null ? dataTransferType.value() : null);
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a system account: " + e.getMessage(),
