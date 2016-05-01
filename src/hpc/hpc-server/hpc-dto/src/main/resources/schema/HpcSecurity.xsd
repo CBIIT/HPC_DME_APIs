@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--  
- * HpcUser.xsd
+ * HpcSecurity.xsd
  *
  * Copyright SVG,  Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -15,10 +15,13 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	xmlns:hpc-domain-user="http://hpc.nci.nih.gov/domain/user"
-	targetNamespace="http://hpc.nci.nih.gov/dto/user" elementFormDefault="unqualified">
+	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
+	targetNamespace="http://hpc.nci.nih.gov/dto/security" elementFormDefault="unqualified">
 
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/user"
-		schemaLocation="HpcUserTypes.xsd" />
+		        schemaLocation="HpcUserTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datatransfer"
+		        schemaLocation="HpcDataTransferTypes.xsd" />
 
 	<!-- User DTO -->
 	<xsd:element name="HpcUserDTO">
@@ -59,6 +62,17 @@
 			<xsd:sequence>
 				<xsd:element name="authenticated" type="xsd:boolean" />
 				<xsd:element name="userRole" type="hpc-domain-user:HpcUserRole" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<!-- System Account DTO -->
+	<xsd:element name="HpcSystemAccountDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="account"
+					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
+				<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

@@ -1,0 +1,163 @@
+/**
+ * HpcSystemAccountDAOImpl.java
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ */
+
+package gov.nih.nci.hpc.dao.postgresql.impl;
+
+import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.exception.HpcException;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+
+/**
+ * <p>
+ * HPC System Account DAO Implementation.
+ * </p>
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ */
+
+public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
+{ 
+    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//    
+    
+    // SQL Queries.
+	public final static String INSERT_SQL = 
+		   "insert into public.\"HPC_SYSTEM_ACCOUNT\" ( " +
+                    "\"USERNAME\", \"PASSWORD\", \"SYSTEM\", \"DATA_TRANSFER_TYPE\") " +
+                    "values (?, ?, ?, ?) " +
+           "on conflict(\"SYSTEM\") do update set \"USERNAME\"=excluded.\"USERNAME\", " +
+                                                  "\"PASSWORD\"=excluded.\"PASSWORD\", " +
+                                                  "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\"";
+
+	public final static String GET_BY_SYSTEM_SQL = 
+		   "select * from public.\"HPC_SYSTEM_ACCOUNT\" where \"SYSTEM\" = ?";
+	public final static String GET_BY_DATA_TRANSFER_TYPE_SQL = 
+		   "select * from public.\"HPC_SYSTEM_ACCOUNT\" where \"DATA_TRANSFER_TYPE\" = ?";
+	
+    //---------------------------------------------------------------------//
+    // Instance members
+    //---------------------------------------------------------------------//
+	
+	// The Spring JDBC Template instance.
+	@Autowired
+	private JdbcTemplate jdbcTemplate = null;
+	
+	// Encryptor.
+	@Autowired
+	HpcEncryptor encryptor = null;
+	
+	// Row mapper.
+	private HpcIntegratedSystemAccountRowMapper rowMapper = new HpcIntegratedSystemAccountRowMapper();
+	
+    //---------------------------------------------------------------------//
+    // Constructors
+    //---------------------------------------------------------------------//
+	
+    /**
+     * Constructor for Spring Dependency Injection. 
+     * 
+     */
+    private HpcSystemAccountDAOImpl()
+    {
+    }   
+    
+    //---------------------------------------------------------------------//
+    // Methods
+    //---------------------------------------------------------------------//
+    
+    //---------------------------------------------------------------------//
+    // HpcManagedUserDAO Interface Implementation
+    //---------------------------------------------------------------------//  
+    
+	@Override
+	public void upsert(HpcIntegratedSystemAccount account, 
+	                   HpcDataTransferType dataTransferType) throws HpcException
+    {
+		try {
+		     jdbcTemplate.update(INSERT_SQL,
+		    		             account.getUsername(),
+		    		             encryptor.encrypt(account.getPassword()),
+		                         account.getIntegratedSystem().value(),
+		                         dataTransferType);
+		     
+		} catch(DataAccessException e) {
+			    throw new HpcException("Failed to upsert a system account: " + e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, e);
+		}
+    }
+	
+	@Override 
+	public HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) 
+                                                      throws HpcException
+	{
+		try {
+		     return jdbcTemplate.queryForObject(GET_BY_SYSTEM_SQL, rowMapper, system);
+		     
+		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get a system account: " + e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}
+	}
+	
+	@Override 
+	public HpcIntegratedSystemAccount getSystemAccount(HpcDataTransferType dataTransferType) 
+                                                      throws HpcException
+	{
+		try {
+		     return jdbcTemplate.queryForObject(GET_BY_DATA_TRANSFER_TYPE_SQL, rowMapper, 
+		    		                            dataTransferType);
+		     
+		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get a system account: " + e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}
+	}
+	
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//  
+	
+	// HpcUser Table to Object mapper.
+	private class HpcIntegratedSystemAccountRowMapper 
+	              implements RowMapper<HpcIntegratedSystemAccount>
+	{
+		public HpcIntegratedSystemAccount mapRow(ResultSet rs, int rowNum) throws SQLException 
+		{
+			HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
+			account.setUsername(rs.getString("USERNAME"));
+			account.setPassword(encryptor.decrypt(rs.getBytes(("PASSWORD"))));
+			account.setIntegratedSystem(HpcIntegratedSystem.fromValue(rs.getString(("SYSTEM"))));
+            
+            return account;
+		}
+	}
+}
+
+ 

@@ -12,8 +12,7 @@ package gov.nih.nci.hpc.scheduler;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
-import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
-import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.dto.security.HpcAuthenticationRequestDTO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

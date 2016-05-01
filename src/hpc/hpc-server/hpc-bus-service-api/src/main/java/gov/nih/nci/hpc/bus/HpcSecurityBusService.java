@@ -12,10 +12,11 @@ package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupResponseDTO;
-import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
-import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
-import gov.nih.nci.hpc.dto.user.HpcUpdateUserRequestDTO;
-import gov.nih.nci.hpc.dto.user.HpcUserDTO;
+import gov.nih.nci.hpc.dto.security.HpcAuthenticationRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
+import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -85,7 +86,16 @@ public interface HpcSecurityBusService
      * @throws HpcException
      */
 	public HpcGroupResponseDTO setGroup(HpcGroupRequestDTO groupRequest) throws HpcException;
-
+	
+    /**
+     * Register a System Account.
+     *
+     * @param systemAccountRegistrationDTO The system account registration DTO.
+     * 
+     * @throws HpcException
+     */
+    public void registerSystemAccount(HpcSystemAccountDTO systemAccountRegistrationDTO) 
+    		                         throws HpcException;
 }
 
  
