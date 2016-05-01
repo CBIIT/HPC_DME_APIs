@@ -53,6 +53,7 @@
 		<prop key="hpc.ws.rs.auth.get-data-objects">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.set-permissions">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.download-data-object">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.register-system-account">SYSTEM_ADMIN</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

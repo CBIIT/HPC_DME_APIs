@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
+import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
@@ -32,6 +33,8 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
  * <p>
  * HPC Data Transfer Service Implementation.
@@ -46,6 +49,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
+	
+    // The System Account DAO instance.
+	@Autowired
+    private HpcSystemAccountDAO systemAccountDAO = null;
 	
 	// Map data transfer type to a 'credentials' structure
 	private Map<HpcDataTransferType, HpcDataTransferCredential> dataTransferCredentials = null;
@@ -63,21 +70,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * Constructor for Spring Dependency Injection.
      * 
      * @param dataTransferProxies The data transfer proxies.
-     * @param dataTransferAccounts The data transfer system accounts.
      * @throws HpcException Constructor is disabled.
      */
     private HpcDataTransferServiceImpl(
-    		Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies,
-    		Map<HpcDataTransferType, HpcIntegratedSystemAccount> dataTransferAccounts) 
+    		Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies) 
     		throws HpcException
     {
     	dataTransferCredentials = new HashMap<HpcDataTransferType, HpcDataTransferCredential>();
     	for(HpcDataTransferType dataTransferType : dataTransferProxies.keySet()) {
     		// Get the data transfer system account.
-    		HpcIntegratedSystemAccount account = dataTransferAccounts.get(dataTransferType);
-        	if(!HpcDomainValidator.isValidIntegratedSystemAccount(account)) {	
-         	   throw new HpcException("Invalid data transfer account", 
-         			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    		HpcIntegratedSystemAccount account = systemAccountDAO.getSystemAccount(dataTransferType);
+        	if(account == null) {	
+         	   throw new HpcException("System account not configured for: " + dataTransferType.value(), 
+         			                  HpcErrorType.UNEXPECTED_ERROR);
          	}	
         	
         	// Create a credential object and authentcate.
