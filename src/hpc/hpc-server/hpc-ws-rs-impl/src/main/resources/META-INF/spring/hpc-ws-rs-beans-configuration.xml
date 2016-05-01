@@ -110,11 +110,12 @@
 	<bean id="hpcAuthorizationInterceptor" class="org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor">
    		<property name="methodRolesMap">
       		<map>
-      			<!-- User Service Authorizations -->
+      			<!-- Security Service Authorizations -->
       			<entry key="registerUser" value="${hpc.ws.rs.auth.register-user}"/>
       			<entry key="updateUser" value="${hpc.ws.rs.auth.update-user}"/>
         		<entry key="getUser" value="${hpc.ws.rs.auth.get-user}"/>
         		<entry key="authenticateUser" value="${hpc.ws.rs.auth.authenticate-user}"/>
+        		<entry key="registerSystemAccount" value="${hpc.ws.rs.auth.register-system-account}"/>
         		
         		<!--  Data Management Service Authorizations -->
         		<entry key="registerCollection" value="${hpc.ws.rs.auth.register-collection}"/>
