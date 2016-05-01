@@ -38,7 +38,7 @@
 	<bean id="hpcS3Account" class="gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount" >
 		<property name="username" value="${hpc.service.datatransfer.s3.username}" />
 		<property name="password" value="${hpc.service.datatransfer.s3.password}" />
-		<property name="integratedSystem" value="S_3" />
+		<property name="integratedSystem" value="CLEVERSAFE" />
 	</bean>
 	
 	<util:map id="hpcDataTransferAccounts" 

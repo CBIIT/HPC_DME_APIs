@@ -13,10 +13,11 @@ package gov.nih.nci.hpc.ws.rs.impl;
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupResponseDTO;
-import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
-import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
-import gov.nih.nci.hpc.dto.user.HpcUpdateUserRequestDTO;
-import gov.nih.nci.hpc.dto.user.HpcUserDTO;
+import gov.nih.nci.hpc.dto.security.HpcAuthenticationRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
+import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcSecurityRestService;
 
@@ -155,6 +156,23 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 		
 		return okResponse(groupResponse, false);
     }    
+    
+    @Override
+    public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistrationDTO)
+    {
+		logger.info("Invoking RS: PUT /systemAccount: " + 
+                    systemAccountRegistrationDTO.getAccount().getIntegratedSystem());
+		
+		try {
+			 securityBusService.registerSystemAccount(systemAccountRegistrationDTO);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: PUT /systemAccount failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return createdResponse(systemAccountRegistrationDTO.getAccount().getIntegratedSystem().value());    	
+    }
 }
 
  

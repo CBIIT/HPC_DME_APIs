@@ -10,8 +10,10 @@
 
 package gov.nih.nci.hpc.service;
 
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -87,6 +89,29 @@ public interface HpcSecurityService
      * @throws HpcException
      */
     public boolean authenticate(String userName, String password) throws HpcException;
+    
+    /**
+     * Add a system account.
+     *
+     * @param account The system account to be added/updated.
+     * @param dataTransferType The data transfer type to associate with the system account.
+     * 
+     * @throws HpcException
+     */
+    public void addSystemAccount(HpcIntegratedSystemAccount account, 
+	                             HpcDataTransferType dataTransferType) 
+	                            throws HpcException;
+    
+    /**
+     * Get an integrated system account.
+     *
+     * @param system The integrated system to get its system-account.
+     * @return The registered user.
+     * 
+     * @throws HpcException
+     */
+    public HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) 
+    		                                          throws HpcException;
 }
 
  
