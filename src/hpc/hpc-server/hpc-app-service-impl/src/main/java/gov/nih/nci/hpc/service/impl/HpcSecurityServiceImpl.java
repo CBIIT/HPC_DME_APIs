@@ -12,11 +12,14 @@ package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidIntegratedSystemAccount;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
+import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -47,6 +50,10 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     // The User DAO instance.
 	@Autowired
     private HpcUserDAO userDAO = null;
+	
+    // The System Account DAO instance.
+	@Autowired
+    private HpcSystemAccountDAO systemAccountDAO = null;
     
 	// The LDAP authenticator instance.
 	@Autowired
@@ -85,7 +92,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcUserService Interface Implementation
+    // HpcSecurityService Interface Implementation
     //---------------------------------------------------------------------//  
     
     @Override
@@ -203,6 +210,33 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 		
 		return ldapAuthenticationProxy.authenticate(userName, password);
 	}
+    
+    @Override
+    public void addSystemAccount(HpcIntegratedSystemAccount account, 
+                                 HpcDataTransferType dataTransferType) 
+                                throws HpcException
+    {
+    	// Input validation.
+    	if(!isValidIntegratedSystemAccount(account)) {	
+    	   throw new HpcException("Invalid system account input", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	systemAccountDAO.upsert(account, dataTransferType);
+    }
+    
+    @Override
+    public HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) 
+    		                                          throws HpcException
+    {
+    	// Input validation.
+    	if(system == null) {
+    	   throw new HpcException("Null integrated system", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	return systemAccountDAO.getSystemAccount(system);
+    }
     
     //---------------------------------------------------------------------//
     // Helper Methods

@@ -10,8 +10,6 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
-import java.util.Arrays;
-
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -22,14 +20,17 @@ import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupResponseDTO;
-import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
-import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
-import gov.nih.nci.hpc.dto.user.HpcUpdateUserRequestDTO;
-import gov.nih.nci.hpc.dto.user.HpcUserDTO;
+import gov.nih.nci.hpc.dto.security.HpcAuthenticationRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
+import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     // Application service instances.
 	
 	@Autowired
-    private HpcSecurityService userService = null;
+    private HpcSecurityService securityService = null;
 	
 	@Autowired
     private HpcDataManagementService dataManagementService = null;
@@ -91,7 +92,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     public void registerUser(HpcUserDTO userRegistrationDTO)  
     		                throws HpcException
     {
-    	logger.info("Invoking registerDataset(HpcUserDTO): " + 
+    	logger.info("Invoking registerUser(HpcUserDTO): " + 
                     userRegistrationDTO);
     	
     	// Input validation.
@@ -131,8 +132,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	boolean registrationCompleted = false;
     	try {
     	     // Add the user to the managed collection.
-    	     userService.addUser(userRegistrationDTO.getNciAccount(), 
-    			                 userRegistrationDTO.getDataManagementAccount());
+    	     securityService.addUser(userRegistrationDTO.getNciAccount(), 
+    			                     userRegistrationDTO.getDataManagementAccount());
     	     registrationCompleted = true;
     	     
     	} finally {
@@ -158,7 +159,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	}
     	
     	// Get the user.
-    	HpcUser user = userService.getUser(nciUserId);
+    	HpcUser user = securityService.getUser(nciUserId);
     	if(user == null) {
     	   throw new HpcException("User not found: " + nciUserId, 
     			                  HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
@@ -210,7 +211,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
      			                         updateLastName, updateRole);
     	
 	     // Update User.
-	     userService.updateUser(nciUserId, updateFirstName, 
+	     securityService.updateUser(nciUserId, updateFirstName, 
 	    		                updateLastName, updateDOC);
     }
     
@@ -226,7 +227,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	}
     	
     	// Get the managed data domain object.
-    	HpcUser user = userService.getUser(nciUserId);
+    	HpcUser user = securityService.getUser(nciUserId);
     	if(user == null) {
     	   return null;
     	}
@@ -258,14 +259,14 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	// LDAP authentication.
     	boolean userAuthenticated =
     			    ldapAuthentication ? 
-    			        userService.authenticate(authenticationRequest.getUserName(), 
-    			                         		 authenticationRequest.getPassword()) : 
+    			    		securityService.authenticate(authenticationRequest.getUserName(), 
+    			                         	           	 authenticationRequest.getPassword()) : 
     			        false;
                     
     	// Get the HPC user.
     	HpcUser user = null;
     	try {
-    	     user = userService.getUser(authenticationRequest.getUserName());
+    	     user = securityService.getUser(authenticationRequest.getUserName());
 			
     	} catch(HpcException e) {
     	}
@@ -293,7 +294,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	}
     	
     	// Populate the request context with the HPC user.
-    	userService.setRequestInvoker(user, userAuthenticated);
+    	securityService.setRequestInvoker(user, userAuthenticated);
     	
     	// Prepare and return a response DTO.
     	HpcAuthenticationResponseDTO authenticationResponse = new HpcAuthenticationResponseDTO();
@@ -304,6 +305,23 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     			      HpcUserRole.NOT_REGISTERED);
     	
     	return authenticationResponse;
+    }
+    
+    @Override
+    public void registerSystemAccount(HpcSystemAccountDTO systemAccountRegistrationDTO)  
+    		                         throws HpcException
+    {
+    	logger.info("Invoking registerSystemAccount(HpcSystemAccountDTO)");
+    	
+    	// Input validation.
+    	if(systemAccountRegistrationDTO == null) {
+    	   throw new HpcException("Null HpcSystemAccountDTO",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+
+    	// Add the user to the managed collection.
+    	securityService.addSystemAccount(systemAccountRegistrationDTO.getAccount(), 
+    			                         systemAccountRegistrationDTO.getDataTransferType());
     }
     
     //---------------------------------------------------------------------//

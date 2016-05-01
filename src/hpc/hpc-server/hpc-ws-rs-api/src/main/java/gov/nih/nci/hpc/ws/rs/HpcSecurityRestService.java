@@ -11,9 +11,10 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
-import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
-import gov.nih.nci.hpc.dto.user.HpcUpdateUserRequestDTO;
-import gov.nih.nci.hpc.dto.user.HpcUserDTO;
+import gov.nih.nci.hpc.dto.security.HpcAuthenticationRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
+import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -44,7 +45,7 @@ public interface HpcSecurityRestService
      */
     @PUT
     @Path("/user")
-    @Consumes("application/json,application/xml")
+    @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response registerUser(HpcUserDTO userRegistrationDTO);
     
     /**
@@ -55,7 +56,7 @@ public interface HpcSecurityRestService
      */
     @POST
     @Path("/user/{nciUserId}")
-    @Consumes("application/json,application/xml")
+    @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response updateUser(@PathParam("nciUserId") String nciUserId,
     		                   HpcUpdateUserRequestDTO updateUserRequestDTO);
     
@@ -63,22 +64,22 @@ public interface HpcSecurityRestService
      * Get user by NCI User ID.
      *
      * @param nciUserId The registered user ID.
-     * @return gov.nih.nci.hpc.dto.user.HpcUserDTO entity.
+     * @return gov.nih.nci.hpc.dto.security.HpcUserDTO entity.
      */
     @GET
     @Path("/user/{nciUserId}")
-    @Produces("application/json,application/xml")
+    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response getUser(@PathParam("nciUserId") String nciUserId); 
 
     /**
      * Authenticate a user.
      *
      * @param authenticationRequest The authentication request.
-     * @return gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO entity.
+     * @return gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO entity.
      */
     @POST
     @Path("/user/authenticate")
-    @Consumes("application/json,application/xml")
+    @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response authenticateUser(HpcAuthenticationRequestDTO authenticationRequest);
     
     /**
@@ -90,7 +91,17 @@ public interface HpcSecurityRestService
 	@Path("/group")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response setGroup(HpcGroupRequestDTO groupRequest);    
+	public Response setGroup(HpcGroupRequestDTO groupRequest);   
+	
+    /**
+     * Register system account.
+     *
+     * @param systemAccountRegistrationDTO The system account DTO to register.
+     */
+    @PUT
+    @Path("/systemAccount")
+    @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistrationDTO);
 }
 
  
