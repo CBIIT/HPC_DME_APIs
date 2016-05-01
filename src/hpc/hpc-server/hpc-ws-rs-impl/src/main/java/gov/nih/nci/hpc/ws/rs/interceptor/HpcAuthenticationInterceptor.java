@@ -12,8 +12,8 @@ package gov.nih.nci.hpc.ws.rs.interceptor;
 
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
-import gov.nih.nci.hpc.dto.user.HpcAuthenticationResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcAuthenticationRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.exception.HpcAuthenticationException;
 import gov.nih.nci.hpc.exception.HpcException;
 

@@ -44,6 +44,8 @@
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcUserDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcUserDAO" />
+	<osgi:reference id="hpcSystemAccountDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcSystemAccountDAO" />
 	<osgi:reference id="hpcGlobusDataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
 		            bean-name="hpcGlobusDataTransferProxy"/>
