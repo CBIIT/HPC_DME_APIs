@@ -112,7 +112,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
                                                       throws HpcException
 	{
 		try {
-		     return jdbcTemplate.queryForObject(GET_BY_SYSTEM_SQL, rowMapper, system);
+		     return jdbcTemplate.queryForObject(GET_BY_SYSTEM_SQL, rowMapper, system.value());
 		     
 		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
 			    return null;
@@ -129,7 +129,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
 	{
 		try {
 		     return jdbcTemplate.queryForObject(GET_BY_DATA_TRANSFER_TYPE_SQL, rowMapper, 
-		    		                            dataTransferType);
+		    		                            dataTransferType.value());
 		     
 		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
 			    return null;
