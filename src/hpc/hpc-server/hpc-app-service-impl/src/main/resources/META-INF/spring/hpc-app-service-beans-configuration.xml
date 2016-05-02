@@ -43,6 +43,7 @@
 	</bean>
 	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl" >
 		<constructor-arg ref="hpcDataTransferProxies" index="0" />
+		<constructor-arg ref="hpcSystemAccountDAO" index="1" />
 	</bean>
 	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl" />
 </beans>

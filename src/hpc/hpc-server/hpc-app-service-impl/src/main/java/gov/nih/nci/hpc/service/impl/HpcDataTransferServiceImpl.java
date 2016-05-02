@@ -33,8 +33,6 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 /**
  * <p>
  * HPC Data Transfer Service Implementation.
@@ -49,10 +47,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
-	
-    // The System Account DAO instance.
-	@Autowired
-    private HpcSystemAccountDAO systemAccountDAO = null;
 	
 	// Map data transfer type to a 'credentials' structure
 	private Map<HpcDataTransferType, HpcDataTransferCredential> dataTransferCredentials = null;
@@ -70,10 +64,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * Constructor for Spring Dependency Injection.
      * 
      * @param dataTransferProxies The data transfer proxies.
-     * @throws HpcException Constructor is disabled.
+     * @throws HpcException
      */
     private HpcDataTransferServiceImpl(
-    		Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies) 
+    		Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies,
+    		HpcSystemAccountDAO systemAccountDAO) 
     		throws HpcException
     {
     	dataTransferCredentials = new HashMap<HpcDataTransferType, HpcDataTransferCredential>();
@@ -85,7 +80,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
          			                  HpcErrorType.UNEXPECTED_ERROR);
          	}	
         	
-        	// Create a credential object and authentcate.
+        	// Create a credential object and authenticate.
         	HpcDataTransferCredential dataTransferCredential = new HpcDataTransferCredential();
         	dataTransferCredential.proxy = dataTransferProxies.get(dataTransferType);
         	dataTransferCredential.account = account;
