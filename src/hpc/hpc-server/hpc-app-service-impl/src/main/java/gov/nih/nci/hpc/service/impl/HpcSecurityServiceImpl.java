@@ -19,7 +19,6 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -58,6 +57,10 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	// The LDAP authenticator instance.
 	@Autowired
 	HpcLdapAuthenticationProxy ldapAuthenticationProxy = null;
+	
+	// System Accounts locator.
+	@Autowired
+	private HpcSystemAccountLocator systemAccountLocator = null;
 	
 	// The valid DOC values.
 	Set<String> docValues = new HashSet<String>();
@@ -223,19 +226,9 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	}
     	
     	systemAccountDAO.upsert(account, dataTransferType);
-    }
-    
-    @Override
-    public HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) 
-    		                                          throws HpcException
-    {
-    	// Input validation.
-    	if(system == null) {
-    	   throw new HpcException("Null integrated system", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
     	
-    	return systemAccountDAO.getSystemAccount(system);
+    	// Refresh the system accounts cache.
+    	systemAccountLocator.reload();
     }
     
     //---------------------------------------------------------------------//

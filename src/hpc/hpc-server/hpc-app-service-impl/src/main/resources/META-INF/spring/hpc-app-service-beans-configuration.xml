@@ -36,6 +36,10 @@
   		<entry key="GLOBUS" value-ref="hpcGlobusDataTransferProxy" />
   		<entry key="S_3" value-ref="hpcS3DataTransferProxy" />
 	</util:map>
+	
+	<!--  HPC System Accounts Locator -->
+	<bean id="hpcSystemAccountLocator" class="gov.nih.nci.hpc.service.impl.HpcSystemAccountLocator"
+	      init-method="reload" />
 		
 	<!-- HPC Application Services Beans -->
 	<bean id="hpcSecurityService" class="gov.nih.nci.hpc.service.impl.HpcSecurityServiceImpl">
@@ -43,7 +47,6 @@
 	</bean>
 	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl" >
 		<constructor-arg ref="hpcDataTransferProxies" index="0" />
-		<constructor-arg ref="hpcSystemAccountDAO" index="1" />
 	</bean>
 	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl" />
 </beans>
