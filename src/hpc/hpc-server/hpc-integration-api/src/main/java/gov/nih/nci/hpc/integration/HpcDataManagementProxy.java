@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.integration;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -325,7 +326,7 @@ public interface HpcDataManagementProxy
      */
     public void setCollectionPermission(Object authenticatedToken,
     		                            String path,
-    		                            HpcUserPermission permissionRequest) 
+    		                            HpcEntityPermission permissionRequest) 
     		                           throws HpcException;   
     
     /**
@@ -339,7 +340,7 @@ public interface HpcDataManagementProxy
      */
     public void setDataObjectPermission(Object authenticatedToken,
     		                            String path,
-    		                            HpcUserPermission permissionRequest) 
+    		                            HpcEntityPermission permissionRequest) 
     		                           throws HpcException; 
     /**
      * Create User group and assign/remove users to group

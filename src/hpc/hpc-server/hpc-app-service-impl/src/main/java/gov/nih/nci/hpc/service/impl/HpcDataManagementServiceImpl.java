@@ -16,6 +16,8 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQue
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
@@ -610,7 +612,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     
     @Override
     public HpcPathAttributes setPermission(String path,
-    		                               HpcUserPermission permissionRequest) 
+    		                               HpcEntityPermission permissionRequest) 
                                           throws HpcException
     {
     	// Input validation.
@@ -640,8 +642,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	return pathAttributes;
-    }
-    
+    }    
     @Override
     public Map<String, String> toMap(List<HpcMetadataEntry> metadataEntries)
     {
