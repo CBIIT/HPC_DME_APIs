@@ -3,7 +3,7 @@
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
- * 
+ *
  * Distributed under the OSI-approved BSD 3-Clause License.
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  */
@@ -17,17 +17,20 @@ import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 
 public class HpcSecurityServiceImpl implements HpcSecurityService
-{         
+{
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -49,141 +52,144 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     // The User DAO instance.
 	@Autowired
     private HpcUserDAO userDAO = null;
-	
+
     // The System Account DAO instance.
 	@Autowired
     private HpcSystemAccountDAO systemAccountDAO = null;
-    
+
 	// The LDAP authenticator instance.
 	@Autowired
 	HpcLdapAuthenticationProxy ldapAuthenticationProxy = null;
-	
+
+	@Autowired
+	HpcDataManagementProxy dataManagementProxy = null;
+
 	// System Accounts locator.
 	@Autowired
 	private HpcSystemAccountLocator systemAccountLocator = null;
-	
+
 	// The valid DOC values.
 	Set<String> docValues = new HashSet<String>();
-	
+
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
-	
+
     /**
      * Constructor for Spring Dependency Injection.
-     * 
+     *
      * @param docValues A whitespace separated list of valid DOC values.
      */
     private HpcSecurityServiceImpl(String docValues)
     {
     	this.docValues.addAll(Arrays.asList(docValues.split("\\s+")));
-    }   
-    
+    }
+
     /**
      * Default constructor disabled.
-     * 
+     *
      * @throws HpcException Constructor is disabled.
      */
     private HpcSecurityServiceImpl() throws HpcException
     {
-    	throw new HpcException("Constructor disabled", 
+    	throw new HpcException("Constructor disabled",
     			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
-    }   
-    
+    }
+
     //---------------------------------------------------------------------//
     // Methods
     //---------------------------------------------------------------------//
-    
+
     //---------------------------------------------------------------------//
     // HpcSecurityService Interface Implementation
-    //---------------------------------------------------------------------//  
-    
+    //---------------------------------------------------------------------//
+
     @Override
-    public void addUser(HpcNciAccount nciAccount, 
-	                    HpcIntegratedSystemAccount dataManagementAccount) 
+    public void addUser(HpcNciAccount nciAccount,
+	                    HpcIntegratedSystemAccount dataManagementAccount)
 	                   throws HpcException
     {
     	// Input validation.
     	if(!isValidNciAccount(nciAccount) ||
-    	   !isValidIntegratedSystemAccount(dataManagementAccount)) {	
-    	   throw new HpcException("Invalid add user input", 
+    	   !isValidIntegratedSystemAccount(dataManagementAccount)) {
+    	   throw new HpcException("Invalid add user input",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	if(!docValues.contains(nciAccount.getDOC())) {
     	   throw new HpcException("Invalid DOC: " + nciAccount.getDOC() +
-    			                  ". Valid values: " + docValues, 
+    			                  ". Valid values: " + docValues,
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
     	}
-    	
+
     	// Check if the user already exists.
     	if(getUser(nciAccount.getUserId()) != null) {
-    	   throw new HpcException("User already exists: nciUserId = " + 
-    	                          nciAccount.getUserId(), 
-    	                          HpcRequestRejectReason.USER_ALREADY_EXISTS);	
+    	   throw new HpcException("User already exists: nciUserId = " +
+    	                          nciAccount.getUserId(),
+    	                          HpcRequestRejectReason.USER_ALREADY_EXISTS);
     	}
-    	
+
     	// Create the User domain object.
     	HpcUser user = new HpcUser();
 
     	user.setNciAccount(nciAccount);
     	user.setDataManagementAccount(dataManagementAccount);
     	user.setCreated(Calendar.getInstance());
-    	
+
     	// Persist to the DB.
     	insert(user);
     }
-    
+
     @Override
-    public void updateUser(String nciUserId, String firstName, String lastName, String DOC) 
+    public void updateUser(String nciUserId, String firstName, String lastName, String DOC)
 	                      throws HpcException
     {
     	// Input validation.
     	if(nciUserId == null || firstName == null || lastName == null || DOC == null) {
-    	   throw new HpcException("Invalid update user input", 
+    	   throw new HpcException("Invalid update user input",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
-    	
+
     	if(!docValues.contains(DOC)) {
     	   throw new HpcException("Invalid DOC: " + DOC +
-    			                  ". Valid values: " + docValues, 
+    			                  ". Valid values: " + docValues,
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
     	}
-    	
+
     	// Get the user.
     	HpcUser user = getUser(nciUserId);
     	if(user == null) {
     	   throw new HpcException("User not found: " + nciUserId,
-    	                          HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
+    	                          HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
     	}
-    	
+
     	// Create the User domain object.
     	user.getNciAccount().setFirstName(firstName);
     	user.getNciAccount().setLastName(lastName);
     	user.getNciAccount().setDOC(DOC);
     	user.setLastUpdated(Calendar.getInstance());
-    	
+
     	// Persist to the DB.
     	update(user);
     }
-    
+
     @Override
     public HpcUser getUser(String nciUserId) throws HpcException
     {
     	// Input validation.
     	if(nciUserId == null) {
-    	   throw new HpcException("Null NCI user ID", 
+    	   throw new HpcException("Null NCI user ID",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
-    	
+
     	return userDAO.getUser(nciUserId);
     }
-    
+
     @Override
     public HpcRequestInvoker getRequestInvoker()
     {
     	return HpcRequestContext.getRequestInvoker();
     }
-    
+
     @Override
     public void setRequestInvoker(HpcUser user, boolean ldapAuthenticated)
     {
@@ -194,52 +200,52 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	   invoker.setDataManagementAuthenticatedToken(null);
     	   invoker.setLdapAuthenticated(ldapAuthenticated);
     	}
-    	
+
     	HpcRequestContext.setRequestInvoker(invoker);
     }
-    
+
     @Override
 	public boolean authenticate(String userName, String password) throws HpcException
 	{
     	// Input validation.
 		if(userName == null || userName.trim().length() == 0) {
-		   throw new HpcException("User name cannot be null or empty", 
+		   throw new HpcException("User name cannot be null or empty",
 				                  HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		if(password == null || password.trim().length() == 0) {
-		   throw new HpcException("Password cannot be null or empty", 
+		   throw new HpcException("Password cannot be null or empty",
 				                  HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		
+
 		return ldapAuthenticationProxy.authenticate(userName, password);
 	}
-    
+
     @Override
-    public void addSystemAccount(HpcIntegratedSystemAccount account, 
-                                 HpcDataTransferType dataTransferType) 
+    public void addSystemAccount(HpcIntegratedSystemAccount account,
+                                 HpcDataTransferType dataTransferType)
                                 throws HpcException
     {
     	// Input validation.
-    	if(!isValidIntegratedSystemAccount(account)) {	
-    	   throw new HpcException("Invalid system account input", 
+    	if(!isValidIntegratedSystemAccount(account)) {
+    	   throw new HpcException("Invalid system account input",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
-    	
+
     	systemAccountDAO.upsert(account, dataTransferType);
-    	
+
     	// Refresh the system accounts cache.
     	systemAccountLocator.reload();
     }
-    
+
     //---------------------------------------------------------------------//
     // Helper Methods
-    //---------------------------------------------------------------------//  
-    
+    //---------------------------------------------------------------------//
+
     /**
      * Persist user to the DB.
      *
      * @param user The user to be persisted.
-     * 
+     *
      * @throws HpcException
      */
     private void insert(HpcUser user) throws HpcException
@@ -257,7 +263,5 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	   userDAO.update(user);
     	}
     }
-
 }
 
- 

@@ -3,15 +3,15 @@
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
- * 
+ *
  * Distributed under the OSI-approved BSD 3-Clause License.
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 
 package gov.nih.nci.hpc.ws.rs;
 
-import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
 import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
@@ -37,7 +37,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/")
 public interface HpcSecurityRestService
-{    
+{
     /**
      * Register user.
      *
@@ -47,7 +47,7 @@ public interface HpcSecurityRestService
     @Path("/user")
     @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response registerUser(HpcUserDTO userRegistrationDTO);
-    
+
     /**
      * Update an existing user.
      *
@@ -59,7 +59,7 @@ public interface HpcSecurityRestService
     @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response updateUser(@PathParam("nciUserId") String nciUserId,
     		                   HpcUpdateUserRequestDTO updateUserRequestDTO);
-    
+
     /**
      * Get user by NCI User ID.
      *
@@ -69,7 +69,7 @@ public interface HpcSecurityRestService
     @GET
     @Path("/user/{nciUserId}")
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-    public Response getUser(@PathParam("nciUserId") String nciUserId); 
+    public Response getUser(@PathParam("nciUserId") String nciUserId);
 
     /**
      * Authenticate a user.
@@ -81,7 +81,7 @@ public interface HpcSecurityRestService
     @Path("/user/authenticate")
     @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response authenticateUser(HpcAuthenticationRequestDTO authenticationRequest);
-    
+
     /**
      * POST Set (create or update) a group and assign/remove users.
      *
@@ -91,8 +91,8 @@ public interface HpcSecurityRestService
 	@Path("/group")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response setGroup(HpcGroupRequestDTO groupRequest);   
-	
+	public Response setGroup(HpcGroupRequestDTO groupRequest);
+
     /**
      * Register system account.
      *
@@ -104,4 +104,3 @@ public interface HpcSecurityRestService
     public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistrationDTO);
 }
 
- 

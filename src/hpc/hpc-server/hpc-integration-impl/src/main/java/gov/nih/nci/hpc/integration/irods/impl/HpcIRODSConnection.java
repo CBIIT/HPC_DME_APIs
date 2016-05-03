@@ -23,6 +23,7 @@ import org.irods.jargon.core.pub.CollectionAO;
 import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.pub.UserAO;
+import org.irods.jargon.core.pub.UserGroupAO;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -202,6 +203,26 @@ public class HpcIRODSConnection
 		}	
     }
     
+    /**
+     * Get iRODS User AO instance.
+     *
+     * @param authenticatedToken An authenticated Data Management account
+     * 
+     * @throws HpcException
+     */
+    public UserGroupAO getUserGroupAO(Object authenticatedToken) throws HpcException
+    {
+    	try {
+			 return irodsFileSystem.getIRODSAccessObjectFactory().getUserGroupAO(
+					                   getIrodsAccount(authenticatedToken));
+			 
+		} catch(JargonException e) {
+			    throw new HpcException(
+			                 "Failed to get iRODs User Group Access Object: " + 
+	                         e.getMessage(),
+                             HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		}	
+    }    
     /**
      * Authenticate an account.
      *
