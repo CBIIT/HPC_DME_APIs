@@ -11,7 +11,6 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
-import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
@@ -33,6 +32,8 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
  * <p>
  * HPC Data Transfer Service Implementation.
@@ -48,13 +49,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     // Instance members
     //---------------------------------------------------------------------//
 	
-	// Map data transfer type to a 'credentials' structure
-	private Map<HpcDataTransferType, HpcDataTransferCredential> dataTransferCredentials = null;
-	private class HpcDataTransferCredential
-	{
-		private HpcDataTransferProxy proxy = null;
-		private HpcIntegratedSystemAccount account = null;
-	};
+	// Map data transfer type to its proxy impl.
+	private Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies = 
+			new HashMap<HpcDataTransferType, HpcDataTransferProxy>();
+	
+	// System Accounts locator
+	@Autowired
+	private HpcSystemAccountLocator systemAccountLocator = null;
     
     //---------------------------------------------------------------------//
     // Constructors
@@ -67,26 +68,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * @throws HpcException
      */
     private HpcDataTransferServiceImpl(
-    		Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies,
-    		HpcSystemAccountDAO systemAccountDAO) 
+    		Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies) 
     		throws HpcException
     {
-    	dataTransferCredentials = new HashMap<HpcDataTransferType, HpcDataTransferCredential>();
-    	for(HpcDataTransferType dataTransferType : dataTransferProxies.keySet()) {
-    		// Get the data transfer system account.
-    		HpcIntegratedSystemAccount account = systemAccountDAO.getSystemAccount(dataTransferType);
-        	if(account == null) {	
-         	   throw new HpcException("System account not configured for: " + dataTransferType.value(), 
-         			                  HpcErrorType.UNEXPECTED_ERROR);
-         	}	
-        	
-        	// Create a credential object and authenticate.
-        	HpcDataTransferCredential dataTransferCredential = new HpcDataTransferCredential();
-        	dataTransferCredential.proxy = dataTransferProxies.get(dataTransferType);
-        	dataTransferCredential.account = account;
-        	
-        	dataTransferCredentials.put(dataTransferType, dataTransferCredential);
+    	if(dataTransferProxies == null || dataTransferProxies.isEmpty()) {
+    	   throw new HpcException("Null or empty map of data transfer proxies",
+    			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
+    	
+    	this.dataTransferProxies.putAll(dataTransferProxies);
     }   
     
     /**
@@ -133,10 +123,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
     	   
     	// Upload the data object using the appropriate data transfer proxy.
-    	HpcDataTransferCredential dataTransferCredential = 
-    			                  dataTransferCredentials.get(dataTransferType);
-  	    return dataTransferCredential.proxy.uploadDataObject(getAuthenticatedToken(dataTransferType), 
-  	    		                		                     uploadRequest);
+  	    return dataTransferProxies.get(dataTransferType).
+  	    		   uploadDataObject(getAuthenticatedToken(dataTransferType), 
+  	    		                    uploadRequest);
     }
     
     @Override
@@ -154,10 +143,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
   	   }
     	
     	// Download the data object using the appropriate data transfer proxy.
-    	HpcDataTransferCredential dataTransferCredential = 
-                                  dataTransferCredentials.get(dataTransferType);
-  	    return dataTransferCredential.proxy.downloadDataObject(getAuthenticatedToken(dataTransferType), 
-  	                                                           downloadRequest);	
+  	    return dataTransferProxies.get(dataTransferType).
+  	    		   downloadDataObject(getAuthenticatedToken(dataTransferType), 
+  	                                  downloadRequest);	
     }
     
 	@Override   
@@ -170,10 +158,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		
-    	HpcDataTransferCredential dataTransferCredential = 
-                                  dataTransferCredentials.get(dataTransferType);
-		return dataTransferCredential.proxy.getDataTransferStatus(getAuthenticatedToken(dataTransferType), 
-           	                                                      dataTransferRequestId);
+		return dataTransferProxies.get(dataTransferType).
+				   getDataTransferStatus(getAuthenticatedToken(dataTransferType), 
+           	                             dataTransferRequestId);
     }	
 	
 	@Override   
@@ -186,10 +173,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		
-    	HpcDataTransferCredential dataTransferCredential = 
-                                  dataTransferCredentials.get(dataTransferType);
-		return dataTransferCredential.proxy.getDataTransferSize(getAuthenticatedToken(dataTransferType), 
-           	                                                    dataTransferRequestId);
+		return dataTransferProxies.get(dataTransferType).
+				   getDataTransferSize(getAuthenticatedToken(dataTransferType), 
+           	                           dataTransferRequestId);
     }	
 	
 	@Override
@@ -204,10 +190,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}	
     	
-    	HpcDataTransferCredential dataTransferCredential = 
-                                  dataTransferCredentials.get(dataTransferType);
-    	return dataTransferCredential.proxy.getPathAttributes(getAuthenticatedToken(dataTransferType), 
-    			                                              fileLocation, getSize);
+    	return dataTransferProxies.get(dataTransferType).
+    			   getPathAttributes(getAuthenticatedToken(dataTransferType), 
+    			                     fileLocation, getSize);
     }
 	
 	@Override
@@ -231,10 +216,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	   request.setUserId(dataTransferAccount.getUsername());
     	}
     	
-    	HpcDataTransferCredential dataTransferCredential = 
-                                  dataTransferCredentials.get(dataTransferType);
-    	dataTransferCredential.proxy.setPermission(getAuthenticatedToken(dataTransferType), 
-                                                   fileLocation, request);
+    	dataTransferProxies.get(dataTransferType).
+    	    setPermission(getAuthenticatedToken(dataTransferType), 
+                          fileLocation, request);
     }
 	
     //---------------------------------------------------------------------//
@@ -266,9 +250,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
     	
     	// No authenticated token found for this request. Create one.
-        HpcDataTransferCredential dataTransferCredential = 
-                                  dataTransferCredentials.get(dataTransferType);
-        Object token = dataTransferCredential.proxy.authenticate(dataTransferCredential.account);
+        Object token = dataTransferProxies.get(dataTransferType).
+        		           authenticate(systemAccountLocator.getSystemAccount(dataTransferType));
     	if(token == null) {
     	   throw new HpcException("Invalid data transfer account credentials",
                                   HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);

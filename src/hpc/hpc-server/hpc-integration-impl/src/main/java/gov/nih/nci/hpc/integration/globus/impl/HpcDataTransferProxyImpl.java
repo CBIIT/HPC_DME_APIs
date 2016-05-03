@@ -39,7 +39,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id:$
+ * @version $Id$
  */
 
 public class HpcDataTransferProxyImpl implements HpcDataTransferProxy 
@@ -228,39 +228,37 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
                                 HpcFileLocation source, HpcFileLocation destination)
                                throws HpcException
 	{
-		if (!autoActivate(source.getFileContainerId(), client) || 
-		!autoActivate(destination.getFileContainerId(), client)) {
-		logger.error("Unable to auto activate go tutorial endpoints, exiting");
-		// throw ENDPOINT NOT ACTIVATED HPCException
-		//return false;
+		if(!autoActivate(source.getFileContainerId(), client) || 
+		   !autoActivate(destination.getFileContainerId(), client)) {
+		   logger.error("Unable to auto activate go tutorial endpoints, exiting");
+		   // throw ENDPOINT NOT ACTIVATED HPCException
+		   //return false;
 		}
 		
 		try {
-		JSONTransferAPIClient.Result r;
-		r = client.getResult("/transfer/submission_id");
-		String submissionId = r.document.getString("value");
-		JSONObject transfer = new JSONObject();
-		transfer.put("DATA_TYPE", "transfer");
-		transfer.put("submission_id", submissionId);
-		transfer.put("verify_checksum", true);
-		transfer.put("delete_destination_extra", false);
-		transfer.put("preserve_timestamp", false);
-		transfer.put("encrypt_data", false);
-		
-		JSONObject item = setJSONItem(source, destination, client);
-		transfer.append("DATA", item);
-		
-		r = client.postResult("/transfer", transfer, null);
-		String taskId = r.document.getString("task_id");
-		logger.debug("Transfer task id :"+ taskId );
-		
-		
-		return taskId;
+			 JSONTransferAPIClient.Result r;
+			 r = client.getResult("/transfer/submission_id");
+			 String submissionId = r.document.getString("value");
+			 JSONObject transfer = new JSONObject();
+			 transfer.put("DATA_TYPE", "transfer");
+			 transfer.put("submission_id", submissionId);
+			 transfer.put("verify_checksum", true);
+			 transfer.put("delete_destination_extra", false);
+			 transfer.put("preserve_timestamp", false);
+			 transfer.put("encrypt_data", false);
+			
+			 JSONObject item = setJSONItem(source, destination, client);
+			 transfer.append("DATA", item);
+			
+			 r = client.postResult("/transfer", transfer, null);
+			 String taskId = r.document.getString("task_id");
+			 logger.debug("Transfer task id :"+ taskId );
+			
+			 return taskId;
 		
 		} catch(Exception e) {
-		throw new HpcException(
-		             "Failed to transfer: " + source + ", " + destination, 
-		             HpcErrorType.DATA_TRANSFER_ERROR, e);
+		        throw new HpcException("Failed to transfer: " + source + ", " + destination, 
+		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 	}
     
