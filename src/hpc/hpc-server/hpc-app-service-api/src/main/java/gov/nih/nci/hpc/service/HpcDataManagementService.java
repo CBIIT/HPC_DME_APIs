@@ -20,6 +20,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.model.HpcGroup;
+import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -342,6 +344,16 @@ public interface HpcDataManagementService
      * @throws HpcException
      */
     public Map<String, String> toMap(List<HpcMetadataEntry> metadataEntries);
+    
+    /**
+     * Create User group and 
+     * @param group group name
+     * @param addUserId List of userIds to add to the group
+     * @param removeUserId List of userIds to remove from the group
+     * @throws HpcException
+     */
+    public HpcGroupResponse setGroup(HpcGroup group, List<String> addUserId, List<String> removeUserId) throws HpcException;
+    
 }
 
  

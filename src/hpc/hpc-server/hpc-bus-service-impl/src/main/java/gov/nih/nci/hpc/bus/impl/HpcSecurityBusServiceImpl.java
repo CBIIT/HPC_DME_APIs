@@ -10,21 +10,29 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
+import gov.nih.nci.hpc.domain.user.HpcGroupUserResponse;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
-import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcGroupResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
 import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserGroupResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -359,16 +367,39 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	}
     }
     
-    @Override
-    public HpcGroupResponseDTO setGroup(HpcGroupRequestDTO groupRequest) 
-    		                           throws HpcException
-    {
-    	if(groupRequest == null || groupRequest.getGroup() == null)
-     	   throw new HpcException("Null Group request",
-	                  HpcErrorType.INVALID_REQUEST_INPUT);	
-    	
-    	return null;
-    }    
+	@Override
+	public HpcGroupResponseDTO setGroup(HpcGroupRequestDTO groupRequest) throws HpcException {
+		if (groupRequest == null || groupRequest.getGroup() == null)
+			throw new HpcException("Null Group request", HpcErrorType.INVALID_REQUEST_INPUT);
+		HpcGroup hpcGroup = new HpcGroup();
+		hpcGroup.setGroupName(groupRequest.getGroup());
+
+		HpcGroupResponseDTO dto = new HpcGroupResponseDTO();
+
+		try {
+			HpcGroupResponse response = dataManagementService.setGroup(hpcGroup, groupRequest.getAddUserIds(),
+					groupRequest.getDeleteUserIds());
+			dto.setGroup(groupRequest.getGroup());
+			dto.setResult(response.getResult());
+			dto.setMessage(response.getMessage());
+			if (response.getGroupuser() != null && response.getGroupuser().size() > 0) {
+				List<HpcUserGroupResponseDTO> userGroupResponse = new ArrayList<HpcUserGroupResponseDTO>();
+				for (HpcGroupUserResponse gResponse : response.getGroupuser()) {
+					HpcUserGroupResponseDTO userGroupResponseDTO = new HpcUserGroupResponseDTO();
+					userGroupResponseDTO.setUserId(gResponse.getUserId());
+					userGroupResponseDTO.setResult(gResponse.getResult());
+					userGroupResponseDTO.setMessage(gResponse.getMessage());
+					userGroupResponse.add(userGroupResponseDTO);
+				}
+				dto.getUserGroupResponses().addAll(userGroupResponse);
+			}
+		} catch (HpcException e) {
+			dto.setResult(false);
+			dto.setMessage("Group is not created due to: " + e.getMessage());
+			throw e;
+		}
+		return dto;
+	}
 }
 
  

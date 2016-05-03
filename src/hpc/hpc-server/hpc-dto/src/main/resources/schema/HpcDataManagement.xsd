@@ -160,36 +160,4 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
-	<!-- User Group DTO -->
-	<xsd:element name="HpcGroupRequestDTO">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="group" type="xsd:string" />
-				<xsd:element name="addUserIds" type="xsd:string"
-					         minOccurs="0" maxOccurs="unbounded" />
-			    <xsd:element name="deleteUserIds" type="xsd:string"
-					         minOccurs="0" maxOccurs="unbounded" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-	
-	<xsd:complexType name="HpcUserGroupResponseDTO">
-		<xsd:sequence>
-			<xsd:element name="userId" type="xsd:string" />
-			<xsd:element name="result" type="xsd:boolean" />
-			<xsd:element name="message" type="xsd:string" />
-		</xsd:sequence>
-	</xsd:complexType>
-	
-	<xsd:element name="HpcGroupResponseDTO">
-		<xsd:complexType> 
-			<xsd:sequence>
-				<xsd:element name="group" type="xsd:string" />
-				<xsd:element name="userGroupResponses"
-				             type="hpc-dto-datamanagement:HpcUserGroupResponseDTO"
-					         minOccurs="0" maxOccurs="unbounded" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-	
 </xsd:schema>
