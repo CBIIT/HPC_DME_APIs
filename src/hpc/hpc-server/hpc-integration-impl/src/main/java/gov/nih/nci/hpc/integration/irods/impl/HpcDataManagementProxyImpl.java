@@ -18,6 +18,9 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.model.HpcGroup;
+import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
+import gov.nih.nci.hpc.domain.user.HpcGroupUserResponse;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -31,16 +34,20 @@ import java.util.List;
 
 import org.irods.jargon.core.exception.DataNotFoundException;
 import org.irods.jargon.core.exception.DuplicateDataException;
+import org.irods.jargon.core.exception.InvalidGroupException;
 import org.irods.jargon.core.exception.InvalidInputParameterException;
+import org.irods.jargon.core.exception.InvalidUserException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.protovalues.UserTypeEnum;
 import org.irods.jargon.core.pub.CollectionAO;
 import org.irods.jargon.core.pub.DataObjectAO;
+import org.irods.jargon.core.pub.UserGroupAO;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.Collection;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.core.pub.domain.User;
+import org.irods.jargon.core.pub.domain.UserGroup;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.query.AVUQueryElement;
@@ -621,6 +628,94 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
     	} 
     }
+
+	@Override
+	public HpcGroupResponse addGroup(Object authenticatedToken, HpcGroup hpcGroup, List<String> addUserIds,
+			List<String> removeUserIds) throws HpcException {
+		// Instantiate an iRODS user domain object.
+		HpcGroupResponse response = new HpcGroupResponse();
+		List<HpcGroupUserResponse> userresponses = new ArrayList<HpcGroupUserResponse>();
+		UserGroup irodsUserGroup = new UserGroup();
+		irodsUserGroup.setUserGroupName(hpcGroup.getGroupName());
+		irodsUserGroup.setZone(irodsConnection.getZone());
+		boolean updated = false;
+		try {
+			UserGroupAO userGroupAO = irodsConnection.getUserGroupAO(authenticatedToken);
+			UserGroup group = userGroupAO.findByName(hpcGroup.getGroupName());
+			if (group == null)
+			{
+				userGroupAO.addUserGroup(irodsUserGroup);
+				updated = true;
+				response.setMessage("Group is created");
+			}
+			if (addUserIds != null && addUserIds.size() > 0) {
+				for (String userId : addUserIds) {
+					HpcGroupUserResponse userResponse = new HpcGroupUserResponse();
+					userResponse.setResult(true);
+					userResponse.setUserId(userId);
+
+					try {
+						userGroupAO.addUserToGroup(hpcGroup.getGroupName(), userId, irodsConnection.getZone());
+						updated= true;
+						userResponse.setMessage("UserId: " + userId + "is added to group: " + hpcGroup.getGroupName());
+					} catch (InvalidGroupException e) {
+						userResponse.setResult(false);
+						userResponse.setMessage("Invalid group: " + hpcGroup.getGroupName() + " | UserId: " + userId
+								+ "is not added to group: " + hpcGroup.getGroupName() + " due to: " + e.getMessage());
+					} catch (InvalidUserException e) {
+						userResponse.setResult(false);
+						userResponse.setMessage("Invalid user: " + userId + " | UserId: " + userId
+								+ "is not added to group: " + hpcGroup.getGroupName() + " due to: " + e.getMessage());
+					} catch (JargonException e) {
+						userResponse.setResult(false);
+						userResponse.setMessage("Internal error adding User: " + userId + " | UserId: " + userId
+								+ "is not added to group: " + hpcGroup.getGroupName() + " due to: " + e.getMessage());
+					}
+					userresponses.add(userResponse);
+				}
+			}
+			if (removeUserIds != null && removeUserIds.size() > 0) {
+				for (String userId : removeUserIds) {
+					HpcGroupUserResponse userResponse = new HpcGroupUserResponse();
+					userResponse.setResult(true);
+					userResponse.setUserId(userId);
+					try {
+						userGroupAO.removeUserFromGroup(hpcGroup.getGroupName(), userId, irodsConnection.getZone());
+						updated = true;
+						userResponse
+								.setMessage("UserId: " + userId + "is removed from group: " + hpcGroup.getGroupName());
+					} catch (InvalidGroupException e) {
+						userResponse.setResult(false);
+						userResponse.setMessage("Invalid group: " + hpcGroup.getGroupName() + " | UserId: " + userId
+								+ "is not removed from the group: " + hpcGroup.getGroupName() + " due to: " + e.getMessage());
+					} catch (InvalidUserException e) {
+						userResponse.setResult(false);
+						userResponse.setMessage("Invalid user: " + userId + " | UserId: " + userId
+								+ "is not removed from the group: " + hpcGroup.getGroupName() + " due to: " + e.getMessage());
+					} catch (JargonException e) {
+						userResponse.setResult(false);
+						userResponse.setMessage("Internal error adding User: " + userId + " | UserId: " + userId
+								+ "is not removed from the group: " + hpcGroup.getGroupName() + " due to: " + e.getMessage());
+					}
+					userresponses.add(userResponse);
+				}
+			}
+			if(updated)
+				response.setMessage("Group is updated");
+
+			response.setResult(updated);
+			response.getGroupuser().addAll(userresponses);
+
+		} catch (DuplicateDataException ex) {
+			throw new HpcException("iRODS group already exists: " + hpcGroup.getGroupName(),
+					HpcErrorType.DATA_MANAGEMENT_ERROR, ex);
+
+		} catch (Exception e) {
+			throw new HpcException("Failed add iRODS user group: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR,
+					e);
+		}
+		return response;
+	}
     
     //---------------------------------------------------------------------//
     // Helper Methods
