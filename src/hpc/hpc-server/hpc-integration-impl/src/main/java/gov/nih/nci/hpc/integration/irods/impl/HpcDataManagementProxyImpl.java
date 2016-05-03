@@ -12,6 +12,8 @@ package gov.nih.nci.hpc.integration.irods.impl;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -571,7 +573,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     public void setCollectionPermission(
     		       Object authenticatedToken,
                    String path,
-                   HpcUserPermission permissionRequest) 
+                   HpcEntityPermission permissionRequest) 
                    throws HpcException
     {
     	FilePermissionEnum permission = null;
@@ -585,10 +587,16 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	}
     	
     	try {
+    		String id = null;
+    		if(permissionRequest instanceof HpcUserPermission)
+    			id = ((HpcUserPermission)permissionRequest).getUserId();
+    		else if(permissionRequest instanceof HpcGroupPermission)
+    			id = ((HpcGroupPermission)permissionRequest).getGroupId();
+    		
     	     irodsConnection.getCollectionAO(authenticatedToken).setAccessPermission(
     		     	                         irodsConnection.getZone(), 
     		     	                         path,
-    			                             permissionRequest.getUserId(),
+    			                             id,
     			                             true, permission);
     	     
     	} catch(Exception e) {
@@ -602,7 +610,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     public void setDataObjectPermission(
     		       Object authenticatedToken,
                    String path,
-                   HpcUserPermission permissionRequest) 
+                   HpcEntityPermission permissionRequest) 
                    throws HpcException
     {
     	path = addPath(path);
@@ -616,10 +624,16 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	}
     	
     	try {
+    		String id = null;
+    		if(permissionRequest instanceof HpcUserPermission)
+    			id = ((HpcUserPermission)permissionRequest).getUserId();
+    		else if(permissionRequest instanceof HpcGroupPermission)
+    			id = ((HpcGroupPermission)permissionRequest).getGroupId();
+    		
     	     irodsConnection.getDataObjectAO(authenticatedToken).setAccessPermission(
     		     	                         irodsConnection.getZone(), 
     		     	                         path,
-    			                             permissionRequest.getUserId(),
+    			                             id,
     			                             permission);
     	     
     	} catch(Exception e) {

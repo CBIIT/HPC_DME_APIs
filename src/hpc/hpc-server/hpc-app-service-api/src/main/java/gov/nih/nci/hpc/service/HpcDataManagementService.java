@@ -12,6 +12,8 @@ package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
@@ -332,7 +334,7 @@ public interface HpcDataManagementService
      * @throws HpcException If it failed to set the entity permission.
      */
     public HpcPathAttributes setPermission(String path,
-    		                               HpcUserPermission permissionRequest) 
+    		                               HpcEntityPermission permissionRequest) 
     		                              throws HpcException;
     
     /**
