@@ -16,6 +16,8 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.model.HpcGroup;
+import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -339,6 +341,17 @@ public interface HpcDataManagementProxy
     		                            String path,
     		                            HpcUserPermission permissionRequest) 
     		                           throws HpcException; 
+    /**
+     * Create User group and assign/remove users to group
+     * @param group group name
+     * @param addUserId List of userIds to add to the group
+     * @param removeUserId List of userIds to remove from the group
+     * @throws HpcException
+     */
+    public HpcGroupResponse addGroup(Object authenticatedToken,
+            HpcGroup hpcGroup, List<String> addUserIds, List<String> removeUserIds) 
+           throws HpcException;
+    
 }
 
  

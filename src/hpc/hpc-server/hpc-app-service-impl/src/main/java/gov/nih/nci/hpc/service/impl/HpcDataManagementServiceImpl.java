@@ -26,7 +26,9 @@ import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
+import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -580,6 +582,18 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
        	
     	dataManagementProxy.deleteUser(getAuthenticatedToken(), nciUserId);
+    }
+
+    @Override
+    public HpcGroupResponse setGroup(HpcGroup hpcGroup, List<String> addUserIds, List<String> removeUserIds) throws HpcException
+    {
+    	// Input validation.
+    	if(hpcGroup == null) {	
+    	   throw new HpcException("Null group name", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+       	
+    	return dataManagementProxy.addGroup(getAuthenticatedToken(), hpcGroup, addUserIds, removeUserIds);
     }
     
     @Override

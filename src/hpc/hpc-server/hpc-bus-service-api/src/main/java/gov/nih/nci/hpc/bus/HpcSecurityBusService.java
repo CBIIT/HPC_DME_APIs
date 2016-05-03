@@ -10,8 +10,8 @@
 
 package gov.nih.nci.hpc.bus;
 
-import gov.nih.nci.hpc.dto.datamanagement.HpcGroupRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcGroupResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;

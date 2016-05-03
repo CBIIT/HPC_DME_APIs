@@ -16,6 +16,7 @@
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	xmlns:hpc-domain-user="http://hpc.nci.nih.gov/domain/user"
 	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
+	xmlns:hpc-dto-security="http://hpc.nci.nih.gov/dto/security"
 	targetNamespace="http://hpc.nci.nih.gov/dto/security" elementFormDefault="unqualified">
 
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/user"
@@ -76,4 +77,38 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
+
+	<!-- User Group DTO -->
+	<xsd:element name="HpcGroupRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="group" type="xsd:string" />
+				<xsd:element name="addUserIds" type="xsd:string"
+					         minOccurs="0" maxOccurs="unbounded" />
+			    <xsd:element name="deleteUserIds" type="xsd:string"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:complexType name="HpcUserGroupResponseDTO">
+		<xsd:sequence>
+			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="result" type="xsd:boolean" />
+			<xsd:element name="message" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="HpcGroupResponseDTO">
+		<xsd:complexType> 
+			<xsd:sequence>
+				<xsd:element name="group" type="xsd:string" />
+				<xsd:element name="result" type="xsd:boolean" />
+				<xsd:element name="message" type="xsd:string" />
+				<xsd:element name="userGroupResponses"
+				             type="hpc-dto-security:HpcUserGroupResponseDTO"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
 </xsd:schema>
