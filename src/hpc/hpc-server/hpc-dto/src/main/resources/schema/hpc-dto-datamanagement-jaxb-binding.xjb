@@ -42,8 +42,14 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcDataObject']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcDataObject"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcEntityPermission']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission"/>
+		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcUserPermission']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcGroupPermission']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission"/>
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcPathAttributes']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes"/>
