@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.bus.impl;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
@@ -35,6 +36,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -440,6 +442,24 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		    // Add this user permission response to the list.
     		    entityPermissionResponse.getUserPermissionResponses().add(userPermissionResponse);
     		}
+       		for(HpcGroupPermission groupPermissionRequest : entityPermissionRequest.getGroupPermissions()) {
+    			HpcGroupPermissionResponseDTO groupPermissionResponse = new HpcGroupPermissionResponseDTO();
+    			groupPermissionResponse.setGroupId(groupPermissionRequest.getGroupId());
+    			groupPermissionResponse.setResult(true);
+    		    try {
+    		    	 // Set the data management permission.
+    		    	 //HpcPathAttributes pathAttributes =
+    		    		dataManagementService.setPermission(entityPermissionRequest.getPath(), 
+    		    				groupPermissionRequest);
+    		    } catch(HpcException e) {
+    		    	    // Request failed. Record the message and keep going.
+    		    		groupPermissionResponse.setResult(false);
+    		    		groupPermissionResponse.setMessage(e.getMessage());
+    		    }
+     		
+    		    // Add this user permission response to the list.
+    		    entityPermissionResponse.getGroupPermissionResponses().add(groupPermissionResponse);
+    		}    		
     		
     		// Add this entity permission response to the list
     		responses.getEntityPermissionResponses().add(entityPermissionResponse);
