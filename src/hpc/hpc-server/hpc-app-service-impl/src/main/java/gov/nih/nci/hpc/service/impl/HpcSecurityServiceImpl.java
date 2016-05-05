@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -198,6 +199,25 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	   invoker.setDataManagementAuthenticatedToken(null);
     	   invoker.setLdapAuthenticated(ldapAuthenticated);
     	}
+
+    	HpcRequestContext.setRequestInvoker(invoker);
+    }
+    
+    @Override
+    public void setSystemRequestInvoker() throws HpcException
+    {
+    	HpcIntegratedSystemAccount dataManagementAccount = 
+    	   systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
+    	if(dataManagementAccount == null) {
+    	   throw new HpcException("System Data Management Account not configured",
+    			                  HpcErrorType.UNEXPECTED_ERROR);
+    	}
+    	
+    	HpcRequestInvoker invoker = new HpcRequestInvoker();
+    	invoker.setNciAccount(null);
+    	invoker.setDataManagementAccount(dataManagementAccount);
+    	invoker.setDataManagementAuthenticatedToken(null);
+    	invoker.setLdapAuthenticated(false);
 
     	HpcRequestContext.setRequestInvoker(invoker);
     }
