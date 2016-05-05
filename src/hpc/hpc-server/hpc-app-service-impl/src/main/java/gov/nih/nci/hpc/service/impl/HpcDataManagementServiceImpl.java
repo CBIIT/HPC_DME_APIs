@@ -17,9 +17,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -98,9 +96,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	private HpcKeyGenerator keyGenerator = null;
 	
 	// Prepared query to get data objects that have their data transfer in-progress.
-	private List<HpcMetadataQuery> dataTransferInProgressQuery = 
-			                       new ArrayList<HpcMetadataQuery>();
-	
+	private List<HpcMetadataQuery> dataTransferInProgressQuery = new ArrayList<HpcMetadataQuery>();
+			
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -110,11 +107,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
      */
     private HpcDataManagementServiceImpl()
     {
-    	// Populate the query to get data objects in data transfer in-progress state.
+    	// Prepare the query to get data objects in data transfer in-progress state.
     	HpcMetadataQuery query = new HpcMetadataQuery();
     	query.setAttribute(DATA_TRANSFER_STATUS_ATTRIBUTE);
-        query.setOperator("EQUAL");
-        query.setValue(HpcDataTransferStatus.IN_PROGRESS.value());
+        query.setOperator("IN");
+        query.setValue("(" + HpcDataTransferStatus.IN_PROGRESS_TO_ARCHIVE.value() + "," +
+        		             HpcDataTransferStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE.value() +
+        		        ")");
         dataTransferInProgressQuery.add(query);
     }   
     

@@ -153,8 +153,9 @@ public interface HpcDataTransferProxy
      * 
      * @return HpcFileLocation The calculated data transfer deposit destination.
      */
-	public static HpcFileLocation getArchiveDestination(HpcFileLocation baseArchiveDestination,
-			                                            String path, String callerObjectId) 
+	public static HpcFileLocation getArchiveDestinationLocation(
+			                         HpcFileLocation baseArchiveDestination,
+			                         String path, String callerObjectId) 
 	{
 		// Calculate the data transfer destination absolute path as the following:
 		// 'base path' / 'caller's data transfer destination path/ 'logical path'

@@ -20,7 +20,9 @@
 
 	<xsd:simpleType name="HpcDataTransferStatus">
 		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="IN_PROGRESS" />
+			<xsd:enumeration value="IN_PROGRESS_TO_TEMPORARY_ARCHIVE" />
+			<xsd:enumeration value="IN_TEMPORARY_ARCHIVE" />
+			<xsd:enumeration value="IN_PROGRESS_TO_ARCHIVE" />
 			<xsd:enumeration value="ARCHIVED" />
 			<xsd:enumeration value="FAILED" />
 			<xsd:enumeration value="UNKNOWN" />
@@ -31,6 +33,13 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="GLOBUS" />
 			<xsd:enumeration value="S3" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="HpcArchiveType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="TEMPORARY_ARCHIVE" />
+			<xsd:enumeration value="ARCHIVE" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
@@ -70,6 +79,13 @@
 		<xsd:sequence>
 			<xsd:element name="fileContainerId" type="xsd:string" />
 			<xsd:element name="fileId" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcArchiveDestination">
+		<xsd:sequence>
+			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="destinationType" type="hpc-domain-datatransfer:HpcArchiveType" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
