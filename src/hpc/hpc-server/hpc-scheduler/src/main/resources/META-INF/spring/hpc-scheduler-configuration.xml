@@ -24,13 +24,8 @@
 	<context:annotation-config />
 	<task:annotation-driven />
 	
-	<bean id="hpcBatchAuthenticationRequest" class="gov.nih.nci.hpc.dto.security.HpcAuthenticationRequestDTO">
-	    <property name="userName" value="${gov.nih.nci.hpc.scheduler.username}" />
-	    <property name="password" value="N/A" />
-	</bean>
-	
-	<!--  Update Data Transfer Status Scheduled task -->
-	<bean id="hpcUpdateDataTransferStatus" class="gov.nih.nci.hpc.scheduler.HpcScheduledTasks" />
+	<!--  HPC Scheduled task -->
+	<bean id="hpcScheduledTasks" class="gov.nih.nci.hpc.scheduler.HpcScheduledTasks" />
 	
 </beans>
 

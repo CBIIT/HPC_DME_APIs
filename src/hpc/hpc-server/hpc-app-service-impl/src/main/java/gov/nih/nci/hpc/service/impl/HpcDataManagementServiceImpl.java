@@ -96,7 +96,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	private HpcKeyGenerator keyGenerator = null;
 	
 	// Prepared query to get data objects that have their data transfer in-progress.
-	private List<HpcMetadataQuery> dataTransferInProgressQuery = new ArrayList<HpcMetadataQuery>();
+	private List<HpcMetadataQuery> dataTransferInProgressQuery = 
+			                       new ArrayList<HpcMetadataQuery>();
+	
+	// Prepared query to get data objects that have their data in temporary archive.
+	private List<HpcMetadataQuery> dataTransferInTemporaryArchiveQuery = 
+			                       new ArrayList<HpcMetadataQuery>();
 			
     //---------------------------------------------------------------------//
     // Constructors
@@ -115,6 +120,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
         		             HpcDataTransferStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE.value() +
         		        ")");
         dataTransferInProgressQuery.add(query);
+        
+        // Prepare the query to get data objects in temporary archive.
+    	query = new HpcMetadataQuery();
+    	query.setAttribute(DATA_TRANSFER_STATUS_ATTRIBUTE);
+        query.setOperator("EQUAL");
+        query.setValue(HpcDataTransferStatus.IN_TEMPORARY_ARCHIVE.value());
+        dataTransferInTemporaryArchiveQuery.add(query);
     }   
     
     //---------------------------------------------------------------------//
@@ -524,6 +536,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public List<HpcDataObject> getDataObjectsInProgress() throws HpcException
     {
     	return getDataObjects(dataTransferInProgressQuery);
+    }
+    
+    @Override
+    public List<HpcDataObject> getDataObjectsInTemporaryArchive() throws HpcException
+    {
+    	return getDataObjects(dataTransferInTemporaryArchiveQuery);
     }
     
     @Override

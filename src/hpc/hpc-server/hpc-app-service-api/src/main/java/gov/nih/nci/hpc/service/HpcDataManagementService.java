@@ -257,12 +257,20 @@ public interface HpcDataManagementService
     /**
      * Get data objects that have their data transfer in-progress.
      *
-     * @param archiveType The type of destination archive.
      * @return HpcDataObject list.
      * 
      * @throws HpcException
      */
     public List<HpcDataObject> getDataObjectsInProgress() throws HpcException;
+    
+    /**
+     * Get data objects that have their data stored in temporary archive.
+     *
+     * @return HpcDataObject list.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcDataObject> getDataObjectsInTemporaryArchive() throws HpcException;
     
     /**
      * Get metadata of a data object.

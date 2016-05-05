@@ -23,7 +23,6 @@
 
 	<!-- HPC Scheduler OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
-		<prop key="gov.nih.nci.hpc.scheduler.username">hpc-system-username</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
