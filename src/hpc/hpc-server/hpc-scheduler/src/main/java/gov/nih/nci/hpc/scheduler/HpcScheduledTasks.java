@@ -12,7 +12,7 @@ package gov.nih.nci.hpc.scheduler;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
-import gov.nih.nci.hpc.dto.security.HpcAuthenticationRequestDTO;
+import gov.nih.nci.hpc.exception.HpcException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +34,6 @@ public class HpcScheduledTasks
     // Instance members
     //---------------------------------------------------------------------//
 
-	// The authentication request for executing the scheduled tasks.
-	@Autowired
-	private HpcAuthenticationRequestDTO batchAuthenticationRequest = null;
-	
     // The Data Management Business Service instance.
 	@Autowired
     private HpcDataManagementBusService dataManagementBusService = null;
@@ -75,17 +71,16 @@ public class HpcScheduledTasks
     {
         logger.info("Starting Update Data Transfer Status Task...");
 
-        //try { 
-		     //userBusService.authenticate(batchAuthenticationRequest, false);
-		     //dataManagementBusService.updateDataTransferStatus();
+        try { 
+		     dataManagementBusService.updateDataTransferStatus();
 		     
-        //} catch(HpcException e) {
-        	//    logger.error("Update Data Transfer Status task failed", e);
+        } catch(HpcException e) {
+        	    logger.error("Update Data Transfer Status task failed", e);
         	    
-        //} finally {
-        	//       dataManagementBusService.closeConnection();
-        	  //     logger.info("Completed Update Data Transfer Status Task...");	
-        //}
+        } finally {
+        	       dataManagementBusService.closeConnection();
+        	       logger.info("Completed Update Data Transfer Status Task...");	
+        }
     }
 }
 
