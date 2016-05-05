@@ -80,7 +80,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // Application service instances.
 	
 	@Autowired
-    private HpcSecurityService userService = null;
+    private HpcSecurityService securityService = null;
 	
 	@Autowired
     private HpcDataTransferService dataTransferService = null;
@@ -471,6 +471,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     @Override
     public void updateDataTransferStatus() throws HpcException
     {
+    	// Use system account to perform this service.
+    	securityService.setSystemRequestInvoker();
+    	
     	// Iterate through the data objects that their data transfer is in-progress
     	for(HpcDataObject dataObject : dataManagementService.getDataObjectsInProgress()) {
     		String path = dataObject.getAbsolutePath();
@@ -484,10 +487,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		        dataTransferService.getDataTransferStatus(systemGeneratedMetadata.getDataTransferType(),
     		        		                                  systemGeneratedMetadata.getDataTransferRequestId());
     			 
-    		     if(dataTransferStatus.equals(HpcDataTransferStatus.ARCHIVED)) {
+    		     if(dataTransferStatus.equals(HpcDataTransferStatus.ARCHIVED) ||
+    		        dataTransferStatus.equals(HpcDataTransferStatus.IN_TEMPORARY_ARCHIVE)) {
     		    	// Data transfer completed successfully. Update the metadata.
     		    	dataManagementService.setDataTransferStatus(path, dataTransferStatus);
-    		    	logger.info("Data transfer completed: " + path);
+    		    	logger.info("Data transfer completed [" + dataTransferStatus + "]: " + path);
     		     } else if(dataTransferStatus.equals(HpcDataTransferStatus.FAILED)) {
      		    	       // Data transfer failed. Remove the data object
      		    	       dataManagementService.delete(path);
