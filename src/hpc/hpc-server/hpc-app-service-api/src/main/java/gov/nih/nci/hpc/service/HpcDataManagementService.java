@@ -13,9 +13,7 @@ package gov.nih.nci.hpc.service;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -257,8 +255,9 @@ public interface HpcDataManagementService
     		    List<HpcMetadataQuery> metadataQueries) throws HpcException;
     
     /**
-     * Get data objects that have their data transfer in-progress
+     * Get data objects that have their data transfer in-progress.
      *
+     * @param archiveType The type of destination archive.
      * @return HpcDataObject list.
      * 
      * @throws HpcException

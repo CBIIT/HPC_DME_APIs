@@ -699,7 +699,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	{
 		// Get the transfer status, transfer request id and data-object size from the metadata entries.
 		HpcDataTransferStatus transferStatus = systemGeneratedMetadata.getDataTransferStatus();
-		if(transferStatus == null || !transferStatus.equals(HpcDataTransferStatus.IN_PROGRESS)) {
+		if(transferStatus == null || 
+		   (!transferStatus.equals(HpcDataTransferStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE) &&
+			!transferStatus.equals(HpcDataTransferStatus.IN_PROGRESS_TO_ARCHIVE))) {
 		   // data transfer not in progress.
 		   return null;
 		}

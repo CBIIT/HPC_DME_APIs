@@ -1,6 +1,8 @@
 package gov.nih.nci.hpc.integration.s3.impl;
 
-import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestination;
+import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
@@ -41,7 +43,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	
 	@Autowired
 	@Qualifier("hpcS3ArchiveDestination")
-	HpcFileLocation baseArchiveDestination = null;
+	HpcArchiveDestination baseArchiveDestination = null;
     
     //---------------------------------------------------------------------//
     // Constructors
@@ -76,20 +78,22 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		                                           throws HpcException
    {
        	// Calculate the archive destination.
-    	HpcFileLocation archiveDestination = 
-    	   getArchiveDestination(baseArchiveDestination, uploadRequest.getPath(),
-    		                     uploadRequest.getCallerObjectId());
+    	HpcFileLocation archiveDestinationLocation = 
+    	   getArchiveDestinationLocation(baseArchiveDestination.getDestinationLocation(), 
+    			                         uploadRequest.getPath(),
+    		                             uploadRequest.getCallerObjectId());
     	
     	// Create a metadata to associate the data management path.
     	ObjectMetadata metadata = new ObjectMetadata();
     	metadata.addUserMetadata("path", uploadRequest.getPath());
     	
     	// Create a S3 upload request.
-    	PutObjectRequest request = new PutObjectRequest(archiveDestination.getFileContainerId(), 
-    			                                        archiveDestination.getFileId(), 
+    	PutObjectRequest request = new PutObjectRequest(archiveDestinationLocation.getFileContainerId(), 
+    			                                        archiveDestinationLocation.getFileId(), 
     			                                        uploadRequest.getSourceInputStream(), 
     			                                        metadata);
     	
+    	// Upload the data
     	try {
     	     s3Connection.getTransferManager(authenticatedToken).upload(request).waitForCompletion();
         	
@@ -101,10 +105,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		                           HpcErrorType.DATA_TRANSFER_ERROR, ie);   
         }
     	
+    	// Upload completed. Create and populate the response object.
     	HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
-    	uploadResponse.setArchiveLocation(archiveDestination);
-    	uploadResponse.setDataTransferStatus(HpcDataTransferStatus.ARCHIVED);
+    	uploadResponse.setArchiveLocation(archiveDestinationLocation);
     	uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
+    	if(baseArchiveDestination.getDestinationType().equals(HpcArchiveType.ARCHIVE)) {
+    	   uploadResponse.setDataTransferStatus(HpcDataTransferStatus.ARCHIVED);
+    	} else {
+    		    uploadResponse.setDataTransferStatus(HpcDataTransferStatus.IN_TEMPORARY_ARCHIVE);
+    	}
         
         return uploadResponse;
    }

@@ -22,9 +22,13 @@
 	<context:annotation-config />
 	
 	<!--  Globus Archive Destination. -->	
-	<bean id="hpcGlobusArchiveDestination" class="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation" >
+	<bean id="hpcGlobusArchiveDestinationLocation" class="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation" >
 		<property name="fileContainerId" value="${hpc.integration.globus.archive.endpoint}" />
 		<property name="fileId" value="${hpc.integration.globus.archive.path}" />
+	</bean>
+	<bean id="hpcGlobusArchiveDestination" class="gov.nih.nci.hpc.domain.datatransfer.HpcArchiveDestination" >
+		<property name="destinationLocation" ref="hpcGlobusArchiveDestinationLocation" />
+		<property name="destinationType" value="${hpc.integration.globus.archive.type}" />
 	</bean>
 	
 	<!--  Globus Connection  -->
@@ -38,9 +42,13 @@
 	      class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl" />
 	      
 	<!--  S3 Archive Destination. -->	
-	<bean id="hpcS3ArchiveDestination" class="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation" >
+	<bean id="hpcS3ArchiveDestinationLocation" class="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation" >
 		<property name="fileContainerId" value="${hpc.integration.cleversafe.archive.vault}" />
 		<property name="fileId" value="${hpc.integration.cleversafe.archive.objectId}" />
+	</bean>
+	<bean id="hpcS3ArchiveDestination" class="gov.nih.nci.hpc.domain.datatransfer.HpcArchiveDestination" >
+		<property name="destinationLocation" ref="hpcS3ArchiveDestinationLocation" />
+		<property name="destinationType" value="${hpc.integration.cleversafe.archive.type}" />
 	</bean>
 	
 	<!--  S3 Connection  -->
