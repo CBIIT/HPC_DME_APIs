@@ -82,6 +82,28 @@ public class HpcScheduledTasks
         	       logger.info("Completed Update Data Transfer Status Task...");	
         }
     }
+    
+    /**
+     * Process data objects in temporary archive task. This tasks transfers data from the temporary
+     * archive to the (permanent) archive and complete data object registration.
+     * 
+     */    
+    @Scheduled(fixedDelay = 30000)
+    private void processTemporaryArchiveTask()
+    {
+        logger.info("Starting Process Temporary Archive Task...");
+
+        try { 
+		     dataManagementBusService.processTemporaryArchive();
+		     
+        } catch(HpcException e) {
+        	    logger.error("Process Temporary Archive task failed", e);
+        	    
+        } finally {
+        	       dataManagementBusService.closeConnection();
+        	       logger.info("Completed Process Temporary Archive Task...");	
+        }
+    }
 }
 
  
