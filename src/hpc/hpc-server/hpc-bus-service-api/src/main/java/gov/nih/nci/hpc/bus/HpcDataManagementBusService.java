@@ -145,10 +145,17 @@ public interface HpcDataManagementBusService
     /**
      * Update the data transfer status of all data objects that the transfer is 'in progress'.
      *
-     * @throws HpcException
+     * @throws HpcException.
      */
 	public void updateDataTransferStatus() throws HpcException;
 	
+    /**
+     * Transfer data objects currently in temporary archive to the (permanent) archive, 
+     * and complete the registration process.
+     *
+     * @throws HpcException
+     */
+	public void processTemporaryArchive() throws HpcException;
 }
 
  
