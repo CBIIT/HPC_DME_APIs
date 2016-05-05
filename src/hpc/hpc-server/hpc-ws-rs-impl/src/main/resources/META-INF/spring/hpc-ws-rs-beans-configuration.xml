@@ -114,6 +114,7 @@
       			<entry key="registerUser" value="${hpc.ws.rs.auth.register-user}"/>
       			<entry key="updateUser" value="${hpc.ws.rs.auth.update-user}"/>
         		<entry key="getUser" value="${hpc.ws.rs.auth.get-user}"/>
+        		<entry key="setGroup" value="${hpc.ws.rs.auth.group}"/>
         		<entry key="authenticateUser" value="${hpc.ws.rs.auth.authenticate-user}"/>
         		<entry key="registerSystemAccount" value="${hpc.ws.rs.auth.register-system-account}"/>
         		
