@@ -17,7 +17,6 @@ import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
-import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -30,7 +29,6 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;

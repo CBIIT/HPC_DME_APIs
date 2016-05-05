@@ -1,8 +1,10 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
-import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestination;
+import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
@@ -66,7 +68,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	
 	@Autowired
 	@Qualifier("hpcGlobusArchiveDestination")
-	HpcFileLocation baseArchiveDestination = null;
+	HpcArchiveDestination baseArchiveDestination = null;
     
 	// The Logger instance.
 	private final Logger logger = 
@@ -105,21 +107,26 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		                                           throws HpcException
     {
     	// Calculate the archive destination.
-    	HpcFileLocation archiveDestination = 
-    	   getArchiveDestination(baseArchiveDestination, uploadRequest.getPath(),
-    		                     uploadRequest.getCallerObjectId());
+    	HpcFileLocation archiveDestinationLocation = 
+    	   getArchiveDestinationLocation(baseArchiveDestination.getDestinationLocation(), 
+    			                         uploadRequest.getPath(),
+    		                             uploadRequest.getCallerObjectId());
     	
     	// Submit a request to Globus to transfer the data.
     	String requestId = transferData(globusConnection.getTransferClient(authenticatedToken),
     			                        uploadRequest.getSourceLocation(),
-    			                        archiveDestination);
+    			                        archiveDestinationLocation);
     	
     	// Package and return the response.
     	HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
-    	uploadResponse.setArchiveLocation(archiveDestination);
+    	uploadResponse.setArchiveLocation(archiveDestinationLocation);
     	uploadResponse.setRequestId(requestId);
-    	uploadResponse.setDataTransferStatus(HpcDataTransferStatus.IN_PROGRESS);
     	uploadResponse.setDataTransferType(HpcDataTransferType.GLOBUS);
+    	if(baseArchiveDestination.getDestinationType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
+    	   uploadResponse.setDataTransferStatus(HpcDataTransferStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE);
+    	} else {
+    		    uploadResponse.setDataTransferStatus(HpcDataTransferStatus.IN_PROGRESS_TO_ARCHIVE);
+    	}
     	return uploadResponse;
     }
     
@@ -147,14 +154,23 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		 HpcGlobusDataTransferReport report = getDataTransferReport(authenticatedToken, 
 				                                                    dataTransferRequestId);
 		 if(report.getStatus().equals(ARCHIVED_STATUS)) {
-			return HpcDataTransferStatus.ARCHIVED;
+	    	if(baseArchiveDestination.getDestinationType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
+	      	   return HpcDataTransferStatus.IN_TEMPORARY_ARCHIVE;
+	      	 } else {
+	      		     return HpcDataTransferStatus.ARCHIVED;
+	      	 }	
 		 }
 
 		 if(report.getStatus().equals(FAILED_STATUS)) {
  			return HpcDataTransferStatus.FAILED;
  		 }
 		 
-		 return HpcDataTransferStatus.IN_PROGRESS;
+		 // Transfer is in progress. Return status based on the archive type.
+    	 if(baseArchiveDestination.getDestinationType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
+     	    return HpcDataTransferStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE;
+     	 } else {
+     	         return HpcDataTransferStatus.IN_PROGRESS_TO_ARCHIVE;
+     	 }		 
     }
     
     @Override
