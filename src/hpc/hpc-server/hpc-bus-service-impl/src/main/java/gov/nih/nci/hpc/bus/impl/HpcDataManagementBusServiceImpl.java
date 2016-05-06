@@ -250,7 +250,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				   (source.getFileContainerId() == null && source.getFileId() == null)) {
 				   source = null;
 				}
-		        
+				
 				// Transfer the data file.
 		        HpcDataObjectUploadResponse uploadResponse = 
 		           uploadData(source, dataObjectStream, path, 
@@ -266,7 +266,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			    			                   source, uploadResponse.getRequestId(), 
 			    			                   uploadResponse.getDataTransferStatus(),
 			    			                   uploadResponse.getDataTransferType(),
-			    			                   sourceSize); 
+			    			                   sourceSize, 
+			    			                   dataObjectRegistrationDTO.getCallerObjectId()); 
 	
 			     registrationCompleted = true;
 			     
@@ -494,8 +495,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			 
     		     if(dataTransferStatus.equals(HpcDataTransferStatus.ARCHIVED) ||
     		        dataTransferStatus.equals(HpcDataTransferStatus.IN_TEMPORARY_ARCHIVE)) {
-    		    	// Data transfer completed successfully. Update the metadata.
-    		    	dataManagementService.setDataTransferStatus(path, dataTransferStatus);
+    		    	// Data transfer completed successfully. Update the system metadata.
+     			    setDataTransferStatus(path, dataTransferStatus);
     		    	logger.info("Data transfer completed [" + dataTransferStatus + "]: " + path);
     		    	
     		     } else if(dataTransferStatus.equals(HpcDataTransferStatus.FAILED)) {
@@ -535,15 +536,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			 
  				 // Transfer the data file.
  		         HpcDataObjectUploadResponse uploadResponse = 
- 		        	uploadData(null, dataObjectStream, path, null);
+ 		        	uploadData(null, dataObjectStream, path, 
+ 		        			   systemGeneratedMetadata.getCallerObjectId());
  		     
- 			     // Generate system metadata and attach to the data object.
- 			     dataManagementService.addSystemGeneratedMetadataToDataObject(
- 			           		                    path, uploadResponse.getArchiveLocation(),
- 			    			                    null, uploadResponse.getRequestId(), 
- 			    			                    uploadResponse.getDataTransferStatus(),
- 			    			                    uploadResponse.getDataTransferType(),
- 			    			                    null); 
+ 			     // Update system metadata of the data object.
+ 			     dataManagementService.updateDataObjectSystemGeneratedMetadata(
+ 			           		                 path, uploadResponse.getArchiveLocation(),
+ 			    			                 uploadResponse.getRequestId(), 
+ 			    			                 uploadResponse.getDataTransferStatus(),
+ 			    			                 uploadResponse.getDataTransferType()); 
  			     
     		} catch(FileNotFoundException fnf) {
     			    logger.info("File not found in temp archive: " + 
@@ -778,8 +779,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     /** 
      * Upload data. Either upload from the input stream or submit a transfer request for the source.
      * 
-     * @param source The source for data transfer.
-     * @param dataObjectStream The data input stream to upload.
+     * @param sourceLocation The source for data transfer.
+     * @param sourceInputStream The source as an input stream
      * @param path The registration path.
      * @param callerObjectId The caller's provided data object ID.
      * @return HpcDataObjectUploadResponse
@@ -828,9 +829,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// If timeout occurred, move the status to unknown.
 		if(!checkTimeout || isDataTransferStatusCheckTimedOut(dataObject)) {
 			try {
-				 dataManagementService.setDataTransferStatus(
-						                  dataObject.getAbsolutePath(), 
-    	                                  HpcDataTransferStatus.UNKNOWN);
+				 setDataTransferStatus(dataObject.getAbsolutePath(), 
+    	                               HpcDataTransferStatus.UNKNOWN);
 			} catch(Exception ex) {
 				    logger.error("failed to set data transfer status to unknown: " + 
 				    		     dataObject.getAbsolutePath(), ex);
@@ -838,6 +838,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			
 			logger.error("Unknown data transfer status: " + dataObject.getAbsolutePath());
 		}
+	}
+	
+    /** 
+     * Set data transfer status of a data object
+     * 
+     * @param path The data object path.
+     * @param dataTransferStatus The data transfer status.
+     * 
+     * @throws HpcException
+     */
+	private void setDataTransferStatus(String path, HpcDataTransferStatus dataTransferStatus)
+	                                  throws HpcException
+	{
+		dataManagementService.updateDataObjectSystemGeneratedMetadata(
+                                    path, null, null, dataTransferStatus, null);
 	}
 }
 

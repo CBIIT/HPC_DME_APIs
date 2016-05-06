@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.transfer.Upload;
 
 /**
  * <p>
@@ -93,9 +94,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     			                                        uploadRequest.getSourceInputStream(), 
     			                                        metadata);
     	
-    	// Upload the data
+    	// Upload the data.
+    	Upload s3Upload = null;
     	try {
-    	     s3Connection.getTransferManager(authenticatedToken).upload(request).waitForCompletion();
+    	     (s3Upload = s3Connection.getTransferManager(authenticatedToken).upload(request)).waitForCompletion();
         	
         } catch(AmazonClientException ace) {
         	    throw new HpcException("Failed to upload file via S3", 
@@ -109,6 +111,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
     	uploadResponse.setArchiveLocation(archiveDestinationLocation);
     	uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
+    	uploadResponse.setRequestId(String.valueOf(s3Upload.hashCode()));
     	if(baseArchiveDestination.getDestinationType().equals(HpcArchiveType.ARCHIVE)) {
     	   uploadResponse.setDataTransferStatus(HpcDataTransferStatus.ARCHIVED);
     	} else {
