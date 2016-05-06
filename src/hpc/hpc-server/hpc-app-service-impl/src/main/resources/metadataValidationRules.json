@@ -518,7 +518,8 @@
                                                         "data_transfer_request_id",
                                                         "data_transfer_status",
                                                         "data_transfer_type",
-                                                        "source_file_size"
+                                                        "source_file_size",
+                                                        "archive_caller_object_id"
                                                       ]
    }
 }
