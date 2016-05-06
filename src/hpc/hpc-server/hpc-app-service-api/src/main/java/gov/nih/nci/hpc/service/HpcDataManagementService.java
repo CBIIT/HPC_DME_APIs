@@ -154,8 +154,8 @@ public interface HpcDataManagementService
      * @param dataTransferRequestId (Optional) The data transfer request ID.
      * @param dataTransferStatus The data transfer status.
      * @param dataTransferType The data transfer type.
-     * @param dataTransferRequestId (Optional) The data transfer request ID.
-     * 
+     * @param sourceSize (Optional) The data source size in bytes.
+     * @param callerObjectId (Optional) The caller object ID.
      * 
      * @throws HpcException
      */
@@ -165,7 +165,25 @@ public interface HpcDataManagementService
     		                                           String dataTransferRequestId,
     		                                           HpcDataTransferStatus dataTransferStatus,
     		                                           HpcDataTransferType dataTransferType,
-    		                                           Long sourceSize) 
+    		                                           Long sourceSize, String callerObjectId) 
+    		                                          throws HpcException; 
+    
+    /**
+     * Update system generated metadata of a data object.
+     *
+     * @param path The data object path.
+     * @param archiveLocation (Optional) The physical file archive location.
+     * @param dataTransferRequestId (Optional) The data transfer request ID.
+     * @param dataTransferStatus (Optional) The data transfer status.
+     * @param dataTransferType (Optional) The data transfer type.
+     * 
+     * @throws HpcException
+     */
+    public void updateDataObjectSystemGeneratedMetadata(String path, 
+    		                                            HpcFileLocation archiveLocation,
+    		                                            String dataTransferRequestId,
+    		                                            HpcDataTransferStatus dataTransferStatus,
+    		                                            HpcDataTransferType dataTransferType) 
     		                                          throws HpcException; 
     
     /**
@@ -190,18 +208,6 @@ public interface HpcDataManagementService
               getDataObjectSystemGeneratedMetadata(List<HpcMetadataEntry> dataObjectMetadata) 
             		                              throws HpcException; 
     
-    /** 
-     * Set a data transfer status of a data object.
-     * 
-     * @param path The data object (logical) path.
-     * @param HpcDataTransferStatus The data transfer status to set
-     * 
-     * @throws HpcException
-     */
-	public void setDataTransferStatus(String path, 
-                                      HpcDataTransferStatus dataTransferStatus) 
-                                     throws HpcException;
-	
     /**
      * Get collection by its path.
      *
