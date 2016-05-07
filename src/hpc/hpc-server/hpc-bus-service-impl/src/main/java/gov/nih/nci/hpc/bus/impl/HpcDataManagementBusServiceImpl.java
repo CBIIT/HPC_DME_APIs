@@ -526,19 +526,27 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		HpcDataObjectSystemGeneratedMetadata systemGeneratedMetadata = null;
     		try {
     		     // Get current data transfer Request Info.
-    			systemGeneratedMetadata = 
-    				  dataManagementService.getDataObjectSystemGeneratedMetadata(path);
+    			 systemGeneratedMetadata = 
+    			       dataManagementService.getDataObjectSystemGeneratedMetadata(path);
     			 
     			 // Get an input stream to the data object in the temporary archive.
-    			 InputStream dataObjectStream = 
-    				  new FileInputStream(
-    					  new File(systemGeneratedMetadata.getArchiveLocation().getFileId()));
+    			 File file = new File(systemGeneratedMetadata.getArchiveLocation().getFileId());
+    			 InputStream dataObjectStream = new FileInputStream(file);
     			 
  				 // Transfer the data file.
  		         HpcDataObjectUploadResponse uploadResponse = 
  		        	uploadData(null, dataObjectStream, path, 
  		        			   systemGeneratedMetadata.getCallerObjectId());
  		     
+ 		         // Delete the file.
+ 		         try {
+ 		              file.delete();
+ 		              
+ 		         } catch(Exception e) {
+ 		        	     logger.error("Failed to delete: " + 
+ 		                              systemGeneratedMetadata.getArchiveLocation().getFileId());
+ 		         }
+ 		         
  			     // Update system metadata of the data object.
  			     dataManagementService.updateDataObjectSystemGeneratedMetadata(
  			           		                 path, uploadResponse.getArchiveLocation(),
