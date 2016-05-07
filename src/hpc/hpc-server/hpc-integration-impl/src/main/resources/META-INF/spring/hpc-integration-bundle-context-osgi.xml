@@ -27,7 +27,7 @@
 	      <prop key="hpc.integration.irods.port">1247</prop>
 	      <prop key="hpc.integration.irods.zone">tempZone</prop>
 	      <prop key="hpc.integration.irods.resource">demoResc</prop>
-	      <prop key="hpc.integration.irods.basePath">/tempZone/home</prop>
+	      <prop key="hpc.integration.irods.basePath">/tempZone/home/FNL_SF_Archive</prop>
 	      
 	      <prop key="hpc.integration.globus.nexusAPIURL">nexus.api.globusonline.org</prop>
 	      <prop key="hpc.integration.globus.globusURL">www.globusonline.org</prop>
@@ -37,7 +37,7 @@
 		  
 		  <prop key="hpc.integration.cleversafe.URL">http://fr-s-clvrsf-01.ncifcrf.gov</prop>
 	      <prop key="hpc.integration.cleversafe.archive.vault">DSE-TestVault1</prop>
-		  <prop key="hpc.integration.cleversafe.archive.objectId">HPC-ARCHIVE</prop>
+		  <prop key="hpc.integration.cleversafe.archive.objectId">FNL_SF_Archive</prop>
 		  <prop key="hpc.integration.cleversafe.archive.type">ARCHIVE</prop>
 	      
 	      <prop key="hpc.integration.ldap.URL">ldaps://nci-ldap-prod.nci.nih.gov:636</prop>
