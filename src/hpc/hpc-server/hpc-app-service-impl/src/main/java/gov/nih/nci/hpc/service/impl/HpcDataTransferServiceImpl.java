@@ -29,9 +29,13 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -53,9 +57,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	private Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies = 
 			new HashMap<HpcDataTransferType, HpcDataTransferProxy>();
 	
-	// System Accounts locator
+	// System Accounts locator.
 	@Autowired
 	private HpcSystemAccountLocator systemAccountLocator = null;
+	
+	// Base source location and directory of the local GLOBUS endpoint.
+	@Autowired
+	private HpcFileLocation baseDownloadSourceLocation = null; 
+	
+	private String baseDownloadDirectory = null;
     
     //---------------------------------------------------------------------//
     // Constructors
@@ -65,18 +75,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * Constructor for Spring Dependency Injection.
      * 
      * @param dataTransferProxies The data transfer proxies.
+     * @param dowloadDirectory The directory of the local GLOBUS endpoint.
      * @throws HpcException
      */
     private HpcDataTransferServiceImpl(
-    		Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies) 
+    		Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies,
+    		String dowloadDirectory) 
     		throws HpcException
     {
-    	if(dataTransferProxies == null || dataTransferProxies.isEmpty()) {
+    	if(dataTransferProxies == null || dataTransferProxies.isEmpty() ||
+    	   dowloadDirectory == null) {
     	   throw new HpcException("Null or empty map of data transfer proxies",
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
     	
-    	this.dataTransferProxies.putAll(dataTransferProxies);
+    	dataTransferProxies.putAll(dataTransferProxies);
+    	baseDownloadDirectory = dowloadDirectory;
     }   
     
     /**
@@ -135,17 +149,35 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     {
     	// Input Validation.
     	HpcDataTransferType dataTransferType = downloadRequest.getTransferType();
-    	if(dataTransferType == null ||
-    	   (dataTransferType.equals(HpcDataTransferType.GLOBUS) && 
-    	    !isValidFileLocation(downloadRequest.getDestinationLocation()))) {
-  	       throw new HpcException("Invalid data transfer type or upload file location", 
+    	HpcFileLocation destinationLocation = downloadRequest.getDestinationLocation();
+    	if(dataTransferType == null || 
+    	   !isValidFileLocation(downloadRequest.getArchiveLocation()) ||
+    	   (destinationLocation != null && !isValidFileLocation(destinationLocation))) {
+  	       throw new HpcException("Invalid data transfer request", 
   	    	                      HpcErrorType.INVALID_REQUEST_INPUT);
   	   }
     	
     	// Download the data object using the appropriate data transfer proxy.
-  	    return dataTransferProxies.get(dataTransferType).
+    	HpcDataObjectDownloadResponse downloadResponse =  
+    	   dataTransferProxies.get(dataTransferType).
   	    		   downloadDataObject(getAuthenticatedToken(dataTransferType), 
   	                                  downloadRequest);	
+    	
+    	// Data was downloaded. 
+    	// if data was downloaded from archive with S3, and the requested
+    	// destination is a GLOBUS endpoint, then we need to perform a 2nd hop. i.e. store 
+    	// the data to a local GLOBUS endpoint, and submit a transfer request to the caller's 
+    	// destination.
+    	if(dataTransferType.equals(HpcDataTransferType.S_3) && destinationLocation != null) {
+    	   // 2nd Hop needed.
+    	   return downloadDataObject(
+    			          toDownloadRequest(downloadResponse.getInputStream(),
+    			        		            destinationLocation,
+    			                            downloadRequest.getArchiveLocation().getFileId()));
+    	   
+    	} else {
+    		    return downloadResponse;
+    	}
     }
     
 	@Override   
@@ -264,6 +296,39 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	invoker.getDataTransferAuthenticatedTokens().add(authenticatedToken);
     	
     	return token;
+    }
+    
+    HpcDataObjectDownloadRequest toDownloadRequest(InputStream dataObjectInputStream, 
+    		                                       HpcFileLocation destinationLocation,
+    		                                       String path)
+    		                                      throws HpcException
+    {
+    	// Create a source location. (This is a local GLOBUS endpoint).
+    	HpcFileLocation sourceLocation = new HpcFileLocation();
+    	sourceLocation.setFileContainerId(baseDownloadSourceLocation.getFileContainerId());
+    	sourceLocation.setFileId(baseDownloadSourceLocation.getFileId() + "/" + path);
+    	                        
+    	// Store the input stream to the local GLOBUS endpoint.
+    	try {
+	         FileOutputStream dataObjectOutputStream = 
+	             new FileOutputStream(new File(baseDownloadDirectory + "/" + path));
+	         IOUtils.copyLarge(dataObjectInputStream, dataObjectOutputStream);
+	         IOUtils.closeQuietly(dataObjectInputStream);
+	         IOUtils.closeQuietly(dataObjectOutputStream);
+	         
+    	} catch(Exception e) {
+    		    throw new HpcException("Failed to store data object to local GLOBUS endpoint", 
+    		    		               HpcErrorType.DATA_TRANSFER_ERROR, e);
+    	}
+    	
+    	// Create and return a download request, from the local GLOBUS endpoint, to the caller's
+    	// destination.
+    	HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
+    	downloadRequest.setArchiveLocation(sourceLocation);
+    	downloadRequest.setDestinationLocation(destinationLocation);
+    	downloadRequest.setTransferType(HpcDataTransferType.GLOBUS);
+
+    	return downloadRequest;
     }
 }
  

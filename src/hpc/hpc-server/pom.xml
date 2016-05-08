@@ -37,6 +37,7 @@
 		<jargon-conveyor.version>4.0.2.1-RELEASE</jargon-conveyor.version>
 		<jackson.version>2.7.3</jackson.version>
 		<google-json-simple.version>1.1</google-json-simple.version>
+		<commons-io.version>2.5</commons-io.version>
 	</properties>
 
 	<modules>
@@ -126,6 +127,11 @@
 				<groupId>commons-lang</groupId>
 				<artifactId>commons-lang</artifactId>
 				<version>2.6</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>${commons-io.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.cxf</groupId>
