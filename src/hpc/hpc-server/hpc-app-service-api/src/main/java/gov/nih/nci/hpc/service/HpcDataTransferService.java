@@ -11,7 +11,6 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
@@ -19,8 +18,9 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.io.File;
 
 /**
  * <p>
@@ -99,22 +99,28 @@ public interface HpcDataTransferService
     		                                  throws HpcException;
     
     /**
-     * Set file permission.
+     * Get upload file.
      *
      * @param dataTransferType The data transfer type.
-     * @param fileLocation The endpoint/path to set permission
-     * @param permissionRequest The user permission request.
-     * @param dataTransferAccount Optional (can be null). If specified, the user ID to set 
-     *                            the permission for is taken from this account instead of the 
-     *                            permission request.
+     * @param fileId The file ID.
      * 
      * @throws HpcException
      */
-    public void setPermission(HpcDataTransferType dataTransferType,
-    		                  HpcFileLocation fileLocation,
-    		                  HpcUserPermission permissionRequest,
-    		                  HpcIntegratedSystemAccount dataTransferAccount) 
-    		                 throws HpcException; 
+    public File getUploadFile(HpcDataTransferType dataTransferType,
+    		                  String fileId)  
+    		                 throws HpcException;
+    
+    /**
+     * Get download file.
+     *
+     * @param dataTransferType The data transfer type.
+     * @param fileId The file ID.
+     * 
+     * @throws HpcException
+     */
+    public File getDownloadFile(HpcDataTransferType dataTransferType,
+    		                    String fileId)  
+    		            	   throws HpcException;
 }
 
  
