@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
@@ -369,13 +370,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   dataManagementService.getDataObjectSystemGeneratedMetadata(path);
     	
     	// Validate the file is archived.
-    	// TODO: Enable this after completing system account change for iRODS
-    	/*
     	if(!metadata.getDataTransferStatus().equals(HpcDataTransferStatus.ARCHIVED)) {
-    	   throw new HpcException("Object is not in archive state yet. It is in " +
+    	   throw new HpcException("Object is not in archived state yet. It is in " +
     			                  metadata.getDataTransferStatus().value() + " state",
     			                  HpcRequestRejectReason.FILE_NOT_ARCHIVED);
-    	}*/
+    	}
     	
     	// Download the data object.
     	HpcDataObjectDownloadRequest downloadRequest = 
