@@ -694,9 +694,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		downloadRequest.setTransferType(dataTransferType);
 		downloadRequest.setArchiveLocation(archiveLocation);
 		
-		if(dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
-		   if(destinationLocation == null || 
-			  destinationLocation.getFileContainerId() == null || 
+		if(destinationLocation != null) {
+		   if(destinationLocation.getFileContainerId() == null || 
 		      destinationLocation.getFileId() == null) {
 			  throw new HpcException("Invalid download destination", 
 			                         HpcErrorType.INVALID_REQUEST_INPUT);
