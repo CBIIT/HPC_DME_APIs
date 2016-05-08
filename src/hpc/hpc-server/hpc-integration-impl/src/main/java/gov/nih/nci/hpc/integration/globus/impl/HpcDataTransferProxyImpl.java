@@ -212,8 +212,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     public File getDownloadFile(String fileId) throws HpcException
     {
     	String path = fileId.replaceFirst(baseDownloadSource.getFileLocation().getFileId(), 
-                                          baseDownloadSource.getDirectory()) + 
-                      "." + (new Date()).getTime();
+                                          baseDownloadSource.getDirectory());
     	String directoryPath = path.substring(0, path.lastIndexOf('/'));
     	
     	File file = null;
@@ -244,7 +243,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	// Create a source location. (This is a local GLOBUS endpoint).
     	HpcFileLocation sourceLocation = new HpcFileLocation();
     	sourceLocation.setFileContainerId(baseDownloadSource.getFileLocation().getFileContainerId());
-    	sourceLocation.setFileId(baseDownloadSource.getFileLocation().getFileId() + "/" + path);
+    	sourceLocation.setFileId(baseDownloadSource.getFileLocation().getFileId() + "/" + path +
+    			                 "." + (new Date()).getTime());
     	
     	return sourceLocation;
     }
