@@ -12,7 +12,6 @@ package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
@@ -24,7 +23,6 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -61,12 +59,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	@Autowired
 	private HpcSystemAccountLocator systemAccountLocator = null;
 	
-	// Base source location and directory of the local GLOBUS endpoint.
-	@Autowired
-	private HpcFileLocation baseDownloadSourceLocation = null; 
-	
-	private String baseDownloadDirectory = null;
-    
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -75,22 +67,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * Constructor for Spring Dependency Injection.
      * 
      * @param dataTransferProxies The data transfer proxies.
-     * @param dowloadDirectory The directory of the local GLOBUS endpoint.
      * @throws HpcException
      */
     private HpcDataTransferServiceImpl(
-    		Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies,
-    		String dowloadDirectory) 
+    		Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies) 
     		throws HpcException
     {
-    	if(dataTransferProxies == null || dataTransferProxies.isEmpty() ||
-    	   dowloadDirectory == null) {
+    	if(dataTransferProxies == null || dataTransferProxies.isEmpty()) {
     	   throw new HpcException("Null or empty map of data transfer proxies",
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
     	
     	dataTransferProxies.putAll(dataTransferProxies);
-    	baseDownloadDirectory = dowloadDirectory;
     }   
     
     /**
@@ -135,7 +123,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     		    throw new HpcException("Could not determine data transfer type",
     		    		               HpcErrorType.UNEXPECTED_ERROR);
     	}
-    	   
+
     	// Upload the data object using the appropriate data transfer proxy.
   	    return dataTransferProxies.get(dataTransferType).
   	    		   uploadDataObject(getAuthenticatedToken(dataTransferType), 
@@ -173,6 +161,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	   return downloadDataObject(
     			          toDownloadRequest(downloadResponse.getInputStream(),
     			        		            destinationLocation,
+    			        		            HpcDataTransferType.GLOBUS,
     			                            downloadRequest.getArchiveLocation().getFileId()));
     	   
     	} else {
@@ -228,31 +217,33 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     }
 	
 	@Override
-	public void setPermission(HpcDataTransferType dataTransferType,
-			                  HpcFileLocation fileLocation,
-                              HpcUserPermission permissionRequest,
-                              HpcIntegratedSystemAccount dataTransferAccount) 
-                             throws HpcException
+	public File getUploadFile(HpcDataTransferType dataTransferType,
+                              String fileId)  
+    	                     throws HpcException
     {
     	// Input validation.
-    	if(!HpcDomainValidator.isValidFileLocation(fileLocation)) {	
-    	   throw new HpcException("Invalid file location", 
+    	if(fileId == null) {	
+    	   throw new HpcException("Invalid file id", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
+    	}	
     	
-    	// Determine the user ID to use on the permission request.
-    	HpcUserPermission request = permissionRequest;
-    	if(dataTransferAccount != null) {
-    	   request = new HpcUserPermission();
-    	   request.setPermission(permissionRequest.getPermission());
-    	   request.setUserId(dataTransferAccount.getUsername());
-    	}
-    	
-    	dataTransferProxies.get(dataTransferType).
-    	    setPermission(getAuthenticatedToken(dataTransferType), 
-                          fileLocation, request);
+    	return dataTransferProxies.get(dataTransferType).getUploadFile(fileId);
     }
 	
+	@Override
+	public File getDownloadFile(HpcDataTransferType dataTransferType,
+                                String fileId)  
+    	                       throws HpcException
+    {
+    	// Input validation.
+    	if(fileId == null) {	
+    	   throw new HpcException("Invalid file id", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}	
+    	
+    	return dataTransferProxies.get(dataTransferType).getDownloadFile(fileId);
+    }
+
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -298,20 +289,33 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	return token;
     }
     
+    /**
+     * Create a download request for a 2nd hop download from local Globus endpoint
+     * to caller's destination.
+     * 
+     * @param dataObjectInputStream The data object input stream (downloaded from S3).
+     * @param destinationLocation The caller's destination.
+     * @param dataTransferType The data transfer type to create the request
+     * @param The data object logical path.
+     *
+     * @throws HpcException If it failed to obtain an authentication token.
+     */
     HpcDataObjectDownloadRequest toDownloadRequest(InputStream dataObjectInputStream, 
     		                                       HpcFileLocation destinationLocation,
+    		                                       HpcDataTransferType dataTransferType,
     		                                       String path)
     		                                      throws HpcException
     {
-    	// Create a source location. (This is a local GLOBUS endpoint).
-    	HpcFileLocation sourceLocation = new HpcFileLocation();
-    	sourceLocation.setFileContainerId(baseDownloadSourceLocation.getFileContainerId());
-    	sourceLocation.setFileId(baseDownloadSourceLocation.getFileId() + "/" + path);
+    	// Create a source location.
+    	HpcFileLocation sourceLocation = 
+    	   dataTransferProxies.get(dataTransferType).getDownloadSourceLocation(path);
     	                        
     	// Store the input stream to the local GLOBUS endpoint.
     	try {
 	         FileOutputStream dataObjectOutputStream = 
-	             new FileOutputStream(new File(baseDownloadDirectory + "/" + path));
+	             new FileOutputStream(
+	            		 dataTransferProxies.get(dataTransferType).
+	            		                     getDownloadFile(sourceLocation.getFileId()));
 	         IOUtils.copyLarge(dataObjectInputStream, dataObjectOutputStream);
 	         IOUtils.closeQuietly(dataObjectInputStream);
 	         IOUtils.closeQuietly(dataObjectOutputStream);
@@ -326,7 +330,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
     	downloadRequest.setArchiveLocation(sourceLocation);
     	downloadRequest.setDestinationLocation(destinationLocation);
-    	downloadRequest.setTransferType(HpcDataTransferType.GLOBUS);
+    	downloadRequest.setTransferType(dataTransferType);
 
     	return downloadRequest;
     }

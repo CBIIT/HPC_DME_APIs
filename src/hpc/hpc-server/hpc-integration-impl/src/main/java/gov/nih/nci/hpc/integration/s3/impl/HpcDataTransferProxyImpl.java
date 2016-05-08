@@ -1,7 +1,7 @@
 package gov.nih.nci.hpc.integration.s3.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
@@ -44,7 +44,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	
 	@Autowired
 	@Qualifier("hpcS3ArchiveDestination")
-	HpcArchiveDestination baseArchiveDestination = null;
+	HpcArchive baseArchiveDestination = null;
     
     //---------------------------------------------------------------------//
     // Constructors
@@ -80,7 +80,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
    {
        	// Calculate the archive destination.
     	HpcFileLocation archiveDestinationLocation = 
-    	   getArchiveDestinationLocation(baseArchiveDestination.getDestinationLocation(), 
+    	   getArchiveDestinationLocation(baseArchiveDestination.getFileLocation(), 
     			                         uploadRequest.getPath(),
     		                             uploadRequest.getCallerObjectId());
     	
@@ -112,7 +112,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	uploadResponse.setArchiveLocation(archiveDestinationLocation);
     	uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
     	uploadResponse.setRequestId(String.valueOf(s3Upload.hashCode()));
-    	if(baseArchiveDestination.getDestinationType().equals(HpcArchiveType.ARCHIVE)) {
+    	if(baseArchiveDestination.getType().equals(HpcArchiveType.ARCHIVE)) {
     	   uploadResponse.setDataTransferStatus(HpcDataTransferStatus.ARCHIVED);
     	} else {
     		    uploadResponse.setDataTransferStatus(HpcDataTransferStatus.IN_TEMPORARY_ARCHIVE);
