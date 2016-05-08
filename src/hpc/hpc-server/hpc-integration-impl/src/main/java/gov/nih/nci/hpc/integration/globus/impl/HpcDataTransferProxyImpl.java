@@ -148,6 +148,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	response.setRequestId(transferData(globusConnection.getTransferClient(authenticatedToken),
     			                           downloadRequest.getArchiveLocation(),
     			                           downloadRequest.getDestinationLocation()));
+    	response.setDestinationLocation(downloadRequest.getDestinationLocation());
     	
     	return response;
     }

@@ -143,7 +143,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	   (destinationLocation != null && !isValidFileLocation(destinationLocation))) {
   	       throw new HpcException("Invalid data transfer request", 
   	    	                      HpcErrorType.INVALID_REQUEST_INPUT);
-  	   }
+    	}
+
+    	// For GLOBUS transfers to directory destination, append the archive file name.
+    	if(dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+    	   calculateDestination(downloadRequest, dataTransferType);	
+    	}
     	
     	// Download the data object using the appropriate data transfer proxy.
     	HpcDataObjectDownloadResponse downloadResponse =  
@@ -333,6 +338,30 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	downloadRequest.setTransferType(dataTransferType);
 
     	return downloadRequest;
+    }
+    
+    /**
+     * Calculate data transfer destination
+     * 
+     * @param downloadRequest The download request.
+     * @param dataTransferType The data transfer type to create the request
+     *
+     * @throws HpcException 
+     */    
+    private void calculateDestination(HpcDataObjectDownloadRequest downloadRequest,
+    		                          HpcDataTransferType dataTransferType) 
+    		                         throws HpcException
+    {
+    	HpcFileLocation destinationLocation = downloadRequest.getDestinationLocation();
+	    if(getPathAttributes(dataTransferType, destinationLocation, false).getIsDirectory()) {
+           // Caller requested to download to a directory. Append the source file name.
+           HpcFileLocation calcDestination = new HpcFileLocation();
+           calcDestination.setFileContainerId(destinationLocation.getFileContainerId());
+           String sourcePath = downloadRequest.getArchiveLocation().getFileId();
+           calcDestination.setFileId(destinationLocation.getFileId() + 
+           sourcePath.substring(sourcePath.lastIndexOf('/')));
+           downloadRequest.setDestinationLocation(calcDestination);
+	    }
     }
 }
  
