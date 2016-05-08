@@ -377,16 +377,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Download the data object.
-    	HpcDataObjectDownloadRequest downloadRequest = 
-    	   getDataObjectDownloadRequest(metadata.getArchiveLocation(), 
-                                        downloadRequestDTO.getDestination(),
-                                        metadata.getDataTransferType());
     	HpcDataObjectDownloadResponse downloadResponse = 
-    	   dataTransferService.downloadDataObject(downloadRequest);
+    	   dataTransferService.downloadDataObject(
+    		   toDataObjectDownloadRequest(metadata.getArchiveLocation(), 
+                                           downloadRequestDTO.getDestination(),
+                                           metadata.getDataTransferType()));
         
         // Construct and return download response DTO.
         HpcDataObjectDownloadResponseDTO downloadResponseDTO = new HpcDataObjectDownloadResponseDTO();
-        downloadResponseDTO.setDestination(downloadRequest.getDestinationLocation());
+        downloadResponseDTO.setDestination(downloadResponse.getDestinationLocation());
         downloadResponseDTO.setRequestId(downloadResponse.getRequestId());
         downloadResponseDTO.setInputStream(downloadResponse.getInputStream());
         return downloadResponseDTO;
@@ -684,38 +683,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * @return HpcFileLocation The data transfer download destination.
      * @throws HpcException
      */
-	private HpcDataObjectDownloadRequest getDataObjectDownloadRequest(
-			                                HpcFileLocation archiveLocation, 
-			                                HpcFileLocation destinationLocation,
-			                                HpcDataTransferType dataTransferType) 
-			                                throws HpcException
+	private HpcDataObjectDownloadRequest toDataObjectDownloadRequest(
+			                               HpcFileLocation archiveLocation, 
+			                               HpcFileLocation destinationLocation,
+			                               HpcDataTransferType dataTransferType) 
+			                               throws HpcException
 	{
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
 		downloadRequest.setTransferType(dataTransferType);
 		downloadRequest.setArchiveLocation(archiveLocation);
-		
-		if(destinationLocation != null) {
-		   if(destinationLocation.getFileContainerId() == null || 
-		      destinationLocation.getFileId() == null) {
-			  throw new HpcException("Invalid download destination", 
-			                         HpcErrorType.INVALID_REQUEST_INPUT);
-		   }
-			
-		   if(!dataTransferService.getPathAttributes(dataTransferType, 
-				                                     destinationLocation, false).getIsDirectory()) {
-			  // The user requested destination is NOT a directory, transfer to it.
-			  downloadRequest.setDestinationLocation(destinationLocation);
-			  
-		   } else {
-		           // User requested to download to a directory. Append the source file name.
-		           HpcFileLocation calcDestination = new HpcFileLocation();
-		           calcDestination.setFileContainerId(destinationLocation.getFileContainerId());
-		           String sourcePath = archiveLocation.getFileId();
-		           calcDestination.setFileId(destinationLocation.getFileId() + 
-			                                 sourcePath.substring(sourcePath.lastIndexOf('/')));
-		           downloadRequest.setDestinationLocation(calcDestination);
-		   }
-		}
+		downloadRequest.setDestinationLocation(destinationLocation);
 		
 		return downloadRequest;
 	}
