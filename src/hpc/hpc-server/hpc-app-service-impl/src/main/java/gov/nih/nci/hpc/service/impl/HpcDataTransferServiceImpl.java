@@ -78,7 +78,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
     	
-    	dataTransferProxies.putAll(dataTransferProxies);
+    	this.dataTransferProxies.putAll(dataTransferProxies);
     }   
     
     /**
