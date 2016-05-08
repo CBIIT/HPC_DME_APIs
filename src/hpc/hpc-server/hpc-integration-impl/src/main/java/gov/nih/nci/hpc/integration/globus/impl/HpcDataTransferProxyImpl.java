@@ -211,10 +211,21 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     @Override
     public File getDownloadFile(String fileId) throws HpcException
     {
-	  	File file = new File(fileId.replaceFirst(baseDownloadSource.getFileLocation().getFileId(), 
-	  			                                 baseDownloadSource.getDirectory()) + 
-	  			                                 "." + (new Date()).getTime());
-	  	try {
+    	String path = fileId.replaceFirst(baseDownloadSource.getFileLocation().getFileId(), 
+                                          baseDownloadSource.getDirectory()) + 
+                      "." + (new Date()).getTime();
+    	String directoryPath = path.substring(0, path.lastIndexOf('/'));
+    	
+    	File file = null;
+    	try {
+    		 // Create download directory if needed.
+	  	     File directory = new File(directoryPath);
+	  	     if(!directory.exists()) {
+	  	    	directory.mkdirs();
+	  	     }
+	  	
+	  	     // Create the download file.
+	  	     file = new File(path);
 	  	     if(!file.createNewFile()) {
 	  	        throw new HpcException("Download file already exists: " + file.getAbsolutePath(), 
 	  			                       HpcErrorType.DATA_TRANSFER_ERROR);	
