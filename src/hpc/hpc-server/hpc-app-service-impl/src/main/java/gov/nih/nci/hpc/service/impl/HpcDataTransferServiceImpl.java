@@ -145,11 +145,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
   	    	                      HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
-    	// For GLOBUS transfers to directory destination, append the archive file name.
-    	if(dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
-    	   calculateDestination(downloadRequest, dataTransferType);	
-    	}
-    	
     	// Download the data object using the appropriate data transfer proxy.
     	HpcDataObjectDownloadResponse downloadResponse =  
     	   dataTransferProxies.get(dataTransferType).
@@ -165,7 +160,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	   // 2nd Hop needed.
     	   return downloadDataObject(
     			          toDownloadRequest(downloadResponse.getInputStream(),
-    			        		            destinationLocation,
+    			        		            calculateDestination(downloadRequest, 
+    			        		            		             HpcDataTransferType.GLOBUS),
     			        		            HpcDataTransferType.GLOBUS,
     			                            downloadRequest.getArchiveLocation().getFileId()));
     	   
@@ -336,7 +332,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	downloadRequest.setArchiveLocation(sourceLocation);
     	downloadRequest.setDestinationLocation(destinationLocation);
     	downloadRequest.setTransferType(dataTransferType);
-
+    	
     	return downloadRequest;
     }
     
@@ -348,9 +344,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      *
      * @throws HpcException 
      */    
-    private void calculateDestination(HpcDataObjectDownloadRequest downloadRequest,
-    		                          HpcDataTransferType dataTransferType) 
-    		                         throws HpcException
+    private HpcFileLocation calculateDestination(HpcDataObjectDownloadRequest downloadRequest,
+    		                                     HpcDataTransferType dataTransferType) 
+    		                                    throws HpcException
     {
     	HpcFileLocation destinationLocation = downloadRequest.getDestinationLocation();
 	    if(getPathAttributes(dataTransferType, destinationLocation, false).getIsDirectory()) {
@@ -360,7 +356,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
            String sourcePath = downloadRequest.getArchiveLocation().getFileId();
            calcDestination.setFileId(destinationLocation.getFileId() + 
                                      sourcePath.substring(sourcePath.lastIndexOf('/')));
-           downloadRequest.setDestinationLocation(calcDestination);
+           return calcDestination;
+           
+	    } else {
+	    	    return destinationLocation;
 	    }
     }
 }
