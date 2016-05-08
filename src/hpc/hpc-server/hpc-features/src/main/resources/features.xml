@@ -56,7 +56,7 @@
 		<feature version="${amazon-aws.version}">hpc-amazon-aws-sdk</feature>
 		<feature version="${jargon.version}">hpc-jargon-sdk</feature>
 		<bundle>wrap:mvn:com.googlecode.json-simple/json-simple/${google-json-simple.version}</bundle>
-		
+		<bundle>mvn:commons-io/commons-io/${commons-io.version}</bundle>
 		
 		<!-- Config files -->
 		<configfile finalname="/etc/gov.nih.nci.hpc.cfg" override="false">mvn:${project.groupId}/hpc-features/${project.version}/properties/hpc-server</configfile>

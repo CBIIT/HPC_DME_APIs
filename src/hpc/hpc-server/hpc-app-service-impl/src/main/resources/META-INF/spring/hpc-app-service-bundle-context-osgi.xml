@@ -25,6 +25,9 @@
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		<prop key="hpc.service.metadataValidationRulesPath">${karaf.base}/etc/hpc-server/metadataValidationRules.json</prop>
 		<prop key="hpc.service.user.DOC">FNLCR CCBR</prop>
+		<prop key="hpc.service.download.endpoint">nihfnlcr#gridftp1</prop>
+		<prop key="hpc.service.download.path">/mnt/IRODsTest/FNL_SF_Archive/Download</prop>
+		<prop key="hpc.service.download.directory">/mnt/IRODsTest/FNL_SF_Archive/Download</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

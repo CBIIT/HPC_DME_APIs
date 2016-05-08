@@ -37,6 +37,11 @@
   		<entry key="S_3" value-ref="hpcS3DataTransferProxy" />
 	</util:map>
 	
+	<bean id="hpcDownloadSourceLocation" class="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation" >
+		<property name="fileContainerId" value="${hpc.service.download.endpoint}" />
+		<property name="fileId" value="${hpc.service.download.path}" />
+	</bean>
+	
 	<!--  HPC System Accounts Locator -->
 	<bean id="hpcSystemAccountLocator" class="gov.nih.nci.hpc.service.impl.HpcSystemAccountLocator"
 	      init-method="reload" />
@@ -47,6 +52,8 @@
 	</bean>
 	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl" >
 		<constructor-arg ref="hpcDataTransferProxies" index="0" />
+		<constructor-arg value="{hpc.service.download.directory}" index="0" />
+		
 	</bean>
 	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl" />
 </beans>
