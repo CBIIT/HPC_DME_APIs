@@ -359,7 +359,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
            calcDestination.setFileContainerId(destinationLocation.getFileContainerId());
            String sourcePath = downloadRequest.getArchiveLocation().getFileId();
            calcDestination.setFileId(destinationLocation.getFileId() + 
-           sourcePath.substring(sourcePath.lastIndexOf('/')));
+                                     sourcePath.substring(sourcePath.lastIndexOf('/')));
            downloadRequest.setDestinationLocation(calcDestination);
 	    }
     }
