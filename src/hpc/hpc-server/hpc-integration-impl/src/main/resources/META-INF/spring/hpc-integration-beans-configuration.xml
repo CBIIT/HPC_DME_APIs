@@ -57,9 +57,9 @@
 		<property name="fileContainerId" value="${hpc.integration.cleversafe.archive.vault}" />
 		<property name="fileId" value="${hpc.integration.cleversafe.archive.objectId}" />
 	</bean>
-	<bean id="hpcS3ArchiveDestination" class="gov.nih.nci.hpc.domain.datatransfer.HpcArchiveDestination" >
-		<property name="destinationLocation" ref="hpcS3ArchiveDestinationLocation" />
-		<property name="destinationType" value="${hpc.integration.cleversafe.archive.type}" />
+	<bean id="hpcS3ArchiveDestination" class="gov.nih.nci.hpc.domain.datatransfer.HpcArchive" >
+		<property name="fileLocation" ref="hpcS3ArchiveDestinationLocation" />
+		<property name="type" value="${hpc.integration.cleversafe.archive.type}" />
 	</bean>
 	
 	<!--  S3 Connection  -->
