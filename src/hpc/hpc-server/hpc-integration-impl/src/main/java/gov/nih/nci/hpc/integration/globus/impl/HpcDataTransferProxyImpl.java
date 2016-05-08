@@ -18,7 +18,9 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -209,8 +211,21 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     @Override
     public File getDownloadFile(String fileId) throws HpcException
     {
-	  	return new File(fileId.replaceFirst(baseDownloadSource.getFileLocation().getFileId(), 
-	  			                            baseDownloadSource.getDirectory()));
+	  	File file = new File(fileId.replaceFirst(baseDownloadSource.getFileLocation().getFileId(), 
+	  			                                 baseDownloadSource.getDirectory()) + 
+	  			                                 "." + (new Date()).getTime());
+	  	try {
+	  	     if(!file.createNewFile()) {
+	  	        throw new HpcException("Download file already exists: " + file.getAbsolutePath(), 
+	  			                       HpcErrorType.DATA_TRANSFER_ERROR);	
+	  	     }
+	  	     
+	  	} catch(IOException e) {
+	  		    throw new HpcException("Failed to create a file in the GLOBUS download space", 
+                                       HpcErrorType.DATA_TRANSFER_ERROR);
+	  	}
+	  	
+	  	return file;
     }
     
     public HpcFileLocation getDownloadSourceLocation(String path) throws HpcException
