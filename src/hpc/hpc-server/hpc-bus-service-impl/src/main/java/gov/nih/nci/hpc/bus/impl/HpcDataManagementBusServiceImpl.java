@@ -524,12 +524,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		String path = dataObject.getAbsolutePath();
     		HpcDataObjectSystemGeneratedMetadata systemGeneratedMetadata = null;
     		try {
-    		     // Get current data transfer Request Info.
+    		     // Get the data object system generated metadata.
     			 systemGeneratedMetadata = 
     			       dataManagementService.getDataObjectSystemGeneratedMetadata(path);
     			 
     			 // Get an input stream to the data object in the temporary archive.
-    			 File file = new File(systemGeneratedMetadata.getArchiveLocation().getFileId());
+    			 File file = dataTransferService.getUploadFile(
+    					         systemGeneratedMetadata.getDataTransferType(),
+    					         systemGeneratedMetadata.getArchiveLocation().getFileId());
     			 InputStream dataObjectStream = new FileInputStream(file);
     			 
  				 // Transfer the data file.

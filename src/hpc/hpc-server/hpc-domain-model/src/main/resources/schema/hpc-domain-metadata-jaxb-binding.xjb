@@ -55,8 +55,8 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcFileLocation']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation"/>
 		</jxb:bindings>
-		<jxb:bindings node="//xsd:complexType[@name='HpcArchiveDestination']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcArchiveDestination"/>
+		<jxb:bindings node="//xsd:complexType[@name='HpcArchive']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcArchive"/>
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcInputStream']">
         	<jxb:class ref="java.io.InputStream"/>

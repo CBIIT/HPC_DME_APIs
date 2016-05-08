@@ -2,8 +2,7 @@ package gov.nih.nci.hpc.integration.globus.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
@@ -18,6 +17,7 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 
+import java.io.File;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,9 +66,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	@Autowired
     private HpcGlobusConnection globusConnection = null;
 	
+	// The Globus archive destination. Used to upload data objects.
 	@Autowired
 	@Qualifier("hpcGlobusArchiveDestination")
-	HpcArchiveDestination baseArchiveDestination = null;
+	HpcArchive baseArchiveDestination = null;
+	
+	// The Globus download source. Used to download data objects.
+	@Autowired
+	@Qualifier("hpcGlobusDownloadSource")
+	HpcArchive baseDownloadSource = null;
     
 	// The Logger instance.
 	private final Logger logger = 
@@ -108,7 +114,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     {
     	// Calculate the archive destination.
     	HpcFileLocation archiveDestinationLocation = 
-    	   getArchiveDestinationLocation(baseArchiveDestination.getDestinationLocation(), 
+    	   getArchiveDestinationLocation(baseArchiveDestination.getFileLocation(), 
     			                         uploadRequest.getPath(),
     		                             uploadRequest.getCallerObjectId());
     	
@@ -122,7 +128,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	uploadResponse.setArchiveLocation(archiveDestinationLocation);
     	uploadResponse.setRequestId(requestId);
     	uploadResponse.setDataTransferType(HpcDataTransferType.GLOBUS);
-    	if(baseArchiveDestination.getDestinationType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
+    	if(baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
     	   uploadResponse.setDataTransferStatus(HpcDataTransferStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE);
     	} else {
     		    uploadResponse.setDataTransferStatus(HpcDataTransferStatus.IN_PROGRESS_TO_ARCHIVE);
@@ -154,7 +160,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		 HpcGlobusDataTransferReport report = getDataTransferReport(authenticatedToken, 
 				                                                    dataTransferRequestId);
 		 if(report.getStatus().equals(ARCHIVED_STATUS)) {
-	    	if(baseArchiveDestination.getDestinationType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
+	    	if(baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
 	      	   return HpcDataTransferStatus.IN_TEMPORARY_ARCHIVE;
 	      	 } else {
 	      		     return HpcDataTransferStatus.ARCHIVED;
@@ -166,7 +172,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
  		 }
 		 
 		 // Transfer is in progress. Return status based on the archive type.
-    	 if(baseArchiveDestination.getDestinationType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
+    	 if(baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
      	    return HpcDataTransferStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE;
      	 } else {
      	         return HpcDataTransferStatus.IN_PROGRESS_TO_ARCHIVE;
@@ -193,36 +199,27 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     }
     
     @Override
-    public void setPermission(Object authenticatedToken,
-                              HpcFileLocation fileLocation,
-                              HpcUserPermission permissionRequest) 
-                             throws HpcException
+    public File getUploadFile(String fileId) throws HpcException
     {
-    	// TODO: This implementation is not complete. This is just initial code to test Globus ACL.
-    	// This implementation creates an ACL, but a complete impl needs to check if ACL rule already
-    	// exists for the user and update it, otherwise create a new ACL.
+	  	return new File(fileId.replaceFirst(baseArchiveDestination.getFileLocation().getFileId(), 
+                                            baseArchiveDestination.getDirectory()));
+    }
+    
+    @Override
+    public File getDownloadFile(String fileId) throws HpcException
+    {
+	  	return new File(fileId.replaceFirst(baseDownloadSource.getFileLocation().getFileId(), 
+	  			                            baseDownloadSource.getDirectory()));
+    }
+    
+    public HpcFileLocation getDownloadSourceLocation(String path) throws HpcException
+    {
+    	// Create a source location. (This is a local GLOBUS endpoint).
+    	HpcFileLocation sourceLocation = new HpcFileLocation();
+    	sourceLocation.setFileContainerId(baseDownloadSource.getFileLocation().getFileContainerId());
+    	sourceLocation.setFileId(baseDownloadSource.getFileLocation().getFileId() + "/" + path);
     	
-    	JSONTransferAPIClient client = 
-			        globusConnection.getTransferClient(authenticatedToken);
-    	
-		try {
-			 String resource = BaseTransferAPIClient.endpointPath(fileLocation.getFileContainerId()) +
-                               "/access";
-             JSONObject accessRequest = new JSONObject();
-             accessRequest.put("DATA_TYPE", "access");
-             accessRequest.put("principal_type", "user");
-             accessRequest.put("principal", permissionRequest.getUserId());
-             accessRequest.put("path", fileLocation.getFileId());
-             accessRequest.put("permissions", "r");
-
-             client.postResult(resource, accessRequest, null);
-            
-		} catch(Exception e) {
-		        throw new HpcException(
-		        		     "Failed to set permission: " + 
-		                     fileLocation.getFileContainerId() + ":" + fileLocation.getFileId(), 
-		        		     HpcErrorType.DATA_TRANSFER_ERROR, e);
-		}
+    	return sourceLocation;
     }
     
     //---------------------------------------------------------------------//

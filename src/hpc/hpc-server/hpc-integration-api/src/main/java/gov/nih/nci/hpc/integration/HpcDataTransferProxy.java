@@ -11,7 +11,6 @@
 package gov.nih.nci.hpc.integration;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
@@ -21,6 +20,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.io.File;
 
 /**
  * <p>
@@ -127,21 +128,42 @@ public interface HpcDataTransferProxy
     }
     
     /**
-     * Set file permission.
+     * Get upload file.
      *
-     * @param authenticatedToken An authenticated token.
-     * @param fileLocation The endpoint/path to set permission
-     * @param permissionRequest The user permission request.
+     * @param fileId The file ID.
      * 
      * @throws HpcException
      */
-    default void setPermission(Object authenticatedToken,
-    		                   HpcFileLocation fileLocation,
-    		                   HpcUserPermission permissionRequest) 
-    		                  throws HpcException
+    default File getUploadFile(String fileId) throws HpcException
     {
-	  	throw new HpcException("getDataTransferStatus() not supported by S3",
-	               HpcErrorType.UNEXPECTED_ERROR);
+	  	throw new HpcException("getUploadFile not supported by S3",
+	                           HpcErrorType.UNEXPECTED_ERROR);
+    }
+    
+    /**
+     * Get download file.
+     *
+     * @param fileId The file ID.
+     * 
+     * @throws HpcException
+     */
+    default File getDownloadFile(String fileId) throws HpcException
+    {
+	  	throw new HpcException("getDownloadFile not supported by S3",
+	                           HpcErrorType.UNEXPECTED_ERROR);
+    }
+    
+    /**
+     * Get download source location.
+     *
+     * @param path The data object logical path.
+     * 
+     * @throws HpcException
+     */
+    default HpcFileLocation getDownloadSourceLocation(String path) throws HpcException
+    {
+	  	throw new HpcException("getDownloadSourceLocation not supported by S3",
+	                           HpcErrorType.UNEXPECTED_ERROR);
     }
     
     /** 
