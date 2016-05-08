@@ -39,7 +39,6 @@
 	</bean>
 	<bean id="hpcGlobusDownloadSource" class="gov.nih.nci.hpc.domain.datatransfer.HpcArchive" >
 		<property name="fileLocation" ref="hpcGlobusDownloadSourceLocation" />
-		<property name="type" value="${hpc.integration.globus.download.type}" />
 		<property name="directory" value="${hpc.integration.globus.download.directory}" />
 	</bean>
 	
