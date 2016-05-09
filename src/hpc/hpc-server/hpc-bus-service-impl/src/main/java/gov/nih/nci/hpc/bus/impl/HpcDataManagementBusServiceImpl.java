@@ -647,6 +647,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			
 			// Validate the user permission requests for this path. 
 			List<HpcUserPermission> userPermissionRequests = entityPermissionRequest.getUserPermissions();
+			
 			if(userPermissionRequests == null || userPermissionRequests.isEmpty()) {
 			   throw new HpcException("Null or empty user permission requests for path: " + path,
                                       HpcErrorType.INVALID_REQUEST_INPUT);						
@@ -663,6 +664,27 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				if(!userIds.add(userId)) {
 				   throw new HpcException("Duplicate userId in a permission request for path: " + path +
 						                  ", userId: " + userId,
+                                          HpcErrorType.INVALID_REQUEST_INPUT);	 
+				}
+				if(permission == null || permission.isEmpty()) { 
+				   throw new HpcException("Null or empty permission in a permission request for path: " + path,
+	                                       HpcErrorType.INVALID_REQUEST_INPUT);	
+				}
+			}
+			
+			// Validate the group permission requests for this path. 
+			List<HpcGroupPermission> groupPermissionRequests = entityPermissionRequest.getGroupPermissions();
+			Set<String> groupIds = new HashSet<String>(); 
+			for(HpcGroupPermission groupPermissionRequest : groupPermissionRequests) {
+				String groupId = groupPermissionRequest.getGroupId();
+				String permission = groupPermissionRequest.getPermission();
+				if(groupId == null || groupId.isEmpty()) { 
+				   throw new HpcException("Null or empty groupId in a permission request for path: " + path,
+                                          HpcErrorType.INVALID_REQUEST_INPUT);	
+				}
+				if(!groupIds.add(groupId)) {
+				   throw new HpcException("Duplicate groupId in a permission request for path: " + path +
+						                  ", groupId: " + groupId,
                                           HpcErrorType.INVALID_REQUEST_INPUT);	 
 				}
 				if(permission == null || permission.isEmpty()) { 
