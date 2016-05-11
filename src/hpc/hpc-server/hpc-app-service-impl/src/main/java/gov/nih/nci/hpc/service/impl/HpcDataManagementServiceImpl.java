@@ -40,6 +40,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -108,7 +110,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	// Prepared query to get data objects that have their data in temporary archive.
 	private List<HpcMetadataQuery> dataTransferInTemporaryArchiveQuery = 
 			                       new ArrayList<HpcMetadataQuery>();
-			
+
+   // The logger instance.
+	private final Logger logger = 
+				             LoggerFactory.getLogger(this.getClass().getName());
+
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -478,10 +484,32 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	systemGeneratedMetadata.setDataTransferRequestId(metadataMap.get(DATA_TRANSFER_REQUEST_ID_ATTRIBUTE));
-    	systemGeneratedMetadata.setDataTransferStatus(
-    		  HpcDataTransferStatus.fromValue(metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE)));
-    	systemGeneratedMetadata.setDataTransferType(
-      		  HpcDataTransferType.fromValue(metadataMap.get(DATA_TRANSFER_TYPE_ATTRIBUTE)));
+    	if(metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE) != null)
+    	{
+    		try
+    		{
+    		systemGeneratedMetadata.setDataTransferStatus(
+    				HpcDataTransferStatus.fromValue(metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE)));
+    		}
+    		catch(Exception e)
+    		{
+    			logger.error("Unable to determine data transfer status: "+ metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE));
+    			systemGeneratedMetadata.setDataTransferStatus(HpcDataTransferStatus.UNKNOWN);
+    		}
+    	}
+    	if(metadataMap.get(DATA_TRANSFER_TYPE_ATTRIBUTE) != null)
+    	{
+    		try
+    		{
+    			systemGeneratedMetadata.setDataTransferType(
+    				HpcDataTransferType.fromValue(metadataMap.get(DATA_TRANSFER_TYPE_ATTRIBUTE)));
+    		}
+    		catch(Exception e)
+    		{
+    			logger.error("Unable to determine data transfer type: "+ metadataMap.get(DATA_TRANSFER_TYPE_ATTRIBUTE));
+    			systemGeneratedMetadata.setDataTransferType(null);
+    		}
+    	}
     	systemGeneratedMetadata.setSourceSize(
     		  metadataMap.get(SOURCE_FILE_SIZE_ATTRIBUTE) != null ?
     		  Long.valueOf(metadataMap.get(SOURCE_FILE_SIZE_ATTRIBUTE)) : null);
