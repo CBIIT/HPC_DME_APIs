@@ -15,4 +15,4 @@ source $HPC_DM_TEST/utils/functions
 USERID=`get_username $HPC_DM_TEST/utils/config`
 DESTINATION_PATH="/FNL_SF_Archive/${USERID}/dice-unit-test/project-add-dataobject"
 echo "$DESTINATION_PATH" >> registered-project-path.tmp
-curl_register ../utils/project-description.json "$DESTINATION_PATH" collection
+curl_register $HPC_DM_TEST/test-register/test-dataObject-registration/utils/project-description.json "$DESTINATION_PATH" collection
