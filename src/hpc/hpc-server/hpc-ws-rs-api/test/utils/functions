@@ -181,7 +181,7 @@ function curl_register {
         then
             curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" $CURL_FLAGS 
         else
-            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" –F dataObject=@"$DATAOBJECT_FILE" $CURL_FLAGS
+            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" -F dataObject=@"$DATAOBJECT_FILE" $CURL_FLAGS
         fi
     elif [ "$TYPE" == "collection" ]
     then
