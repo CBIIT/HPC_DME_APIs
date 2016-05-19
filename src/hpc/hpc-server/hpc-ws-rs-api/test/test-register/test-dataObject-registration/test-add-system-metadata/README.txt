@@ -13,5 +13,5 @@
 @ddblock_end copyright
 ******************************/
 
-Make sure that system generated metadata: "uuid", "DOC", "userID" are added as part of the system generated metadata.
+Make sure that all the system generated metadata form the policies file  are added as part of the system generated metadata.
 
