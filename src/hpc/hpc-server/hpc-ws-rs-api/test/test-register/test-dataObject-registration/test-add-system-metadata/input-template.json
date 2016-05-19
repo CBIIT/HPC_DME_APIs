@@ -1,7 +1,7 @@
 { 
     "source": {
-        "fileContainerId": "nihnci#NIH-NCI-TRANSFER1",
-        "fileId": "/GridFTP/GridFTP_t3/dxtestuid/test.txt"
+        "fileContainerId": "c546fe96-1dd1-11e6-bfc3-22000b1701d1",
+        "fileId": "test.txt"
     },
     "filePath" :  "/",
     "metadataEntries": [
