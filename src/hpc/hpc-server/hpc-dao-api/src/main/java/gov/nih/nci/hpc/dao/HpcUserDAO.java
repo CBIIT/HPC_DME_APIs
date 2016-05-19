@@ -31,17 +31,8 @@ public interface HpcUserDAO
      * 
      * @throws HpcException
      */
-    public void insert(HpcUser user) throws HpcException;
+    public void upsert(HpcUser user) throws HpcException;
     
-    /**
-     * Update existing user.
-     *
-     * @param user The user to be updated.
-     * 
-     * @throws HpcException
-     */
-    public void update(HpcUser user) throws HpcException;
-
     /**
      * Get user from the repository by ID.
      *

@@ -46,11 +46,11 @@ public interface HpcSecurityService
      * @param nciUserId The NCI user ID of the user to update.
      * @param firstName The user first name.
      * @param lastName The user last name. 
-     * @param DOC The user DOC.
+     * @param doc The user DOC.
      * 
      * @throws HpcException
      */
-    public void updateUser(String nciUserId, String firstName, String lastName, String DOC) 
+    public void updateUser(String nciUserId, String firstName, String lastName, String doc) 
     		              throws HpcException;
 
     /**

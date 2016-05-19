@@ -18,10 +18,12 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * <p>
@@ -51,12 +53,14 @@ public interface HpcDataTransferProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param dataUploadRequest The data upload request
+     * @param metadataEntries (Optional) a list of metadata to attach to the physical file storage.
      * @return HpcDataObjectUploadResponse A data object upload response.
      * 
      * @throws HpcException
      */
     public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
-    		                                            HpcDataObjectUploadRequest uploadRequest) 
+    		                                            HpcDataObjectUploadRequest uploadRequest,
+    		                                            List<HpcMetadataEntry> metadataEntries) 
     		                                           throws HpcException;
     
     /**

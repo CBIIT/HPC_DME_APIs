@@ -1,6 +1,9 @@
 package gov.nih.nci.hpc.integration.s3.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
+
+import java.util.List;
+
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
@@ -11,6 +14,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
@@ -75,7 +79,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     
     @Override
     public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
-    		                                            HpcDataObjectUploadRequest uploadRequest) 
+    		                                            HpcDataObjectUploadRequest uploadRequest,
+    		                                            List<HpcMetadataEntry> metadataEntries) 
     		                                           throws HpcException
    {
        	// Calculate the archive destination.
@@ -84,27 +89,32 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     			                         uploadRequest.getPath(),
     		                             uploadRequest.getCallerObjectId());
     	
-    	// Create a metadata to associate the data management path.
-    	ObjectMetadata metadata = new ObjectMetadata();
-    	metadata.addUserMetadata("path", uploadRequest.getPath());
+    	// Create a metadata to associate with the data object.
+    	ObjectMetadata objectMetadata = new ObjectMetadata();
+    	if(metadataEntries != null) {
+    	   for(HpcMetadataEntry metadataEntry : metadataEntries) {
+    	       objectMetadata.addUserMetadata(metadataEntry.getAttribute(), 
+    	    		                          metadataEntry.getValue());
+    	   }
+    	}
     	
     	// Create a S3 upload request.
     	PutObjectRequest request = new PutObjectRequest(archiveDestinationLocation.getFileContainerId(), 
     			                                        archiveDestinationLocation.getFileId(), 
     			                                        uploadRequest.getSourceInputStream(), 
-    			                                        metadata);
+    			                                        objectMetadata);
     	
     	// Upload the data.
     	Upload s3Upload = null;
     	try {
-    	     (s3Upload = s3Connection.getTransferManager(authenticatedToken).upload(request)).waitForCompletion();
+    	     s3Upload = s3Connection.getTransferManager(authenticatedToken).upload(request);
+    	     s3Upload.waitForCompletion();
         	
         } catch(AmazonClientException ace) {
         	    throw new HpcException("Failed to upload file via S3", 
         	    		               HpcErrorType.DATA_TRANSFER_ERROR, ace);
         } catch(InterruptedException ie) {
-    	    throw new HpcException("S3 upload interrupted", 
-		                           HpcErrorType.DATA_TRANSFER_ERROR, ie);   
+        	    Thread.currentThread().interrupt();
         }
     	
     	// Upload completed. Create and populate the response object.

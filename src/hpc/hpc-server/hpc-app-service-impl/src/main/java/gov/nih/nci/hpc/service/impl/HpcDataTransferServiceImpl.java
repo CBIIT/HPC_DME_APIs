@@ -21,6 +21,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -30,7 +31,9 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
@@ -46,14 +49,22 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 
 public class HpcDataTransferServiceImpl implements HpcDataTransferService
-{     
+{    
+    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//
+	
+    // Data transfer system generated metadata attributes (attach to files in archive)
+	private static final String PATH_ATTRIBUTE = "path";
+	private static final String USER_ID_ATTRIBUTE = "user_id";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 	
 	// Map data transfer type to its proxy impl.
 	private Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies = 
-			new HashMap<HpcDataTransferType, HpcDataTransferProxy>();
+			new EnumMap<>(HpcDataTransferType.class);
 	
 	// System Accounts locator.
 	@Autowired
@@ -69,9 +80,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * @param dataTransferProxies The data transfer proxies.
      * @throws HpcException
      */
-    private HpcDataTransferServiceImpl(
-    		Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies) 
-    		throws HpcException
+    public HpcDataTransferServiceImpl(
+    		  Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies) 
+    		  throws HpcException
     {
     	if(dataTransferProxies == null || dataTransferProxies.isEmpty()) {
     	   throw new HpcException("Null or empty map of data transfer proxies",
@@ -86,7 +97,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcDataTransferServiceImpl() throws HpcException
+    @SuppressWarnings("unused")
+	private HpcDataTransferServiceImpl() throws HpcException
     {
     	throw new HpcException("Default Constructor disabled",
     			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -96,6 +108,33 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     // HpcDataTransferService Interface Implementation
     //---------------------------------------------------------------------//  
     
+    @Override
+	public HpcDataObjectUploadResponse uploadDataObject(HpcFileLocation sourceLocation, 
+			                                            InputStream sourceInputStream, 
+			                                            String path, String callerObjectId)
+	                                                   throws HpcException
+	{
+    	// Validate one and only one data source is provided.
+    	if(sourceLocation == null && sourceInputStream == null) {
+    	   throw new HpcException("No data transfer source or data attachment provided",
+	                              HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	if(sourceLocation != null && sourceInputStream != null) {
+     	   throw new HpcException("Both data transfer source and data attachment provided",
+ 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
+     	}
+    	
+    	// Create an upload request.
+    	HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
+    	uploadRequest.setPath(path);
+    	uploadRequest.setCallerObjectId(callerObjectId);
+    	uploadRequest.setSourceLocation(sourceLocation);
+    	uploadRequest.setSourceInputStream(sourceInputStream);
+    	
+		// Upload the data object file.
+	    return uploadDataObject(uploadRequest);	
+	}
+	
     @Override
     public HpcDataObjectUploadResponse uploadDataObject(HpcDataObjectUploadRequest uploadRequest) 
                                                        throws HpcException
@@ -107,7 +146,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
         	
     	// Determine the data transfer type.
-    	HpcDataTransferType dataTransferType = null;
+    	HpcDataTransferType dataTransferType;
     	if(uploadRequest.getSourceLocation() != null) {
     	   if(!isValidFileLocation(uploadRequest.getSourceLocation())) {
     	      throw new HpcException("Invalid upload file location", 
@@ -127,7 +166,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	// Upload the data object using the appropriate data transfer proxy.
   	    return dataTransferProxies.get(dataTransferType).
   	    		   uploadDataObject(getAuthenticatedToken(dataTransferType), 
-  	    		                    uploadRequest);
+  	    		                    uploadRequest, 
+  	    		                    generateMetadata(uploadRequest.getPath()));
     }
     
     @Override
@@ -361,6 +401,42 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    } else {
 	    	    return destinationLocation;
 	    }
+    }
+    
+    /**
+     * Generate metadata to attach to the data object in the archive:
+     * 1. Path - the data object path in the DM system (iRODS)
+     * 2. User ID - the user id that registers the data object. 
+     * 
+     * @param path The data object logical path.
+     * 
+     * @return a List of the 2 metadata.
+     * @throws HpcException if the service invoker is unknown.
+     */
+    private List<HpcMetadataEntry> generateMetadata(String path) throws HpcException
+    {
+       	// Get the service invoker.
+       	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+       	if(invoker == null) {
+       	   throw new HpcException("Unknown service invoker", 
+		                          HpcErrorType.UNEXPECTED_ERROR);
+       	}	
+       	
+       	List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+       	
+       	// Create the user-id metadata.
+       	HpcMetadataEntry entry = new HpcMetadataEntry();
+    	entry.setAttribute(USER_ID_ATTRIBUTE);
+    	entry.setValue(invoker.getNciAccount().getUserId());
+       	metadataEntries.add(entry);
+       	
+       	// Create the path metadata.
+       	entry = new HpcMetadataEntry();
+    	entry.setAttribute(PATH_ATTRIBUTE);
+    	entry.setValue(path);
+       	metadataEntries.add(entry);
+       	
+       	return metadataEntries;
     }
 }
  

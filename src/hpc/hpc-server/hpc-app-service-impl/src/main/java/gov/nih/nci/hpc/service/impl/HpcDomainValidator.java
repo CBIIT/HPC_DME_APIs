@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * @version $Id$
  */
 
-class HpcDomainValidator 
+public class HpcDomainValidator 
 {   
     //---------------------------------------------------------------------//
     // Class members
@@ -41,6 +41,18 @@ class HpcDomainValidator
 	private static final Logger logger = 
 			LoggerFactory.getLogger(HpcDomainValidator.class.getName());
 	
+    //---------------------------------------------------------------------//
+    // Constructors
+    //---------------------------------------------------------------------//
+	
+    /**
+     * Default constructor is disabled.
+     * 
+     */
+    private HpcDomainValidator()
+    {
+    }
+    
     //---------------------------------------------------------------------//
     // User Domain Object Types Validators
     //---------------------------------------------------------------------//
@@ -70,13 +82,16 @@ class HpcDomainValidator
      */
     public static boolean isValidNciAccount(HpcNciAccount nciAccount) 
     {
-    	if(nciAccount == null || nciAccount.getUserId() == null || 
- 	       nciAccount.getFirstName() == null || 
+    	if(nciAccount == null || nciAccount.getUserId() == null) {
+    	   return false;	
+    	}
+    	
+    	if(nciAccount.getFirstName() == null || 
  	       nciAccount.getLastName() == null ||
  	       nciAccount.getDOC() == null) {
-    	   logger.info("Invalid NCI Account: " + nciAccount);
     	   return false;
     	}
+    	
     	return true;
     }  
     
@@ -135,10 +150,8 @@ class HpcDomainValidator
     	   return false;
      	}
     	for(HpcMetadataEntry metadataEntry : metadataEntries) {
-    		if(metadataEntry.getAttribute() == null || 
-    		   metadataEntry.getAttribute().isEmpty() ||
-    		   metadataEntry.getValue() == null ||
-    		   metadataEntry.getValue().isEmpty()) {
+    		if(isEmpty(metadataEntry.getAttribute()) || 
+    		   isEmpty(metadataEntry.getValue())) {
     		   return false;
     		}
     	}
@@ -157,16 +170,28 @@ class HpcDomainValidator
     	   return false;
      	}
     	for(HpcMetadataQuery metadataQuery : metadataQueries) {
-    		if(metadataQuery.getAttribute() == null || 
-    		   metadataQuery.getAttribute().isEmpty() ||
-    		   metadataQuery.getValue() == null ||
-    		   metadataQuery.getValue().isEmpty() ||
-    		   metadataQuery.getOperator() == null ||
-    		   metadataQuery.getOperator().isEmpty()) {
+    		if(isEmpty(metadataQuery.getAttribute()) || 
+    		   isEmpty(metadataQuery.getValue()) ||
+    		   isEmpty(metadataQuery.getOperator())) {
     		   return false;
     		}
     	}
      	return true;
+    }
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//
+    
+    /**
+     * Check is a string is empty.
+     *
+     * @param value The string to check
+     * @return true if not null and not empty, false otherwise.
+     */
+    private static boolean isEmpty(String value) 
+    {
+    	return value == null ? false : value.isEmpty();
     }
 }
 
