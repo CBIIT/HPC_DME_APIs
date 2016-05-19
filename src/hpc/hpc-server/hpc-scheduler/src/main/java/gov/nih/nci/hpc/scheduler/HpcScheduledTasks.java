@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.scheduler;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
-import gov.nih.nci.hpc.bus.HpcSecurityBusService;
+import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import org.slf4j.Logger;
@@ -38,9 +38,9 @@ public class HpcScheduledTasks
 	@Autowired
     private HpcDataManagementBusService dataManagementBusService = null;
 	
-    // The Security Business Service instance.
+    // The System Business Service instance.
 	@Autowired
-    private HpcSecurityBusService securityBusService = null;
+    private HpcSystemBusService systemBusService = null;
 	
 	// The Logger instance.
 	private final Logger logger = 
@@ -72,7 +72,7 @@ public class HpcScheduledTasks
         logger.info("Starting Update Data Transfer Status Task...");
 
         try { 
-		     dataManagementBusService.updateDataTransferStatus();
+		     systemBusService.updateDataTransferStatus();
 		     
         } catch(HpcException e) {
         	    logger.error("Update Data Transfer Status task failed", e);
@@ -94,7 +94,7 @@ public class HpcScheduledTasks
         logger.info("Starting Process Temporary Archive Task...");
 
         try { 
-		     dataManagementBusService.processTemporaryArchive();
+		     systemBusService.processTemporaryArchive();
 		     
         } catch(HpcException e) {
         	    logger.error("Process Temporary Archive task failed", e);

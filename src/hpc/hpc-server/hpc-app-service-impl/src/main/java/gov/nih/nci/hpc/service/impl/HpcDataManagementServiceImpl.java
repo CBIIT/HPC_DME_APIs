@@ -60,28 +60,32 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     //---------------------------------------------------------------------//
 	
     // System generated metadata attributes.
-	private final static String ID_ATTRIBUTE = "uuid";
-	private final static String REGISTRAR_ID_ATTRIBUTE = "registered_by";
-	private final static String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
-	private final static String REGISTRAR_DOC_ATTRIBUTE = "registered_by_doc";
-	private final static String SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
+	private static final String ID_ATTRIBUTE = "uuid";
+	private static final String REGISTRAR_ID_ATTRIBUTE = "registered_by";
+	private static final String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
+	private static final String REGISTRAR_DOC_ATTRIBUTE = "registered_by_doc";
+	private static final String SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
                                 "source_file_container_id"; 
-	private final static String SOURCE_LOCATION_FILE_ID_ATTRIBUTE = 
+	private static final String SOURCE_LOCATION_FILE_ID_ATTRIBUTE = 
                                 "source_file_id"; 
-	private final static String ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
+	private static final String ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
 			                    "archive_file_container_id"; 
-	private final static String ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE = 
+	private static final String ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE = 
 			                    "archive_file_id"; 
-	private final static String DATA_TRANSFER_REQUEST_ID_ATTRIBUTE = 
+	private static final String DATA_TRANSFER_REQUEST_ID_ATTRIBUTE = 
                                 "data_transfer_request_id";
-	private final static String DATA_TRANSFER_STATUS_ATTRIBUTE = 
+	private static final String DATA_TRANSFER_STATUS_ATTRIBUTE = 
                                 "data_transfer_status";
-	private final static String DATA_TRANSFER_TYPE_ATTRIBUTE = 
+	private static final String DATA_TRANSFER_TYPE_ATTRIBUTE = 
                                 "data_transfer_type";
-	private final static String SOURCE_FILE_SIZE_ATTRIBUTE = 
+	private static final String SOURCE_FILE_SIZE_ATTRIBUTE = 
                                 "source_file_size";
-	private final static String CALLER_OBJECT_ID_ATTRIBUTE = 
+	private static final String CALLER_OBJECT_ID_ATTRIBUTE = 
                                 "archive_caller_object_id";
+	
+	private static final String EQUAL_OPERATOR = "EQUAL";
+	private static final String INVALID_PATH_METADATA_MSG = 
+			                    "Invalid path or metadata entry";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -100,16 +104,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	private HpcKeyGenerator keyGenerator = null;
 	
 	// Prepared query to get data objects that have their data transfer in-progress to archive.
-	private List<HpcMetadataQuery> dataTransferInProgressToArchiveQuery = 
-			                       new ArrayList<HpcMetadataQuery>();
+	private List<HpcMetadataQuery> dataTransferInProgressToArchiveQuery = new ArrayList<>();
 	
 	// Prepared query to get data objects that have their data transfer in-progress to temporary archive.
-	private List<HpcMetadataQuery> dataTransferInProgressToTemporaryArchiveQuery = 
-			                       new ArrayList<HpcMetadataQuery>();
+	private List<HpcMetadataQuery> dataTransferInProgressToTemporaryArchiveQuery = new ArrayList<>();
 	
 	// Prepared query to get data objects that have their data in temporary archive.
-	private List<HpcMetadataQuery> dataTransferInTemporaryArchiveQuery = 
-			                       new ArrayList<HpcMetadataQuery>();
+	private List<HpcMetadataQuery> dataTransferInTemporaryArchiveQuery = new ArrayList<>();
 
    // The logger instance.
 	private final Logger logger = 
@@ -127,19 +128,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	// Prepare the query to get data objects in data transfer in-progress to archive.
         dataTransferInProgressToArchiveQuery.add(
             toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, 
-        	                "EQUAL", 
+            		        EQUAL_OPERATOR, 
         	                HpcDataTransferStatus.IN_PROGRESS_TO_ARCHIVE.value()));
         
         // Prepare the query to get data objects in data transfer in-progress to temporary archive.
         dataTransferInProgressToTemporaryArchiveQuery.add(
         	toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, 
-        			        "EQUAL", 
+        			        EQUAL_OPERATOR, 
         			        HpcDataTransferStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE.value()));
         
         // Prepare the query to get data objects in temporary archive.
         dataTransferInTemporaryArchiveQuery.add(
         	toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, 
-        			        "EQUAL", 
+        			        EQUAL_OPERATOR, 
         			        HpcDataTransferStatus.IN_TEMPORARY_ARCHIVE.value()));
     }   
     
@@ -226,7 +227,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
        	// Input validation.
        	if(path == null || !isValidMetadataEntries(metadataEntries)) {
-       	   throw new HpcException("Null path or Invalid metadata entry", 
+       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
@@ -244,11 +245,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
        	// Input validation.
        	if(path == null) {
-       	   throw new HpcException("Null path", 
+       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
-       	List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
+       	List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
        	
        	// Generate a collection ID and add it as metadata.
        	metadataEntries.add(generateIdMetadata());
@@ -268,7 +269,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
        	// Input validation.
        	if(path == null || !isValidMetadataEntries(metadataEntries)) {
-       	   throw new HpcException("Null path or Invalid metadata entry", 
+       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
@@ -288,7 +289,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
        	// Input validation.
        	if(path == null || !isValidMetadataEntries(metadataEntries)) {
-       	   throw new HpcException("Null path or Invalid metadata entry", 
+       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
@@ -307,7 +308,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
        	// Input validation.
        	if(path == null || !isValidMetadataEntries(metadataEntries)) {
-       	   throw new HpcException("Null path or Invalid metadata entry", 
+       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
@@ -331,14 +332,17 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
                                                       throws HpcException
     {
        	// Input validation.
-       	if(path == null || !isValidFileLocation(archiveLocation) ||
-       	   (sourceLocation != null && !isValidFileLocation(sourceLocation)) || 
-       	   dataTransferStatus == null || dataTransferType == null) {
-       	   throw new HpcException("Invalid system generated metadata for data object", 
+       	if(path == null || dataTransferStatus == null || dataTransferType == null) {
+       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
+		                          HpcErrorType.INVALID_REQUEST_INPUT);	
+       	}
+       	if(!isValidFileLocation(archiveLocation) ||
+       	   (sourceLocation != null && !isValidFileLocation(sourceLocation))) {
+       	   throw new HpcException("Invalid source/archive location", 
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
-       	List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
+       	List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
        	
        	// Generate a data-object ID and add it as metadata.
        	metadataEntries.add(generateIdMetadata());
@@ -348,53 +352,57 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	
        	if(sourceLocation != null) {
        	   // Create the source location file-container-id metadata.
-       	   metadataEntries.add(toMetadataEntry(SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE, 
-       			                               sourceLocation.getFileContainerId()));
+       	   addMetadataEntry(metadataEntries,
+       			            toMetadataEntry(SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE, 
+       			                            sourceLocation.getFileContainerId()));
        	
        	   // Create the source location file-id metadata.
-       	   metadataEntries.add(toMetadataEntry(SOURCE_LOCATION_FILE_ID_ATTRIBUTE, 
-       			                               sourceLocation.getFileId()));
+       	   addMetadataEntry(metadataEntries,
+       			            toMetadataEntry(SOURCE_LOCATION_FILE_ID_ATTRIBUTE, 
+       			                            sourceLocation.getFileId()));
        	}
        	
        	// Create the archive location file-container-id metadata.
-       	metadataEntries.add(toMetadataEntry(ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE, 
-       			                            archiveLocation.getFileContainerId()));
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE, 
+       			                         archiveLocation.getFileContainerId()));
        	
        	// Create the archive location file-id metadata.
-       	metadataEntries.add(toMetadataEntry(ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE, 
-       			                            archiveLocation.getFileId()));
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE, 
+       			                         archiveLocation.getFileId()));
        	
-       	if(dataTransferRequestId != null) {
-       	   // Create the Data Transfer Request ID metadata.
-       	   metadataEntries.add(toMetadataEntry(DATA_TRANSFER_REQUEST_ID_ATTRIBUTE, 
-       			                               dataTransferRequestId));
-       	}
+   	    // Create the Data Transfer Request ID metadata.
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(DATA_TRANSFER_REQUEST_ID_ATTRIBUTE, 
+       			                         dataTransferRequestId));
        	
        	// Create the Data Transfer Status metadata.
-       	metadataEntries.add(toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, 
-       			                            dataTransferStatus.value()));
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, 
+       		                             dataTransferStatus.value()));
        	
        	// Create the Data Transfer Type metadata.
-       	metadataEntries.add(toMetadataEntry(DATA_TRANSFER_TYPE_ATTRIBUTE, 
-       			                            dataTransferType.value()));
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(DATA_TRANSFER_TYPE_ATTRIBUTE, 
+       		                             dataTransferType.value()));
        	
-       	if(sourceSize != null) {
-       	   // Create the Source File Size metadata.
-       	   metadataEntries.add(toMetadataEntry(SOURCE_FILE_SIZE_ATTRIBUTE, 
-       			                               String.valueOf(sourceSize)));
-       	}
+       	// Create the Source File Size metadata.
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(SOURCE_FILE_SIZE_ATTRIBUTE, 
+       			                         sourceSize));
        	
-       	if(callerObjectId != null) {
-           // Create the Source File Size metadata.
-           metadataEntries.add(toMetadataEntry(CALLER_OBJECT_ID_ATTRIBUTE, 
-        	                                   callerObjectId));
-        }
+        // Create the Source File Size metadata.
+        addMetadataEntry(metadataEntries,
+        		         toMetadataEntry(CALLER_OBJECT_ID_ATTRIBUTE, 
+        	                             callerObjectId));
        	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToDataObject(getAuthenticatedToken(), 
        			                                    path, metadataEntries);    	
     }
     
+    @Override
     public void updateDataObjectSystemGeneratedMetadata(String path, 
                                                         HpcFileLocation archiveLocation,
                                                         String dataTransferRequestId,
@@ -409,34 +417,39 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
-       	List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
+       	List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
        	
        	if(archiveLocation != null) {
        	   // Update the archive location file-container-id metadata.
-       	   metadataEntries.add(toMetadataEntry(ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE, 
-       		                                   archiveLocation.getFileContainerId()));
+       	   addMetadataEntry(metadataEntries,
+       			            toMetadataEntry(ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE, 
+       		                                archiveLocation.getFileContainerId()));
        	
        	   // Update the archive location file-id metadata.
-       	   metadataEntries.add(toMetadataEntry(ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE, 
-       		   	                               archiveLocation.getFileId()));
+       	   addMetadataEntry(metadataEntries,
+       		   	            toMetadataEntry(ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE, 
+       		   	                            archiveLocation.getFileId()));
        	}
        	
        	if(dataTransferRequestId != null) {
        	   // Update the Data Transfer Request ID metadata.
-       	   metadataEntries.add(toMetadataEntry(DATA_TRANSFER_REQUEST_ID_ATTRIBUTE, 
-       			                               dataTransferRequestId));
+       	   addMetadataEntry(metadataEntries,
+       		                toMetadataEntry(DATA_TRANSFER_REQUEST_ID_ATTRIBUTE, 
+       			                            dataTransferRequestId));
        	}
        	
        	if(dataTransferStatus != null) {
        	   // Update the Data Transfer Status metadata.
-       	   metadataEntries.add(toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, 
-       		   	                               dataTransferStatus.value()));
+       	   addMetadataEntry(metadataEntries,
+       			            toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, 
+       		   	                            dataTransferStatus.value()));
        	}
        	
        	if(dataTransferType != null) {
        	   // Update the Data Transfer Type metadata.
-       	   metadataEntries.add(toMetadataEntry(DATA_TRANSFER_TYPE_ATTRIBUTE, 
-       		  	                               dataTransferType.value()));
+       	   addMetadataEntry(metadataEntries,
+       		                toMetadataEntry(DATA_TRANSFER_TYPE_ATTRIBUTE, 
+       		  	                            dataTransferType.value()));
        	}
        	
 		dataManagementProxy.updateDataObjectMetadata(getAuthenticatedToken(),
@@ -493,7 +506,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		}
     		catch(Exception e)
     		{
-    			logger.error("Unable to determine data transfer status: "+ metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE));
+    			logger.error("Unable to determine data transfer status: "+ 
+    		                 metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE), e);
     			systemGeneratedMetadata.setDataTransferStatus(HpcDataTransferStatus.UNKNOWN);
     		}
     	}
@@ -506,7 +520,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		}
     		catch(Exception e)
     		{
-    			logger.error("Unable to determine data transfer type: "+ metadataMap.get(DATA_TRANSFER_TYPE_ATTRIBUTE));
+    			logger.error("Unable to determine data transfer type: "+ 
+    		                 metadataMap.get(DATA_TRANSFER_TYPE_ATTRIBUTE), e);
     			systemGeneratedMetadata.setDataTransferType(null);
     		}
     	}
@@ -548,7 +563,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
        	// Input validation.
        	if(path == null) {
-       	   throw new HpcException("Null path", 
+       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
@@ -583,7 +598,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     @Override
     public List<HpcDataObject> getDataObjectsInProgress() throws HpcException
     {
-    	List<HpcDataObject> objectsInProgress = new ArrayList<HpcDataObject>();
+    	List<HpcDataObject> objectsInProgress = new ArrayList<>();
     	objectsInProgress.addAll(
     		   getDataObjects(dataTransferInProgressToArchiveQuery));
     	objectsInProgress.addAll(
@@ -603,7 +618,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
        	// Input validation.
        	if(path == null) {
-       	   throw new HpcException("Null path", 
+       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
@@ -677,8 +692,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	     
     	} catch(HpcException e) {
     		    // Ignore.
+    		    logger.error("Failed to close data management connection", e);
     	}
-    	
     }
     
     @Override
@@ -688,7 +703,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	// Input validation.
     	if(path == null || permissionRequest == null) {
-           throw new HpcException("Null path", 
+           throw new HpcException("Null path or permission request", 
 		                          HpcErrorType.INVALID_REQUEST_INPUT);    	   	
     	}
     	
@@ -717,7 +732,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     @Override
     public Map<String, String> toMap(List<HpcMetadataEntry> metadataEntries)
     {
-    	Map<String, String> metadataMap = new HashMap<String, String>();
+    	Map<String, String> metadataMap = new HashMap<>();
     	for(HpcMetadataEntry metadataEntry : metadataEntries) {
     		metadataMap.put(metadataEntry.getAttribute(), metadataEntry.getValue());
     	}
@@ -779,7 +794,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     /**
      * Generate registrar ID, name and DOC metadata.
      * 
-     * @return a List of 3 metadata.
+     * @return a List of the 3 metadata.
      * @throws HpcException if the service invoker is unknown.
      */
     private List<HpcMetadataEntry> generateRegistrarMetadata() throws HpcException
@@ -791,20 +806,23 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		                          HpcErrorType.UNEXPECTED_ERROR);
        	}	
        	
-       	List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
+       	List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
        	
        	// Create the registrar user-id metadata.
-       	metadataEntries.add(toMetadataEntry(REGISTRAR_ID_ATTRIBUTE, 
-       			                            invoker.getNciAccount().getUserId()));
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(REGISTRAR_ID_ATTRIBUTE, 
+       			                         invoker.getNciAccount().getUserId()));
        	
        	// Create the registrar name metadata.
-       	metadataEntries.add(toMetadataEntry(REGISTRAR_NAME_ATTRIBUTE, 
-       			                            invoker.getNciAccount().getFirstName() + " " +
-                                            invoker.getNciAccount().getLastName()));
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(REGISTRAR_NAME_ATTRIBUTE, 
+       			                         invoker.getNciAccount().getFirstName() + " " +
+                                         invoker.getNciAccount().getLastName()));
        	
        	// Create the registrar DOC.
-       	metadataEntries.add(toMetadataEntry(REGISTRAR_DOC_ATTRIBUTE, 
-       			                            invoker.getNciAccount().getDOC()));
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(REGISTRAR_DOC_ATTRIBUTE, 
+       			                         invoker.getNciAccount().getDOC()));
        	
        	return metadataEntries;
     }
@@ -820,10 +838,35 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	HpcMetadataEntry entry = new HpcMetadataEntry();
     	entry.setAttribute(attribute);
-    	entry.setValue(value);
-    	entry.setUnit("");
-    	
-    	return entry;
+	    entry.setValue(value);
+	    entry.setUnit("");
+	    return entry;
+    }
+    
+    /**
+     * Generate a metadata entry from attribute/value pair.
+     * 
+     * @param attribute The metadata entry attribute.
+     * @param value The metadata entry value.
+     * @return HpcMetadataEntry instance
+     */
+    private HpcMetadataEntry toMetadataEntry(String attribute, Long value)
+    {
+    	return toMetadataEntry(attribute, value != null ? String.valueOf(value) : null);
+    }
+    
+    /**
+     * Add a metadata entry to a list. 
+     * 
+     * @param metadataEntries list of metadata entries. 
+     * @param entry A metadata entry.
+     */
+    private void addMetadataEntry(List<HpcMetadataEntry> metadataEntries,
+    		                      HpcMetadataEntry entry)
+    {
+    	if(entry.getAttribute() != null && entry.getValue() != null) {
+    	   metadataEntries.add(entry);
+    	}
     }
     
     /**

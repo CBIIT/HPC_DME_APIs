@@ -244,8 +244,9 @@ public class HpcIRODSConnection
 	    				                      authenticateIRODSAccount(toIrodsAccount(dataManagementAccount,
 	    				                    		                   authScheme));
 	         return authResponse != null ? authResponse.getAuthenticatedIRODSAccount() : null;
-			 
+	         
     	} catch(AuthenticationException ae) {
+    		    logger.info("iRODS authentication failed: " + dataManagementAccount.getUsername(), ae);
     		    return null;
     		    
     	} catch(JargonException e) {

@@ -68,7 +68,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	private HpcSystemAccountLocator systemAccountLocator = null;
 
 	// The valid DOC values.
-	Set<String> docValues = new HashSet<String>();
+	Set<String> docValues = new HashSet<>();
 
     //---------------------------------------------------------------------//
     // Constructors
@@ -135,21 +135,21 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	user.setCreated(Calendar.getInstance());
 
     	// Persist to the DB.
-    	insert(user);
+    	upsert(user);
     }
 
     @Override
-    public void updateUser(String nciUserId, String firstName, String lastName, String DOC)
+    public void updateUser(String nciUserId, String firstName, String lastName, String doc)
 	                      throws HpcException
     {
     	// Input validation.
-    	if(nciUserId == null || firstName == null || lastName == null || DOC == null) {
+    	if(nciUserId == null || firstName == null || lastName == null || doc == null) {
     	   throw new HpcException("Invalid update user input",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
-    	if(!docValues.contains(DOC)) {
-    	   throw new HpcException("Invalid DOC: " + DOC +
+    	if(!docValues.contains(doc)) {
+    	   throw new HpcException("Invalid DOC: " + doc +
     			                  ". Valid values: " + docValues,
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
     	}
@@ -164,11 +164,11 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	// Create the User domain object.
     	user.getNciAccount().setFirstName(firstName);
     	user.getNciAccount().setLastName(lastName);
-    	user.getNciAccount().setDOC(DOC);
+    	user.getNciAccount().setDOC(doc);
     	user.setLastUpdated(Calendar.getInstance());
 
     	// Persist to the DB.
-    	update(user);
+    	upsert(user);
     }
 
     @Override
@@ -266,20 +266,10 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
      *
      * @throws HpcException
      */
-    private void insert(HpcUser user) throws HpcException
+    private void upsert(HpcUser user) throws HpcException
     {
-    	if(user != null) {
-    	   user.setLastUpdated(Calendar.getInstance());
-    	   userDAO.insert(user);
-    	}
-    }
-
-    private void update(HpcUser user) throws HpcException
-    {
-    	if(user != null) {
-    	   user.setLastUpdated(Calendar.getInstance());
-    	   userDAO.update(user);
-    	}
+    	user.setLastUpdated(Calendar.getInstance());
+    	userDAO.upsert(user);
     }
 }
 
