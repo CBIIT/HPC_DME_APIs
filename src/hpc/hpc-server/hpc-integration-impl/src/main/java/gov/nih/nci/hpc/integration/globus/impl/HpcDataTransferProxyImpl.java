@@ -13,6 +13,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDataTransferReport;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.DatatypeConverter;
@@ -111,7 +113,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     
     @Override
     public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
-    		                                            HpcDataObjectUploadRequest uploadRequest) 
+    		                                            HpcDataObjectUploadRequest uploadRequest,
+    		                                            List<HpcMetadataEntry> metadataEntries) 
     		                                           throws HpcException
     {
     	// Calculate the archive destination.

@@ -23,6 +23,8 @@ import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -45,22 +47,20 @@ public class HpcUserDAOImpl implements HpcUserDAO
     //---------------------------------------------------------------------//    
     
     // SQL Queries.
-	public final static String INSERT_SQL = 
+	public static final String UPSERT_SQL = 
 		   "insert into public.\"HPC_USER\" ( " +
                     "\"USER_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"DOC\", " +
                     "\"IRODS_USERNAME\", \"IRODS_PASSWORD\", " +
                     "\"CREATED\", \"LAST_UPDATED\") " +
-                    "values (?, ?, ?, ?, ?, ?, ?, ?) ";
-	
-	/* Add this back in when we upgrade to PostgreSQL 9.5
-            + "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", \"DOC\", " +
+                    "values (?, ?, ?, ?, ?, ?, ?, ?) " +
+           "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", \"DOC\", " +
                                                   "\"LAST_NAME\"=excluded.\"LAST_NAME\", " +
                                                   "\"IRODS_USERNAME\"=excluded.\"IRODS_USERNAME\", " +
                                                   "\"IRODS_PASSWORD\"=excluded.\"IRODS_PASSWORD\", " +
                                                   "\"CREATED\"=excluded.\"CREATED\", " +
-                                                  "\"LAST_UPDATED\"=excluded.\"LAST_UPDATED\"";*/
+                                                  "\"LAST_UPDATED\"=excluded.\"LAST_UPDATED\"";
 
-	public final static String GET_SQL = "select * from public.\"HPC_USER\" where \"USER_ID\" = ?";
+	public static final String GET_SQL = "select * from public.\"HPC_USER\" where \"USER_ID\" = ?";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -76,6 +76,10 @@ public class HpcUserDAOImpl implements HpcUserDAO
 	
 	// Row mapper.
 	private HpcUserRowMapper rowMapper = new HpcUserRowMapper();
+	
+    // The logger instance.
+	private static final Logger logger = 
+			LoggerFactory.getLogger(HpcUserDAOImpl.class.getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -98,10 +102,10 @@ public class HpcUserDAOImpl implements HpcUserDAO
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void insert(HpcUser user) throws HpcException
+	public void upsert(HpcUser user) throws HpcException
     {
 		try {
-		     jdbcTemplate.update(INSERT_SQL,
+		     jdbcTemplate.update(UPSERT_SQL,
 		                         user.getNciAccount().getUserId(),
 		                         user.getNciAccount().getFirstName(),
 		                         user.getNciAccount().getLastName(),
@@ -117,48 +121,14 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		}
     }
 	
-	@Override
-	public void update(HpcUser user) throws HpcException
-    {
-		try {
-			String UPDATE_SQL = 
-					   "update public.\"HPC_USER\" set " +
-			                    "\"FIRST_NAME\"=?, \"LAST_NAME\"=?, \"DOC\"=?, ";
-			if(user.getDataManagementAccount() != null)
-				UPDATE_SQL = UPDATE_SQL + "\"IRODS_USERNAME\"=?, \"IRODS_PASSWORD\"=?, ";
-			UPDATE_SQL = UPDATE_SQL + "\"LAST_UPDATED\" =? " +
-				"WHERE \"USER_ID\"=?";
-			
-			if(user.getDataManagementAccount() != null)
-		     jdbcTemplate.update(UPDATE_SQL,
-		                         user.getNciAccount().getFirstName(),
-		                         user.getNciAccount().getLastName(),
-		                         user.getNciAccount().getDOC(),
-		                         user.getDataManagementAccount().getUsername(),
-		                         encryptor.encrypt(user.getDataManagementAccount().getPassword()),
-		                         user.getLastUpdated(),
-		                         user.getNciAccount().getUserId());
-			else
-			     jdbcTemplate.update(UPDATE_SQL,
-                         user.getNciAccount().getFirstName(),
-                         user.getNciAccount().getLastName(),
-                         user.getNciAccount().getDOC(),
-                         user.getLastUpdated(),
-                         user.getNciAccount().getUserId());
-				
-		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to upsert a user: " + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
-		}
-    }
-
 	@Override 
 	public HpcUser getUser(String nciUserId) throws HpcException
 	{
 		try {
 		     return jdbcTemplate.queryForObject(GET_SQL, rowMapper, nciUserId);
 		     
-		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
+		} catch(IncorrectResultSizeDataAccessException irse) {
+			    logger.error("Multiple users with the same ID found", irse);
 			    return null;
 			    
 		} catch(DataAccessException e) {
@@ -174,6 +144,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 	// HpcUser Table to Object mapper.
 	private class HpcUserRowMapper implements RowMapper<HpcUser>
 	{
+		@Override
 		public HpcUser mapRow(ResultSet rs, int rowNum) throws SQLException 
 		{
 			HpcNciAccount nciAccount = new HpcNciAccount();
@@ -185,7 +156,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 			HpcIntegratedSystemAccount dataManagementAccount = new HpcIntegratedSystemAccount();
 			dataManagementAccount.setIntegratedSystem(HpcIntegratedSystem.IRODS);
 			dataManagementAccount.setUsername(rs.getString("IRODS_USERNAME"));
-			dataManagementAccount.setPassword(encryptor.decrypt(rs.getBytes(("IRODS_PASSWORD"))));
+			dataManagementAccount.setPassword(encryptor.decrypt(rs.getBytes("IRODS_PASSWORD")));
 			
         	HpcUser user = new HpcUser();
         	Calendar created = new GregorianCalendar();
@@ -208,7 +179,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
      * 
      * Throws HpcException If it failed to connect to the database.
      */
-    @SuppressWarnings("unused")
+	@SuppressWarnings("unused")
 	private void dbConnect() throws HpcException
     {
     	try {
