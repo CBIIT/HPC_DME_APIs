@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -43,7 +44,7 @@ public class HpcMetadataValidator
     //---------------------------------------------------------------------//    
     
     // Collection type attribute name.
-	private final static String COLLECTION_TYPE_ATTRIBUTE = "collection_type"; 
+	private static final String COLLECTION_TYPE_ATTRIBUTE = "collection_type"; 
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -61,7 +62,8 @@ public class HpcMetadataValidator
      * 
      * @throws HpcException Constructor is disabled.
      */
-    private HpcMetadataValidator() throws HpcException
+    @SuppressWarnings("unused")
+	private HpcMetadataValidator() throws HpcException
     {
     	throw new HpcException("Constructor Disabled",
                                HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -74,20 +76,10 @@ public class HpcMetadataValidator
      * 
      * @throws HpcException
      */
-    private HpcMetadataValidator(String metadataValidationRulesPath) throws HpcException
+    public HpcMetadataValidator(String metadataValidationRulesPath) throws HpcException
     {
 		try {
-	         FileReader reader = new FileReader(metadataValidationRulesPath);
-	         JSONObject jsonMetadataValidationRules = (JSONObject) ((JSONObject) new JSONParser().parse(reader)).get("HpcMetadataValidationRules");
-	         
-	         if(jsonMetadataValidationRules == null ||
-	        	!jsonMetadataValidationRules.containsKey("collectionMetadataValidationRules") ||
-	            !jsonMetadataValidationRules.containsKey("dataObjectMetadataValidationRules") ||
-	            !jsonMetadataValidationRules.containsKey("collectionSystemGeneratedMetadataAttributes") ||
-	            !jsonMetadataValidationRules.containsKey("dataObjectSystemGeneratedMetadataAttributes")) {
-	        	 throw new HpcException("Invalid JSON rules: " + jsonMetadataValidationRules,
-		                                HpcErrorType.SPRING_CONFIGURATION_ERROR);	
-	         }
+	         JSONObject jsonMetadataValidationRules = getMetadataValidationRulesJSON(metadataValidationRulesPath);
 	         
 	         metadataValidationRules.getCollectionMetadataValidationRules().addAll(
 	        		 rulesFromJSON((JSONArray) jsonMetadataValidationRules.get("collectionMetadataValidationRules")));
@@ -171,7 +163,7 @@ public class HpcMetadataValidator
     		                     throws HpcException
     {
     	// Crate a metadata <attribute, value> map. Put existing entries first.
-    	Map<String, String> metadataEntriesMap = new HashMap<String, String>();
+    	Map<String, String> metadataEntriesMap = new HashMap<>();
     	if(existingMetadataEntries != null) {
     	   for(HpcMetadataEntry metadataEntry : existingMetadataEntries) {
     		   metadataEntriesMap.put(metadataEntry.getAttribute(), metadataEntry.getValue());
@@ -183,7 +175,7 @@ public class HpcMetadataValidator
     	}
     	
     	// Add Add/Update metadata entries to the map.
-    	Map<String, String> addUpdateMetadataEntriesMap = new HashMap<String, String>();
+    	Map<String, String> addUpdateMetadataEntriesMap = new HashMap<>();
     	for(HpcMetadataEntry metadataEntry : addUpdateMetadataEntries) {
     		metadataEntriesMap.put(metadataEntry.getAttribute(), metadataEntry.getValue());
     		addUpdateMetadataEntriesMap.put(metadataEntry.getAttribute(), metadataEntry.getValue());
@@ -204,42 +196,26 @@ public class HpcMetadataValidator
     	
     	// Execute the validation rules.
 	    for(HpcMetadataValidationRule metadataValidationRule: metadataValidationRules) {
-	    	// Skip disabled rules.
-	    	if(!metadataValidationRule.getRuleEnabled()) {
+	    	// Check if rules needs to be skipped.
+	    	if(skipRule(metadataValidationRule, metadataEntriesMap)) {
 	    	   continue;
 	    	}
 	    
-	        // Skip rules for other collection types.
-	    	String collectionType = metadataEntriesMap.get(COLLECTION_TYPE_ATTRIBUTE);
-	    	if(collectionType != null &&
-	    	   metadataValidationRule.getCollectionTypes() != null &&
-	    	   !metadataValidationRule.getCollectionTypes().isEmpty() &&
-	    	   !metadataValidationRule.getCollectionTypes().contains(collectionType)) {
-	    	   continue;
-	    	}
-	    	
 	    	// Apply default value/unit if default is defined and metadata was not provided.
-	    	if(metadataValidationRule.getDefaultValue() != null &&
-	    	   !metadataValidationRule.getDefaultValue().isEmpty()) {
-	    	   if(!metadataEntriesMap.containsKey(metadataValidationRule.getAttribute())) {
-				  HpcMetadataEntry defaultMetadataEntry = new HpcMetadataEntry();
-				  defaultMetadataEntry.setAttribute(metadataValidationRule.getAttribute());
-				  defaultMetadataEntry.setValue(metadataValidationRule.getDefaultValue());
-				  defaultMetadataEntry.setUnit(metadataValidationRule.getDefaultUnit() != null ?
-						                       metadataValidationRule.getDefaultUnit() : "");
-				  addUpdateMetadataEntries.add(defaultMetadataEntry);
-				  metadataEntriesMap.put(defaultMetadataEntry.getAttribute(), defaultMetadataEntry.getValue());
-			   }
+	    	HpcMetadataEntry defaultMetadataEntry = 
+	    	    generateDefaultMetadataEntry(metadataValidationRule, metadataEntriesMap);
+	    	if(defaultMetadataEntry != null) {
+			   addUpdateMetadataEntries.add(defaultMetadataEntry);
+			   metadataEntriesMap.put(defaultMetadataEntry.getAttribute(), defaultMetadataEntry.getValue());
 	    	}
 	    	
 	    	// Validate a mandatory metadata is provided.
-	    	if(metadataValidationRule.getMandatory()) {
-	    	   if(!metadataEntriesMap.containsKey(metadataValidationRule.getAttribute())) {	
-				  // Metadata entry is missing, but no default is defined.
-			      throw new HpcException("Missing mandataory metadata: " + 
-			    		                 metadataValidationRule.getAttribute(), 
-			                             HpcErrorType.INVALID_REQUEST_INPUT);
-			   }
+	    	if(metadataValidationRule.getMandatory() &&
+	    	   !metadataEntriesMap.containsKey(metadataValidationRule.getAttribute())) {	
+			   // Metadata entry is missing, but no default is defined.
+			   throw new HpcException("Missing mandataory metadata: " + 
+			    		              metadataValidationRule.getAttribute(), 
+			                          HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 	    	
 	    	// Validate the metadata value is valid.
@@ -259,6 +235,59 @@ public class HpcMetadataValidator
     }  
     
     /**
+     * Check if a metadata validation rules needs to be skipped.
+     *
+     * @param metadataValidationRule The validation rule.
+     * @param metadataEntriesMap The metadata entries.
+     * @return true if the rule needs to be skipped.
+     */
+    private boolean skipRule(HpcMetadataValidationRule metadataValidationRule,
+    		                 Map<String, String> metadataEntriesMap)
+    {
+		// Skip disabled rules.
+		if(!metadataValidationRule.getRuleEnabled()) {
+		   return true;
+		}
+	
+	    // Skip rules for other collection types.
+		String collectionType = metadataEntriesMap.get(COLLECTION_TYPE_ATTRIBUTE);
+		if(collectionType != null &&
+		   metadataValidationRule.getCollectionTypes() != null &&
+		   !metadataValidationRule.getCollectionTypes().isEmpty() &&
+		   !metadataValidationRule.getCollectionTypes().contains(collectionType)) {
+		   return true;
+		}
+		
+		return false;
+	}
+    
+    /**
+     * Generate a default metadata entry if needed by the validation rule.
+     *
+     * @param metadataValidationRule The validation rule.
+     * @param metadataEntriesMap The metadata entries.
+     * @return A default metadata entry if needed.
+     */
+    private HpcMetadataEntry generateDefaultMetadataEntry(
+    		   HpcMetadataValidationRule metadataValidationRule,
+               Map<String, String> metadataEntriesMap)
+    {
+		// Apply default value/unit if default is defined and metadata was not provided.
+		if(metadataValidationRule.getDefaultValue() != null &&
+		   !metadataValidationRule.getDefaultValue().isEmpty() &&
+		   !metadataEntriesMap.containsKey(metadataValidationRule.getAttribute())) {
+		   HpcMetadataEntry defaultMetadataEntry = new HpcMetadataEntry();
+		   defaultMetadataEntry.setAttribute(metadataValidationRule.getAttribute());
+		   defaultMetadataEntry.setValue(metadataValidationRule.getDefaultValue());
+		   defaultMetadataEntry.setUnit(metadataValidationRule.getDefaultUnit() != null ?
+			 	                        metadataValidationRule.getDefaultUnit() : "");
+		   return defaultMetadataEntry;
+		}
+		
+		return null;
+    }
+    
+    /**
      * Instantiate list metadata validation rules from JSON.
      *
      * @param jsonMetadataValidationRules The validation rules JSON array. 
@@ -270,8 +299,7 @@ public class HpcMetadataValidator
 	private List<HpcMetadataValidationRule> rulesFromJSON(JSONArray jsonMetadataValidationRules) 
     		                                             throws HpcException
     {
-    	List<HpcMetadataValidationRule> metadataValidationRules = 
-    			                        new ArrayList<HpcMetadataValidationRule>();
+    	List<HpcMetadataValidationRule> validationRules = new ArrayList<>();
     	
     	// Iterate through the rules and map to POJO.
     	Iterator<JSONObject> rulesIterator = jsonMetadataValidationRules.iterator();
@@ -296,10 +324,10 @@ public class HpcMetadataValidator
 	    	  metadataValidationRule.setDefaultUnit((String) jsonMetadataValidationRule.get("defaultUnit"));
 	    	  JSONArray jsonCollectionTypes = (JSONArray) jsonMetadataValidationRule.get("collectionTypes");
 	    	  if(jsonCollectionTypes != null) {
-		    	     Iterator<String> collectionTypeIterator = jsonCollectionTypes.iterator();
-		    	     while(collectionTypeIterator.hasNext()) {
-		    	    	   metadataValidationRule.getCollectionTypes().add(collectionTypeIterator.next());
-		    	     }
+		    	 Iterator<String> collectionTypeIterator = jsonCollectionTypes.iterator();
+		    	 while(collectionTypeIterator.hasNext()) {
+		    	   	   metadataValidationRule.getCollectionTypes().add(collectionTypeIterator.next());
+		    	 }
 	    	  }
 	    	  
 	    	  // Extract the valid values.
@@ -311,10 +339,10 @@ public class HpcMetadataValidator
 	    	     }
 	    	  }
 	    	  
-	    	  metadataValidationRules.add(metadataValidationRule);
+	    	  validationRules.add(metadataValidationRule);
     	}
     	
-    	return metadataValidationRules;
+    	return validationRules;
     }
     
     /**
@@ -327,13 +355,50 @@ public class HpcMetadataValidator
     @SuppressWarnings("unchecked")
 	private List<String> stringsFromJSON(JSONArray jsonStringArray) throws HpcException
     {
-    	List<String> values = new ArrayList<String>();
+    	List<String> values = new ArrayList<>();
     	Iterator<String> valuesIterator = jsonStringArray.iterator();
 	    while(valuesIterator.hasNext()) {
 	    	  values.add(valuesIterator.next());
 	    }
     	
     	return values;
+    }
+    
+    /**
+     * Load the metadata validation rules from file.
+     * 
+     * @param metadataValidationRulesPath The path to the validation rules JSON.
+     * @return a JSON object with the validation rules
+     * @throws HpcException
+     */
+	private JSONObject getMetadataValidationRulesJSON(String metadataValidationRulesPath) 
+			                                         throws HpcException
+    {
+		try {
+	         FileReader reader = new FileReader(metadataValidationRulesPath);
+	         JSONObject jsonMetadataValidationRules = (JSONObject) ((JSONObject) new JSONParser().parse(reader)).get("HpcMetadataValidationRules");
+	         if(jsonMetadataValidationRules == null) {
+	       	    throw new HpcException("No validation rules",
+	                                   HpcErrorType.SPRING_CONFIGURATION_ERROR); 
+	         }
+	         
+	         List<String> keys = Arrays.asList("collectionMetadataValidationRules", 
+	        		                           "dataObjectMetadataValidationRules",
+	        		                           "collectionSystemGeneratedMetadataAttributes",
+	        		                           "dataObjectSystemGeneratedMetadataAttributes");
+	         for(String key : keys) {
+	             if(!jsonMetadataValidationRules.containsKey(key)) {
+	       	        throw new HpcException("Invalid JSON rules: " + jsonMetadataValidationRules,
+	                                   HpcErrorType.SPRING_CONFIGURATION_ERROR);
+	             }
+	         }
+	         
+	         return jsonMetadataValidationRules;
+	         
+		} catch(Exception e) {
+		    throw new HpcException("Could not open or parse: " + metadataValidationRulesPath,
+                                   HpcErrorType.SPRING_CONFIGURATION_ERROR, e);
+		}
     }
 }
 

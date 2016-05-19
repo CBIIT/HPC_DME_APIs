@@ -17,7 +17,6 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -42,13 +41,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
-import gov.nih.nci.hpc.service.HpcSecurityService;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -69,22 +63,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusService
 {  
     //---------------------------------------------------------------------//
-    // Constants
-    //---------------------------------------------------------------------//    
-    
-    // Data transfer status check timeout, in days. If these many days pass 
-	// after the data registration date, and we still can't get a data transfer 
-	// status, then the state will move to UNKNOWN.
-	private final static int DATA_TRANSFER_STATUS_CHECK_TIMEOUT_PERIOD = 1;
-	
-    //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
     // Application service instances.
-	
-	@Autowired
-    private HpcSecurityService securityService = null;
 	
 	@Autowired
     private HpcDataTransferService dataTransferService = null;
@@ -113,7 +95,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcCollectionBusService Interface Implementation
+    // HpcDataManagementBusService Interface Implementation
     //---------------------------------------------------------------------//  
     
     @Override
@@ -210,8 +192,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		}
     		catch(HpcException e)
     		{
-    			//Failed to get metadata
-    			logger.error("Failed to fetch metadata for "+collection.getAbsolutePath(), e);
+    			// Failed to get metadata.
+    			logger.error("Failed to fetch metadata for "+ collection.getAbsolutePath(), e);
     			continue;
     		}
     	}
@@ -254,8 +236,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				
 				// Transfer the data file.
 		        HpcDataObjectUploadResponse uploadResponse = 
-		           uploadData(source, dataObjectStream, path, 
-		        		      dataObjectRegistrationDTO.getCallerObjectId());
+		           dataTransferService.uploadDataObject(source, dataObjectStream, path, 
+		        		                                dataObjectRegistrationDTO.getCallerObjectId());
 		        Long sourceSize = source != null ? 
 		        		          dataTransferService.getPathAttributes(uploadResponse.getDataTransferType(), 
 		        		        		                                source, true).getSize() : 
@@ -472,104 +454,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	return responses;
     }
     
-    @Override
-    public void updateDataTransferStatus() throws HpcException
-    {
-    	// Use system account to perform this service.
-    	securityService.setSystemRequestInvoker();
-    	
-    	// Iterate through the data objects that their data transfer is in-progress
-    	for(HpcDataObject dataObject : dataManagementService.getDataObjectsInProgress()) {
-    		String path = dataObject.getAbsolutePath();
-    		try {
-    		     // Get current data transfer Request Info.
-    			 HpcDataObjectSystemGeneratedMetadata systemGeneratedMetadata = 
-    			    dataManagementService.getDataObjectSystemGeneratedMetadata(path);
-    			 
-    			 // Get the data transfer request status.
-    			 HpcDataTransferStatus dataTransferStatus =
-    		        dataTransferService.getDataTransferStatus(systemGeneratedMetadata.getDataTransferType(),
-    		        		                                  systemGeneratedMetadata.getDataTransferRequestId());
-    			 
-    		     if(dataTransferStatus.equals(HpcDataTransferStatus.ARCHIVED) ||
-    		        dataTransferStatus.equals(HpcDataTransferStatus.IN_TEMPORARY_ARCHIVE)) {
-    		    	// Data transfer completed successfully. Update the system metadata.
-     			    setDataTransferStatus(path, dataTransferStatus);
-    		    	logger.info("Data transfer completed [" + dataTransferStatus + "]: " + path);
-    		    	
-    		     } else if(dataTransferStatus.equals(HpcDataTransferStatus.FAILED)) {
-     		    	       // Data transfer failed. Remove the data object
-     		    	       dataManagementService.delete(path);
-     		    	       logger.info("Data transfer failed: " + path);
-    		     }
-    		     
-    		} catch(HpcException e) {
-    			    logger.error("Failed to process data transfer update:" + path, e);
-    			    
-    			    // If timeout occurred, move the status to unknown.
-    			    this.setTransferStatusToUnknown(dataObject, true);
-    		}
-    	}
-    }
-    
-    @Override
-    public void processTemporaryArchive() throws HpcException
-    {
-    	// Use system account to perform this service.
-    	securityService.setSystemRequestInvoker();
-    	
-    	// Iterate through the data objects that their data is in temporary archive
-    	for(HpcDataObject dataObject : dataManagementService.getDataObjectsInTemporaryArchive()) {
-    		String path = dataObject.getAbsolutePath();
-    		HpcDataObjectSystemGeneratedMetadata systemGeneratedMetadata = null;
-    		try {
-    		     // Get the data object system generated metadata.
-    			 systemGeneratedMetadata = 
-    			       dataManagementService.getDataObjectSystemGeneratedMetadata(path);
-    			 
-    			 // Get an input stream to the data object in the temporary archive.
-    			 File file = dataTransferService.getUploadFile(
-    					         systemGeneratedMetadata.getDataTransferType(),
-    					         systemGeneratedMetadata.getArchiveLocation().getFileId());
-    			 InputStream dataObjectStream = new FileInputStream(file);
-    			 
- 				 // Transfer the data file.
- 		         HpcDataObjectUploadResponse uploadResponse = 
- 		        	uploadData(null, dataObjectStream, path, 
- 		        			   systemGeneratedMetadata.getCallerObjectId());
- 		     
- 		         // Delete the file.
- 		         try {
- 		              file.delete();
- 		              
- 		         } catch(Exception e) {
- 		        	     logger.error("Failed to delete: " + 
- 		                              systemGeneratedMetadata.getArchiveLocation().getFileId());
- 		         }
- 		         
- 			     // Update system metadata of the data object.
- 			     dataManagementService.updateDataObjectSystemGeneratedMetadata(
- 			           		                 path, uploadResponse.getArchiveLocation(),
- 			    			                 uploadResponse.getRequestId(), 
- 			    			                 uploadResponse.getDataTransferStatus(),
- 			    			                 uploadResponse.getDataTransferType()); 
- 			     
-    		} catch(FileNotFoundException fnf) {
-    			    logger.info("File not found in temp archive: " + 
-    			    		    systemGeneratedMetadata.getArchiveLocation().getFileId());
-    			    
-    			    // File not found in temporary archive. Set transfer status to unknown.
-    			    this.setTransferStatusToUnknown(dataObject, false);
-    		     
-    		} catch(HpcException e) {
-    			    logger.error("Failed to transfer data from temporary archive:" + path, e);
-    			    
-    			    // If timeout occurred, move the status to unknown.
-    			    this.setTransferStatusToUnknown(dataObject, true);
-    		}
-    	}
-    }
-    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
@@ -720,29 +604,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 	
     /** 
-     * Determine if data transfer status check timed out.
-     * 
-     * @param dataObject The data object to check the timeout for.
-     * 
-     * @return true if status check timeout occurred. 
-     */
-	private boolean isDataTransferStatusCheckTimedOut(HpcDataObject dataObject) 
-	{
-		if(dataObject.getCreatedAt() == null) {
-		   // Creation time unknown.
-		   return true;	
-		}
-		
-		// Calculate the timeout.
-		Calendar timeout = Calendar.getInstance();
-	    timeout.setTime(dataObject.getCreatedAt().getTime());
-	    timeout.add(Calendar.DATE, DATA_TRANSFER_STATUS_CHECK_TIMEOUT_PERIOD);
-	    
-	    // Compare to now.
-	    return Calendar.getInstance().after(timeout);
-	}
-	
-    /** 
      * Calculate the data transfer % completion if transfer is in progress
      * 
      * @param dataObject The data object to check the timeout for.
@@ -781,85 +642,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		
 		return String.valueOf((transferSize * 100L) / sourceSize) + '%';
-	}
-	
-    /** 
-     * Upload data. Either upload from the input stream or submit a transfer request for the source.
-     * 
-     * @param sourceLocation The source for data transfer.
-     * @param sourceInputStream The source as an input stream
-     * @param path The registration path.
-     * @param callerObjectId The caller's provided data object ID.
-     * @return HpcDataObjectUploadResponse
-     * 
-     * @throws HpcException
-     */
-	private HpcDataObjectUploadResponse uploadData(HpcFileLocation sourceLocation, 
-			                                       InputStream sourceInputStream, 
-			                                       String path, String callerObjectId)
-	                                              throws HpcException
-	{
-    	// Validate one and only one data source is provided.
-    	if(sourceLocation == null && sourceInputStream == null) {
-    	   throw new HpcException("No data transfer source or data attachment provided",
-	                              HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
-    	if(sourceLocation != null && sourceInputStream != null) {
-     	   throw new HpcException("Both data transfer source and data attachment provided",
- 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
-     	}
-    	
-    	// Create an upload request.
-    	HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
-    	uploadRequest.setPath(path);
-    	uploadRequest.setCallerObjectId(callerObjectId);
-    	uploadRequest.setSourceLocation(sourceLocation);
-    	uploadRequest.setSourceInputStream(sourceInputStream);
-    	
-		// Upload the data object file.
-	    return dataTransferService.uploadDataObject(uploadRequest);	
-	}
-	
-    /** 
-     * Set the data transfer status of a data object to unknown
-     * 
-     * @param dataObject The data object
-     * @param checkTimeout If 'true', this method checks for transfer status timeout occurred 
-     *                     before setting the status. 
-     * @return HpcDataObjectUploadResponse
-     * 
-     * @throws HpcException
-     */
-	private void setTransferStatusToUnknown(HpcDataObject dataObject, 
-			                                boolean checkTimeout)
-	{
-		// If timeout occurred, move the status to unknown.
-		if(!checkTimeout || isDataTransferStatusCheckTimedOut(dataObject)) {
-			try {
-				 setDataTransferStatus(dataObject.getAbsolutePath(), 
-    	                               HpcDataTransferStatus.UNKNOWN);
-			} catch(Exception ex) {
-				    logger.error("failed to set data transfer status to unknown: " + 
-				    		     dataObject.getAbsolutePath(), ex);
-			}
-			
-			logger.error("Unknown data transfer status: " + dataObject.getAbsolutePath());
-		}
-	}
-	
-    /** 
-     * Set data transfer status of a data object
-     * 
-     * @param path The data object path.
-     * @param dataTransferStatus The data transfer status.
-     * 
-     * @throws HpcException
-     */
-	private void setDataTransferStatus(String path, HpcDataTransferStatus dataTransferStatus)
-	                                  throws HpcException
-	{
-		dataManagementService.updateDataObjectSystemGeneratedMetadata(
-                                    path, null, null, dataTransferStatus, null);
 	}
 }
 
