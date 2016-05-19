@@ -18,6 +18,24 @@ source ../../utils/registration-functions
 #Check if collection registration went through:
 verify_registration collection-registration-response-header.tmp
 
+#Make sure the system generated metadat file exists and is not empty
+METADATA_FILE="system-generated-metadata.tmp"
+
+if [ ! -e "$METADATA_FILE" ]
+then 
+    echo "ERROR: The file $METADATA_FILE does not exits "
+    echo "HINT: run makeme first"
+    exit
+fi
+
+SYSTEM_METADATA=$(cat $METADATA_FILE)
+if [ -z "$SYSTEM_METADATA" ]
+then 
+    echo "ERROR: The file $METADATA_FILE is empty"
+    echo "HINT: run makeme first"
+    exit
+fi
+
 SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username $HPC_DM_TEST/utils/config`
 PROJECT_PATH=`cat registered-project-path.tmp`
@@ -53,14 +71,12 @@ then
 fi
 
 
+#loop over all the system generated metadata and make sure they exists
 
-ATTRIBUTE="\"uuid\""
-check_attribute "$RESPONSE_MSG" "$ATTRIBUTE"
+IFS=$'\n' read -rd '' -a METADATA_ARRAY <<<"$SYSTEM_METADATA"
 
-ATTRIBUTE="\"registered_by_name\""
-check_attribute "$RESPONSE_MSG" "$ATTRIBUTE"
-
-ATTRIBUTE="\"registered_by_doc\""
-check_attribute "$RESPONSE_MSG" "$ATTRIBUTE"
-
+for system_attribute in "${METADATA_ARRAY[@]}"
+do
+    check_attribute "$RESPONSE_MSG" "\"$system_attribute\""
+done
 
