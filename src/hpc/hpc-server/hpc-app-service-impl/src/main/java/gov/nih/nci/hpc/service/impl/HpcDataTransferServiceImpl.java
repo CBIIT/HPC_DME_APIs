@@ -169,7 +169,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
   	    return dataTransferProxies.get(dataTransferType).
   	    		   uploadDataObject(getAuthenticatedToken(dataTransferType), 
   	    		                    uploadRequest, 
-  	    		                    generateMetadata(uploadRequest.getPath()));
+  	    		                    generateMetadata(uploadRequest.getPath(),
+  	    		                    		         uploadRequest.getUserId()));
     }
     
     @Override
@@ -411,25 +412,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * 2. User ID - the user id that registers the data object. 
      * 
      * @param path The data object logical path.
+     * @param userId The user-id uploaded the data.
      * 
      * @return a List of the 2 metadata.
-     * @throws HpcException if the service invoker is unknown.
      */
-    private List<HpcMetadataEntry> generateMetadata(String path) throws HpcException
+    private List<HpcMetadataEntry> generateMetadata(String path, String userId) 
     {
-       	// Get the service invoker.
-       	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
-       	if(invoker == null) {
-       	   throw new HpcException("Unknown service invoker", 
-		                          HpcErrorType.UNEXPECTED_ERROR);
-       	}	
-       	
        	List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
        	
        	// Create the user-id metadata.
        	HpcMetadataEntry entry = new HpcMetadataEntry();
     	entry.setAttribute(USER_ID_ATTRIBUTE);
-    	entry.setValue(invoker.getNciAccount().getUserId());
+    	entry.setValue(userId);
        	metadataEntries.add(entry);
        	
        	// Create the path metadata.
