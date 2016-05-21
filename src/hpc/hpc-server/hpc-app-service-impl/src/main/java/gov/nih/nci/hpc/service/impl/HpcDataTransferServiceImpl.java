@@ -110,17 +110,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     
     @Override
 	public HpcDataObjectUploadResponse uploadDataObject(HpcFileLocation sourceLocation, 
-			                                            InputStream sourceInputStream, 
+			                                            File sourceFile, 
 			                                            String path, String userId,
 			                                            String callerObjectId)
 	                                                   throws HpcException
 	{
     	// Validate one and only one data source is provided.
-    	if(sourceLocation == null && sourceInputStream == null) {
+    	if(sourceLocation == null && sourceFile == null) {
     	   throw new HpcException("No data transfer source or data attachment provided",
 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
-    	if(sourceLocation != null && sourceInputStream != null) {
+    	if(sourceLocation != null && sourceFile != null) {
      	   throw new HpcException("Both data transfer source and data attachment provided",
  	                              HpcErrorType.INVALID_REQUEST_INPUT);	
      	}
@@ -131,7 +131,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	uploadRequest.setUserId(userId);
     	uploadRequest.setCallerObjectId(callerObjectId);
     	uploadRequest.setSourceLocation(sourceLocation);
-    	uploadRequest.setSourceInputStream(sourceInputStream);
+    	uploadRequest.setSourceFile(sourceFile);
     	
 		// Upload the data object file.
 	    return uploadDataObject(uploadRequest);	
@@ -142,8 +142,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
                                                        throws HpcException
     {
     	// Input validation.
-    	if(uploadRequest.getPath() == null) {
-    	   throw new HpcException("Null data object path", 
+    	if(uploadRequest.getPath() == null || uploadRequest.getUserId() == null) {
+    	   throw new HpcException("Null data object path or user-id", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
         	
@@ -156,7 +156,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	   }
     	   dataTransferType = HpcDataTransferType.GLOBUS;
     	   
-    	} else if(uploadRequest.getSourceInputStream() != null) {
+    	} else if(uploadRequest.getSourceFile() != null) {
     		      dataTransferType = HpcDataTransferType.S_3;
     		      
     	} else {

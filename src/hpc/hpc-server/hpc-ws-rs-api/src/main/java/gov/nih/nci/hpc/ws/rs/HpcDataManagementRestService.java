@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 
+import java.io.File;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -29,7 +30,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
 /**
@@ -89,6 +89,7 @@ public interface HpcDataManagementRestService
      *
      * @param path The data object path.
      * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
+     * @param dataFile The data object file.
      * @return Response The REST service response.
      */
 	@PUT
@@ -100,7 +101,7 @@ public interface HpcDataManagementRestService
 			           @Multipart(value = "dataObjectRegistration", type = "application/json")
 			           HpcDataObjectRegistrationDTO dataObjectRegistration,
 			           @Multipart(value = "dataObject", type = "application/octet-stream", required = false)
-	                   Attachment dataObject);
+	                   File dataObjectFile);
 
     /**
      * GET Data Object.
