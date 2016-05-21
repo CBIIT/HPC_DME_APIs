@@ -111,7 +111,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     @Override
 	public HpcDataObjectUploadResponse uploadDataObject(HpcFileLocation sourceLocation, 
 			                                            InputStream sourceInputStream, 
-			                                            String path, String callerObjectId)
+			                                            String path, String userId,
+			                                            String callerObjectId)
 	                                                   throws HpcException
 	{
     	// Validate one and only one data source is provided.
@@ -127,6 +128,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	// Create an upload request.
     	HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
     	uploadRequest.setPath(path);
+    	uploadRequest.setUserId(userId);
     	uploadRequest.setCallerObjectId(callerObjectId);
     	uploadRequest.setSourceLocation(sourceLocation);
     	uploadRequest.setSourceInputStream(sourceInputStream);
