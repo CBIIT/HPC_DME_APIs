@@ -43,7 +43,7 @@ import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
-import java.io.InputStream;
+import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -208,7 +208,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     @Override
     public boolean registerDataObject(String path,
     		                          HpcDataObjectRegistrationDTO dataObjectRegistrationDTO,
-    		                          InputStream dataObjectStream)  
+    		                          File dataObjectFile)  
     		                         throws HpcException
     {
     	logger.info("Invoking registerDataObject(HpcDataObjectRegistrationDTO): " + 
@@ -241,7 +241,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				// Transfer the data file.
 		        HpcDataObjectUploadResponse uploadResponse = 
 		           dataTransferService.uploadDataObject(
-		        	   source, dataObjectStream, path, 
+		        	   source, dataObjectFile, path, 
 		        	   securityService.getRequestInvoker().getNciAccount().getUserId(),
 		        	   dataObjectRegistrationDTO.getCallerObjectId());
 		        Long sourceSize = source != null ? 

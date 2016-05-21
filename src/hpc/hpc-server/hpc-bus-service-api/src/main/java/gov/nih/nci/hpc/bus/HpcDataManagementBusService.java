@@ -23,7 +23,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import java.io.InputStream;
+import java.io.File;
 import java.util.List;
 
 /**
@@ -77,8 +77,8 @@ public interface HpcDataManagementBusService
      *
      * @param path The data object's path.
      * @param dataObjectRegistrationDTO A DTO contains the metadata and data transfer locations.
-     * @param dataObjectStream (Optional) The data object input stream. 2 options are available to upload the data -
-     *                         Specify a source in 'dataObjectRegistrationDTO' or provide this input stream. The caller
+     * @param dataObjectFile (Optional) The data object file. 2 options are available to upload the data -
+     *                         Specify a source in 'dataObjectRegistrationDTO' or provide this file. The caller
      *                         is expected to provide one and only one option.
      * @return true if a new data object was registered, false if the collection already exists
      *         and its metadata got updated.
@@ -87,7 +87,7 @@ public interface HpcDataManagementBusService
      */
     public boolean registerDataObject(String path,
     		                          HpcDataObjectRegistrationDTO dataObjectRegistrationDTO,
-    		                          InputStream dataObjectStream) 
+    		                          File dataObjectFile) 
     		                         throws HpcException;
     
     /**

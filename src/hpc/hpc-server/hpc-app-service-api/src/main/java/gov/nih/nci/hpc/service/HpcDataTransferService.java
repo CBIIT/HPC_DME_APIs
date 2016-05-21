@@ -21,7 +21,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.io.File;
-import java.io.InputStream;
 
 /**
  * <p>
@@ -38,7 +37,7 @@ public interface HpcDataTransferService
      * Upload data. Either upload from the input stream or submit a transfer request for the source.
      * 
      * @param sourceLocation The source for data transfer.
-     * @param sourceInputStream The source as an input stream
+     * @param sourceFile The source file.
      * @param path The registration path.
      * @param userId The user-id who requested the data upload.
      * @param callerObjectId The caller's provided data object ID.
@@ -47,7 +46,7 @@ public interface HpcDataTransferService
      * @throws HpcException
      */
 	public HpcDataObjectUploadResponse uploadDataObject(HpcFileLocation sourceLocation, 
-                                                        InputStream sourceInputStream, 
+                                                        File sourceFile, 
                                                         String path, String userId,
                                                         String callerObjectId)
                                                        throws HpcException;

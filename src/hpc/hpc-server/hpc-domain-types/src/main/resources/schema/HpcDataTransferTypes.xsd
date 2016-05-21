@@ -91,6 +91,7 @@
 	</xsd:complexType>
 	
 	<xsd:complexType name="HpcInputStream"/>
+	<xsd:complexType name="HpcFile"/>
 	
 	<xsd:complexType name="HpcDataObjectUploadRequest">
 		<xsd:sequence>
@@ -98,7 +99,7 @@
 			<xsd:element name="callerObjectId" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="sourceLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="sourceInputStream" type="hpc-domain-datatransfer:HpcInputStream" />
+			<xsd:element name="sourceFile" type="hpc-domain-datatransfer:HpcFile" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
