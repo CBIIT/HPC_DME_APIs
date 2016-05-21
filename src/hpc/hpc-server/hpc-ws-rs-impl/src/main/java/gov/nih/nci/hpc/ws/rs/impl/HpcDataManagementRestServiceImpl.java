@@ -26,15 +26,13 @@ import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -150,27 +148,16 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response registerDataObject(String path, 
     		                           HpcDataObjectRegistrationDTO dataObjectRegistration,
-    		                           Attachment dataObject)
+    		                           File dataObjectFile)
     {	
     	path = toAbsolutePath(path);
 		logger.info("Invoking RS: PUT /dataObject" + path);
-		
-		// Extract the data object input stream from the attachment.
-		InputStream dataObjectStream = null;
-		if(dataObject != null) { 
-    	   try {
-    	        dataObjectStream = dataObject.getDataHandler().getInputStream();
-    	
-    	   }catch(IOException e) {
-    		      logger.error("Failed to extract input stream from attachment", e);
-    	   }
-		}
 		
 		boolean created = true;
 		try {
 			 created = dataManagementBusService.registerDataObject(path, 
 					                                               dataObjectRegistration,
-					                                               dataObjectStream);
+					                                               dataObjectFile);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: PUT /dataObject" + path + " failed:", e);

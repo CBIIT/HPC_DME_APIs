@@ -21,9 +21,6 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.Calendar;
 
 import org.slf4j.Logger;
@@ -36,7 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id:$
+ * @version $Id$
  */
 
 public class HpcSystemBusServiceImpl implements HpcSystemBusService
@@ -148,11 +145,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			 File file = dataTransferService.getUploadFile(
     					         systemGeneratedMetadata.getDataTransferType(),
     					         systemGeneratedMetadata.getArchiveLocation().getFileId());
-    			 InputStream dataObjectStream = new FileInputStream(file);
     			 
  				 // Transfer the data file.
  		         HpcDataObjectUploadResponse uploadResponse = 
- 		        	dataTransferService.uploadDataObject(null, dataObjectStream, path, 
+ 		        	dataTransferService.uploadDataObject(null, file, path, 
  		        			                             systemGeneratedMetadata.getRegistrarId(),
  		        			                             systemGeneratedMetadata.getCallerObjectId());
  		     
@@ -172,13 +168,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  			    			                 uploadResponse.getDataTransferStatus(),
  			    			                 uploadResponse.getDataTransferType()); 
  			     
-    		} catch(FileNotFoundException fnf) {
-    			    logger.error("File not found in temp archive: " + 
-    			    		     systemGeneratedMetadata.getArchiveLocation().getFileId());
-    			    
-    			    // File not found in temporary archive. Set transfer status to unknown.
-    			    this.setTransferStatusToUnknown(dataObject, false);
-    		     
     		} catch(HpcException e) {
     			    logger.error("Failed to transfer data from temporary archive:" + path, e);
     			    
