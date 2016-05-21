@@ -99,10 +99,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	}
     	
     	// Create a S3 upload request.
-    	PutObjectRequest request = new PutObjectRequest(archiveDestinationLocation.getFileContainerId(), 
-    			                                        archiveDestinationLocation.getFileId(), 
-    			                                        uploadRequest.getSourceInputStream(), 
-    			                                        objectMetadata);
+    	PutObjectRequest request = 
+    	   new PutObjectRequest(archiveDestinationLocation.getFileContainerId(), 
+    			                archiveDestinationLocation.getFileId(), 
+    			                uploadRequest.getSourceFile()).withMetadata(objectMetadata); 
     	
     	// Upload the data.
     	Upload s3Upload = null;
