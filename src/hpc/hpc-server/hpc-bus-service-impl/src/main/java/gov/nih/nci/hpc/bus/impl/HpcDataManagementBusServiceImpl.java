@@ -41,6 +41,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.io.InputStream;
 import java.util.HashSet;
@@ -73,6 +74,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	
 	@Autowired
     private HpcDataManagementService dataManagementService = null;
+	
+	@Autowired
+    private HpcSecurityService securityService = null;
 	
     // The logger instance.
 	private final Logger logger = 
@@ -236,8 +240,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				
 				// Transfer the data file.
 		        HpcDataObjectUploadResponse uploadResponse = 
-		           dataTransferService.uploadDataObject(source, dataObjectStream, path, 
-		        		                                dataObjectRegistrationDTO.getCallerObjectId());
+		           dataTransferService.uploadDataObject(
+		        	   source, dataObjectStream, path, 
+		        	   securityService.getRequestInvoker().getNciAccount().getUserId(),
+		        	   dataObjectRegistrationDTO.getCallerObjectId());
 		        Long sourceSize = source != null ? 
 		        		          dataTransferService.getPathAttributes(uploadResponse.getDataTransferType(), 
 		        		        		                                source, true).getSize() : 

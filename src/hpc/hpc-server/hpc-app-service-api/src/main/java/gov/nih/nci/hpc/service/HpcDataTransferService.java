@@ -40,6 +40,7 @@ public interface HpcDataTransferService
      * @param sourceLocation The source for data transfer.
      * @param sourceInputStream The source as an input stream
      * @param path The registration path.
+     * @param userId The user-id who requested the data upload.
      * @param callerObjectId The caller's provided data object ID.
      * @return HpcDataObjectUploadResponse
      * 
@@ -47,7 +48,8 @@ public interface HpcDataTransferService
      */
 	public HpcDataObjectUploadResponse uploadDataObject(HpcFileLocation sourceLocation, 
                                                         InputStream sourceInputStream, 
-                                                        String path, String callerObjectId)
+                                                        String path, String userId,
+                                                        String callerObjectId)
                                                        throws HpcException;
     /**
      * Upload a data object file.

@@ -153,6 +153,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  				 // Transfer the data file.
  		         HpcDataObjectUploadResponse uploadResponse = 
  		        	dataTransferService.uploadDataObject(null, dataObjectStream, path, 
+ 		        			                             systemGeneratedMetadata.getRegistrarId(),
  		        			                             systemGeneratedMetadata.getCallerObjectId());
  		     
  		         // Delete the file.
