@@ -198,7 +198,10 @@ public interface HpcDataTransferProxy
 		if(path.charAt(0) != '/') {
 		   destinationPath.append('/');
 		}
-		destinationPath.append(path);
+		if(destinationPath.charAt(destinationPath.length()-1) == '/' && path.charAt(0) == '/')
+			destinationPath.append(path.substring(1));
+		else
+			destinationPath.append(path);
 		 
 		HpcFileLocation archiveDestination = new HpcFileLocation();
 		archiveDestination.setFileContainerId(baseArchiveDestination.getFileContainerId());
