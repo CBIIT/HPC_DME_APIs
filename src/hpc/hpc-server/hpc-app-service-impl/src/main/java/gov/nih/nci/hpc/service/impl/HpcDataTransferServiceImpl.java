@@ -230,7 +230,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	   // Set the first hop file destination to be the source file of the second hop.
     	   downloadRequest.setDestinationFile(
     			   createFile(
-    			         dataTransferProxies.get(dataTransferType).
+    			         dataTransferProxies.get(HpcDataTransferType.GLOBUS).
 	                         getFilePath(secondHopDownloadRequest.getArchiveLocation().getFileId(), 
 	                        		     false)));
     	}
