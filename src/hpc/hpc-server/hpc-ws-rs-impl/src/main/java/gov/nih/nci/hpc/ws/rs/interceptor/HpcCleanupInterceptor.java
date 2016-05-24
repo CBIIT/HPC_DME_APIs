@@ -10,8 +10,13 @@
 
 package gov.nih.nci.hpc.ws.rs.interceptor;
 
+import java.io.File;
+
+import javax.ws.rs.core.Response;
+
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 
+import org.apache.cxf.jaxrs.model.OperationResourceInfo;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
@@ -63,5 +68,13 @@ public class HpcCleanupInterceptor
     {
     	// Close the connection to Data Management.
     	dataManagementBusService.closeConnection();
+    	
+    	// Clean up files returned by the data object download service.
+    	OperationResourceInfo resourceInfo = message.getExchange().get(OperationResourceInfo.class);
+    	if(resourceInfo.getClassResourceInfo().getServiceClass().equals(HpcDataManagementBusService.class) &&
+    	   resourceInfo.getMethodToInvoke().getName().equals("downloadDataObject")) {
+    		Response response = message.getExchange().get(Response.class);
+    		File file = (File) response.getEntity();
+    	}
     }
 } 
