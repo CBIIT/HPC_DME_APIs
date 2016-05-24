@@ -15,11 +15,9 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -344,7 +342,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                  HpcDataObjectDownloadRequestDTO downloadRequestDTO)
                                 throws HpcException
     {
-    	logger.info("Invoking downloadDataObject(path, downloadReqest): " + path + ", " + 
+    	logger.info("Invoking downloadDataObject(path, downloadReqest, dataObjectFile): " + path + ", " + 
                     downloadRequestDTO);
     	
     	// Input validation.
@@ -366,16 +364,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Download the data object.
     	HpcDataObjectDownloadResponse downloadResponse = 
-    	   dataTransferService.downloadDataObject(
-    		   toDataObjectDownloadRequest(metadata.getArchiveLocation(), 
-                                           downloadRequestDTO.getDestination(),
-                                           metadata.getDataTransferType()));
+    	   dataTransferService.downloadDataObject(metadata.getArchiveLocation(), 
+                                                  downloadRequestDTO.getDestination(),
+                                                  metadata.getDataTransferType());
         
         // Construct and return download response DTO.
         HpcDataObjectDownloadResponseDTO downloadResponseDTO = new HpcDataObjectDownloadResponseDTO();
-        downloadResponseDTO.setDestination(downloadResponse.getDestinationLocation());
+        downloadResponseDTO.setDestinationLocation(downloadResponse.getDestinationLocation());
         downloadResponseDTO.setRequestId(downloadResponse.getRequestId());
-        downloadResponseDTO.setInputStream(downloadResponse.getInputStream());
+        downloadResponseDTO.setDestinationFile(downloadResponse.getDestinationFile());
         return downloadResponseDTO;
     }
     
@@ -584,30 +581,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
     }
-	
-    /** 
-     * Create a data object download request object.
-     * 
-     * @param archiveLocation The archive file location.
-     * @param destinationLocation The user requested file destination.
-     * @param dataTransferType The data transfer type.
-     * 
-     * @return HpcFileLocation The data transfer download destination.
-     * @throws HpcException
-     */
-	private HpcDataObjectDownloadRequest toDataObjectDownloadRequest(
-			                               HpcFileLocation archiveLocation, 
-			                               HpcFileLocation destinationLocation,
-			                               HpcDataTransferType dataTransferType) 
-			                               throws HpcException
-	{
-		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
-		downloadRequest.setTransferType(dataTransferType);
-		downloadRequest.setArchiveLocation(archiveLocation);
-		downloadRequest.setDestinationLocation(destinationLocation);
-		
-		return downloadRequest;
-	}
 	
     /** 
      * Calculate the data transfer % completion if transfer is in progress

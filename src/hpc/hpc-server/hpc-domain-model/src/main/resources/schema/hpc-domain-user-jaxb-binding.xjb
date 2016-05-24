@@ -59,9 +59,6 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcArchive']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcArchive"/>
 		</jxb:bindings>
-		<jxb:bindings node="//xsd:complexType[@name='HpcInputStream']">
-        	<jxb:class ref="java.io.InputStream"/>
-		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcFile']">
         	<jxb:class ref="java.io.File"/>
 		</jxb:bindings>

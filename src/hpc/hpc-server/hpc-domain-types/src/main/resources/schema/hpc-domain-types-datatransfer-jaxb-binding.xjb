@@ -36,9 +36,6 @@
 	</jxb:globalBindings>
 	
 	<jxb:bindings schemaLocation="HpcDataTransferTypes.xsd">
-        <jxb:bindings node="//xsd:complexType[@name='HpcInputStream']">
-        	<jxb:class ref="java.io.InputStream"/>
-		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcFile']">
         	<jxb:class ref="java.io.File"/>
 		</jxb:bindings>

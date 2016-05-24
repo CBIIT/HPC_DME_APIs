@@ -29,14 +29,13 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -70,6 +69,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	@Autowired
 	private HpcSystemAccountLocator systemAccountLocator = null;
 	
+	// The download directory
+	private String downloadDirectory = null;
+	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -81,15 +83,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * @throws HpcException
      */
     public HpcDataTransferServiceImpl(
-    		  Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies) 
+    		  Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies,
+    		  String downloadDirectory) 
     		  throws HpcException
     {
-    	if(dataTransferProxies == null || dataTransferProxies.isEmpty()) {
-    	   throw new HpcException("Null or empty map of data transfer proxies",
+    	if(dataTransferProxies == null || dataTransferProxies.isEmpty() || 
+    	   downloadDirectory == null || downloadDirectory.isEmpty()) {
+    	   throw new HpcException("Null or empty map of data transfer proxies, or download directory",
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
     	
     	this.dataTransferProxies.putAll(dataTransferProxies);
+    	this.downloadDirectory = downloadDirectory;
     }   
     
     /**
@@ -174,6 +179,27 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     }
     
     @Override
+	public HpcDataObjectDownloadResponse downloadDataObject(
+                                                 HpcFileLocation archiveLocation, 
+                                                 HpcFileLocation destinationLocation,
+                                                 HpcDataTransferType dataTransferType) 
+                                                 throws HpcException
+    {
+    	HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
+    	downloadRequest.setTransferType(dataTransferType);
+    	downloadRequest.setArchiveLocation(archiveLocation);
+    	downloadRequest.setDestinationLocation(destinationLocation);
+    	
+    	// Create a data object file to download the data if a destination was not provided.
+    	if(destinationLocation == null) {
+           downloadRequest.setDestinationFile(createFile(downloadDirectory + "/" + 
+    	                                                 UUID.randomUUID().toString()));
+    	}
+
+    	return downloadDataObject(downloadRequest);
+    }
+    
+    @Override
     public HpcDataObjectDownloadResponse 
               downloadDataObject(HpcDataObjectDownloadRequest downloadRequest) 
                                 throws HpcException
@@ -187,27 +213,37 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
   	       throw new HpcException("Invalid data transfer request", 
   	    	                      HpcErrorType.INVALID_REQUEST_INPUT);
     	}
-
+    	
+    	// if data is in an archive with S3 data-transfer, and the requested
+    	// destination is a GLOBUS endpoint, then we need to perform a 2nd hop. i.e. store 
+    	// the data to a local GLOBUS endpoint, and submit a transfer request to the caller's 
+    	// destination.
+    	HpcDataObjectDownloadRequest secondHopDownloadRequest = null;
+    	if(dataTransferType.equals(HpcDataTransferType.S_3) && destinationLocation != null) {
+    	   // 2nd Hop needed. Create a request.
+    	   secondHopDownloadRequest =
+    			 toDownloadRequest(calculateDestination(downloadRequest, 
+    			  	            		                HpcDataTransferType.GLOBUS),
+    			        		   HpcDataTransferType.GLOBUS,
+    			                   downloadRequest.getArchiveLocation().getFileId());
+    	   
+    	   // Set the first hop file destination to be the source file of the second hop.
+    	   downloadRequest.setDestinationFile(
+    			   createFile(
+    			         dataTransferProxies.get(dataTransferType).
+	                         getFilePath(secondHopDownloadRequest.getArchiveLocation().getFileId(), 
+	                        		     false)));
+    	}
+    	
     	// Download the data object using the appropriate data transfer proxy.
     	HpcDataObjectDownloadResponse downloadResponse =  
     	   dataTransferProxies.get(dataTransferType).
   	    		   downloadDataObject(getAuthenticatedToken(dataTransferType), 
   	                                  downloadRequest);	
     	
-    	// Data was downloaded. 
-    	// if data was downloaded from archive with S3, and the requested
-    	// destination is a GLOBUS endpoint, then we need to perform a 2nd hop. i.e. store 
-    	// the data to a local GLOBUS endpoint, and submit a transfer request to the caller's 
-    	// destination.
-    	if(dataTransferType.equals(HpcDataTransferType.S_3) && destinationLocation != null) {
-    	   // 2nd Hop needed.
-    	   return downloadDataObject(
-    			          toDownloadRequest(downloadResponse.getInputStream(),
-    			        		            calculateDestination(downloadRequest, 
-    			        		            		             HpcDataTransferType.GLOBUS),
-    			        		            HpcDataTransferType.GLOBUS,
-    			                            downloadRequest.getArchiveLocation().getFileId()));
-    	   
+    	// Perform 2nd hop download if needed.
+    	if(secondHopDownloadRequest != null) {
+    	   return downloadDataObject(secondHopDownloadRequest);
     	} else {
     		    return downloadResponse;
     	}
@@ -261,9 +297,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     }
 	
 	@Override
-	public File getUploadFile(HpcDataTransferType dataTransferType,
-                              String fileId)  
-    	                     throws HpcException
+	public File getArchiveFile(HpcDataTransferType dataTransferType,
+                               String fileId)  
+    	                      throws HpcException
     {
     	// Input validation.
     	if(fileId == null) {	
@@ -271,23 +307,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}	
     	
-    	return dataTransferProxies.get(dataTransferType).getUploadFile(fileId);
+    	File file = new File(dataTransferProxies.get(dataTransferType).getFilePath(fileId, true));
+    	if(!file.exists()) {
+    	   throw new HpcException("Archive file could not be found: " + file.getAbsolutePath(),
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	return file;
     }
 	
-	@Override
-	public File getDownloadFile(HpcDataTransferType dataTransferType,
-                                String fileId)  
-    	                       throws HpcException
-    {
-    	// Input validation.
-    	if(fileId == null) {	
-    	   throw new HpcException("Invalid file id", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}	
-    	
-    	return dataTransferProxies.get(dataTransferType).getDownloadFile(fileId);
-    }
-
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -337,15 +365,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * Create a download request for a 2nd hop download from local Globus endpoint
      * to caller's destination.
      * 
-     * @param dataObjectInputStream The data object input stream (downloaded from S3).
      * @param destinationLocation The caller's destination.
      * @param dataTransferType The data transfer type to create the request
      * @param The data object logical path.
      *
      * @throws HpcException If it failed to obtain an authentication token.
      */
-    HpcDataObjectDownloadRequest toDownloadRequest(InputStream dataObjectInputStream, 
-    		                                       HpcFileLocation destinationLocation,
+    HpcDataObjectDownloadRequest toDownloadRequest(HpcFileLocation destinationLocation,
     		                                       HpcDataTransferType dataTransferType,
     		                                       String path)
     		                                      throws HpcException
@@ -354,21 +380,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	HpcFileLocation sourceLocation = 
     	   dataTransferProxies.get(dataTransferType).getDownloadSourceLocation(path);
     	                        
-    	// Store the input stream to the local GLOBUS endpoint.
-    	try {
-	         FileOutputStream dataObjectOutputStream = 
-	             new FileOutputStream(
-	            		 dataTransferProxies.get(dataTransferType).
-	            		                     getDownloadFile(sourceLocation.getFileId()));
-	         IOUtils.copyLarge(dataObjectInputStream, dataObjectOutputStream);
-	         IOUtils.closeQuietly(dataObjectInputStream);
-	         IOUtils.closeQuietly(dataObjectOutputStream);
-	         
-    	} catch(Exception e) {
-    		    throw new HpcException("Failed to store data object to local GLOBUS endpoint", 
-    		    		               HpcErrorType.DATA_TRANSFER_ERROR, e);
-    	}
-    	
     	// Create and return a download request, from the local GLOBUS endpoint, to the caller's
     	// destination.
     	HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
@@ -434,5 +445,38 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
        	
        	return metadataEntries;
     }
+    
+    /**
+     * Create an empty file.
+     * 
+     * @param filePath The file's path
+     * @return File
+     */
+    private File createFile(String filePath) throws HpcException
+    {
+    	String directoryPath = filePath.substring(0, filePath.lastIndexOf('/'));
+	
+    	File file = null;
+    	try {
+    		 // Create directory if needed.
+  	         File directory = new File(directoryPath);
+  	         if(!directory.exists()) {
+  	     	    directory.mkdirs();
+  	         }
+  	
+  	         // Create the file.
+  	         file = new File(filePath);
+  	         if(!file.createNewFile()) {
+  	            throw new HpcException("File already exists: " + file.getAbsolutePath(), 
+  			                           HpcErrorType.DATA_TRANSFER_ERROR);	
+  	         }  	
+  	         
+    	} catch(IOException e) {
+  		        throw new HpcException("Failed to create a file: " + file.getAbsolutePath(), 
+                                       HpcErrorType.DATA_TRANSFER_ERROR);
+    	}
+    	
+    	return file;
+  	}
 }
  
