@@ -115,8 +115,8 @@ public interface HpcDataManagementBusService
      * Download Data Object.
      *
      * @param path The data object path.
-     * @param downloadRequest The download request.
-     * @return The downloaded file if this is 
+     * @param downloadRequest The download request DTO.
+     * @return HpcDataObjectDownloadResponseDTO 
      * 
      * @throws HpcException
      */
