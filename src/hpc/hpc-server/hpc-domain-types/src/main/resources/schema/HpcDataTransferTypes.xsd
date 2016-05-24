@@ -90,7 +90,6 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
-	<xsd:complexType name="HpcInputStream"/>
 	<xsd:complexType name="HpcFile"/>
 	
 	<xsd:complexType name="HpcDataObjectUploadRequest">
@@ -117,14 +116,15 @@
 			<xsd:element name="transferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="archiveLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
 	<xsd:complexType name="HpcDataObjectDownloadResponse">
 		<xsd:sequence>
 			<xsd:element name="requestId" type="xsd:string" />
-			<xsd:element name="inputStream" type="hpc-domain-datatransfer:HpcInputStream" />
 			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
 		</xsd:sequence>
 	</xsd:complexType>
 	

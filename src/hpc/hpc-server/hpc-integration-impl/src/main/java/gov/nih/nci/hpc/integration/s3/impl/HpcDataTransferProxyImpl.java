@@ -1,9 +1,6 @@
 package gov.nih.nci.hpc.integration.s3.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
-
-import java.util.List;
-
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
@@ -19,12 +16,16 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.Upload;
 
 /**
@@ -46,22 +47,23 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	@Autowired
     private HpcS3Connection s3Connection = null;
 	
+	// The base archive destination.
 	@Autowired
 	@Qualifier("hpcS3ArchiveDestination")
 	HpcArchive baseArchiveDestination = null;
-    
+	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
 	
     /**
-     * Constructor for Spring Dependency Injection.
+     * Constructor for spring injection.
      * 
      */
-	private HpcDataTransferProxyImpl()
+	private HpcDataTransferProxyImpl() 
     {
     }
-    
+	
     //---------------------------------------------------------------------//
     // Methods
     //---------------------------------------------------------------------//
@@ -113,6 +115,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         } catch(AmazonClientException ace) {
         	    throw new HpcException("Failed to upload file via S3", 
         	    		               HpcErrorType.DATA_TRANSFER_ERROR, ace);
+        	    
         } catch(InterruptedException ie) {
         	    Thread.currentThread().interrupt();
         }
@@ -137,22 +140,30 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		                     HpcDataObjectDownloadRequest downloadRequest) 
     		                    throws HpcException
     {
-    	HpcDataObjectDownloadResponse response = new HpcDataObjectDownloadResponse();
+    	// Create a S3 download request.
+    	GetObjectRequest request = 
+    	   new GetObjectRequest(downloadRequest.getArchiveLocation().getFileContainerId(), 
+    			                downloadRequest.getArchiveLocation().getFileId());
     	
     	// Download the file via S3. 
-    	// Note: TransferManager currently not supporting download w/ an InputStream. 
-    	//       We use the Client API until this is added.
+    	Download s3Download = null;
     	try {
-    		 response.setInputStream(
-    		 s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client().
-    		   getObject(downloadRequest.getArchiveLocation().getFileContainerId(),
-    			         downloadRequest.getArchiveLocation().getFileId()).getObjectContent());
+    		 s3Download = s3Connection.getTransferManager(authenticatedToken).
+    				        download(request, downloadRequest.getDestinationFile());
+    		 s3Download.waitForCompletion(); 
     			             
-    	     return response;
-    	     
         } catch(AmazonClientException ace) {
-    	        throw new HpcException("Failed to upload file via S3", 
+    	        throw new HpcException("Failed to download file via S3", 
     	    	     	               HpcErrorType.DATA_TRANSFER_ERROR, ace);
+    	    
+        } catch(InterruptedException ie) {
+    	        Thread.currentThread().interrupt();
         }
+    	
+    	HpcDataObjectDownloadResponse downloadResponse = new HpcDataObjectDownloadResponse();
+    	downloadResponse.setRequestId(String.valueOf(s3Download.hashCode()));
+    	downloadResponse.setDestinationFile(downloadRequest.getDestinationFile());
+    	
+    	return downloadResponse;
     }
 }

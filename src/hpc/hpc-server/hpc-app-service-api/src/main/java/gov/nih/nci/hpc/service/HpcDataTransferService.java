@@ -61,6 +61,22 @@ public interface HpcDataTransferService
     public HpcDataObjectUploadResponse uploadDataObject(HpcDataObjectUploadRequest uploadRequest) 
     		                                           throws HpcException;
     
+    /** 
+     * Download a data object file.
+     * 
+     * @param archiveLocation The archive file location.
+     * @param destinationLocation The user requested file destination.
+     * @param dataTransferType The data transfer type.
+     * @return HpcDataObjectDownloadResponse A data object download response.
+     * 
+     * @throws HpcException
+     */
+	public HpcDataObjectDownloadResponse downloadDataObject(
+			                                     HpcFileLocation archiveLocation, 
+			                                     HpcFileLocation destinationLocation,
+			                                     HpcDataTransferType dataTransferType) 
+			                                     throws HpcException;
+    
     /**
      * Download a data object file.
      *
@@ -71,7 +87,7 @@ public interface HpcDataTransferService
      */
     public HpcDataObjectDownloadResponse downloadDataObject(HpcDataObjectDownloadRequest downloadRequest) 
     		                                               throws HpcException;
-
+    
     /**
      * Get a data transfer request status.
      *
@@ -116,28 +132,16 @@ public interface HpcDataTransferService
     		                                  throws HpcException;
     
     /**
-     * Get upload file.
+     * Get a file from the archive.
      *
      * @param dataTransferType The data transfer type.
      * @param fileId The file ID.
      * 
      * @throws HpcException
      */
-    public File getUploadFile(HpcDataTransferType dataTransferType,
-    		                  String fileId)  
-    		                 throws HpcException;
-    
-    /**
-     * Get download file.
-     *
-     * @param dataTransferType The data transfer type.
-     * @param fileId The file ID.
-     * 
-     * @throws HpcException
-     */
-    public File getDownloadFile(HpcDataTransferType dataTransferType,
-    		                    String fileId)  
-    		            	   throws HpcException;
+    public File getArchiveFile(HpcDataTransferType dataTransferType,
+    		                   String fileId)  
+    		                  throws HpcException;
 }
 
  
