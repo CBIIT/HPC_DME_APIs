@@ -18,13 +18,11 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -205,49 +203,22 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     }
     
     @Override
-    public File getUploadFile(String fileId) throws HpcException
+    public String getFilePath(String fileId, boolean archive) throws HpcException
     {
-	  	return new File(fileId.replaceFirst(baseArchiveDestination.getFileLocation().getFileId(), 
-                                            baseArchiveDestination.getDirectory()));
+	  	return archive ? fileId.replaceFirst(baseArchiveDestination.getFileLocation().getFileId(), 
+                                             baseArchiveDestination.getDirectory()) : 
+                         fileId.replaceFirst(baseDownloadSource.getFileLocation().getFileId(), 
+                                             baseDownloadSource.getDirectory());
     }
     
     @Override
-    public File getDownloadFile(String fileId) throws HpcException
-    {
-    	String path = fileId.replaceFirst(baseDownloadSource.getFileLocation().getFileId(), 
-                                          baseDownloadSource.getDirectory());
-    	String directoryPath = path.substring(0, path.lastIndexOf('/'));
-    	
-    	File file = null;
-    	try {
-    		 // Create download directory if needed.
-	  	     File directory = new File(directoryPath);
-	  	     if(!directory.exists()) {
-	  	    	directory.mkdirs();
-	  	     }
-	  	
-	  	     // Create the download file.
-	  	     file = new File(path);
-	  	     if(!file.createNewFile()) {
-	  	        throw new HpcException("Download file already exists: " + file.getAbsolutePath(), 
-	  			                       HpcErrorType.DATA_TRANSFER_ERROR);	
-	  	     }
-	  	     
-	  	} catch(IOException e) {
-	  		    throw new HpcException("Failed to create a file in the GLOBUS download space", 
-                                       HpcErrorType.DATA_TRANSFER_ERROR);
-	  	}
-	  	
-	  	return file;
-    }
-    
     public HpcFileLocation getDownloadSourceLocation(String path) throws HpcException
     {
     	// Create a source location. (This is a local GLOBUS endpoint).
     	HpcFileLocation sourceLocation = new HpcFileLocation();
     	sourceLocation.setFileContainerId(baseDownloadSource.getFileLocation().getFileContainerId());
-    	sourceLocation.setFileId(baseDownloadSource.getFileLocation().getFileId() + "/" + path +
-    			                 "." + (new Date()).getTime());
+    	sourceLocation.setFileId(baseDownloadSource.getFileLocation().getFileId() + "/" + 
+    	                         UUID.randomUUID().toString() + "/" + path);
     	
     	return sourceLocation;
     }

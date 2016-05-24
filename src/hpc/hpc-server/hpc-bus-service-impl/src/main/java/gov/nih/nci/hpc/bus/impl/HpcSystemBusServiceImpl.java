@@ -142,7 +142,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			       dataManagementService.getDataObjectSystemGeneratedMetadata(path);
     			 
     			 // Get an input stream to the data object in the temporary archive.
-    			 File file = dataTransferService.getUploadFile(
+    			 File file = dataTransferService.getArchiveFile(
     					         systemGeneratedMetadata.getDataTransferType(),
     					         systemGeneratedMetadata.getArchiveLocation().getFileId());
     			 

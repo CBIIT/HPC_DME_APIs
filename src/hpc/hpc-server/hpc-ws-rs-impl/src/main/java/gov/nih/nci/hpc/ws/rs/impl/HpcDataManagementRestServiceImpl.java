@@ -229,8 +229,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		if(downloadResponse.getInputStream() != null) {
-		   return okResponse(downloadResponse.getInputStream(), 
+		if(downloadResponse.getDestinationFile() != null) {
+		   return okResponse(downloadResponse.getDestinationFile(), 
 				             MediaType.APPLICATION_OCTET_STREAM_TYPE);
 		} else {
 			    return okResponse(downloadResponse, false);

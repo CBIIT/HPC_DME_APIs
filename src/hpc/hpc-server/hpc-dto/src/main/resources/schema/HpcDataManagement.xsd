@@ -153,9 +153,9 @@
 		<xsd:complexType>
 			<xsd:sequence>
 			    <xsd:element name="requestId" type="xsd:string" />
-				<xsd:element name="destination"
+				<xsd:element name="destinationLocation"
 				             type="hpc-domain-datatransfer:HpcFileLocation" />
-				<xsd:element name="inputStream" type="hpc-domain-datatransfer:HpcInputStream" />
+				<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	

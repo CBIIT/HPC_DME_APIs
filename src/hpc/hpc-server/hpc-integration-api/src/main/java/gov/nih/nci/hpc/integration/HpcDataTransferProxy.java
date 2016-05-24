@@ -22,7 +22,6 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import java.io.File;
 import java.util.List;
 
 /**
@@ -132,28 +131,17 @@ public interface HpcDataTransferProxy
     }
     
     /**
-     * Get upload file.
+     * Get a file path for a given file ID
      *
      * @param fileId The file ID.
+     * @param archive If true, the archive path is returned, otherwise the download/share path is returned.
+     * @return a file path.
      * 
      * @throws HpcException
      */
-    default File getUploadFile(String fileId) throws HpcException
+    default String getFilePath(String fileId, boolean archive) throws HpcException
     {
-	  	throw new HpcException("getUploadFile not supported by S3",
-	                           HpcErrorType.UNEXPECTED_ERROR);
-    }
-    
-    /**
-     * Get download file.
-     *
-     * @param fileId The file ID.
-     * 
-     * @throws HpcException
-     */
-    default File getDownloadFile(String fileId) throws HpcException
-    {
-	  	throw new HpcException("getDownloadFile not supported by S3",
+	  	throw new HpcException("getFilePath not supported by S3",
 	                           HpcErrorType.UNEXPECTED_ERROR);
     }
     
