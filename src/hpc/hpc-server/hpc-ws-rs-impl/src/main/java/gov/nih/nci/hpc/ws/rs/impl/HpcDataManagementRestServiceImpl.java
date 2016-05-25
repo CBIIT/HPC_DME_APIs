@@ -30,9 +30,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.apache.cxf.message.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +52,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
              implements HpcDataManagementRestService
 {   
+    //---------------------------------------------------------------------//
+    // Instance members
+    //---------------------------------------------------------------------//
+	
+	public static String DATA_OBJECT_DOWNLOAD_FILE = "DataObjectDownloadFile";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -214,7 +223,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     
     @Override
 	public Response downloadDataObject(String path,
-                                       HpcDataObjectDownloadRequestDTO downloadRequest)
+                                       HpcDataObjectDownloadRequestDTO downloadRequest,
+                                       MessageContext messageContext)
     {
     	path = toAbsolutePath(path);
     	logger.info("Invoking RS: POST /dataObject/" + path + "/download: " + downloadRequest);
@@ -230,6 +240,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		if(downloadResponse.getDestinationFile() != null) {
+		   messageContext.put(DATA_OBJECT_DOWNLOAD_FILE, 
+				              downloadResponse.getDestinationFile());
 		   return okResponse(downloadResponse.getDestinationFile(), 
 				             MediaType.APPLICATION_OCTET_STREAM_TYPE);
 		} else {
