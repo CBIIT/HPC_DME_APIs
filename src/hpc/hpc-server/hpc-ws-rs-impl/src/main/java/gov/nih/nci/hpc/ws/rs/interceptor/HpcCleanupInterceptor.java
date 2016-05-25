@@ -10,17 +10,11 @@
 
 package gov.nih.nci.hpc.ws.rs.interceptor;
 
-import java.io.File;
-import java.io.OutputStream;
-import java.util.Collection;
-
-import javax.ws.rs.core.Response;
-
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl;
 
-import org.apache.cxf.jaxrs.model.OperationResourceInfo;
-import org.apache.cxf.message.Attachment;
+import java.io.File;
+
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
