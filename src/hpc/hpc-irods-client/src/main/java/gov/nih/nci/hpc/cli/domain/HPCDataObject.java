@@ -4,6 +4,8 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.csv.CSVRecord;
+
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 
 @XmlRootElement
@@ -16,7 +18,27 @@ public class HPCDataObject{
 	private String userId;
 	private String password;
 	private String authToken;
+	private String logFile;
+	private String errorRecordsFile;
+	private Map<String, Integer> headersMap;
+	private CSVRecord csvRecord;
 	
+	public CSVRecord getCsvRecord() {
+		return csvRecord;
+	}
+
+	public void setCsvRecord(CSVRecord csvRecord) {
+		this.csvRecord = csvRecord;
+	}
+
+	public Map<String, Integer> getHeadersMap() {
+		return headersMap;
+	}
+
+	public void setHeadersMap(Map<String, Integer> headersMap) {
+		this.headersMap = headersMap;
+	}
+
 	public HPCDataObject() {
 	}
 
@@ -85,5 +107,20 @@ public class HPCDataObject{
 	public void setAuthToken(String authToken) {
 		this.authToken = authToken;
 	}
-	
+
+	public String getLogFile() {
+		return logFile;
+	}
+
+	public void setLogFile(String logFile) {
+		this.logFile = logFile;
+	}
+
+	public String getErrorRecordsFile() {
+		return errorRecordsFile;
+	}
+
+	public void setErrorRecordsFile(String errorRecordsFile) {
+		this.errorRecordsFile = errorRecordsFile;
+	}
 }

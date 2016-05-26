@@ -63,25 +63,6 @@ public class HPCDatafiles extends HPCBatchClient {
 				+ new SimpleDateFormat("yyyyMMddhhmm'.txt'").format(new Date());
 		logRecordsFile = logDir + File.separator + "putDatafiles_errorRecords"
 				+ new SimpleDateFormat("yyyyMMddhhmm'.csv'").format(new Date());
-		File file1 = new File(logFile);
-		File file2 = new File(logRecordsFile);
-		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator("\n");
-		try {
-			if (!file1.exists()) {
-				file1.createNewFile();
-			}
-			fileLogWriter = new FileWriter(file1, true);
-
-			if (!file2.exists()) {
-				file2.createNewFile();
-			}
-			fileRecordWriter = new FileWriter(file2, true);
-			csvFilePrinter = new CSVPrinter(fileRecordWriter, csvFileFormat);
-		} catch (IOException e) {
-			System.out.println("Failed to initialize Batch process: " + e.getMessage());
-			e.printStackTrace();
-		}
-
 	}
 
 	protected boolean processFile(String fileName, String userId, String password) {
@@ -94,19 +75,12 @@ public class HPCDatafiles extends HPCBatchClient {
 		}
 		try {
 
-			new HPCDataFileProcessor(fileName, 10, hpcServerURL+ "/" + hpcDataService,
-					hpcCertPath, hpcCertPassword, userId, password, logDir, null).processData();
+			success = new HPCDataFileProcessor(fileName, threadCount, hpcServerURL+ "/" + hpcDataService,
+					hpcCertPath, hpcCertPassword, userId, password, logFile, logRecordsFile, null).processData();
 		} catch (Exception e) {
 			System.out.println("Cannot read the input file");
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			String exceptionAsString = sw.toString();
-			try {
-				addErrorToLog(exceptionAsString, 0);
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+			e.printStackTrace();
+			return false;
 		}
 		return success;
 
