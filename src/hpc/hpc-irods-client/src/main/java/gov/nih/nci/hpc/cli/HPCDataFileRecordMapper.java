@@ -36,9 +36,11 @@ public class HPCDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
 	private String userId;
 	private String password;
 	private String authToken;
+	private String logFile;
+	private String errorRecordsFile;
 
 	public HPCDataFileRecordMapper(Class recordClass, Map<String, Integer> headersMap, String basePath,
-			String hpcCertPath, String hpcCertPassword, String userId, String password, String authToken) {
+			String hpcCertPath, String hpcCertPassword, String userId, String password, String authToken, String logFile, String errorRecordsFile) {
 		super(recordClass);
 		this.headersMap = headersMap;
 		this.basePath = basePath;
@@ -47,6 +49,8 @@ public class HPCDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
 		this.userId = userId;
 		this.password = password;
 		this.authToken = authToken;
+		this.logFile = logFile;
+		this.errorRecordsFile = errorRecordsFile;
 	}
 
 	@Override
@@ -82,9 +86,14 @@ public class HPCDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
 		dataObject.setHpcCertPath(hpcCertPath);
 		dataObject.setPassword(password);
 		dataObject.setUserId(userId);
+		dataObject.setLogFile(logFile);
+		dataObject.setErrorRecordsFile(errorRecordsFile);
+		dataObject.setHeadersMap(headersMap);
+		dataObject.setCsvRecord(csvRecord);
+		
 		HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationDTO();
-		if (!objectPath.startsWith("/"))
-			objectPath = "/" + objectPath;
+//		if (!objectPath.startsWith("/"))
+//			objectPath = "/" + objectPath;
 		dataObject.setObjectPath(objectPath);
 
 		hpcDataObjectRegistrationDTO.setSource(source);

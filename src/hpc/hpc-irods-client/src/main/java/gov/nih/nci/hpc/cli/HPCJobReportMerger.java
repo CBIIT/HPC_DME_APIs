@@ -77,7 +77,7 @@ public class HPCJobReportMerger{
             endTimes.add(jobReport.getMetrics().getEndTime());
             totalRecords += jobReport.getMetrics().getTotalCount();
             calculateSkippedRecords(finalJobReport, jobReport);
-            calculateFilteredRecords(finalJobReport, jobReport);
+            //calculateFilteredRecords(finalJobReport, jobReport);
             calculateErrorRecords(finalJobReport, jobReport);
             calculateSuccessRecords(finalJobReport, jobReport);
             addJobResult(results, jobReport);
