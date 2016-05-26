@@ -48,10 +48,11 @@ public class HPCDataFileProcessor {
 	private String userId;
 	private String password;
 	private String authToken;
-	private String logDir;
+	private String errorRecordsFile;
+	private String logFile;
 
 	public HPCDataFileProcessor(String inputFileName, int threadPoolSize, String basePath, String hpcCertPath, 
-			String hpcCertPassword, String userId, String password, String logDir, String authToken) {
+			String hpcCertPassword, String userId, String password, String logFile, String errorRecordsFile, String authToken) {
 		this.inputFileName = inputFileName;
 		this.threadPoolSize = threadPoolSize;
 		this.basePath = basePath;
@@ -59,11 +60,13 @@ public class HPCDataFileProcessor {
 		this.hpcCertPassword = hpcCertPassword;
 		this.userId = userId;
 		this.password = password;
-		this.logDir = logDir;
+		this.logFile = logFile;
+		this.errorRecordsFile = errorRecordsFile;
 		this.authToken = authToken;
 	}
 
-	public void processData() throws HpcBatchException {
+	public boolean processData() throws HpcBatchException {
+		boolean success = false;
 		List<BlockingQueue<Record>> queueList = new ArrayList<BlockingQueue<Record>>(); 
 		// Create queues
 		for(int i=0;i<threadPoolSize;i++)
@@ -71,14 +74,6 @@ public class HPCDataFileProcessor {
 			BlockingQueue<Record> queue = new LinkedBlockingQueue<>();
 			queueList.add(queue);
 		}
-//		BlockingQueue<Record> queue1 = new LinkedBlockingQueue<>();
-//		BlockingQueue<Record> queue2 = new LinkedBlockingQueue<>();
-//		BlockingQueue<Record> queue3 = new LinkedBlockingQueue<>();
-//		BlockingQueue<Record> queue4 = new LinkedBlockingQueue<>();
-//
-//		// Create a round robin record dispatcher
-//		RoundRobinRecordDispatcher<Record> roundRobinRecordDispatcher = new RoundRobinRecordDispatcher<>(
-//				Arrays.asList(queue1, queue2, queue3, queue4));
 		RoundRobinRecordDispatcher<Record> roundRobinRecordDispatcher = new RoundRobinRecordDispatcher<>(
 				queueList);
 
@@ -100,9 +95,9 @@ public class HPCDataFileProcessor {
 		// Build a master job that will read records from the data source
 		// and dispatch them to worker jobs
 		Job masterJob = JobBuilder.aNewJob().named("master-job").reader(new ApacheCommonCsvRecordReader(csvFileParser))
-				.filter(new HPCHeaderRecordFilter()).mapper(new HPCDataFileRecordMapper(HPCDataObject.class, headersMap, basePath, hpcCertPath, hpcCertPassword, userId, password, authToken))
+				//.filter(new HeaderRecordFilter()).mapper(new HPCDataFileRecordMapper(HPCDataObject.class, headersMap, basePath, hpcCertPath, hpcCertPassword, userId, password, authToken))
+				.mapper(new HPCDataFileRecordMapper(HPCDataObject.class, headersMap, basePath, hpcCertPath, hpcCertPassword, userId, password, authToken, logFile, errorRecordsFile))
 				.dispatcher(roundRobinRecordDispatcher)
-				//.jobListener(new PoisonRecordBroadcaster<>(Arrays.asList(queue1, queue2, queue3, queue4)))
 				.jobListener(new PoisonRecordBroadcaster<>(queueList))
 				.build();
 
@@ -111,15 +106,10 @@ public class HPCDataFileProcessor {
 		jobs.add(masterJob);
 		for(int i=0;i<threadPoolSize;i++)
 		{
-			Job workerJob = buildWorkerJob(queueList.get(i), "worker-job"+i);
+			Job workerJob = buildWorkerJob(queueList.get(i), "HPC DME Data object registration"+i);
 			jobs.add(workerJob);
 		}
 		
-//		Job workerJob1 = buildWorkerJob(queue1, "worker-job1");
-//		Job workerJob2 = buildWorkerJob(queue2, "worker-job2");
-//		Job workerJob3 = buildWorkerJob(queue3, "worker-job3");
-//		Job workerJob4 = buildWorkerJob(queue4, "worker-job4");
-
 		// Create a thread pool to call master and worker jobs in parallel
 		ExecutorService executorService = Executors.newFixedThreadPool(threadPoolSize);
 
@@ -127,11 +117,6 @@ public class HPCDataFileProcessor {
 		try {
 			List<Future<JobReport>> reports = executorService.invokeAll(jobs);
 			
-//	        JobReport report1 = reports.get(0).get();
-//	        JobReport report2 = reports.get(1).get();
-//	        JobReport report3 = reports.get(2).get();
-//	        JobReport report4 = reports.get(3).get();
-
 			List<JobReport> jobReports = new ArrayList<JobReport>();
 			for(int i=0;i<reports.size();i++)
 			{
@@ -141,33 +126,35 @@ public class HPCDataFileProcessor {
 
 	        HPCJobReportMerger reportMerger = new HPCJobReportMerger();
 	        JobReport finalReport = reportMerger.mergerReports(jobReports);
-	        String htmlReport = new HtmlJobReportFormatter().formatReport(finalReport);
+	        if(finalReport.getMetrics().getErrorCount() == 0)
+	        	success = true;
+	        String htmlReport = new HpcHtmlJobReportFormatter().formatReport(finalReport);
 	        System.out.println(finalReport);		
 	        //System.out.println(htmlReport);		
-			String logFile = logDir + File.separator + "putDatafiles_errorLog" + new SimpleDateFormat("yyyyMMddhhmm'.html'").format(new Date());
-			File file1 = new File(logFile);
+			//String logFile = logDir + File.separator + "putDatafiles_errorLog" + new SimpleDateFormat("yyyyMMddhhmm'.html'").format(new Date());
+			//File file1 = new File(logFile);
 			FileWriter fileLogWriter = null;
-			try {
-				if (!file1.exists()) {
-					file1.createNewFile();
-				}
-				fileLogWriter = new FileWriter(file1, true);
-				fileLogWriter.write(htmlReport);
-				fileLogWriter.flush();
-			} catch (IOException e) {
-				System.out.println("Failed to initialize Batch process: " + e.getMessage());
-				e.printStackTrace();
-			}
-			finally
-			{
-				if(fileLogWriter != null)
-					try {
-						fileLogWriter.close();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-			}
+//			try {
+//				if (!file1.exists()) {
+//					file1.createNewFile();
+//				}
+//				fileLogWriter = new FileWriter(file1, true);
+//				fileLogWriter.write(htmlReport);
+//				fileLogWriter.flush();
+//			} catch (IOException e) {
+//				System.out.println("Failed to initialize Batch process: " + e.getMessage());
+//				e.printStackTrace();
+//			}
+//			finally
+//			{
+//				if(fileLogWriter != null)
+//					try {
+//						fileLogWriter.close();
+//					} catch (IOException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//			}
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 			throw new HpcBatchException("Failed to process input csv file: "+inputFileName + " due to: "+e.getMessage());
@@ -179,10 +166,14 @@ public class HPCDataFileProcessor {
 
 		// Shutdown executor service
 		executorService.shutdown();
+		return success;
 	}
 
 	public static Job buildWorkerJob(BlockingQueue<Record> queue, String jobName) {
+//		return JobBuilder.aNewJob().named(jobName).silentMode(true).reader(new BlockingQueueRecordReader(queue))
+//				.filter(new PoisonRecordFilter()).processor(new HPCDataFileRecordProcessor()).build();
 		return JobBuilder.aNewJob().named(jobName).silentMode(true).reader(new BlockingQueueRecordReader(queue))
 				.filter(new PoisonRecordFilter()).processor(new HPCDataFileRecordProcessor()).build();
+
 	}
 }

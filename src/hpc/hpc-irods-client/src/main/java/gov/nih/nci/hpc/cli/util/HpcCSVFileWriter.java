@@ -33,7 +33,9 @@ public class HpcCSVFileWriter{
 			for (Entry<String, Integer> entry : headers.entrySet()) {
 				csvFilePrinter.print(record.get(entry.getKey()));
 			}
+			csvFilePrinter.println();
 			csvFilePrinter.flush();
+			fileRecordWriter.flush();
 		} catch (IOException e) {
 			System.out.println("Failed to write batch record into the log: " + e.getMessage());
 			e.printStackTrace();
