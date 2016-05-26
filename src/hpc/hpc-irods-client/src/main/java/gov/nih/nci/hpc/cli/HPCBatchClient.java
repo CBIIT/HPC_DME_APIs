@@ -36,6 +36,7 @@ public abstract class HPCBatchClient {
 	protected String logFile = null;
 	protected String logRecordsFile = null;
 	protected boolean headerAdded = false;
+	protected int threadCount;
 
 	public HPCBatchClient() {
 
@@ -50,6 +51,16 @@ public abstract class HPCBatchClient {
 		logDir = configProperties.getProperty("hpc.error-log.dir");
 		loginFile = configProperties.getProperty("hpc.login.credentials");
 		hpcCollectionService = configProperties.getProperty("hpc.collection.service");
+		try
+		{
+			String threadStr = configProperties.getProperty("hpc.job.thread.count");
+			threadCount = Integer.parseInt(threadStr);
+		}
+		catch(Exception e)
+		{
+			threadCount = 3;
+		}
+		
 		initializeLog();
 	}
 	

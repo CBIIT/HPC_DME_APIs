@@ -58,7 +58,8 @@ public class HpcClientUtil {
 	public static WebClient getWebClient(String url, String hpcCertPath, String hpcCertPassword) {
 		WebClient client = WebClient.create(url, Collections.singletonList(new JacksonJsonProvider()));
 		WebClient.getConfig(client).getRequestContext().put("support.type.as.multipart", "true");
-		WebClient.getConfig(client).getHttpConduit().getClient().setReceiveTimeout(6000000);
+		WebClient.getConfig(client).getHttpConduit().getClient().setReceiveTimeout(60000000);
+		WebClient.getConfig(client).getHttpConduit().getClient().setConnectionTimeout(60000000);
 		HTTPConduit conduit = WebClient.getConfig(client).getHttpConduit();
 
 		TLSClientParameters params = conduit.getTlsClientParameters();
