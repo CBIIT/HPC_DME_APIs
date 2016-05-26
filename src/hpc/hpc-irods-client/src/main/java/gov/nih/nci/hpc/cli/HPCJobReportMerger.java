@@ -68,22 +68,30 @@ public class HPCJobReportMerger{
         List<Object> results = new ArrayList<>();
         List<String> dataSources = new ArrayList<>();
         long totalRecords = 0;
+        long errorRecords = 0;
 
         JobReport finalJobReport = new JobReport();
         finalJobReport.setStatus(JobStatus.COMPLETED);
-
+        		
         for (JobReport jobReport : jobReports) {
             startTimes.add(jobReport.getMetrics().getStartTime());
             endTimes.add(jobReport.getMetrics().getEndTime());
-            totalRecords += jobReport.getMetrics().getTotalCount();
+        	if(jobReport.getParameters().getName().equals("master-job"))
+        		totalRecords += jobReport.getMetrics().getTotalCount();
             calculateSkippedRecords(finalJobReport, jobReport);
             //calculateFilteredRecords(finalJobReport, jobReport);
-            calculateErrorRecords(finalJobReport, jobReport);
-            calculateSuccessRecords(finalJobReport, jobReport);
+        	if(!jobReport.getParameters().getName().equals("master-job"))
+        	{
+        		errorRecords += jobReport.getMetrics().getErrorCount();
+        		calculateErrorRecords(finalJobReport, jobReport);
+        	}
+        	
+            //calculateSuccessRecords(finalJobReport, jobReport);
             addJobResult(results, jobReport);
             setStatus(finalJobReport, jobReport);
             dataSources.add(jobReport.getParameters().getDataSource());
         }
+    	calculateSuccessRecords(finalJobReport, totalRecords, errorRecords);
 
         //merge results
         finalJobReport.getMetrics().setStartTime(Collections.min(startTimes));
@@ -116,7 +124,7 @@ public class HPCJobReportMerger{
         if (JobStatus.ABORTED.equals(jobReport.getStatus())) {
             finalJobReport.setStatus(JobStatus.ABORTED);
         }
-        if (JobStatus.FAILED.equals(jobReport.getStatus())) {
+        if (JobStatus.FAILED.equals(jobReport.getStatus()) || jobReport.getMetrics().getErrorCount() != 0) {
             finalJobReport.setStatus(JobStatus.FAILED);
         }
     }
@@ -128,7 +136,13 @@ public class HPCJobReportMerger{
     }
 
     private void calculateSuccessRecords(JobReport finalJobReport, JobReport jobReport) {
-        for (int i = 0; i < jobReport.getMetrics().getSuccessCount(); i++) {
+        for (int i = 0; i < (jobReport.getMetrics().getSuccessCount() - jobReport.getMetrics().getErrorCount()); i++) {
+            finalJobReport.getMetrics().incrementSuccessCount();
+        }
+    }
+
+    private void calculateSuccessRecords(JobReport finalJobReport, long total, long error) {
+        for (int i = 0; i < (total - error); i++) {
             finalJobReport.getMetrics().incrementSuccessCount();
         }
     }

@@ -122,18 +122,19 @@ public class HPCDataFileProcessor {
 			{
 				JobReport jobReport = reports.get(i).get();
 				jobReports.add(jobReport);
+				//System.out.println(jobReport.toString());
 			}
 
 	        HPCJobReportMerger reportMerger = new HPCJobReportMerger();
 	        JobReport finalReport = reportMerger.mergerReports(jobReports);
 	        if(finalReport.getMetrics().getErrorCount() == 0)
 	        	success = true;
-	        String htmlReport = new HpcHtmlJobReportFormatter().formatReport(finalReport);
-	        System.out.println(finalReport);		
-	        //System.out.println(htmlReport);		
-			//String logFile = logDir + File.separator + "putDatafiles_errorLog" + new SimpleDateFormat("yyyyMMddhhmm'.html'").format(new Date());
-			//File file1 = new File(logFile);
-			FileWriter fileLogWriter = null;
+//	        String htmlReport = new HpcHtmlJobReportFormatter().formatReport(finalReport);
+	        System.out.println(new HpcJobReportFormatter().formatReport(finalReport));		
+//	        //System.out.println(htmlReport);		
+//			String logFile = File.separator + "putDatafiles_report" + new SimpleDateFormat("yyyyMMddhhmm'.html'").format(new Date());
+//			File file1 = new File(logFile);
+//			FileWriter fileLogWriter = null;
 //			try {
 //				if (!file1.exists()) {
 //					file1.createNewFile();
