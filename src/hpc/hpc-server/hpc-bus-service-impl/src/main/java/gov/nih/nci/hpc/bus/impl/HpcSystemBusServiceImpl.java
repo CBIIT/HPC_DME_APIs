@@ -12,8 +12,10 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadCleanup;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -87,9 +89,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     //---------------------------------------------------------------------//  
     
     @Override
-    public void updateDataTransferStatus() throws HpcException
+    public void updateDataTransferUploadStatus() throws HpcException
     {
     	// Use system account to perform this service.
+        // TODO: Make this AOP. 
     	securityService.setSystemRequestInvoker();
     	
     	// Iterate through the data objects that their data transfer is in-progress
@@ -100,28 +103,29 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			 HpcDataObjectSystemGeneratedMetadata systemGeneratedMetadata = 
     			    dataManagementService.getDataObjectSystemGeneratedMetadata(path);
     			 
-    			 // Get the data transfer request status.
-    			 HpcDataTransferStatus dataTransferStatus =
-    		        dataTransferService.getDataTransferStatus(systemGeneratedMetadata.getDataTransferType(),
-    		        		                                  systemGeneratedMetadata.getDataTransferRequestId());
+    			 // Get the data transfer upload request status.
+    			 HpcDataTransferUploadStatus dataTransferStatus =
+    		        dataTransferService.getDataTransferUploadStatus(
+    		        		               systemGeneratedMetadata.getDataTransferType(),
+    		        		               systemGeneratedMetadata.getDataTransferRequestId());
     			 
-    		     if(dataTransferStatus.equals(HpcDataTransferStatus.ARCHIVED) ||
-    		        dataTransferStatus.equals(HpcDataTransferStatus.IN_TEMPORARY_ARCHIVE)) {
+    		     if(dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED) ||
+    		        dataTransferStatus.equals(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE)) {
     		    	// Data transfer completed successfully. Update the system metadata.
-     			    setDataTransferStatus(path, dataTransferStatus);
+     			    setDataTransferUploadStatus(path, dataTransferStatus);
     		    	logger.info("Data transfer completed [" + dataTransferStatus + "]: " + path);
     		    	
-    		     } else if(dataTransferStatus.equals(HpcDataTransferStatus.FAILED)) {
+    		     } else if(dataTransferStatus.equals(HpcDataTransferUploadStatus.FAILED)) {
      		    	       // Data transfer failed. Remove the data object
      		    	       dataManagementService.delete(path);
      		    	       logger.info("Data transfer failed: " + path);
     		     }
     		     
     		} catch(HpcException e) {
-    			    logger.error("Failed to process data transfer update:" + path, e);
+    			    logger.error("Failed to process data transfer upload update:" + path, e);
     			    
     			    // If timeout occurred, move the status to unknown.
-    			    this.setTransferStatusToUnknown(dataObject, true);
+    			    setTransferUploadStatusToUnknown(dataObject, true);
     		}
     	}
     }
@@ -172,7 +176,35 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			    logger.error("Failed to transfer data from temporary archive:" + path, e);
     			    
     			    // If timeout occurred, move the status to unknown.
-    			    this.setTransferStatusToUnknown(dataObject, true);
+    			    setTransferUploadStatusToUnknown(dataObject, true);
+    		}
+    	}
+    }
+    
+    @Override
+    public void cleanupDataTransferDownloadFiles() throws HpcException
+    {
+    	// Use system account to perform this service.
+    	securityService.setSystemRequestInvoker();
+    	
+    	for(HpcDataObjectDownloadCleanup dataObjectDownloadCleanup :
+    		dataTransferService.getDataObjectDownloadCleanups()) {
+    		// Get the data transfer download status.
+    		HpcDataTransferDownloadStatus dataTransferDownloadStatus = 
+    		   dataTransferService.getDataTransferDownloadStatus(
+    			                      dataObjectDownloadCleanup.getDataTransferType(), 
+    			                      dataObjectDownloadCleanup.getDataTransferRequestId());
+    		
+    		// Delete the file if the transfer is no longer in-progress.
+    		if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
+    		   try {
+    			    // TODO - move this to common
+    			    File file = new File(dataObjectDownloadCleanup.getFilePath());
+    			    file.delete();
+    			    
+    		   } catch(Exception e) {
+    			       logger.error("Failed to delete file", e);
+    		   }
     		}
     	}
     }
@@ -205,7 +237,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	}
 	
     /** 
-     * Set the data transfer status of a data object to unknown
+     * Set the data transfer upload status of a data object to unknown.
      * 
      * @param dataObject The data object
      * @param checkTimeout If 'true', this method checks for transfer status timeout occurred 
@@ -214,14 +246,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * 
      * @throws HpcException
      */
-	private void setTransferStatusToUnknown(HpcDataObject dataObject, 
-			                                boolean checkTimeout)
+	private void setTransferUploadStatusToUnknown(HpcDataObject dataObject, 
+			                                      boolean checkTimeout)
 	{
 		// If timeout occurred, move the status to unknown.
 		if(!checkTimeout || isDataTransferStatusCheckTimedOut(dataObject)) {
 			try {
-				 setDataTransferStatus(dataObject.getAbsolutePath(), 
-    	                               HpcDataTransferStatus.UNKNOWN);
+				 setDataTransferUploadStatus(dataObject.getAbsolutePath(), 
+    	                                     HpcDataTransferUploadStatus.UNKNOWN);
 			} catch(Exception ex) {
 				    logger.error("failed to set data transfer status to unknown: " + 
 				    		     dataObject.getAbsolutePath(), ex);
@@ -232,15 +264,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	}
 	
     /** 
-     * Set data transfer status of a data object
+     * Set data transfer upload status of a data object.
      * 
      * @param path The data object path.
      * @param dataTransferStatus The data transfer status.
      * 
      * @throws HpcException
      */
-	private void setDataTransferStatus(String path, HpcDataTransferStatus dataTransferStatus)
-	                                  throws HpcException
+	private void setDataTransferUploadStatus(String path, HpcDataTransferUploadStatus dataTransferStatus)
+	                                        throws HpcException
 	{
 		dataManagementService.updateDataObjectSystemGeneratedMetadata(
                                     path, null, null, dataTransferStatus, null);

@@ -43,6 +43,8 @@
 	                interface="gov.nih.nci.hpc.dao.HpcUserDAO" />
 	<osgi:reference id="hpcSystemAccountDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcSystemAccountDAO" />
+	<osgi:reference id="hpcDataObjectDownloadCleanupDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcDataObjectDownloadCleanupDAO" />
 	<osgi:reference id="hpcGlobusDataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
 		            bean-name="hpcGlobusDataTransferProxy"/>

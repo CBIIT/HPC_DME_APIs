@@ -8,8 +8,9 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDataTransferReport;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -53,11 +54,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     //---------------------------------------------------------------------//    
     
     // Globus transfer status strings.
-	private final static String FAILED_STATUS = "FAILED"; 
-	private final static String ARCHIVED_STATUS = "SUCCEEDED";
+	private static final String FAILED_STATUS = "FAILED"; 
+	private static final String SUCCEEDED_STATUS = "SUCCEEDED";
 	
 	// Globus error codes.
-	private final static String NOT_DIRECTORY_GLOBUS_CODE = 
+	private static final String NOT_DIRECTORY_GLOBUS_CODE = 
 			                    "ExternalError.DirListingFailed.NotDirectory";
 	
     //---------------------------------------------------------------------//
@@ -132,9 +133,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	uploadResponse.setRequestId(requestId);
     	uploadResponse.setDataTransferType(HpcDataTransferType.GLOBUS);
     	if(baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
-    	   uploadResponse.setDataTransferStatus(HpcDataTransferStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE);
+    	   uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE);
     	} else {
-    		    uploadResponse.setDataTransferStatus(HpcDataTransferStatus.IN_PROGRESS_TO_ARCHIVE);
+    		    uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE);
     	}
     	return uploadResponse;
     }
@@ -157,30 +158,48 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     }
     
     @Override
-    public HpcDataTransferStatus getDataTransferStatus(Object authenticatedToken,
-                                                       String dataTransferRequestId) 
-                                                      throws HpcException
+    public HpcDataTransferUploadStatus getDataTransferUploadStatus(Object authenticatedToken,
+                                                                   String dataTransferRequestId) 
+                                                                  throws HpcException
     {
 		 HpcGlobusDataTransferReport report = getDataTransferReport(authenticatedToken, 
 				                                                    dataTransferRequestId);
-		 if(report.getStatus().equals(ARCHIVED_STATUS)) {
+		 if(report.getStatus().equals(SUCCEEDED_STATUS)) {
 	    	if(baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
-	      	   return HpcDataTransferStatus.IN_TEMPORARY_ARCHIVE;
+	      	   return HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE;
 	      	 } else {
-	      		     return HpcDataTransferStatus.ARCHIVED;
+	      		     return HpcDataTransferUploadStatus.ARCHIVED;
 	      	 }	
 		 }
 
 		 if(report.getStatus().equals(FAILED_STATUS)) {
- 			return HpcDataTransferStatus.FAILED;
+ 			return HpcDataTransferUploadStatus.FAILED;
  		 }
 		 
 		 // Transfer is in progress. Return status based on the archive type.
     	 if(baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
-     	    return HpcDataTransferStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE;
+     	    return HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE;
      	 } else {
-     	         return HpcDataTransferStatus.IN_PROGRESS_TO_ARCHIVE;
+     	         return HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE;
      	 }		 
+    }
+    
+    @Override
+    public HpcDataTransferDownloadStatus getDataTransferDownloadStatus(Object authenticatedToken,
+                                                                       String dataTransferRequestId) 
+                                                                      throws HpcException
+    {
+		 HpcGlobusDataTransferReport report = getDataTransferReport(authenticatedToken, 
+				                                                    dataTransferRequestId);
+		 if(report.getStatus().equals(SUCCEEDED_STATUS)) {
+	    	return HpcDataTransferDownloadStatus.COMPLETED;
+		 }
+
+		 if(report.getStatus().equals(FAILED_STATUS)) {
+ 			return HpcDataTransferDownloadStatus.FAILED;
+ 		 }
+		 
+		 return HpcDataTransferDownloadStatus.IN_PROGRESS;
     }
     
     @Override
