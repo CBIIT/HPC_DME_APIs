@@ -18,8 +18,8 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -129,19 +129,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
         dataTransferInProgressToArchiveQuery.add(
             toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, 
             		        EQUAL_OPERATOR, 
-        	                HpcDataTransferStatus.IN_PROGRESS_TO_ARCHIVE.value()));
+        	                HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE.value()));
         
         // Prepare the query to get data objects in data transfer in-progress to temporary archive.
         dataTransferInProgressToTemporaryArchiveQuery.add(
         	toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, 
         			        EQUAL_OPERATOR, 
-        			        HpcDataTransferStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE.value()));
+        			        HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE.value()));
         
         // Prepare the query to get data objects in temporary archive.
         dataTransferInTemporaryArchiveQuery.add(
         	toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, 
         			        EQUAL_OPERATOR, 
-        			        HpcDataTransferStatus.IN_TEMPORARY_ARCHIVE.value()));
+        			        HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE.value()));
     }   
     
     //---------------------------------------------------------------------//
@@ -326,7 +326,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
                                                        HpcFileLocation archiveLocation,
     		                                           HpcFileLocation sourceLocation,
     		                                           String dataTransferRequestId,
-    		                                           HpcDataTransferStatus dataTransferStatus,
+    		                                           HpcDataTransferUploadStatus dataTransferStatus,
     		                                           HpcDataTransferType dataTransferType,
     		                                           Long sourceSize, String callerObjectId) 
                                                       throws HpcException
@@ -406,7 +406,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public void updateDataObjectSystemGeneratedMetadata(String path, 
                                                         HpcFileLocation archiveLocation,
                                                         String dataTransferRequestId,
-                                                        HpcDataTransferStatus dataTransferStatus,
+                                                        HpcDataTransferUploadStatus dataTransferStatus,
                                                         HpcDataTransferType dataTransferType) 
                                                         throws HpcException
 	{
@@ -497,34 +497,31 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	systemGeneratedMetadata.setDataTransferRequestId(metadataMap.get(DATA_TRANSFER_REQUEST_ID_ATTRIBUTE));
-    	if(metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE) != null)
-    	{
-    		try
-    		{
-    		systemGeneratedMetadata.setDataTransferStatus(
-    				HpcDataTransferStatus.fromValue(metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE)));
-    		}
-    		catch(Exception e)
-    		{
-    			logger.error("Unable to determine data transfer status: "+ 
-    		                 metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE), e);
-    			systemGeneratedMetadata.setDataTransferStatus(HpcDataTransferStatus.UNKNOWN);
+    	if(metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE) != null) {
+    		try {
+    		     systemGeneratedMetadata.setDataTransferStatus(
+    				   HpcDataTransferUploadStatus.fromValue(
+    						                metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE)));
+    		     
+    		} catch(Exception e) {
+    			    logger.error("Unable to determine data transfer status: "+ 
+    		                     metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE), e);
+    			    systemGeneratedMetadata.setDataTransferStatus(HpcDataTransferUploadStatus.UNKNOWN);
     		}
     	}
-    	if(metadataMap.get(DATA_TRANSFER_TYPE_ATTRIBUTE) != null)
-    	{
-    		try
-    		{
+    	
+    	if(metadataMap.get(DATA_TRANSFER_TYPE_ATTRIBUTE) != null) {
+    	   try {
     			systemGeneratedMetadata.setDataTransferType(
-    				HpcDataTransferType.fromValue(metadataMap.get(DATA_TRANSFER_TYPE_ATTRIBUTE)));
-    		}
-    		catch(Exception e)
-    		{
-    			logger.error("Unable to determine data transfer type: "+ 
-    		                 metadataMap.get(DATA_TRANSFER_TYPE_ATTRIBUTE), e);
-    			systemGeneratedMetadata.setDataTransferType(null);
+    				  HpcDataTransferType.fromValue(metadataMap.get(DATA_TRANSFER_TYPE_ATTRIBUTE)));
+    			
+    		} catch(Exception e) {
+    			    logger.error("Unable to determine data transfer type: "+ 
+    		                     metadataMap.get(DATA_TRANSFER_TYPE_ATTRIBUTE), e);
+    			    systemGeneratedMetadata.setDataTransferType(null);
     		}
     	}
+    	
     	systemGeneratedMetadata.setSourceSize(
     		  metadataMap.get(SOURCE_FILE_SIZE_ATTRIBUTE) != null ?
     		  Long.valueOf(metadataMap.get(SOURCE_FILE_SIZE_ATTRIBUTE)) : null);

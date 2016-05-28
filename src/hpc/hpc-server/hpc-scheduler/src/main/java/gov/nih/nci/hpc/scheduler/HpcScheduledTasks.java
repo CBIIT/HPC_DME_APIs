@@ -67,19 +67,19 @@ public class HpcScheduledTasks
      * 
      */    
     @Scheduled(fixedDelay = 30000)
-    private void updateDataTransferStatusTask()
+    private void updateDataTransferUploadStatusTask()
     {
-        logger.info("Starting Update Data Transfer Status Task...");
+        logger.info("Starting Update Data Transfer Upload Status Task...");
 
         try { 
-		     systemBusService.updateDataTransferStatus();
+		     systemBusService.updateDataTransferUploadStatus();
 		     
         } catch(HpcException e) {
-        	    logger.error("Update Data Transfer Status task failed", e);
+        	    logger.error("Update Data Transfer Upload Status task failed", e);
         	    
         } finally {
         	       dataManagementBusService.closeConnection();
-        	       logger.info("Completed Update Data Transfer Status Task...");	
+        	       logger.info("Completed Update Data Transfer Upload Status Task...");	
         }
     }
     
@@ -102,6 +102,28 @@ public class HpcScheduledTasks
         } finally {
         	       dataManagementBusService.closeConnection();
         	       logger.info("Completed Process Temporary Archive Task...");	
+        }
+    }
+    
+    /**
+     * Update Data Transfer Status Task
+     * 
+     */    
+    @Scheduled(fixedDelay = 30000)
+    private void cleanupDataTransferDownloadFilesTask()
+    {
+        logger.info("Starting Cleanup Data Transfer Download Task...");
+
+        try { 
+		     systemBusService.cleanupDataTransferDownloadFiles();
+		     
+        } catch(HpcException e) {
+        	    logger.error("Cleanup Data Transfer Download task failed", e);
+        	    
+        } finally {
+        	       // TODO - make this AOP.
+        	       dataManagementBusService.closeConnection();
+        	       logger.info("Completed Cleanup Data Transfer Download Task...");	
         }
     }
 }
