@@ -42,7 +42,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
     //---------------------------------------------------------------------//    
     
     // SQL Queries.
-	public final static String INSERT_SQL = 
+	public final static String UPSERT_SQL = 
 		   "insert into public.\"HPC_SYSTEM_ACCOUNT\" ( " +
                     "\"USERNAME\", \"PASSWORD\", \"SYSTEM\", \"DATA_TRANSFER_TYPE\") " +
                     "values (?, ?, ?, ?) " +
@@ -95,7 +95,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
 	                   HpcDataTransferType dataTransferType) throws HpcException
     {
 		try {
-		     jdbcTemplate.update(INSERT_SQL,
+		     jdbcTemplate.update(UPSERT_SQL,
 		    		             account.getUsername(),
 		    		             encryptor.encrypt(account.getPassword()),
 		                         account.getIntegratedSystem().value(),

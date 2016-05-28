@@ -24,11 +24,11 @@ import gov.nih.nci.hpc.exception.HpcException;
 public interface HpcSystemBusService 
 {         
     /**
-     * Update the data transfer status of all data objects that the transfer is 'in progress'.
+     * Update the data transfer upload status of all data objects that the transfer is 'in progress'.
      *
      * @throws HpcException.
      */
-	public void updateDataTransferStatus() throws HpcException;
+	public void updateDataTransferUploadStatus() throws HpcException;
 	
     /**
      * Transfer data objects currently in temporary archive to the (permanent) archive, 
@@ -37,6 +37,14 @@ public interface HpcSystemBusService
      * @throws HpcException
      */
 	public void processTemporaryArchive() throws HpcException;
+	
+    /**
+     * Detect all the completed (aync) 2nd hop download requests and delete the files 
+     * in the download space.
+     *
+     * @throws HpcException
+     */
+	public void cleanupDataTransferDownloadFiles() throws HpcException;
 }
 
  

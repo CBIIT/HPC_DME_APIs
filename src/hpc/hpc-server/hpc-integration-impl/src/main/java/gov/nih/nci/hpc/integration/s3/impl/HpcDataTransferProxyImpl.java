@@ -7,8 +7,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -126,9 +126,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
     	uploadResponse.setRequestId(String.valueOf(s3Upload.hashCode()));
     	if(baseArchiveDestination.getType().equals(HpcArchiveType.ARCHIVE)) {
-    	   uploadResponse.setDataTransferStatus(HpcDataTransferStatus.ARCHIVED);
+    	   uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED);
     	} else {
-    		    uploadResponse.setDataTransferStatus(HpcDataTransferStatus.IN_TEMPORARY_ARCHIVE);
+    		    uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE);
     	}
         
         return uploadResponse;

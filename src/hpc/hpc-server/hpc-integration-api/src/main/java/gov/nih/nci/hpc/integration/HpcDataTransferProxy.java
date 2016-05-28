@@ -15,7 +15,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -76,21 +77,39 @@ public interface HpcDataTransferProxy
     		                                               throws HpcException;
     
     /**
-     * Get a data transfer request status.
+     * Get a data transfer upload request status.
      *
      * @param authenticatedToken An authenticated token.
      * @param dataTransferRequestId The data transfer request ID.
      * 
-     * @return HpcDataTransferStatus the data transfer request status.
+     * @return HpcDataTransferUploadStatus the data transfer request status.
      * 
      * @throws HpcException
      */
-    default HpcDataTransferStatus getDataTransferStatus(Object authenticatedToken,
-    		                                            String dataTransferRequestId) 
-    		                                           throws HpcException
+    default HpcDataTransferUploadStatus getDataTransferUploadStatus(Object authenticatedToken,
+    		                                                        String dataTransferRequestId) 
+    		                                                       throws HpcException
     {
-    	throw new HpcException("getDataTransferStatus() not supported by S3",
-	               HpcErrorType.UNEXPECTED_ERROR);
+    	throw new HpcException("getDataTransferUploadStatus() not supported by S3",
+	                           HpcErrorType.UNEXPECTED_ERROR);
+    }
+    
+    /**
+     * Get a data transfer download request status.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param dataTransferRequestId The data transfer request ID.
+     * 
+     * @return HpcDataTransferDownloadStatus the data transfer request status.
+     * 
+     * @throws HpcException
+     */
+    default HpcDataTransferDownloadStatus getDataTransferDownloadStatus(Object authenticatedToken,
+    		                                                            String dataTransferRequestId) 
+    		                                                           throws HpcException
+    {
+    	throw new HpcException("getDataTransferDownloadStatus() not supported by S3",
+	                           HpcErrorType.UNEXPECTED_ERROR);
     }
     
     /**
