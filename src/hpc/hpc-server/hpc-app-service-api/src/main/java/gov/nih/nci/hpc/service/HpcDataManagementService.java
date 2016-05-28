@@ -14,8 +14,8 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -152,7 +152,7 @@ public interface HpcDataManagementService
      * @param archiveLocation The physical file archive location.
      * @param sourceLocation (Optional) The source location of the file.
      * @param dataTransferRequestId (Optional) The data transfer request ID.
-     * @param dataTransferStatus The data transfer status.
+     * @param dataTransferStatus The data transfer upload status.
      * @param dataTransferType The data transfer type.
      * @param sourceSize (Optional) The data source size in bytes.
      * @param callerObjectId (Optional) The caller object ID.
@@ -163,7 +163,7 @@ public interface HpcDataManagementService
     		                                           HpcFileLocation archiveLocation,
     		                                           HpcFileLocation sourceLocation,
     		                                           String dataTransferRequestId,
-    		                                           HpcDataTransferStatus dataTransferStatus,
+    		                                           HpcDataTransferUploadStatus dataTransferStatus,
     		                                           HpcDataTransferType dataTransferType,
     		                                           Long sourceSize, String callerObjectId) 
     		                                          throws HpcException; 
@@ -174,7 +174,7 @@ public interface HpcDataManagementService
      * @param path The data object path.
      * @param archiveLocation (Optional) The physical file archive location.
      * @param dataTransferRequestId (Optional) The data transfer request ID.
-     * @param dataTransferStatus (Optional) The data transfer status.
+     * @param dataTransferStatus (Optional) The data transfer upload status.
      * @param dataTransferType (Optional) The data transfer type.
      * 
      * @throws HpcException
@@ -182,7 +182,7 @@ public interface HpcDataManagementService
     public void updateDataObjectSystemGeneratedMetadata(String path, 
     		                                            HpcFileLocation archiveLocation,
     		                                            String dataTransferRequestId,
-    		                                            HpcDataTransferStatus dataTransferStatus,
+    		                                            HpcDataTransferUploadStatus dataTransferStatus,
     		                                            HpcDataTransferType dataTransferType) 
     		                                          throws HpcException; 
     

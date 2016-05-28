@@ -17,7 +17,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -297,7 +297,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		                   dataManagementService.getDataObjectMetadata(path);
     		
     	return toDTO(dataObject, metadataEntries, 
-    			     getDataTransferPercentCompletion(
+    			     getDataTransferUploadPercentCompletion(
     			        dataManagementService.getDataObjectSystemGeneratedMetadata(metadataEntries)));
     }
     
@@ -330,7 +330,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		// Combine data object attributes and metadata into a single DTO.
     		dataObjectsDTO.getDataObjects().add(
     			toDTO(dataObject, metadataEntries,
-    			      getDataTransferPercentCompletion(
+    			      getDataTransferUploadPercentCompletion(
     			       	 dataManagementService.getDataObjectSystemGeneratedMetadata(metadataEntries))));
     	}
     	
@@ -356,7 +356,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   dataManagementService.getDataObjectSystemGeneratedMetadata(path);
     	
     	// Validate the file is archived.
-    	if(!metadata.getDataTransferStatus().equals(HpcDataTransferStatus.ARCHIVED)) {
+    	if(!metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
     	   throw new HpcException("Object is not in archived state yet. It is in " +
     			                  metadata.getDataTransferStatus().value() + " state",
     			                  HpcRequestRejectReason.FILE_NOT_ARCHIVED);
@@ -590,14 +590,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * @return The transfer % completion if transfer is in progress, or null otherwise.
      *         e.g 86%.
      */
-	private String getDataTransferPercentCompletion(
+	private String getDataTransferUploadPercentCompletion(
 			          HpcDataObjectSystemGeneratedMetadata systemGeneratedMetadata)
 	{
 		// Get the transfer status, transfer request id and data-object size from the metadata entries.
-		HpcDataTransferStatus transferStatus = systemGeneratedMetadata.getDataTransferStatus();
+		HpcDataTransferUploadStatus transferStatus = systemGeneratedMetadata.getDataTransferStatus();
 		if(transferStatus == null || 
-		   (!transferStatus.equals(HpcDataTransferStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE) &&
-			!transferStatus.equals(HpcDataTransferStatus.IN_PROGRESS_TO_ARCHIVE))) {
+		   (!transferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE) &&
+			!transferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE))) {
 		   // data transfer not in progress.
 		   return null;
 		}

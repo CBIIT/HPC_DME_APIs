@@ -50,7 +50,7 @@
 				<xsd:element name="archiveLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="sourceLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="dataTransferRequestId" type="xsd:string" />
-				<xsd:element name="dataTransferStatus" type="hpc-domain-datatransfer:HpcDataTransferStatus" />
+				<xsd:element name="dataTransferStatus" type="hpc-domain-datatransfer:HpcDataTransferUploadStatus" />
 				<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 				<xsd:element name="sourceSize" type="xsd:long" minOccurs="0" maxOccurs="1"/>
 				<xsd:element name="callerObjectId" type="xsd:string" />

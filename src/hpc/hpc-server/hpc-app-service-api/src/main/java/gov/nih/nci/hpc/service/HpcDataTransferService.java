@@ -11,16 +11,19 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadCleanup;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * <p>
@@ -89,18 +92,32 @@ public interface HpcDataTransferService
     		                                               throws HpcException;
     
     /**
-     * Get a data transfer request status.
+     * Get a data transfer upload request status.
      *
      * @param dataTransferType The data transfer type.
      * @param dataTransferRequestId The data transfer request ID.
      * 
-     * @return HpcDataTransferStatus the data transfer request status.
+     * @return HpcDataTransferUploadStatus the data transfer upload request status.
      * 
      * @throws HpcException
      */
-    public HpcDataTransferStatus getDataTransferStatus(HpcDataTransferType dataTransferType,
-    		                                           String dataTransferRequestId) 
-    		                                          throws HpcException;
+    public HpcDataTransferUploadStatus getDataTransferUploadStatus(HpcDataTransferType dataTransferType,
+    		                                                       String dataTransferRequestId) 
+    		                                                      throws HpcException;
+    
+    /**
+     * Get a data transfer download request status.
+     *
+     * @param dataTransferType The data transfer type.
+     * @param dataTransferRequestId The data transfer request ID.
+     * 
+     * @return HpcDataTransferDownloadStatus the data transfer download request status.
+     * 
+     * @throws HpcException
+     */
+    public HpcDataTransferDownloadStatus getDataTransferDownloadStatus(HpcDataTransferType dataTransferType,
+    		                                                           String dataTransferRequestId) 
+    		                                                          throws HpcException;
     
     /**
      * Get the size of the data transferred of a specific request.
@@ -142,6 +159,15 @@ public interface HpcDataTransferService
     public File getArchiveFile(HpcDataTransferType dataTransferType,
     		                   String fileId)  
     		                  throws HpcException;
+    
+    /**
+     * Get all data object download cleanup entries. 
+     *
+     * @return List<HpcDataObjectDownloadCleanup>
+     * 
+     * @throws HpcException
+     */
+    public List<HpcDataObjectDownloadCleanup> getDataObjectDownloadCleanups() throws HpcException;
 }
 
  
