@@ -46,7 +46,7 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
 		   "insert into public.\"HPC_DATA_OBJECT_DOWNLOAD_CLEANUP\" ( " +
                     "\"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", \"FILE_PATH\") " +
                     "values (?, ?, ?) " +
-           "on conflict(\"REQUEST_ID\") do update set \"TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\", " +
+           "on conflict(\"DATA_TRANSFER_REQUEST_ID\") do update set \"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\", " +
                                                      "\"FILE_PATH\"=excluded.\"FILE_PATH\"";
 	
 	public static final String DELETE_SQL = 
@@ -144,6 +144,7 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
 			dataObjectDownloadCleanup.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
 			dataObjectDownloadCleanup.setDataTransferType(
 					  HpcDataTransferType.fromValue(rs.getString(("DATA_TRANSFER_TYPE"))));
+			dataObjectDownloadCleanup.setFilePath(rs.getString("FILE_PATH"));
             
             return dataObjectDownloadCleanup;
 		}
