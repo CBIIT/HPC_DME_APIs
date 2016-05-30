@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
@@ -27,8 +28,11 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -156,13 +160,16 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response registerDataObject(String path, 
     		                           HpcDataObjectRegistrationDTO dataObjectRegistration,
-    		                           File dataObjectFile)
+    		                           InputStream dataObjectInputStream)
     {	
     	path = toAbsolutePath(path);
 		logger.info("Invoking RS: PUT /dataObject" + path);
 		
+		File dataObjectFile = null;
 		boolean created = true;
+
 		try {
+			 dataObjectFile = toFile(dataObjectInputStream);
 			 created = dataManagementBusService.registerDataObject(path, 
 					                                               dataObjectRegistration,
 					                                               dataObjectFile);
@@ -287,7 +294,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
      * 
      * @throws HpcException if the params unmarshalling failed.
      */
-    
     private List<HpcMetadataQuery> unmarshallQueryParams(
     		                                 List<HpcMetadataQueryParam> metadataQueries)
     		                                 throws HpcException
@@ -302,6 +308,32 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		 }
 		 
 		 return queries;
+    }
+    
+    /**
+     * Copy input stream tp File and close the input stream
+     * 
+     * @param dataObjectInputStream The input stream
+     * @return File
+     * 
+     * @throws HpcException if copy of input stream failed.
+     */
+    private File toFile(InputStream dataObjectInputStream) throws HpcException
+    {
+    	if(dataObjectInputStream == null) {
+    	   return null;
+    	}
+
+    	File dataObjectFile = FileUtils.getFile(FileUtils.getTempDirectory(), 
+    			                                UUID.randomUUID().toString());
+    	try {
+	         FileUtils.copyInputStreamToFile(dataObjectInputStream, dataObjectFile);
+	         
+    	} catch(IOException e) {
+    		    throw new HpcException("Failed to copy input stream", HpcErrorType.UNEXPECTED_ERROR, e);
+    	}
+    	
+    	return dataObjectFile;
     }
 }
 
