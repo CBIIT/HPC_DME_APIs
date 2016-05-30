@@ -25,6 +25,7 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
 import java.io.File;
 import java.util.Calendar;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,12 +158,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  		        			                             systemGeneratedMetadata.getCallerObjectId());
  		     
  		         // Delete the file.
- 		         try {
- 		              file.delete();
- 		              
- 		         } catch(Exception e) {
- 		        	     logger.error("Failed to delete: " + 
- 		                              systemGeneratedMetadata.getArchiveLocation().getFileId());
+ 		         if(!FileUtils.deleteQuietly(file)) {
+ 		        	logger.error("Failed to delete file: " + 
+ 		                          systemGeneratedMetadata.getArchiveLocation().getFileId());
  		         }
  		         
  			     // Update system metadata of the data object.
@@ -195,16 +193,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			                      dataObjectDownloadCleanup.getDataTransferType(), 
     			                      dataObjectDownloadCleanup.getDataTransferRequestId());
     		
-    		// Delete the file if the transfer is no longer in-progress.
+    		// Cleanup the file if the transfer is no longer in-progress.
     		if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
-    		   try {
-    			    // TODO - move this to common
-    			    File file = new File(dataObjectDownloadCleanup.getFilePath());
-    			    file.delete();
-    			    
-    		   } catch(Exception e) {
-    			       logger.error("Failed to delete file", e);
-    		   }
+    		   dataTransferService.cleanupDataObjectDownloadFile(dataObjectDownloadCleanup);
     		}
     	}
     }
