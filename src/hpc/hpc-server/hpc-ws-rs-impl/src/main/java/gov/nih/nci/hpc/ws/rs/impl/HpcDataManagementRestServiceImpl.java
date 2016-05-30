@@ -33,6 +33,7 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -169,6 +170,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		} catch(HpcException e) {
 			    logger.error("RS: PUT /dataObject" + path + " failed:", e);
 			    return errorResponse(e);
+			    
+		} finally {
+			       // Delete the temporary file (if provided).
+	    	       FileUtils.deleteQuietly(dataObjectFile);
 		}
 		
 		if(created) {
@@ -238,6 +243,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		if(downloadResponse.getDestinationFile() != null) {
+		   // Put the download file on the message context, so the cleanup interceptor can
+		   // delete it after it was received by the caller.
 		   messageContext.put(DATA_OBJECT_DOWNLOAD_FILE, 
 				              downloadResponse.getDestinationFile());
 		   return okResponse(downloadResponse.getDestinationFile(), 
