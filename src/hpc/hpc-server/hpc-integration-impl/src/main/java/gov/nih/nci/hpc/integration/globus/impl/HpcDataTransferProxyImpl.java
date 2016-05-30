@@ -120,7 +120,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	HpcFileLocation archiveDestinationLocation = 
     	   getArchiveDestinationLocation(baseArchiveDestination.getFileLocation(), 
     			                         uploadRequest.getPath(),
-    		                             uploadRequest.getCallerObjectId());
+    		                             uploadRequest.getCallerObjectId(),
+    		                             baseArchiveDestination.getType());
     	
     	// Submit a request to Globus to transfer the data.
     	String requestId = transferData(globusConnection.getTransferClient(authenticatedToken),
