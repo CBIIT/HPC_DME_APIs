@@ -47,19 +47,21 @@
 		<bundle>wrap:mvn:org.irods.jargon/jargon-user-tagging/${jargon.version}</bundle>
 	</feature>
 	
-	<!-- HPC Server -->
-	<feature name="hpc-server" version="${project.version}">
+	<!-- HPC Server Core -->
+	<feature name="hpc-server-core" version="${project.version}">
 	
-		<!--  Dependent Features / Bundles -->
+		<!--  Dependent Features -->
 		<feature version="${postgresql.version}">hpc-postgresql-driver</feature>
 		<feature version="${spring-security.version}">hpc-spring-security-ldap</feature>
 		<feature version="${amazon-aws.version}">hpc-amazon-aws-sdk</feature>
 		<feature version="${jargon.version}">hpc-jargon-sdk</feature>
+		
+		<!--  Dependent Bundles -->
 		<bundle>wrap:mvn:com.googlecode.json-simple/json-simple/${google-json-simple.version}</bundle>
+		<bundle>mvn:commons-io/commons-io/${commons-io.version}</bundle>
 		
 		<!-- Config files -->
 		<configfile finalname="/etc/gov.nih.nci.hpc.cfg" override="false">mvn:${project.groupId}/hpc-features/${project.version}/properties/hpc-server</configfile>
-		<configfile finalname="/etc/hpc-server/keystore.jks" override="true">mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}/jks/keystore</configfile>
 		<configfile finalname="/etc/hpc-server/metadataValidationRules.json" override="true">mvn:${project.groupId}/hpc-app-service-impl/${project.version}/json/metadataValidationRules</configfile>
 
 		<!-- Server Bundles -->
@@ -75,10 +77,33 @@
 		<bundle>mvn:${project.groupId}/hpc-app-service-impl/${project.version}</bundle>
 		<bundle>mvn:${project.groupId}/hpc-bus-service-api/${project.version}</bundle>
 		<bundle>mvn:${project.groupId}/hpc-bus-service-impl/${project.version}</bundle>
+		
+	</feature>
+	
+	<!-- HPC Server REST Services -->
+	<feature name="hpc-server-rest-services" version="${project.version}">
+	
+		<!--  Dependent Features -->
+		<feature version="${project.version}">hpc-server-core</feature>
+		
+		<!-- Config files -->
+		<configfile finalname="/etc/hpc-server/keystore.jks" override="true">mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}/jks/keystore</configfile>
+
+		<!-- Server Bundles -->
 		<bundle>mvn:${project.groupId}/hpc-ws-rs-api/${project.version}</bundle>
 		<bundle>mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}</bundle>
-		<bundle>mvn:${project.groupId}/hpc-scheduler/${project.version}</bundle>
+		
+	</feature>
+	
+	<!-- HPC Server Scheduler  -->
+	<feature name="hpc-server-scheduler" version="${project.version}">
+	
+		<!--  Dependent Features -->
+		<feature version="${project.version}">hpc-server-core</feature>
 
+		<!-- Server Bundles -->
+		<bundle>mvn:${project.groupId}/hpc-scheduler/${project.version}</bundle>
+		
 	</feature>
 
 </features>

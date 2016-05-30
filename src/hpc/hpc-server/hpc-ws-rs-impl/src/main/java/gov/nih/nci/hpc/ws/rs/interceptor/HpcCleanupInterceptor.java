@@ -15,9 +15,12 @@ import gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl;
 
 import java.io.File;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -39,6 +42,9 @@ public class HpcCleanupInterceptor
     // The Data Management Business Service instance.
 	@Autowired
     private HpcDataManagementBusService dataManagementBusService = null;
+	
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -69,8 +75,11 @@ public class HpcCleanupInterceptor
     	
     	// Clean up files returned by the data object download service.
     	Object fileObj = message.getContextualProperty(HpcDataManagementRestServiceImpl.DATA_OBJECT_DOWNLOAD_FILE);
-    	if(fileObj != null) {
-    	   ((File) fileObj).delete();
+    	if(fileObj != null && fileObj instanceof File) {
+    	   File file = (File) fileObj;
+    	   if(!FileUtils.deleteQuietly(file)) {
+    		  logger.error("Failed to delete a file: " + file.getAbsolutePath());
+    	   }
     	}
     }
 } 
