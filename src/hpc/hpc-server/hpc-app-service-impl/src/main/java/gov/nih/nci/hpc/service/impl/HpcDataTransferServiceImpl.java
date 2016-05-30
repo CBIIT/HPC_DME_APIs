@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -358,6 +359,26 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		return dataObjectDownloadCleanupDAO.getAll();
 	}
 	
+	@Override
+	public void cleanupDataObjectDownloadFile(
+	                   HpcDataObjectDownloadCleanup dataObjectDownloadCleanup) 
+	                   throws HpcException
+	{
+		// Input validation
+		if(dataObjectDownloadCleanup == null) {
+		   throw new HpcException("Invalid data object download cleanup request", 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		// Delete the download file.
+		if(!FileUtils.deleteQuietly(new File(dataObjectDownloadCleanup.getFilePath()))) {
+		   logger.error("Failed to delete file: " + dataObjectDownloadCleanup.getFilePath());
+		}
+		
+		// Cleanup the DB record.
+		dataObjectDownloadCleanupDAO.delete(dataObjectDownloadCleanup.getDataTransferRequestId());
+	}
+	
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -496,26 +517,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      */
     private File createFile(String filePath) throws HpcException
     {
-    	String directoryPath = filePath.substring(0, filePath.lastIndexOf('/'));
-	
-    	File file = null;
+    	File file = new File(filePath);
+    	
     	try {
-    		 // Create directory if needed.
-  	         File directory = new File(directoryPath);
-  	         if(!directory.exists()) {
-  	     	    directory.mkdirs();
-  	         }
-  	
-  	         // Create the file.
-  	         file = new File(filePath);
-  	         if(!file.createNewFile()) {
-  	            throw new HpcException("File already exists: " + file.getAbsolutePath(), 
-  			                           HpcErrorType.DATA_TRANSFER_ERROR);	
-  	         }  	
+    		 FileUtils.touch(file);
   	         
     	} catch(IOException e) {
-  		        throw new HpcException("Failed to create a file: " + file.getAbsolutePath(), 
-                                       HpcErrorType.DATA_TRANSFER_ERROR);
+  		        throw new HpcException("Failed to create a file: " + filePath, 
+                                       HpcErrorType.DATA_TRANSFER_ERROR, e);
     	}
     	
     	return file;
