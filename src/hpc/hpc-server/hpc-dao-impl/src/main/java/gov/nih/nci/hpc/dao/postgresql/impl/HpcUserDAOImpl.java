@@ -53,7 +53,8 @@ public class HpcUserDAOImpl implements HpcUserDAO
                     "\"IRODS_USERNAME\", \"IRODS_PASSWORD\", " +
                     "\"CREATED\", \"LAST_UPDATED\") " +
                     "values (?, ?, ?, ?, ?, ?, ?, ?) " +
-           "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", \"DOC\", " +
+           "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", " +
+                                                  "\"DOC\"=excluded.\"DOC\", " +
                                                   "\"LAST_NAME\"=excluded.\"LAST_NAME\", " +
                                                   "\"IRODS_USERNAME\"=excluded.\"IRODS_USERNAME\", " +
                                                   "\"IRODS_PASSWORD\"=excluded.\"IRODS_PASSWORD\", " +

@@ -19,12 +19,10 @@ CREATE TABLE public."HPC_USER"
   "FIRST_NAME" text,
   "LAST_NAME" text,
   "DOC" text,
-  "GLOBUS_USERNAME" text,
   "IRODS_USERNAME" text,
+  "IRODS_PASSWORD" bytea,
   "CREATED" date,
   "LAST_UPDATED" text,
-  "GLOBUS_PASSWORD" bytea,
-  "IRODS_PASSWORD" bytea,
   CONSTRAINT "HPC_USER_pkey" PRIMARY KEY ("USER_ID")
 )
 WITH (
