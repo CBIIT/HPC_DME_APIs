@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.integration;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
@@ -24,6 +25,7 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * <p>
@@ -183,32 +185,45 @@ public interface HpcDataTransferProxy
      * @param baseArchiveDestination The base (archive specific) destination.
      * @param path The data object (logical) path.
      * @param callerObjectId The caller's objectId.
+     * @param archiveType The type of the archive.
      * 
      * @return HpcFileLocation The calculated data transfer deposit destination.
      */
 	public static HpcFileLocation getArchiveDestinationLocation(
 			                         HpcFileLocation baseArchiveDestination,
-			                         String path, String callerObjectId) 
+			                         String path, String callerObjectId,
+			                         HpcArchiveType archiveType) 
 	{
 		// Calculate the data transfer destination absolute path as the following:
-		// 'base path' / 'caller's data transfer destination path/ 'logical path'
-		StringBuffer destinationPath = new StringBuffer();
+		
+		StringBuilder destinationPath = new StringBuilder();
 		destinationPath.append(baseArchiveDestination.getFileId());
 		
-		if(callerObjectId != null && !callerObjectId.isEmpty()) {
-		   if(callerObjectId.charAt(0) != '/') {
-			  destinationPath.append('/'); 
+		if(archiveType.equals(HpcArchiveType.ARCHIVE)) {
+		   // For Archive destination, destination path is:
+		   // 'base path' / 'caller's object-id / 'logical path'
+		   if(callerObjectId != null && !callerObjectId.isEmpty()) {
+		      if(callerObjectId.charAt(0) != '/') {
+			     destinationPath.append('/'); 
+		      }
+		      destinationPath.append(callerObjectId);
 		   }
-		   destinationPath.append(callerObjectId);
-		}
 		
-		if(path.charAt(0) != '/') {
-		   destinationPath.append('/');
+		   if(path.charAt(0) != '/') {
+		      destinationPath.append('/');
+		   }
+		   if(destinationPath.charAt(destinationPath.length() - 1) == '/' && 
+			  path.charAt(0) == '/') {
+			  destinationPath.append(path.substring(1));
+		   } else {
+			       destinationPath.append(path);
+		   }
+		   
+		} else {
+			    // For Temporary Archive, destination path is:
+			    // 'base path' / generated UUID
+			    destinationPath.append('/' + UUID.randomUUID().toString());
 		}
-		if(destinationPath.charAt(destinationPath.length()-1) == '/' && path.charAt(0) == '/')
-			destinationPath.append(path.substring(1));
-		else
-			destinationPath.append(path);
 		 
 		HpcFileLocation archiveDestination = new HpcFileLocation();
 		archiveDestination.setFileContainerId(baseArchiveDestination.getFileContainerId());
