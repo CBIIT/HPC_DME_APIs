@@ -168,6 +168,16 @@ public interface HpcDataTransferService
      * @throws HpcException
      */
     public List<HpcDataObjectDownloadCleanup> getDataObjectDownloadCleanups() throws HpcException;
+    
+    /**
+     * Cleanup data object download file. 
+     *
+     * @param dataObjectDownloadCleanup The info about the file to cleanup.
+     * 
+     * @throws HpcException
+     */
+    public void cleanupDataObjectDownloadFile(
+    		           HpcDataObjectDownloadCleanup dataObjectDownloadCleanup) throws HpcException;
 }
 
  
