@@ -238,7 +238,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	HpcFileLocation sourceLocation = new HpcFileLocation();
     	sourceLocation.setFileContainerId(baseDownloadSource.getFileLocation().getFileContainerId());
     	sourceLocation.setFileId(baseDownloadSource.getFileLocation().getFileId() + "/" + 
-    	                         UUID.randomUUID().toString() + "/" + path);
+    	                         UUID.randomUUID().toString());
     	
     	return sourceLocation;
     }
