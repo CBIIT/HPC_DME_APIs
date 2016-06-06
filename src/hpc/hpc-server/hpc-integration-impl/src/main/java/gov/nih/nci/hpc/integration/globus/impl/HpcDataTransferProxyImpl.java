@@ -116,6 +116,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		                                            List<HpcMetadataEntry> metadataEntries) 
     		                                           throws HpcException
     {
+    	// Verify the source exists. 
+    	JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
+    	if(!getPathAttributes(uploadRequest.getSourceLocation(), client, false).getExists()) {
+    	   throw new HpcException("Source doesn't exist or not accessible: " + 
+    	                          uploadRequest.getSourceLocation(), 
+    	                          HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    			
     	// Calculate the archive destination.
     	HpcFileLocation archiveDestinationLocation = 
     	   getArchiveDestinationLocation(baseArchiveDestination.getFileLocation(), 
@@ -123,8 +131,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		                             uploadRequest.getCallerObjectId(),
     		                             baseArchiveDestination.getType());
     	
+
     	// Submit a request to Globus to transfer the data.
-    	String requestId = transferData(globusConnection.getTransferClient(authenticatedToken),
+    	String requestId = transferData(client,
     			                        uploadRequest.getSourceLocation(),
     			                        archiveDestinationLocation);
     	
