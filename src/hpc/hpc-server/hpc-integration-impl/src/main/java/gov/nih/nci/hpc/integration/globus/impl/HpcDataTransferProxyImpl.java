@@ -120,7 +120,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
     	if(!getPathAttributes(uploadRequest.getSourceLocation(), client, false).getExists()) {
     	   throw new HpcException("Source doesn't exist or not accessible: " + 
-    	                          uploadRequest.getSourceLocation(), 
+    	                          uploadRequest.getSourceLocation().getFileContainerId() + ":" +
+    	                          uploadRequest.getSourceLocation().getFileId(), 
     	                          HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     			
