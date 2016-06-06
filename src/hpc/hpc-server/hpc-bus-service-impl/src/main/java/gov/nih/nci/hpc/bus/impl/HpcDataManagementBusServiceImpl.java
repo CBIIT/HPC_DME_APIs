@@ -403,24 +403,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			userPermissionResponse.setResult(true);
     		    try {
     		    	 // Set the data management permission.
-    		    	 //HpcPathAttributes pathAttributes =
-    		    		dataManagementService.setPermission(entityPermissionRequest.getPath(), 
-    			    	                                    userPermissionRequest);
-    			     
-    			     // Set the physical file permission (if the path is of a file).
-    		    	 /*
-    		    	 if(pathAttributes.getIsFile()) {
-    		    		// Get the data transfer account of this user.
-    		    		HpcUser user = userService.getUser(userPermissionRequest.getUserId());
-    		    		HpcIntegratedSystemAccount dataTransferAccount = 
-    		    				                   user != null ? user.getDataTransferAccount() : null;
-    		    	    // Set the data transfer permission.
-    		    	    dataTransferService.setPermission(
-    		    		    dataManagementService.getFileLocation(entityPermissionRequest.getPath()), 
-    		    		    userPermissionRequest,
-    		    		    dataTransferAccount);
-    		    	 }
-    		    	 */
+    		    	 dataManagementService.setPermission(entityPermissionRequest.getPath(), 
+    			                                         userPermissionRequest);
     			     
     		    } catch(HpcException e) {
     		    	    // Request failed. Record the message and keep going.
@@ -431,6 +415,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		    // Add this user permission response to the list.
     		    entityPermissionResponse.getUserPermissionResponses().add(userPermissionResponse);
     		}
+    		
        		for(HpcGroupPermission groupPermissionRequest : entityPermissionRequest.getGroupPermissions()) {
     			HpcGroupPermissionResponseDTO groupPermissionResponse = new HpcGroupPermissionResponseDTO();
     			groupPermissionResponse.setGroupId(groupPermissionRequest.getGroupId());
