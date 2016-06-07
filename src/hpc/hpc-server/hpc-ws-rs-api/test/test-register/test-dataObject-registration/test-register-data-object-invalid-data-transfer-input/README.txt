@@ -13,5 +13,5 @@
 @ddblock_end copyright
 ******************************/
 
-Register a dataObject with an invalid datatransfer input. 
+Register a dataObject with an invalid datatransfer input (Globus endpoint). 
 The returned code should equal 400 with DATA_TRANSFER_ERROR as errorType.
