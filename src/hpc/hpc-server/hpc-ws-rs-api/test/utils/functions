@@ -122,6 +122,25 @@ function get_username {
 }
 
 
+#Get a parameter from the test-configuration file
+#Usage get_parameter <parameter_name> 
+function get_parameter {
+
+    if [ -z "$1" ]
+    then
+        echo "ERROR: using get_parameter"
+        echo "USAGE: get_parameter <parameter-name>"
+        exit
+    fi
+
+    CONFIGURATION_FILE="$HPC_DM_TEST/utils/configuration-file"
+    PARAMETER_NAME="$1"
+    PARAMETER_VALUE=`grep "$PARAMETER_NAME" "$CONFIGURATION_FILE" | sed "s/.*$PARAMETER_NAME[   ]*\([a-zA-Z-0-9]*\).*/\1/"`
+    echo $USER_NAME
+}
+
+
+
 #Verify that a collection or a dataObject  was registered correctly
 #Input  registration-response-header
 function verify_registration {
@@ -195,6 +214,7 @@ function curl_register {
 }
 
 #Substitute the "dxtestuid" string  with the actual username
+# and globus-shared-endpoint-uid with the value mentiond in $HPC_DM_TEST/utils/test-configuration  
 #Inputs: input_file  output_file
 function update_uid {
 
@@ -207,7 +227,9 @@ function update_uid {
     INPUT_FILE="$1"
     OUTPUT_FILE="$2"
     USERID=`get_username $HPC_DM_TEST/utils/config`
+    ENDPOINT=$(get_json_value $HPC_DM_TEST/utils/test-configuration globus-shared-endpoint-uid)
     OUT=`cat "$INPUT_FILE" | sed "s/dxtestuid/$USERID/"`
+    OUT=`echo "$OUT" | sed "s/globus-shared-endpoint-uid/$ENDPOINT/"`
     echo "$OUT" > $OUTPUT_FILE
 }
 
