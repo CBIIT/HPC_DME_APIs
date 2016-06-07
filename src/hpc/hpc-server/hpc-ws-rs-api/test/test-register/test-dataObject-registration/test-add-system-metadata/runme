@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# runme
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+source ../../utils/registration-functions
+../utils/runtest
+
+#Check if collection registration went through:
+verify_registration collection-registration-response-header.tmp
+
+#Make sure the system generated metadat file exists and is not empty
+METADATA_FILE="system-generated-metadata.tmp"
+
+if [ ! -e "$METADATA_FILE" ]
+then 
+    echo "ERROR: The file $METADATA_FILE does not exits "
+    echo "HINT: run makeme first"
+    exit
+fi
+
+SYSTEM_METADATA=$(cat $METADATA_FILE)
+if [ -z "$SYSTEM_METADATA" ]
+then 
+    echo "ERROR: The file $METADATA_FILE is empty"
+    echo "HINT: run makeme first"
+    exit
+fi
+
+SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username $HPC_DM_TEST/utils/config`
+PROJECT_PATH=`cat registered-project-path.tmp`
+
+DATAOBJECT_PATH="${PROJECT_PATH}/object-${SUFFIX}.txt"
+
+#GET the first system generate metadata and add it as attribute.
+NEW_ATTRIBUTE=$(head -n1 $METADATA_FILE)
+
+UPDATED_INPUT=$(cat input-template.json | sed "s/dx_system_attribute/$NEW_ATTRIBUTE/")
+echo $UPDATED_INPUT  > input.json
+
+../../utils/registration-runtest dataObject $PROJECT_PATH/object-${NAME}.txt  INVALID_REQUEST_INPUT 
+
