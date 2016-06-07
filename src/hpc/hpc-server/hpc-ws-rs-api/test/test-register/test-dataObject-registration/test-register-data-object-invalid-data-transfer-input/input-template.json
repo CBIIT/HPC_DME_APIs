@@ -1,7 +1,7 @@
 { 
     "source": {
-        "fileContainerId": "nihnci#NIH-NCI-TRANSFER1XXXXXXXXXX",
-        "fileId": "/GridFTP/GridFTP_t3/dxtestuid/test.txt"
+        "fileContainerId": "globus-shared-endpoint-uidXXXXXXXXXX",
+        "fileId": "test.txt"
     },
     "filePath" :  "/",
     "metadataEntries": [

@@ -33,13 +33,13 @@ http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
     3. ./utils/server
         Edit the server name and port number for the server to be tested.
 
-  II- Add a test.txt empty file to this Globus endpoint:
-        "endpoint": "nihnci#NIH-NCI-TRANSFER1",
-        "path": "/GridFTP/GridFTP_t3/<nci-userid>/test.txt"
+  II- Create a globus shared endpoint called HPC_DM_TEST and share it with the system admin. Add a test.txt empty file to this Globus endpoint:
+        "endpoint": "HPC_DM_TEST",
+        "path": "test.txt"
 
   III- Add a dice-download empty folder to this  Globus endpoint:
-        "endpoint": "nihnci#NIH-NCI-TRANSFER1",
-        "path": "/GridFTP/GridFTP_t3/<nci-userid>/dice-download/"
+        "endpoint": "HPC_DM_TEST",
+        "path": "/dice-download/"
   
   IV- Define the environment variable HPC_DM_TEST and let it point to the directory where this README.txt is located.
         For example:
