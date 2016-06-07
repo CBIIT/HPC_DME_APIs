@@ -170,9 +170,39 @@ function check_attribute {
     if [ -z "$VALUE" ]
     then
         echo "ERROR: No $ATTRIBUTE is returned" 1>&2
-    exit
+        exit
     fi
 }
+
+
+#Generate a list of the system generated metadata
+#Inputs: 1- General policies file
+#        2- Type  (either dataOjbects or collection)
+#Ouutput: The file "system-generated-metadata.tmp" which contains the attributes names 
+#Usage: get_system_added_metadata <policies-file> <type>
+
+function get_system_added_metadata {
+
+    if [ -z "$1" ] || [ -z "$2"  ]
+    then
+        echo "ERROR: using get_system_added_metadata:"
+        echo "USAGE: get_system_added_metadata <policies-file> <type>"
+        exit
+    fi
+ 
+    POLICIES_FILE="$1"
+    METADATA_TYPE="$2"
+    OUTPUT_FILE="system-generated-metadata.tmp"
+
+    ONE_LINE=$(tr "\n" " " < "$POLICIES_FILE")
+    METADATA_ARRAY=$(get_json_array_value "$ONE_LINE" "$METADATA_TYPE")
+
+    echo "$METADATA_ARRAY" | tr "," "\n" |  tr -d " \""  > $OUTPUT_FILE
+#
+
+}
+
+
 
 
 
