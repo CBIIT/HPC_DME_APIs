@@ -1,6 +1,6 @@
 { 
     "source": {
-        "fileContainerId": "c546fe96-1dd1-11e6-bfc3-22000b1701d1",
+        "fileContainerId": "globus-shared-endpoint-uid",
         "fileId": "test.txt"
     },
     "filePath" :  "/",

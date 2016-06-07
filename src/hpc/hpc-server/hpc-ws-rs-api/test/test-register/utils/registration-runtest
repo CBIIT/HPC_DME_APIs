@@ -66,7 +66,7 @@ curl_register input.json $DESTINATION_PATH $REGISTRATION_TYPE
 
 RETURN_CODE=`get_http_code $RESPONSE_HEADER`
 
-#If the input is valide, 201 should be returned
+#If the input is valid, 201 should be returned
 if [ "$VALID_INPUT" == "PASS" ] && [ -z "$ERROR_TYPE" ]
 then 
     if [ "$RETURN_CODE" != "201" ] 
