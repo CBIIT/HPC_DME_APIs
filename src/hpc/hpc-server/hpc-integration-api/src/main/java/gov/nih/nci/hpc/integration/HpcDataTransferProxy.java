@@ -195,7 +195,6 @@ public interface HpcDataTransferProxy
 			                         HpcArchiveType archiveType) 
 	{
 		// Calculate the data transfer destination absolute path as the following:
-		
 		StringBuilder destinationPath = new StringBuilder();
 		destinationPath.append(baseArchiveDestination.getFileId());
 		
