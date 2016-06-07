@@ -125,7 +125,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	                          HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	createACL(client, uploadRequest.getSourceLocation());
+    	//createACL(client, uploadRequest.getSourceLocation());
     			
     	// Calculate the archive destination.
     	HpcFileLocation archiveDestinationLocation = 
@@ -605,12 +605,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		try {
 			 JSONObject acl = new JSONObject();
 			 acl.put("DATA_TYPE", "access");
-			 acl.put("principal_type", "identity");
+			 acl.put("principal_type", "all_authenticated_users");
 			 acl.put("principal", "pkonka");
 			 acl.put("path", "/");
 			 acl.put("permissions", "r");
 			
-			 JSONTransferAPIClient.Result result = client.postResult("/endpoint/Eran-Share/access", acl, null);
+			 JSONTransferAPIClient.Result result = client.postResult(BaseTransferAPIClient.endpointPath("eranrosenberg#eran-share") +"/access", acl, null);
 			 String accessId = result.document.getString("access_id");
 			
 			 return accessId;
