@@ -124,6 +124,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	                          uploadRequest.getSourceLocation().getFileId(), 
     	                          HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
+    	
+    	createACL(client, uploadRequest.getSourceLocation());
     			
     	// Calculate the archive destination.
     	HpcFileLocation archiveDestinationLocation = 
@@ -586,4 +588,36 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
     }
+    
+    /**
+     * Create an ACL rule to add RW permission.
+     *
+     * @param client Client API instance.
+     * @param fileLocation The file location.
+     * 
+     * @return The ACL rule ID..
+     * 
+     * @throws HpcException
+     */
+    private String createACL(JSONTransferAPIClient client, HpcFileLocation fileLocation)
+                            throws HpcException
+	{
+		try {
+			 JSONObject acl = new JSONObject();
+			 acl.put("DATA_TYPE", "access");
+			 acl.put("principal_type", "identity");
+			 acl.put("principal", "pkonka");
+			 acl.put("path", "/");
+			 acl.put("permissions", "r");
+			
+			 JSONTransferAPIClient.Result result = client.postResult("/endpoint/Eran-Share/access", acl, null);
+			 String accessId = result.document.getString("access_id");
+			
+			 return accessId;
+		
+		} catch(Exception e) {
+		        throw new HpcException("Failed to create ACL: " + fileLocation, 
+		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
+		}
+	}
 }
