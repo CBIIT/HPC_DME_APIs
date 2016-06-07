@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username "$HPC_DM_TEST/utils/config"`
+COLLECTION_PATH="${USERID}/dice-unit-test/test-${NAME}"
+
+#Register the collection 
+curl_register input.json  "$COLLECTION_PATH" collection
+
+#Check the returned code is 400 
+REG_HTTP_CODE=`get_http_code collection-registration-response-header.tmp`
+if [ "$REG_HTTP_CODE" != "400" ]  
+then
+        echo "SUCCESSFUL REGISTARTION OF INVALID INPUT, HTTP_CODE = $REG_HTTP_CODE" 1>&2
+        exit
+fi
+
+
+
+mv collection-registration-response-header.tmp original-registration-header.tmp
+mv collection-registration-response-message.json.tmp original-registration-message.json.tmp
+
+
+RESPONSE_HEADER=response-header
+RESPONSE_MSG=response-message.json
+
+
+#Try to get the registered collection by path
+get_item "/collection/${COLLECTION_PATH}" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+
+
+RETURN_CODE=`get_http_code $RESPONSE_HEADER`
+
+echo  "$RETURN_CODE"  1>&2
