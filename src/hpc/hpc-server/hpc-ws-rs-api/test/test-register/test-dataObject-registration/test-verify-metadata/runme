@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# runme
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+source ../../utils/registration-functions
+../utils/runtest
+
+
+
+
+#Check if collection registration went through:
+verify_registration collection-registration-response-header.tmp
+
+SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username $HPC_DM_TEST/utils/config`
+PROJECT_PATH=`cat registered-project-path.tmp`
+
+DATAOBJECT_PATH="${PROJECT_PATH}/object-${SUFFIX}.txt"
+
+#Register the collection 
+curl_register input.json  "$DATAOBJECT_PATH" dataObject 
+
+#Check the returned code is 201
+REG_HTTP_CODE=`get_http_code dataObject-registration-response-header.tmp`
+if [ "$REG_HTTP_CODE" != "201" ]  
+then
+        echo "FAILED TO REGISTER DATAOBJECT, HTTP_CODE = $REG_HTTP_CODE" 1>&2
+        exit
+fi
+
+mv dataObject-registration-response-header.tmp original-registration-header.tmp
+echo $REG_HTTP_CODE
+
+
+#Get the registered dataObject by path
+RESPONSE_HEADER=response-header
+RESPONSE_MSG=response-message.json
+get_item "/dataObject/${DATAOBJECT_PATH}" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+
+GET_HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+if [ "$GET_HTTP_CODE" != "200" ]  
+then
+        echo "FAILED TO GET, HTTP_CODE = $GET_HTTP_CODE" 1>&2
+        exit
+fi
+
+
+#loop over all the system generated metadata and make sure they exists
+
+
+
+IFS=$'\n' read -rd '' -a METADATA_ARRAY <<<"$SYSTEM_METADATA"
+
+
+ONE_LINE=$(tr "\n" " " < "input-template.json")
+METADATA_ARRAY=$(get_json_array_value "$ONE_LINE" "metadataEntries")
+METADATA_ARRAY=$(echo "$METADATA_ARRAY" | tr "}" "\n")
+
+ATTRIBUTES=$(get_json_value "$METADATA_ARRAY" attribute)
+VALUES=$(get_json_value "$METADATA_ARRAY" value)
+
+IFS=$'\n' read -rd '' -a ATT_ARRAY <<<"$ATTRIBUTES"
+IFS=$'\n' read -rd '' -a VAL_ARRAY <<<"$VALUES"
+
+for i in `seq 0 ${#ATT_ARRAY[@]}`
+do 
+    if ! [ -z   ${ATT_ARRAY[i]} ]
+    then 
+        check_attribute "$RESPONSE_MSG" "\"${ATT_ARRAY[i]}\"" "${VAL_ARRAY[i]}"
+    fi
+done 
+
+
