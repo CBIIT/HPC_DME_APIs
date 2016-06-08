@@ -1,0 +1,3 @@
+500
+DATA_MANAGEMENT_ERROR
+Failed to update collection metadata: No access to item in catalog
