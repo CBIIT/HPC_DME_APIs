@@ -61,6 +61,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	private static final String NOT_DIRECTORY_GLOBUS_CODE = 
 			                    "ExternalError.DirListingFailed.NotDirectory";
 	
+	//ExternalError.DirListingFailed.PermissionDenied
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -605,14 +607,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		try {
 			 JSONObject acl = new JSONObject();
 			 acl.put("DATA_TYPE", "access");
-			 acl.put("principal_type", "all_authenticated_users");
-			 acl.put("principal", "pkonka");
+			 acl.put("principal_type", "identity");
+			 acl.put("principal", "pkonka@globusid.org");
 			 acl.put("path", "/");
 			 acl.put("permissions", "r");
 			
-			 Map<String, String> usernamemap = new HashMap<String, String>();
-			 usernamemap.put("usernames", "eranrosenberg@globusid.org");
-		     JSONTransferAPIClient.Result result1 = client.getResult("/v2/api/identities", usernamemap);
+
 		     
 			 JSONTransferAPIClient.Result result = client.postResult(BaseTransferAPIClient.endpointPath("eranrosenberg#eran-share") +"/access", acl, null);
 			 String accessId = result.document.getString("access_id");
