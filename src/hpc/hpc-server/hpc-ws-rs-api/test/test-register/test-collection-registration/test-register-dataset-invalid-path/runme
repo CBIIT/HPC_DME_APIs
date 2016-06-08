@@ -11,7 +11,7 @@
 # Usage: runme [no arguments]
 #import common functions
 
-DESTINATION_PATH=""
+DESTINATION_PATH="xyz"
 
 source ../../../utils/functions
 source ../../utils/registration-functions
@@ -37,6 +37,10 @@ RETURN_CODE=`get_http_code $RESPONSE_HEADER`
 ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
 ERROR_MSG=`get_json_value $RESPONSE_MSG message`
 
+
+#expecting this message
+REFORMATED_MSG=$(echo "$ERROR_MSG" | sed "s#Failed to create directory.*#Failed to create directory#")
+
 echo  $RETURN_CODE  1>&2
 echo  $ERROR_TYPE  1>&2
-echo $ERROR_MSG 1>&2
+echo $REFORMATED_MSG 1>&2
