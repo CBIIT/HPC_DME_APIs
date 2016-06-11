@@ -226,6 +226,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
                                                boolean getSize) 
                                               throws HpcException
     {
+    	boolean b = this.autoActivate(fileLocation.getFileContainerId(), 
+    			                      globusConnection.getTransferClient(authenticatedToken));
     	return getPathAttributes(fileLocation, 
     			                 globusConnection.getTransferClient(authenticatedToken),
     			                 getSize);
