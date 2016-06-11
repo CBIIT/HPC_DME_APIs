@@ -347,6 +347,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			 attributes.setIsDirectory(file.isDirectory());
 			 attributes.setIsFile(file.isFile());
 			 attributes.setSize(-1);
+			 attributes.setIsAccessible(file.canWrite());
 			 
 			 return attributes;
 			 
