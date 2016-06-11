@@ -226,11 +226,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
                                                boolean getSize) 
                                               throws HpcException
     {
-    	boolean b = this.autoActivate(fileLocation.getFileContainerId(), 
-    			                      globusConnection.getTransferClient(authenticatedToken));
-    	return getPathAttributes(fileLocation, 
-    			                 globusConnection.getTransferClient(authenticatedToken),
-    			                 getSize);
+    	JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
+    	autoActivate(fileLocation.getFileContainerId(), client);
+    	return getPathAttributes(fileLocation, client, getSize);
     }
     
     @Override
@@ -273,13 +271,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
                                 HpcFileLocation source, HpcFileLocation destination)
                                throws HpcException
 	{
-		if(!autoActivate(source.getFileContainerId(), client) || 
-		   !autoActivate(destination.getFileContainerId(), client)) {
-		   logger.error("Unable to auto activate go tutorial endpoints, exiting");
-		   // throw ENDPOINT NOT ACTIVATED HPCException
-		   //return false;
-		}
+    	// Activate endpoints.
+		autoActivate(source.getFileContainerId(), client);
+		autoActivate(destination.getFileContainerId(), client); 
 		
+		// Submit transfer request,
 		try {
 			 JSONTransferAPIClient.Result r;
 			 r = client.getResult("/transfer/submission_id");
@@ -336,19 +332,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		}    
     }
 
-	private boolean autoActivate(String endpointName, JSONTransferAPIClient client)
-                                throws HpcException 
+	private void autoActivate(String endpointName, JSONTransferAPIClient client)
+                             throws HpcException 
 	{
 		try {
              String resource = BaseTransferAPIClient.endpointPath(endpointName)
                                + "/autoactivate?if_expires_in=100";
-             JSONTransferAPIClient.Result r = client.postResult(resource, null,
-                                                                null);
-             String code = r.document.getString("code");
-             if(code.startsWith("AutoActivationFailed")) {
-            	return false;
-             }
-             return true;
+             client.postResult(resource, null, null);
              
 		} catch(Exception e) {
 		        throw new HpcException(
