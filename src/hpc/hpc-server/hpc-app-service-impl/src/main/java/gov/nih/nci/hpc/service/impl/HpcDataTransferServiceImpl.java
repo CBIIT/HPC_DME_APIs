@@ -168,10 +168,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	// Determine the data transfer type.
     	HpcDataTransferType dataTransferType;
     	if(uploadRequest.getSourceLocation() != null) {
-    	   if(!isValidFileLocation(uploadRequest.getSourceLocation())) {
-    	      throw new HpcException("Invalid upload file location", 
-    	    	                     HpcErrorType.INVALID_REQUEST_INPUT);
-    	   }
     	   dataTransferType = HpcDataTransferType.GLOBUS;
     	   
     	} else if(uploadRequest.getSourceFile() != null) {
@@ -182,7 +178,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     		    throw new HpcException("Could not determine data transfer type",
     		    		               HpcErrorType.UNEXPECTED_ERROR);
     	}
-
+    	
+    	// Validate source location exists and accessible.
+    	validateFileLocation(dataTransferType, uploadRequest.getSourceLocation(), 
+    			             true, true);
+    	
     	// Upload the data object using the appropriate data transfer proxy.
   	    return dataTransferProxies.get(dataTransferType).
   	    		   uploadDataObject(getAuthenticatedToken(dataTransferType), 
@@ -221,8 +221,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	HpcDataTransferType dataTransferType = downloadRequest.getDataTransferType();
     	HpcFileLocation destinationLocation = downloadRequest.getDestinationLocation();
     	if(dataTransferType == null || 
-    	   !isValidFileLocation(downloadRequest.getArchiveLocation()) ||
-    	   (destinationLocation != null && !isValidFileLocation(destinationLocation))) {
+    	   !isValidFileLocation(downloadRequest.getArchiveLocation())) {
   	       throw new HpcException("Invalid data transfer request", 
   	    	                      HpcErrorType.INVALID_REQUEST_INPUT);
     	}
@@ -246,6 +245,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     			         dataTransferProxies.get(HpcDataTransferType.GLOBUS).
 	                         getFilePath(secondHopDownloadRequest.getArchiveLocation().getFileId(), 
 	                        		     false)));
+    	   
+    	   // Validate the destination location.
+    	   validateFileLocation(HpcDataTransferType.GLOBUS, destinationLocation, false, true);
     	}
     	
     	// Download the data object using the appropriate data transfer proxy.
@@ -553,6 +555,47 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	} catch(HpcException e) {
     		    logger.error("Failed to persist Data Object Download Cleanup record", e);
     	}
+    }
+    
+    /**
+     * Validate file location.
+     * 
+     * @param dataTransferType The data transfer type.
+     * @param fileLocation The file location to validate. If null, no validation is performed.
+     * @param validateExists If true, validate the file exists.
+     * @param validateAccessible If true, validate file accessible.
+     * 
+     * @throws HpcException if validation failed.
+     */
+    private void validateFileLocation(HpcDataTransferType dataTransferType,
+                                      HpcFileLocation fileLocation,
+                                      boolean validateExists,
+                                      boolean validateAccessible) 
+                                     throws HpcException
+    		                                   
+    {
+    	if(fileLocation == null) {
+    	   return;
+    	}
+    
+	   	HpcPathAttributes pathAttributes = getPathAttributes(dataTransferType, 
+	   			                                             fileLocation, false);
+		
+	   	// Validate file exists.
+		if(validateExists && !pathAttributes.getExists()) {
+	 	   throw new HpcException("File location doesn't exist: " + 
+	 			                  fileLocation.getFileContainerId() + ":" +
+	 			                  fileLocation.getFileId(), 
+	 	                          HpcErrorType.INVALID_REQUEST_INPUT);	
+	 	}
+		
+	   	// Validate file accessible
+		if(validateAccessible && !pathAttributes.getIsAccessible()) {
+	 	   throw new HpcException("File location not accessible: " + 
+	 			                  fileLocation.getFileContainerId() + ":" +
+	 			                  fileLocation.getFileId(), 
+	 	                          HpcErrorType.INVALID_REQUEST_INPUT);	
+	 	}
     }
 }
  

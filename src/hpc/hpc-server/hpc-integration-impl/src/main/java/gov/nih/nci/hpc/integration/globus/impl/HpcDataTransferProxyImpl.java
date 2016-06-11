@@ -60,8 +60,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	// Globus error codes.
 	private static final String NOT_DIRECTORY_GLOBUS_CODE = 
 			                    "ExternalError.DirListingFailed.NotDirectory";
-	
-	//ExternalError.DirListingFailed.PermissionDenied
+	private static final String PERMISSION_DENIED_GLOBUS_CODE = 
+                                "ExternalError.DirListingFailed.PermissionDenied";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -120,14 +120,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     {
     	// Verify the source exists. 
     	JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
-    	if(!getPathAttributes(uploadRequest.getSourceLocation(), client, false).getExists()) {
-    	   throw new HpcException("Source doesn't exist or not accessible: " + 
-    	                          uploadRequest.getSourceLocation().getFileContainerId() + ":" +
-    	                          uploadRequest.getSourceLocation().getFileId(), 
-    	                          HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
+
     	
-    	createACL(client, uploadRequest.getSourceLocation());
+    	//createACL(client, uploadRequest.getSourceLocation());
     			
     	// Calculate the archive destination.
     	HpcFileLocation archiveDestinationLocation = 
@@ -448,6 +443,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	pathAttributes.setIsDirectory(false);
     	pathAttributes.setIsFile(false);
     	pathAttributes.setSize(0);
+    	pathAttributes.setIsAccessible(true);
     	
     	// Invoke the Globus directory listing service.
         try {
@@ -462,7 +458,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         	       pathAttributes.setExists(true);
         	       pathAttributes.setIsFile(true);
         	       pathAttributes.setSize(getSize ? getFileSize(fileLocation, client) : -1);
-        	    } // else path was not found. 
+        	    } else if(error.code.equals(PERMISSION_DENIED_GLOBUS_CODE)) {
+         	              // Path exists but not accessible.
+         	              pathAttributes.setExists(true);
+         	              pathAttributes.setIsAccessible(false);
+         	    } // else path was not found. 
         	    
         } catch(Exception e) {
 	            throw new HpcException("Failed to get path attributes: " + fileLocation, 

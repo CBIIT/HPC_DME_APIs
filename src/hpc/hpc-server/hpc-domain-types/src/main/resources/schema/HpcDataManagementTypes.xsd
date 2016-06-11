@@ -97,6 +97,7 @@
 			<xsd:element name="isFile" type="xsd:boolean" />
 			<xsd:element name="isDirectory" type="xsd:boolean" />
 			<xsd:element name="size" type="xsd:long" />
+			<xsd:element name="isAccessible" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 
