@@ -91,7 +91,7 @@ public class HpcGlobusConnection
 			
 			 Authenticator authenticator = new GoauthAuthenticator(accessToken);
 			 JSONTransferAPIClient transferClient = 
-			     new JSONTransferAPIClient(dataTransferAccount.getUsername(), null, null);
+			     new JSONTransferAPIClient(dataTransferAccount.getUsername());
 			 transferClient.setAuthenticator(authenticator);
 			 return transferClient;
 		
@@ -101,6 +101,37 @@ public class HpcGlobusConnection
 		} catch(Exception e) {
     	        throw new HpcException("Failed to authenticate Globus Account: " +
     	        		               dataTransferAccount.getUsername(),
+    	    		                   HpcErrorType.DATA_TRANSFER_ERROR, e);
+		}
+	} 
+    
+    /**
+     * Authenticate a token.
+     *
+     * @param username The Globus username
+     * @return An authenticated JSONTransferAPIClient object, or null if authentication failed.
+     */
+    public Object authenticate(String username, String accessToken)
+			                  throws HpcException
+    {
+    	GoauthClient authClient = new GoauthClient();
+    	authClient.setNexusApiHost(nexusAPIURL);
+    	authClient.setGlobusOnlineHost(globusURL);
+    	
+		try {
+			 authClient.validateAccessToken(accessToken);        
+			
+			 Authenticator authenticator = new GoauthAuthenticator(accessToken);
+			 JSONTransferAPIClient transferClient = new JSONTransferAPIClient(username);
+			 transferClient.setAuthenticator(authenticator);
+			 return transferClient;
+		
+		} catch(InvalidCredentialsException ice) {
+		        return null;
+		    
+		} catch(Exception e) {
+    	        throw new HpcException("Failed to authenticate Globus Account: " +
+    	        		               username,
     	    		                   HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 	} 
