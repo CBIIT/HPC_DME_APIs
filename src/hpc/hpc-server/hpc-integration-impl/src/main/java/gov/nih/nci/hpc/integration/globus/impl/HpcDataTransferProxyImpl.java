@@ -121,9 +121,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	// Verify the source exists. 
     	JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 
-    	JSONTransferAPIClient client1 = globusConnection.getTransferClient(
-    	globusConnection.authenticate("eranrosenberg", "AQBXYFrFAAAAAAADWxlbzOKvHnSjklWk3B--RaytmHUyKz0JwNsBcna6Naf69GW2kOBLvQGDYoKo7xiF8rZE"));
-    	createACL(client1, uploadRequest.getSourceLocation());
+    	//JSONTransferAPIClient client1 = globusConnection.getTransferClient(
+    	//globusConnection.authenticate("eranrosenberg@globusid.org", "AQBXYF_RAAAAAAADWxmuVCxLxsFPixcomyx4sNvT5zERR9z6jadnmASRHM81OywDsBro_U0-KkASvDiOyv_4"));
+    	//createACL(client1, uploadRequest.getSourceLocation());
     			
     	// Calculate the archive destination.
     	HpcFileLocation archiveDestinationLocation = 
@@ -590,7 +590,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
      * @param client Client API instance.
      * @param fileLocation The file location.
      * 
-     * @return The ACL rule ID..
+     * @return The ACL rule ID.
      * 
      * @throws HpcException
      */
