@@ -121,8 +121,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	// Verify the source exists. 
     	JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 
-    	
-    	createACL(client, uploadRequest.getSourceLocation());
+    	JSONTransferAPIClient client1 = globusConnection.getTransferClient(
+    	globusConnection.authenticate("eranrosenberg", "AQBXYFrFAAAAAAADWxlbzOKvHnSjklWk3B--RaytmHUyKz0JwNsBcna6Naf69GW2kOBLvQGDYoKo7xiF8rZE"));
+    	createACL(client1, uploadRequest.getSourceLocation());
     			
     	// Calculate the archive destination.
     	HpcFileLocation archiveDestinationLocation = 
