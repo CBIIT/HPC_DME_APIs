@@ -122,7 +122,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 
     	
-    	//createACL(client, uploadRequest.getSourceLocation());
+    	createACL(client, uploadRequest.getSourceLocation());
     			
     	// Calculate the archive destination.
     	HpcFileLocation archiveDestinationLocation = 
@@ -599,14 +599,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		try {
 			 JSONObject acl = new JSONObject();
 			 acl.put("DATA_TYPE", "access");
-			 acl.put("principal_type", "identity");
-			 acl.put("principal", "pkonka@globusid.org");
-			 acl.put("path", "/");
+			 //acl.put("principal_type", "identity");
+			 //acl.put("principal", "pkonka@globusid.org");
+			 acl.put("principal_type", "all_authenticated_users");
+			 acl.put("principal", "");
+			 acl.put("path", fileLocation.getFileId());
 			 acl.put("permissions", "r");
-			
-
 		     
-			 JSONTransferAPIClient.Result result = client.postResult(BaseTransferAPIClient.endpointPath("eranrosenberg#eran-share") +"/access", acl, null);
+			 JSONTransferAPIClient.Result result = client.postResult(BaseTransferAPIClient.endpointPath(fileLocation.getFileContainerId()) +"/access", acl, null);
 			 String accessId = result.document.getString("access_id");
 			
 			 return accessId;
