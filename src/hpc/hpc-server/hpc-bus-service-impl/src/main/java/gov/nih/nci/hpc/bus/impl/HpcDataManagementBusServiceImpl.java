@@ -519,9 +519,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			
 			// Validate the user permission requests for this path. 
 			List<HpcUserPermission> userPermissionRequests = entityPermissionRequest.getUserPermissions();
+			List<HpcGroupPermission> groupPermissionRequests = entityPermissionRequest.getGroupPermissions();
 			
-			if(userPermissionRequests == null || userPermissionRequests.isEmpty()) {
-			   throw new HpcException("Null or empty user permission requests for path: " + path,
+			if((userPermissionRequests == null || userPermissionRequests.isEmpty()) && (groupPermissionRequests == null || groupPermissionRequests.isEmpty())) {
+			   throw new HpcException("Null or empty user and group permission requests for path: " + path,
                                       HpcErrorType.INVALID_REQUEST_INPUT);						
 			}
 			
@@ -545,7 +546,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 			
 			// Validate the group permission requests for this path. 
-			List<HpcGroupPermission> groupPermissionRequests = entityPermissionRequest.getGroupPermissions();
 			Set<String> groupIds = new HashSet<String>(); 
 			for(HpcGroupPermission groupPermissionRequest : groupPermissionRequests) {
 				String groupId = groupPermissionRequest.getGroupId();
