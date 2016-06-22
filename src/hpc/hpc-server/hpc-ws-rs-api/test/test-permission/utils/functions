@@ -43,6 +43,7 @@ function update_permission {
     RESPONSE_MSG="$3"
     SERVER=`cat $HPC_DM_TEST/utils/server`
     curl -H "Content-Type: application/json" -d @$PERMISSION_FILE -X POST ${SERVER}/hpc-server/acl  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    #echo "curl -H \"Content-Type: application/json\" -d @$PERMISSION_FILE -X POST ${SERVER}/hpc-server/acl  --config $HPC_DM_TEST/utils/config  -H \"Accept: application/json\" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status "
     check_connection $RESPONSE_HEADER
 }
 
@@ -98,12 +99,14 @@ function check_message {
 function register_permission_collection {
      
  
-    PERMISSION_UTILS=$HPC_DM_TEST/test-permission/utils/
+    #PERMISSION_UTILS=$HPC_DM_TEST/test-permission/utils/
     #Register the collection
     USERID=`get_username $HPC_DM_TEST/utils/config`
     PROJECT_PATH="/FNL_SF_Archive/${USERID}/dice-unit-test/project-permission"
     echo "$PROJECT_PATH" > registered-project-path.tmp
-    curl_register $PERMISSION_UTILS/register-project.json "$PROJECT_PATH" collection
+
+    register_collection_from_template  "$PROJECT_PATH"
+    #curl_register $PERMISSION_UTILS/register-project.json "$PROJECT_PATH" collection
 }
 
 #Register a new project and a user
@@ -115,13 +118,5 @@ function register_new_project_and_user {
     register_permission_collection
    
     #Register a user
-
-    TEMPLATE=$HPC_DM_TEST/test-permission/utils/register-user-template.json
-    RESPONSE_CODE=$( create_new_user $TEMPLATE)
-    if [ "$RESPONSE_CODE" !=  "201" ] 
-    then 
-        echo "ERROR: Failed to register new user"
-        echo "Response code:$RESPONSE_CODE "
-        exit
-    fi
+    register_user_from_template
 }
