@@ -1,9 +1,5 @@
 { 
-    "source": {
-        "fileContainerId": "nihnci#NIH-NCI-TRANSFER1",
-        "fileId": "/GridFTP/GridFTP_t3/dxtestuid/test.txt"
-    },
-    "metadataEntries": [
+        "metadataEntries": [
     {
         "attribute": "name",
         "value": "dxtest-data-name"
