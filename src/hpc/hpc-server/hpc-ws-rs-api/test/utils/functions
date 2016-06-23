@@ -317,6 +317,135 @@ function create_new_user {
     echo $RESPONSE_CODE
 }
 
+#Register a new test user using the tempalte
+function register_user_from_template {
+
+    TEMPLATE=$HPC_DM_TEST/utils/templates/register-user-template.json
+    RESPONSE_CODE=$(create_new_user $TEMPLATE)
+    if [ "$RESPONSE_CODE" !=  "201" ] 
+    then 
+        echo "ERROR: Failed to register new user"
+        echo "Response code:$RESPONSE_CODE "
+        exit
+    fi
+}
+
+#Register a new group
+#Inputs: registration-input.json
+#      : response-header
+#      : response-msg
+function register_group {
+
+    if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] 
+    then
+        echo "ERROR: using register_group"
+        echo "USAGE: register_group  <input.json> <response-header> <response-msg>"
+        exit
+    fi
+
+    INPUT_FILE="$1"
+    RESPONSE_HEADER="$2"
+    RESPONSE_MSG="$3"
+
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+    curl -H "Content-Type: application/json" -d @"$INPUT_FILE" -X POST ${SERVER}/hpc-server/group  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
+    check_connection $RESPONSE_HEADER
+
+}
+
+#Create a new group from template
+function register_group_from_template {
+
+    SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+    NEW_GROUP=group-$SUFFIX
+    INPUT_TEMPLATE=$(cat $HPC_DM_TEST/utils/templates/register-new-group-template.json)
+    
+    ADDED_GROUP=$(echo "$INPUT_TEMPLATE" | sed "s/dxtest-group/$NEW_GROUP/")
+
+    echo "$ADDED_GROUP" > input.json.tmp
+    echo "$NEW_GROUP" > new-group-id.tmp
+
+    RESPONSE_MSG=group-registration-response-message.json.tmp
+    RESPONSE_HEADER=group-registration-response-header.tmp
+    register_group  "input.json.tmp" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+}
+
+#Add user to group
+#Inputs: groupID
+#      : userID 
+function add_user_to_group {
+
+    if [ -z "$1" ] || [ -z "$2" ]
+    then
+        echo "ERROR: using add_user_to_group"
+        echo "USAGE: add_user_to_group  <group-id> <user-id>"
+        exit
+    fi
+
+    GROUP_ID="$1"
+    USER_ID="$2"
+
+    INPUT_TEMPLATE=$(cat $HPC_DM_TEST/utils/templates/add-user-to-group-template.json)
+    ADDED_USER=$(echo "$INPUT_TEMPLATE" | sed "s/dxtest-new-user/$USER_ID/")
+    ADDED_GROUP=$(echo "$ADDED_USER" | sed "s/dxtest-group/$GROUP_ID/")
+
+    echo "$ADDED_GROUP" > input.json.tmp
+
+    RESPONSE_MSG=group-registration-response-message.json.tmp
+    RESPONSE_HEADER=group-registration-response-header.tmp
+
+    register_group "input.json.tmp" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+}
+
+#Register a new user and a group from template:
+function register-user-and-group {
+
+
+    register_user_from_template
+    register_group_from_template
+
+    if ! [ -e new-user-id.tmp ] 
+    then
+        echo "ERROR: The file new-user.id-tmp does not exist"
+        exit 1
+    fi
+
+ 
+    if ! [ -e new-group-id.tmp ] 
+    then
+        echo "ERROR: The file new-user.id-tmp does not exist"
+        exit 1
+    fi
+
+    NEW_USER=$(cat new-user-id.tmp )
+    NEW_GROUP=$(cat new-group-id.tmp)
+
+    add_user_to_group  "$NEW_GROUP" "$NEW_USER"
+
+}
+
+
+#Register a new collection user using the project tempalte
+#Input: collection-path
+function register_collection_from_template {
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR: using register_collection_from_template"
+        echo "USAGE: register_collection_from_template  <project-path>"
+        exit
+    fi
+
+    PROJECT_PATH="$1"
+    TEMPLATE=$HPC_DM_TEST/utils/templates/register-project-template.json
+
+    curl_register "$TEMPLATE" "$PROJECT_PATH" collection
+
+}
+
+
+
+
 #Get an item (collection or dataObject) from the archive
 #Inputs: item-path
 #      : response-header-filename
