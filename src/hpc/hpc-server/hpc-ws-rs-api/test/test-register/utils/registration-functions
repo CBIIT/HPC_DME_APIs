@@ -155,8 +155,9 @@ function validate_collection {
 
 #Make sure the attribute exists in the response header
 function check_attribute {
-    RETURNED_MSG=$1
-    ATTRIBUTE=$2
+    RETURNED_MSG="$1"
+    ATTRIBUTE="$2"
+    CORRECT_VALUE="$3"
 
     RESPONSE_GROUPS=`cat $RETURNED_MSG | tr "{" "\n"`
     OBJECT_GROUPS=`echo "$RESPONSE_GROUPS" | grep "$ATTRIBUTE"`
@@ -172,6 +173,15 @@ function check_attribute {
         echo "ERROR: No $ATTRIBUTE is returned" 1>&2
         exit
     fi
+
+    if ! [ -z "$CORRECT_VALUE" ] 
+    then
+        if ! [[ "$VALUE" == "$CORRECT_VALUE" ]]
+        then
+            echo "ERROR: The returned value for $ATTRIBUTE is \"$VALUE\" while it should be \"$CORRECT_VALUE"\" 1>&2
+        fi
+    fi
+
 }
 
 
