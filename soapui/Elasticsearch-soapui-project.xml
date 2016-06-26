@@ -1,21 +1,299 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<con:soapui-project id="1bae70c6-1f2a-4f94-a4c0-b45b125e3e71" activeEnvironment="Default" name="Elasticsearch" resourceRoot="" soapui-version="5.2.1" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:RestService" id="87f31350-25bf-4f19-b474-2c3b708020e1" wadlVersion="http://wadl.dev.java.net/2009/02" name="http://localhost:9200" type="rest" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache/><con:endpoints><con:endpoint>http://localhost:9200</con:endpoint></con:endpoints><con:resource name="Health Check" path="/_cluster/health" id="dc8b9d5b-3945-4e9a-be5c-fba05cec3500"><con:settings/><con:parameters/><con:method name="" id="18e64125-2c32-4651-9daa-f9fabe4ca6ec" method="GET"><con:settings/><con:parameters/><con:representation type="RESPONSE"><con:mediaType>application/json; charset=UTF-8</con:mediaType><con:status>200</con:status><con:params/><con:element xmlns:heal="http://localhost/_cluster/health">heal:Response</con:element></con:representation><con:request name="Health Check" id="402b27a9-fde7-45ba-b02d-293e77f0208c" mediaType="application/json"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9200</con:endpoint><con:request/><con:originalUri>http://localhost/_cluster/health</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method></con:resource><con:resource name="Register Metadata" path="/hpc/metadata/{id}" id="dc8b9d5b-3945-4e9a-be5c-fba05cec3500"><con:settings/><con:parameters><con:parameter><con:name>id</con:name><con:value/><con:style>TEMPLATE</con:style><con:default/><con:description xsi:nil="true"/></con:parameter></con:parameters><con:method name="" id="18e64125-2c32-4651-9daa-f9fabe4ca6ec" method="PUT"><con:settings/><con:parameters/><con:representation type="RESPONSE"><con:mediaType>application/json; charset=UTF-8</con:mediaType><con:status>200 201</con:status><con:params/><con:element xmlns:heal="http://localhost/_cluster/health">heal:Response</con:element></con:representation><con:representation type="REQUEST"><con:mediaType>application/json</con:mediaType><con:params/></con:representation><con:request name="Register Metadata" id="402b27a9-fde7-45ba-b02d-293e77f0208c" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9200</con:endpoint><con:request>{
-	"metadataEntries": [
-      	{
-      	 "attribute": "name",
-      	 "value": "file-name dfdf"
-   		},
-      	{
-      	 "attribute": "description",
-      	 "value": "file-description"
-   		},
-   		{
-      	 "attribute": "source_lab_pi",
-      	 "value": "fdfdfd"
-   		},
-   		{
-      	 "attribute": "lab_branch",
-      	 "value": "file-Lab / Branch Name"
-   		}
-   	]
-}</con:request><con:originalUri>http://localhost/_cluster/health</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters><entry key="id" value="data-obj-3" xmlns="http://eviware.com/soapui/config"/></con:parameters><con:parameterOrder><con:entry>id</con:entry></con:parameterOrder></con:request></con:method></con:resource><con:resource name="Get Metadata" path="/hpc/metadata/{id}" id="dc8b9d5b-3945-4e9a-be5c-fba05cec3500"><con:settings/><con:parameters><con:parameter><con:name>id</con:name><con:value/><con:style>TEMPLATE</con:style><con:default/><con:description xsi:nil="true"/></con:parameter></con:parameters><con:method name="" id="18e64125-2c32-4651-9daa-f9fabe4ca6ec" method="GET"><con:settings/><con:parameters/><con:representation type="RESPONSE"><con:mediaType>application/json; charset=UTF-8</con:mediaType><con:status>200 201</con:status><con:params/><con:element xmlns:heal="http://localhost/_cluster/health">heal:Response</con:element></con:representation><con:representation type="REQUEST"><con:mediaType>application/json</con:mediaType><con:params/></con:representation><con:request name="Get Metadata" id="402b27a9-fde7-45ba-b02d-293e77f0208c" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9200</con:endpoint><con:request/><con:originalUri>http://localhost/_cluster/health</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters><entry key="id" value="data-obj-1" xmlns="http://eviware.com/soapui/config"/></con:parameters><con:parameterOrder><con:entry>id</con:entry></con:parameterOrder></con:request></con:method></con:resource><con:resource name="Get All Metadata" path="/hpc/metadata/_search" id="dc8b9d5b-3945-4e9a-be5c-fba05cec3500"><con:settings/><con:parameters/><con:method name="" id="18e64125-2c32-4651-9daa-f9fabe4ca6ec" method="GET"><con:settings/><con:parameters/><con:representation type="RESPONSE"><con:mediaType>application/json; charset=UTF-8</con:mediaType><con:status>200 201</con:status><con:params/><con:element xmlns:heal="http://localhost/_cluster/health">heal:Response</con:element></con:representation><con:representation type="REQUEST"><con:mediaType>application/json</con:mediaType><con:params/></con:representation><con:request name="Get All  Metadata" id="402b27a9-fde7-45ba-b02d-293e77f0208c" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9200</con:endpoint><con:request/><con:originalUri>http://localhost/_cluster/health</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/><con:parameterOrder/></con:request></con:method></con:resource></con:interface><con:properties/><con:wssContainer/><con:oAuth2ProfileContainer/><con:sensitiveInformation/></con:soapui-project>
+<con:soapui-project id="1bae70c6-1f2a-4f94-a4c0-b45b125e3e71" activeEnvironment="Default" name="Elasticsearch" resourceRoot="" soapui-version="5.2.1" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:RestService" id="87f31350-25bf-4f19-b474-2c3b708020e1" wadlVersion="http://wadl.dev.java.net/2009/02" name="http://localhost:9200" type="rest" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache/><con:endpoints><con:endpoint>http://localhost:9200</con:endpoint></con:endpoints><con:resource name="Health Check" path="/_cluster/health" id="dc8b9d5b-3945-4e9a-be5c-fba05cec3500"><con:settings/><con:parameters/><con:method name="" id="18e64125-2c32-4651-9daa-f9fabe4ca6ec" method="GET"><con:settings/><con:parameters/><con:representation type="RESPONSE"><con:mediaType>application/json; charset=UTF-8</con:mediaType><con:status>200</con:status><con:params/><con:element xmlns:heal="http://localhost/_cluster/health">heal:Response</con:element></con:representation><con:request name="Health Check" id="402b27a9-fde7-45ba-b02d-293e77f0208c" mediaType="application/json"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9200</con:endpoint><con:request/><con:originalUri>http://localhost/_cluster/health</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method></con:resource><con:resource name="Register Project" path="/hpc/project/{id}" id="dc8b9d5b-3945-4e9a-be5c-fba05cec3500"><con:settings/><con:parameters><con:parameter><con:name>id</con:name><con:value/><con:style>TEMPLATE</con:style><con:default/><con:description xsi:nil="true"/></con:parameter></con:parameters><con:method name="" id="18e64125-2c32-4651-9daa-f9fabe4ca6ec" method="PUT"><con:settings/><con:parameters/><con:representation type="RESPONSE"><con:mediaType>application/json; charset=UTF-8</con:mediaType><con:status>200 201</con:status><con:params/><con:element xmlns:heal="http://localhost/_cluster/health">heal:Response</con:element></con:representation><con:representation type="REQUEST"><con:mediaType>application/json</con:mediaType><con:params/></con:representation><con:representation type="FAULT"><con:mediaType>application/json; charset=UTF-8</con:mediaType><con:status>400</con:status><con:params/><con:element xmlns:heal="http://localhost/_cluster/health">heal:Fault</con:element></con:representation><con:request name="Register Project 1" id="402b27a9-fde7-45ba-b02d-293e77f0208c" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9200</con:endpoint><con:request>{
+	"metadata" : [
+	{
+ 		"attribute": "name",
+ 	 	"value": "My project One"
+	},
+	{
+ 	 	"attribute": "description",
+ 	 	"value": "My project one description abc"
+	},
+	{
+ 		"attribute": "eran",
+ 	 	"value": "rosenberg"
+	}],
+	"dataObjects" : []
+}</con:request><con:originalUri>http://localhost/_cluster/health</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters><entry key="id" value="project-1" xmlns="http://eviware.com/soapui/config"/></con:parameters><con:parameterOrder><con:entry>id</con:entry></con:parameterOrder></con:request><con:request name="Register Project 2" id="402b27a9-fde7-45ba-b02d-293e77f0208c" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9200</con:endpoint><con:request>{
+	"metadata" : [
+	{
+ 		"attribute": "name",
+ 	 	"value": "My project Two"
+	},
+	{
+ 	 	"attribute": "description",
+ 	 	"value": "My project two description"
+	},
+	{
+ 		"attribute": "eran",
+ 	 	"value": "rosenberg"
+	}],
+	"dataObjects" : []
+}</con:request><con:originalUri>http://localhost/_cluster/health</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters><entry key="id" value="project-2" xmlns="http://eviware.com/soapui/config"/></con:parameters><con:parameterOrder><con:entry>id</con:entry></con:parameterOrder></con:request></con:method></con:resource><con:resource name="Query Metadata" path="/hpc/project/_search" id="dc8b9d5b-3945-4e9a-be5c-fba05cec3500"><con:settings/><con:parameters/><con:method name="" id="18e64125-2c32-4651-9daa-f9fabe4ca6ec" method="POST"><con:settings/><con:parameters/><con:representation type="RESPONSE"><con:mediaType>application/json; charset=UTF-8</con:mediaType><con:status>200 201</con:status><con:params/><con:element xmlns:heal="http://localhost/_cluster/health">heal:Response</con:element></con:representation><con:representation type="REQUEST"><con:mediaType>application/json</con:mediaType><con:params/></con:representation><con:representation type="FAULT"><con:mediaType>application/json; charset=UTF-8</con:mediaType><con:status>400</con:status><con:params/><con:element xmlns:heal="http://localhost/_cluster/health">heal:Fault</con:element></con:representation><con:request name="Single Project Metadata Search" id="402b27a9-fde7-45ba-b02d-293e77f0208c" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9200</con:endpoint><con:request>
+  {
+    "query": {
+      "nested": {
+        "path": "metadata",
+        "query": {
+          "filtered": {
+            "filter": {
+              "and": {
+                "filters": [
+                  {
+                    "query": {
+                      "term": {
+                        "metadata.attribute": "eran"
+                      }
+                    }
+                  },
+                  {
+                    "query": {
+                      "match": {
+                        "metadata.value": "eran rosenberg"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }</con:request><con:originalUri>http://localhost/_cluster/health</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/><con:parameterOrder/></con:request><con:request name="Single Data Object Metadata Search" id="402b27a9-fde7-45ba-b02d-293e77f0208c" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9200</con:endpoint><con:request>{
+  "query": {
+    "nested": {
+      "path": "dataObjects.metadata",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "term": {
+                "dataObjects.metadata.attribute": "name"
+              }
+            },
+            {
+              "match": {
+                "dataObjects.metadata.value": "Data"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}</con:request><con:originalUri>http://localhost/_cluster/health</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/><con:parameterOrder/></con:request><con:request name="Multi Data Object Metadata Search" id="402b27a9-fde7-45ba-b02d-293e77f0208c" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9200</con:endpoint><con:request>{
+  "query": {
+    "filtered": {
+      "filter": {
+        "or": {
+          "filters": [
+            {
+              "query": {
+                "nested": {
+                  "path": "dataObjects.metadata",
+                  "query": {
+                    "bool": {
+                      "must": [
+                        {
+                          "term": {
+                            "dataObjects.metadata.attribute": "name"
+                          }
+                        },
+                        {
+                          "match_phrase": {
+                            "dataObjects.metadata.value": "one"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "query": {
+                "nested": {
+                  "path": "dataObjects.metadata",
+                  "query": {
+                    "bool": {
+                      "must": [
+                        {
+                          "term": {
+                            "dataObjects.metadata.attribute": "name"
+                          }
+                        },
+                        {
+                          "match_phrase": {
+                            "dataObjects.metadata.value": "two"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}</con:request><con:originalUri>http://localhost/_cluster/health</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/><con:parameterOrder/></con:request></con:method></con:resource><con:resource name="Filter Metadata" path="/hpc/metadata/_search" id="dc8b9d5b-3945-4e9a-be5c-fba05cec3500"><con:settings/><con:parameters/><con:method name="" id="18e64125-2c32-4651-9daa-f9fabe4ca6ec" method="POST"><con:settings/><con:parameters/><con:representation type="RESPONSE"><con:mediaType>application/json; charset=UTF-8</con:mediaType><con:status>200 201</con:status><con:params/><con:element xmlns:heal="http://localhost/_cluster/health">heal:Response</con:element></con:representation><con:representation type="REQUEST"><con:mediaType>application/json</con:mediaType><con:params/></con:representation><con:representation type="FAULT"><con:mediaType>application/json; charset=UTF-8</con:mediaType><con:status>400</con:status><con:params/><con:element xmlns:heal="http://localhost/_cluster/health">heal:Fault</con:element></con:representation><con:request name="Filter Metadata" id="402b27a9-fde7-45ba-b02d-293e77f0208c" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9200</con:endpoint><con:request>{
+	"query" : {
+		"filtered" : {
+			"filter" : {
+				"range" : {
+					 "metadataEntries.value" : {
+					 	"gte" : 58888
+					 }
+				}
+			}
+		}
+	}
+}
+</con:request><con:originalUri>http://localhost/_cluster/health</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/><con:parameterOrder/></con:request></con:method></con:resource><con:resource name="Mappings" path="/hpc" id="dc8b9d5b-3945-4e9a-be5c-fba05cec3500"><con:settings/><con:parameters/><con:method name="" id="18e64125-2c32-4651-9daa-f9fabe4ca6ec" method="PUT"><con:settings/><con:parameters/><con:representation type="RESPONSE"><con:mediaType>application/json; charset=UTF-8</con:mediaType><con:status>200 201</con:status><con:params/><con:element xmlns:heal="http://localhost/_cluster/health">heal:Response</con:element></con:representation><con:representation type="REQUEST"><con:mediaType>application/json</con:mediaType><con:params/></con:representation><con:representation type="FAULT"><con:mediaType>application/json; charset=UTF-8</con:mediaType><con:status>400</con:status><con:params/><con:element xmlns:heal="http://localhost/_cluster/health">heal:Fault</con:element></con:representation><con:representation type="FAULT"><con:mediaType>text/plain; charset=UTF-8</con:mediaType><con:status>400</con:status><con:params/><con:element>data</con:element></con:representation><con:request name="Mappings" id="402b27a9-fde7-45ba-b02d-293e77f0208c" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9200</con:endpoint><con:request>{
+    "mappings": {
+      "project": {
+        "properties": {
+          "dataObjects": {
+            "type": "nested",
+            "properties": {
+              "metadata": {
+              	 "type": "nested",
+                "properties": {
+                  "attribute": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              },
+              "uuid": {
+                "type": "string",
+                "index": "not_analyzed"
+              }
+            }
+          },
+          "metadata": {
+            "type": "nested",
+            "properties": {
+              "attribute": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+}</con:request><con:originalUri>http://localhost/_cluster/health</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/><con:parameterOrder/></con:request></con:method></con:resource><con:resource name="Register Data Object" path="/hpc/project/{id}/_update" id="dc8b9d5b-3945-4e9a-be5c-fba05cec3500"><con:settings/><con:parameters><con:parameter><con:name>id</con:name><con:value/><con:style>TEMPLATE</con:style><con:default/><con:description xsi:nil="true"/></con:parameter></con:parameters><con:method name="" id="18e64125-2c32-4651-9daa-f9fabe4ca6ec" method="POST"><con:settings/><con:parameters/><con:representation type="RESPONSE"><con:mediaType>application/json; charset=UTF-8</con:mediaType><con:status>200 201</con:status><con:params/><con:element xmlns:heal="http://localhost/_cluster/health">heal:Response</con:element></con:representation><con:representation type="REQUEST"><con:mediaType>application/json</con:mediaType><con:params/></con:representation><con:representation type="FAULT"><con:mediaType>application/json; charset=UTF-8</con:mediaType><con:status>400 500</con:status><con:params/><con:element xmlns:heal="http://localhost/_cluster/health">heal:Fault</con:element></con:representation><con:request name="Register Data Object 1" id="402b27a9-fde7-45ba-b02d-293e77f0208c" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9200</con:endpoint><con:request>{
+	"script" : {
+        "file": "addDataObject",
+        "params" : {
+            "dataObject" : {
+			"uuid" : "dataObject-1",
+			"metadata" : [
+			{
+		 		"attribute": "name",
+		 	 	"value": "My Data Object One"
+			},
+			{
+		 	 	"attribute": "description",
+		 	 	"value": "My Data Object one description"
+			},
+			{
+		 	 	"attribute": "prasad",
+		 	 	"value": "konka"
+			},
+			{
+		 		"attribute": "eran",
+		 	 	"value": "rosenberg"
+			}]
+            }
+        }
+	}
+}</con:request><con:originalUri>http://localhost/_cluster/health</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters><entry key="id" value="project-1" xmlns="http://eviware.com/soapui/config"/></con:parameters><con:parameterOrder><con:entry>id</con:entry></con:parameterOrder></con:request><con:request name="Register Data Object 2" id="402b27a9-fde7-45ba-b02d-293e77f0208c" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9200</con:endpoint><con:request>{
+	"script" : {
+        "file": "addDataObject",
+        "params" : {
+            "dataObject" : {
+			"uuid" : "dataObject-2",
+			"metadata" : [
+			{
+		 		"attribute": "name",
+		 	 	"value": "My Data Object Two"
+			},
+			{
+		 	 	"attribute": "description",
+		 	 	"value": "My Data Object two description"
+			},
+			{
+		 	 	"attribute": "prasad",
+		 	 	"value": "konka"
+			},
+			{
+		 		"attribute": "eran",
+		 	 	"value": "rosenberg"
+			}]
+            }
+        }
+	}
+}</con:request><con:originalUri>http://localhost/_cluster/health</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters><entry key="id" value="project-2" xmlns="http://eviware.com/soapui/config"/></con:parameters><con:parameterOrder><con:entry>id</con:entry></con:parameterOrder></con:request><con:request name="Register Data Object 3" id="402b27a9-fde7-45ba-b02d-293e77f0208c" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9200</con:endpoint><con:request>{
+	"script" : {
+        "file": "addDataObject",
+        "params" : {
+            "dataObject" : {
+			"uuid" : "dataObject-3",
+			"metadata" : [
+			{
+		 		"attribute": "name",
+		 	 	"value": "My Data Object One"
+			},
+			{
+		 	 	"attribute": "description",
+		 	 	"value": "My Data Object one description"
+			},
+			{
+		 	 	"attribute": "prasad",
+		 	 	"value": "konka"
+			},
+			{
+		 		"attribute": "eran",
+		 	 	"value": "rosenberg"
+			}]
+            }
+        }
+	}
+}</con:request><con:originalUri>http://localhost/_cluster/health</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters><entry key="id" value="project-2" xmlns="http://eviware.com/soapui/config"/></con:parameters><con:parameterOrder><con:entry>id</con:entry></con:parameterOrder></con:request><con:request name="Register Data Object 4" id="402b27a9-fde7-45ba-b02d-293e77f0208c" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9200</con:endpoint><con:request>{
+	"script" : {
+        "file": "addDataObject",
+        "params" : {
+            "dataObject" : {
+			"uuid" : "dataObject-4",
+			"metadata" : [
+			{
+		 		"attribute": "name",
+		 	 	"value": "My Data Object Two"
+			},
+			{
+		 	 	"attribute": "description",
+		 	 	"value": "My Data Object two description"
+			},
+			{
+		 	 	"attribute": "prasad",
+		 	 	"value": "konka"
+			},
+			{
+		 		"attribute": "eran",
+		 	 	"value": "rosenberg"
+			}]
+            }
+        }
+	}
+}</con:request><con:originalUri>http://localhost/_cluster/health</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters><entry key="id" value="project-2" xmlns="http://eviware.com/soapui/config"/></con:parameters><con:parameterOrder><con:entry>id</con:entry></con:parameterOrder></con:request></con:method></con:resource></con:interface><con:properties/><con:wssContainer/><con:oAuth2ProfileContainer/><con:sensitiveInformation/></con:soapui-project>
