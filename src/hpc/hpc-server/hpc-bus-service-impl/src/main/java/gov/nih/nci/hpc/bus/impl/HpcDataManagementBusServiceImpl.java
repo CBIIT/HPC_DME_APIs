@@ -121,6 +121,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	if(created) {
     	   boolean registrationCompleted = false; 
     	   try {
+    		    // Assign system account as an additional owner of the collection.
+    		    dataManagementService.assignSystemAccountPermission(path);
+    		    
     		    // Add user provided metadata.
     	        dataManagementService.addMetadataToCollection(path, metadataEntries);
        	   
@@ -224,6 +227,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    if(created) {
     	   boolean registrationCompleted = false; 
     	   try {
+    		    // Assign system account as an additional owner of the data-object.
+   		        dataManagementService.assignSystemAccountPermission(path);
+   		        
 		        // Attach the user provided metadata.
 		        dataManagementService.addMetadataToDataObject(
 		    	   		                 path, 

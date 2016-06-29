@@ -351,6 +351,18 @@ public interface HpcDataManagementService
     		                              throws HpcException;
     
     /**
+     * Assign system account as an additional owner of an entity.
+     *
+     * @param path The entity path.
+     * @return HpcPathAttributes of the path.
+     * 
+     * @throws HpcException If it failed to set the entity permission.
+     */
+    public HpcPathAttributes assignSystemAccountPermission(String path) 
+    		                                              throws HpcException;
+    
+    
+    /**
      * convert a list of metadata entries to Map<attribute, value>
      *
      * @param metadataEntries The list of metadata entries
