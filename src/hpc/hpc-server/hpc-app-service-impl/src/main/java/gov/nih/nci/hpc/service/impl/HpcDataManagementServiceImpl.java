@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -29,6 +30,8 @@ import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -87,6 +90,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	private static final String INVALID_PATH_METADATA_MSG = 
 			                    "Invalid path or metadata entry";
 	
+	// Data Management OWN permission.
+	private static final String OWN_PERMISSION = "OWN"; 
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -102,6 +108,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	// Key Generator.
 	@Autowired
 	private HpcKeyGenerator keyGenerator = null;
+	
+	// System Accounts locator.
+	@Autowired
+	private HpcSystemAccountLocator systemAccountLocator = null;
 	
 	// Prepared query to get data objects that have their data transfer in-progress to archive.
 	private List<HpcMetadataQuery> dataTransferInProgressToArchiveQuery = new ArrayList<>();
@@ -726,6 +736,25 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	
     	return pathAttributes;
     }    
+    
+    @Override
+    public HpcPathAttributes assignSystemAccountPermission(String path) 
+                                                          throws HpcException
+    {
+    	HpcIntegratedSystemAccount dataManagementAccount = 
+    	    	     systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
+    	if(dataManagementAccount == null) {
+    	   throw new HpcException("System Data Management Account not configured",
+    	      	                  HpcErrorType.UNEXPECTED_ERROR);
+    	}
+    	
+    	HpcUserPermission permissionRequest = new HpcUserPermission();
+    	permissionRequest.setPermission(OWN_PERMISSION);
+    	permissionRequest.setUserId(dataManagementAccount.getUsername());
+    	
+    	return setPermission(path, permissionRequest);
+    }
+    
     @Override
     public Map<String, String> toMap(List<HpcMetadataEntry> metadataEntries)
     {
