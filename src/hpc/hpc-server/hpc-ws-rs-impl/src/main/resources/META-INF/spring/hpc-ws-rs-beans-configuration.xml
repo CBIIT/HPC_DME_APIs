@@ -164,6 +164,9 @@
       		<ref bean="hpcAPIVersionInterceptor" />
       		<ref bean="hpcCleanupInterceptor" />
       	</jaxrs:outInterceptors>
+      	<jaxrs:properties>
+         	<entry key="attachment-directory" value="${hpc.ws.rs.attachment-directory}"/>
+     	</jaxrs:properties>
 	</jaxrs:server>
 	
 	<!-- CXF JAX-RS Secured Server Config -->
