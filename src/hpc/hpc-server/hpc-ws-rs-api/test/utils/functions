@@ -445,9 +445,32 @@ function register_collection_from_template {
 
 
 
+#Register a new collection user using the project tempalte
+#Input: collection-path "The parent collection for the dataObject"
+function register_dataobject_async_from_template {
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR: using register_dataobject_async_from_template"
+        echo "USAGE: register_dataobject_async_from_template  <collection-path>"
+        exit
+    fi
+
+    COLLECTION_PATH="$1"
+    SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+    DATAOBJECT_PATH="${COLLECTION_PATH}/object-${SUFFIX}.txt"
+    echo "$DATAOBJECT_PATH" > registered-data-object-path.tmp
+
+
+    TEMPLATE=$HPC_DM_TEST/utils/templates/register-dataobject-template.json
+    update_uid $TEMPLATE input.json.tmp
+    curl_register input.json.tmp  "$DATAOBJECT_PATH" dataObject 
+}
+
+
 
 #Get an item (collection or dataObject) from the archive
-#Inputs: item-path
+#Inputs: item-path (should have a prefix of "dataObject" or "collection:)
 #      : response-header-filename
 #      : response-message-filename
 function get_item {
