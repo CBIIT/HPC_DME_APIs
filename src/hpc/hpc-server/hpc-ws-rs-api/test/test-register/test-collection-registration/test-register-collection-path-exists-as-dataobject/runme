@@ -19,7 +19,8 @@ verify_registration dataObject-registration-response-header.tmp
 DATAOBJECT_PATH=$(cat registered-data-object-path.tmp)
 
 #Register the collection 
-curl_register project-description.json "$DATAOBJECT_PATH" collection 
+register_collection_from_template "$DATAOBJECT_PATH"
+#curl_register $HPC_DM_TEST/utils/templates/register-project-template.json  "$DATAOBJECT_PATH" collection 
 
 REG_HTTP_CODE=`get_http_code collection-registration-response-header.tmp`
 

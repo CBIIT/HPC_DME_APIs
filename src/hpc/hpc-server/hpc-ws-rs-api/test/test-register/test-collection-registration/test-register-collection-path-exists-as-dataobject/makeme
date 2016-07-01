@@ -25,18 +25,13 @@ source ../../../utils/functions
 USERID=`get_username ../../../utils/config`
 COLLECTION_PATH="/FNL_SF_Archive/${USERID}/dice-unit-test/project-add-dataobject"
 echo "$COLLECTION_PATH" >> registered-project-path.tmp
-curl_register project-description.json "$COLLECTION_PATH" collection
+
+register_collection_from_template "$COLLECTION_PATH"
+#curl_register project-description.json "$COLLECTION_PATH" collection
 
 verify_registration collection-registration-response-header.tmp
 mv collection-registration-response-header.tmp original-collection-registration-response-header.tmp
 
 #Register a dataOjbect
-SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
-USERID=`get_username $HPC_DM_TEST/utils/config`
-DATAOBJECT_PATH="${COLLECTION_PATH}/object-${SUFFIX}.txt"
-echo "$DATAOBJECT_PATH" > registered-data-object-path.tmp
-
-
-update_uid input-template.json input.json
-curl_register input.json  "$DATAOBJECT_PATH" dataObject 
+register_dataobject_async_from_template  "$COLLECTION_PATH"
 
