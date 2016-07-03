@@ -85,6 +85,9 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	
 	// The authentication token signature key.
 	private String authenticationTokenSignatureKey = null;
+	
+	// The authentication token expiration period in minutes.
+	private int authenticationTokenExpirationPeriod = 0;
 
     //---------------------------------------------------------------------//
     // Constructors
@@ -95,12 +98,15 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
      *
      * @param docValues A whitespace separated list of valid DOC values.
      * @param authenticationTokenSignatureKey The authentication token signature key.
+     * @param authenticationTokenExpirationPeriod The authentication token expiration period in minutes.
      */
     private HpcSecurityServiceImpl(String docValues, 
-    		                       String authenticationTokenSignatureKey)
+    		                       String authenticationTokenSignatureKey,
+    		                       int authenticationTokenExpirationPeriod)
     {
     	this.docValues.addAll(Arrays.asList(docValues.split("\\s+")));
     	this.authenticationTokenSignatureKey = authenticationTokenSignatureKey;
+    	this.authenticationTokenExpirationPeriod = authenticationTokenExpirationPeriod;
     }
 
     /**
@@ -278,12 +284,17 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     public String getAuthenticationToken(String userName, String password)
                                         throws HpcException
     {
-    	// Prepare the Claims MAp.
+    	// Prepare the Claims Map.
     	Map<String, Object> claims = new HashMap<>();
     	claims.put(TOKEN_USER_NAME, userName);
     	claims.put(TOKEN_PASSWORD, password);
     	
+    	// Calculate the expiration date.
+    	Calendar tokenExpiration = Calendar.getInstance();
+    	tokenExpiration.add(Calendar.MINUTE, authenticationTokenExpirationPeriod);
+    	
     	return Jwts.builder().setSubject(TOKEN_SUBJECT).setClaims(claims).
+    			              setExpiration(tokenExpiration.getTime()).
     			              signWith(SignatureAlgorithm.HS256, authenticationTokenSignatureKey).
     			              compact();
     }
