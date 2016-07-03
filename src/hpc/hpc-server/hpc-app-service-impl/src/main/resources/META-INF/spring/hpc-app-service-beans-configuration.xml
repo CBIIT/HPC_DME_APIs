@@ -45,6 +45,7 @@
 	<bean id="hpcSecurityService" class="gov.nih.nci.hpc.service.impl.HpcSecurityServiceImpl">
 		<constructor-arg value="${hpc.service.security.DOC}" index="0" />
 		<constructor-arg value="${hpc.service.security.authenticationTokenSignatureKey}" index="1" />
+		<constructor-arg value="${hpc.service.security.authenticationTokenExpirationPeriod}" index="2" />
 	</bean>
 	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl" >
 		<constructor-arg ref="hpcDataTransferProxies" index="0" />
