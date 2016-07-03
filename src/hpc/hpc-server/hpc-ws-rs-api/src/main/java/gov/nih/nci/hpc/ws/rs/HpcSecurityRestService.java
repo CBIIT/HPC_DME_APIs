@@ -76,7 +76,7 @@ public interface HpcSecurityRestService
      * @param authenticationRequest The authentication request.
      * @return gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO entity.
      */
-    @POST
+    @GET
     @Path("/authenticate")
     @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response authenticate();
