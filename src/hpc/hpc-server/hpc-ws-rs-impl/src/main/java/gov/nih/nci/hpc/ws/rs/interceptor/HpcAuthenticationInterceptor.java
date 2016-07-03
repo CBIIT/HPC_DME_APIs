@@ -12,7 +12,6 @@ package gov.nih.nci.hpc.ws.rs.interceptor;
 
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.dto.security.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.exception.HpcAuthenticationException;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -42,9 +41,9 @@ public class HpcAuthenticationInterceptor
     // Instance members
     //---------------------------------------------------------------------//
 
-    // The User Business Service instance.
+    // The Security Business Service instance.
 	@Autowired
-    private HpcSecurityBusService userBusService = null;
+    private HpcSecurityBusService securityBusService = null;
 	
 	// LDAP authentication on/off switch.
 	private boolean ldapAuthentication = true;
@@ -91,19 +90,17 @@ public class HpcAuthenticationInterceptor
     public void handleMessage(Message message) 
     {
     	// Get and validate the authorization policy set by the caller.
-    	HpcAuthenticationRequestDTO authenticationRequest = null;
-    	
     	AuthorizationPolicy policy = message.get(AuthorizationPolicy.class);
+    	String userName = null, password = null;
     	if(policy != null) {
-    	   authenticationRequest = new HpcAuthenticationRequestDTO();
-    	   authenticationRequest.setUserName(policy.getUserName());
-    	   authenticationRequest.setPassword(policy.getPassword());
+    		userName = policy.getUserName();
+    	    password = policy.getPassword();
     	}
     	
     	// Authenticate the caller (if configured to do so) and populate the request context.
         try {
         	 HpcAuthenticationResponseDTO authenticationResponse =
-        	    userBusService.authenticate(authenticationRequest, ldapAuthentication);
+        	    securityBusService.authenticate(userName, password, ldapAuthentication);
              if(!authenticationResponse.getAuthenticated()) {
                 throw new HpcAuthenticationException("Invalid NCI user credentials"); 
              }

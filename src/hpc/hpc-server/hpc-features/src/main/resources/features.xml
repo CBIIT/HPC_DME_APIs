@@ -60,6 +60,12 @@
 		<bundle>wrap:mvn:com.googlecode.json-simple/json-simple/${google-json-simple.version}</bundle>
 		<bundle>mvn:commons-io/commons-io/${commons-io.version}</bundle>
 		
+		<!-- Current version of JJWT 0.6 has a defect in the bundle manifest which requires
+		     Android jar. This is being fixed in 0.7. Remove the Android bundle when upgrading 
+		     to 0.7 when it's available -->
+		<bundle>wrap:mvn:com.google.android/android/4.1.1.4</bundle>
+		<bundle>mvn:io.jsonwebtoken/jjwt/${jjwt.version}</bundle>
+		
 		<!-- Config files -->
 		<configfile finalname="/etc/gov.nih.nci.hpc.cfg" override="false">mvn:${project.groupId}/hpc-features/${project.version}/properties/hpc-server</configfile>
 		<configfile finalname="/etc/hpc-server/metadataValidationRules.json" override="true">mvn:${project.groupId}/hpc-app-service-impl/${project.version}/json/metadataValidationRules</configfile>
