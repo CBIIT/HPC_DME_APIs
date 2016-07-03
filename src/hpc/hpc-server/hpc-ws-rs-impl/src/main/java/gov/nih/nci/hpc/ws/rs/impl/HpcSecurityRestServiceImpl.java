@@ -11,7 +11,6 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
-import gov.nih.nci.hpc.dto.security.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupResponseDTO;
@@ -123,17 +122,16 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response authenticateUser(HpcAuthenticationRequestDTO authenticationRequest)
+    public Response authenticate()
     {
-		logger.info("Invoking RS: POST /user/authenticate: " + authenticationRequest.getUserName());
+		logger.info("Invoking RS: POST /authenticate");
 		
 		HpcAuthenticationResponseDTO authenticationResponse = null;
 		try {
-			 authenticationResponse = securityBusService.authenticate(authenticationRequest, true); 
+			 authenticationResponse = securityBusService.getAuthenticationResponse();
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /user/authenticate failed: " + 
-		                     authenticationRequest.getUserName(), e);
+			    logger.error("RS: POST /authenticate failed", e);
 			    return errorResponse(e);
 		}
 		

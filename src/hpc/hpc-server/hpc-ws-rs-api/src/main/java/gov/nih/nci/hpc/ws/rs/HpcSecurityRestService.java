@@ -10,7 +10,6 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
-import gov.nih.nci.hpc.dto.security.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
 import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
@@ -78,9 +77,9 @@ public interface HpcSecurityRestService
      * @return gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO entity.
      */
     @POST
-    @Path("/user/authenticate")
+    @Path("/authenticate")
     @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-    public Response authenticateUser(HpcAuthenticationRequestDTO authenticationRequest);
+    public Response authenticate();
 
     /**
      * POST Set (create or update) a group and assign/remove users.

@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
 import gov.nih.nci.hpc.domain.user.HpcGroupUserResponse;
@@ -21,7 +22,6 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
-import gov.nih.nci.hpc.dto.security.HpcAuthenticationRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupResponseDTO;
@@ -251,64 +251,35 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     }
     
     @Override
-    public HpcAuthenticationResponseDTO authenticate(
-    		                HpcAuthenticationRequestDTO authenticationRequest, 
-    		                boolean ldapAuthentication) 
-                            throws HpcException
+    public HpcAuthenticationResponseDTO 
+           authenticate(String userName, String password, 
+    		            boolean ldapAuthentication) 
+                       throws HpcException
     {
-    	// Input Validation
-    	if(authenticationRequest == null) {
-      	   throw new HpcException("Null authentication request",
-      			                  HpcErrorType.INVALID_REQUEST_INPUT); 	
-      	}
-    	
     	// LDAP authentication.
     	boolean userAuthenticated =
-    			    ldapAuthentication ? 
-    			    		securityService.authenticate(authenticationRequest.getUserName(), 
-    			                         	           	 authenticationRequest.getPassword()) : 
-    			        false;
-                    
-    	// Get the HPC user.
-    	HpcUser user = null;
-    	try {
-    	     user = securityService.getUser(authenticationRequest.getUserName());
-			
-    	} catch(HpcException e) {
-    	}
+    			ldapAuthentication ? 
+    			    securityService.authenticate(userName, password) : false;
+    			    		
+    	// Generate an authentication token.
+    	String authenticatedToken = securityService.getAuthenticationToken(userName, password);
     	
-    	if(user == null) {
-    	   // This is a request from a user that is not registered with HPC.
-    	   logger.info("Service call for a user that is not registered with HPC. NCI User-id: " + 
-    	               authenticationRequest.getUserName());
+        // Set the request invoker.
+    	HpcAuthenticationResponseDTO authenticationResponse = 
+    	   setRequestInvoker(userName, password, userAuthenticated, ldapAuthentication, 
+    			             authenticatedToken);   
     	
-    	   user = new HpcUser();
- 		   HpcNciAccount nciAccount = new HpcNciAccount();
- 		   nciAccount.setUserId("Unknown-NCI-User-ID");
-     	   user.setNciAccount(nciAccount);
-     	   user.setDataManagementAccount(null);
-        }
-    	
-    	// If the user was authenticated w/ LDAP, then we use the NCI credentials to access
-    	// Data Management (iRODS).
-    	if(userAuthenticated) {
-    	   HpcIntegratedSystemAccount dataManagementAccount = new HpcIntegratedSystemAccount();
-    	   dataManagementAccount.setIntegratedSystem(HpcIntegratedSystem.IRODS);
-    	   dataManagementAccount.setUsername(authenticationRequest.getUserName());
-    	   dataManagementAccount.setPassword(authenticationRequest.getPassword());
-    	   user.setDataManagementAccount(dataManagementAccount);
-    	}
-    	
-    	// Populate the request context with the HPC user.
-    	securityService.setRequestInvoker(user, userAuthenticated);
-    	
-    	// Prepare and return a response DTO.
+    	return authenticationResponse;
+    }
+    
+    @Override
+    public HpcAuthenticationResponseDTO getAuthenticationResponse() throws HpcException
+    {
     	HpcAuthenticationResponseDTO authenticationResponse = new HpcAuthenticationResponseDTO();
-    	authenticationResponse.setAuthenticated(ldapAuthentication ? userAuthenticated : true);	                
-    	authenticationResponse.setUserRole(
-    			      user.getDataManagementAccount() != null ? 
-    			      dataManagementService.getUserRole(user.getDataManagementAccount().getUsername()) : 
-    			      HpcUserRole.NOT_REGISTERED);
+    	HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
+    	authenticationResponse.setAuthenticated(requestInvoker.getLdapAuthenticated());
+    	authenticationResponse.setToken(requestInvoker.getLdapAuthenticatedToken());
+    	authenticationResponse.setUserRole(requestInvoker.getUserRole());
     	
     	return authenticationResponse;
     }
@@ -328,41 +299,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	// Add the user to the managed collection.
     	securityService.addSystemAccount(systemAccountRegistrationDTO.getAccount(), 
     			                         systemAccountRegistrationDTO.getDataTransferType());
-    }
-    
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//
-    
-    /**
-     * Mask account passwords.
-     * 
-     * @param userDTO the user DTO to have passwords masked.
-     */
-    private void maskPasswords(HpcUserDTO userDTO)
-    {
-    	if(userDTO.getDataManagementAccount() != null) {
-    	   userDTO.getDataManagementAccount().setPassword("*****");
-    	}
-    }
-    
-    /**
-     * Convert a user role from string to enum.
-     * 
-     * @param roleStr The role string.
-     * @return The enum value.
-     * @throws HpcException If the enum value is invalid
-     */
-    private HpcUserRole roleFromString(String roleStr) throws HpcException
-    {
-    	try {
-    	     return HpcUserRole.fromValue(roleStr);
-    	     
-    	} catch(IllegalArgumentException e) {
-    		    throw new HpcException("Invalid user role: " + roleStr + 
-    		    		               ". Valid values: " +  Arrays.asList(HpcUserRole.values()),
-    		    		               HpcErrorType.INVALID_REQUEST_INPUT, e);
-    	}
     }
     
 	@Override
@@ -398,6 +334,108 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		}
 		return dto;
 	}
+	
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//
+    
+    /**
+     * Mask account passwords.
+     * 
+     * @param userDTO the user DTO to have passwords masked.
+     */
+    private void maskPasswords(HpcUserDTO userDTO)
+    {
+    	if(userDTO.getDataManagementAccount() != null) {
+    	   userDTO.getDataManagementAccount().setPassword("*****");
+    	}
+    }
+    
+    /**
+     * Convert a user role from string to enum.
+     * 
+     * @param roleStr The role string.
+     * @return The enum value.
+     * @throws HpcException If the enum value is invalid
+     */
+    private HpcUserRole roleFromString(String roleStr) throws HpcException
+    {
+    	try {
+    	     return HpcUserRole.fromValue(roleStr);
+    	     
+    	} catch(IllegalArgumentException e) {
+    		    throw new HpcException("Invalid user role: " + roleStr + 
+    		    		               ". Valid values: " +  Arrays.asList(HpcUserRole.values()),
+    		    		               HpcErrorType.INVALID_REQUEST_INPUT, e);
+    	}
+    }
+    
+    /**
+     * Set the Request invoker and return an authentication request DTO
+     * 
+     * @param authenticationRequest The authentication request.
+     * @param userAuthenticated User authenticated indicator.
+     * @param ldapAuthentication LDAP authenticated user indicator.
+     * @param ldapAuthenticatedToken The LDAP authenticated token.
+     * @return The HpcAuthenticationResponseDTO.
+     * @throws HpcException 
+     */
+    private HpcAuthenticationResponseDTO setRequestInvoker(
+    		   String userName, String password,
+    		   boolean userAuthenticated,
+    		   boolean ldapAuthentication, 
+    		   String ldapAuthenticatedToken) throws HpcException
+    {
+		// Get the HPC user.
+		HpcUser user = null;
+		try {
+		     user = securityService.getUser(userName);
+			
+		} catch(HpcException e) {
+			    logger.error("Failed to get user: " +  userName);
+		}
+		
+		if(user == null) {
+		   // This is a request from a user that is not registered with HPC.
+		   logger.info("Service call for a user that is not registered with HPC. NCI User-id: " + 
+		               userName);
+		
+		   user = new HpcUser();
+		   HpcNciAccount nciAccount = new HpcNciAccount();
+		   nciAccount.setUserId("Unknown-NCI-User-ID");
+	 	   user.setNciAccount(nciAccount);
+	 	   user.setDataManagementAccount(null);
+	    }
+		
+		// If the user was authenticated w/ LDAP, then we use the NCI credentials to access
+		// Data Management (iRODS).
+		if(userAuthenticated) {
+		   HpcIntegratedSystemAccount dataManagementAccount = new HpcIntegratedSystemAccount();
+		   dataManagementAccount.setIntegratedSystem(HpcIntegratedSystem.IRODS);
+		   dataManagementAccount.setUsername(userName);
+		   dataManagementAccount.setPassword(password);
+		   user.setDataManagementAccount(dataManagementAccount);
+		}
+		
+		// Populate the request invoker context with the HPC user data.
+		securityService.setRequestInvoker(user, userAuthenticated);
+		
+		// Prepare and return a response DTO.
+		HpcAuthenticationResponseDTO authenticationResponse = new HpcAuthenticationResponseDTO();
+		authenticationResponse.setAuthenticated(ldapAuthentication ? userAuthenticated : true);	
+		authenticationResponse.setToken(ldapAuthenticatedToken);
+		authenticationResponse.setUserRole(
+				      user.getDataManagementAccount() != null ? 
+				      dataManagementService.getUserRole(user.getDataManagementAccount().getUsername()) : 
+				      HpcUserRole.NOT_REGISTERED);
+    	
+    	// Update the request invoker instance.
+		HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
+		requestInvoker.setLdapAuthenticatedToken(ldapAuthenticatedToken);
+		requestInvoker.setUserRole(authenticationResponse.getUserRole());
+		
+		return authenticationResponse;
+    }    
 }
 
  
