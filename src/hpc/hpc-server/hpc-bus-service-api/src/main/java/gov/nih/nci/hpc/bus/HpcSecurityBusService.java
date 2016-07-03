@@ -10,10 +10,9 @@
 
 package gov.nih.nci.hpc.bus;
 
+import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupResponseDTO;
-import gov.nih.nci.hpc.dto.security.HpcAuthenticationRequestDTO;
-import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
 import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
@@ -62,20 +61,28 @@ public interface HpcSecurityBusService
      */
     public HpcUserDTO getUser(String nciUserId) throws HpcException;
     
-    
     /**
      * Authenticate user.
      *
-     * @param authenticationRequest The authentication request.
-     * @param ldapAuthentication Set to true if LDAP authentication should be performed.
-     * @return HpcAuthenticationResponseDTO Authentication results.
+     * @param userName The user's name.
+     * @param password The user's password.
+     * @param ldapAuthentication Perform LDAP authentication indicator.
+     * @return HpcAuthenticationResponseDTO.
      * 
      * @throws HpcException
      */
-    public HpcAuthenticationResponseDTO authenticate(
-    		                            HpcAuthenticationRequestDTO authenticationRequest,
-    		                            boolean ldapAuthentication) 
-    		                            throws HpcException;  
+    public HpcAuthenticationResponseDTO 
+           authenticate(String userName, String password, 
+        		        boolean ldapAuthentication) throws HpcException;  
+    
+    /**
+     * Get the authentication response for the current request invoker.
+     *
+     * @return HpcAuthenticationResponseDTO.
+     * 
+     * @throws HpcException
+     */
+    public HpcAuthenticationResponseDTO getAuthenticationResponse() throws HpcException; 
     
     /**
      * Set (create or update) a group and assign/remove users.

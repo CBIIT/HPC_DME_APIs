@@ -67,6 +67,8 @@
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 				<xsd:element name="dataManagementAuthenticatedToken" type="xsd:anyType" />
 				<xsd:element name="ldapAuthenticated" type="xsd:boolean" />
+				<xsd:element name="ldapAuthenticatedToken" type="xsd:string" />
+				<xsd:element name="userRole" type="hpc-domain-user:HpcUserRole" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

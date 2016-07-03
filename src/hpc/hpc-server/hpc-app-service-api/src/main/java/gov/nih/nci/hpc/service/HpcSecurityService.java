@@ -107,6 +107,18 @@ public interface HpcSecurityService
     public void addSystemAccount(HpcIntegratedSystemAccount account, 
 	                             HpcDataTransferType dataTransferType) 
 	                            throws HpcException;
+    
+    /**
+     * Generate an authentication token, so the caller can use it in subsequent calls.
+     *
+     * @param userName The user's name.
+     * @param password The password.
+     * @return An Authentication token.
+     * 
+     * @throws HpcException
+     */
+    public String getAuthenticationToken(String userName, String password)
+    		                            throws HpcException;
 }
 
  

@@ -26,10 +26,14 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +49,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class HpcSecurityServiceImpl implements HpcSecurityService
 {
     //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//
+	
+    // Authentication Token claim attributes.
+	private static final String TOKEN_SUBJECT = "HPCAuthenticationToken";
+	private static final String TOKEN_USER_NAME = "UserName";
+	private static final String TOKEN_PASSWORD = "Password";
+	
+    //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
@@ -58,17 +71,20 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 
 	// The LDAP authenticator instance.
 	@Autowired
-	HpcLdapAuthenticationProxy ldapAuthenticationProxy = null;
+	private HpcLdapAuthenticationProxy ldapAuthenticationProxy = null;
 
 	@Autowired
-	HpcDataManagementProxy dataManagementProxy = null;
+	private HpcDataManagementProxy dataManagementProxy = null;
 
 	// System Accounts locator.
 	@Autowired
 	private HpcSystemAccountLocator systemAccountLocator = null;
 
 	// The valid DOC values.
-	Set<String> docValues = new HashSet<>();
+	private Set<String> docValues = new HashSet<>();
+	
+	// The authentication token signature key.
+	private String authenticationTokenSignatureKey = null;
 
     //---------------------------------------------------------------------//
     // Constructors
@@ -78,10 +94,13 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
      * Constructor for Spring Dependency Injection.
      *
      * @param docValues A whitespace separated list of valid DOC values.
+     * @param authenticationTokenSignatureKey The authentication token signature key.
      */
-    private HpcSecurityServiceImpl(String docValues)
+    private HpcSecurityServiceImpl(String docValues, 
+    		                       String authenticationTokenSignatureKey)
     {
     	this.docValues.addAll(Arrays.asList(docValues.split("\\s+")));
+    	this.authenticationTokenSignatureKey = authenticationTokenSignatureKey;
     }
 
     /**
@@ -253,6 +272,20 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 
     	// Refresh the system accounts cache.
     	systemAccountLocator.reload();
+    }
+    
+    @Override
+    public String getAuthenticationToken(String userName, String password)
+                                        throws HpcException
+    {
+    	// Prepare the Claims MAp.
+    	Map<String, Object> claims = new HashMap<>();
+    	claims.put(TOKEN_USER_NAME, userName);
+    	claims.put(TOKEN_PASSWORD, password);
+    	
+    	return Jwts.builder().setSubject(TOKEN_SUBJECT).setClaims(claims).
+    			              signWith(SignatureAlgorithm.HS256, authenticationTokenSignatureKey).
+    			              compact();
     }
 
     //---------------------------------------------------------------------//
