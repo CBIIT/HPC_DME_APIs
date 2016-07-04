@@ -10,22 +10,18 @@
 
 package gov.nih.nci.hpc.ws.rs.interceptor;
 
-import java.util.ArrayList;
-import java.util.Map;
-
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.exception.HpcAuthenticationException;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import java.util.ArrayList;
+import java.util.Map;
+
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.interceptor.security.SecureAnnotationsInterceptor;
 import org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor;
-import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
@@ -44,6 +40,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class HpcAuthenticationInterceptor 
              extends AbstractPhaseInterceptor<Message> 
 {
+    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//   
+	
+	// HTTP header attributes.
+	private static String AUTHORIZATION_HEADER = "Authorization";
+	
+	// Authorization Types
+	private static String BASIC_AUTHORIZATION = "Basic";
+	private static String TOKEN_AUTHORIZATION = "Bearer";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -96,31 +103,11 @@ public class HpcAuthenticationInterceptor
     @Override
     public void handleMessage(Message message) 
     {
-    	// Get and validate the authorization policy set by the caller.
-    	AuthorizationPolicy policy = message.get(AuthorizationPolicy.class);
-    	//SecurityContext sc1 = message.get(SecurityContext.class);
-    	//Map<String, Object> ph = (Map<String, Object> )message.get(Message.PROTOCOL_HEADERS);
-    	//ArrayList auth = (ArrayList) ph.get("Authorization");
-    	
-   
-    		
-    	
-    	
-    	
-    	
-    	
-    	String userName = null, password = null;
-    	if(policy != null) {
-    		userName = policy.getUserName();
-    	    password = policy.getPassword();
-    	}
-    	
     	// Authenticate the caller (if configured to do so) and populate the request context.
         try {
-        	 HpcAuthenticationResponseDTO authenticationResponse =
-        	    securityBusService.authenticate(userName, password, ldapAuthentication);
+        	 HpcAuthenticationResponseDTO authenticationResponse = authenticate(message);
              if(!authenticationResponse.getAuthenticated()) {
-                throw new HpcAuthenticationException("Invalid NCI user credentials"); 
+                throw new HpcAuthenticationException("Invalid NCI user credentials or token"); 
              }
              
              // Set a security context with the user's role.
@@ -136,5 +123,92 @@ public class HpcAuthenticationInterceptor
         } catch(Throwable t) {
    	            throw new HpcAuthenticationException("LDAP authentication failed", t);
        }
+    }
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//
+    
+    /**
+     * Authenticate the caller.
+     * 
+     * @param message The RS message.
+     * @return HpcAuthenticationResponseDTO.
+     * 
+     * @throws HpcException
+     */
+    private HpcAuthenticationResponseDTO authenticate(Message message) throws HpcException
+    {
+		ArrayList<String> authorization = getAuthorization(message);
+    	String authorizationType = authorization.get(0);
+    	
+    	// Authenticate the caller (if configured to do so) and populate the request context.
+        if(authorizationType.equals(BASIC_AUTHORIZATION)) {
+           return authenticate(message.get(AuthorizationPolicy.class));
+        } 
+        if(authorizationType.equals(TOKEN_AUTHORIZATION)) {
+           return authenticate(authorization.get(1));
+        } 
+        
+        throw new HpcAuthenticationException("Invalid Authorization Type: " + authorizationType); 
+    }
+    
+    /**
+     * Perform a basic authentication w/ user-name & password.
+     * 
+     * @param message The RS message.
+     *
+     * @return HpcAuthenticationResponseDTO.
+     */
+    private HpcAuthenticationResponseDTO authenticate(AuthorizationPolicy policy) 
+    		                                         throws HpcException
+    {
+    	String userName = null, password = null;
+    	if(policy != null) {
+    	   userName = policy.getUserName();
+    	   password = policy.getPassword();
+    	}
+    	
+    	return securityBusService.authenticate(userName, password, ldapAuthentication);
+    }
+    
+    /**
+     * Perform a token authentication (JWT).
+     * 
+     * @param token The JWT token.
+     *
+     * @return HpcAuthenticationResponseDTO.
+     */
+    private HpcAuthenticationResponseDTO authenticate(String token) throws HpcException
+    {
+    	return null;
+    }
+    
+    /**
+     * Get Authorization array from a message.
+     * 
+     * @param message The RS message.
+     *
+     * @return The authorzation type of the message.
+     */
+    private ArrayList<String> getAuthorization(Message message) 
+    		                                  throws HpcAuthenticationException
+    {
+		// Determine the authorization type.
+		@SuppressWarnings("unchecked")
+		Map<String, Object> protocolHeaders = 
+				            (Map<String, Object>) message.get(Message.PROTOCOL_HEADERS); 
+		if(protocolHeaders == null) {
+		   throw new HpcAuthenticationException("Invalid Protocol Headers"); 
+		}
+		
+		@SuppressWarnings("unchecked")
+		ArrayList<String> authorization = 
+				          (ArrayList<String>) protocolHeaders.get(AUTHORIZATION_HEADER);
+		if(authorization == null || authorization.size() != 2) {
+		   throw new HpcAuthenticationException("Invalid Authorization Header"); 
+		}
+		
+		return authorization;
     }
 } 

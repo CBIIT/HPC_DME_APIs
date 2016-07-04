@@ -56,8 +56,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
              implements HpcDataManagementRestService
 {   
     //---------------------------------------------------------------------//
-    // Instance members
-    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//   
 	
 	public static String DATA_OBJECT_DOWNLOAD_FILE = "DataObjectDownloadFile";
 	
