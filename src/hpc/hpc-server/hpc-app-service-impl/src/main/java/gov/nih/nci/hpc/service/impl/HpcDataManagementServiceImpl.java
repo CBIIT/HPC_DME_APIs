@@ -122,9 +122,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	// Prepared query to get data objects that have their data in temporary archive.
 	private List<HpcMetadataQuery> dataTransferInTemporaryArchiveQuery = new ArrayList<>();
 
-   // The logger instance.
-	private final Logger logger = 
-				             LoggerFactory.getLogger(this.getClass().getName());
+    // The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
     //---------------------------------------------------------------------//
     // Constructors

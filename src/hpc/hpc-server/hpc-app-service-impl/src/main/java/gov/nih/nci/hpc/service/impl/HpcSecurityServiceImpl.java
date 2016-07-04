@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
@@ -26,8 +27,11 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -36,6 +40,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
  * <p>
@@ -56,6 +62,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	private static final String TOKEN_SUBJECT = "HPCAuthenticationToken";
 	private static final String TOKEN_USER_NAME = "UserName";
 	private static final String TOKEN_PASSWORD = "Password";
+	private static final String TOKEN_LDAP_AUTHENTICATION = "LDAPAuthentication";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -88,6 +95,9 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	
 	// The authentication token expiration period in minutes.
 	private int authenticationTokenExpirationPeriod = 0;
+	
+    // The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
     //---------------------------------------------------------------------//
     // Constructors
@@ -281,13 +291,14 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     }
     
     @Override
-    public String getAuthenticationToken(String userName, String password)
-                                        throws HpcException
+    public String createAuthenticationToken(HpcAuthenticationTokenClaims authenticationTokenClaims)
+                                           throws HpcException
     {
     	// Prepare the Claims Map.
     	Map<String, Object> claims = new HashMap<>();
-    	claims.put(TOKEN_USER_NAME, userName);
-    	claims.put(TOKEN_PASSWORD, password);
+    	claims.put(TOKEN_USER_NAME, authenticationTokenClaims.getUserName());
+    	claims.put(TOKEN_PASSWORD, authenticationTokenClaims.getPassword());
+    	claims.put(TOKEN_LDAP_AUTHENTICATION, authenticationTokenClaims.getLdapAuthentication());
     	
     	// Calculate the expiration date.
     	Calendar tokenExpiration = Calendar.getInstance();
@@ -297,6 +308,34 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     			              setExpiration(tokenExpiration.getTime()).
     			              signWith(SignatureAlgorithm.HS256, authenticationTokenSignatureKey).
     			              compact();
+    }
+    
+    @Override
+    public HpcAuthenticationTokenClaims parseAuthenticationToken(String authenticationToken)
+                                                                throws HpcException
+    {
+    	try {
+    	     Jws<Claims> jwsClaims = Jwts.parser().setSigningKey(authenticationTokenSignatureKey).
+    	    		                            parseClaimsJws(authenticationToken);
+    	     
+    	     // Validate the subject.
+    	     if(!jwsClaims.getBody().getSubject().equals(TOKEN_SUBJECT)) {
+    	    	logger.error("Invalid Token Subject: " + jwsClaims.getBody().getSubject());
+    	    	return null;
+    	     }
+    	     
+    	     // Extract the claims.
+    	     HpcAuthenticationTokenClaims tokenClaims = new HpcAuthenticationTokenClaims();
+    	     tokenClaims.setUserName(jwsClaims.getBody().get(TOKEN_USER_NAME, String.class));
+    	     tokenClaims.setPassword(jwsClaims.getBody().get(TOKEN_PASSWORD, String.class));
+    	     tokenClaims.setLdapAuthentication(jwsClaims.getBody().get(TOKEN_LDAP_AUTHENTICATION, Boolean.class));
+    	     
+    	     return tokenClaims;
+
+    	} catch(SignatureException e) {
+    		    logger.error("Untrusted Token: " + e);
+	    	    return null;
+    	}
     }
 
     //---------------------------------------------------------------------//
