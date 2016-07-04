@@ -63,6 +63,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	private static final String TOKEN_USER_NAME = "UserName";
 	private static final String TOKEN_PASSWORD = "Password";
 	private static final String TOKEN_LDAP_AUTHENTICATION = "LDAPAuthentication";
+	private static final String TOKEN_USER_AUTHENTICATED = "UserAuthenticated";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -299,6 +300,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	claims.put(TOKEN_USER_NAME, authenticationTokenClaims.getUserName());
     	claims.put(TOKEN_PASSWORD, authenticationTokenClaims.getPassword());
     	claims.put(TOKEN_LDAP_AUTHENTICATION, authenticationTokenClaims.getLdapAuthentication());
+    	claims.put(TOKEN_USER_AUTHENTICATED, authenticationTokenClaims.getUserAuthenticated());
     	
     	// Calculate the expiration date.
     	Calendar tokenExpiration = Calendar.getInstance();
@@ -323,6 +325,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	     tokenClaims.setUserName(jwsClaims.getBody().get(TOKEN_USER_NAME, String.class));
     	     tokenClaims.setPassword(jwsClaims.getBody().get(TOKEN_PASSWORD, String.class));
     	     tokenClaims.setLdapAuthentication(jwsClaims.getBody().get(TOKEN_LDAP_AUTHENTICATION, Boolean.class));
+    	     tokenClaims.setUserAuthenticated(jwsClaims.getBody().get(TOKEN_USER_AUTHENTICATED, Boolean.class));
     	     
     	     return tokenClaims;
 
