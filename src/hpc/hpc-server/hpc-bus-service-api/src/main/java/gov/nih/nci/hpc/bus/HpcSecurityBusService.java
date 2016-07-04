@@ -76,6 +76,17 @@ public interface HpcSecurityBusService
         		        boolean ldapAuthentication) throws HpcException;  
     
     /**
+     * Authenticate user.
+     *
+     * @param authenticationToken An Authentication token.
+     * @return HpcAuthenticationResponseDTO.
+     * 
+     * @throws HpcException
+     */
+    public HpcAuthenticationResponseDTO authenticate(String authenticationToken) 
+    		                                         throws HpcException;  
+    
+    /**
      * Get the authentication response for the current request invoker.
      *
      * @return HpcAuthenticationResponseDTO.

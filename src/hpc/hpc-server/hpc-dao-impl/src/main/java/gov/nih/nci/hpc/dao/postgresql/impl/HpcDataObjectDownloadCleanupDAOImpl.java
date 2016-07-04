@@ -138,6 +138,7 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
 	private class HpcDataObjectDownloadCleanupRowMapper 
 	              implements RowMapper<HpcDataObjectDownloadCleanup>
 	{
+		@Override
 		public HpcDataObjectDownloadCleanup mapRow(ResultSet rs, int rowNum) throws SQLException 
 		{
 			HpcDataObjectDownloadCleanup dataObjectDownloadCleanup = new HpcDataObjectDownloadCleanup();

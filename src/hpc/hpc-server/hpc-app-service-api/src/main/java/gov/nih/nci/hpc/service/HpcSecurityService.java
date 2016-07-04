@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -109,16 +110,26 @@ public interface HpcSecurityService
 	                            throws HpcException;
     
     /**
-     * Generate an authentication token, so the caller can use it in subsequent calls.
+     * Create an authentication token, so the caller can use it in subsequent calls.
      *
-     * @param userName The user's name.
-     * @param password The password.
+     * @param authenticationTokenClaims The token's claims to put in the token.
      * @return An Authentication token.
      * 
      * @throws HpcException
      */
-    public String getAuthenticationToken(String userName, String password)
-    		                            throws HpcException;
+    public String createAuthenticationToken(HpcAuthenticationTokenClaims authenticationTokenClaims)
+    		                               throws HpcException;
+    
+    /**
+     * Parse an authentication token.
+     *
+     * @param authenticationToken The token to parse
+     * @return The token claims if was able to parse, or null otherwise.
+     * 
+     * @throws HpcException
+     */
+    public HpcAuthenticationTokenClaims parseAuthenticationToken(String authenticationToken)
+    		                                                    throws HpcException;
 }
 
  
