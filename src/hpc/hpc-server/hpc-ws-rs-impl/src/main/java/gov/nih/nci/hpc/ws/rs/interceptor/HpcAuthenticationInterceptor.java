@@ -121,7 +121,7 @@ public class HpcAuthenticationInterceptor
     	        throw ex;
         	    
         } catch(Throwable t) {
-   	            throw new HpcAuthenticationException("LDAP authentication failed", t);
+   	            throw new HpcAuthenticationException("Authentication failed", t);
        }
     }
     
@@ -139,15 +139,15 @@ public class HpcAuthenticationInterceptor
      */
     private HpcAuthenticationResponseDTO authenticate(Message message) throws HpcException
     {
-		ArrayList<String> authorization = getAuthorization(message);
-    	String authorizationType = authorization.get(0);
+		String[] authorization = getAuthorization(message);
+    	String authorizationType = authorization[0];
     	
     	// Authenticate the caller (if configured to do so) and populate the request context.
         if(authorizationType.equals(BASIC_AUTHORIZATION)) {
            return authenticate(message.get(AuthorizationPolicy.class));
         } 
         if(authorizationType.equals(TOKEN_AUTHORIZATION)) {
-           return authenticate(authorization.get(1));
+           return authenticate(authorization[1]);
         } 
         
         throw new HpcAuthenticationException("Invalid Authorization Type: " + authorizationType); 
@@ -191,8 +191,7 @@ public class HpcAuthenticationInterceptor
      *
      * @return The authorzation type of the message.
      */
-    private ArrayList<String> getAuthorization(Message message) 
-    		                                  throws HpcAuthenticationException
+    private String[] getAuthorization(Message message) throws HpcAuthenticationException
     {
 		// Determine the authorization type.
 		@SuppressWarnings("unchecked")
@@ -205,10 +204,10 @@ public class HpcAuthenticationInterceptor
 		@SuppressWarnings("unchecked")
 		ArrayList<String> authorization = 
 				          (ArrayList<String>) protocolHeaders.get(AUTHORIZATION_HEADER);
-		if(authorization == null || authorization.size() != 2) {
+		if(authorization == null || authorization.isEmpty()) {
 		   throw new HpcAuthenticationException("Invalid Authorization Header"); 
 		}
 		
-		return authorization;
+		return authorization.get(0).split(" ");
     }
 } 
