@@ -10,6 +10,12 @@
 
 package gov.nih.nci.hpc.ws.rs.interceptor;
 
+import java.util.ArrayList;
+import java.util.Map;
+
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
@@ -19,6 +25,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.interceptor.security.SecureAnnotationsInterceptor;
 import org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor;
+import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
@@ -91,6 +98,17 @@ public class HpcAuthenticationInterceptor
     {
     	// Get and validate the authorization policy set by the caller.
     	AuthorizationPolicy policy = message.get(AuthorizationPolicy.class);
+    	//SecurityContext sc1 = message.get(SecurityContext.class);
+    	//Map<String, Object> ph = (Map<String, Object> )message.get(Message.PROTOCOL_HEADERS);
+    	//ArrayList auth = (ArrayList) ph.get("Authorization");
+    	
+   
+    		
+    	
+    	
+    	
+    	
+    	
     	String userName = null, password = null;
     	if(policy != null) {
     		userName = policy.getUserName();
