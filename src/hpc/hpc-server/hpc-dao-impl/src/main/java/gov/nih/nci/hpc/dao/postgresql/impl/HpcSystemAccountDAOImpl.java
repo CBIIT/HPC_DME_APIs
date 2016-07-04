@@ -148,6 +148,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
 	private class HpcIntegratedSystemAccountRowMapper 
 	              implements RowMapper<HpcIntegratedSystemAccount>
 	{
+		@Override
 		public HpcIntegratedSystemAccount mapRow(ResultSet rs, int rowNum) throws SQLException 
 		{
 			HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();

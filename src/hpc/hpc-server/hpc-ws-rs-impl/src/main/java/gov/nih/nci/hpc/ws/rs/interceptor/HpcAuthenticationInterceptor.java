@@ -120,9 +120,9 @@ public class HpcAuthenticationInterceptor
         } catch(HpcAuthenticationException ex) {
     	        throw ex;
         	    
-        } catch(Throwable t) {
-   	            throw new HpcAuthenticationException("Authentication failed", t);
-       }
+        } catch(Exception e) {
+   	            throw new HpcAuthenticationException("LDAP authentication failed", e);
+        }
     }
     
     //---------------------------------------------------------------------//
@@ -181,7 +181,7 @@ public class HpcAuthenticationInterceptor
      */
     private HpcAuthenticationResponseDTO authenticate(String token) throws HpcException
     {
-    	return null;
+    	return securityBusService.authenticate(token);
     }
     
     /**

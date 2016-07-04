@@ -50,10 +50,10 @@
 	</xsd:element>
 
 	<xsd:complexType name="HpcDataTransferAuthenticatedToken">
-			<xsd:sequence>
-				<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
-				<xsd:element name="dataTransferAuthenticatedToken" type="xsd:anyType" />
-			</xsd:sequence>
+		<xsd:sequence>
+			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
+			<xsd:element name="dataTransferAuthenticatedToken" type="xsd:anyType" />
+		</xsd:sequence>
 	</xsd:complexType>
 	
 	<xsd:element name="HpcRequestInvoker">
@@ -67,8 +67,18 @@
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 				<xsd:element name="dataManagementAuthenticatedToken" type="xsd:anyType" />
 				<xsd:element name="ldapAuthenticated" type="xsd:boolean" />
-				<xsd:element name="ldapAuthenticatedToken" type="xsd:string" />
+				<xsd:element name="authenticationToken" type="xsd:string" />
 				<xsd:element name="userRole" type="hpc-domain-user:HpcUserRole" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="HpcAuthenticationTokenClaims">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="userName" type="xsd:string" />
+				<xsd:element name="password" type="xsd:string" />
+				<xsd:element name="ldapAuthentication" type="xsd:boolean" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
