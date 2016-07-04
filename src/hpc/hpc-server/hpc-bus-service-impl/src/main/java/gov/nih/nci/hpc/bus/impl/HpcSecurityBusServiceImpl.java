@@ -287,7 +287,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
         // Set the request invoker.
     	return setRequestInvoker(authenticationTokenClaims.getUserName(), 
     			                 authenticationTokenClaims.getPassword(), 
-    			                 true, authenticationTokenClaims.getLdapAuthentication(), 
+    			                 authenticationTokenClaims.getUserAuthenticated(), 
+    			                 authenticationTokenClaims.getLdapAuthentication(), 
     			                 authenticationToken); 	
     }
     

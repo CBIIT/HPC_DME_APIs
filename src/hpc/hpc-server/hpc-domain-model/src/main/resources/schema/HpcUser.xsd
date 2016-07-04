@@ -79,6 +79,7 @@
 				<xsd:element name="userName" type="xsd:string" />
 				<xsd:element name="password" type="xsd:string" />
 				<xsd:element name="ldapAuthentication" type="xsd:boolean" />
+				<xsd:element name="userAuthenticated" type="xsd:boolean" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
