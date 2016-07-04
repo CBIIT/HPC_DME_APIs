@@ -318,12 +318,6 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	     Jws<Claims> jwsClaims = Jwts.parser().setSigningKey(authenticationTokenSignatureKey).
     	    		                            parseClaimsJws(authenticationToken);
     	     
-    	     // Validate the subject.
-    	     if(!jwsClaims.getBody().getSubject().equals(TOKEN_SUBJECT)) {
-    	    	logger.error("Invalid Token Subject: " + jwsClaims.getBody().getSubject());
-    	    	return null;
-    	     }
-    	     
     	     // Extract the claims.
     	     HpcAuthenticationTokenClaims tokenClaims = new HpcAuthenticationTokenClaims();
     	     tokenClaims.setUserName(jwsClaims.getBody().get(TOKEN_USER_NAME, String.class));
@@ -332,9 +326,13 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	     
     	     return tokenClaims;
 
-    	} catch(SignatureException e) {
-    		    logger.error("Untrusted Token: " + e);
+    	} catch(SignatureException se) {
+    		    logger.error("Untrusted Token: " + se);
 	    	    return null;
+	    	    
+    	} catch(Exception e) {
+    		    logger.error("Invalid Token: " + e);
+    		    return null;
     	}
     }
 
