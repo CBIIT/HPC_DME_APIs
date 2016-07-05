@@ -25,7 +25,12 @@ PREFIX="dxtest-data-name"
 SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
 VALUE=$PREFIX-$SUFFIX
 echo "$VALUE" > value.tmp
-DESCRIPTION=`cat ../utils/register-dataobject.json | sed "s/dxtest-data-name/$VALUE/" | sed "s/username/$USERNAME/"`
+
+INPUT_TEMPLATE=../utils/register-dataobject.json
+TEMPLATE=temp.tmp
+update_uid "$INPUT_TEMPLATE"  "$TEMPLATE"
+
+DESCRIPTION=`cat "$TEMPLATE" | sed "s/dxtest-data-name/$VALUE/" | sed "s/username/$USERNAME/"`
 INPUT=`cat input.json | sed "s/dxtest-data-name/$VALUE/"`
 
 echo "$DESCRIPTION" >  register-dataobject.json.tmp
@@ -33,4 +38,3 @@ echo "$INPUT" > input.json.tmp
 
 register_project ../utils/register-project.json 
 register_dataobject register-dataobject.json.tmp
-
