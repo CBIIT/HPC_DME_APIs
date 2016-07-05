@@ -25,7 +25,12 @@ SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
 VALUE=$PREFIX-$SUFFIX
 USERID=`get_username $HPC_DM_TEST/utils/config`
 echo "$VALUE" > value.tmp
-DESCRIPTION=`cat register-dataobject.json | sed "s/dxtest-data-name/$VALUE/" | sed "s/dxtestuid/$USERID/"`
+
+INPUT_TEMPLATE=../utils/register-dataobject.json
+TEMPLATE=temp.tmp
+update_uid "$INPUT_TEMPLATE"  "$TEMPLATE"
+DESCRIPTION=`cat "$TEMPLATE" | sed "s/dxtest-data-name/$VALUE/" | sed "s/username/$USERNAME/"`
+
 INPUT=`cat input.json | sed "s/dxtest-data-name/$VALUE/"`
 
 echo "$DESCRIPTION" >  register-dataobject.json.tmp
