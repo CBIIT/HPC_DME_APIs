@@ -234,19 +234,28 @@ function update_uid {
 }
 
 
-#Verify the existance of a file in the Globus nihnci#NIH-NCI-TRANSFER1 endpoint
+#Verify the existance of a file in a given Globus endpoint 
 #Inputs: <file path on the endpoint>
+#Inputs: [EndpointID]
 function verify_globus_file {
 
-    if [ -z "$1" ] 
+    if [ "$#" -ne  1 ]  && [ "$#" -ne 2  ]
     then
-        echo "ERROR: using verify_globus_file"
-        echo "USAGE: verify_globus_file <file-path-on-nihnci#NIH-NCI-TRANSFER1>"
+        echo "ERROR: using verify_globus_file $#"
+        echo "USAGE: verify_globus_file <file-path-on-nihnci#NIH-NCI-TRANSFER1> [globus-endpointID]  "
         exit
     fi
 
-    FILE_PATH="$1"
-    ENDPOINT_ID="e1c6b3bd-6d04-11e5-ba46-22000b92c6ec"
+    #If endpoint is not passed, use the default endpoint
+    if [ "$#" -eq 1 ] 
+    then
+        FILE_PATH="$1"
+        ENDPOINT_ID=$(get_json_value $HPC_DM_TEST/utils/test-configuration globus-shared-endpoint-uid)
+    else 
+        FILE_PATH="$1"
+        ENDPOINT_ID="$2"
+    fi
+
     GLOBUS_CREDENTIALS=$HPC_DM_TEST/utils/globus-config
 
     #Verify the existance of the credentials file
