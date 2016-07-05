@@ -33,5 +33,5 @@ verify_registration collection-registration-response-header.tmp
 mv collection-registration-response-header.tmp original-collection-registration-response-header.tmp
 
 #Register a dataOjbect
-register_dataobject_async_from_template  "$COLLECTION_PATH"
+register_dataobject_sync_from_template  "$COLLECTION_PATH"
 
