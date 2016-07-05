@@ -73,7 +73,6 @@ public interface HpcSecurityRestService
     /**
      * Authenticate a user.
      *
-     * @param authenticationRequest The authentication request.
      * @return gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO entity.
      */
     @GET
