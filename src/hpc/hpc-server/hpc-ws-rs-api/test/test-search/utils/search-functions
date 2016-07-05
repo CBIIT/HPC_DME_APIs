@@ -22,7 +22,6 @@ function register_project {
 
 
 function register_dataobject {
-
     source ../../../utils/functions
 
     DATAOBJECT_DESCRIPTION=$1
