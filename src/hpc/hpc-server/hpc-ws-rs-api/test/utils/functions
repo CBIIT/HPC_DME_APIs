@@ -445,7 +445,7 @@ function register_collection_from_template {
 
 
 
-#Register a new collection user using the project tempalte
+#Register a new dataObject asynchronously using a template 
 #Input: collection-path "The parent collection for the dataObject"
 function register_dataobject_async_from_template {
 
@@ -464,8 +464,39 @@ function register_dataobject_async_from_template {
 
     TEMPLATE=$HPC_DM_TEST/utils/templates/register-dataobject-template.json
     update_uid $TEMPLATE input.json.tmp
+
+
     curl_register input.json.tmp  "$DATAOBJECT_PATH" dataObject 
 }
+
+
+#Register a new dataObject synchronously using a template 
+#Input: collection-path "The parent collection for the dataObject"
+function register_dataobject_sync_from_template {
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR: using register_dataobject_async_from_template"
+        echo "USAGE: register_dataobject_async_from_template  <collection-path>"
+        exit
+    fi
+
+    COLLECTION_PATH="$1"
+    SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+    DATAOBJECT_PATH="${COLLECTION_PATH}/object-${SUFFIX}.txt"
+    echo "$DATAOBJECT_PATH" > registered-data-object-path.tmp
+
+    TEMPLATE=$HPC_DM_TEST/utils/templates/upload-input-template.json
+    update_uid $TEMPLATE input.json.tmp
+
+    OBJECT_FILE="test-object.tmp"
+    echo "test file" > $OBJECT_FILE 
+    curl_register input.json.tmp  "$DATAOBJECT_PATH" dataObject "$OBJECT_FILE" 
+
+
+}
+
+
 
 
 
