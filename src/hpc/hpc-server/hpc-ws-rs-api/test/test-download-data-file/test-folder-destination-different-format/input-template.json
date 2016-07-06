@@ -1,6 +1,6 @@
 {
     "destination": {
-        "fileContainerId": "nihnci#NIH-NCI-TRANSFER1",
-        "fileId": "/GridFTP/GridFTP_t3/dxtestuid/dice-download"
+        "fileContainerId": "globus-shared-endpoint-uid",
+        "fileId": "/download"
     }
 }
