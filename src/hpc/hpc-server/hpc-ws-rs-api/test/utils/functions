@@ -88,6 +88,31 @@ function get_json_hier_array_value {
     echo "$INPUT" | sed "s/\(.*\)\(\"$ATTRIBUTE\"[  ]*:[ 	]*\[\([^][]*\[[^][]*\]\)*[^][]*\]\)\(.*\)/\2/" 
 }
 
+
+#Return the value for a one line json file with the format "attribute"  "value"
+#Inputs: <input-file.json or json string> 
+#Inputs: <attribute name > 
+function get_json_attribute_value {
+
+    if [ -z "$1" ] || [ -z "$2" ]
+    then
+        echo "ERROR: using get_json_attribute_value"
+        echo "USAGE: get_json_attribute_value <input-string-or-file> <attribute>"
+        exit
+    fi
+
+    INPUT="$1"
+    ATTRIBUTE="$2"
+    INPUT=$(get_file_value "$INPUT")
+
+
+    RESPONSE_GROUPS=$(echo "$INPUT" | tr "{" "\n" | grep "$ATTRIBUTE" )
+
+    #echo "$RESPONSE_GROUPS"
+    ACTUAL_VALUE=`get_json_value $RESPONSE_GROUPS value `
+    echo $ACTUAL_VALUE
+} 
+
 #Checks that the response header file has information.
 function check_connection {
     if [ -z "$1" ]
@@ -282,7 +307,7 @@ function verify_globus_file {
     EXISTS=$(grep  "\"$FILE_NAME\"" directory-list.tmp)
     if [ -z "$EXISTS" ]
     then
-        echo "ERROR: Can not find the file $FILE_PATH in the nihnci#NIH-NCI-TRANSFER1 Globus endpoint"
+        echo "ERROR: Can not find the file $FILE_PATH in the Globus endpoint $ENDPOINT_ID"
         exit
     fi
     
@@ -505,6 +530,86 @@ function register_dataobject_sync_from_template {
 
 }
 
+#Download a dataObject synchronously 
+#Input: dataObject-path 
+function download_dataobject_sync {
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR: using download_dataobject_sync"
+        echo "USAGE: download_dataobject_sync <dataOjbect-path>"
+        exit
+    fi
+
+    if [ -z $RESPONSE_HEADER ] 
+    then
+        $RESPONSE_HEADER=download-dataobject-response-header.tmp
+    fi
+
+    if [ -z $RESPONSE_MSG ] 
+    then
+        $RESPONSE_MSG=download-dataobject-response-message.json.tmp
+    fi
+
+    OBJECT_PATH="$1"
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+    TEMPLATE="$HPC_DM_TEST/utils/templates/download-sync-template.json"
+    curl -H "Content-Type: application/json" -d @$TEMPLATE -X POST ${SERVER}/hpc-server/dataObject/$OBJECT_PATH/download  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    check_connection $RESPONSE_HEADER
+
+}
+
+
+
+#Download a dataObject asynchronously to the default globus endpoint
+#Input: <dataObject-path>
+#Input: [download-template]
+function download_dataobject_async {
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR: using download_dataobject_sync"
+        echo "USAGE: download_dataobject_sync <dataOjbect-path>"
+        exit
+    fi
+
+    if [ -z $RESPONSE_HEADER ] 
+    then
+        $RESPONSE_HEADER=download-dataobject-response-header.tmp
+    fi
+
+    if [ -z $RESPONSE_MSG ] 
+    then
+        $RESPONSE_MSG=download-dataobject-response-message.json.tmp
+    fi
+
+    OBJECT_PATH="$1"
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+
+   
+    if [ -z "$2" ]
+    then 
+        TEMPLATE="$HPC_DM_TEST/utils/templates/download-async-template.json"
+    else 
+        TEMPLATE="$2"
+    fi
+
+
+    FILE_NAME=$(basename $OBJECT_PATH)
+    TEMP=input-temp.json.tmp
+
+    #Update the globus endpoint
+    update_uid "$TEMPLATE" "$TEMP"
+
+    #Update the file name 
+    INPUT_JSON=$(cat "$TEMP" | sed "s/dxfilename/$FILE_NAME/")
+    echo "$INPUT_JSON" > input.json
+
+
+    curl -H "Content-Type: application/json" -d @input.json -X POST ${SERVER}/hpc-server/dataObject/$OBJECT_PATH/download  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    check_connection $RESPONSE_HEADER
+
+}
 
 
 
