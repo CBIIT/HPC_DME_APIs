@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# runme 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+#Run the common runtest
+$HPC_DM_TEST/test-user-groups/utils/runtest
+
+
+#Verify that the user registration went through
+verify_registration  group-registration-response-header.tmp
+
+#Verify that the group registration went through
+
+GROUP_RESPONSE_HEADER=original_group_registration.tmp
+mv group-registration-response-header.tmp  $GROUP_RESPONSE_HEADER 
+verify_registration $GROUP_RESPONSE_HEADER 
+
+#Get the new user ID
+if ! [ -e new-user-id.tmp ] 
+then
+    echo "ERROR: The file new-user.id-tmp does not exist"
+    exit 1
+fi
+
+#Get the new group ID
+if ! [ -e new-group-id.tmp ] 
+then
+    echo "ERROR: The file new-user.id-tmp does not exist"
+    exit 1
+fi
+
+
+
+NEW_USER=$(cat new-user-id.tmp )
+NEW_GROUP=$(cat new-group-id.tmp)
+
+#add_user_to_group  "$NEW_GROUP" "$NEW_USER"
+
+INPUT_TEMPLATE=$(cat input-template.json)
+DELETED_USER=$(echo "$INPUT_TEMPLATE" | sed "s/dxtest-delete-user/$NEW_USER/")
+GROUP=$(echo "$DELETED_USER" | sed "s/dxtest-group/$NEW_GROUP/")
+echo "$GROUP" > input.json.tmp
+
+RESPONSE_MSG=group-registration-response-message.json.tmp
+RESPONSE_HEADER=group-registration-response-header.tmp
+
+register_group "input.json.tmp" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+
+verify_registration  $RESPONSE_HEADER 
+
+#Parse the response header. 
+
+#Divide the output by {
+SEPARATE_LINES=$(cat $RESPONSE_MSG | tr "{" "\n")
+#GROUP_RESPONSE=$(echo "$SEPARATE_LINES" | grep "\"group\"")
+USER_RESPONSE=$(echo "$SEPARATE_LINES" | grep "\"userId\"")
+
+
+#Make sure the user is added "result true"
+if ! [[ "$USER_RESPONSE" ==  *"\"result\":true"*  ]] 
+then
+    echo "ERROR: The user was not added correctly"
+    exit
+fi

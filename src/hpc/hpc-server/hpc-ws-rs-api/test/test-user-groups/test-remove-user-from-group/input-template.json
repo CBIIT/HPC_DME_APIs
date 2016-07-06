@@ -1,0 +1,4 @@
+{
+    "group": "dxtest-group",
+        "deleteUserIds": ["dxtest-delete-user"]
+}
