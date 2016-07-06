@@ -20,13 +20,13 @@ verify_registration  dataObject-registration-response-header.tmp
 
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
-SERVER=`cat $HPC_DM_TEST/utils/server`
+
 OBJECT_PATH=`cat registered-dataobject-path.tmp`
 
-
-curl -H "Content-Type: application/json" -d @input.json -X POST ${SERVER}/hpc-server/dataObject/$OBJECT_PATH/download  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
-#echo "curl -H \"Content-Type: application/json\" -d @input.json -X POST ${SERVER}/hpc-server/dataObject/$OBJECT_PATH/download  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status"
-check_connection $RESPONSE_HEADER
+download_dataobject_async "$OBJECT_PATH" "input-template.json"
+##SERVER=`cat $HPC_DM_TEST/utils/server`
+#curl -H "Content-Type: application/json" -d @input.json -X POST ${SERVER}/hpc-server/dataObject/$OBJECT_PATH/download  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+#check_connection $RESPONSE_HEADER
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 echo $HTTP_CODE
@@ -39,6 +39,6 @@ then
 fi
 
 FILE_NAME=$(basename $OBJECT_PATH)
-GLOBUS_DIR=$(get_json_value input.json path)
+GLOBUS_DIR=$(get_json_value input.json fileId)
 GLOBUS_PATH="${GLOBUS_DIR}${FILE_NAME}"
 verify_globus_file  "$GLOBUS_PATH"
