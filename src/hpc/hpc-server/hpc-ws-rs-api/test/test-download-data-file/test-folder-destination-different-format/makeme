@@ -14,6 +14,4 @@
 #Clean previous results
 ./cleanme
 ../../utils/maketest
-../utils/maketest 
-
-
+../utils/maketest-synchronous
