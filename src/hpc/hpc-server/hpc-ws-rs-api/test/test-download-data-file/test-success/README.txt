@@ -14,3 +14,4 @@
 ******************************/
 
 Register the dataObject and the collection before downloading it. 
+Registration and download will take place asynchronously.
