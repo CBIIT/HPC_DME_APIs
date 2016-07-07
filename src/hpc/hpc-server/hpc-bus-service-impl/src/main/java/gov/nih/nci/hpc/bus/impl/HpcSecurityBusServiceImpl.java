@@ -266,6 +266,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
         HpcAuthenticationTokenClaims authenticationTokenClaims = new HpcAuthenticationTokenClaims();
         authenticationTokenClaims.setUserName(userName);
         authenticationTokenClaims.setPassword(password);
+        authenticationTokenClaims.setUserAuthenticated(userAuthenticated);
         authenticationTokenClaims.setLdapAuthentication(ldapAuthentication);
     	String authenticatioToken = securityService.createAuthenticationToken(authenticationTokenClaims);
     	
