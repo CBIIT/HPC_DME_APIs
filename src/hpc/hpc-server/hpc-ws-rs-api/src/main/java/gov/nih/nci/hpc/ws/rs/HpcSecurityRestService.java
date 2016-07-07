@@ -1,5 +1,5 @@
 /**
- * HpcUserRegistrationRestService.java
+ * HpcSecurityRestService.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -27,7 +27,7 @@ import javax.ws.rs.core.Response;
 
 /**
  * <p>
- * HPC User REST Service Interface.
+ * HPC Security REST Service Interface.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
@@ -77,7 +77,7 @@ public interface HpcSecurityRestService
      */
     @GET
     @Path("/authenticate")
-    @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response authenticate();
 
     /**
