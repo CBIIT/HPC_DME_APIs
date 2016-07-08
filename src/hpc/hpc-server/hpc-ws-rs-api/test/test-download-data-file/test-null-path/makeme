@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Readme.txt
+# maketest
 # @author: George Zaki 
 # 
 # Copyright Leidos Biomedical Research, Inc
@@ -9,7 +9,8 @@
 #
 
 #Register a project and a dataObject to be downloaded
- 
+
+
 #Clean previous results
 ./cleanme
-../../utils/maketest
+../utils/maketest-synchronous

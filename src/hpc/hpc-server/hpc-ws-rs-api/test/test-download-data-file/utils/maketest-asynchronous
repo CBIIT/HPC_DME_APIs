@@ -13,6 +13,4 @@ source $HPC_DM_TEST/utils/functions
 ./cleanme 
 
 update_uid $HPC_DM_TEST/utils/templates/register-dataobject-template.json register-dataobject.json.tmp
-
 ../utils/maketest 
-

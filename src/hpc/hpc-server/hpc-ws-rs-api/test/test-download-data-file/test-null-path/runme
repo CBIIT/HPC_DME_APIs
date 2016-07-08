@@ -13,15 +13,17 @@
 #import common functions
 source ../../utils/functions
 
+../utils/runtest
+
+verify_registration  collection-registration-response-header.tmp
+verify_registration  dataObject-registration-response-header.tmp
+
+OBJECT_PATH=`cat registered-dataobject-path.tmp`
 
 
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
-SERVER=`cat $HPC_DM_TEST/utils/server`
-
-
-curl -H "Content-Type: application/json" -d @input.json -X POST ${SERVER}/hpc-server/dataObject/$OBJECT_PATH/download  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
-check_connection $RESPONSE_HEADER
+download_dataobject_async "$OBJECT_PATH"  "input.json"
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
