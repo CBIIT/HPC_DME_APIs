@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+verify_registration  collection-registration-response-header.tmp
+verify_registration  dataObject-registration-response-header.tmp
+
+OBJECT_PATH=`cat registered-dataobject-path.tmp`
+RESPONSE_HEADER=get-item-response-header
+RESPONSE_MSG=get-item-response-message.json
+
+#Make sure the dataObject is archived
+OBJECT_GET_PATH=dataObject/$OBJECT_PATH
+RESPONSE_HEADER=get-item-response-header.tmp 
+RESPONSE_MSG=get-item-response-message.json.tmp
+
+get_item "$OBJECT_GET_PATH"  "$RESPONSE_HEADER" "$RESPONSE_MSG"
+ARCH_STATUS=$(get_json_attribute_value "$RESPONSE_MSG" "data_transfer_status")
+
+if [ "$ARCH_STATUS" == "ARCHIVED" ]
+then
+    echo "dataObject already archived. So it can be downloaded" 1>&2
+    echo "data_transfer_status=$ARCH_STATUS" 1>&2
+    exit
+fi
+
+#GLOBUS_STATUS="IN_PROGRESS"
+
+RESPONSE_HEADER=download-response-header.tmp 
+RESPONSE_MSG=download-response-message.json.tmp
+
+download_dataobject_async "$OBJECT_PATH"
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
+ERROR_REASON=`get_json_value $RESPONSE_MSG requestRejectReason`
+
+echo $HTTP_CODE 1>&2
+echo $ERROR_TYPE 1>&2
+echo $ERROR_REASON 1>&2
+
