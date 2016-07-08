@@ -603,10 +603,10 @@ function download_dataobject_async {
 
     #Update the file name 
     INPUT_JSON=$(cat "$TEMP" | sed "s/dxfilename/$FILE_NAME/")
-    echo "$INPUT_JSON" > input.json
+    echo "$INPUT_JSON" > input.json.tmp
 
 
-    curl -H "Content-Type: application/json" -d @input.json -X POST ${SERVER}/hpc-server/dataObject/$OBJECT_PATH/download  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -H "Content-Type: application/json" -d @input.json.tmp -X POST ${SERVER}/hpc-server/dataObject/$OBJECT_PATH/download  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     check_connection $RESPONSE_HEADER
 
 }
