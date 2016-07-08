@@ -27,6 +27,14 @@ download_dataobject_async "$OBJECT_PATH"  "input.json"
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
+ERROR_MSG=`get_json_value $RESPONSE_MSG message`
 
 echo $HTTP_CODE 1>&2 
 echo $ERROR_TYPE 1>&2
+
+MSG_PREFIX="Failed to activate endpoint"
+
+if [[ "$ERROR_MSG" == *"$MSG_PREFIX"* ]]
+then
+    echo $MSG_PREFIX  1>&2
+fi
