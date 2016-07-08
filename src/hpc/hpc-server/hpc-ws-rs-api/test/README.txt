@@ -21,7 +21,7 @@ To download and install DICE, please follow the documentation at:
 http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
 
 -Configuration:
-  I-Edit three configuration files in the ./utils subdirectory:
+  I-Edit four configuration files in the ./utils subdirectory:
     1- ./utils/config
         Add you username after the option "-u <username>[:password]"
         Note: Do not check in the config file in the repository with your NCI password.
@@ -32,6 +32,8 @@ http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
         For that, the globus-config file is checked in as a dynamic link.
     3. ./utils/server
         Edit the server name and port number for the server to be tested.
+    4. ./utils/test-configuration
+        Edit the shared globus endpoint. 
 
   II- Create a globus shared endpoint called HPC_DM_TEST and share it with the system admin. Add a test.txt empty file to this Globus endpoint:
         "endpoint": "HPC_DM_TEST",
@@ -43,7 +45,7 @@ http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
   
   IV- Define the environment variable HPC_DM_TEST and let it point to the directory where this README.txt is located.
         For example:
-           $export HPC_DM_TEST=/path/to/test/
+           $export HPC_DM_TEST=/path/to/this/README.txt/
 
   V- To run test-hpc-client units tests, please follow the setup steps shown in ./test-hpc-client/README.txt 
 
