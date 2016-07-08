@@ -37,11 +37,20 @@ RESPONSE_MSG=group-registration-response-message.json.tmp
 RESPONSE_HEADER=group-registration-response-header.tmp
 
 add_user_to_group  "$NEW_GROUP" "$NEW_USER"
+verify_registration  $RESPONSE_HEADER 
 
 RESPONSE_CODE=$(get_http_code "$RESPONSE_HEADER")
 ERROR_TYPE=$(get_json_value "$RESPONSE_MSG" "errorType")
 
 
-echo "$RESPONSE_CODE"
-echo "$ERROR_TYPE"
+#Parse the response header. 
+#Divide the output by {
+SEPARATE_LINES=$(cat $RESPONSE_MSG | tr "{" "\n")
+USER_RESPONSE=$(echo "$SEPARATE_LINES" | grep "\"userId\"")
 
+#Make sure the user is not added "result:false"
+if ! [[ "$USER_RESPONSE" ==  *"\"result\":false"*  ]] 
+then
+    echo "ERROR: The invalid user was added." 1>&2
+    exit
+fi
