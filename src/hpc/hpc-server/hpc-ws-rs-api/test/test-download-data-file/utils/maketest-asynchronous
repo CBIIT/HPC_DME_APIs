@@ -7,10 +7,21 @@
 # Distributed under the OSI-approved BSD 3-Clause License.
 # See http://ncip.github.com/HPC/LICENSE.txt for details.
 #
-#Register a dataObject synchronously
+#Register a dataObject asynchronously
+#Inputs: [dataObject-path] 
 
 source $HPC_DM_TEST/utils/functions
 ./cleanme 
 
-update_uid $HPC_DM_TEST/utils/templates/register-dataobject-template.json register-dataobject.json.tmp
+NEW_TEMPLATE="register-dataobject.json.tmp"
+
+update_uid $HPC_DM_TEST/utils/templates/register-dataobject-template.json "$NEW_TEMPLATE" 
+
+if ! [ -z "$1" ]
+then
+    FILE_ID="$1"
+    echo hello
+    INPUT=$(cat $NEW_TEMPLATE | sed "s/test\.txt/$FILE_ID/")
+    echo "$INPUT" > $NEW_TEMPLATE
+fi 
 ../utils/maketest 
