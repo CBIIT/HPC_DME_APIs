@@ -39,6 +39,8 @@
 		          interface="gov.nih.nci.hpc.service.HpcDataTransferService" />
 	<osgi:service ref="hpcDataManagementService"
 		          interface="gov.nih.nci.hpc.service.HpcDataManagementService" />	
+	<osgi:service ref="hpcNotificationService"
+		          interface="gov.nih.nci.hpc.service.HpcNotificationService" />	
 
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcUserDAO" 
@@ -47,6 +49,8 @@
 	                interface="gov.nih.nci.hpc.dao.HpcSystemAccountDAO" />
 	<osgi:reference id="hpcDataObjectDownloadCleanupDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcDataObjectDownloadCleanupDAO" />
+	<osgi:reference id="hpcNotificationDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcNotificationDAO" />	                
 	<osgi:reference id="hpcGlobusDataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
 		            bean-name="hpcGlobusDataTransferProxy"/>

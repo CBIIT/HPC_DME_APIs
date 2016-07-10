@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcNotificationTypes.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-notification="http://hpc.nci.nih.gov/domain/notification"
+	targetNamespace="http://hpc.nci.nih.gov/domain/notification"
+	elementFormDefault="unqualified">
+
+	<xsd:simpleType name="HpcNotificationType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE" />
+			<xsd:enumeration value="DATA_TRANSFER_UPLOAD_ARCHIVED" />
+			<xsd:enumeration value="DATA_TRANSFER_UPLOAD_FAILED" />
+			<xsd:enumeration value="DATA_TRANSFER_DOWNLOAD_COMPLETED" />
+			<xsd:enumeration value="DATA_TRANSFER_DOWNLOAD_FAILED" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="HpcNotificationDeliveryMethod">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="EMAIL" />
+			<xsd:enumeration value="TEXT" />
+			<xsd:enumeration value="NONE" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="HpcNotificationSubscription">
+		<xsd:sequence>
+			<xsd:element name="notificationType" type="hpc-domain-notification:HpcNotificationType" />
+			<xsd:element name="notificationDeliveryMethods" 
+			             type="hpc-domain-notification:HpcNotificationDeliveryMethod" 
+			             minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+</xsd:schema>

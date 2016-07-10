@@ -52,4 +52,5 @@
 		<constructor-arg value="${hpc.service.dataTransfer.downloadDirectory}" index="1" />
 	</bean>
 	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl" />
+	<bean id="hpcNotificationService" class="gov.nih.nci.hpc.service.impl.HpcNotificationServiceImpl" />
 </beans>

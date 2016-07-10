@@ -20,7 +20,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
- * HPC User Business Service Interface.
+ * HPC Security Business Service Interface.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
