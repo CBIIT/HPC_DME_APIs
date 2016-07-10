@@ -17,7 +17,8 @@
 	xmlns:hpc-domain-user="http://hpc.nci.nih.gov/domain/user"
 	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
 	xmlns:hpc-dto-security="http://hpc.nci.nih.gov/dto/security"
-	targetNamespace="http://hpc.nci.nih.gov/dto/security" elementFormDefault="unqualified">
+	targetNamespace="http://hpc.nci.nih.gov/dto/security" 
+	elementFormDefault="unqualified">
 
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/user"
 		        schemaLocation="HpcUserTypes.xsd" />

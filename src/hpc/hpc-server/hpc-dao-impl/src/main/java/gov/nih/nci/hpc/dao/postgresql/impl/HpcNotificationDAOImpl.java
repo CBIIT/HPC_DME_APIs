@@ -45,7 +45,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		   "insert into public.\"HPC_NOTIFICATION_SUBSCRIPTION\" ( " +
                    "\"USER_ID\", \"NOTIFICATION_TYPE\", \"NOTIFICATION_DELIVERY_METHODS\") " +
                    "values (?, ?, ?) " +
-           "on conflict(\"HPC_NOTIFICATION_SUBSCRIPTION_pkey\") do update " +
+           "on conflict(\"USER_ID\", \"NOTIFICATION_TYPE\") do update " +
                    "set \"NOTIFICATION_DELIVERY_METHODS\"=excluded.\"NOTIFICATION_DELIVERY_METHODS\"";
 
 	public static final String GET_SQL = "select * from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"USER_ID\" = ?";
