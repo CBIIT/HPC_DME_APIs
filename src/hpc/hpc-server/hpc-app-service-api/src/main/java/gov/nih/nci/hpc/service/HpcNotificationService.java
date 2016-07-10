@@ -19,7 +19,7 @@ import gov.nih.nci.hpc.exception.HpcException;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: HpcSecurityService.java 1013 2016-03-26 23:06:30Z rosenbergea $
+ * @version $Id$
  */
 
 public interface HpcNotificationService 
