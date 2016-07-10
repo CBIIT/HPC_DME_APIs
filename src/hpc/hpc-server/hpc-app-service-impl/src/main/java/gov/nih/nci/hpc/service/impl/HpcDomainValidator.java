@@ -195,9 +195,12 @@ public class HpcDomainValidator
     	if(notificationSubscription == null || 
     	   notificationSubscription.getNotificationType() == null ||
     	   notificationSubscription.getNotificationDeliveryMethods() == null ||
-    	   notificationSubscription.getNotificationDeliveryMethods().isEmpty()) {
+    	   notificationSubscription.getNotificationDeliveryMethods().isEmpty() ||
+    	   notificationSubscription.getNotificationDeliveryMethods().contains(null)) {
      	   return false;
     	}
+    	
+    	
     
     	return true;
     }  

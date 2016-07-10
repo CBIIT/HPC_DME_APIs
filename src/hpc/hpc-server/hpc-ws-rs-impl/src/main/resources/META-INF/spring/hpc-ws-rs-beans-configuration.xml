@@ -79,11 +79,12 @@
 		<entry key="http://hpc.nci.nih.gov/dto/error" value="gov.nih.nci.hpc.dto.error" />
 		<entry key="http://hpc.nci.nih.gov/dto/security" value="gov.nih.nci.hpc.dto.security" />
 		<entry key="http://hpc.nci.nih.gov/dto/datamanagement" value="gov.nih.nci.hpc.dto.datamanagement" />
+		<entry key="http://hpc.nci.nih.gov/dto/notification" value="gov.nih.nci.hpc.dto.notification" />
 		<entry key="http://hpc.nci.nih.gov/domain/error" value="gov.nih.nci.hpc.domain.error" />
 		<entry key="http://hpc.nci.nih.gov/domain/metadata" value="gov.nih.nci.hpc.domain.metadata" />
 		<entry key="http://hpc.nci.nih.gov/domain/user" value="gov.nih.nci.hpc.domain.user" />
 		<entry key="http://hpc.nci.nih.gov/domain/datatransfer" value="gov.nih.nci.hpc.domain.datatransfer" />
-		<entry key="http://hpc.nci.nih.gov/domain/datamanagement" value="gov.nih.nci.hpc.domain.datamanagement" />
+		<entry key="http://hpc.nci.nih.gov/domain/notification" value="gov.nih.nci.hpc.domain.notification" />
 	</util:map>
 
 	<!-- Exception Mapper Providers -->
