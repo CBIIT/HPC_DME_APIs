@@ -69,7 +69,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     	// Input validation.
     	if(userId == null || 
     	   !isValidNotificationSubscription(notificationSubscription)) {
-    	   throw new HpcException("Invalid add/update notification subscription",
+    	   throw new HpcException("Invalid add/update notification subscription request",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
@@ -84,7 +84,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     {
     	// Input validation.
     	if(userId == null || notificationType == null) {
-    	   throw new HpcException("Invalid delete notification subscription",
+    	   throw new HpcException("Invalid delete notification subscription request",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
