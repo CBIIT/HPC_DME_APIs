@@ -11,9 +11,12 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcNotificationBusService;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcNotificationRestService;
+
+import java.util.List;
 
 import javax.ws.rs.core.Response;
 
@@ -83,6 +86,23 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
 		
 		return okResponse(null, false);
 	}
+    
+    @Override
+    public Response getNotificationSubscriptions(String nciUserId)
+    {
+		logger.info("Invoking RS: GET /notification/{nciUserId}: " + nciUserId);
+	
+		List<HpcNotificationSubscription> subscriptions = null;
+		try {
+			 subscriptions = notificationBusService.getNotificationSubscriptions(nciUserId);
+		 
+		} catch(HpcException e) {
+		        logger.error("RS: GET /notification/{nciUserId} failed:", e);
+		        return errorResponse(e);
+		}
+	
+		return okResponse(subscriptions, true);   	
+    }
     
 }
 
