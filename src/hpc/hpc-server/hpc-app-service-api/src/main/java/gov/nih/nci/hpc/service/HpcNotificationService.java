@@ -10,6 +10,8 @@
 
 package gov.nih.nci.hpc.service;
 
+import java.util.List;
+
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -48,6 +50,17 @@ public interface HpcNotificationService
     public void deleteNotificationSubscription(String userId,
     		                                   HpcNotificationType notificationType)
                                               throws HpcException;
+    
+    /**
+     * Get notification subscriptions of a user.
+     *
+     * @param userId The user ID.
+     * @return List<HpcNotificationSubscription>
+     * 
+     * @throws HpcException
+     */
+    public List<HpcNotificationSubscription> getNotificationSubscriptions(String userId) 
+    		                                                             throws HpcException;
 }
 
  

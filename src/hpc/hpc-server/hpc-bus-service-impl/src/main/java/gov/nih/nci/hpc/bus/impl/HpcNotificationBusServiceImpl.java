@@ -10,6 +10,8 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
+import java.util.List;
+
 import gov.nih.nci.hpc.bus.HpcNotificationBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
@@ -103,6 +105,19 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService
     	       notificationService.deleteNotificationSubscription(userId, notificationType);
     	   }
     	}
+    }
+    
+    @Override
+    public List<HpcNotificationSubscription> 
+           getNotificationSubscriptions(String userId) throws HpcException
+    {
+    	// Input validation.
+    	if(securityService.getUser(userId) == null) {
+    	   throw new HpcException("Invalid user: " + userId,
+	                              HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}   
+    	
+    	return notificationService.getNotificationSubscriptions(userId);
     }
 }
 

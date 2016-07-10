@@ -19,9 +19,11 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -68,7 +70,8 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	HpcEncryptor encryptor = null;
 	
 	// Row mapper.
-	private HpcNotificationSubscriptionRowMapper rowMapper = new HpcNotificationSubscriptionRowMapper();
+	private HpcNotificationSubscriptionRowMapper notificationSubscriptionRowMapper = 
+			                                     new HpcNotificationSubscriptionRowMapper();
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -126,6 +129,22 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			    throw new HpcException("Failed to delete a notification subscription: " + 
 		                               e.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, e);
+		}		
+	}
+	
+	@Override
+	public List<HpcNotificationSubscription> get(String userId) throws HpcException
+	{
+		try {
+		     return jdbcTemplate.query(GET_SUBSCRIPTION_SQL, notificationSubscriptionRowMapper);
+		     
+		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get notification subscription: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
 		}		
 	}
 	

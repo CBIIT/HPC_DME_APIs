@@ -14,6 +14,8 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import java.util.List;
+
 /**
  * <p>
  * HPC Notification DAO Interface.
@@ -46,6 +48,16 @@ public interface HpcNotificationDAO
      */
     public void delete(String userId, HpcNotificationType notificationType) 
     		          throws HpcException;
+    
+    /**
+     * Get notification subscriptions of a user.
+     *
+     * @param userId The user ID.
+     * @return List<HpcNotificationSubscription>
+     * 
+     * @throws HpcException
+     */
+    public List<HpcNotificationSubscription> get(String userId) throws HpcException;
 }
 
  
