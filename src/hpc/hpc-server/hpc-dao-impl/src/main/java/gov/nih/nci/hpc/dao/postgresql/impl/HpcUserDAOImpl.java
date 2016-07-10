@@ -99,7 +99,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcManagedUserDAO Interface Implementation
+    // HpcUserDAO Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override

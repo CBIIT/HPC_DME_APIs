@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcNotification.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-notification="http://hpc.nci.nih.gov/domain/notification"
+	xmlns:hpc-dto-notification="http://hpc.nci.nih.gov/dto/notification"
+	targetNamespace="http://hpc.nci.nih.gov/dto/notification" elementFormDefault="unqualified">
+
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/notification"
+		        schemaLocation="HpcNotificationTypes.xsd" />
+
+	<!-- Notification Subscriptions DTO -->
+	<xsd:element name="HpcNotificationSubscriptionsRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="addUpdateSubscriptions" 
+				             type="hpc-domain-notification:HpcNotificationSubscription" 
+				             minOccurs="0" maxOccurs="unbounded"/>
+				<xsd:element name="deleteSubscriptions"
+					         type="hpc-domain-notification:HpcNotificationType" 
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+</xsd:schema>
