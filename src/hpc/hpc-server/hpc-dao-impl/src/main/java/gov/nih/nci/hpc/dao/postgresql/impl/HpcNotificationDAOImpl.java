@@ -41,14 +41,19 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
     //---------------------------------------------------------------------//    
     
     // SQL Queries.
-	public static final String UPSERT_SQL = 
+	public static final String UPSERT_SUBSCRIPTION_SQL = 
 		   "insert into public.\"HPC_NOTIFICATION_SUBSCRIPTION\" ( " +
                    "\"USER_ID\", \"NOTIFICATION_TYPE\", \"NOTIFICATION_DELIVERY_METHODS\") " +
                    "values (?, ?, ?) " +
            "on conflict(\"USER_ID\", \"NOTIFICATION_TYPE\") do update " +
                    "set \"NOTIFICATION_DELIVERY_METHODS\"=excluded.\"NOTIFICATION_DELIVERY_METHODS\"";
+	
+	public static final String DELETE_SUBSCRIPTION_SQL = 
+			   "delete from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" " +
+	                   "where \"USER_ID\" = ? and \"NOTIFICATION_TYPE\" = ?";
 
-	public static final String GET_SQL = "select * from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"USER_ID\" = ?";
+	public static final String GET_SUBSCRIPTION_SQL = 
+		   "select * from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"USER_ID\" = ?";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -97,16 +102,32 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 				 deliveryMethods.append(deliveryMethod.value() + " ");
 			 }
 			 
-		     jdbcTemplate.update(UPSERT_SQL,
+		     jdbcTemplate.update(UPSERT_SUBSCRIPTION_SQL,
 		    		             userId,
 		    		             notificationSubscription.getNotificationType().value(),
 		    		             deliveryMethods.toString());
 		     
 		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to upsert a notification subscription: " + e.getMessage(),
+			    throw new HpcException("Failed to upsert a notification subscription: " + 
+		                               e.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, e);
 		}
     }
+	
+	@Override
+    public void delete(String userId, HpcNotificationType notificationType) 
+	                  throws HpcException
+	{
+		try {
+		     jdbcTemplate.update(DELETE_SUBSCRIPTION_SQL,
+		    		             userId, notificationType.value());
+		     
+		} catch(DataAccessException e) {
+			    throw new HpcException("Failed to delete a notification subscription: " + 
+		                               e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, e);
+		}		
+	}
 	
     //---------------------------------------------------------------------//
     // Helper Methods

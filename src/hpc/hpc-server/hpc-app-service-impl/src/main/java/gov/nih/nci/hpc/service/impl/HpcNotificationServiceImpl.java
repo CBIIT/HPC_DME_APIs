@@ -14,6 +14,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNotificatio
 import gov.nih.nci.hpc.dao.HpcNotificationDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 
@@ -54,7 +55,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     //---------------------------------------------------------------------//
 
     //---------------------------------------------------------------------//
-    // HpcSecurityService Interface Implementation
+    // HpcNotificationService Interface Implementation
     //---------------------------------------------------------------------//
 
     @Override
@@ -63,13 +64,29 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
                                                  throws HpcException
     {
     	// Input validation.
-    	if(!isValidNotificationSubscription(notificationSubscription)) {
-    	   throw new HpcException("Invalid notification subscription",
+    	if(userId == null || 
+    	   !isValidNotificationSubscription(notificationSubscription)) {
+    	   throw new HpcException("Invalid add/update notification subscription",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
-    	// Persist to the DB.
+    	// Upsert to DB.
     	notificationDAO.upsert(userId, notificationSubscription);
+    }
+    
+    @Override
+    public void deleteNotificationSubscription(String userId,
+                                               HpcNotificationType notificationType)
+                                              throws HpcException
+    {
+    	// Input validation.
+    	if(userId == null || notificationType == null) {
+    	   throw new HpcException("Invalid delete notification subscription",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+
+    	// Delete from DB DB.
+    	notificationDAO.delete(userId, notificationType);
     }
 }
 
