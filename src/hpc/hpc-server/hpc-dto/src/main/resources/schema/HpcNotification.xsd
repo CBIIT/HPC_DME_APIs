@@ -16,7 +16,8 @@
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	xmlns:hpc-domain-notification="http://hpc.nci.nih.gov/domain/notification"
 	xmlns:hpc-dto-notification="http://hpc.nci.nih.gov/dto/notification"
-	targetNamespace="http://hpc.nci.nih.gov/dto/notification" elementFormDefault="unqualified">
+	targetNamespace="http://hpc.nci.nih.gov/dto/notification" 
+	elementFormDefault="unqualified">
 
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/notification"
 		        schemaLocation="HpcNotificationTypes.xsd" />
