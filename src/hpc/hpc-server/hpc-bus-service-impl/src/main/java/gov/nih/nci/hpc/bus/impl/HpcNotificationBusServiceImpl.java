@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.bus.impl;
 import gov.nih.nci.hpc.bus.HpcNotificationBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationType;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcNotificationService;
@@ -92,6 +93,14 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService
     	   for(HpcNotificationSubscription notificationSubscription : 
     		   notificationSubscriptions.getAddUpdateSubscriptions()) {
     	       notificationService.addUpdateNotificationSubscription(userId, notificationSubscription);
+    	   }
+    	}
+    	
+    	// Delete subscriptions for the user.
+    	if(notificationSubscriptions.getDeleteSubscriptions() != null) {
+    	   for(HpcNotificationType notificationType : 
+    		   notificationSubscriptions.getDeleteSubscriptions()) {
+    	       notificationService.deleteNotificationSubscription(userId, notificationType);
     	   }
     	}
     }
