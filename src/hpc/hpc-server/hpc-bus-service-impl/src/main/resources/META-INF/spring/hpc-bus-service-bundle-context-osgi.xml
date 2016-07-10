@@ -34,6 +34,8 @@
 		          interface="gov.nih.nci.hpc.bus.HpcDataManagementBusService" />
 	<osgi:service ref="hpcSystemBusService"
 		          interface="gov.nih.nci.hpc.bus.HpcSystemBusService" />
+	<osgi:service ref="hpcNotificationBusService"
+		          interface="gov.nih.nci.hpc.bus.HpcNotificationBusService" />
 
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcSecurityService"
@@ -42,5 +44,7 @@
 		            interface="gov.nih.nci.hpc.service.HpcDataTransferService" />
 	<osgi:reference id="hpcDataManagementService"
 		            interface="gov.nih.nci.hpc.service.HpcDataManagementService" />
+	<osgi:reference id="hpcNotificationService"
+		            interface="gov.nih.nci.hpc.service.HpcNotificationService" />
 
 </beans>

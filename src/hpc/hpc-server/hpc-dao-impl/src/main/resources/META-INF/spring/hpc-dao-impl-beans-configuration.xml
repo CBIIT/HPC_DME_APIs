@@ -45,5 +45,6 @@
 	      init-method="dbConnect"/>
 	<bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcSystemAccountDAOImpl" />
 	<bean id="hpcDataObjectDownloadCleanupDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataObjectDownloadCleanupDAOImpl" />
+	<bean id="hpcNotificationDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcNotificationDAOImpl" />
 
 </beans>

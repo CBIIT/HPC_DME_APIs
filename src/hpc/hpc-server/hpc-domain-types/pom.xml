@@ -89,6 +89,15 @@
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
+								<xsdOption>
+									<xsd>src/main/resources/schema/HpcNotificationTypes.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.domain.notification</packagename>
+									<bindingFile>src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:multiline</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
 							</xsdOptions>
 						</configuration>
 					</execution>
@@ -108,7 +117,8 @@
 							gov.nih.nci.hpc.domain.dataset,
 							gov.nih.nci.hpc.domain.project,
 							gov.nih.nci.hpc.domain.datamanagement,
-							gov.nih.nci.hpc.domain.datatransfer
+							gov.nih.nci.hpc.domain.datatransfer,
+							gov.nih.nci.hpc.domain.notification
 						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>
