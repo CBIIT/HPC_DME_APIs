@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -25,7 +26,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 public interface HpcNotificationService 
 {         
 	/**
-     * Add/Update notification subscription for a user.
+     * Add/Update a notification subscription for a user.
      *
      * @param userId The user ID.
      * @param notificationSubscription The notification subscription to add/update.
@@ -35,6 +36,18 @@ public interface HpcNotificationService
     public void addUpdateNotificationSubscription(String userId,
     		                                      HpcNotificationSubscription notificationSubscription)
                                                  throws HpcException;
+    
+	/**
+     * Delete a notification subscription for a user.
+     *
+     * @param userId The user ID.
+     * @param notificationType The notification type to delete.
+     * 
+     * @throws HpcException
+     */
+    public void deleteNotificationSubscription(String userId,
+    		                                   HpcNotificationType notificationType)
+                                              throws HpcException;
 }
 
  

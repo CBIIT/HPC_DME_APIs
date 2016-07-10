@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.dao;
 
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -34,6 +35,17 @@ public interface HpcNotificationDAO
      */
     public void upsert(String userId,
     		           HpcNotificationSubscription notificationSubscription) throws HpcException;
+    
+    /**
+     * Delete a notification subscription.
+     *
+     * @param userId The user ID.
+     * @param notificationType The notification type.
+     * 
+     * @throws HpcException
+     */
+    public void delete(String userId, HpcNotificationType notificationType) 
+    		          throws HpcException;
 }
 
  
