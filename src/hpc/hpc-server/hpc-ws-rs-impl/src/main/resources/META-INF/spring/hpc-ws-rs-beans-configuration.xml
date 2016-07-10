@@ -143,12 +143,14 @@
 	<!-- JAX-RS Service Beans -->
 	<bean id="hpcSecurityRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcSecurityRestServiceImpl" />
 	<bean id="hpcDataManagementRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl" />
+	<bean id="hpcNotificationRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcNotificationRestServiceImpl" />
 	
 	<!-- CXF JAX-RS Server Config -->
 	<jaxrs:server id="hpc-server" address="${hpc.ws.rs.url}" bus="cxf">
 		<jaxrs:serviceBeans>
 			<ref bean="hpcSecurityRestService" />
 			<ref bean="hpcDataManagementRestService" />
+			<ref bean="hpcNotificationRestService" />
 		</jaxrs:serviceBeans>
 		<jaxrs:providers>
 			<ref bean="jaxbProvider" />
@@ -174,6 +176,7 @@
 		<jaxrs:serviceBeans>
 			<ref bean="hpcSecurityRestService" />
 			<ref bean="hpcDataManagementRestService" />
+			<ref bean="hpcNotificationRestService" />
 		</jaxrs:serviceBeans>
 		<jaxrs:providers>
 			<ref bean="jaxbProvider" />

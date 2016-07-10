@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
- * HPC User REST Service Implementation.
+ * HPC Security REST Service Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
@@ -42,7 +42,7 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     // Instance members
     //---------------------------------------------------------------------//
 
-    // The User Business Service instance.
+    // The Security Business Service instance.
 	@Autowired
     private HpcSecurityBusService securityBusService = null;
     
@@ -68,7 +68,7 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcDataRegistrationRestService Interface Implementation
+    // HpcSecurityRestService Interface Implementation
     //---------------------------------------------------------------------//  
 	
     @Override

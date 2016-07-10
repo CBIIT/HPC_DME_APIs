@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 
@@ -54,7 +55,7 @@ public class HpcDomainValidator
     }
     
     //---------------------------------------------------------------------//
-    // User Domain Object Types Validators
+    // Security Domain Object Types Validators
     //---------------------------------------------------------------------//
 	
     /**
@@ -115,7 +116,7 @@ public class HpcDomainValidator
     }  
 	 
     //---------------------------------------------------------------------//
-    // Dataset Domain Object Types Validators
+    // Data Management Domain Object Types Validators
     //---------------------------------------------------------------------//
     
     /**
@@ -178,6 +179,28 @@ public class HpcDomainValidator
     	}
      	return true;
     }
+    
+    //---------------------------------------------------------------------//
+    // Notification Domain Object Types Validators
+    //---------------------------------------------------------------------//
+    
+    /**
+     * Validate a notification subscription object.
+     *
+     * @param notificationSubscription the object to be validated.
+     * @return true if valid, false otherwise.
+     */
+    public static boolean isValidNotificationSubscription(HpcNotificationSubscription notificationSubscription) 
+    {
+    	if(notificationSubscription == null || 
+    	   notificationSubscription.getNotificationType() == null ||
+    	   notificationSubscription.getNotificationDeliveryMethods() == null ||
+    	   notificationSubscription.getNotificationDeliveryMethods().isEmpty()) {
+     	   return false;
+    	}
+    
+    	return true;
+    }  
     
     //---------------------------------------------------------------------//
     // Helper Methods

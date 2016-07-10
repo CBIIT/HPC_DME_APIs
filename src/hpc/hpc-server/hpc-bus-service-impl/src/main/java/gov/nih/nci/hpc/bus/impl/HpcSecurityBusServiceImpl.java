@@ -45,7 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
- * HPC User Business Service Implementation.
+ * HPC Security Business Service Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
@@ -81,9 +81,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @throws HpcException Constructor is disabled.
      */
-    private HpcSecurityBusServiceImpl() throws HpcException
+    private HpcSecurityBusServiceImpl() 
     {
     }   
     
