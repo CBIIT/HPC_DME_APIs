@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.ws.rs;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -35,7 +36,9 @@ public interface HpcNotificationRestService
     /**
      * Subscribe to notifications.
      *
+     * @param nciUserId The NCI user ID.
      * @param notificationSubscriptions The notification subscriptions request.
+     * @return Response The REST service response.
      */
 	@POST
     @Path("/notification/{nciUserId}")
@@ -43,5 +46,16 @@ public interface HpcNotificationRestService
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response subscribeNotifications(@PathParam("nciUserId") String nciUserId,
     		                               HpcNotificationSubscriptionsRequestDTO notificationSubscriptions);
+	
+    /**
+     * Get Notification Subscriptions.
+     *
+     * @param nciUserId The NCI user ID.
+     * @return Response The REST service response.
+     */
+	@GET
+    @Path("/notification/{nciUserId}")
+    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    public Response getNotificationSubscriptions(@PathParam("nciUserId") String nciUserId);
 }
 

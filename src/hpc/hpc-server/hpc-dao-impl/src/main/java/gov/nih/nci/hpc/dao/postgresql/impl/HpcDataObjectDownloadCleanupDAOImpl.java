@@ -125,7 +125,8 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
 			    return null;
 			    
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get a system account: " + e.getMessage(),
+		        throw new HpcException("Failed to get data object download cleanup: " + 
+		                               e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, e);
 		}
 	}
