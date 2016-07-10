@@ -11,6 +11,9 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNotificationSubscription;
+
+import java.util.List;
+
 import gov.nih.nci.hpc.dao.HpcNotificationDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
@@ -85,8 +88,22 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
-    	// Delete from DB DB.
+    	// Delete from DB.
     	notificationDAO.delete(userId, notificationType);
+    }
+    
+    @Override
+    public List<HpcNotificationSubscription> getNotificationSubscriptions(String userId) 
+    		                                                             throws HpcException
+    {
+    	// Input validation.
+    	if(userId == null) {
+    	   throw new HpcException("Invalid user ID",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+
+    	// Query the DB.
+    	return notificationDAO.get(userId);
     }
 }
 
