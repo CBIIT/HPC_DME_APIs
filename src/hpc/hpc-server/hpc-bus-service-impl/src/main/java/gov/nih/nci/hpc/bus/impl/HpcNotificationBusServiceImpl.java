@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.bus.HpcNotificationBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationType;
+import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcNotificationService;
@@ -108,7 +109,7 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService
     }
     
     @Override
-    public List<HpcNotificationSubscription> 
+    public HpcNotificationSubscriptionListDTO
            getNotificationSubscriptions(String userId) throws HpcException
     {
     	// Input validation.
@@ -117,7 +118,17 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService
 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
     	}   
     	
-    	return notificationService.getNotificationSubscriptions(userId);
+    	// Get the subscriptions for the user.
+    	List<HpcNotificationSubscription> subscriptions = 
+    		 notificationService.getNotificationSubscriptions(userId);
+    	if(subscriptions == null || subscriptions.isEmpty()) {
+    	   return null;
+    	}
+    	
+    	// Construct and return a DTO.
+    	HpcNotificationSubscriptionListDTO subscriptionsDTO = new HpcNotificationSubscriptionListDTO();
+    	subscriptionsDTO.getSubscriptions().addAll(subscriptions);
+    	return subscriptionsDTO;
     }
 }
 
