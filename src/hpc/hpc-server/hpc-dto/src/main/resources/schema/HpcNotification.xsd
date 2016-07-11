@@ -36,4 +36,14 @@
 		</xsd:complexType>
 	</xsd:element>
 	
+	<xsd:element name="HpcNotificationSubscriptionListDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="subscriptions"
+				             type="hpc-domain-notification:HpcNotificationSubscription"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
 </xsd:schema>
