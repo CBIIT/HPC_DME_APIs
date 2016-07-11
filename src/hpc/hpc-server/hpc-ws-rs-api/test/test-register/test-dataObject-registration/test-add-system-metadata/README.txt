@@ -13,7 +13,7 @@
 @ddblock_end copyright
 ******************************/
 
-Register a dataObject using one the system generated metadat.
+Register a dataObject using one the system generated metadata.
 makeme: Generate a list of system metadata.
 runme: Use of the system metadata during registration
 

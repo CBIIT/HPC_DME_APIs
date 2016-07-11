@@ -46,7 +46,6 @@ DATAOBJECT_PATH="${PROJECT_PATH}/object-${SUFFIX}.txt"
 NEW_ATTRIBUTE=$(head -n1 $METADATA_FILE)
 
 UPDATED_INPUT=$(cat input-template.json | sed "s/dx_system_attribute/$NEW_ATTRIBUTE/")
-echo $UPDATED_INPUT  > input.json
+echo "$UPDATED_INPUT"  > input.json
 
 ../../utils/registration-runtest dataObject $PROJECT_PATH/object-${NAME}.txt  INVALID_REQUEST_INPUT 
-
