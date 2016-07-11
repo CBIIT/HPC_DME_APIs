@@ -136,7 +136,8 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	public List<HpcNotificationSubscription> get(String userId) throws HpcException
 	{
 		try {
-		     return jdbcTemplate.query(GET_SUBSCRIPTION_SQL, notificationSubscriptionRowMapper);
+		     return jdbcTemplate.query(GET_SUBSCRIPTION_SQL, notificationSubscriptionRowMapper,
+		    		                   userId);
 		     
 		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
 			    return null;
