@@ -10,9 +10,7 @@
 
 package gov.nih.nci.hpc.bus;
 
-import java.util.List;
-
-import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
+import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -43,11 +41,11 @@ public interface HpcNotificationBusService
      * Get notification subscriptions of a user.
      *
      * @param userId The user ID.
-     * @return List<HpcNotificationSubscription>
+     * @return HpcNotificationSubscriptionListDTO A list of notification subscriptions.
      * 
      * @throws HpcException
      */
-    public List<HpcNotificationSubscription> getNotificationSubscriptions(String userId) 
+    public HpcNotificationSubscriptionListDTO getNotificationSubscriptions(String userId) 
     		                                                             throws HpcException;
 }
 
