@@ -25,4 +25,4 @@ WITH (
   OIDS=FALSE
 );
 ALTER TABLE public."HPC_SYSTEM_ACCOUNT"
-  OWNER TO postgres;
+  OWNER TO ncif_hpcdm_db;
