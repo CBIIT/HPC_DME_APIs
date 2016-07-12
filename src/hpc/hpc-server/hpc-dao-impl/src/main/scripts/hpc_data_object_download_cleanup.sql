@@ -1,4 +1,4 @@
-﻿--
+--
 -- hpc_data_object_download_cleanup.sql
 --
 -- Copyright SVG, Inc.
@@ -24,4 +24,4 @@ WITH (
   OIDS=FALSE
 );
 ALTER TABLE public."HPC_DATA_OBJECT_DOWNLOAD_CLEANUP"
-  OWNER TO postgres;
+  OWNER TO ncif_hpcdm_db;
