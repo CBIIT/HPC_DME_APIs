@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.dao;
 
+import gov.nih.nci.hpc.domain.notification.HpcNotificationEvent;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -35,8 +36,9 @@ public interface HpcNotificationDAO
      * 
      * @throws HpcException
      */
-    public void upsert(String userId,
-    		           HpcNotificationSubscription notificationSubscription) throws HpcException;
+    public void upsertSubscription(
+    		          String userId,
+    		          HpcNotificationSubscription notificationSubscription) throws HpcException;
     
     /**
      * Delete a notification subscription.
@@ -46,8 +48,8 @@ public interface HpcNotificationDAO
      * 
      * @throws HpcException
      */
-    public void delete(String userId, HpcNotificationType notificationType) 
-    		          throws HpcException;
+    public void deleteSubscription(String userId, HpcNotificationType notificationType) 
+    		                      throws HpcException;
     
     /**
      * Get notification subscriptions of a user.
@@ -57,7 +59,17 @@ public interface HpcNotificationDAO
      * 
      * @throws HpcException
      */
-    public List<HpcNotificationSubscription> get(String userId) throws HpcException;
+    public List<HpcNotificationSubscription> 
+           getSubscriptions(String userId) throws HpcException;
+    
+    /**
+     * Store a new notification event to the repository.
+     *
+     * @param notificationEvent The notification event to be added/updated.
+     * 
+     * @throws HpcException
+     */
+    public void insertEvent(HpcNotificationEvent notificationEvent) throws HpcException;
 }
 
  

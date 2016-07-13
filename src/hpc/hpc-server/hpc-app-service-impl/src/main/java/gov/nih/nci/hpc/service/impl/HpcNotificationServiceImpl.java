@@ -16,6 +16,7 @@ import java.util.List;
 
 import gov.nih.nci.hpc.dao.HpcNotificationDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationEvent;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -74,7 +75,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     	}
 
     	// Upsert to DB.
-    	notificationDAO.upsert(userId, notificationSubscription);
+    	notificationDAO.upsertSubscription(userId, notificationSubscription);
     }
     
     @Override
@@ -89,7 +90,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     	}
 
     	// Delete from DB.
-    	notificationDAO.delete(userId, notificationType);
+    	notificationDAO.deleteSubscription(userId, notificationType);
     }
     
     @Override
@@ -103,7 +104,43 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     	}
 
     	// Query the DB.
-    	return notificationDAO.get(userId);
+    	return notificationDAO.getSubscriptions(userId);
+    }
+    
+    @Override
+    public void addDataTransferDownloadCompletedEvent(String userId) throws HpcException
+    {
+    	// Construct the event.
+    	HpcNotificationEvent event = new HpcNotificationEvent();
+    	event.setUserId(userId);
+    	event.setNotificationType(HpcNotificationType.DATA_TRANSFER_DOWNLOAD_COMPLETED);
+    	
+    	// Persist to DB.
+    	addNotificationEvent(event);
+    }
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//  
+    
+    /**
+     * Add a notification event.
+     * 
+     * @param notificationEvent The event to add.
+     * 
+     * @throws HpcException if validation failed.
+     */
+    private void addNotificationEvent(HpcNotificationEvent notificationEvent) throws HpcException
+    {
+    	// Input validation.
+    	if(notificationEvent == null || notificationEvent.getUserId() == null ||
+    	   notificationEvent.getNotificationType() == null) {
+    	   throw new HpcException("Invalid notification event",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+
+    	// Persist to DB.
+    	notificationDAO.insertEvent(notificationEvent);	
     }
 }
 
