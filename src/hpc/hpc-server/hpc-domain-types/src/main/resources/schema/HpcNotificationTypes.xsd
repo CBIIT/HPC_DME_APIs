@@ -45,4 +45,36 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:complexType name="HpcNotificationPayloadEntry">
+		<xsd:sequence>
+			<xsd:element name="attribute" type="xsd:string" />
+			<xsd:element name="value" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcNotificationEvent">
+		<xsd:sequence>
+			<xsd:element name="id" type="xsd:integer" />
+			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="notificationType" type="hpc-domain-notification:HpcNotificationType" />
+			<xsd:element name="notificationPayloadEntries" 
+			             type="hpc-domain-notification:HpcNotificationPayloadEntry" 
+			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="created" type="xsd:dateTime" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcNotificationDeliveryReceipt">
+		<xsd:sequence>
+			<xsd:element name="id" type="xsd:integer" />
+			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="notificationType" type="hpc-domain-notification:HpcNotificationType" />
+			<xsd:element name="notificationDeliveryMethod" type="hpc-domain-notification:HpcNotificationDeliveryMethod" />
+			<xsd:element name="payload" type="xsd:string" />
+			<xsd:element name="deliveryStatus" type="xsd:boolean" />
+			<xsd:element name="created" type="xsd:dateTime" />
+			<xsd:element name="delivered" type="xsd:dateTime" />
+		</xsd:sequence>
+	</xsd:complexType>
+
 </xsd:schema>

@@ -20,6 +20,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
+import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.io.File;
@@ -64,6 +65,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	
 	@Autowired
     private HpcDataManagementService dataManagementService = null;
+	
+	@Autowired
+    private HpcNotificationService notificationService = null;
 	
     // The logger instance.
 	private final Logger logger = 
@@ -196,6 +200,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		// Cleanup the file if the transfer is no longer in-progress.
     		if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
     		   dataTransferService.cleanupDataObjectDownloadFile(dataObjectDownloadCleanup);
+    		   notificationService.addDataTransferDownloadCompletedEvent("rosenbergea");
     		}
     	}
     }

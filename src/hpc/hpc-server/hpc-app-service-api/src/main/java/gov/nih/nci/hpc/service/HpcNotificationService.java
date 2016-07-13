@@ -10,11 +10,11 @@
 
 package gov.nih.nci.hpc.service;
 
-import java.util.List;
-
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.util.List;
 
 /**
  * <p>
@@ -61,6 +61,15 @@ public interface HpcNotificationService
      */
     public List<HpcNotificationSubscription> getNotificationSubscriptions(String userId) 
     		                                                             throws HpcException;
+    
+    /**
+     * Add a data transfer download completed event.
+     *
+     * @param userId The user ID.
+     * 
+     * @throws HpcException
+     */
+    public void addDataTransferDownloadCompletedEvent(String userId) throws HpcException;
 }
 
  
