@@ -9,7 +9,7 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id:$
+ * @version $Id$
  -->
 <jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1"
 			  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -43,6 +43,15 @@
             </jxb:bindings>
 		    <jxb:bindings node="//xsd:complexType[@name='HpcNotificationSubscription']">
                 <jxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription"/>
+            </jxb:bindings>
+            <jxb:bindings node="//xsd:complexType[@name='HpcNotificationPayloadEntry']">
+                <jxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationPayloadEntry"/>
+            </jxb:bindings>
+            <jxb:bindings node="//xsd:complexType[@name='HpcNotificationEvent']">
+                <jxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationEvent"/>
+            </jxb:bindings>
+            <jxb:bindings node="//xsd:complexType[@name='HpcNotificationDeliveryReceipt']">
+                <jxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt"/>
             </jxb:bindings>
     </jxb:bindings>
     
