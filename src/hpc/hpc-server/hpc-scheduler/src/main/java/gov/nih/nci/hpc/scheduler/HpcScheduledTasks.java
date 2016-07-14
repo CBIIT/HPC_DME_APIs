@@ -63,7 +63,7 @@ public class HpcScheduledTasks
     //---------------------------------------------------------------------//
     
     /**
-     * Update Data Transfer Status Task
+     * Update Data Transfer Status Task.
      * 
      */    
     @Scheduled(fixedDelay = 30000)
@@ -106,7 +106,7 @@ public class HpcScheduledTasks
     }
     
     /**
-     * Update Data Transfer Status Task
+     * Cleanup Data Transfer Download Files Task.
      * 
      */    
     @Scheduled(fixedDelay = 30000)
@@ -126,6 +126,29 @@ public class HpcScheduledTasks
         	       logger.info("Completed Cleanup Data Transfer Download Task...");	
         }
     }
+    
+    /**
+     * Deliver Notification Events Task
+     * 
+     */    
+    /*
+    @Scheduled(fixedDelay = 30000)
+    private void deliverNotificationEvents()
+    {
+        logger.info("Starting Deliver Notification Events Task...");
+
+        try { 
+		     systemBusService.deliverNotificationEvents();
+		     
+        } catch(HpcException e) {
+        	    logger.error("Deliver Notification Events task failed", e);
+        	    
+        } finally {
+        	       // TODO - make this AOP.
+        	       dataManagementBusService.closeConnection();
+        	       logger.info("Completed Cleanup Data Transfer Download Task...");	
+        }
+    }*/
 }
 
  
