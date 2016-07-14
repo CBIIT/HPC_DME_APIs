@@ -54,7 +54,7 @@
 	
 	<xsd:complexType name="HpcNotificationEvent">
 		<xsd:sequence>
-			<xsd:element name="id" type="xsd:integer" />
+			<xsd:element name="id" type="xsd:int" minOccurs="0" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="notificationType" type="hpc-domain-notification:HpcNotificationType" />
 			<xsd:element name="notificationPayloadEntries" 

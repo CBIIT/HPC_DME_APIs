@@ -63,6 +63,19 @@ public interface HpcNotificationDAO
            getSubscriptions(String userId) throws HpcException;
     
     /**
+     * Get notification subscription
+     *
+     * @param userId The user ID.
+     * @param notificationType The notification type.
+     * @return HpcNotificationSubscription
+     * 
+     * @throws HpcException
+     */
+    public HpcNotificationSubscription getSubscription(String userId, 
+    		                                           HpcNotificationType notificationType) 
+    		                                          throws HpcException;
+    
+    /**
      * Store a new notification event to the repository.
      *
      * @param notificationEvent The notification event to be added/updated.
@@ -70,6 +83,24 @@ public interface HpcNotificationDAO
      * @throws HpcException
      */
     public void insertEvent(HpcNotificationEvent notificationEvent) throws HpcException;
+    
+    /**
+     * Get all notification events.
+     *
+     * @return List<HpcNotificationEvent>
+     * 
+     * @throws HpcException
+     */
+    public List<HpcNotificationEvent> getEvents() throws HpcException;
+    
+    /**
+     * Delete an event
+     *
+     * @param eventId The eventId to delete.
+     * 
+     * @throws HpcException
+     */
+    public void deleteEvent(String eventId) throws HpcException;
 }
 
  
