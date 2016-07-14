@@ -45,6 +45,13 @@ public interface HpcSystemBusService
      * @throws HpcException
      */
 	public void cleanupDataTransferDownloadFiles() throws HpcException;
+	
+    /**
+     * Deliver all notification events.
+     *
+     * @throws HpcException
+     */
+	public void deliverNotificationEvents() throws HpcException;
 }
 
  

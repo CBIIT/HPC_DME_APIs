@@ -17,6 +17,9 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationEvent;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -200,7 +203,32 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		// Cleanup the file if the transfer is no longer in-progress.
     		if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
     		   dataTransferService.cleanupDataObjectDownloadFile(dataObjectDownloadCleanup);
-    		   //notificationService.addDataTransferDownloadCompletedEvent("rosenbergea");
+    		   //notificationService.addDataTransferDownloadCompletedEvent(
+    		                // "rosenbergea", 
+    		                // dataObjectDownloadCleanup.getDataTransferRequestId());
+    		}
+    	}
+    }
+    
+    @Override
+    public void deliverNotificationEvents() throws HpcException
+    {
+    	// Get and process the pending notification events.
+    	for(HpcNotificationEvent event : notificationService.getNotificationEvents()) {
+    		// Get the subscription.
+    		HpcNotificationSubscription subscription = 
+    		   notificationService.getNotificationSubscription(event.getUserId(), 
+    				                                           event.getNotificationType());
+    		if(subscription != null) {
+    		   // Iterate through all the delivery methods the user is subscribed to.
+    		   for(HpcNotificationDeliveryMethod deliveryMethod : 
+    			   subscription.getNotificationDeliveryMethods()) {
+    			   // Deliver notification via this method.
+    			   notificationService.deliverNotification(event, deliveryMethod);
+    		   }
+    		   
+    		   // Create delivery receipts for this event.
+    		   notificationService.createDeliveryReceipts(event);
     		}
     	}
     }
@@ -273,6 +301,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		dataManagementService.updateDataObjectSystemGeneratedMetadata(
                                     path, null, null, dataTransferStatus, null);
 	}
+
 }
 
  
