@@ -33,6 +33,7 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessagePreparator;
+
 /**
  * <p>
  * HPC Notification Application Service Implementation.
@@ -51,6 +52,9 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     // The Notification DAO instance.
 	@Autowired
     private HpcNotificationDAO notificationDAO = null;
+	
+	@Autowired
+	JavaMailSender mailSender = null;
 
     //---------------------------------------------------------------------//
     // Constructors
