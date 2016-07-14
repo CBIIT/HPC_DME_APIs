@@ -21,9 +21,14 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -57,6 +62,9 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			"delete from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" " +
 	                "where \"USER_ID\" = ? and \"NOTIFICATION_TYPE\" = ?";
 
+	private static final String GET_SUBSCRIPTIONS_SQL = 
+		    "select * from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"USER_ID\" = ?";
+	
 	private static final String GET_SUBSCRIPTION_SQL = 
 		    "select * from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"USER_ID\" = ?";
 	
@@ -64,6 +72,10 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			"insert into public.\"HPC_NOTIFICATION_EVENT\" ( " +
 	                "\"USER_ID\", \"NOTIFICATION_TYPE\", \"PAYLOAD\") " +
 	                "values (?, ?, ?)"; 
+	
+	private static final String GET_EVENTS_SQL = 
+		    "select * from public.\"HPC_NOTIFICATION_EVENT\"";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -76,9 +88,11 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	@Autowired
 	HpcEncryptor encryptor = null;
 	
-	// Row mapper.
+	// Row mappers.
 	private HpcNotificationSubscriptionRowMapper notificationSubscriptionRowMapper = 
 			                                     new HpcNotificationSubscriptionRowMapper();
+	private HpcNotificationEventRowMapper notificationEventRowMapper = 
+                                          new HpcNotificationEventRowMapper();
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -144,8 +158,28 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	public List<HpcNotificationSubscription> getSubscriptions(String userId) throws HpcException
 	{
 		try {
-		     return jdbcTemplate.query(GET_SUBSCRIPTION_SQL, notificationSubscriptionRowMapper,
+		     return jdbcTemplate.query(GET_SUBSCRIPTIONS_SQL, notificationSubscriptionRowMapper,
 		    		                   userId);
+		     
+		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get notification subscriptions: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}		
+	}
+	
+	@Override
+    public HpcNotificationSubscription getSubscription(String userId, 
+                                                       HpcNotificationType notificationType) 
+                                                      throws HpcException
+    {
+		try {
+		     return jdbcTemplate.queryForObject(GET_SUBSCRIPTION_SQL, 
+		    		                            notificationSubscriptionRowMapper,
+		    		                            userId, notificationType.value());
 		     
 		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
 			    return null;
@@ -154,8 +188,9 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		        throw new HpcException("Failed to get notification subscription: " + 
 		                               e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, e);
-		}		
-	}
+		}				
+		
+    }
 	
 	@Override
 	public void insertEvent(HpcNotificationEvent notificationEvent) throws HpcException
@@ -173,11 +208,33 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		}
 	}
 	
+	@Override
+    public List<HpcNotificationEvent> getEvents() throws HpcException
+    {
+		try {
+		     return jdbcTemplate.query(GET_EVENTS_SQL, notificationEventRowMapper);
+		     
+		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get notification events: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}	    	
+    }
+    
+    @Override
+    public void deleteEvent(String eventId) throws HpcException
+    {
+    	
+    }
+	
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
 
-	// HpcNotificationSubscription Table to Object mapper.
+	// HpcNotificationSubscription Row to Object mapper.
 	private class HpcNotificationSubscriptionRowMapper implements RowMapper<HpcNotificationSubscription>
 	{
 		@Override
@@ -195,10 +252,30 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		}
 	}
 	
+	// HpcNotificationEvent Row to Object mapper.
+	private class HpcNotificationEventRowMapper implements RowMapper<HpcNotificationEvent>
+	{
+		@Override
+		public HpcNotificationEvent mapRow(ResultSet rs, int rowNum) throws SQLException 
+		{
+			HpcNotificationEvent notificationEvent = new HpcNotificationEvent();
+			notificationEvent.setId(rs.getInt("ID"));
+			notificationEvent.setUserId(rs.getString("USER_ID"));
+			notificationEvent.setNotificationType(HpcNotificationType.fromValue(rs.getString("NOTIFICATION_TYPE")));
+			notificationEvent.getNotificationPayloadEntries().addAll(fromJSON(rs.getString("PAYLOAD")));
+			
+        	Calendar created = new GregorianCalendar();
+        	created.setTime(rs.getDate("CREATED"));
+        	notificationEvent.setCreated(created);
+            
+            return notificationEvent;
+		}
+	}
+	
     /** 
      * Convert payload entries into a JSON string
      * 
-     * @param payloadEntries
+     * @param payloadEntries List of payload entries.
      * @return A JSON representation of the payload entries.
      */
 	@SuppressWarnings("unchecked")
@@ -215,6 +292,39 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		
 		return jsonPayload.toJSONString();
 	}
+	  
+    /** 
+     * Convert JSON string to payload entries.
+     * 
+     * @param jsonPayloadStr The Payload Entries JSON String.
+     * @return List<HpcNotificationPayloadEntry>
+     */
+	private List<HpcNotificationPayloadEntry> fromJSON(String jsonPayloadStr)
+	{
+		List<HpcNotificationPayloadEntry> payloadEntries = new ArrayList<>();
+		if(jsonPayloadStr == null || jsonPayloadStr.isEmpty()) {
+		   return payloadEntries;
+		}
+		
+		// Parse the JSON string.
+		JSONObject jsonPayload = null;
+		try {
+			 jsonPayload = (JSONObject) (new JSONParser().parse(jsonPayloadStr));
+			 
+		} catch(ParseException e) {
+			    return payloadEntries;
+		}
+		
+		// Map all attributes to payload entries.
+		for(Object attribue : jsonPayload.keySet()) {
+			HpcNotificationPayloadEntry entry = new HpcNotificationPayloadEntry();
+			entry.setAttribute(attribue.toString());
+			entry.setValue(jsonPayload.get(attribue).toString());
+			payloadEntries.add(entry);
+		}
+
+		return payloadEntries;
+	}	  
 }
 
  
