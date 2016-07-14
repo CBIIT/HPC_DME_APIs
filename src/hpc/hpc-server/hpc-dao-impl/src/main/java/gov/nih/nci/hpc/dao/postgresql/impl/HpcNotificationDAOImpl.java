@@ -66,7 +66,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		    "select * from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"USER_ID\" = ?";
 	
 	private static final String GET_SUBSCRIPTION_SQL = 
-		    "select * from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"USER_ID\" = ?";
+		    "select * from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"USER_ID\" = ? and \"NOTIFICATION_TYPE\" = ?";
 	
 	private static final String INSERT_EVENT_SQL = 
 			"insert into public.\"HPC_NOTIFICATION_EVENT\" ( " +
