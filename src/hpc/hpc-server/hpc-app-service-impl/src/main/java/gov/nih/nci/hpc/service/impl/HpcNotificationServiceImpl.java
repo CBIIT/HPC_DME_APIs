@@ -28,6 +28,8 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -55,6 +57,9 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
 	
 	@Autowired
 	JavaMailSender mailSender = null;
+	
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
     //---------------------------------------------------------------------//
     // Constructors
@@ -152,20 +157,20 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
             public void prepare(MimeMessage mimeMessage) throws Exception {
 
                 mimeMessage.setRecipient(Message.RecipientType.TO,
-                        new InternetAddress(event.getUserId() + "@nih.gov"));
+                        new InternetAddress("eran.rosenberg@nih.gov"));
                 mimeMessage.setFrom(new InternetAddress("HPC_SERVER@nih.gov"));
-                mimeMessage.setText("Data Transfer Completed. Task Id:" +
-                                    event.getNotificationPayloadEntries().get(0));
+                mimeMessage.setSubject("HPC Data Transfer Request Completed Successfully!!");
+                mimeMessage.setText("Data Transfer Completed. Task Id: " +
+                                    event.getNotificationPayloadEntries().get(0).getValue());
             }
         };
 
         try {
-        	JavaMailSender mailSender = new JavaMailSenderImpl();
             mailSender.send(preparator);
         }
         catch (MailException ex) {
             // simply log it and go on...
-            System.err.println(ex.getMessage());
+            logger.error("Failed to send email: ", ex);
         }
     	
     }
