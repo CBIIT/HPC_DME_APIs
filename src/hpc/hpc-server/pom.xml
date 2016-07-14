@@ -39,6 +39,7 @@
 		<google-json-simple.version>1.1</google-json-simple.version>
 		<commons-io.version>2.5</commons-io.version>
 		<jjwt.version>0.6.0</jjwt.version>
+		<java-mail.version>1.4.7</java-mail.version>
 	</properties>
 
 	<modules>
@@ -205,6 +206,11 @@
 				<version>${spring.version}</version>
 			</dependency>
 			<dependency>
+    			<groupId>org.springframework</groupId>
+    			<artifactId>spring-context-support</artifactId>
+    			<version>${spring.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>com.amazonaws</groupId>
 				<artifactId>aws-java-sdk-s3</artifactId>
 				<version>${amazon-aws.version}</version>
@@ -253,6 +259,11 @@
     			<groupId>io.jsonwebtoken</groupId>
     			<artifactId>jjwt</artifactId>
     			<version>${jjwt.version}</version>
+			</dependency>
+			<dependency>
+    			<groupId>javax.mail</groupId>
+    			<artifactId>javax.mail-api</artifactId>
+    			<version>${java-mail.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
