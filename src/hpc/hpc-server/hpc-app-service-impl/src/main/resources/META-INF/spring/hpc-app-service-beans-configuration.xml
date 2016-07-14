@@ -43,7 +43,7 @@
 	      
 	<!--  Mail Sender -->
 	<bean id="hpcMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
-    	<property name="host" value="mail.mycompany.com"/>
+    	<property name="host" value="smtp.verizon.net"/>
     	<property name="port" value="465"/>
     	<property name="username" value="me"/>
     	<property name="password" value="pwd"/>
