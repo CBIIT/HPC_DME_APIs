@@ -3,7 +3,7 @@
         "fileContainerId": "globus-shared-endpoint-uid",
         "fileId": "test.txt"
     },
-    "filePath" :  "/",
+    "callerObjectId" : "george/archive-directory",
     "metadataEntries": [
     {
         "attribute": "name",
