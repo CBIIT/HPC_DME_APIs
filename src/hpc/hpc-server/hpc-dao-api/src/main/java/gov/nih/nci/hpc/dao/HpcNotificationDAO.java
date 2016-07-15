@@ -100,7 +100,7 @@ public interface HpcNotificationDAO
      * 
      * @throws HpcException
      */
-    public void deleteEvent(String eventId) throws HpcException;
+    public void deleteEvent(int eventId) throws HpcException;
 }
 
  
