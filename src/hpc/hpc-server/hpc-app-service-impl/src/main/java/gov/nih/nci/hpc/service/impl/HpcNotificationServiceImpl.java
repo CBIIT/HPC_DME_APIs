@@ -11,13 +11,6 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNotificationSubscription;
-
-import java.util.List;
-
-import javax.mail.Message;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-
 import gov.nih.nci.hpc.dao.HpcNotificationDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
@@ -28,12 +21,17 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 
+import java.util.List;
+
+import javax.mail.Message;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessagePreparator;
 
 /**
@@ -152,6 +150,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
                                     HpcNotificationDeliveryMethod deliveryMethod) 
                                    throws HpcException
     {
+    	// TODO: Invoke the notification event sender for the delivery method.
         MimeMessagePreparator preparator = new MimeMessagePreparator() {
 
             public void prepare(MimeMessage mimeMessage) throws Exception {
@@ -178,6 +177,8 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     @Override
     public void createDeliveryReceipts(HpcNotificationEvent event) throws HpcException
     {
+    	// TODO: Create delivery receipts, then delete the event.
+    	notificationDAO.deleteEvent(event.getId());
     	
     }
     
