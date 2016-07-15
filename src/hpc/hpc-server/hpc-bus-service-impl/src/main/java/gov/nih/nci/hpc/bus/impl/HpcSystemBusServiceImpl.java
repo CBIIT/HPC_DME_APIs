@@ -227,10 +227,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			   // Deliver notification via this method.
     			   notificationService.deliverNotification(event, deliveryMethod);
     		   }
-    		   
-    		   // Create delivery receipts for this event.
-    		   notificationService.createDeliveryReceipts(event);
     		}
+    		
+    		// Create delivery receipts for this event.
+ 		   notificationService.createDeliveryReceipts(event);
     	}
     }
     
