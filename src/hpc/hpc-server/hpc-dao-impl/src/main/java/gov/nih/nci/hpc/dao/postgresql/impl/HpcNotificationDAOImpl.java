@@ -76,6 +76,9 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	private static final String GET_EVENTS_SQL = 
 		    "select * from public.\"HPC_NOTIFICATION_EVENT\"";
 	
+	private static final String DELETE_EVENT_SQL = 
+		    "delete from public.\"HPC_NOTIFICATION_EVENT\" where \"ID\" = ?";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -225,9 +228,16 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
     }
     
     @Override
-    public void deleteEvent(String eventId) throws HpcException
+    public void deleteEvent(int eventId) throws HpcException
     {
-    	
+		try {
+		     jdbcTemplate.update(DELETE_EVENT_SQL, eventId);
+		     
+		} catch(DataAccessException e) {
+			    throw new HpcException("Failed to delete a notification event " + 
+		                               e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, e);
+		}    	
     }
 	
     //---------------------------------------------------------------------//
