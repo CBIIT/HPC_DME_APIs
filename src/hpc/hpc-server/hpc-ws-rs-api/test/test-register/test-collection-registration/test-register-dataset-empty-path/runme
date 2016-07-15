@@ -41,4 +41,4 @@ ERROR_MSG=`get_json_value $RESPONSE_MSG message`
 
 echo  "$RETURN_CODE"  1>&2
 echo  "$ERROR_TYPE"  1>&2
-echo "$ERROR_MSG"
+echo "$ERROR_MSG" 1>&2
