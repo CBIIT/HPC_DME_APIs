@@ -30,7 +30,7 @@
 				             type="hpc-domain-notification:HpcNotificationSubscription" 
 				             minOccurs="0" maxOccurs="unbounded"/>
 				<xsd:element name="deleteSubscriptions"
-					         type="hpc-domain-notification:HpcNotificationType" 
+					         type="hpc-domain-notification:HpcEventType" 
 					         minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>

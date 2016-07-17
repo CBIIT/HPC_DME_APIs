@@ -193,15 +193,13 @@ public class HpcDomainValidator
     public static boolean isValidNotificationSubscription(HpcNotificationSubscription notificationSubscription) 
     {
     	if(notificationSubscription == null || 
-    	   notificationSubscription.getNotificationType() == null ||
+    	   notificationSubscription.getEventType() == null ||
     	   notificationSubscription.getNotificationDeliveryMethods() == null ||
     	   notificationSubscription.getNotificationDeliveryMethods().isEmpty() ||
     	   notificationSubscription.getNotificationDeliveryMethods().contains(null)) {
      	   return false;
     	}
-    	
-    	
-    
+
     	return true;
     }  
     

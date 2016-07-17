@@ -13,14 +13,15 @@ package gov.nih.nci.hpc.service.impl;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNotificationSubscription;
 import gov.nih.nci.hpc.dao.HpcNotificationDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.notification.HpcEvent;
+import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationEvent;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 
+import java.util.Calendar;
 import java.util.List;
 
 import javax.mail.Message;
@@ -97,17 +98,17 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     
     @Override
     public void deleteNotificationSubscription(String userId,
-                                               HpcNotificationType notificationType)
+                                               HpcEventType eventType)
                                               throws HpcException
     {
     	// Input validation.
-    	if(userId == null || notificationType == null) {
+    	if(userId == null || eventType == null) {
     	   throw new HpcException("Invalid delete notification subscription request",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
     	// Delete from DB.
-    	notificationDAO.deleteSubscription(userId, notificationType);
+    	notificationDAO.deleteSubscription(userId, eventType);
     }
     
     @Override
@@ -126,27 +127,27 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     
     @Override
     public HpcNotificationSubscription getNotificationSubscription(String userId,
-                                                                   HpcNotificationType notificationType) 
+                                                                   HpcEventType eventType) 
                                                                   throws HpcException
     {
     	// Input validation.
-    	if(userId == null || notificationType == null) {
-    	   throw new HpcException("Invalid user ID or notification type",
+    	if(userId == null || eventType == null) {
+    	   throw new HpcException("Invalid user ID or event type",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
     	// Query the DB.
-    	return notificationDAO.getSubscription(userId, notificationType);
+    	return notificationDAO.getSubscription(userId, eventType);
     }
     
     @Override
-    public List<HpcNotificationEvent> getNotificationEvents() throws HpcException
+    public List<HpcEvent> getEvents() throws HpcException
     {
     	return notificationDAO.getEvents();
     }
     
     @Override
-    public void deliverNotification(HpcNotificationEvent event, 
+    public void deliverNotification(HpcEvent event, 
                                     HpcNotificationDeliveryMethod deliveryMethod) 
                                    throws HpcException
     {
@@ -175,7 +176,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     }
     
     @Override
-    public void createDeliveryReceipts(HpcNotificationEvent event) throws HpcException
+    public void createDeliveryReceipts(HpcEvent event) throws HpcException
     {
     	// TODO: Create delivery receipts, then delete the event.
     	notificationDAO.deleteEvent(event.getId());
@@ -191,13 +192,14 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     	payloadEntry.setAttribute("DATA_TRANSFER_REQUEST_ID");
     	payloadEntry.setValue(dataTransferRequestId);
     	
-    	HpcNotificationEvent event = new HpcNotificationEvent();
+    	HpcEvent event = new HpcEvent();
     	event.setUserId(userId);
-    	event.setNotificationType(HpcNotificationType.DATA_TRANSFER_DOWNLOAD_COMPLETED);
+    	event.setType(HpcEventType.DATA_TRANSFER_DOWNLOAD_COMPLETED);
     	event.getNotificationPayloadEntries().add(payloadEntry);
-    	
+    	event.setCreated(Calendar.getInstance());
+
     	// Persist to DB.
-    	addNotificationEvent(event);
+    	addEvent(event);
     }
     
     
@@ -212,17 +214,17 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
      * 
      * @throws HpcException if validation failed.
      */
-    private void addNotificationEvent(HpcNotificationEvent notificationEvent) throws HpcException
+    private void addEvent(HpcEvent event) throws HpcException
     {
     	// Input validation.
-    	if(notificationEvent == null || notificationEvent.getUserId() == null ||
-    	   notificationEvent.getNotificationType() == null) {
-    	   throw new HpcException("Invalid notification event",
+    	if(event == null || event.getUserId() == null ||
+    	   event.getType() == null || event.getCreated() == null) {
+    	   throw new HpcException("Invalid event",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
     	// Persist to DB.
-    	notificationDAO.insertEvent(notificationEvent);	
+    	notificationDAO.insertEvent(event);	
     }
 }
 
