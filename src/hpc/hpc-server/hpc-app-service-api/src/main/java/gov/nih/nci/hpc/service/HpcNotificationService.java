@@ -10,10 +10,10 @@
 
 package gov.nih.nci.hpc.service;
 
+import gov.nih.nci.hpc.domain.notification.HpcEvent;
+import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationEvent;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -45,12 +45,12 @@ public interface HpcNotificationService
      * Delete a notification subscription for a user.
      *
      * @param userId The user ID.
-     * @param notificationType The notification type to delete.
+     * @param eventType The event type to delete.
      * 
      * @throws HpcException
      */
     public void deleteNotificationSubscription(String userId,
-    		                                   HpcNotificationType notificationType)
+    		                                   HpcEventType eventType)
                                               throws HpcException;
     
     /**
@@ -68,33 +68,42 @@ public interface HpcNotificationService
      * Get notification subscription.
      *
      * @param userId The user ID.
-     * @param notificationType The notification type.
+     * @param eventType The event type.
      * @return HpcNotificationSubscription or null if not found.
      * 
      * @throws HpcException
      */
     public HpcNotificationSubscription getNotificationSubscription(String userId,
-    		                                                       HpcNotificationType notificationType) 
+    		                                                       HpcEventType eventType) 
     		                                                      throws HpcException;
     
     /**
-     * Get all notification events.
+     * Get all (active) events.
      *
-     * @return List<HpcNotificationEvent>
+     * @return List<HpcEvent>
      * 
      * @throws HpcException
      */
-    public List<HpcNotificationEvent> getNotificationEvents() throws HpcException;
+    public List<HpcEvent> getEvents() throws HpcException;
     
     /**
-     * Deliver a notification event.
+     * Archive an event - move it from active table to history table. 
      *
-     * @param event The notification event.
+     * @param eventId The event ID.
+     * 
+     * @throws HpcException
+     */
+    //public void archiveEvent(int EventId) throws HpcException;
+    
+    /**
+     * Deliver an event notification.
+     *
+     * @param event The event.
      * @param deliveryMethod The delivery method.
      * 
      * @throws HpcException
      */
-    public void deliverNotification(HpcNotificationEvent event, 
+    public void deliverNotification(HpcEvent event, 
     		                        HpcNotificationDeliveryMethod deliveryMethod) 
     		                       throws HpcException;
     
@@ -105,7 +114,7 @@ public interface HpcNotificationService
      * 
      * @throws HpcException
      */
-    public void createDeliveryReceipts(HpcNotificationEvent event) throws HpcException;
+    public void createDeliveryReceipts(HpcEvent event) throws HpcException;
     
     /**
      * Add a data transfer download completed event.
