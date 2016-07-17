@@ -201,7 +201,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		     jdbcTemplate.update(INSERT_EVENT_SQL,
 		    		             event.getUserId(),
 		    		             event.getType().value(),
-		    		             toJSON(event.getNotificationPayloadEntries()),
+		    		             encryptor.encrypt(toJSON(event.getNotificationPayloadEntries())),
 		    		             event.getCreated());
 		     
 		} catch(DataAccessException e) {
@@ -272,7 +272,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			event.setId(rs.getInt("ID"));
 			event.setUserId(rs.getString("USER_ID"));
 			event.setType(HpcEventType.fromValue(rs.getString("TYPE")));
-			event.getNotificationPayloadEntries().addAll(fromJSON(rs.getString("PAYLOAD")));
+			event.getNotificationPayloadEntries().addAll(fromJSON(encryptor.decrypt(rs.getBytes("PAYLOAD"))));
 			
         	Calendar created = new GregorianCalendar();
         	created.setTime(rs.getDate("CREATED"));
