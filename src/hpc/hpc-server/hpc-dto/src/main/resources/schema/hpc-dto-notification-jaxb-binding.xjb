@@ -35,8 +35,8 @@
 	</jxb:globalBindings>
 	
 	<jxb:bindings schemaLocation="HpcNotificationTypes.xsd">
-			<jxb:bindings node="//xsd:simpleType[@name='HpcNotificationType']">
-                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.notification.HpcNotificationType"/>
+			<jxb:bindings node="//xsd:simpleType[@name='HpcEventType']">
+                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.notification.HpcEventType"/>
             </jxb:bindings>
             <jxb:bindings node="//xsd:simpleType[@name='HpcNotificationDeliveryMethod']">
                 <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod"/>
@@ -47,8 +47,8 @@
             <jxb:bindings node="//xsd:complexType[@name='HpcNotificationPayloadEntry']">
                 <jxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationPayloadEntry"/>
             </jxb:bindings>
-            <jxb:bindings node="//xsd:complexType[@name='HpcNotificationEvent']">
-                <jxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationEvent"/>
+            <jxb:bindings node="//xsd:complexType[@name='HpcEvent']">
+                <jxb:class ref="gov.nih.nci.hpc.domain.notification.HpcEvent"/>
             </jxb:bindings>
             <jxb:bindings node="//xsd:complexType[@name='HpcNotificationDeliveryReceipt']">
                 <jxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt"/>

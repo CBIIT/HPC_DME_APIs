@@ -10,17 +10,17 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
-import java.util.List;
-
 import gov.nih.nci.hpc.bus.HpcNotificationBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationType;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,9 +101,9 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService
     	
     	// Delete subscriptions for the user.
     	if(notificationSubscriptions.getDeleteSubscriptions() != null) {
-    	   for(HpcNotificationType notificationType : 
+    	   for(HpcEventType eventType : 
     		   notificationSubscriptions.getDeleteSubscriptions()) {
-    	       notificationService.deleteNotificationSubscription(userId, notificationType);
+    	       notificationService.deleteNotificationSubscription(userId, eventType);
     	   }
     	}
     }

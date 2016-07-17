@@ -17,8 +17,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationEvent;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -215,11 +215,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     public void deliverNotificationEvents() throws HpcException
     {
     	// Get and process the pending notification events.
-    	for(HpcNotificationEvent event : notificationService.getNotificationEvents()) {
+    	for(HpcEvent event : notificationService.getEvents()) {
     		// Get the subscription.
     		HpcNotificationSubscription subscription = 
     		   notificationService.getNotificationSubscription(event.getUserId(), 
-    				                                           event.getNotificationType());
+    				                                           event.getType());
     		if(subscription != null) {
     		   // Iterate through all the delivery methods the user is subscribed to.
     		   for(HpcNotificationDeliveryMethod deliveryMethod : 

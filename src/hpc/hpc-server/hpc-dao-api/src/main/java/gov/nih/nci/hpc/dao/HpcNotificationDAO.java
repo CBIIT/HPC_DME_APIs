@@ -10,9 +10,9 @@
 
 package gov.nih.nci.hpc.dao;
 
-import gov.nih.nci.hpc.domain.notification.HpcNotificationEvent;
+import gov.nih.nci.hpc.domain.notification.HpcEvent;
+import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -44,11 +44,11 @@ public interface HpcNotificationDAO
      * Delete a notification subscription.
      *
      * @param userId The user ID.
-     * @param notificationType The notification type.
+     * @param eventType The event type.
      * 
      * @throws HpcException
      */
-    public void deleteSubscription(String userId, HpcNotificationType notificationType) 
+    public void deleteSubscription(String userId, HpcEventType eventType) 
     		                      throws HpcException;
     
     /**
@@ -66,32 +66,32 @@ public interface HpcNotificationDAO
      * Get notification subscription
      *
      * @param userId The user ID.
-     * @param notificationType The notification type.
+     * @param eventType The event type.
      * @return HpcNotificationSubscription
      * 
      * @throws HpcException
      */
     public HpcNotificationSubscription getSubscription(String userId, 
-    		                                           HpcNotificationType notificationType) 
+    		                                           HpcEventType eventType) 
     		                                          throws HpcException;
     
     /**
      * Store a new notification event to the repository.
      *
-     * @param notificationEvent The notification event to be added/updated.
+     * @param event The event to be added/updated.
      * 
      * @throws HpcException
      */
-    public void insertEvent(HpcNotificationEvent notificationEvent) throws HpcException;
+    public void insertEvent(HpcEvent event) throws HpcException;
     
     /**
-     * Get all notification events.
+     * Get all (active) events.
      *
-     * @return List<HpcNotificationEvent>
+     * @return List<HpcEvent>
      * 
      * @throws HpcException
      */
-    public List<HpcNotificationEvent> getEvents() throws HpcException;
+    public List<HpcEvent> getEvents() throws HpcException;
     
     /**
      * Delete an event

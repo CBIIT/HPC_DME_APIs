@@ -18,7 +18,7 @@
 	targetNamespace="http://hpc.nci.nih.gov/domain/notification"
 	elementFormDefault="unqualified">
 
-	<xsd:simpleType name="HpcNotificationType">
+	<xsd:simpleType name="HpcEventType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE" />
 			<xsd:enumeration value="DATA_TRANSFER_UPLOAD_ARCHIVED" />
@@ -38,7 +38,7 @@
 	
 	<xsd:complexType name="HpcNotificationSubscription">
 		<xsd:sequence>
-			<xsd:element name="notificationType" type="hpc-domain-notification:HpcNotificationType" />
+			<xsd:element name="eventType" type="hpc-domain-notification:HpcEventType" />
 			<xsd:element name="notificationDeliveryMethods" 
 			             type="hpc-domain-notification:HpcNotificationDeliveryMethod" 
 			             minOccurs="0" maxOccurs="unbounded" />
@@ -52,11 +52,11 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
-	<xsd:complexType name="HpcNotificationEvent">
+	<xsd:complexType name="HpcEvent">
 		<xsd:sequence>
 			<xsd:element name="id" type="xsd:int" minOccurs="0" />
 			<xsd:element name="userId" type="xsd:string" />
-			<xsd:element name="notificationType" type="hpc-domain-notification:HpcNotificationType" />
+			<xsd:element name="type" type="hpc-domain-notification:HpcEventType" />
 			<xsd:element name="notificationPayloadEntries" 
 			             type="hpc-domain-notification:HpcNotificationPayloadEntry" 
 			             minOccurs="0" maxOccurs="unbounded" />
@@ -66,15 +66,10 @@
 	
 	<xsd:complexType name="HpcNotificationDeliveryReceipt">
 		<xsd:sequence>
-			<xsd:element name="id" type="xsd:integer" />
-			<xsd:element name="userId" type="xsd:string" />
-			<xsd:element name="notificationType" type="hpc-domain-notification:HpcNotificationType" />
+			<xsd:element name="eventId" type="xsd:int" />
 			<xsd:element name="notificationDeliveryMethod" type="hpc-domain-notification:HpcNotificationDeliveryMethod" />
-			<xsd:element name="payload" type="xsd:string" />
 			<xsd:element name="deliveryStatus" type="xsd:boolean" />
-			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="delivered" type="xsd:dateTime" />
 		</xsd:sequence>
 	</xsd:complexType>
-
 </xsd:schema>
