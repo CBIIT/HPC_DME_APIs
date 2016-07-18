@@ -30,4 +30,4 @@ check_connection $RESPONSE_HEADER
 
 RESPONSE_CODE=`get_http_code $RESPONSE_HEADER`
 
-echo $RESPONSE_CODE 1>&2
+echo $RESPONSE_CODE 
