@@ -482,7 +482,8 @@ function register_collection_from_template {
 
 
 #Register a new dataObject asynchronously using a template 
-#Input: collection-path "The parent collection for the dataObject"
+#Input: <collection-path> "The parent collection for the dataObject"
+#Input: [dataObject-path] "the path for the object to replace fileId" 
 function register_dataobject_async_from_template {
 
     if [ -z "$1" ] 
@@ -492,6 +493,13 @@ function register_dataobject_async_from_template {
         exit
     fi
 
+    if ! [ -z "$2" ] 
+    then
+        FILE_ID="$2"
+    else 
+        FILE_ID="test.txt"
+    fi
+
     COLLECTION_PATH="$1"
     SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
     DATAOBJECT_PATH="${COLLECTION_PATH}/object-${SUFFIX}.txt"
@@ -499,8 +507,13 @@ function register_dataobject_async_from_template {
 
 
     TEMPLATE=$HPC_DM_TEST/utils/templates/register-dataobject-template.json
+
+    #update the endpoint
     update_uid $TEMPLATE input.json.tmp
 
+    #update the fileId    
+    INPUT=$(cat input.json.tmp | sed "s/test\.txt/$FILE_ID/")
+    echo "$INPUT" > input.json.tmp
 
     curl_register input.json.tmp  "$DATAOBJECT_PATH" dataObject 
 }
