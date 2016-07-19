@@ -139,12 +139,27 @@ function check_connection {
 function get_username {
     if [ -z "$1" ]
     then
-        echo "ERROR: using get_username"
-        echo "USAGE: get_username <curl-config-file>"
-        exit
+     #   echo "ERROR: using get_username"
+     #   echo "USAGE: get_username <curl-config-file>"
+     #   exit
+        CURL_CONFIG_FILE=$HPC_DM_TEST/utils/config
+    else
+        CURL_CONFIG_FILE="$1"
     fi
-    CURL_CONFIG_FILE="$1"
+
     USER_NAME=`grep '\-u' "$CURL_CONFIG_FILE" | sed "s/.*\-u[   ]*\([a-zA-Z]*\).*/\1/"`
+
+    #If the username is not in the $CURL_CONFIG_FILE look in the general configuration
+    if [ -z "$USER_NAME" ]
+    then 
+        USER_NAME=$(get_json_value $HPC_DM_TEST/utils/test-configuration username)
+    fi
+
+    if [ -z "$USER_NAME" ]
+    then 
+        echo "ERROR: Can not retrieve username"
+        exit 
+    fi
     echo $USER_NAME
 }
 
