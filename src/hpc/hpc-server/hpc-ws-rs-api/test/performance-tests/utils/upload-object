@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# upload-object 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Register an object with a specified size
+# Usage: upload-object <file-size-in-MB> 
+# Maximum file size is 100000 MBs ~ 100GB
+
+
+source $HPC_DM_TEST/utils/functions
+../utils/runtest
+
+if [ -z "$1" ]
+then
+    echo "ERROR: using upload-object"
+    echo "USAGE: upload-object <file-size-MB>"
+    exit
+fi
+
+
+FILE_SIZE="$1"
+MAX_FILE_SIZE="100000"
+
+#Make sure the file size is a number: 
+
+RE='^[0-9]+$'
+if ! [[ $FILE_SIZE =~ $RE ]] ; then
+   echo "ERROR: The file size $FILE_SIZE should be a positive integer." >&2 
+   exit 
+fi
+
+if [ "$FILE_SIZE" -gt "$MAX_FILE_SIZE" ]; then
+   echo "ERROR: The maximum file size is $MAX_FILE_SIZE. $FILE_SIZE is given " >&2 
+   exit 
+fi
+
+#Check if collection registration went through:
+verify_registration collection-registration-response-header.tmp
+
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username $HPC_DM_TEST/utils/config`
+PROJECT_PATH=`cat registered-project-path.tmp`
+OBJECT_PATH=$PROJECT_PATH/object-${NAME}.txt
+
+#Create an object file with the specified size
+OBJECT_FILE=object-$FILE_SIZE.tmp
+dd if=/dev/zero of=$OBJECT_FILE  bs=1M  count=$FILE_SIZE &> dd-output.tmp
+
+curl_register ../utils/upload-input-template.json  "$OBJECT_PATH" dataObject "$OBJECT_FILE"
+
+verify_registration dataObject-registration-response-header.tmp
