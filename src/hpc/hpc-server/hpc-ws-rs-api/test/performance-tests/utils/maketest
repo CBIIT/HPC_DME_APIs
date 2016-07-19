@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# maketest
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Usage maktest <file-name>
+
+#Register a project and create the dataObject registration file.
+
+if [ -z "$1" ]
+then
+    echo "ERROR: using maketest"
+    echo "USAGE: maketest <file-name>"
+    exit
+fi
+
+LARGE_FILE_NAME=$1
+
+
+source $HPC_DM_TEST/utils/functions
+../../utils/maketest
+ 
+#Clean previous results
+./cleanme
+
+#Set the Globus endpoint and path 
+DATA_CONFIG_FILE="$HPC_DM_TEST/performance-tests/utils/globus-data-config"
+
+if [ ! -e "$DATA_CONFIG_FILE"  ]
+then
+    echo "ERROR: the large data configuration file $DATA_CONFIG_FILE does not exists"
+    exit
+fi
+
+ONE_LINE=`tr "\n" " " < $DATA_CONFIG_FILE`
+GLOBUS_ENDPOINT=`get_json_value "$ONE_LINE" endpoint`
+GLOBUS_PATH=$(get_json_value "$ONE_LINE" path)
+
+if [ -z "$GLOBUS_ENDPOINT"  ]  || [ -z "$GLOBUS_PATH"  ]
+then
+    echo "ERROR: Can not retrieve the globus endpoint or path from $DATA_CONFIG_FILE"
+    echo "Check $HPC_DM_TEST/performance-test/README.txt for details"
+    exit
+fi
+
+GLOBUS_PATH=${GLOBUS_PATH}/$LARGE_FILE_NAME
+UPDATED_ENDPOINT=`cat ../utils/register-dataobject.json | sed "s/dice-globus-endpoint/$GLOBUS_ENDPOINT/"`
+UPDATED_PATH=`echo "$UPDATED_ENDPOINT" | sed "s#dice-path#$GLOBUS_PATH#"`
+
+echo "$UPDATED_PATH" > register-dataobject.json.tmp 
+
+#Register the project
+USERID=`get_username $HPC_DM_TEST/utils/config`
+PROJECT_PATH="/FNL_SF_Archive/${USERID}/dice-unit-test/project-large-files"
+echo "$PROJECT_PATH" > registered-project-path.tmp
+curl_register ../utils/register-project.json "$PROJECT_PATH" collection
+
+verify_registration collection-registration-response-header.tmp
+
+#Register the dataOjbect
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+DESTINATION_PATH=${PROJECT_PATH}/object-${NAME}.txt
+echo "$DESTINATION_PATH" > registered-dataobject-path.tmp
+curl_register register-dataobject.json.tmp  "$DESTINATION_PATH" dataObject
+
+
+
