@@ -15,4 +15,4 @@
 
 Try to download a dataObject to a globus folder that the system admin does not
 have write permission to.  This test will register the dataObject synchronously
-and downloat it asynchronously. 
+and download it asynchronously. 
