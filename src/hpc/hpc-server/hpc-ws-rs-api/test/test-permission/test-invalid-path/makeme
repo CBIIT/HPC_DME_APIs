@@ -20,4 +20,4 @@ source $HPC_DM_TEST/utils/functions
 source $HPC_DM_TEST/test-permission/utils/functions
 
 TEMPLATE=$HPC_DM_TEST/test-permission/utils/register-user-template.json
-CODE=$(create_new_user $HPC_DM_TEST/test-permission/utils/register-user-template.json)
+register_user_from_template
