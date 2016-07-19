@@ -13,5 +13,6 @@
 @ddblock_end copyright
 ******************************/
 
+This test is depricated as we do not collect the Globus account anymore.
 TODO: Remove the user before running the test 
 Try to register an existing user using an invalid globus credentials. Should get a 400 bad request with the corresponding error message.
