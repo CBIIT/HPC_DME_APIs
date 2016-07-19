@@ -17,6 +17,9 @@ source $HPC_DM_TEST/test-permission/utils/functions
 #Run the common runtest
 $HPC_DM_TEST/test-permission/utils/runtest
 
+#Verify the new user got created
+verify_registration user-registration-response-header.tmp
+
 #Check correct behavior
 
 #Update the input template with the new collection and user values  
