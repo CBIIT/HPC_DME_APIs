@@ -66,7 +66,7 @@ public class HpcScheduledTasks
      * Update Data Transfer Status Task.
      * 
      */    
-    @Scheduled(fixedDelay = 30000)
+    @Scheduled(fixedDelay = 60000)
     private void updateDataTransferUploadStatusTask()
     {
         logger.info("Starting Update Data Transfer Upload Status Task...");
@@ -88,7 +88,7 @@ public class HpcScheduledTasks
      * archive to the (permanent) archive and complete data object registration.
      * 
      */    
-    @Scheduled(fixedDelay = 30000)
+    @Scheduled(fixedDelay = 50000)
     private void processTemporaryArchiveTask()
     {
         logger.info("Starting Process Temporary Archive Task...");
@@ -109,7 +109,7 @@ public class HpcScheduledTasks
      * Cleanup Data Transfer Download Files Task.
      * 
      */    
-    @Scheduled(fixedDelay = 30000)
+    @Scheduled(fixedDelay = 90000)
     private void cleanupDataTransferDownloadFilesTask()
     {
         logger.info("Starting Cleanup Data Transfer Download Task...");
