@@ -11,7 +11,7 @@
 # Usage: runme [no arguments]
 #import common functions
 
-DESTINATION_PATH="xyz"
+DESTINATION_PATH="dxtestinvaliddestination"
 
 source ../../../utils/functions
 source ../../utils/registration-functions
