@@ -25,7 +25,7 @@ PROJECT_PATH=`cat registered-project-path.tmp`
 DATAOBJECT_PATH=$(cat registered-dataobject-path.tmp)
 
 #Allow time for the transfer to complete
-sleep 5
+sleep 15
 
 #Get the registered dataObject by path
 RESPONSE_HEADER=get-response-header.tmp
