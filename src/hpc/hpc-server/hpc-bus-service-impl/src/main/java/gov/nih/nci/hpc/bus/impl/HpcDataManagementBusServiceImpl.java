@@ -109,7 +109,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			    metadataEntries);
     	
     	// Input validation.
-    	if(path == null || path.isEmpty() || metadataEntries == null) {
+    	if(path == null || path.isEmpty() || metadataEntries == null || metadataEntries.size() == 0) {
     	   throw new HpcException("Null path or metadata entries",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
@@ -272,6 +272,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    	}
     	   
 	    } else {
+	    	if(dataObjectFile != null)
+	    		   throw new HpcException("Data object cannot be updated. Only updating metadata is allowed.",
+			                  HpcErrorType.REQUEST_REJECTED);	
+	    	
 	    	    // Attach the user provided metadata.
 	            dataManagementService.updateDataObjectMetadata(
 	    	   	    	                    path, 
@@ -591,7 +595,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			!transferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE))) {
 		   // data transfer not in progress.
 		   return null;
-		}
+		} else if(transferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED))
+			return "100%";
+		
 		
 		String dataTransferRequestId = systemGeneratedMetadata.getDataTransferRequestId();
 		Long sourceSize = systemGeneratedMetadata.getSourceSize();
