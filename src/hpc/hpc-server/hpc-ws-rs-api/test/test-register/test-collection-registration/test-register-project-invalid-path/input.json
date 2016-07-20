@@ -1,48 +1,41 @@
 {
     "metadataEntries": [
         {
-         "attribute": "NCI user-id of the User registering the File (Registrar)",
-         "value": "rosenbergea"
+         "attribute": "name",
+         "value": "Demo Project Name10"
         },
         {
-         "attribute": "Project name",
-         "value": "project-name"
-        },
-        {
-         "attribute": "Collection type",
+         "attribute": "collection_type",
          "value": "Project"
         },
         {
-         "attribute": "Project description",
+         "attribute": "description",
          "value": "Project desc"
         },
         {
-         "attribute": "Internal Project ID",
+         "attribute": "internal_project_id",
          "value": "ipi"
         },
         {
-         "attribute": "Source Lab PI",
+         "attribute": "source_lab_pi",
          "value": "Source Lab PI"
         },
         {
-         "attribute": "Lab / Branch Name",
+         "attribute": "lab_branch",
          "value": "Lab / Branch Name"
         },
         {
-         "attribute": "Name of the User registering the Project (Registrar)",
-         "value": "me"
-        },
-        {
-         "attribute": "DOC of the PI",
+         "attribute": "pi_doc",
          "value": "FNLCR"
         },
         {
-         "attribute": "NCI user-id of the User registering the Project (Registrar)",
-         "value": "uid"
+         "attribute": "original_date_created",
+         "value": "10/25/2006"
         },
-                {
-         "attribute": "DOC of the Registrar",
-         "value": "FNLCR"
-        },
+        {
+         "attribute": "old_doc_attribute",
+         "value": "CCBR"
+        }
     ]
 }
+
