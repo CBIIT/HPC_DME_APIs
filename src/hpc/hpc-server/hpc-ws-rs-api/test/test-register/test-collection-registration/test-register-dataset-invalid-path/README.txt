@@ -18,4 +18,4 @@ The input.json file follows the policies file. However the provided path is inva
 The error should be (message might be different):
 400
 INVALID_REQUEST_INPUT
-Failed to create directory (possibly insufficient permission on path): /tempZone/home/xyz
+Failed to create directory (possibly insufficient permission on path): /tempZone/home/dxtestinvaliddestination

@@ -23,4 +23,4 @@ NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username $HPC_DM_TEST/utils/config`
 PROJECT_PATH=`cat registered-project-path.tmp`
 ../../utils/registration-runtest dataObject $PROJECT_PATH/object-${NAME}.txt
-../../utils/registration-runtest dataObject $PROJECT_PATH/object-${NAME}.txt  REQUEST_REJECTED DATA_OBJECT_PATH_ALREADY_EXISTS
+../../utils/registration-runtest dataObject $PROJECT_PATH/object-${NAME}.txt  REQUEST_REJECTED
