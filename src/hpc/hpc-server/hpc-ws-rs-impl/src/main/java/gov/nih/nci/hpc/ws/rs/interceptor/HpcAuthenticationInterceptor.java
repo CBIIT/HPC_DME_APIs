@@ -72,7 +72,7 @@ public class HpcAuthenticationInterceptor
      */
     private HpcAuthenticationInterceptor() throws HpcException
     {
-    	super(Phase.RECEIVE);
+   	super(Phase.RECEIVE);
         throw new HpcException("Constructor disabled",
         	                   HpcErrorType.SPRING_CONFIGURATION_ERROR); 
     }
@@ -86,7 +86,7 @@ public class HpcAuthenticationInterceptor
     {
         super(Phase.RECEIVE);
         this.ldapAuthentication = ldapAuthentication;
-        
+        System.setProperty("org.apache.cxf.io.CachedOutputStream.OutputDirectory", "/mnt/IRODsScratch/data/cxf"); 
         // We need to authenticate first, and then authorize.
         getBefore().add(SecureAnnotationsInterceptor.class.getName());
         getBefore().add(SimpleAuthorizingInterceptor.class.getName());
