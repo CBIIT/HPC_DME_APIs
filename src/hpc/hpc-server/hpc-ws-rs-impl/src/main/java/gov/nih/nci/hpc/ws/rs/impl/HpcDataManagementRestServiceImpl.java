@@ -346,7 +346,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	   return null;
     	}
 
-    	File dataObjectFile = FileUtils.getFile(FileUtils.getTempDirectory(), 
+    	//File dataObjectFile = FileUtils.getFile(FileUtils.getTempDirectory(), 
+    	File dataObjectFile = FileUtils.getFile("/mnt/IRODsScratch/data/cxf", 
     			                                UUID.randomUUID().toString());
     	try {
 	         FileUtils.copyInputStreamToFile(dataObjectInputStream, dataObjectFile);
