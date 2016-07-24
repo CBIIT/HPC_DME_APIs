@@ -87,6 +87,12 @@
 		<entry key="http://hpc.nci.nih.gov/domain/notification" value="gov.nih.nci.hpc.domain.notification" />
 	</util:map>
 
+	<!--  Multipart Provider -->
+	<bean id="hpcMultipartProvider" class="gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider">
+		<property name="attachmentDirectory" value="${hpc.ws.rs.attachment-tmp-directory}" />
+		<property name="attachmentThreshold" value="${hpc.ws.rs.attachment-memory-threshold}" />
+	</bean>
+	
 	<!-- Exception Mapper Providers -->
 	<bean id="hpcExceptionMapper" 
 	      class="gov.nih.nci.hpc.ws.rs.provider.HpcExceptionMapper">
@@ -156,6 +162,7 @@
 		<jaxrs:providers>
 			<ref bean="jaxbProvider" />
 			<ref bean="jsonProvider" />
+			<ref bean="hpcMultipartProvider" />
 			<ref bean="hpcAuthenticationExceptionMapper" />
 			<ref bean="hpcAuthorizationExceptionMapper" />
 		</jaxrs:providers>
@@ -167,9 +174,6 @@
       		<ref bean="hpcAPIVersionInterceptor" />
       		<ref bean="hpcCleanupInterceptor" />
       	</jaxrs:outInterceptors>
-      	<jaxrs:properties>
-         	<entry key="attachment-directory" value="${hpc.ws.rs.attachment-directory}"/>
-     	</jaxrs:properties>
 	</jaxrs:server>
 	
 	<!-- CXF JAX-RS Secured Server Config -->
@@ -182,6 +186,7 @@
 		<jaxrs:providers>
 			<ref bean="jaxbProvider" />
 			<ref bean="jsonProvider" />
+			<ref bean="hpcMultipartProvider" />
 			<ref bean="hpcAuthenticationExceptionMapper" />
 			<ref bean="hpcAuthorizationExceptionMapper" />
 		</jaxrs:providers>
