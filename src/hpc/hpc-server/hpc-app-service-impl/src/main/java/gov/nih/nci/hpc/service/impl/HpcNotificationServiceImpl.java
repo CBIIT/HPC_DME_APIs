@@ -14,26 +14,19 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNotificatio
 import gov.nih.nci.hpc.dao.HpcNotificationDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
+import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 
 import java.util.Calendar;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
-import javax.mail.Message;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.MailException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessagePreparator;
 
 /**
  * <p>
@@ -50,16 +43,14 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     // Instance members
     //---------------------------------------------------------------------//
 
+	// Map notification delivery method to its notification sender impl.
+	private Map<HpcNotificationDeliveryMethod, HpcNotificationSender> notificationSenders = 
+			new EnumMap<>(HpcNotificationDeliveryMethod.class);
+	
     // The Notification DAO instance.
 	@Autowired
     private HpcNotificationDAO notificationDAO = null;
 	
-	@Autowired
-	JavaMailSender mailSender = null;
-	
-	// The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -68,8 +59,22 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
      * Default constructor disabled.
      *
      */
-    private HpcNotificationServiceImpl()
+    private HpcNotificationServiceImpl() throws HpcException
     {
+    	throw new HpcException("Constructor Dosabled",
+    			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    }
+    
+    /**
+     * Default constructor disabled.
+     *
+     * @param notificationSenders The notification senders.
+     */
+    private HpcNotificationServiceImpl(
+    		   Map<HpcNotificationDeliveryMethod, HpcNotificationSender> notificationSenders) 
+    		   throws HpcException
+    {
+    	this.notificationSenders.putAll(notificationSenders);
     }
 
     //---------------------------------------------------------------------//
@@ -147,32 +152,18 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     }
     
     @Override
-    public void deliverNotification(HpcEvent event, 
-                                    HpcNotificationDeliveryMethod deliveryMethod) 
-                                   throws HpcException
+    public void sendNotification(HpcEvent event, 
+                                 HpcNotificationDeliveryMethod deliveryMethod) 
+                                throws HpcException
     {
-    	// TODO: Invoke the notification event sender for the delivery method.
-        MimeMessagePreparator preparator = new MimeMessagePreparator() {
+    	// Locate the notification sender for this delivery method.
+    	HpcNotificationSender notificationSender = notificationSenders.get(deliveryMethod);
+    	if(notificationSender == null) {
+    	   throw new HpcException("Could not locate notification sender for: " + deliveryMethod,
+    			                  HpcErrorType.UNEXPECTED_ERROR);
+    	}
 
-            public void prepare(MimeMessage mimeMessage) throws Exception {
-
-                mimeMessage.setRecipient(Message.RecipientType.TO,
-                        new InternetAddress("eran.rosenberg@nih.gov"));
-                mimeMessage.setFrom(new InternetAddress("HPC_SERVER@nih.gov"));
-                mimeMessage.setSubject("HPC Data Transfer Request Completed Successfully!!");
-                mimeMessage.setText("Data Transfer Completed. Task Id: " +
-                                    event.getNotificationPayloadEntries().get(0).getValue());
-            }
-        };
-
-        try {
-            mailSender.send(preparator);
-        }
-        catch (MailException ex) {
-            // simply log it and go on...
-            logger.error("Failed to send email: ", ex);
-        }
-    	
+    	notificationSender.sendNotification(event);
     }
     
     @Override
@@ -188,14 +179,14 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     		                                          String dataTransferRequestId) throws HpcException
     {
     	// Construct the event.
-    	HpcNotificationPayloadEntry payloadEntry = new HpcNotificationPayloadEntry();
+    	HpcEventPayloadEntry payloadEntry = new HpcEventPayloadEntry();
     	payloadEntry.setAttribute("DATA_TRANSFER_REQUEST_ID");
     	payloadEntry.setValue(dataTransferRequestId);
     	
     	HpcEvent event = new HpcEvent();
     	event.setUserId(userId);
     	event.setType(HpcEventType.DATA_TRANSFER_DOWNLOAD_COMPLETED);
-    	event.getNotificationPayloadEntries().add(payloadEntry);
+    	event.getPayloadEntries().add(payloadEntry);
     	event.setCreated(Calendar.getInstance());
 
     	// Persist to DB.

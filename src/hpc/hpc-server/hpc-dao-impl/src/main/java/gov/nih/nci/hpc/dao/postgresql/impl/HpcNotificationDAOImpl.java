@@ -13,9 +13,9 @@ package gov.nih.nci.hpc.dao.postgresql.impl;
 import gov.nih.nci.hpc.dao.HpcNotificationDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
+import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -201,7 +201,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		     jdbcTemplate.update(INSERT_EVENT_SQL,
 		    		             event.getUserId(),
 		    		             event.getType().value(),
-		    		             encryptor.encrypt(toJSON(event.getNotificationPayloadEntries())),
+		    		             encryptor.encrypt(toJSON(event.getPayloadEntries())),
 		    		             event.getCreated());
 		     
 		} catch(DataAccessException e) {
@@ -272,7 +272,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			event.setId(rs.getInt("ID"));
 			event.setUserId(rs.getString("USER_ID"));
 			event.setType(HpcEventType.fromValue(rs.getString("TYPE")));
-			event.getNotificationPayloadEntries().addAll(fromJSON(encryptor.decrypt(rs.getBytes("PAYLOAD"))));
+			event.getPayloadEntries().addAll(fromJSON(encryptor.decrypt(rs.getBytes("PAYLOAD"))));
 			
         	Calendar created = new GregorianCalendar();
         	created.setTime(rs.getDate("CREATED"));
@@ -289,14 +289,14 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
      * @return A JSON representation of the payload entries.
      */
 	@SuppressWarnings("unchecked")
-	private String toJSON(List<HpcNotificationPayloadEntry> payloadEntries)
+	private String toJSON(List<HpcEventPayloadEntry> payloadEntries)
 	{
 		if(payloadEntries == null || payloadEntries.isEmpty()) {
 		   return "";
 		}
 		
 		JSONObject jsonPayload = new JSONObject();
-		for(HpcNotificationPayloadEntry payloadEntry : payloadEntries) {
+		for(HpcEventPayloadEntry payloadEntry : payloadEntries) {
 			jsonPayload.put(payloadEntry.getAttribute(), payloadEntry.getValue());
 		}
 		
@@ -309,9 +309,9 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
      * @param jsonPayloadStr The Payload Entries JSON String.
      * @return List<HpcNotificationPayloadEntry>
      */
-	private List<HpcNotificationPayloadEntry> fromJSON(String jsonPayloadStr)
+	private List<HpcEventPayloadEntry> fromJSON(String jsonPayloadStr)
 	{
-		List<HpcNotificationPayloadEntry> payloadEntries = new ArrayList<>();
+		List<HpcEventPayloadEntry> payloadEntries = new ArrayList<>();
 		if(jsonPayloadStr == null || jsonPayloadStr.isEmpty()) {
 		   return payloadEntries;
 		}
@@ -327,7 +327,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		
 		// Map all attributes to payload entries.
 		for(Object attribue : jsonPayload.keySet()) {
-			HpcNotificationPayloadEntry entry = new HpcNotificationPayloadEntry();
+			HpcEventPayloadEntry entry = new HpcEventPayloadEntry();
 			entry.setAttribute(attribue.toString());
 			entry.setValue(jsonPayload.get(attribue).toString());
 			payloadEntries.add(entry);

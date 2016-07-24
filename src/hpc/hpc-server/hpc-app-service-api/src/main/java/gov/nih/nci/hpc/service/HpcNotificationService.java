@@ -96,16 +96,16 @@ public interface HpcNotificationService
     //public void archiveEvent(int EventId) throws HpcException;
     
     /**
-     * Deliver an event notification.
+     * Send an event notification.
      *
      * @param event The event.
      * @param deliveryMethod The delivery method.
      * 
      * @throws HpcException
      */
-    public void deliverNotification(HpcEvent event, 
-    		                        HpcNotificationDeliveryMethod deliveryMethod) 
-    		                       throws HpcException;
+    public void sendNotification(HpcEvent event, 
+    		                     HpcNotificationDeliveryMethod deliveryMethod) 
+    		                    throws HpcException;
     
     /**
      * Create delivery receipts for this event and delete it.

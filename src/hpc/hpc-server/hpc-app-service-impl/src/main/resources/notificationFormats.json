@@ -1,0 +1,16 @@
+{  
+	"notificationFormats": [  
+    	{  
+         "eventType" : "DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE",
+         "subjectFormat" : "Upload in temp archive",
+         "subjectArguments" : [],
+         "textFormat" : "Data transfer file in temp archive. request id = %1$s",
+         "textArguments" : [
+         	{  
+             "payloadEntryAttribute" : "request_id",
+             "index" : "0"
+             }
+         ]
+        }
+    ]
+}
