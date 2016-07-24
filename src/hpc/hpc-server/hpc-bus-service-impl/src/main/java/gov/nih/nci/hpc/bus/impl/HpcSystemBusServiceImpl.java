@@ -212,25 +212,39 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     }
     
     @Override
-    public void deliverNotificationEvents() throws HpcException
+    public void processEvents() throws HpcException
     {
     	// Get and process the pending notification events.
     	for(HpcEvent event : notificationService.getEvents()) {
-    		// Get the subscription.
-    		HpcNotificationSubscription subscription = 
-    		   notificationService.getNotificationSubscription(event.getUserId(), 
-    				                                           event.getType());
-    		if(subscription != null) {
-    		   // Iterate through all the delivery methods the user is subscribed to.
-    		   for(HpcNotificationDeliveryMethod deliveryMethod : 
-    			   subscription.getNotificationDeliveryMethods()) {
-    			   // Deliver notification via this method.
-    			   notificationService.deliverNotification(event, deliveryMethod);
-    		   }
+    		try {
+    		     // Get the subscription.
+    		     HpcNotificationSubscription subscription = 
+    		        notificationService.getNotificationSubscription(event.getUserId(), 
+    				                                                event.getType());
+    		     if(subscription != null) {
+    		        // Iterate through all the delivery methods the user is subscribed to.
+    		        for(HpcNotificationDeliveryMethod deliveryMethod : 
+    			        subscription.getNotificationDeliveryMethods()) {
+    			        // Deliver notification via this method.
+    		        	boolean notificationSent = false;
+    		        	try {
+    			             notificationService.sendNotification(event, deliveryMethod);
+    			             notificationSent = true;
+    			             
+    		        	} catch(HpcException e) {
+    		        		    logger.error("Failed to send event notification", e);
+    		        		    
+    		        	} finally {
+    		        		       // Create delivery receipts for this event.
+    		      		           //notificationService.createDeliveryReceipts(event, deliveryMethod, notificationSent);
+    		        	}
+    		        }
+    		     }
+    		     
+    		} finally {
+    			       // TODO: 
+    			       // cleanupEvent(event)
     		}
-    		
-    		// Create delivery receipts for this event.
- 		   notificationService.createDeliveryReceipts(event);
     	}
     }
     
