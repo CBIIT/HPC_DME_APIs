@@ -60,7 +60,6 @@
 			<xsd:element name="message" type="xsd:string" />
 			<xsd:element name="groupuser" type="hpc-domain-user:HpcGroupUserResponse" 
 			             minOccurs="0" maxOccurs="unbounded"/>
-			
 		</xsd:sequence>
 	</xsd:complexType>
 

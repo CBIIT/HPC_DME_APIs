@@ -32,7 +32,6 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="EMAIL" />
 			<xsd:enumeration value="TEXT" />
-			<xsd:enumeration value="NONE" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
@@ -45,7 +44,7 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
-	<xsd:complexType name="HpcNotificationPayloadEntry">
+	<xsd:complexType name="HpcEventPayloadEntry">
 		<xsd:sequence>
 			<xsd:element name="attribute" type="xsd:string" />
 			<xsd:element name="value" type="xsd:string" />
@@ -57,8 +56,8 @@
 			<xsd:element name="id" type="xsd:int" minOccurs="0" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="type" type="hpc-domain-notification:HpcEventType" />
-			<xsd:element name="notificationPayloadEntries" 
-			             type="hpc-domain-notification:HpcNotificationPayloadEntry" 
+			<xsd:element name="payloadEntries" 
+			             type="hpc-domain-notification:HpcEventPayloadEntry" 
 			             minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="created" type="xsd:dateTime" />
 		</xsd:sequence>
@@ -72,4 +71,25 @@
 			<xsd:element name="delivered" type="xsd:dateTime" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:complexType name="HpcNotificationFormatArgument">
+		<xsd:sequence>
+			<xsd:element name="index" type="xsd:int" />
+			<xsd:element name="payloadEntryAttribute" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcNotificationFormat">
+		<xsd:sequence>
+			<xsd:element name="subjectFormat" type="xsd:string" />
+			<xsd:element name="subjectArguments" 
+			             type="hpc-domain-notification:HpcNotificationFormatArgument" 
+			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="textFormat" type="xsd:string" />
+			<xsd:element name="textArguments" 
+			             type="hpc-domain-notification:HpcNotificationFormatArgument" 
+			             minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
 </xsd:schema>

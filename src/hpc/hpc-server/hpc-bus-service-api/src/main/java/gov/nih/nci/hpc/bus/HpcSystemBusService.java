@@ -47,11 +47,11 @@ public interface HpcSystemBusService
 	public void cleanupDataTransferDownloadFiles() throws HpcException;
 	
     /**
-     * Deliver all notification events.
+     * Process all (active) events.
      *
      * @throws HpcException
      */
-	public void deliverNotificationEvents() throws HpcException;
+	public void processEvents() throws HpcException;
 }
 
  
