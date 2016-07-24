@@ -128,25 +128,25 @@ public class HpcScheduledTasks
     }
     
     /**
-     * Deliver Notification Events Task
+     * Process Events Task.
      * 
      */    
     /*
     @Scheduled(fixedDelay = 30000)
-    private void deliverNotificationEvents()
+    private void processEvents()
     {
-        logger.info("Starting Deliver Notification Events Task...");
+        logger.info("Starting Process Events Task...");
 
         try { 
-		     systemBusService.deliverNotificationEvents();
+		     systemBusService.processEvents();
 		     
         } catch(HpcException e) {
-        	    logger.error("Deliver Notification Events task failed", e);
+        	    logger.error("Process Events task failed", e);
         	    
         } finally {
         	       // TODO - make this AOP.
         	       dataManagementBusService.closeConnection();
-        	       logger.info("Completed Cleanup Data Transfer Download Task...");	
+        	       logger.info("Completed Process Events Task...");	
         }
     }*/
 }

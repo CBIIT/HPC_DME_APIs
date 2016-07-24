@@ -9,8 +9,20 @@
          	{  
              "payloadEntryAttribute" : "request_id",
              "index" : "0"
-             }
+			}
          ]
-        }
+        },
+        {  
+         "eventType" : "DATA_TRANSFER_DOWNLOAD_COMPLETED",
+         "subjectFormat" : "HPC Data Transfer Download Request Completed",
+         "subjectArguments" : [],
+         "textFormat" : "Your Request completed successfully\n. Request id = %1$s",
+         "textArguments" : [
+         	{  
+             "payloadEntryAttribute" : "DATA_TRANSFER_REQUEST_ID",
+             "index" : "0"
+            }
+         ]
+        },
     ]
 }
