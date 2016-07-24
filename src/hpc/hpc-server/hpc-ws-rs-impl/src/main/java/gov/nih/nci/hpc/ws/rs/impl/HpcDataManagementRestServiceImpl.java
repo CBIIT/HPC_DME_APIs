@@ -26,6 +26,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
+import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,6 +69,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     // The Data Management Business Service instance.
 	@Autowired
     private HpcDataManagementBusService dataManagementBusService = null;
+	
+	// The multipart provider.
+	@Autowired
+	private HpcMultipartProvider multipartProvider = null;
 	
 	// The Logger instance.
 	private final Logger logger = 
@@ -285,7 +290,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response setPermissions(List<HpcEntityPermissionRequestDTO> entityPermissionRequests)
     {
-    	long start = System.currentTimeMillis();
     	logger.info("Invoking RS: POST /acl: " + entityPermissionRequests);
     	
     	HpcEntityPermissionResponseListDTO permissionResponseList = null;
@@ -301,8 +305,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		
 		return okResponse(permissionResponseList, false);
     }
-    
- 
     
     //---------------------------------------------------------------------//
     // Helper Methods
@@ -333,7 +335,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     /**
-     * Copy input stream tp File and close the input stream
+     * Copy input stream to File and close the input stream
      * 
      * @param dataObjectInputStream The input stream
      * @return File
@@ -346,8 +348,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	   return null;
     	}
 
-    	//File dataObjectFile = FileUtils.getFile(FileUtils.getTempDirectory(), 
-    	File dataObjectFile = FileUtils.getFile("/mnt/IRODsScratch/data/cxf", 
+    	File dataObjectFile = FileUtils.getFile(multipartProvider.getTempDirectory(), 
     			                                UUID.randomUUID().toString());
     	try {
 	         FileUtils.copyInputStreamToFile(dataObjectInputStream, dataObjectFile);
