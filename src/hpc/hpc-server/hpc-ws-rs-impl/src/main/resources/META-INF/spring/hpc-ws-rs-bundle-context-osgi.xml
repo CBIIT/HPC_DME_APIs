@@ -32,7 +32,8 @@
 		<prop key="hpc.ws.rs.stackTraceEnabled">true</prop>
 		<prop key="hpc.ws.rs.api-version">1.0.0</prop>
 		<prop key="hpc.ws.rs.ldapAuthentication">true</prop>
-		<prop key="hpc.ws.rs.attachment-directory">${karaf.base}/data/hpc-tmp-archive</prop>
+		<prop key="hpc.ws.rs.attachment-tmp-directory">C:\\temp</prop>
+		<prop key="hpc.ws.rs.attachment-memory-threshold">104857600</prop>
 		
 		<prop key="hpc.ws.rs.ssl.keystore.path">${karaf.base}/etc/hpc-server/keystore.jks</prop>
 		<prop key="hpc.ws.rs.ssl.keystore.type">JKS</prop>
