@@ -72,8 +72,8 @@ public class HPCDataFileRecordProcessor implements RecordProcessor{
 				hpcDataObjectRegistrationDTO));
 		long start = System.currentTimeMillis();
 		WebClient client = HpcClientUtil.getWebClient(hpcObject.getBasePath()+ "/" + hpcObject.getObjectPath(), hpcObject.getHpcCertPath(), hpcObject.getHpcCertPassword());
-		String token = DatatypeConverter.printBase64Binary((hpcObject.getUserId() + ":" + hpcObject.getPassword()).getBytes());
-		client.header("Authorization", "Basic " + token);
+		//String token = DatatypeConverter.printBase64Binary((hpcObject.getUserId() + ":" + hpcObject.getPassword()).getBytes());
+		client.header("Authorization", "Bearer " + hpcObject.getAuthToken());
 		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
 		//client.type(MediaType.MULTIPART_FORM_DATA);
 

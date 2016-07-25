@@ -93,6 +93,7 @@ public class HPCCollections extends HPCBatchClient {
             String collectionPath = null;
             ResponseEntity<HpcExceptionDTO> response = null;
             //Read the CSV file records starting from the second record to skip the header
+		    String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL);
             for (int i = 0; i < csvRecords.size(); i++) {
             	boolean processedRecordFlag = true;
             	CSVRecord record = csvRecords.get(i);
@@ -111,10 +112,16 @@ public class HPCCollections extends HPCBatchClient {
 				System.out.println((i+1) +": Registering Collection " + collectionPath);
 				
 				 RestTemplate restTemplate = HpcClientUtil.getRestTemplate(hpcCertPath, hpcCertPassword);
-
+				 if(authToken == null)
+				 {
+					 System.out.println("Invalid authenticaiton. Aborting the batch processing.");
+					 return false;
+				 }
+				// System.out.println("token: "+authToken);
 				HttpHeaders headers = new HttpHeaders();
-				String token =DatatypeConverter.printBase64Binary((userId + ":" + password).getBytes());
-				headers.add("Authorization", "Basic " + token);				
+				headers.add("Accept", "*/*");
+				//String token =DatatypeConverter.printBase64Binary((userId + ":" + password).getBytes());
+				headers.add("Authorization", "Bearer " + authToken);				
 				List <MediaType> mediaTypeList = new ArrayList<MediaType>();
 				mediaTypeList.add(MediaType.APPLICATION_JSON);
 				headers.setAccept(mediaTypeList);

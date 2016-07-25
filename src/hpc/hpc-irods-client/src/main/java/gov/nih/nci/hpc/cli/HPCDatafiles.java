@@ -74,9 +74,9 @@ public class HPCDatafiles extends HPCBatchClient {
 			return false;
 		}
 		try {
-
+			String authToken =  HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL);
 			success = new HPCDataFileProcessor(fileName, threadCount, hpcServerURL+ "/" + hpcDataService,
-					hpcCertPath, hpcCertPassword, userId, password, logFile, logRecordsFile, null).processData();
+					hpcCertPath, hpcCertPassword, null, null, logFile, logRecordsFile, authToken).processData();
 		} catch (Exception e) {
 			System.out.println("Cannot read the input file");
 			e.printStackTrace();

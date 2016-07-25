@@ -36,6 +36,7 @@ import org.springframework.web.client.RestTemplate;
 import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
+import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
@@ -92,31 +93,51 @@ public class HPCPermissions extends HPCBatchClient {
 			List<CSVRecord> csvRecords = csvFileParser.getRecords();
 			// Read the CSV file records starting from the second record to skip
 			// the header
-			Map<String, List<HpcUserPermission>> permissions = new HashMap<String, List<HpcUserPermission>>();
+			Map<String, List<HpcUserPermission>> userPermissions = new HashMap<String, List<HpcUserPermission>>();
+			Map<String, List<HpcGroupPermission>> groupPermissions = new HashMap<String, List<HpcGroupPermission>>();
+			String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL);
 			for (int i = 0; i < csvRecords.size(); i++) {
 				CSVRecord record = csvRecords.get(i);
 				String path = record.get(Constants.PATH);
 				String ruserId = record.get(Constants.USER_ID);
+				String rGroupId = record.get(Constants.GROUP_ID);
 				String permission = record.get(Constants.PERMISSION);
-				List<HpcUserPermission> pathPermission = permissions.get(path);
-				if (pathPermission == null)
-					pathPermission = new ArrayList<HpcUserPermission>();
-				HpcUserPermission userPermission = new HpcUserPermission();
-				userPermission.setUserId(ruserId);
-				userPermission.setPermission(permission);
-				pathPermission.add(userPermission);
-				permissions.put(path, pathPermission);
-
+				if(ruserId != null && !ruserId.isEmpty())
+				{
+					List<HpcUserPermission> pathPermission = userPermissions.get(path);
+					if (pathPermission == null)
+						pathPermission = new ArrayList<HpcUserPermission>();
+					HpcUserPermission userPermission = new HpcUserPermission();
+					userPermission.setUserId(ruserId);
+					userPermission.setPermission(permission);
+					pathPermission.add(userPermission);
+					userPermissions.put(path, pathPermission);
+				}
+				if(rGroupId != null && !rGroupId.isEmpty())
+				{
+					List<HpcGroupPermission> pathPermission = groupPermissions.get(path);
+					if (pathPermission == null)
+						pathPermission = new ArrayList<HpcGroupPermission>();
+					HpcGroupPermission groupPermission = new HpcGroupPermission();
+					groupPermission.setGroupId(ruserId);
+					groupPermission.setPermission(permission);
+					pathPermission.add(groupPermission);
+					groupPermissions.put(path, pathPermission);
+				}
 				List<HpcEntityPermissionRequestDTO> dtos = new ArrayList<HpcEntityPermissionRequestDTO>();
 				HpcEntityPermissionRequestDTO hpcPermissionDTO = new HpcEntityPermissionRequestDTO();
 				hpcPermissionDTO.setPath(path);
-				hpcPermissionDTO.getUserPermissions().addAll(permissions.get(path));
+				if(userPermissions.get(path) != null && userPermissions.get(path).size() > 0)
+					hpcPermissionDTO.getUserPermissions().addAll(userPermissions.get(path));
+				if(groupPermissions.get(path) != null && groupPermissions.get(path).size() > 0)
+					hpcPermissionDTO.getGroupPermissions().addAll(groupPermissions.get(path));
 				dtos.add(hpcPermissionDTO);
 				//System.out.println(dtos);
 				RestTemplate restTemplate = HpcClientUtil.getRestTemplate(hpcCertPath, hpcCertPassword);
 				HttpHeaders headers = new HttpHeaders();
 				String token = DatatypeConverter.printBase64Binary((userId + ":" + password).getBytes());
-				headers.add("Authorization", "Basic " + token);
+				//headers.add("Authorization", "Basic " + token);
+				headers.add("Authorization", "Bearer " + authToken);
 				List<MediaType> mediaTypeList = new ArrayList<MediaType>();
 				mediaTypeList.add(MediaType.APPLICATION_JSON);
 				headers.setAccept(mediaTypeList);
