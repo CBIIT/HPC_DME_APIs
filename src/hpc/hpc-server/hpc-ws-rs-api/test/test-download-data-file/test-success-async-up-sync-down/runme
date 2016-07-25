@@ -19,6 +19,7 @@ verify_registration  collection-registration-response-header.tmp
 verify_registration  dataObject-registration-response-header.tmp
 
 
+sleep 60
 OBJECT_PATH=`cat registered-dataobject-path.tmp`
 
 #Make sure the dataObject is archived
