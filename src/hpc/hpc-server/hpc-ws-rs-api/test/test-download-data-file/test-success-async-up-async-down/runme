@@ -18,6 +18,7 @@ source $HPC_DM_TEST/utils/functions
 verify_registration  collection-registration-response-header.tmp
 verify_registration  dataObject-registration-response-header.tmp
 
+sleep 60
 
 OBJECT_PATH=`cat registered-dataobject-path.tmp`
 
@@ -44,7 +45,7 @@ HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 echo $HTTP_CODE
 
 #Do not check the file is the code is not 200
-if [ $HTTP_CODE != 200 ] 
+if [ "$HTTP_CODE" != 200 ] 
 then
     exit
 fi
