@@ -573,12 +573,12 @@ function download_dataobject_sync {
 
     if [ -z $RESPONSE_HEADER ] 
     then
-        $RESPONSE_HEADER=download-dataobject-response-header.tmp
+        RESPONSE_HEADER=download-dataobject-response-header.tmp
     fi
 
     if [ -z $RESPONSE_MSG ] 
     then
-        $RESPONSE_MSG=download-dataobject-response-message.json.tmp
+        RESPONSE_MSG=download-dataobject-response-message.json.tmp
     fi
 
     OBJECT_PATH="$1"
@@ -613,7 +613,6 @@ function download_dataobject_async {
         $RESPONSE_MSG=download-dataobject-response-message.json.tmp
     fi
 
-    sleep 30
     OBJECT_PATH="$1"
     SERVER=`cat $HPC_DM_TEST/utils/server`
 
