@@ -1,5 +1,5 @@
-object_path,UserId,Permission
-/FNL_SF_Archive/Project200,godbolesv,WRITE
-/FNL_SF_Archive/Project201,zhaoyong,OWN
-/FNL_SF_Archive/Project200,konkapv,OWN
-/FNL_SF_Archive/Project201,godbolesv,NONE
+object_path,UserId,GroupId,Permission
+/FNL_SF_Archive/Project200,godbolesv,,WRITE
+/FNL_SF_Archive/Project201,zhaoyong,,OWN
+/FNL_SF_Archive/Project200,konkapv,,OWN
+/FNL_SF_Archive/Project201,godbolesv,,NONE

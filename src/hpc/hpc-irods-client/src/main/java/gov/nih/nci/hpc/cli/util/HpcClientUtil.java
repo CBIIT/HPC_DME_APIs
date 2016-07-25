@@ -2,6 +2,7 @@ package gov.nih.nci.hpc.cli.util;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -11,6 +12,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -22,6 +24,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
+import javax.ws.rs.core.Response;
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.transform.Source;
 
 import org.apache.cxf.binding.BindingFactoryManager;
@@ -29,6 +33,7 @@ import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.jaxrs.JAXRSBindingFactory;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.scheme.Scheme;
@@ -41,6 +46,12 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.easybatch.core.processor.RecordProcessingException;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -51,7 +62,13 @@ import org.springframework.integration.http.converter.MultipartAwareFormHttpMess
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
+import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 
 public class HpcClientUtil {
 
@@ -75,6 +92,39 @@ public class HpcClientUtil {
 		return client;
 	}
 
+	public static String getAuthenticationToken(String userId, String passwd, String hpcServerURL)
+	{
+		
+		WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/authenticate", null, null);
+		String token = DatatypeConverter.printBase64Binary((userId + ":" + passwd).getBytes());
+		client.header("Authorization", "Basic " + token);
+		Response restResponse = client.get();
+		
+		if(restResponse == null)
+        	return null;
+		MappingJsonFactory factory = new MappingJsonFactory();
+		JsonParser parser;
+		try {
+			parser = factory.createJsonParser((InputStream) restResponse.getEntity());
+		} catch (IllegalStateException | IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return null;
+		}
+		try {
+			HpcAuthenticationResponseDTO dto  = parser.readValueAs(HpcAuthenticationResponseDTO.class);
+			return dto.getToken();
+		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+			e.printStackTrace();
+			return null;
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			return null;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 	public static RestTemplate getRestTemplate(String hpcCertPath, String hpcCertPassword) {
 
 		RestTemplate restTemplate = null;
