@@ -10,8 +10,10 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.domain.notification.HpcEvent;
-import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
+import gov.nih.nci.hpc.domain.notification.HpcEventType;
+
+import java.util.List;
 
 import javax.mail.Message;
 import javax.mail.internet.InternetAddress;
@@ -32,6 +34,13 @@ import org.springframework.mail.javamail.MimeMessagePreparator;
 public class HpcMimeMessagePreparator 
 {     
     //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//
+	
+    // NIH email domain
+	private static final String NIH_EMAIL_DOMAIN = "mail.nih.gov";
+	
+    //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
@@ -45,21 +54,23 @@ public class HpcMimeMessagePreparator
     /**
      * Instantiate a MIME message preparator for an event.
      *
-     * @param event The event to instantiate the MIME message preparator for.
+     * @param userId The recipient user ID
+     * @param eventType The event type to generate the message for.
+     * @param payloadEntries The payload entries to use for the message text & subject arguments.
      * @return MimeMessagePreparator
-     * @throws HpcException
      */    
-    public MimeMessagePreparator getPreparator(HpcEvent event) throws HpcException
+    public MimeMessagePreparator getPreparator(String userId, HpcEventType eventType, 
+    		                                   List<HpcEventPayloadEntry> payloadEntries)
     {
         return new MimeMessagePreparator() 
         {
             public void prepare(MimeMessage mimeMessage) throws Exception 
             {
-            	mimeMessage.setRecipient(Message.RecipientType.TO,
-                                         new InternetAddress("eran.rosenberg@nih.gov"));
-                mimeMessage.setFrom(new InternetAddress("HPC_SERVER@nih.gov"));
-                mimeMessage.setSubject(notificationFormatter.formatSubject(event));
-                mimeMessage.setText(notificationFormatter.formatText(event));
+            	mimeMessage.setRecipient(
+            			       Message.RecipientType.TO,
+                               new InternetAddress(userId + "@" + NIH_EMAIL_DOMAIN));
+                mimeMessage.setSubject(notificationFormatter.formatSubject(eventType, payloadEntries));
+                mimeMessage.setText(notificationFormatter.formatText(eventType, payloadEntries));
             }
         };
     }

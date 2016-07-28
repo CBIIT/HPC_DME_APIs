@@ -266,7 +266,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     				                      downloadDataObject(secondHopDownloadRequest);
     		
     		// Create an entry to cleanup the file after the async download completes.
-    		saveDataObjectDownloadCleanup(secondHopDownloadResponse.getRequestId(), 
+    		saveDataObjectDownloadCleanup(secondHopDownloadResponse.getDataTransferRequestId(), 
     		 	                          secondHopDownloadRequest.getDataTransferType(),
     				                      downloadRequest.getDestinationFile().getAbsolutePath());
     		
@@ -552,6 +552,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	dataObjectDownloadCleanup.setDataTransferRequestId(dataTransferRequestId);
     	dataObjectDownloadCleanup.setDataTransferType(dataTransferType);
     	dataObjectDownloadCleanup.setFilePath(filePath);
+    	
+    	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+    	if(invoker != null && invoker.getNciAccount() != null) {
+    	   dataObjectDownloadCleanup.setUserId(invoker.getNciAccount().getUserId());
+    	} else {
+    		    dataObjectDownloadCleanup.setUserId("Unknown");
+    	}
     	
     	try {
     		 dataObjectDownloadCleanupDAO.upsert(dataObjectDownloadCleanup);

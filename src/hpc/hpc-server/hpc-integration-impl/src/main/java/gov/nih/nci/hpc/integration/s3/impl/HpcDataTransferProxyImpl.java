@@ -125,7 +125,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
     	uploadResponse.setArchiveLocation(archiveDestinationLocation);
     	uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
-    	uploadResponse.setRequestId(String.valueOf(s3Upload.hashCode()));
+    	uploadResponse.setDataTransferRequestId(String.valueOf(s3Upload.hashCode()));
     	if(baseArchiveDestination.getType().equals(HpcArchiveType.ARCHIVE)) {
     	   uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED);
     	} else {
@@ -162,7 +162,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         }
     	
     	HpcDataObjectDownloadResponse downloadResponse = new HpcDataObjectDownloadResponse();
-    	downloadResponse.setRequestId(String.valueOf(s3Download.hashCode()));
+    	downloadResponse.setDataTransferRequestId(String.valueOf(s3Download.hashCode()));
     	downloadResponse.setDestinationFile(downloadRequest.getDestinationFile());
     	
     	return downloadResponse;

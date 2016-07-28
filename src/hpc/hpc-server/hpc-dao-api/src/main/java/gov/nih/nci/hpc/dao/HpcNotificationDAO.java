@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.dao;
 
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -78,7 +79,7 @@ public interface HpcNotificationDAO
     /**
      * Store a new notification event to the repository.
      *
-     * @param event The event to be added/updated.
+     * @param event The event to be added.
      * 
      * @throws HpcException
      */
@@ -101,6 +102,25 @@ public interface HpcNotificationDAO
      * @throws HpcException
      */
     public void deleteEvent(int eventId) throws HpcException;
+    
+    /**
+     * Store a new notification delivery receipt to the repository or update it if it exists.
+     *
+     * @param deliveryReceipt The notification delivery receipt to be added/updated.
+     * 
+     * @throws HpcException
+     */
+    public void upsertDeliveryReceipt(HpcNotificationDeliveryReceipt deliveryReceipt) 
+    		                         throws HpcException;
+    
+    /**
+     * Store an event to the event history table.
+     *
+     * @param event The event to be added.
+     * 
+     * @throws HpcException
+     */
+    public void insertEventHistory(HpcEvent event) throws HpcException;
 }
 
  
