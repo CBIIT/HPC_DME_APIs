@@ -54,7 +54,8 @@
 	<xsd:complexType name="HpcEvent">
 		<xsd:sequence>
 			<xsd:element name="id" type="xsd:int" minOccurs="0" />
-			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="userIds" type="xsd:string" 
+			             minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="type" type="hpc-domain-notification:HpcEventType" />
 			<xsd:element name="payloadEntries" 
 			             type="hpc-domain-notification:HpcEventPayloadEntry" 
@@ -66,6 +67,7 @@
 	<xsd:complexType name="HpcNotificationDeliveryReceipt">
 		<xsd:sequence>
 			<xsd:element name="eventId" type="xsd:int" />
+			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="notificationDeliveryMethod" type="hpc-domain-notification:HpcNotificationDeliveryMethod" />
 			<xsd:element name="deliveryStatus" type="xsd:boolean" />
 			<xsd:element name="delivered" type="xsd:dateTime" />

@@ -11,7 +11,6 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationFormat;
@@ -89,41 +88,43 @@ public class HpcNotificationFormatter
     /**
      * Generate a notification text message for an event.
      *
-     * @param event The event to generate the text for.
+     * @param eventType The event type to generate the text for.
+     * @param payloadEntries The payload entries to use for the format arguments.
      * @return A notification text message.
      * @throws HpcException
      */
-    public String formatText(HpcEvent event) throws HpcException
+    public String formatText(HpcEventType eventType, List<HpcEventPayloadEntry> payloadEntries) 
+    		                throws HpcException
     {
     	// Find the format for the event type
-    	HpcNotificationFormat format = notificationFormats.get(event.getType());
+    	HpcNotificationFormat format = notificationFormats.get(eventType);
     	if(format == null) {
-    	   throw new HpcException("Notification format not found for: " + event.getType(),
+    	   throw new HpcException("Notification format not found for: " +  eventType,
     			                  HpcErrorType.UNEXPECTED_ERROR);
     	}
     	
-		return format(format.getTextFormat(), format.getTextArguments(),
-				      event.getPayloadEntries());
+		return format(format.getTextFormat(), format.getTextArguments(), payloadEntries);
     }
     
     /**
      * Generate a notification subject for an event.
      *
-     * @param event The event to generate the text for.
+     * @param eventType The event type to generate the subject for.
+     * @param payloadEntries The payload entries to use for the format arguments.
      * @return A notification text message.
      * @throws HpcException
      */
-    public String formatSubject(HpcEvent event) throws HpcException
+    public String formatSubject(HpcEventType eventType, List<HpcEventPayloadEntry> payloadEntries) 
+    		                   throws HpcException
     {
     	// Find the format for the event type
-    	HpcNotificationFormat format = notificationFormats.get(event.getType());
+    	HpcNotificationFormat format = notificationFormats.get(eventType);
     	if(format == null) {
-    	   throw new HpcException("Notification format not found for: " + event.getType(),
+    	   throw new HpcException("Notification format not found for: " + eventType,
     			                  HpcErrorType.UNEXPECTED_ERROR);
     	}
     	
-		return format(format.getSubjectFormat(), format.getSubjectArguments(),
-				      event.getPayloadEntries());
+		return format(format.getSubjectFormat(), format.getSubjectArguments(), payloadEntries);
     }
     		                               
     //---------------------------------------------------------------------//

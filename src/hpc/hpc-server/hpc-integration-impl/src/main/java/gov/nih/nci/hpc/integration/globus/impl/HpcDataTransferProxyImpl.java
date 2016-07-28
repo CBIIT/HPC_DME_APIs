@@ -141,7 +141,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	// Package and return the response.
     	HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
     	uploadResponse.setArchiveLocation(archiveDestinationLocation);
-    	uploadResponse.setRequestId(requestId);
+    	uploadResponse.setDataTransferRequestId(requestId);
     	uploadResponse.setDataTransferType(HpcDataTransferType.GLOBUS);
     	if(baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
     	   uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE);
@@ -160,9 +160,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	HpcDataObjectDownloadResponse response = new HpcDataObjectDownloadResponse();
     	
     	// Submit a request to Globus to transfer the data.
-    	response.setRequestId(transferData(globusConnection.getTransferClient(authenticatedToken),
-    			                           downloadRequest.getArchiveLocation(),
-    			                           downloadRequest.getDestinationLocation()));
+    	response.setDataTransferRequestId(
+    			    transferData(globusConnection.getTransferClient(authenticatedToken),
+    			                 downloadRequest.getArchiveLocation(),
+    			                 downloadRequest.getDestinationLocation()));
     	response.setDestinationLocation(downloadRequest.getDestinationLocation());
     	
     	return response;
