@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.integration.irods.impl;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -255,6 +256,33 @@ public class HpcIRODSConnection
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
     	}
     }  
+    
+    public HpcDataManagementAccount getHpcDataManagementAccount(IRODSAccount  irodsAccount)
+    {
+    	HpcDataManagementAccount account = new HpcDataManagementAccount();
+    	account.setDefaultStorageResource(irodsAccount.getDefaultStorageResource());
+    	account.setHomeDirectory(irodsAccount.getHomeDirectory());
+    	account.setHost(irodsAccount.getHost());
+    	account.setPassword(irodsAccount.getPassword());
+    	account.setProxyName(irodsAccount.getProxyName());
+    	account.setProxyZone(irodsAccount.getProxyZone());
+    	account.setUserName(irodsAccount.getUserName());
+    	account.setUserZone(irodsAccount.getZone());
+    	account.setPort(irodsAccount.getPort());
+    	account.setAuthenticationScheme(irodsAccount.getAuthenticationScheme().getTextValue());
+    	return account;
+    }
+
+    public IRODSAccount getIRODSAccount(HpcDataManagementAccount irodsAccount) throws JargonException
+    {
+    	IRODSAccount account = IRODSAccount.instance(irodsAccount.getHost(), irodsAccount.getPort(),
+    			irodsAccount.getUserName(), irodsAccount.getPassword(),
+    			irodsAccount.getHomeDirectory(), irodsAccount.getUserZone(),
+    			irodsAccount.getDefaultStorageResource(),
+    	    	AuthScheme.findTypeByString(irodsAccount.getAuthenticationScheme())); 
+    	
+    	return account;
+    }
     
     /**
      * Close iRODS connection of an account.
