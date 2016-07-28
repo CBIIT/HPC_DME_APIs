@@ -256,7 +256,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			    // Generate system metadata and attach to the data object.
 			    dataManagementService.addSystemGeneratedMetadataToDataObject(
 			        		                   path, uploadResponse.getArchiveLocation(),
-			    			                   source, uploadResponse.getRequestId(), 
+			    			                   source, uploadResponse.getDataTransferRequestId(), 
 			    			                   uploadResponse.getDataTransferStatus(),
 			    			                   uploadResponse.getDataTransferType(),
 			    			                   sourceSize, 
@@ -381,7 +381,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         // Construct and return download response DTO.
         HpcDataObjectDownloadResponseDTO downloadResponseDTO = new HpcDataObjectDownloadResponseDTO();
         downloadResponseDTO.setDestinationLocation(downloadResponse.getDestinationLocation());
-        downloadResponseDTO.setRequestId(downloadResponse.getRequestId());
+        downloadResponseDTO.setRequestId(downloadResponse.getDataTransferRequestId());
         downloadResponseDTO.setDestinationFile(downloadResponse.getDestinationFile());
         return downloadResponseDTO;
     }

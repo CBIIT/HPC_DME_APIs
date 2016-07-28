@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -70,7 +71,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	
 	private static final String INSERT_EVENT_SQL = 
 			"insert into public.\"HPC_EVENT\" ( " +
-	                "\"USER_ID\", \"TYPE\", \"PAYLOAD\", \"CREATED\") " +
+	                "\"USER_IDS\", \"TYPE\", \"PAYLOAD\", \"CREATED\") " +
 	                "values (?, ?, ?, ?)"; 
 	
 	private static final String GET_EVENTS_SQL = 
@@ -78,6 +79,18 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	
 	private static final String DELETE_EVENT_SQL = 
 		    "delete from public.\"HPC_EVENT\" where \"ID\" = ?";
+	
+	private static final String UPSERT_DELIVERY_RECEIPT_SQL = 
+		    "insert into public.\"HPC_NOTIFICATION_DELIVERY_RECEIPT\" ( " +
+                    "\"EVENT_ID\", \"USER_ID\", \"NOTIFICATION_DELIVERY_METHOD\", \"DELIVERY_STATUS\", \"DELIVERED\") " +
+                    "values (?, ?, ?, ?, ?) " +
+            "on conflict(\"EVENT_ID\", \"USER_ID\", \"NOTIFICATION_DELIVERY_METHOD\") do update " +
+                    "set \"DELIVERY_STATUS\"=excluded.\"DELIVERY_STATUS\", \"DELIVERED\"=excluded.\"DELIVERED\"";
+	
+	private static final String INSERT_EVENT_HISTORY_SQL = 
+			"insert into public.\"HPC_EVENT_HISTORY\" ( " +
+	                "\"ID\", \"USER_IDS\", \"TYPE\", \"PAYLOAD\", \"CREATED\") " +
+	                "values (?, ?, ?, ?, ?)"; 
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -199,7 +212,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	{
 		try {
 		     jdbcTemplate.update(INSERT_EVENT_SQL,
-		    		             event.getUserId(),
+		    		             toString(event.getUserIds()),
 		    		             event.getType().value(),
 		    		             encryptor.encrypt(toJSON(event.getPayloadEntries())),
 		    		             event.getCreated());
@@ -234,10 +247,47 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		     jdbcTemplate.update(DELETE_EVENT_SQL, eventId);
 		     
 		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to delete a notification event " + 
+			    throw new HpcException("Failed to delete a notification event" + 
 		                               e.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, e);
 		}    	
+    }
+    
+    @Override
+    public void upsertDeliveryReceipt(HpcNotificationDeliveryReceipt deliveryReceipt) 
+                                     throws HpcException
+    {
+		try {
+		     jdbcTemplate.update(UPSERT_DELIVERY_RECEIPT_SQL,
+		    		             deliveryReceipt.getEventId(),
+		    		             deliveryReceipt.getUserId(),
+		    		             deliveryReceipt.getNotificationDeliveryMethod().value(),
+		    		             deliveryReceipt.getDeliveryStatus(),
+		    		             deliveryReceipt.getDelivered());
+		     
+		} catch(DataAccessException e) {
+			    throw new HpcException("Failed to upsert a notification delivery receipt: " + 
+		                               e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, e);
+		}                                    
+    }
+    
+    @Override
+    public void insertEventHistory(HpcEvent event) throws HpcException
+    {
+		try {
+		     jdbcTemplate.update(INSERT_EVENT_HISTORY_SQL,
+		    		             event.getId(),
+		    		             toString(event.getUserIds()),
+		    		             event.getType().value(),
+		    		             encryptor.encrypt(toJSON(event.getPayloadEntries())),
+		    		             event.getCreated());
+		     
+		} catch(DataAccessException e) {
+			    throw new HpcException("Failed to insert an event to history table" + 
+		                               e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, e);
+		}
     }
 	
     //---------------------------------------------------------------------//
@@ -270,7 +320,10 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		{
 			HpcEvent event = new HpcEvent();
 			event.setId(rs.getInt("ID"));
-			event.setUserId(rs.getString("USER_ID"));
+			String userIds = rs.getString("USER_IDS");
+			for(String userId : userIds.split(",")) {
+				event.getUserIds().add(userId);
+			}
 			event.setType(HpcEventType.fromValue(rs.getString("TYPE")));
 			event.getPayloadEntries().addAll(fromJSON(encryptor.decrypt(rs.getBytes("PAYLOAD"))));
 			
@@ -334,7 +387,24 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		}
 
 		return payloadEntries;
-	}	  
+	}	
+	
+    /** 
+     * Map an array of user IDs to a single string.
+     * 
+     * @param jsonPayloadStr The Payload Entries JSON String.
+     * @return List<HpcNotificationPayloadEntry>
+     */
+	 // Map the userIds to a single string.
+	private String toString(List<String> userIds)
+	{
+		 StringBuilder userIdsStr = new StringBuilder();
+		 for(String userId : userIds) {
+			 userIdsStr.append(userId + ",");
+		 }
+		 
+		 return userIdsStr.toString();
+	}
 }
 
  

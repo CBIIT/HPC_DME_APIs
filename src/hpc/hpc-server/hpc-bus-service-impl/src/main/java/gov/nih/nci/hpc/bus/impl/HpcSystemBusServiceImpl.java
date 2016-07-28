@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
+import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -173,7 +174,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  			     // Update system metadata of the data object.
  			     dataManagementService.updateDataObjectSystemGeneratedMetadata(
  			           		                 path, uploadResponse.getArchiveLocation(),
- 			    			                 uploadResponse.getRequestId(), 
+ 			    			                 uploadResponse.getDataTransferRequestId(), 
  			    			                 uploadResponse.getDataTransferStatus(),
  			    			                 uploadResponse.getDataTransferType()); 
  			     
@@ -205,8 +206,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		   dataTransferService.cleanupDataObjectDownloadFile(dataObjectDownloadCleanup);
     		   /*
     		   notificationService.addDataTransferDownloadCompletedEvent(
-    		                "rosenbergea", 
-    		                dataObjectDownloadCleanup.getDataTransferRequestId());*/
+    		                dataObjectDownloadCleanup.getUserId(), 
+    		                dataObjectDownloadCleanup.getDataTransferRequestId(),
+    		                dataTransferDownloadStatus);
+    		                */
     		}
     	}
     }
@@ -216,34 +219,39 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     {
     	// Get and process the pending notification events.
     	for(HpcEvent event : notificationService.getEvents()) {
+    		// Notify all users associated with this event.
     		try {
-    		     // Get the subscription.
-    		     HpcNotificationSubscription subscription = 
-    		        notificationService.getNotificationSubscription(event.getUserId(), 
-    				                                                event.getType());
-    		     if(subscription != null) {
-    		        // Iterate through all the delivery methods the user is subscribed to.
-    		        for(HpcNotificationDeliveryMethod deliveryMethod : 
-    			        subscription.getNotificationDeliveryMethods()) {
-    			        // Deliver notification via this method.
-    		        	boolean notificationSent = false;
-    		        	try {
-    			             notificationService.sendNotification(event, deliveryMethod);
-    			             notificationSent = true;
-    			             
-    		        	} catch(HpcException e) {
-    		        		    logger.error("Failed to send event notification", e);
-    		        		    
-    		        	} finally {
-    		        		       // Create delivery receipts for this event.
-    		      		           //notificationService.createDeliveryReceipts(event, deliveryMethod, notificationSent);
-    		        	}
-    		        }
-    		     }
+    		     for(String userId : event.getUserIds()) {
+    		    	 try {
+		    		      // Get the subscription.
+		    			  HpcEventType eventType = event.getType();
+		    		      HpcNotificationSubscription subscription = 
+		    		         notificationService.getNotificationSubscription(userId, eventType);
+		    		      if(subscription != null) {
+		    		         // Iterate through all the delivery methods the user is subscribed to.
+		    		         for(HpcNotificationDeliveryMethod deliveryMethod : 
+		    			         subscription.getNotificationDeliveryMethods()) {
+		    			         // Send notification via this delivery method.
+		    		        	 boolean notificationSent = 
+		    		        	 notificationService.sendNotification(userId, eventType, 
+		    		        	 		                              event.getPayloadEntries(), 
+		    		        			                              deliveryMethod);
+		
+		    		        	 // Create a delivery receipt for this delivery method.
+		    		      		 notificationService.createNotificationDeliveryReceipt(userId,
+		    		      				                                               event.getId(), 
+		    		      				                                               deliveryMethod, 
+		    		      				                                               notificationSent);
+		    		        }
+		    		     }
+		    		      
+    		    	 } catch(Exception e) {
+    		    		     logger.error("Failed to deliver notifications to: " + userId);
+    		    	 }
+	    		}
     		     
     		} finally {
-    			       // TODO: 
-    			       // cleanupEvent(event)
+    			       notificationService.archiveEvent(event);
     		}
     	}
     }
