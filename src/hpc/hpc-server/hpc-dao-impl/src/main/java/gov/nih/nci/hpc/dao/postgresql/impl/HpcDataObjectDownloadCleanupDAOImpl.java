@@ -32,7 +32,7 @@ import org.springframework.jdbc.core.RowMapper;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id $
+ * @version $Id$
  */
 
 public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloadCleanupDAO
@@ -44,9 +44,11 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
     // SQL Queries.
 	public static final String UPSERT_SQL = 
 		   "insert into public.\"HPC_DATA_OBJECT_DOWNLOAD_CLEANUP\" ( " +
-                    "\"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", \"FILE_PATH\") " +
-                    "values (?, ?, ?) " +
-           "on conflict(\"DATA_TRANSFER_REQUEST_ID\") do update set \"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\", " +
+                    "\"USER_ID\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", \"FILE_PATH\") " +
+                    "values (?, ?, ?, ?) " +
+           "on conflict(\"DATA_TRANSFER_REQUEST_ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
+                                                     "\"DATA_TRANSFER_REQUEST_ID\"=excluded.\"DATA_TRANSFER_REQUEST_ID\", " + 
+                                                     "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\", " +
                                                      "\"FILE_PATH\"=excluded.\"FILE_PATH\"";
 	
 	public static final String DELETE_SQL = 
@@ -93,6 +95,7 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
     {
 		try {
 		     jdbcTemplate.update(UPSERT_SQL,
+		    		             dataObjectDownloadCleanup.getUserId(),
 		    		             dataObjectDownloadCleanup.getDataTransferRequestId(),
 		    		             dataObjectDownloadCleanup.getDataTransferType().value(),
 		    		             dataObjectDownloadCleanup.getFilePath());
@@ -143,6 +146,7 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
 		public HpcDataObjectDownloadCleanup mapRow(ResultSet rs, int rowNum) throws SQLException 
 		{
 			HpcDataObjectDownloadCleanup dataObjectDownloadCleanup = new HpcDataObjectDownloadCleanup();
+			dataObjectDownloadCleanup.setUserId(rs.getString("USER_ID"));
 			dataObjectDownloadCleanup.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
 			dataObjectDownloadCleanup.setDataTransferType(
 					  HpcDataTransferType.fromValue(rs.getString(("DATA_TRANSFER_TYPE"))));

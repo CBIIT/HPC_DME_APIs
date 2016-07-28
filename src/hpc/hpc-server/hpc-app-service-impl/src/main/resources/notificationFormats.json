@@ -14,12 +14,17 @@
         },
         {  
          "eventType" : "DATA_TRANSFER_DOWNLOAD_COMPLETED",
-         "subjectFormat" : "HPC Data Transfer Download Request Completed",
-         "subjectArguments" : [],
-         "textFormat" : "Your Request completed successfully\n. Request id = %1$s",
-         "textArguments" : [
+         "subjectFormat" : "HPC Data Transfer Download Request Completed: [%1$s]",
+         "subjectArguments" : [
          	{  
              "payloadEntryAttribute" : "DATA_TRANSFER_REQUEST_ID",
+             "index" : "0"
+            }
+         ],
+         "textFormat" : "Your Request completed.\n The request status is %1$s",
+         "textArguments" : [
+         	{  
+             "payloadEntryAttribute" : "DATA_TRANSFER_DOWNLOAD_STATUS",
              "index" : "0"
             }
          ]

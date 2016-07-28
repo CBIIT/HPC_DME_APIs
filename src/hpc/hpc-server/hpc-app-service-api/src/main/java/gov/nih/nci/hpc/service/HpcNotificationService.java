@@ -10,7 +10,9 @@
 
 package gov.nih.nci.hpc.service;
 
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
+import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
@@ -87,47 +89,50 @@ public interface HpcNotificationService
     public List<HpcEvent> getEvents() throws HpcException;
     
     /**
-     * Archive an event - move it from active table to history table. 
+     * Notify a user of an event.
      *
-     * @param eventId The event ID.
-     * 
-     * @throws HpcException
-     */
-    //public void archiveEvent(int EventId) throws HpcException;
-    
-    /**
-     * Send an event notification.
-     *
-     * @param event The event.
+     * @param userId The user to send the notification to.
+     * @param eventType The event type to notify.
+     * @param payloadEntries The payload entries to use for the notification message.
      * @param deliveryMethod The delivery method.
-     * 
-     * @throws HpcException
+     * @return If the notification was delivered successfully, or false otherwise.
      */
-    public void sendNotification(HpcEvent event, 
-    		                     HpcNotificationDeliveryMethod deliveryMethod) 
-    		                    throws HpcException;
+    public boolean sendNotification(String userId, HpcEventType eventType, 
+                                    List<HpcEventPayloadEntry> payloadEntries,
+    		                        HpcNotificationDeliveryMethod deliveryMethod);
     
     /**
-     * Create delivery receipts for this event and delete it.
+     * Create a notification delivery receipt for this event.
      *
-     * @param event The notification event.
-     * 
-     * @throws HpcException
+     * @param userId The user ID.
+     * @param eventId The event ID.
+     * @param deliveryMethod The delivery method.
+     * @param deliveryStatus The delivery status.
      */
-    public void createDeliveryReceipts(HpcEvent event) throws HpcException;
+    public void createNotificationDeliveryReceipt(String userId, int eventId, 
+    		                                      HpcNotificationDeliveryMethod deliveryMethod,
+    		                                      boolean deliveryStatus);
+    
+    /**
+     * Archive an event. Move it from the active table to the history table.
+     *
+     * @param event The event to archive
+     */
+    public void archiveEvent(HpcEvent event);
     
     /**
      * Add a data transfer download completed event.
      *
      * @param userId The user ID.
      * @param dataTransferRequestId The data transfer request ID.
+     * @param dataTransferDownloadStatus The data transfer download status.
      * 
      * @throws HpcException
      */
-    public void addDataTransferDownloadCompletedEvent(String userId, String dataTransferRequestId) 
-    		                                         throws HpcException;
-    
-
+    public void addDataTransferDownloadCompletedEvent(
+    		       String userId, String dataTransferRequestId,
+    		       HpcDataTransferDownloadStatus dataTransferDownloadStatus) 
+    		       throws HpcException;
 }
 
  

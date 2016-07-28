@@ -10,8 +10,11 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.domain.notification.HpcEvent;
+import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
+import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.util.List;
 
 /**
  * <p>
@@ -27,10 +30,14 @@ public interface HpcNotificationSender
     /**
      * Send a notification.
      *
-     * @param event The event to notify.
+     * @param userId The user to send the notification to.
+     * @param eventType The event type to notify.
+     * @param payloadEntries The payload entries to use for the notification message.
      * @throws HpcException if the delivery failed.
      */
-    public void sendNotification(HpcEvent event) throws HpcException;
+    public void sendNotification(String userId, HpcEventType eventType, 
+    		                     List<HpcEventPayloadEntry> payloadEntries) 
+    		                    throws HpcException;
 }
 
  
