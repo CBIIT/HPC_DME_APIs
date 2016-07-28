@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
@@ -261,17 +262,16 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     			ldapAuthentication ? 
     			    securityService.authenticate(userName, password) : false;
     			    		
-    	// Generate an authentication token.
-        HpcAuthenticationTokenClaims authenticationTokenClaims = new HpcAuthenticationTokenClaims();
-        authenticationTokenClaims.setUserName(userName);
-        authenticationTokenClaims.setPassword(password);
-        authenticationTokenClaims.setUserAuthenticated(userAuthenticated);
-        authenticationTokenClaims.setLdapAuthentication(ldapAuthentication);
-    	String authenticatioToken = securityService.createAuthenticationToken(authenticationTokenClaims);
+//    	// Generate an authentication token.
+//        HpcAuthenticationTokenClaims authenticationTokenClaims = new HpcAuthenticationTokenClaims();
+//        authenticationTokenClaims.setUserName(userName);
+//        authenticationTokenClaims.setPassword(password);
+//        authenticationTokenClaims.setUserAuthenticated(userAuthenticated);
+//        authenticationTokenClaims.setLdapAuthentication(ldapAuthentication);
+//    	String authenticatioToken = securityService.createAuthenticationToken(authenticationTokenClaims);
     	
         // Set the request invoker.
-    	return setRequestInvoker(userName, password, userAuthenticated, ldapAuthentication, 
-    			                 authenticatioToken);   
+    	return setRequestInvoker(userName, password, userAuthenticated, ldapAuthentication, null);    
     }
     
     public HpcAuthenticationResponseDTO authenticate(String authenticationToken) 
@@ -288,8 +288,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	return setRequestInvoker(authenticationTokenClaims.getUserName(), 
     			                 authenticationTokenClaims.getPassword(), 
     			                 authenticationTokenClaims.getUserAuthenticated(), 
-    			                 authenticationTokenClaims.getLdapAuthentication(), 
-    			                 authenticationToken); 	
+    			                 authenticationTokenClaims.getLdapAuthentication(),
+    			                 authenticationTokenClaims.getDataManagementAccount()); 	
     }
     
     @Override
@@ -403,8 +403,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     private HpcAuthenticationResponseDTO setRequestInvoker(
     		   String userName, String password,
     		   boolean userAuthenticated,
-    		   boolean ldapAuthentication, 
-    		   String authenticationToken) throws HpcException
+    		   boolean ldapAuthentication,
+    		   HpcDataManagementAccount dmAccount) throws HpcException
     {
 		// Get the HPC user.
 		HpcUser user = null;
@@ -443,16 +443,34 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		// Prepare and return a response DTO.
 		HpcAuthenticationResponseDTO authenticationResponse = new HpcAuthenticationResponseDTO();
 		authenticationResponse.setAuthenticated(ldapAuthentication ? userAuthenticated : true);	
-		authenticationResponse.setToken(authenticationToken);
+
+		HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
+		if(requestInvoker.getDataManagementAuthenticatedToken() == null && dmAccount != null)
+			requestInvoker.setDataManagementAuthenticatedToken(dataManagementService.getProxyManagementAccount(dmAccount));
+		
 		authenticationResponse.setUserRole(
 				      user.getDataManagementAccount() != null ? 
 				      dataManagementService.getUserRole(user.getDataManagementAccount().getUsername()) : 
 				      HpcUserRole.NOT_REGISTERED);
-    	
+    	// Generate an authentication token.
+        HpcAuthenticationTokenClaims authenticationTokenClaims = new HpcAuthenticationTokenClaims();
+        authenticationTokenClaims.setUserName(userName);
+        authenticationTokenClaims.setPassword(password);
+        authenticationTokenClaims.setUserAuthenticated(userAuthenticated);
+        authenticationTokenClaims.setLdapAuthentication(ldapAuthentication);
+        if(dmAccount == null)
+        	dmAccount = dataManagementService.getHpcDataManagementAccount(requestInvoker.getDataManagementAuthenticatedToken());
+        authenticationTokenClaims.setDataManagementAccount(dmAccount);
+        String authenticationToken = securityService.createAuthenticationToken(authenticationTokenClaims);
+
+    	authenticationResponse.setToken(authenticationToken);
+		
     	// Update the request invoker instance.
-		HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
+		
 		requestInvoker.setAuthenticationToken(authenticationToken);
 		requestInvoker.setUserRole(authenticationResponse.getUserRole());
+		if(requestInvoker.getDataManagementAuthenticatedToken() == null)
+			requestInvoker.setDataManagementAuthenticatedToken(dataManagementService.getProxyManagementAccount(dmAccount));
 		
 		return authenticationResponse;
     }    

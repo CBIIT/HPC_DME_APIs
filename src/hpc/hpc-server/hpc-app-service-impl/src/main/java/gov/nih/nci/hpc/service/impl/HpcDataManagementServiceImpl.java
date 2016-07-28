@@ -26,8 +26,10 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
@@ -631,6 +633,18 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	return dataManagementProxy.getDataObjectMetadata(getAuthenticatedToken(),
                                                          path);
     }
+    
+    @Override
+    public HpcDataManagementAccount getHpcDataManagementAccount(Object irodsAccount) throws HpcException
+    {
+   		return dataManagementProxy.getHpcDataManagementAccount(irodsAccount);
+    }
+    
+    @Override
+    public Object getProxyManagementAccount(HpcDataManagementAccount irodsAccount) throws HpcException
+    {
+   		return dataManagementProxy.getProxyManagementAccount(irodsAccount);
+    }  
     
     @Override
     public HpcUserRole getUserRole(String username) throws HpcException

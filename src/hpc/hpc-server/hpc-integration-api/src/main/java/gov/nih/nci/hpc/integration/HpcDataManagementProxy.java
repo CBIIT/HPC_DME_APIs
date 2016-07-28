@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -24,6 +25,7 @@ import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
+
 
 /**
  * <p>
@@ -50,6 +52,23 @@ public interface HpcDataManagementProxy
     public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount,
     		                   boolean ldapAuthenticated) 
     		                  throws HpcException;
+
+    /**
+     * Create HPC data management account from proxy account object. 
+     * This is to cache proxy data management account for better performance
+     * @param proxyAccount
+     * @return HpcDataManagementAccount to tokenize 
+     * @throws HpcException
+     */
+    public HpcDataManagementAccount getHpcDataManagementAccount(Object proxyAccount) throws HpcException;
+    
+    /**
+     * Create Proxy data management account from cached HPC data management account 
+     * @param datamanagementAccount
+     * @return
+     * @throws HpcException
+     */
+    public Object getProxyManagementAccount(HpcDataManagementAccount datamanagementAccount) throws HpcException;
     
     /**
      * Close iRODS connection of an account.

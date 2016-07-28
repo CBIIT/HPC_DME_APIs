@@ -20,6 +20,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
 import gov.nih.nci.hpc.domain.user.HpcGroupUserResponse;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.DataNotFoundException;
 import org.irods.jargon.core.exception.DuplicateDataException;
 import org.irods.jargon.core.exception.InvalidGroupException;
@@ -106,6 +108,33 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	return irodsConnection.authenticate(dataManagementAccount, 
     			                            ldapAuthenticated);
     }
+    
+    public HpcDataManagementAccount getHpcDataManagementAccount(Object irodsAccount) throws HpcException
+    {
+    	try
+    	{
+    		return irodsConnection.getHpcDataManagementAccount((IRODSAccount)irodsAccount);
+    	} catch (ClassCastException e)
+    	{
+	        throw new HpcException("Failed to get Data management account from IRODSAccount: " + 
+                    e.getMessage(),
+                    HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+    	}
+    	
+    }
+    
+    public Object getProxyManagementAccount(HpcDataManagementAccount irodsAccount) throws HpcException
+    {
+    	try
+    	{
+    		return irodsConnection.getIRODSAccount(irodsAccount);
+		} catch(JargonException e) {
+		        throw new HpcException("Failed to get iRODS account: " + 
+		                               e.getMessage(),
+		                               HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} 
+    }
+    
     
     @Override
     public void disconnect(Object authenticatedToken)
