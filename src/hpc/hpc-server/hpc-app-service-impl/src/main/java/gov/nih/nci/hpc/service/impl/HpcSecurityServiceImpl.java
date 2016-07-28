@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
@@ -39,6 +40,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import javax.xml.bind.annotation.XmlElement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +67,17 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	private static final String TOKEN_PASSWORD = "Password";
 	private static final String TOKEN_LDAP_AUTHENTICATION = "LDAPAuthentication";
 	private static final String TOKEN_USER_AUTHENTICATED = "UserAuthenticated";
+	
+	private static final String TOKEN_DM_HOST = "Host";
+	private static final String TOKEN_DM_PORT = "Port";
+	private static final String TOKEN_DM_USER_ZONE = "UserZone";
+	private static final String TOKEN_DM_USER_NAME = "UserName";
+	private static final String TOKEN_DM_PROXY_ZONE = "ProxyZone";
+	private static final String TOKEN_DM_PROXY_NAME = "ProxyName";
+	private static final String TOKEN_DM_PASSWORD = "DM_Password";
+	private static final String TOKEN_DM_DEFAULT_RESC_STORAGE = "DefaultStorageResource";
+	private static final String TOKEN_DM_HOME_DIRECTORY = "HomeDirectory";
+	private static final String TOKEN_DM_AUTH_SCHEME = "AuthenticationScheme";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -302,6 +316,18 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	claims.put(TOKEN_LDAP_AUTHENTICATION, authenticationTokenClaims.getLdapAuthentication());
     	claims.put(TOKEN_USER_AUTHENTICATED, authenticationTokenClaims.getUserAuthenticated());
     	
+    	claims.put(TOKEN_DM_AUTH_SCHEME, authenticationTokenClaims.getDataManagementAccount().getAuthenticationScheme());
+    	claims.put(TOKEN_DM_HOST, authenticationTokenClaims.getDataManagementAccount().getHost());
+    	claims.put(TOKEN_DM_PORT, authenticationTokenClaims.getDataManagementAccount().getPort());
+    	claims.put(TOKEN_DM_USER_ZONE, authenticationTokenClaims.getDataManagementAccount().getUserZone());
+    	claims.put(TOKEN_DM_USER_NAME, authenticationTokenClaims.getDataManagementAccount().getUserName());
+    	claims.put(TOKEN_DM_PROXY_ZONE, authenticationTokenClaims.getDataManagementAccount().getProxyZone());
+    	claims.put(TOKEN_DM_PROXY_NAME, authenticationTokenClaims.getDataManagementAccount().getProxyName());
+    	claims.put(TOKEN_DM_PASSWORD, authenticationTokenClaims.getDataManagementAccount().getPassword());
+    	claims.put(TOKEN_DM_DEFAULT_RESC_STORAGE, authenticationTokenClaims.getDataManagementAccount().getDefaultStorageResource());
+    	claims.put(TOKEN_DM_HOME_DIRECTORY, authenticationTokenClaims.getDataManagementAccount().getHomeDirectory());
+    	
+    	
     	// Calculate the expiration date.
     	Calendar tokenExpiration = Calendar.getInstance();
     	tokenExpiration.add(Calendar.MINUTE, authenticationTokenExpirationPeriod);
@@ -327,6 +353,18 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	     tokenClaims.setLdapAuthentication(jwsClaims.getBody().get(TOKEN_LDAP_AUTHENTICATION, Boolean.class));
     	     tokenClaims.setUserAuthenticated(jwsClaims.getBody().get(TOKEN_USER_AUTHENTICATED, Boolean.class));
     	     
+    	     HpcDataManagementAccount account = new HpcDataManagementAccount();
+    	     account.setAuthenticationScheme(jwsClaims.getBody().get(TOKEN_DM_AUTH_SCHEME, String.class));
+    	     account.setHost(jwsClaims.getBody().get(TOKEN_DM_HOST, String.class));
+    	     account.setPort(jwsClaims.getBody().get(TOKEN_DM_PORT, Integer.class));
+    	     account.setUserZone(jwsClaims.getBody().get(TOKEN_DM_USER_ZONE, String.class));
+    	     account.setUserName(jwsClaims.getBody().get(TOKEN_DM_USER_NAME, String.class));
+    	     account.setProxyZone(jwsClaims.getBody().get(TOKEN_DM_PROXY_ZONE, String.class));
+    	     account.setProxyName(jwsClaims.getBody().get(TOKEN_DM_PROXY_NAME, String.class));
+    	     account.setPassword(jwsClaims.getBody().get(TOKEN_DM_PASSWORD, String.class));
+    	     account.setDefaultStorageResource(jwsClaims.getBody().get(TOKEN_DM_DEFAULT_RESC_STORAGE, String.class));
+    	     account.setHomeDirectory(jwsClaims.getBody().get(TOKEN_DM_HOME_DIRECTORY, String.class));
+    	     tokenClaims.setDataManagementAccount(account);
     	     return tokenClaims;
 
     	} catch(SignatureException se) {

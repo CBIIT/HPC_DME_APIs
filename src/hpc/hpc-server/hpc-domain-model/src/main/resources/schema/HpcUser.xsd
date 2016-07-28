@@ -80,8 +80,25 @@
 				<xsd:element name="password" type="xsd:string" />
 				<xsd:element name="ldapAuthentication" type="xsd:boolean" />
 				<xsd:element name="userAuthenticated" type="xsd:boolean" />
+				<xsd:element name="dataManagementAccount" type="hpc-domain-model:HpcDataManagementAccount" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
 
+	<xsd:complexType name="HpcDataManagementAccount">
+		<xsd:sequence>
+			<xsd:element name="host" type="xsd:string" />
+			<xsd:element name="port" type="xsd:int" />
+			<xsd:element name="userZone" type="xsd:string" />
+			<xsd:element name="userName" type="xsd:string" />
+			<xsd:element name="proxyZone" type="xsd:string" />
+			<xsd:element name="proxyName" type="xsd:string" />
+			<xsd:element name="password" type="xsd:string" />
+			<xsd:element name="defaultStorageResource" type="xsd:string" />
+			<xsd:element name="homeDirectory" type="xsd:string" />
+			<xsd:element name="authenticationScheme" type="xsd:string" />
+		    <xsd:element name="authenticatedRoles" type="xsd:string" 
+			                 minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
 </xsd:schema>
