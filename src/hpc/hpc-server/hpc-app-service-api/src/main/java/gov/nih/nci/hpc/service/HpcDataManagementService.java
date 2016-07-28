@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
@@ -380,6 +381,23 @@ public interface HpcDataManagementService
      * @throws HpcException
      */
     public HpcGroupResponse setGroup(HpcGroup group, List<String> addUserId, List<String> removeUserId) throws HpcException;
+    
+    /**
+     * Create HPC data management account from proxy account object. 
+     * This is to cache proxy data management account for better performance
+     * @param proxyAccount
+     * @return HpcDataManagementAccount to tokenize 
+     * @throws HpcException
+     */
+    public HpcDataManagementAccount getHpcDataManagementAccount(Object proxyAccount) throws HpcException;
+    
+    /**
+     * Create Proxy data management account from cached HPC data management account 
+     * @param managementAccount
+     * @return
+     * @throws HpcException
+     */
+    public Object getProxyManagementAccount(HpcDataManagementAccount managementAccount) throws HpcException;
     
 }
 
