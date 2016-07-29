@@ -328,7 +328,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			event.getPayloadEntries().addAll(fromJSON(encryptor.decrypt(rs.getBytes("PAYLOAD"))));
 			
         	Calendar created = new GregorianCalendar();
-        	created.setTime(rs.getDate("CREATED"));
+        	created.setTime(rs.getTimestamp("CREATED"));
         	event.setCreated(created);
             
             return event;

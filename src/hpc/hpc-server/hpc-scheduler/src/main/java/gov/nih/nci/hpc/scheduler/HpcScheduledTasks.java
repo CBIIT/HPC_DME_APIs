@@ -130,8 +130,7 @@ public class HpcScheduledTasks
     /**
      * Process Events Task.
      * 
-     */    
-    /*
+     */  
     @Scheduled(fixedDelay = 30000)
     private void processEvents()
     {
@@ -148,7 +147,7 @@ public class HpcScheduledTasks
         	       dataManagementBusService.closeConnection();
         	       logger.info("Completed Process Events Task...");	
         }
-    }*/
+    }
 }
 
  
