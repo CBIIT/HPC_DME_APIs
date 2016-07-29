@@ -204,12 +204,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		// Cleanup the file if the transfer is no longer in-progress.
     		if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
     		   dataTransferService.cleanupDataObjectDownloadFile(dataObjectDownloadCleanup);
-    		   /*
     		   notificationService.addDataTransferDownloadCompletedEvent(
-    		                dataObjectDownloadCleanup.getUserId(), 
-    		                dataObjectDownloadCleanup.getDataTransferRequestId(),
-    		                dataTransferDownloadStatus);
-    		                */
+    		                          dataObjectDownloadCleanup.getUserId(), 
+    		                          dataObjectDownloadCleanup.getDataTransferRequestId(),
+    		                          dataTransferDownloadStatus);
     		}
     	}
     }
