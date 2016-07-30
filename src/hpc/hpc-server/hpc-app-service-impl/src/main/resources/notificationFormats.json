@@ -2,12 +2,14 @@
 	"notificationFormats": [  
     	{  
          "eventType" : "DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE",
-         "subjectFormat" : "Upload in temp archive",
+         "subjectFormat" : "HPC Data Upload received in temporary archive",
          "subjectArguments" : [],
-         "textFormat" : "Data transfer file in temp archive. request id = %1$s",
+         "textFormat" : "Your data upload request is stored in temporary archive. 
+                        It will post to permanent archive soon. \n
+                        Data path: %1$s",
          "textArguments" : [
          	{  
-             "payloadEntryAttribute" : "request_id",
+             "payloadEntryAttribute" : "DATA_OBJECT_PATH",
              "index" : "0"
 			}
          ]

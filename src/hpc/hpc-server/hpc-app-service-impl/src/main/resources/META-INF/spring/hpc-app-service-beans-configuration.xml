@@ -81,4 +81,5 @@
 	<bean id="hpcNotificationService" class="gov.nih.nci.hpc.service.impl.HpcNotificationServiceImpl">
 		<constructor-arg ref="hpcNotificationSenders" index="0" />
 	</bean>
+	<bean id="hpcEventService" class="gov.nih.nci.hpc.service.impl.HpcEventServiceImpl" />
 </beans>
