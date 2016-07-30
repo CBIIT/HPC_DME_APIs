@@ -40,5 +40,6 @@
 	<osgi:service ref="hpcDataObjectDownloadCleanupDAO" 
 	              interface="gov.nih.nci.hpc.dao.HpcDataObjectDownloadCleanupDAO" />
 	<osgi:service ref="hpcNotificationDAO" interface="gov.nih.nci.hpc.dao.HpcNotificationDAO" />
+	<osgi:service ref="hpcEventDAO" interface="gov.nih.nci.hpc.dao.HpcEventDAO" />
 
 </beans>
