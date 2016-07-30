@@ -12,6 +12,30 @@
 			}
          ]
         },
+    	{  
+         "eventType" : "DATA_TRANSFER_UPLOAD_ARCHIVED",
+         "subjectFormat" : "HPC Data Object Registration Completed Successfully",
+         "subjectArguments" : [],
+         "textFormat" : "Your data registration completed successfully. \nData path: %1$s",
+         "textArguments" : [
+         	{  
+             "payloadEntryAttribute" : "DATA_OBJECT_PATH",
+             "index" : "0"
+			}
+         ]
+        },
+        {  
+         "eventType" : "DATA_TRANSFER_UPLOAD_FAILED",
+         "subjectFormat" : "HPC Data Object Registration Failed",
+         "subjectArguments" : [],
+         "textFormat" : "Your data registration failed. \nData path: %1$s",
+         "textArguments" : [
+         	{  
+             "payloadEntryAttribute" : "DATA_OBJECT_PATH",
+             "index" : "0"
+			}
+         ]
+        },
         {  
          "eventType" : "DATA_TRANSFER_DOWNLOAD_COMPLETED",
          "subjectFormat" : "HPC Data Transfer Download Request Completed: [%1$s]",
@@ -21,13 +45,20 @@
              "index" : "0"
             }
          ],
-         "textFormat" : "Your Request completed.\n The request status is %1$s",
-         "textArguments" : [
+         "textFormat" : "Your download request completed.",
+         "textArguments" : []
+        },
+        {  
+         "eventType" : "DATA_TRANSFER_DOWNLOAD_FAILED",
+         "subjectFormat" : "HPC Data Transfer Download Request Failed: [%1$s]",
+         "subjectArguments" : [
          	{  
-             "payloadEntryAttribute" : "DATA_TRANSFER_DOWNLOAD_STATUS",
+             "payloadEntryAttribute" : "DATA_TRANSFER_REQUEST_ID",
              "index" : "0"
             }
-         ]
+         ],
+         "textFormat" : "Your download request failed.",
+         "textArguments" : []
         },
     ]
 }
