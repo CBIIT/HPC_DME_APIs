@@ -1,5 +1,5 @@
 /**
- * HpcSecurityService.java
+ * HpcNotificationService.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,8 +10,6 @@
 
 package gov.nih.nci.hpc.service;
 
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
-import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
@@ -80,15 +78,6 @@ public interface HpcNotificationService
     		                                                      throws HpcException;
     
     /**
-     * Get all (active) events.
-     *
-     * @return List<HpcEvent>
-     * 
-     * @throws HpcException
-     */
-    public List<HpcEvent> getEvents() throws HpcException;
-    
-    /**
      * Notify a user of an event.
      *
      * @param userId The user to send the notification to.
@@ -112,27 +101,6 @@ public interface HpcNotificationService
     public void createNotificationDeliveryReceipt(String userId, int eventId, 
     		                                      HpcNotificationDeliveryMethod deliveryMethod,
     		                                      boolean deliveryStatus);
-    
-    /**
-     * Archive an event. Move it from the active table to the history table.
-     *
-     * @param event The event to archive
-     */
-    public void archiveEvent(HpcEvent event);
-    
-    /**
-     * Add a data transfer download completed event.
-     *
-     * @param userId The user ID.
-     * @param dataTransferRequestId The data transfer request ID.
-     * @param dataTransferDownloadStatus The data transfer download status.
-     * 
-     * @throws HpcException
-     */
-    public void addDataTransferDownloadCompletedEvent(
-    		       String userId, String dataTransferRequestId,
-    		       HpcDataTransferDownloadStatus dataTransferDownloadStatus) 
-    		       throws HpcException;
 }
 
  
