@@ -24,6 +24,7 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
+import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
@@ -73,6 +74,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	@Autowired
     private HpcNotificationService notificationService = null;
 	
+	@Autowired
+    private HpcEventService eventService = null;
+	
     // The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -104,7 +108,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
         // TODO: Make this AOP. 
     	securityService.setSystemRequestInvoker();
     	
-    	// Iterate through the data objects that their data transfer is in-progress
+    	// Iterate through the data objects that their data transfer is in-progress.
     	for(HpcDataObject dataObject : dataManagementService.getDataObjectsInProgress()) {
     		String path = dataObject.getAbsolutePath();
     		try {
@@ -118,16 +122,34 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		        		               systemGeneratedMetadata.getDataTransferType(),
     		        		               systemGeneratedMetadata.getDataTransferRequestId());
     			 
-    		     if(dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED) ||
-    		        dataTransferStatus.equals(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE)) {
-    		    	// Data transfer completed successfully. Update the system metadata.
-     			    setDataTransferUploadStatus(path, dataTransferStatus);
-    		    	logger.info("Data transfer completed [" + dataTransferStatus + "]: " + path);
-    		    	
-    		     } else if(dataTransferStatus.equals(HpcDataTransferUploadStatus.FAILED)) {
-     		    	       // Data transfer failed. Remove the data object
-     		    	       dataManagementService.delete(path);
-     		    	       logger.info("Data transfer failed: " + path);
+    			 switch(dataTransferStatus) {
+    			        case ARCHIVED:
+    			             // Data transfer completed successfully into Archive. 
+    			        	 // Update the system metadata and send event.
+    	     			     setDataTransferUploadStatus(path, dataTransferStatus);
+    	     			     eventService.addDataTransferUploadArchivedEvent(
+    	     			    		         systemGeneratedMetadata.getRegistrarId(), path);
+    	    		         logger.info("Data transfer completed [" + dataTransferStatus + "]: " + path);
+    	    		         break;
+    	    		         
+    			        case IN_TEMPORARY_ARCHIVE:
+	   			             // Data transfer completed successfully into temporary archive. 
+	   			        	 // Update the system metadata and send event.
+	   	     			     setDataTransferUploadStatus(path, dataTransferStatus);
+	   	     			     eventService.addDataTransferUploadInTemporaryArchiveEvent(
+	   	     			    		         systemGeneratedMetadata.getRegistrarId(), path);
+	   	    		         logger.info("Data transfer completed [" + dataTransferStatus + "]: " + path);
+	   	    		         break;
+	   	    		         
+    			        case FAILED:
+    			             // Data transfer failed. Remove the data object.
+  		    	             dataManagementService.delete(path);
+  		    	             logger.info("Data transfer failed: " + path);
+  		    	             break;
+  		    	             
+  		    	        default:
+  		    	        	 // Should never be here.
+  		    	        	 logger.error("Unexpected data transfer status: " + dataTransferStatus);
     		     }
     		     
     		} catch(HpcException e) {
@@ -204,10 +226,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		// Cleanup the file if the transfer is no longer in-progress.
     		if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
     		   dataTransferService.cleanupDataObjectDownloadFile(dataObjectDownloadCleanup);
-    		   notificationService.addDataTransferDownloadCompletedEvent(
-    		                          dataObjectDownloadCleanup.getUserId(), 
-    		                          dataObjectDownloadCleanup.getDataTransferRequestId(),
-    		                          dataTransferDownloadStatus);
+    		   eventService.addDataTransferDownloadCompletedEvent(
+    		                       dataObjectDownloadCleanup.getUserId(), 
+    		                       dataObjectDownloadCleanup.getDataTransferRequestId(),
+    		                       dataTransferDownloadStatus);
     		}
     	}
     }
@@ -216,7 +238,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     public void processEvents() throws HpcException
     {
     	// Get and process the pending notification events.
-    	for(HpcEvent event : notificationService.getEvents()) {
+    	for(HpcEvent event : eventService.getEvents()) {
     		// Notify all users associated with this event.
     		try {
     		     for(String userId : event.getUserIds()) {
@@ -249,7 +271,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	    		}
     		     
     		} finally {
-    			       notificationService.archiveEvent(event);
+    			       eventService.archiveEvent(event);
     		}
     	}
     }

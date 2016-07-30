@@ -46,5 +46,7 @@
 		            interface="gov.nih.nci.hpc.service.HpcDataManagementService" />
 	<osgi:reference id="hpcNotificationService"
 		            interface="gov.nih.nci.hpc.service.HpcNotificationService" />
+	<osgi:reference id="hpcEventService"
+		            interface="gov.nih.nci.hpc.service.HpcEventService" />
 
 </beans>
