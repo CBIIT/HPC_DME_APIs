@@ -131,7 +131,7 @@ public class HpcScheduledTasks
      * Process Events Task.
      * 
      */  
-    @Scheduled(fixedDelay = 30000)
+    @Scheduled(fixedDelay = 60000)
     private void processEvents()
     {
         logger.info("Starting Process Events Task...");
