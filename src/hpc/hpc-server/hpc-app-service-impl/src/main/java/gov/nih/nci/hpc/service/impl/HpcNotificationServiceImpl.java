@@ -288,7 +288,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
      * Instantiate a payload entry object.
      * 
      * @param attribute The payload entry attribute.
-     * @param value The payload entry value
+     * @param value The payload entry value.
      */
     
     private HpcEventPayloadEntry toPayloadEntry(String attribute, String value)
@@ -296,7 +296,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
 		// Construct the event.
 		HpcEventPayloadEntry payloadEntry = new HpcEventPayloadEntry();
 		payloadEntry.setAttribute(attribute);
-		payloadEntry.setValue(attribute);
+		payloadEntry.setValue(value);
 		
 		return payloadEntry;
     }
