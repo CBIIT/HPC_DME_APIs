@@ -4,9 +4,7 @@
          "eventType" : "DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE",
          "subjectFormat" : "HPC Data Upload received in temporary archive",
          "subjectArguments" : [],
-         "textFormat" : "Your data upload request is stored in temporary archive. 
-                        It will post to permanent archive soon. \n
-                        Data path: %1$s",
+         "textFormat" : "Your data upload request is stored in temporary archive. \nIt will post to permanent archive soon. \nData path: %1$s",
          "textArguments" : [
          	{  
              "payloadEntryAttribute" : "DATA_OBJECT_PATH",
