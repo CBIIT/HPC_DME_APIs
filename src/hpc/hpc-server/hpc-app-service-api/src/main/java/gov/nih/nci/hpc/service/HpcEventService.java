@@ -10,7 +10,6 @@
 
 package gov.nih.nci.hpc.service;
 
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -48,14 +47,22 @@ public interface HpcEventService
      *
      * @param userId The user ID.
      * @param dataTransferRequestId The data transfer request ID.
-     * @param dataTransferDownloadStatus The data transfer download status.
      * 
      * @throws HpcException
      */
-    public void addDataTransferDownloadCompletedEvent(
-    		       String userId, String dataTransferRequestId,
-    		       HpcDataTransferDownloadStatus dataTransferDownloadStatus) 
-    		       throws HpcException;
+    public void addDataTransferDownloadCompletedEvent(String userId, String dataTransferRequestId) 
+    		                                         throws HpcException;
+    
+    /**
+     * Add a data transfer download failed event.
+     *
+     * @param userId The user ID.
+     * @param dataTransferRequestId The data transfer request ID.
+     * 
+     * @throws HpcException
+     */
+    public void addDataTransferDownloadFailedEvent(String userId, String dataTransferRequestId) 
+    		                                      throws HpcException;
     
     /**
      * Add a data transfer upload in temporary archive event.
@@ -78,6 +85,17 @@ public interface HpcEventService
      */
     public void addDataTransferUploadArchivedEvent(String userId, String path) 
                                                   throws HpcException;
+    
+    /**
+     * Add a data transfer upload failed event.
+     *
+     * @param userId The user ID.
+     * @param path The data object path.
+     * 
+     * @throws HpcException
+     */
+    public void addDataTransferUploadFailedEvent(String userId, String path) 
+                                                throws HpcException;
 }
 
  

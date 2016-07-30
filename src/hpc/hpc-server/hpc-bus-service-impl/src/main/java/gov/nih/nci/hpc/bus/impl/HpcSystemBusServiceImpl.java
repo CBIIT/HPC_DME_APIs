@@ -124,33 +124,26 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			 
     			 switch(dataTransferStatus) {
     			        case ARCHIVED:
-    			             // Data transfer completed successfully into Archive. 
-    			        	 // Update the system metadata and send event.
-    	     			     setDataTransferUploadStatus(path, dataTransferStatus);
-    	     			     eventService.addDataTransferUploadArchivedEvent(
-    	     			    		         systemGeneratedMetadata.getRegistrarId(), path);
-    	    		         logger.info("Data transfer completed [" + dataTransferStatus + "]: " + path);
-    	    		         break;
-    	    		         
     			        case IN_TEMPORARY_ARCHIVE:
-	   			             // Data transfer completed successfully into temporary archive. 
-	   			        	 // Update the system metadata and send event.
-	   	     			     setDataTransferUploadStatus(path, dataTransferStatus);
-	   	     			     eventService.addDataTransferUploadInTemporaryArchiveEvent(
-	   	     			    		         systemGeneratedMetadata.getRegistrarId(), path);
-	   	    		         logger.info("Data transfer completed [" + dataTransferStatus + "]: " + path);
-	   	    		         break;
+    			             // Data transfer completed successfully into Archive. 
+    			             // Update the system metadata and add an event.
+    	     			     setDataTransferUploadStatus(path, dataTransferStatus);
+    	    		         break;
 	   	    		         
     			        case FAILED:
     			             // Data transfer failed. Remove the data object.
   		    	             dataManagementService.delete(path);
-  		    	             logger.info("Data transfer failed: " + path);
+  		    	             logger.error("Data transfer failed: " + path);
   		    	             break;
   		    	             
   		    	        default:
-  		    	        	 // Should never be here.
-  		    	        	 logger.error("Unexpected data transfer status: " + dataTransferStatus);
+  		    	        	 // Transfer is still in progress.
+  		    	        	 continue;
     		     }
+    			 
+    			 // Data transfer upload completed (successfully or failed). Add an event.
+    			 addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
+		                                    dataTransferStatus);
     		     
     		} catch(HpcException e) {
     			    logger.error("Failed to process data transfer upload update:" + path, e);
@@ -167,7 +160,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	// Use system account to perform this service.
     	securityService.setSystemRequestInvoker();
     	
-    	// Iterate through the data objects that their data is in temporary archive
+    	// Iterate through the data objects that their data is in temporary archive.
     	for(HpcDataObject dataObject : dataManagementService.getDataObjectsInTemporaryArchive()) {
     		String path = dataObject.getAbsolutePath();
     		HpcDataObjectSystemGeneratedMetadata systemGeneratedMetadata = null;
@@ -176,7 +169,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			 systemGeneratedMetadata = 
     			       dataManagementService.getDataObjectSystemGeneratedMetadata(path);
     			 
-    			 // Get an input stream to the data object in the temporary archive.
+    			 // Get the file associated with the data object in the temporary archive.
     			 File file = dataTransferService.getArchiveFile(
     					         systemGeneratedMetadata.getDataTransferType(),
     					         systemGeneratedMetadata.getArchiveLocation().getFileId());
@@ -199,6 +192,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  			    			                 uploadResponse.getDataTransferRequestId(), 
  			    			                 uploadResponse.getDataTransferStatus(),
  			    			                 uploadResponse.getDataTransferType()); 
+ 			     
+ 			     // Data transfer upload completed (successfully or failed). Add an event.
+    			 addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
+    					                    uploadResponse.getDataTransferStatus());
  			     
     		} catch(HpcException e) {
     			    logger.error("Failed to transfer data from temporary archive:" + path, e);
@@ -223,13 +220,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			                      dataObjectDownloadCleanup.getDataTransferType(), 
     			                      dataObjectDownloadCleanup.getDataTransferRequestId());
     		
-    		// Cleanup the file if the transfer is no longer in-progress.
+    		// Cleanup the file if the transfer is no longer in-progress, and add an event.
     		if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
     		   dataTransferService.cleanupDataObjectDownloadFile(dataObjectDownloadCleanup);
-    		   eventService.addDataTransferDownloadCompletedEvent(
-    		                       dataObjectDownloadCleanup.getUserId(), 
-    		                       dataObjectDownloadCleanup.getDataTransferRequestId(),
-    		                       dataTransferDownloadStatus);
+    		   addDataTransferDownloadEvent(dataObjectDownloadCleanup.getUserId(), 
+    				                        dataObjectDownloadCleanup.getDataTransferRequestId(),
+    				                        dataTransferDownloadStatus);
     		}
     	}
     }
@@ -344,7 +340,68 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		dataManagementService.updateDataObjectSystemGeneratedMetadata(
                                     path, null, null, dataTransferStatus, null);
 	}
+	
+    /** 
+     * add data transfer upload event.
+     * 
+     * @param userId The user ID.
+     * @param path The data object path.
+     * @param dataTransferStatus The data transfer upload status.
+     */
+	private void addDataTransferUploadEvent(String userId, String path,
+			                                HpcDataTransferUploadStatus dataTransferStatus) 
+	{
+		try {
+			 switch(dataTransferStatus) {
+			        case ARCHIVED: 
+		                 eventService.addDataTransferUploadArchivedEvent(userId, path);
+		                 break;
+		                 
+			        case IN_TEMPORARY_ARCHIVE: 
+		                 eventService.addDataTransferUploadInTemporaryArchiveEvent(userId, path);
+		                 break;
+		                 
+			        case FAILED: 
+		                 eventService.addDataTransferUploadFailedEvent(userId, path);
+		                 break;
+		                 
+		            default: 
+		                 logger.error("Unexpected data transfer status: " + dataTransferStatus); 
+			 }
 
+		} catch(HpcException e) {
+			    logger.error("Failed to add a data transfer upload event", e);
+		}
+	}
+	
+    /** 
+     * add data transfer download event.
+     * 
+     * @param userId The user ID.
+     * @param dataTransferRequestId The data transfer request ID.
+     * @param dataTransferStatus The data transfer download status.
+     */
+	private void addDataTransferDownloadEvent(String userId, String dataTransferRequestId,
+			                                  HpcDataTransferDownloadStatus dataTransferStatus) 
+	{
+		try {
+			 switch(dataTransferStatus) {
+			        case COMPLETED: 
+		                 eventService.addDataTransferDownloadCompletedEvent(userId, dataTransferRequestId);
+		                 break;
+		                 
+			        case FAILED: 
+		                 eventService.addDataTransferDownloadFailedEvent(userId, dataTransferRequestId);
+		                 break;
+		                 
+		            default: 
+		                 logger.error("Unexpected data transfer status: " + dataTransferStatus); 
+			 }
+
+		} catch(HpcException e) {
+			    logger.error("Failed to add a data transfer download event", e);
+		}
+	}
 }
 
  

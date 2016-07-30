@@ -11,7 +11,6 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.dao.HpcEventDAO;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
@@ -44,8 +43,6 @@ public class HpcEventServiceImpl implements HpcEventService
     // Event payload entries attributes.
 	private static final String DATA_TRANSFER_REQUEST_ID_ATTRIBUTE = 
 			                    "DATA_TRANSFER_REQUEST_ID";
-	private static final String DATA_TRANSFER_DOWNLOAD_STATUS_ATTRIBUTE = 
-                                "DATA_TRANSFER_DOWNLOAD_STATUS";
 	private static final String DATA_OBJECT_PATH_ATTRIBUTE = 
                                 "DATA_OBJECT_PATH";
 	
@@ -105,48 +102,42 @@ public class HpcEventServiceImpl implements HpcEventService
     
     @Override
     public void addDataTransferDownloadCompletedEvent(
-    		       String userId, String dataTransferRequestId,
-    		       HpcDataTransferDownloadStatus dataTransferDownloadStatus) throws HpcException
+    		       String userId, String dataTransferRequestId) throws HpcException
     {
-    	// Construct the event.
-    	HpcEvent event = new HpcEvent();
-    	event.getUserIds().add(userId);
-    	event.setType(HpcEventType.DATA_TRANSFER_DOWNLOAD_COMPLETED);
-    	event.getPayloadEntries().add(toPayloadEntry(DATA_TRANSFER_REQUEST_ID_ATTRIBUTE, 
-    			                                     dataTransferRequestId));
-    	event.getPayloadEntries().add(toPayloadEntry(DATA_TRANSFER_DOWNLOAD_STATUS_ATTRIBUTE, 
-    			                                     dataTransferDownloadStatus.value()));
-
-    	// Persist to DB.
-    	addEvent(event);
+    	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_DOWNLOAD_COMPLETED,
+    			             dataTransferRequestId, null);
+    }
+    
+    @Override
+    public void addDataTransferDownloadFailedEvent(
+    		       String userId, String dataTransferRequestId) throws HpcException
+    {
+    	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_DOWNLOAD_FAILED,
+	                         dataTransferRequestId, null);
     }
     
     @Override
     public void addDataTransferUploadInTemporaryArchiveEvent(String userId, String path) 
     		                                                throws HpcException
     {
-    	// Construct the event.
-    	HpcEvent event = new HpcEvent();
-    	event.getUserIds().add(userId);
-    	event.setType(HpcEventType.DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE);
-    	event.getPayloadEntries().add(toPayloadEntry(DATA_OBJECT_PATH_ATTRIBUTE, path));
-
-    	// Persist to DB.
-    	addEvent(event);
+    	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE,
+                             null, path);
     }
     
     @Override
     public void addDataTransferUploadArchivedEvent(String userId, String path) 
     		                                      throws HpcException
     {
-    	// Construct the event.
-    	HpcEvent event = new HpcEvent();
-    	event.getUserIds().add(userId);
-    	event.setType(HpcEventType.DATA_TRANSFER_UPLOAD_ARCHIVED);
-    	event.getPayloadEntries().add(toPayloadEntry(DATA_OBJECT_PATH_ATTRIBUTE, path));
-
-    	// Persist to DB.
-    	addEvent(event);
+    	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_ARCHIVED,
+                             null, path);
+    }
+    
+    @Override
+    public void addDataTransferUploadFailedEvent(String userId, String path) 
+    		                                    throws HpcException
+    {
+    	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_FAILED,
+                             null, path);
     }
     
     //---------------------------------------------------------------------//
@@ -182,7 +173,6 @@ public class HpcEventServiceImpl implements HpcEventService
      * @param attribute The payload entry attribute.
      * @param value The payload entry value.
      */
-    
     private HpcEventPayloadEntry toPayloadEntry(String attribute, String value)
     {
 		// Construct the event.
@@ -192,5 +182,39 @@ public class HpcEventServiceImpl implements HpcEventService
 		
 		return payloadEntry;
     }
+    
+    /**
+     * Add a data transfer event.
+     * 
+     * @param userId The user ID.
+     * @param eventType The event type.
+     * @param dataTransferRequestId (Optional) The data transfer request ID.
+     * @param path (Optional) The data object path.
+     */
+    private void addDataTransferEvent(String userId, HpcEventType eventType, 
+    		                          String dataTransferRequestId, String path) throws HpcException
+	{
+		// Input Validation.
+		if(userId == null || eventType == null) {
+		   throw new HpcException("Invalid data transfer event input", 
+				                  HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		// Construct the event.
+		HpcEvent event = new HpcEvent();
+		event.getUserIds().add(userId);
+		event.setType(eventType);
+		if(dataTransferRequestId != null) {
+		   event.getPayloadEntries().add(toPayloadEntry(DATA_TRANSFER_REQUEST_ID_ATTRIBUTE, 
+			                                            dataTransferRequestId));
+		}
+		if(path != null) {
+		   event.getPayloadEntries().add(toPayloadEntry(DATA_OBJECT_PATH_ATTRIBUTE, path));
+		}
+	
+		// Persist to DB.
+		addEvent(event);
+	}
+
 }
 
