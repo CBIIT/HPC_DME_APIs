@@ -254,6 +254,27 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
+    public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries)
+    {
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: POST /dataObject/query" + metadataQueries);
+    	
+    	HpcDataObjectListDTO dataObjects = null;
+		try {
+			 dataObjects = dataManagementBusService.getDataObjects(metadataQueries);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /dataObject/query" + metadataQueries + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " getDataObjects" + metadataQueries);
+		
+		return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null, true);
+    }
+    
+    @Override
 	public Response downloadDataObject(String path,
                                        HpcDataObjectDownloadRequestDTO downloadRequest,
                                        MessageContext messageContext)
