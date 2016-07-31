@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
@@ -128,6 +129,18 @@ public interface HpcDataManagementRestService
 	public Response getDataObjects(
 			           @QueryParam("metadataQuery")
 			           List<HpcMetadataQueryParam> metadataQueries);
+	
+    /**
+     * POST Data objects query by metadata.
+     *
+     * @param metadataEntries A list of metadata entries to attach to the collection.
+     * @return Response The REST service response.
+     */
+	@POST
+	@Path("/dataObject/query")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries);
 
     /**
      * POST Download Data Object.
