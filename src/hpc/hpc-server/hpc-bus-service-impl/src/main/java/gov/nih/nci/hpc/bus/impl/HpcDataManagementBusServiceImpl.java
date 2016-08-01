@@ -229,7 +229,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   try {
     		    // Assign system account as an additional owner of the data-object.
    		        dataManagementService.assignSystemAccountPermission(path);
-   		        
+   		  
 		        // Attach the user provided metadata.
 		        dataManagementService.addMetadataToDataObject(
 		    	   		                 path, 
@@ -252,6 +252,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		        		          dataTransferService.getPathAttributes(uploadResponse.getDataTransferType(), 
 		        		        		                                source, true).getSize() : 
 		        		          null;
+		        		        		                                
+		   		if(dataObjectFile != null)
+					sourceSize = dataObjectFile.length();
 		     
 			    // Generate system metadata and attach to the data object.
 			    dataManagementService.addSystemGeneratedMetadataToDataObject(

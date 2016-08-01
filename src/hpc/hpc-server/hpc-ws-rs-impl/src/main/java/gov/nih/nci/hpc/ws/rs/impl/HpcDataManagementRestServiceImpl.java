@@ -114,7 +114,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " registerCollection" + path);
+		logger.info((stop-start) + " registerCollection: Total time - " + path);
 		
 		if(created) {
 		   return createdResponse(null);
@@ -143,7 +143,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " getCollection" + path);
+		logger.info((stop-start) + " getCollection: Total time - " + path);
 		
 		return okResponse(!collections.getCollections().isEmpty() ? collections : null , true);
     }
@@ -165,7 +165,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " getCollections" + metadataQueries);
+		logger.info((stop-start) + " getCollections: Total time - " + metadataQueries);
 		
 		return okResponse(!collections.getCollections().isEmpty() ? collections : null , true);
     }
@@ -198,7 +198,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " registerDataObject" + path);
+		logger.info((stop-start) + " registerDataObject: Total time - " + path);
 		
 		if(created) {
 		   return createdResponse(null);
@@ -227,7 +227,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " getDataObject" + path);
+		logger.info((stop-start) + " getDataObject: Total time - " + path);
 		return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null, true);
     }
     
@@ -294,7 +294,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " downloadDataObject" + path);
+		logger.info((stop-start) + " downloadDataObject: Total time - " + path);
 		
 		if(downloadResponse.getDestinationFile() != null) {
 		   // Put the download file on the message context, so the cleanup interceptor can
@@ -312,7 +312,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     public Response setPermissions(List<HpcEntityPermissionRequestDTO> entityPermissionRequests)
     {
     	logger.info("Invoking RS: POST /acl: " + entityPermissionRequests);
-    	
+    	long start = System.currentTimeMillis();
     	HpcEntityPermissionResponseListDTO permissionResponseList = null;
 		try {
 			 permissionResponseList = dataManagementBusService.setPermissions(
@@ -323,6 +323,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " setPermissions: Total time - "+entityPermissionRequests);
 		
 		return okResponse(permissionResponseList, false);
     }
