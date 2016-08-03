@@ -11,8 +11,8 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
@@ -122,25 +122,28 @@ public interface HpcDataManagementRestService
      * GET Data objects by metadata query.
      *
      * @param metadataEntryQueries A list of metadata entries to query for.
+     * @param metadataEntryQueries (Optional) A list of metadata entries to query the parent collection(s).
      */
 	@GET
 	@Path("/dataObject")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getDataObjects(
 			           @QueryParam("metadataQuery")
-			           List<HpcMetadataQueryParam> metadataQueries);
+			           List<HpcMetadataQueryParam> metadataQueries,
+			           @QueryParam("collectionMetadataQuery")
+			           List<HpcMetadataQueryParam> collectionMetadataQueries);
 	
     /**
-     * POST Data objects query by metadata.
+     * POST Data objects query.
      *
-     * @param metadataEntries A list of metadata entries to attach to the collection.
+     * @param dataObjectQuery A data object query DTO.
      * @return Response The REST service response.
      */
 	@POST
 	@Path("/dataObject/query")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries);
+	public Response queryDataObjects(HpcDataObjectQueryDTO dataObjectQuery);
 
     /**
      * POST Download Data Object.

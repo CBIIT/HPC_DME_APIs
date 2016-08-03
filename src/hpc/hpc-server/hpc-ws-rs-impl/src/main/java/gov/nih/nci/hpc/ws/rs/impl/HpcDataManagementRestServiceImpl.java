@@ -20,6 +20,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
@@ -232,7 +233,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getDataObjects(List<HpcMetadataQueryParam> metadataQueries)
+    public Response getDataObjects(List<HpcMetadataQueryParam> metadataQueries,
+    		                       List<HpcMetadataQueryParam> collectionMetadataQueries)
     {
     	long start = System.currentTimeMillis();
     	logger.info("Invoking RS: GET /dataObject/" + metadataQueries);
@@ -240,7 +242,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	HpcDataObjectListDTO dataObjects = null;
 		try {
 			 dataObjects = dataManagementBusService.getDataObjects(
-					                     unmarshallQueryParams(metadataQueries));
+					                     unmarshallQueryParams(metadataQueries),
+					                     unmarshallQueryParams(collectionMetadataQueries));
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /dataObject/" + metadataQueries + 
@@ -254,22 +257,24 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries)
+    public Response queryDataObjects(HpcDataObjectQueryDTO dataObjectQuery)
     {
     	long start = System.currentTimeMillis();
-    	logger.info("Invoking RS: POST /dataObject/query" + metadataQueries);
+    	logger.info("Invoking RS: POST /dataObject/query" + dataObjectQuery);
     	
     	HpcDataObjectListDTO dataObjects = null;
 		try {
-			 dataObjects = dataManagementBusService.getDataObjects(metadataQueries);
+			 dataObjects = dataManagementBusService.getDataObjects(
+					           dataObjectQuery.getMetadataQueries(),
+					           dataObjectQuery.getCollectionMetadataQueries());
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /dataObject/query" + metadataQueries + 
+			    logger.error("RS: POST /dataObject/query" + dataObjectQuery + 
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " getDataObjects" + metadataQueries);
+		logger.info((stop-start) + " queryDataObjects" + dataObjectQuery);
 		
 		return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null, true);
     }
