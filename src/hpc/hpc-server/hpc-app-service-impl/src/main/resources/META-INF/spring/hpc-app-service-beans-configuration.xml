@@ -45,13 +45,10 @@
 	<bean id="hpcMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
 		<property name="host" value="${hpc.service.notification.mail.host}" />
 		<property name="port" value="${hpc.service.notification.mail.port}" />
-		<property name="username" value="${hpc.service.notification.mail.username}" />
-		<property name="password" value="${hpc.service.notification.mail.password}" />
 		<property name="javaMailProperties">
 	   		<props>
-       			<prop key="mail.smtp.auth">true</prop>
-       			<prop key="mail.smtp.starttls.enable">true</prop>
-       			<prop key="mail.smtp.auth.ntlm.domain">nih.gov</prop>
+       			<prop key="mail.smtp.auth">false</prop>
+       			<prop key="mail.smtp.starttls.enable">false</prop>
        	   </props>
 		</property>
 	</bean>

@@ -29,10 +29,8 @@
 		<prop key="hpc.service.security.authenticationTokenSignatureKey">hpc-token-signature-key</prop>
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriod">120</prop>
 		<prop key="hpc.service.notification.formatsPath">${karaf.base}/etc/hpc-server/notificationFormats.json</prop>
-		<prop key="hpc.service.notification.mail.host">smtp.gmail.com</prop>
-		<prop key="hpc.service.notification.mail.port">587</prop>
-		<prop key="hpc.service.notification.mail.username">eran.rosenberg.va@gmail.com</prop>
-		<prop key="hpc.service.notification.mail.password">smtp-pwd</prop>
+		<prop key="hpc.service.notification.mail.host">mailfwd.nih.gov</prop>
+		<prop key="hpc.service.notification.mail.port">25</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
