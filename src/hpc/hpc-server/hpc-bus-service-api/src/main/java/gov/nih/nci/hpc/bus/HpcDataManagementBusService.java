@@ -104,11 +104,13 @@ public interface HpcDataManagementBusService
      * Get data objects by metadata query.
      *
      * @param metadataQueries The metadata queries.
+     * @param collectionMetadataQueries (Optional) The metadata queries for the parent collections(s).
      * @return A list of HpcDataObjectDTO.
      * 
      * @throws HpcException
      */
-    public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries) 
+    public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries,
+    		                                   List<HpcMetadataQuery> collectionMetadataQueries) 
     		                                  throws HpcException;
     
     /**
