@@ -137,6 +137,15 @@
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
+								<xsdOption>
+									<xsd>xjc-build/schema/HpcReport.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.dto.report</packagename>
+									<bindingFile>xjc-build/schema/hpc-dto-report-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:multiline</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
 							</xsdOptions>
 						</configuration>
 					</execution>
@@ -154,7 +163,8 @@
 							gov.nih.nci.hpc.dto.security,
 							gov.nih.nci.hpc.dto.datamanagement,
 							gov.nih.nci.hpc.dto.metadata,
-							gov.nih.nci.hpc.dto.notification
+							gov.nih.nci.hpc.dto.notification,
+							gov.nih.nci.hpc.dto.report
 						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>
