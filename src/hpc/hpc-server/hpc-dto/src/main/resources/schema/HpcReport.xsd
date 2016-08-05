@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcReport.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:Prasad.konka@nih.gov">Prasad Konka</a>
+ * @version $Id:$
+ -->
+
+	<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-report="http://hpc.nci.nih.gov/domain/report"
+	xmlns:hpc-dto-report="http://hpc.nci.nih.gov/dto/report"
+	targetNamespace="http://hpc.nci.nih.gov/dto/report" 
+	elementFormDefault="unqualified">
+
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/report"
+		        schemaLocation="HpcReportTypes.xsd" />
+
+	<!-- Notification Subscriptions DTO -->
+	<xsd:element name="HpcReportRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="type" type="hpc-domain-report:HpcReportType" />
+				<xsd:element name="doc" type="xsd:string" />
+				<xsd:element name="user" type="xsd:string" />
+				<xsd:element name="fromDate" type="xsd:date" />
+				<xsd:element name="ToDate" type="xsd:date" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="HpcReportDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="type" type="hpc-domain-report:HpcReportType" />
+				<xsd:element name="doc" type="xsd:string" />
+				<xsd:element name="user" type="xsd:string" />
+				<xsd:element name="fromDate" type="xsd:date" />
+				<xsd:element name="ToDate" type="xsd:date" />
+				<xsd:element name="generatedOn" type="xsd:date" />
+				<xsd:element name="reportEntries" 
+				             type="hpc-domain-report:HpcReportEntry" 
+				             minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
+</xsd:schema>
