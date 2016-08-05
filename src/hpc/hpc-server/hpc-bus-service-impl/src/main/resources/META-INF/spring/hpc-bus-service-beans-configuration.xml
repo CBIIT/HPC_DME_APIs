@@ -24,5 +24,6 @@
 	<bean id="hpcDataManagementBusService" class="gov.nih.nci.hpc.bus.impl.HpcDataManagementBusServiceImpl" />
 	<bean id="hpcSystemBusService" class="gov.nih.nci.hpc.bus.impl.HpcSystemBusServiceImpl" />
 	<bean id="hpcNotificationBusService" class="gov.nih.nci.hpc.bus.impl.HpcNotificationBusServiceImpl" />
+	<bean id="hpcReportBusService" class="gov.nih.nci.hpc.bus.impl.HpcReportBusServiceImpl" />
 
 </beans>
