@@ -329,7 +329,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
         HpcParentPathMetadata parentPathMetadata = 
         		 dataManagementProxy.getParentPathMetadata(authenticatedToken, path);
        	while(parentPathMetadata != null) {
-       		  parentHierarchyMetadata.addAll(parentPathMetadata.getMetadataEntries());
+       		  // Add this collection metadata to the list.
+       		  for(HpcMetadataEntry metadataEntry : parentPathMetadata.getMetadataEntries()) {
+       			  if(metadataEntry.getUnit() == null) {
+       				 metadataEntry.setUnit("");
+       			  }
+       			  parentHierarchyMetadata.add(metadataEntry);
+       		  }
+       		  // Get metadata for one level up in the hierarchy.
        		  parentPathMetadata = 
            		    dataManagementProxy.getParentPathMetadata(authenticatedToken, 
            		    		                                  parentPathMetadata.getParentPath());
