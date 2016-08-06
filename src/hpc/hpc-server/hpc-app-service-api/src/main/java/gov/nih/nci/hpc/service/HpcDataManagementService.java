@@ -124,6 +124,16 @@ public interface HpcDataManagementService
     		                           throws HpcException; 
     
     /**
+     * Add parent hierarchy metadata to a data object.
+     *
+     * @param path The data object path.
+     * 
+     * @throws HpcException
+     */
+    public void addParentHierarchyMetadataToDataObject(String path) 
+    		                                          throws HpcException; 
+    
+    /**
      * Update a data object's metadata.
      *
      * @param path The data object path.

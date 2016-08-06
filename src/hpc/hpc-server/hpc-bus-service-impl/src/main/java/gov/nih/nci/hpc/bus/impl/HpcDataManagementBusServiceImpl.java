@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -234,6 +235,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		        dataManagementService.addMetadataToDataObject(
 		    	   		                 path, 
 		    			                 dataObjectRegistrationDTO.getMetadataEntries());
+		        
+		        // Attach the parent hierarchy metadata.
+		        dataManagementService.addParentHierarchyMetadataToDataObject(path);
 		       
 		        // Extract the source location.
 		        HpcFileLocation source = dataObjectRegistrationDTO.getSource();
@@ -248,14 +252,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		        	   source, dataObjectFile, path, 
 		        	   securityService.getRequestInvoker().getNciAccount().getUserId(),
 		        	   dataObjectRegistrationDTO.getCallerObjectId());
-		        Long sourceSize = source != null ? 
-		        		          dataTransferService.getPathAttributes(uploadResponse.getDataTransferType(), 
-		        		        		                                source, true).getSize() : 
-		        		          null;
-		        		        		                                
-		   		if(dataObjectFile != null)
-					sourceSize = dataObjectFile.length();
-		     
+		        
+		        // Get the data file size
+		        Long sourceSize = getSourceSize(source, uploadResponse.getDataTransferType(),
+		                                        dataObjectFile);
+		        		
 			    // Generate system metadata and attach to the data object.
 			    dataManagementService.addSystemGeneratedMetadataToDataObject(
 			        		                   path, uploadResponse.getArchiveLocation(),
@@ -623,6 +624,28 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		
 		return String.valueOf((transferSize * 100L) / sourceSize) + '%';
+	}
+	
+    /** 
+     * Get the data object source size. (Either source or dataObjectFile are not null)
+     * 
+     * @param source A data transfer source.
+     * @param dataTransferType The data transfer type.
+     * @param dataObjectFile The attached data file.
+     * 
+     * @return The source size in bytes.
+     */
+	private Long getSourceSize(HpcFileLocation source, HpcDataTransferType dataTransferType,
+			                   File dataObjectFile) throws HpcException
+	{
+		if(source != null) {
+	       return dataTransferService.getPathAttributes(dataTransferType, 
+	        		                                    source, true).getSize();
+		}
+		if(dataObjectFile != null) {
+           return dataObjectFile.length();
+		}
+		return null;
 	}
 }
 

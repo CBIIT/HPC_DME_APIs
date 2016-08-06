@@ -29,6 +29,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
+import gov.nih.nci.hpc.domain.model.HpcParentPathMetadata;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
@@ -306,9 +307,37 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	// Validate Metadata.
        	metadataValidator.validateDataObjectMetadata(null, metadataEntries);
        	
+       	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToDataObject(getAuthenticatedToken(), 
        			                                    path, metadataEntries);
+    }
+    
+    @Override
+    public void addParentHierarchyMetadataToDataObject(String path) 
+    		                                          throws HpcException
+    {
+       	// Input validation.
+       	if(path == null) {
+       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+       	// Get a list of the parent hierarchy metadata.
+        Object authenticatedToken = getAuthenticatedToken();
+        List<HpcMetadataEntry> parentHierarchyMetadata = new ArrayList<>();
+        HpcParentPathMetadata parentPathMetadata = 
+        		 dataManagementProxy.getParentPathMetadata(authenticatedToken, path);
+       	while(parentPathMetadata != null) {
+       		  parentHierarchyMetadata.addAll(parentPathMetadata.getMetadataEntries());
+       		  parentPathMetadata = 
+           		    dataManagementProxy.getParentPathMetadata(authenticatedToken, 
+           		    		                                  parentPathMetadata.getParentPath());
+       	}
+       	
+       	// Add Parent Hierarchy Metadata to the DM system.
+       	dataManagementProxy.addMetadataToDataObject(authenticatedToken, 
+       			                                    path, parentHierarchyMetadata);
     }
     
     @Override
@@ -924,5 +953,4 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	    
 	    return query;
     }
-    
 }
