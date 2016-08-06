@@ -272,6 +272,10 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		     }
 		     irodsConnection.getDataObjectAO(authenticatedToken).addBulkAVUMetadataToDataObject(path, avuDatas);
 		     
+		} catch(DuplicateDataException dde) {
+			    throw new HpcException("Failed to add metadata to a data object: " + 
+                                       dde.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, dde);
 		} catch(JargonException e) {
 	            throw new HpcException("Failed to add metadata to a data object: " + 
                                        e.getMessage(),
