@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
+import gov.nih.nci.hpc.domain.model.HpcParentPathMetadata;
 import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
@@ -272,7 +273,7 @@ public interface HpcDataManagementProxy
      * Get metadata of a data object.
      *
      * @param authenticatedToken An authenticated token.
-     * @param path The collection path.
+     * @param path The data object path.
      * @return HpcMetadataEntry list.
      * 
      * @throws HpcException
@@ -280,6 +281,20 @@ public interface HpcDataManagementProxy
     public List<HpcMetadataEntry> getDataObjectMetadata(Object authenticatedToken, 
    		                                                String path) 
    		                                               throws HpcException;   
+    
+    /**
+     * Get metadata of a the parent path.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param path The path.
+     * @return HpcParentPathMetadata The parent path and metadata list, 
+     *                               or null if parent path doesn't exist.
+     * 
+     * @throws HpcException
+     */
+    public HpcParentPathMetadata getParentPathMetadata(Object authenticatedToken, 
+   		                                               String path) 
+   		                                              throws HpcException;   
     
     /**
      * Get the user's role.
