@@ -22,6 +22,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
+import gov.nih.nci.hpc.domain.model.HpcParentPathMetadata;
 import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
 import gov.nih.nci.hpc.domain.user.HpcGroupUserResponse;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -313,20 +314,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                             String path) 
     		                            throws HpcException
     {
-		try {
-			 path = addPath(path);
-			 IRODSFileFactory irodsFileFactory = 
-			      irodsConnection.getIRODSFileFactory(authenticatedToken);
-			 IRODSFile file = irodsFileFactory.instanceIRODSFile(path);
-			 IRODSFile parentPath = irodsFileFactory.instanceIRODSFile(file.getParent());
-			 return parentPath.isDirectory();
-			 
-		} catch(JargonException e) {
-		        throw new HpcException("Failed to get a path parent: " + 
-                                       e.getMessage(),
-                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		        
-		} 
+    	IRODSFile parentPath = getParentPath(authenticatedToken, path);
+    	return (parentPath != null && parentPath.isDirectory());
     }
     
     @Override    
@@ -334,31 +323,22 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                              String path) 
     		                             throws HpcException
     {
-		try {
-			 path = addPath(path);
-			 IRODSFileFactory irodsFileFactory = 
-					          irodsConnection.getIRODSFileFactory(authenticatedToken);
-			 IRODSFile file = irodsFileFactory.instanceIRODSFile(path);
-			 IRODSFile parentPath = irodsFileFactory.instanceIRODSFile(file.getParent());
-			 
-			 if(parentPath.isFile()) {
-				throw new HpcException("Path exists as a file: " + parentPath.getPath(), 
-                                       HpcErrorType.INVALID_REQUEST_INPUT);
-			 }
-			 
-			 if(!parentPath.isDirectory()) {
-				mkdirs(parentPath); 
-			 }
-			 
-		} catch(InvalidInputParameterException ex) {
-			    
-			    
-		} catch(JargonException e) {
-		        throw new HpcException("Failed to get a path parent: " + 
-                                       e.getMessage(),
-                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		        
-		} 
+		 path = addPath(path);
+		 IRODSFile parentPath = getParentPath(authenticatedToken, path);
+		 
+		 if(parentPath == null) {
+			throw new HpcException("Invalid parent path for: " + path, 
+                                   HpcErrorType.INVALID_REQUEST_INPUT);
+		 }
+		 
+		 if(parentPath.isFile()) {
+			throw new HpcException("Path exists as a file: " + parentPath.getPath(), 
+                                   HpcErrorType.INVALID_REQUEST_INPUT);
+		 }
+		 
+		 if(!parentPath.isDirectory()) {
+			mkdirs(parentPath); 
+		 }
     }
     
     @Override    
@@ -515,6 +495,24 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	                                   HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} 
 	}
+    
+    @Override
+    public HpcParentPathMetadata getParentPathMetadata(Object authenticatedToken, 
+                                                       String path) 
+                                                      throws HpcException
+    {
+		IRODSFile parentPath = getParentPath(authenticatedToken, path);
+		if(parentPath == null || !parentPath.isDirectory()) {
+		   return null;
+		}
+		
+		HpcParentPathMetadata parentPathMetadata = new HpcParentPathMetadata();
+		parentPathMetadata.setParentPath(parentPath.getPath());
+		parentPathMetadata.getMetadataEntries().addAll(
+				  getCollectionMetadata(authenticatedToken, parentPath.getPath()));
+		
+		return parentPathMetadata;
+    }
     
     @Override
     public HpcUserRole getUserRole(Object authenticatedToken, String username) 
@@ -1062,6 +1060,39 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			                           HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} 
 	}
+    
+    /**
+     * Get a parent path file.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param path The path.
+     * 
+     * @throws HpcException
+     */
+    private IRODSFile getParentPath(Object authenticatedToken, String path) 
+    		                       throws HpcException
+    {
+    	if(path.equals(irodsConnection.getBasePath())) {
+    	   return null;
+    	}
+    	
+		try {
+			 path = addPath(path);
+			 IRODSFileFactory irodsFileFactory = 
+			                  irodsConnection.getIRODSFileFactory(authenticatedToken);
+			 IRODSFile file = irodsFileFactory.instanceIRODSFile(path);
+			 return irodsFileFactory.instanceIRODSFile(file.getParent());
+			 
+		} catch(InvalidInputParameterException ex) {
+			    return null;
+		        
+		} catch(JargonException e) {
+		        throw new HpcException("Failed to get a parent path" + 
+	                                   e.getMessage(),
+	                                   HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		        
+		}    
+    }
 }
 
  
