@@ -42,8 +42,10 @@ import gov.nih.nci.hpc.service.HpcDataManagementService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -323,19 +325,33 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
+    	// Create a metadata attribute set. Put existing data object metadata attributes first.
+    	Set<String> metadataAttributeSet = new HashSet<>();
+    	List<HpcMetadataEntry> dataObjectMetadata = getDataObjectMetadata(path);
+    	if(dataObjectMetadata != null) {
+    	   for(HpcMetadataEntry metadataEntry : dataObjectMetadata) {
+    		   metadataAttributeSet.add(metadataEntry.getAttribute());
+    	   }
+    	}
+       	
        	// Get a list of the parent hierarchy metadata.
         Object authenticatedToken = getAuthenticatedToken();
         List<HpcMetadataEntry> parentHierarchyMetadata = new ArrayList<>();
         HpcParentPathMetadata parentPathMetadata = 
         		 dataManagementProxy.getParentPathMetadata(authenticatedToken, path);
        	while(parentPathMetadata != null) {
-       		  // Add this collection metadata to the list.
+       		  // Add this collection metadata to the parent hierarchy metadata list. 
+       		  // Any metadata already on the list remains unchanged.
        		  for(HpcMetadataEntry metadataEntry : parentPathMetadata.getMetadataEntries()) {
        			  if(metadataEntry.getUnit() == null) {
        				 metadataEntry.setUnit("");
        			  }
-       			  parentHierarchyMetadata.add(metadataEntry);
+       			  if(!metadataAttributeSet.contains(metadataEntry.getAttribute())) {
+       			     parentHierarchyMetadata.add(metadataEntry);
+       			     metadataAttributeSet.add(metadataEntry.getAttribute());
+       			  }
        		  }
+       		  
        		  // Get metadata for one level up in the hierarchy.
        		  parentPathMetadata = 
            		    dataManagementProxy.getParentPathMetadata(authenticatedToken, 
