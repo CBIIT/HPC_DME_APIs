@@ -233,6 +233,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     @Override
     public void processEvents() throws HpcException
     {
+    	// Use system account to perform this service.
+        // TODO: Make this AOP. 
+    	securityService.setSystemRequestInvoker();
+    	
     	// Get and process the pending notification events.
     	for(HpcEvent event : eventService.getEvents()) {
     		// Notify all users associated with this event.
