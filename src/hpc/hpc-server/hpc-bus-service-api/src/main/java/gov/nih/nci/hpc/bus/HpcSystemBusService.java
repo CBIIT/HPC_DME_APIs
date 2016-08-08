@@ -52,6 +52,13 @@ public interface HpcSystemBusService
      * @throws HpcException
      */
 	public void processEvents() throws HpcException;
+
+    /**
+     * Generate reports events.
+     *
+     * @throws HpcException
+     */
+	public void generateReportsEvents() throws HpcException;
 }
 
  

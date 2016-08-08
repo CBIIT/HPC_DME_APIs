@@ -78,6 +78,17 @@ public interface HpcNotificationService
     		                                                      throws HpcException;
     
     /**
+     * Get notification subscribed users.
+     *
+     * @param eventType The event type.
+     * @return userId List of subscribed user IDs.
+     * 
+     * @throws HpcException
+     */
+    public List<String> getNotificationSubscribedUsers(HpcEventType eventType) 
+    		                                                      throws HpcException;
+
+    /**
      * Notify a user of an event.
      *
      * @param userId The user to send the notification to.

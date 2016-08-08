@@ -136,6 +136,12 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     }
     
     @Override
+    public List<String> getNotificationSubscribedUsers(HpcEventType eventType) throws HpcException
+    {
+    	return notificationDAO.getSubscriptedUsers(eventType);
+    }
+    
+    @Override
     public HpcNotificationSubscription getNotificationSubscription(String userId,
                                                                    HpcEventType eventType) 
                                                                   throws HpcException

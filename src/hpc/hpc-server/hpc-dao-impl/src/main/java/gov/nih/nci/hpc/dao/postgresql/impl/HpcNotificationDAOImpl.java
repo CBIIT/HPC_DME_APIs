@@ -27,6 +27,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 
 /**
  * <p>
@@ -60,6 +61,9 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	
 	private static final String GET_SUBSCRIPTION_SQL = 
 		    "select * from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"USER_ID\" = ? and \"EVENT_TYPE\" = ?";
+
+	private static final String GET_SUBSCRIPTION_USERS_SQL = 
+		    "select \"USER_ID\" from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"EVENT_TYPE\" = ?";
 	
 	private static final String UPSERT_DELIVERY_RECEIPT_SQL = 
 		    "insert into public.\"HPC_NOTIFICATION_DELIVERY_RECEIPT\" ( " +
@@ -178,6 +182,26 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		
     }
     
+	@Override
+    public List<String> getSubscriptedUsers(HpcEventType eventType) 
+                                                      throws HpcException
+    {
+		try {
+		     return jdbcTemplate.query(GET_SUBSCRIPTION_USERS_SQL, 
+		    		 new SingleColumnRowMapper<String>(),
+		    		                            eventType.value());
+		     
+		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get notification subscribed users: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}				
+		
+    }
+    	
     @Override
     public void upsertDeliveryReceipt(HpcNotificationDeliveryReceipt deliveryReceipt) 
                                      throws HpcException
