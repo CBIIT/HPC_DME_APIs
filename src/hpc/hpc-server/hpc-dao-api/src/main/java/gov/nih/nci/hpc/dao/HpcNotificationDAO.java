@@ -61,6 +61,17 @@ public interface HpcNotificationDAO
      */
     public List<HpcNotificationSubscription> 
            getSubscriptions(String userId) throws HpcException;
+
+    /**
+     * Get event subscribed users.
+     *
+     * @param userId The user ID.
+     * @return List<String> list of userIds
+     * 
+     * @throws HpcException
+     */
+    public List<String> 
+           getSubscriptedUsers(HpcEventType eventType) throws HpcException;
     
     /**
      * Get notification subscription
