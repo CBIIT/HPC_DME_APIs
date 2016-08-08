@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
+import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -96,6 +97,13 @@ public interface HpcEventService
      */
     public void addDataTransferUploadFailedEvent(String userId, String path) 
                                                 throws HpcException;
+
+    /**
+     * Generate reports event.
+     *
+     * @throws HpcException
+     */
+    public void generateReportsEvents(List<String> userIds, HpcReportCriteria criteria) throws HpcException;
 }
 
  

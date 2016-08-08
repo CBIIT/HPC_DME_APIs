@@ -23,6 +23,11 @@
 
 	<!-- HPC Scheduler OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
+		<prop key="hpc.scheduler.cron.generateReports.delay">0 0/24 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.updateDataTransferUploadStatus.delay">10 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.processTemporaryArchive.delay">20 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.cleanupDataTransferDownloadFiles.delay">30 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.processevents.delay">40 0/1 * * * ?</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

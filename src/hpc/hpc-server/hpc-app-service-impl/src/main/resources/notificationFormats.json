@@ -60,5 +60,97 @@
          "textFormat" : "Your download request failed.",
          "textArguments" : []
         },
+        {  
+         "eventType" : "USAGE_SUMMARY_REPORT",
+         "subjectFormat" : "HPC DME Summary Report: [%1$s]",
+         "subjectArguments" : [
+         	{  
+             "payloadEntryAttribute" : "REPORT_GENERATED_ON",
+             "index" : "0"
+            }
+         ],
+         "textFormat" : "HPC DME Usage summary report generated on %1$s. \n_______________________________________________________
+         \nTotal registered users: %2$s 
+         \nTotal size of the data:  %3$s
+         \nLargest file:  %4$s
+         \nAverage file size:  %5$s
+         \nTotal number of objects:  %6$s
+         \nTotal number of collections:  %7$s
+         \nTotal number of metadata attributes:  %8$s
+         \nTotal number of files with size < 1MB:  %9$s
+		 \nTotal number of files with size > 1MB and < 10MB:  %10$s
+		 \nTotal number of files with size > 10MB and < 50MB:  %11$s
+		 \nTotal number of files with size > 50MB and < 100MB:  %12$s
+		 \nTotal number of files with size > 100MB and < 500MB:  %13$s
+		 \nTotal number of files with size > 500MB and < 1GB:  %14$s
+		 \nTotal number of files with size > 1GB and < 10GB:  %15$s
+		 \nTotal number of files with size > 10GB:  %16$s",
+         "textArguments" : [
+         	{  
+             "payloadEntryAttribute" : "REPORT_GENERATED_ON",
+             "index" : "0"
+			},
+         	{  
+             "payloadEntryAttribute" : "TOTAL_NUM_OF_REGISTERED_USERS",
+             "index" : "1"
+			},
+         	{  
+             "payloadEntryAttribute" : "TOTAL_DATA_SIZE",
+             "index" : "2"
+			},
+         	{  
+             "payloadEntryAttribute" : "LARGEST_FILE_SIZE",
+             "index" : "3"
+			},
+         	{  
+             "payloadEntryAttribute" : "AVERAGE_FILE_SIZE",
+             "index" : "4"
+			},
+         	{  
+             "payloadEntryAttribute" : "TOTAL_NUM_OF_DATA_OBJECTS",
+             "index" : "5"
+			},
+         	{  
+             "payloadEntryAttribute" : "TOTAL_NUM_OF_COLLECTIONS",
+             "index" : "6"
+			},
+         	{  
+             "payloadEntryAttribute" : "TOTAL_NUMBER_OF_META_ATTRS",
+             "index" : "7"
+			},
+         	{  
+             "payloadEntryAttribute" : "FILE_SIZE_BELOW_1_MB",
+             "index" : "8"
+			},
+         	{  
+             "payloadEntryAttribute" : "FILE_SIZE_1_MB_10_MB",
+             "index" : "9"
+			},
+         	{  
+             "payloadEntryAttribute" : "FILE_SIZE_10_MB_50_MB",
+             "index" : "10"
+			},
+         	{  
+             "payloadEntryAttribute" : "FILE_SIZE_50_MB_100_MB",
+             "index" : "11"
+			},
+         	{  
+             "payloadEntryAttribute" : "FILE_SIZE_100_MB_500_MB",
+             "index" : "12"
+			},
+         	{  
+             "payloadEntryAttribute" : "FILE_SIZE_500_MB_1_GB",
+             "index" : "13"
+			},
+         	{  
+             "payloadEntryAttribute" : "FILE_SIZE_1_GB_10_GB",
+             "index" : "14"
+			},
+         	{  
+             "payloadEntryAttribute" : "FILE_SIZE_OVER_10_GB",
+             "index" : "15"
+			}
+         ]
+        },
     ]
 }

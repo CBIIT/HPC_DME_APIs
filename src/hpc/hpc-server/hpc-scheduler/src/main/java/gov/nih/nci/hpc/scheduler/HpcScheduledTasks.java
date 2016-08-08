@@ -66,7 +66,7 @@ public class HpcScheduledTasks
      * Update Data Transfer Status Task.
      * 
      */    
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(cron = "${hpc.scheduler.cron.updateDataTransferUploadStatus.delay}")
     private void updateDataTransferUploadStatusTask()
     {
         logger.info("Starting Update Data Transfer Upload Status Task...");
@@ -88,7 +88,7 @@ public class HpcScheduledTasks
      * archive to the (permanent) archive and complete data object registration.
      * 
      */    
-    @Scheduled(fixedDelay = 50000)
+    @Scheduled(cron = "${hpc.scheduler.cron.processTemporaryArchive.delay}")
     private void processTemporaryArchiveTask()
     {
         logger.info("Starting Process Temporary Archive Task...");
@@ -109,7 +109,7 @@ public class HpcScheduledTasks
      * Cleanup Data Transfer Download Files Task.
      * 
      */    
-    @Scheduled(fixedDelay = 90000)
+    @Scheduled(cron = "${hpc.scheduler.cron.cleanupDataTransferDownloadFiles.delay}")
     private void cleanupDataTransferDownloadFilesTask()
     {
         logger.info("Starting Cleanup Data Transfer Download Task...");
@@ -131,7 +131,29 @@ public class HpcScheduledTasks
      * Process Events Task.
      * 
      */  
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(cron = "${hpc.scheduler.cron.generateReports.delay}")
+    private void generateReports()
+    {
+        logger.info("Generating reports...");
+
+        try { 
+		     systemBusService.generateReportsEvents();
+		     
+        } catch(HpcException e) {
+        	    logger.error("Process Events task failed", e);
+        	    
+        } finally {
+        	       // TODO - make this AOP.
+        	       dataManagementBusService.closeConnection();
+        	       logger.info("Completed Process Events Task...");	
+        }
+    }
+    
+    /**
+     * Process Events Task.
+     * 
+     */  
+    @Scheduled(cron = "${hpc.scheduler.cron.processevents.delay}")
     private void processEvents()
     {
         logger.info("Starting Process Events Task...");
@@ -148,6 +170,7 @@ public class HpcScheduledTasks
         	       logger.info("Completed Process Events Task...");	
         }
     }
+    
 }
 
  

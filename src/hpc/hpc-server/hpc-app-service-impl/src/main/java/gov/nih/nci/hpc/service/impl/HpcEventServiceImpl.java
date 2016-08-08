@@ -11,13 +11,21 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.dao.HpcEventDAO;
+import gov.nih.nci.hpc.dao.HpcReportsDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
+import gov.nih.nci.hpc.domain.report.HpcReport;
+import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
+import gov.nih.nci.hpc.domain.report.HpcReportEntry;
+import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
+import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcEventService;
 
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
@@ -54,6 +62,9 @@ public class HpcEventServiceImpl implements HpcEventService
 	@Autowired
     private HpcEventDAO eventDAO = null;
 	
+	@Autowired
+    private HpcReportsDAO reportsDAO = null;
+
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	
@@ -216,5 +227,76 @@ public class HpcEventServiceImpl implements HpcEventService
 		addEvent(event);
 	}
 
+    public void generateReportsEvents(List<String> userIds, HpcReportCriteria criteria) throws HpcException
+    {
+		HpcEvent event = new HpcEvent();
+		event.getUserIds().addAll(userIds);
+		HpcEventType type = getEventType(criteria.getType());
+		if(type == null)
+			throw new HpcException("Invalid report type", HpcErrorType.INVALID_REQUEST_INPUT);
+		event.setType(type);
+		HpcReport report = reportsDAO.generatReport(criteria);
+		if(report.getDoc() != null)
+			event.getPayloadEntries().add(toPayloadEntry(HpcReportEntryAttribute.DOC.name(), 
+                   report.getDoc()));
+		Format formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm");
+		
+		if(report.getFromDate() != null)
+		{
+			event.getPayloadEntries().add(toPayloadEntry(HpcReportEntryAttribute.FROM_DATE.name(), 
+					formatter.format(report.getFromDate().getTime())));
+		}
+		if(report.getToDate() != null)
+		{
+			try
+			{
+			event.getPayloadEntries().add(toPayloadEntry(HpcReportEntryAttribute.TO_DATE.name(), 
+					formatter.format(report.getToDate().getTime())));
+			}
+			catch(Exception e)
+			{
+				
+			}
+		}
+		if(report.getGeneratedOn() != null)
+			event.getPayloadEntries().add(toPayloadEntry(HpcReportEntryAttribute.REPORT_GENERATED_ON.name(), 
+					formatter.format(report.getGeneratedOn().getTime())));
+		
+		if(report.getType() != null)
+			event.getPayloadEntries().add(toPayloadEntry(HpcReportEntryAttribute.TYPE.name(), 
+                   report.getType().name()));
+		if(report.getUser() != null)
+			event.getPayloadEntries().add(toPayloadEntry(HpcReportEntryAttribute.USER_ID.name(), 
+                   report.getUser()));
+		List<HpcReportEntry> entries = report.getReportEntries();
+		for(HpcReportEntry entry : entries)
+		{
+			event.getPayloadEntries().add(toPayloadEntry(entry.getAttribute().name(), 
+	                   entry.getValue()));
+		}
+		// Persist to DB.
+		addEvent(event);
+    	
+    }
+    
+    private HpcEventType getEventType(HpcReportType reportType)
+    {
+    	if(reportType == null)
+    		return null;
+    	else if(reportType.equals(HpcReportType.USAGE_SUMMARY))
+    		return HpcEventType.USAGE_SUMMARY_REPORT;
+    	else if(reportType.equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE))
+    		return HpcEventType.USAGE_SUMMARY_BY_DATE_RANGE_REPORT;
+    	else if(reportType.equals(HpcReportType.USAGE_SUMMARY_BY_DOC))
+    		return HpcEventType.USAGE_SUMMARY_BY_DOC_REPORT;
+    	else if(reportType.equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
+    		return HpcEventType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE_REPORT;
+    	else if(reportType.equals(HpcReportType.USAGE_SUMMARY_BY_USER))
+    		return HpcEventType.USAGE_SUMMARY_BY_USER_REPORT;
+    	else if(reportType.equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE))
+    		return HpcEventType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE_REPORT;
+    	else
+    		return null;
+    }
 }
 
