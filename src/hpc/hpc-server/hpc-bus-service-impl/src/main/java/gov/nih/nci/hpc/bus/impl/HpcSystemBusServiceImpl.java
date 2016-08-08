@@ -21,15 +21,19 @@ import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
+import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
+import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
+import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.io.File;
 import java.util.Calendar;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -77,7 +81,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	@Autowired
     private HpcEventService eventService = null;
 	
-    // The logger instance.
+	@Autowired
+    private HpcReportService reportService = null;
+
+	// The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
 	
@@ -276,6 +283,19 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	}
     }
     
+    @Override
+	public void generateReportsEvents() throws HpcException
+	{
+    	List<String> summaryReportUsers = notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_REPORT);
+    	logger.error("Reports: "+summaryReportUsers);
+    	if(summaryReportUsers != null && summaryReportUsers.size() > 0)
+    	{
+    		HpcReportCriteria criteria = new HpcReportCriteria();
+    		criteria.setType(HpcReportType.USAGE_SUMMARY);
+    		eventService.generateReportsEvents(summaryReportUsers, criteria);
+    	}
+	}
+
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//

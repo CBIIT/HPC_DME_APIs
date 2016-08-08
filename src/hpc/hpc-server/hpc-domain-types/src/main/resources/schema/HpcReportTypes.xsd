@@ -62,6 +62,12 @@
 	
 	<xsd:simpleType name="HpcReportEntryAttribute">
 		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="REPORT_GENERATED_ON" />
+			<xsd:enumeration value="FROM_DATE" />
+			<xsd:enumeration value="TO_DATE" />
+			<xsd:enumeration value="TYPE" />
+			<xsd:enumeration value="DOC" />
+			<xsd:enumeration value="USER_ID" />
 			<xsd:enumeration value="TOTAL_DATA_SIZE" />
 			<xsd:enumeration value="TOTAL_NUM_OF_REGISTERED_USERS" />
 			<xsd:enumeration value="TOTAL_NUM_OF_DATA_OBJECTS" />

@@ -161,7 +161,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		Long averageFileSize = jdbcTemplate.queryForObject(AVERAGE_FILE_SQL, Long.class);
 		HpcReportEntry averageFileSizeEntry = new HpcReportEntry();
 		averageFileSizeEntry.setAttribute(HpcReportEntryAttribute.AVERAGE_FILE_SIZE);
-		averageFileSizeEntry.setValue(Long.toString(largestFileSize == null ? 0 : largestFileSize));
+		averageFileSizeEntry.setValue(Long.toString(averageFileSize == null ? 0 : averageFileSize));
 
 		//Total number of data objects
 		Long numOfDataObj = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_SQL, Long.class);
