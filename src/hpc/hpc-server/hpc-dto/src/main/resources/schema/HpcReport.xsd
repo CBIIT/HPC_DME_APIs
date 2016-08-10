@@ -29,8 +29,8 @@
 				<xsd:element name="type" type="hpc-domain-report:HpcReportType" />
 				<xsd:element name="doc" type="xsd:string" />
 				<xsd:element name="user" type="xsd:string" />
-				<xsd:element name="fromDate" type="xsd:date" />
-				<xsd:element name="ToDate" type="xsd:date" />
+				<xsd:element name="fromDate" type="xsd:string" />
+				<xsd:element name="toDate" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
