@@ -71,13 +71,13 @@
          ],
          "textFormat" : "HPC DME Usage summary report generated on %1$s. \n_______________________________________________________
          \nTotal registered users: %2$s 
-         \nTotal size of the data:  %3$s
-         \nLargest file:  %4$s
-         \nAverage file size:  %5$s
+         \nTotal size of the data:  %3$s bytes
+         \nLargest file:  %4$s bytes
+         \nAverage file size:  %5$s bytes
          \nTotal number of objects:  %6$s
          \nTotal number of collections:  %7$s
          \nTotal number of metadata attributes:  %8$s
-         \nTotal number of files with size < 1MB:  %9$s
+         \nTotal number of files with size < 1MB:  %9$s 
 		 \nTotal number of files with size > 1MB and < 10MB:  %10$s
 		 \nTotal number of files with size > 10MB and < 50MB:  %11$s
 		 \nTotal number of files with size > 50MB and < 100MB:  %12$s

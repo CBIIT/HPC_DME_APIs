@@ -12,7 +12,11 @@ package gov.nih.nci.hpc.dao.postgresql.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -65,6 +69,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 
 	private static final String TOTAL_NUM_OF_COLLECTIONS_SQL = 
 			"SELECT count(*) totalcolls FROM public.r_coll_main";
+
+	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_SQL = 
+			"select a.meta_attr_value, count(a.meta_attr_name) from r_meta_main a, r_coll_main b, r_objt_metamap c where b.coll_id=c.object_id and c.meta_id=a.meta_id and a.meta_attr_name='collection_type' group by a.meta_attr_value;";
 
 	private static final String TOTAL_NUM_OF_META_ATTRS_SQL = 
 			"SELECT count(*) totalAttrs FROM public.r_meta_main";
@@ -170,10 +177,25 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		numOfDataObjEntry.setValue(Long.toString(numOfDataObj == null ? 0 : numOfDataObj));
 
 		//Total number of collections
-		Long numOfColl = jdbcTemplate.queryForObject(TOTAL_NUM_OF_COLLECTIONS_SQL, Long.class);
+		List<Map<String, Object>> list = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_SQL);
+		List<String> entryList = new ArrayList<String>();
+		StringBuffer str = new StringBuffer();
+		if(list != null)
+		{
+			for(Map<String, Object> listEntry : list)
+			{
+				Iterator<String> iter = listEntry.keySet().iterator();
+				while(iter.hasNext())
+				{
+					String name = iter.next();
+					String value = (String)listEntry.get(name);
+					str.append(name + ": " + value +"\n");
+				}
+			}
+		}
 		HpcReportEntry numOfCollEntry = new HpcReportEntry();
 		numOfCollEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUM_OF_COLLECTIONS);
-		numOfCollEntry.setValue(Long.toString(numOfColl == null ? 0 : numOfColl));
+		numOfCollEntry.setValue(str.toString());
 
 		//Total Meta attributes Size
 		Long totalMetaSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_SQL, Long.class);
