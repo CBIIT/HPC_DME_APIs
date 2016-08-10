@@ -10,6 +10,12 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +85,14 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
 			throw new HpcException("Date range is missing for USAGE_SUMMARY_BY_DATE_RANGE report",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 
+		if(criteriaDTO.getFromDate() != null && !isDateValid(criteriaDTO.getFromDate(), "mm/dd/yyyy"))
+			throw new HpcException("Invalid fromDate format. Valid format is mm/dd/yyyy",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		
+		if(criteriaDTO.getToDate() != null && !isDateValid(criteriaDTO.getToDate(), "mm/dd/yyyy"))
+			throw new HpcException("Invalid toDate format. Valid format is mm/dd/yyyy",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+
 		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC)
 				&& (criteriaDTO.getDoc() == null || criteriaDTO.getDoc().isEmpty()))
 			throw new HpcException("DOC value is missing for USAGE_SUMMARY_BY_DOC report",
@@ -103,19 +117,56 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
 		HpcReportCriteria criteria = new HpcReportCriteria(); 
 		criteria.setDoc(criteriaDTO.getDoc());
 		criteria.setType(criteriaDTO.getType());
-		criteria.setFromDate(criteriaDTO.getFromDate());
-		criteria.setToDate(criteriaDTO.getToDate());
+		Calendar fromcal = null;
+		Calendar tocal = null; 
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("mm/dd/yyyy");
+			Date frdate = sdf.parse(criteriaDTO.getFromDate());
+			fromcal = sdf.getCalendar();
+			criteria.setFromDate(fromcal);
+			Date todate = sdf.parse(criteriaDTO.getToDate());
+			tocal = sdf.getCalendar();
+			criteria.setToDate(tocal);
+		} catch (ParseException e) {
+			throw new HpcException(
+					"Failed to parse date value "+e.getMessage(),
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 		criteria.setUser(criteriaDTO.getUser());
 		HpcReport report = reportService.generateReport(criteria);
 		HpcReportDTO dto = new HpcReportDTO();
 		dto.setDoc(report.getDoc());
-		dto.setFromDate(report.getFromDate());
+		dto.setFromDate(fromcal);
 		dto.setGeneratedOn(report.getGeneratedOn());
-		dto.setToDate(report.getToDate());
+		dto.setToDate(tocal);
 		dto.setType(report.getType());
 		dto.setUser(report.getUser());
 		dto.getReportEntries().addAll(report.getReportEntries());
 		return dto;
+	}
+
+	private boolean isDateValid(String dateToValidate, String dateFromat){
+
+		if(dateToValidate == null){
+			return false;
+		}
+
+		SimpleDateFormat sdf = new SimpleDateFormat(dateFromat);
+		sdf.setLenient(false);
+
+		try {
+
+			//if not valid, it will throw ParseException
+			Date date = sdf.parse(dateToValidate);
+			System.out.println(date);
+
+		} catch (ParseException e) {
+
+			e.printStackTrace();
+			return false;
+		}
+
+		return true;
 	}
 
 }
