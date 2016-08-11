@@ -256,7 +256,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
                                 } else
                                         type = (String) listEntry.get(name);
                         }
-                        str.append(type + ": "+ count + "\n");
+                        str.append("\t"+type + ": "+ count + "\n");
                 }
         }
 		HpcReportEntry numOfCollEntry = new HpcReportEntry();
@@ -413,6 +413,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 
 		report.setGeneratedOn(Calendar.getInstance());
 		report.setType(criteria.getType());
+		if(criteria.getFromDate() != null)
+			report.setFromDate(criteria.getFromDate());
+		if(criteria.getToDate() != null)
+			report.setToDate(criteria.getToDate());
 		
 		report.getReportEntries().add(userSizeEntry);
 		report.getReportEntries().add(sizeEntry);
