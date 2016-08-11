@@ -26,11 +26,11 @@
 			<xsd:enumeration value="DATA_TRANSFER_DOWNLOAD_COMPLETED" />
 			<xsd:enumeration value="DATA_TRANSFER_DOWNLOAD_FAILED" />
 			<xsd:enumeration value="USAGE_SUMMARY_REPORT" />
-			<xsd:enumeration value="USAGE_SUMMARY_BY_DATE_RANGE_REPORT" />
+			<xsd:enumeration value="USAGE_SUMMARY_BY_WEEKLY_REPORT" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_DOC_REPORT" />
-			<xsd:enumeration value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE_REPORT" />
+			<xsd:enumeration value="USAGE_SUMMARY_BY_DOC_BY_WEEKLY_REPORT" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_USER_REPORT" />
-			<xsd:enumeration value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE_REPORT" />
+			<xsd:enumeration value="USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	

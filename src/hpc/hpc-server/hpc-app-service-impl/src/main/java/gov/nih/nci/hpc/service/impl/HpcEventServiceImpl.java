@@ -286,15 +286,15 @@ public class HpcEventServiceImpl implements HpcEventService
     	else if(reportType.equals(HpcReportType.USAGE_SUMMARY))
     		return HpcEventType.USAGE_SUMMARY_REPORT;
     	else if(reportType.equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE))
-    		return HpcEventType.USAGE_SUMMARY_BY_DATE_RANGE_REPORT;
+    		return HpcEventType.USAGE_SUMMARY_BY_WEEKLY_REPORT;
     	else if(reportType.equals(HpcReportType.USAGE_SUMMARY_BY_DOC))
     		return HpcEventType.USAGE_SUMMARY_BY_DOC_REPORT;
     	else if(reportType.equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
-    		return HpcEventType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE_REPORT;
+    		return HpcEventType.USAGE_SUMMARY_BY_DOC_BY_WEEKLY_REPORT;
     	else if(reportType.equals(HpcReportType.USAGE_SUMMARY_BY_USER))
     		return HpcEventType.USAGE_SUMMARY_BY_USER_REPORT;
     	else if(reportType.equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE))
-    		return HpcEventType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE_REPORT;
+    		return HpcEventType.USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT;
     	else
     		return null;
     }

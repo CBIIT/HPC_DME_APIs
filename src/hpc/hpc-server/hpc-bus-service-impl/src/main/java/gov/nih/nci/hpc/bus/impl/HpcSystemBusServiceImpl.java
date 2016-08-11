@@ -294,6 +294,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		criteria.setType(HpcReportType.USAGE_SUMMARY);
     		eventService.generateReportsEvents(summaryReportUsers, criteria);
     	}
+
+    	List<String> summaryReportByDateUsers = notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_BY_WEEKLY_REPORT);
+    	logger.error("summaryReportByDateUsers: "+summaryReportByDateUsers);
+    	if(summaryReportByDateUsers != null && summaryReportByDateUsers.size() > 0)
+    	{
+    		HpcReportCriteria criteria = new HpcReportCriteria();
+    		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE);
+    		Calendar today = Calendar.getInstance();
+    		Calendar oneWeekbefore = Calendar.getInstance();
+    		oneWeekbefore.add(Calendar.DATE, -7);
+    		criteria.setFromDate(oneWeekbefore);
+    		criteria.setToDate(today);
+    		eventService.generateReportsEvents(summaryReportByDateUsers, criteria);
+    	}
 	}
 
     //---------------------------------------------------------------------//
