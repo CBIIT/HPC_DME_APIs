@@ -258,15 +258,15 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
     
 	private String getUsersSize(HpcReportCriteria criteria, Date[] dates, Object[] docArg, Object[] docDateArgs)
 	{
-		Integer usersSize = null;
+		Long usersSize = null;
 		if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
-			usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_SQL, Integer.class);
+			usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_SQL, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE))
-			usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_DATE_SQL, dates, Integer.class);
+			usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_DATE_SQL, dates, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC))
-			usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_DOC_SQL, docArg, Integer.class);
+			usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_DOC_SQL, docArg, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
-			usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_DOC_DATE_SQL, docDateArgs, Integer.class);
+			usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_DOC_DATE_SQL, docDateArgs, Long.class);
 		
 		if(usersSize != null)
 			return usersSize.toString();
@@ -275,19 +275,19 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 	
 	private String getTotalDataSize(HpcReportCriteria criteria, Date[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
 	{
-		Integer totalSize = null;
+		Long totalSize = null;
 		if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
-			totalSize = jdbcTemplate.queryForObject(SUM_OF_DATA_SQL, Integer.class);
+			totalSize = jdbcTemplate.queryForObject(SUM_OF_DATA_SQL, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE))
-			totalSize = jdbcTemplate.queryForObject(SUM_OF_DATA_BY_DATE_SQL, dates, Integer.class);
+			totalSize = jdbcTemplate.queryForObject(SUM_OF_DATA_BY_DATE_SQL, dates, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC))
-			totalSize = jdbcTemplate.queryForObject(SUM_OF_DATA_BY_DOC_SQL, docArg, Integer.class);
+			totalSize = jdbcTemplate.queryForObject(SUM_OF_DATA_BY_DOC_SQL, docArg, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
-			totalSize = jdbcTemplate.queryForObject(SUM_OF_DATA_BY_DOC_DATE_SQL, docDateArgs, Integer.class);
+			totalSize = jdbcTemplate.queryForObject(SUM_OF_DATA_BY_DOC_DATE_SQL, docDateArgs, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER))
-			totalSize = jdbcTemplate.queryForObject(SUM_OF_DATA_BY_USER_SQL, userArg, Integer.class);
+			totalSize = jdbcTemplate.queryForObject(SUM_OF_DATA_BY_USER_SQL, userArg, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE))
-			totalSize = jdbcTemplate.queryForObject(SUM_OF_DATA_BY_USER_DATE_SQL, userDateArgs, Integer.class);
+			totalSize = jdbcTemplate.queryForObject(SUM_OF_DATA_BY_USER_DATE_SQL, userDateArgs, Long.class);
 		
 		if(totalSize != null)
 			return totalSize.toString();
@@ -297,19 +297,19 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 
 	private String getLargestSize(HpcReportCriteria criteria, Date[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
 	{
-		Integer largestSize = null;
+		Long largestSize = null;
 		if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
-			largestSize = jdbcTemplate.queryForObject(LARGEST_FILE_SQL, Integer.class);
+			largestSize = jdbcTemplate.queryForObject(LARGEST_FILE_SQL, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE))
-			largestSize = jdbcTemplate.queryForObject(LARGEST_FILE_BY_DATE_SQL, dates, Integer.class);
+			largestSize = jdbcTemplate.queryForObject(LARGEST_FILE_BY_DATE_SQL, dates, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC))
-			largestSize = jdbcTemplate.queryForObject(LARGEST_FILE_BY_DOC_SQL, docArg, Integer.class);
+			largestSize = jdbcTemplate.queryForObject(LARGEST_FILE_BY_DOC_SQL, docArg, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
-			largestSize = jdbcTemplate.queryForObject(LARGEST_FILE_BY_DOC_DATE_SQL, docDateArgs, Integer.class);
+			largestSize = jdbcTemplate.queryForObject(LARGEST_FILE_BY_DOC_DATE_SQL, docDateArgs, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER))
-			largestSize = jdbcTemplate.queryForObject(LARGEST_FILE_BY_USER_SQL, userArg, Integer.class);
+			largestSize = jdbcTemplate.queryForObject(LARGEST_FILE_BY_USER_SQL, userArg, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE))
-			largestSize = jdbcTemplate.queryForObject(LARGEST_FILE_BY_USER_DATE_SQL, userDateArgs, Integer.class);
+			largestSize = jdbcTemplate.queryForObject(LARGEST_FILE_BY_USER_DATE_SQL, userDateArgs, Long.class);
 		
 		if(largestSize != null)
 			return largestSize.toString();
@@ -318,19 +318,19 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 
 	private String getAverageSize(HpcReportCriteria criteria, Date[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
 	{
-		Integer averageSize = null;
+		Long averageSize = null;
 		if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
-			averageSize = jdbcTemplate.queryForObject(AVERAGE_FILE_SQL, Integer.class);
+			averageSize = jdbcTemplate.queryForObject(AVERAGE_FILE_SQL, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE))
-			averageSize = jdbcTemplate.queryForObject(AVERAGE_FILE_BY_DATE_SQL, dates, Integer.class);
+			averageSize = jdbcTemplate.queryForObject(AVERAGE_FILE_BY_DATE_SQL, dates, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC))
-			averageSize = jdbcTemplate.queryForObject(AVERAGE_FILE_BY_DOC_SQL, docArg, Integer.class);
+			averageSize = jdbcTemplate.queryForObject(AVERAGE_FILE_BY_DOC_SQL, docArg, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
-			averageSize = jdbcTemplate.queryForObject(AVERAGE_FILE_BY_DOC_DATE_SQL, docDateArgs, Integer.class);
+			averageSize = jdbcTemplate.queryForObject(AVERAGE_FILE_BY_DOC_DATE_SQL, docDateArgs, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER))
-			averageSize = jdbcTemplate.queryForObject(AVERAGE_FILE_BY_USER_SQL, userArg, Integer.class);
+			averageSize = jdbcTemplate.queryForObject(AVERAGE_FILE_BY_USER_SQL, userArg, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE))
-			averageSize = jdbcTemplate.queryForObject(AVERAGE_FILE_BY_USER_DATE_SQL, userDateArgs, Integer.class);
+			averageSize = jdbcTemplate.queryForObject(AVERAGE_FILE_BY_USER_DATE_SQL, userDateArgs, Long.class);
 		
 		if(averageSize != null)
 			return averageSize.toString();
@@ -339,19 +339,19 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 
 	private String getTotalDataObjSize(HpcReportCriteria criteria, Date[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
 	{
-		Integer dataSize = null;
+		Long dataSize = null;
 		if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
-			dataSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_SQL, Integer.class);
+			dataSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_SQL, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE))
-			dataSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_BY_DATE_SQL, dates, Integer.class);
+			dataSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_BY_DATE_SQL, dates, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC))
-			dataSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_BY_DOC_SQL, docArg, Integer.class);
+			dataSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_BY_DOC_SQL, docArg, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
-			dataSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_BY_DOC_DATE_SQL, docDateArgs, Integer.class);
+			dataSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_BY_DOC_DATE_SQL, docDateArgs, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER))
-			dataSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_BY_USER_SQL, userArg, Integer.class);
+			dataSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_BY_USER_SQL, userArg, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE))
-			dataSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_BY_USER_DATE_SQL, userDateArgs, Integer.class);
+			dataSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_BY_USER_DATE_SQL, userDateArgs, Long.class);
 		
 		if(dataSize != null)
 			return dataSize.toString();
@@ -378,19 +378,19 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 
 	private String getTotalMetaAttrCount(HpcReportCriteria criteria, Date[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
 	{
-		Integer metaAttrCount = null;
+		Long metaAttrCount = null;
 		if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
-			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_SQL, Integer.class);
+			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_SQL, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE))
-			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_DATE_SQL, dates, Integer.class);
+			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_DATE_SQL, dates, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC))
-			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_DOC_SQL, docArg, Integer.class);
+			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_DOC_SQL, docArg, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
-			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_DOC_DATE_SQL, docDateArgs, Integer.class);
+			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_DOC_DATE_SQL, docDateArgs, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER))
-			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_USER_SQL, userArg, Integer.class);
+			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_USER_SQL, userArg, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE))
-			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_USER_DATE_SQL, userDateArgs, Integer.class);
+			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_USER_DATE_SQL, userDateArgs, Long.class);
 		
 		if(metaAttrCount != null)
 			return metaAttrCount.toString();
@@ -399,19 +399,19 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 	
 	private String getFileSize(HpcReportCriteria criteria, Object[] fileSizeArgs, Object[] filesizedateArgs, Object[] filesizedocArgs, Object[] filesizedocDateArgs, Object[] filesizeuserArgs, Object[] filesizeuserDateArgs)
 	{
-		Integer fileSize = null;
+		Long fileSize = null;
 		if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
-			fileSize = jdbcTemplate.queryForObject(FILE_SIZE_RANGE_SQL, fileSizeArgs, Integer.class);
+			fileSize = jdbcTemplate.queryForObject(FILE_SIZE_RANGE_SQL, fileSizeArgs, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE))
-			fileSize = jdbcTemplate.queryForObject(FILE_SIZE_RANGE_BY_DATE_SQL, filesizedateArgs, Integer.class);
+			fileSize = jdbcTemplate.queryForObject(FILE_SIZE_RANGE_BY_DATE_SQL, filesizedateArgs, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC))
-			fileSize = jdbcTemplate.queryForObject(FILE_SIZE_RANGE_BY_DOC_SQL, filesizedocArgs, Integer.class);
+			fileSize = jdbcTemplate.queryForObject(FILE_SIZE_RANGE_BY_DOC_SQL, filesizedocArgs, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
-			fileSize = jdbcTemplate.queryForObject(FILE_SIZE_RANGE_BY_DOC_DATE_SQL, filesizedocDateArgs, Integer.class);
+			fileSize = jdbcTemplate.queryForObject(FILE_SIZE_RANGE_BY_DOC_DATE_SQL, filesizedocDateArgs, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER))
-			fileSize = jdbcTemplate.queryForObject(FILE_SIZE_RANGE_BY_USER_SQL, filesizeuserArgs, Integer.class);
+			fileSize = jdbcTemplate.queryForObject(FILE_SIZE_RANGE_BY_USER_SQL, filesizeuserArgs, Long.class);
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE))
-			fileSize = jdbcTemplate.queryForObject(FILE_SIZE_RANGE_BY_USER_DATE_SQL, filesizeuserDateArgs, Integer.class);
+			fileSize = jdbcTemplate.queryForObject(FILE_SIZE_RANGE_BY_USER_DATE_SQL, filesizeuserDateArgs, Long.class);
 		
 		if(fileSize != null)
 			return fileSize.toString();
