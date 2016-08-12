@@ -120,13 +120,16 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
 		Calendar fromcal = null;
 		Calendar tocal = null; 
 		try {
-			SimpleDateFormat sdf = new SimpleDateFormat("mm/dd/yyyy");
-			Date frdate = sdf.parse(criteriaDTO.getFromDate());
-			fromcal = sdf.getCalendar();
-			criteria.setFromDate(fromcal);
-			Date todate = sdf.parse(criteriaDTO.getToDate());
-			tocal = sdf.getCalendar();
-			criteria.setToDate(tocal);
+			if(criteriaDTO.getFromDate() != null && criteriaDTO.getToDate() != null)
+			{
+				SimpleDateFormat sdf = new SimpleDateFormat("mm/dd/yyyy");
+				sdf.parse(criteriaDTO.getFromDate());
+				fromcal = sdf.getCalendar();
+				criteria.setFromDate(fromcal);
+				sdf.parse(criteriaDTO.getToDate());
+				tocal = sdf.getCalendar();
+				criteria.setToDate(tocal);
+			}
 		} catch (ParseException e) {
 			throw new HpcException(
 					"Failed to parse date value "+e.getMessage(),
