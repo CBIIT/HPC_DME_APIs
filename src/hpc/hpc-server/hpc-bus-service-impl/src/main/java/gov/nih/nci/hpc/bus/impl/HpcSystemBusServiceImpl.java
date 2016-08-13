@@ -198,7 +198,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  			           		                 path, uploadResponse.getArchiveLocation(),
  			    			                 uploadResponse.getDataTransferRequestId(), 
  			    			                 uploadResponse.getDataTransferStatus(),
- 			    			                 uploadResponse.getDataTransferType()); 
+ 			    			                 uploadResponse.getDataTransferType(),
+ 			    			                 null); 
  			     
  			     // Data transfer upload completed (successfully or failed). Add an event.
     			 addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
@@ -376,7 +377,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	                                        throws HpcException
 	{
 		dataManagementService.updateDataObjectSystemGeneratedMetadata(
-                                    path, null, null, dataTransferStatus, null);
+                                    path, null, null, dataTransferStatus, null, null);
 	}
 	
     /** 
