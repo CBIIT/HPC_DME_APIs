@@ -42,8 +42,6 @@ import java.util.Map;
 
 public interface HpcDataManagementService 
 {   
-
-	
     /**
      * Create a collection's directory.
      *
@@ -93,12 +91,16 @@ public interface HpcDataManagementService
      * 		2. Registrar user ID.
      * 		3. Registrar name.
      *      4. Registrar DOC.
+     *      5. Metadata Origin.
      *
      * @param path The collection path.
+     * @param metadataOrigin an object describing the origin of the metadata (parent or self).
      * 
      * @throws HpcException
      */
-    public void addSystemGeneratedMetadataToCollection(String path) throws HpcException; 
+    public void addSystemGeneratedMetadataToCollection(String path,
+    		                                           HpcMetadataOrigin metadataOrigin) 
+    		                                          throws HpcException; 
     
     /**
      * Update a collection's metadata.
@@ -159,6 +161,7 @@ public interface HpcDataManagementService
      *      8. Data Transfer Status.
      *      9. Data Transfer Type.
      *      10. Data Object File(s) size. (Optional)
+     *      11. Metadata Origin
      *
      * @param path The data object path.
      * @param archiveLocation The physical file archive location.
@@ -168,6 +171,7 @@ public interface HpcDataManagementService
      * @param dataTransferType The data transfer type.
      * @param sourceSize (Optional) The data source size in bytes.
      * @param callerObjectId (Optional) The caller object ID.
+     * @param metadataOrigin The metadata origin.
      * 
      * @throws HpcException
      */
@@ -177,7 +181,8 @@ public interface HpcDataManagementService
     		                                           String dataTransferRequestId,
     		                                           HpcDataTransferUploadStatus dataTransferStatus,
     		                                           HpcDataTransferType dataTransferType,
-    		                                           Long sourceSize, String callerObjectId) 
+    		                                           Long sourceSize, String callerObjectId,
+    		                                           HpcMetadataOrigin metadataOrigin) 
     		                                          throws HpcException; 
     
     /**
