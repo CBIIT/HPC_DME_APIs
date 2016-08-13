@@ -505,7 +505,8 @@
       "collectionSystemGeneratedMetadataAttributes" : [ "uuid",
                                                         "registered_by",
                                                         "registered_by_name",
-                                                        "registered_by_doc"
+                                                        "registered_by_doc",
+                                                        "metadata_origin"
                                                       ],
       "dataObjectSystemGeneratedMetadataAttributes" : [ "uuid",
                                                         "registered_by",
@@ -519,7 +520,8 @@
                                                         "data_transfer_status",
                                                         "data_transfer_type",
                                                         "source_file_size",
-                                                        "archive_caller_object_id"
+                                                        "archive_caller_object_id",
+                                                        "metadata_origin"
                                                       ]
    }
 }

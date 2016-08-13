@@ -58,14 +58,4 @@
 		</xsd:complexType>
 	</xsd:element>
 	
-	<xsd:element name="HpcParentPathMetadata">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="parentPath" type="xsd:string" />
-			    <xsd:element name="metadataEntries" 
-			                 type="hpc-domain-metadata:HpcMetadataEntry" 
-			                 minOccurs="0" maxOccurs="unbounded" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
 </xsd:schema>
