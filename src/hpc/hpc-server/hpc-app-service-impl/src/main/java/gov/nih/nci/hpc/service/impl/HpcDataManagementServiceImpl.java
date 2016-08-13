@@ -386,14 +386,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 			}
        	}
 		  
-       	// Add Parent Metadata to the data object or collection
-    	if(pathAttributes.getIsFile()) {
-       	   dataManagementProxy.addMetadataToDataObject(authenticatedToken, 
-       		   	                                       path, addMetadataEntries);
-    	} else {
-    		    dataManagementProxy.addMetadataToCollection(authenticatedToken, 
-                                                            path, addMetadataEntries);
-    	}
+        // Add Parent Metadata to the data object or collection. 
+       	if(!addMetadataEntries.isEmpty()) {
+    	   if(pathAttributes.getIsFile()) {
+       	      dataManagementProxy.addMetadataToDataObject(authenticatedToken, 
+       		     	                                      path, addMetadataEntries);
+    	   } else {
+    		       dataManagementProxy.addMetadataToCollection(authenticatedToken, 
+                                                               path, addMetadataEntries);
+    	   }
+       	}
        	
        	return metadataOrigin;
     }
