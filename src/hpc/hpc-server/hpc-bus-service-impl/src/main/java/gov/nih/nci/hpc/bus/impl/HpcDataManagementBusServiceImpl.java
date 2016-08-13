@@ -24,7 +24,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
-import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
@@ -367,7 +367,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Get the System generated metadata.
-    	HpcDataObjectSystemGeneratedMetadata metadata = 
+    	HpcSystemGeneratedMetadata metadata = 
     	   dataManagementService.getDataObjectSystemGeneratedMetadata(path);
     	
     	// Validate the file is archived.
@@ -591,7 +591,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      *         e.g 86%.
      */
 	private String getDataTransferUploadPercentCompletion(
-			          HpcDataObjectSystemGeneratedMetadata systemGeneratedMetadata)
+			          HpcSystemGeneratedMetadata systemGeneratedMetadata)
 	{
 		// Get the transfer status, transfer request id and data-object size from the metadata entries.
 		HpcDataTransferUploadStatus transferStatus = systemGeneratedMetadata.getDataTransferStatus();
