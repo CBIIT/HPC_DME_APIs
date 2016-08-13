@@ -193,6 +193,7 @@ public interface HpcDataManagementService
      * @param dataTransferRequestId (Optional) The data transfer request ID.
      * @param dataTransferStatus (Optional) The data transfer upload status.
      * @param dataTransferType (Optional) The data transfer type.
+     * @param metadataOrigin (Optional) The metadata origin
      * 
      * @throws HpcException
      */
@@ -200,14 +201,15 @@ public interface HpcDataManagementService
     		                                            HpcFileLocation archiveLocation,
     		                                            String dataTransferRequestId,
     		                                            HpcDataTransferUploadStatus dataTransferStatus,
-    		                                            HpcDataTransferType dataTransferType) 
+    		                                            HpcDataTransferType dataTransferType,
+    		                                            HpcMetadataOrigin metadataOrigin) 
     		                                          throws HpcException; 
     
     /**
      * Get the system generated metadata of a data object.
      *
      * @param path The data object path.
-     * @return HpcDataObjectSystemGeneratedMetadata The system generated metadata
+     * @return HpcSystemGeneratedMetadata The system generated metadata
      * 
      * @throws HpcException
      */
@@ -215,15 +217,39 @@ public interface HpcDataManagementService
               getDataObjectSystemGeneratedMetadata(String path) throws HpcException; 
     
     /**
-     * Get the system generated metadata of a data object.
+     * Get the system generated metadata of a collection.
      *
-     * @param dataObjectMetadata The data object metadata.
+     * @param path The collection path.
+     * @return HpcSystemGeneratedMetadata The system generated metadata.
      * 
      * @throws HpcException
      */
     public HpcSystemGeneratedMetadata 
-              getDataObjectSystemGeneratedMetadata(List<HpcMetadataEntry> dataObjectMetadata) 
-            		                              throws HpcException; 
+              getCollectionSystemGeneratedMetadata(String path) throws HpcException; 
+    
+    /**
+     * Update system generated metadata of a collection.
+     *
+     * @param path The data object path.
+     * @param metadataOrigin (Optional) The metadata origin
+     * 
+     * @throws HpcException
+     */
+    public void updateCollectionSystemGeneratedMetadata(String path, 
+    		                                            HpcMetadataOrigin metadataOrigin) 
+    		                                           throws HpcException; 
+    
+    /**
+     * Get the system generated metadata object from a list of entries.
+     *
+     * @param systemGeneratedMetadataEntries The system generated metadata entries.
+     * @return HpcSystemGeneratedMetadata The system generated metadata.
+     * 
+     * @throws HpcException
+     */
+    public HpcSystemGeneratedMetadata 
+              toSystemGeneratedMetadata(List<HpcMetadataEntry> systemGeneratedMetadataEntries) 
+            	                       throws HpcException; 
     
     /**
      * Get collection by its path.
