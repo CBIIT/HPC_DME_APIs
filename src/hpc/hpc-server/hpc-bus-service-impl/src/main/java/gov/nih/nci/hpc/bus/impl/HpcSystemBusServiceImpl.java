@@ -16,7 +16,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadCleanup;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
-import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
@@ -120,7 +120,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		String path = dataObject.getAbsolutePath();
     		try {
     		     // Get current data transfer Request Info.
-    			 HpcDataObjectSystemGeneratedMetadata systemGeneratedMetadata = 
+    			 HpcSystemGeneratedMetadata systemGeneratedMetadata = 
     			    dataManagementService.getDataObjectSystemGeneratedMetadata(path);
     			 
     			 // Get the data transfer upload request status.
@@ -170,7 +170,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	// Iterate through the data objects that their data is in temporary archive.
     	for(HpcDataObject dataObject : dataManagementService.getDataObjectsInTemporaryArchive()) {
     		String path = dataObject.getAbsolutePath();
-    		HpcDataObjectSystemGeneratedMetadata systemGeneratedMetadata = null;
+    		HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
     		try {
     		     // Get the data object system generated metadata.
     			 systemGeneratedMetadata = 
