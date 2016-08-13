@@ -50,6 +50,8 @@ import java.util.Set;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +77,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	
 	// Data Management OWN permission.
 	private static final String OWN_PERMISSION = "OWN"; 
+	
+	// JSON attributes.
+	private static final String JSON_METADATA_ATTRIBUTES = "metadataAttributes"; 
+	private static final String JSON_PARENT_METADATA_ATTRIBUTES = "parentMetadataAttributes"; 
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -296,6 +302,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	// Add Metadata to the DM system.
        	dataManagementProxy.updateCollectionMetadata(getAuthenticatedToken(),
        			                                     path, metadataEntries);
+       	
+       	// Update the metadata origin system metadata.
+       	HpcMetadataOrigin metadataOrigin = getCollectionSystemGeneratedMetadata(path).getMetadataOrigin();
+       	updateMetadataOrigin(metadataOrigin, metadataEntries);
+       	updateCollectionSystemGeneratedMetadata(path, metadataOrigin);
     }
     
     @Override
@@ -407,6 +418,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	// Update Metadata.
        	dataManagementProxy.updateDataObjectMetadata(getAuthenticatedToken(),
        			                                     path, metadataEntries);
+       	
+       	// Update the metadata origin system metadata.
+       	HpcMetadataOrigin metadataOrigin = getDataObjectSystemGeneratedMetadata(path).getMetadataOrigin();
+       	updateMetadataOrigin(metadataOrigin, metadataEntries);
+       	updateDataObjectSystemGeneratedMetadata(path, null, null, null, null, metadataOrigin);
     }
     
     @Override
@@ -484,7 +500,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        			         toMetadataEntry(SOURCE_FILE_SIZE_ATTRIBUTE, 
        			                         sourceSize));
        	
-        // Create the Source File Size metadata.
+        // Create the Caller Object ID metadata.
         addMetadataEntry(metadataEntries,
         		         toMetadataEntry(CALLER_OBJECT_ID_ATTRIBUTE, 
         	                             callerObjectId));
@@ -499,7 +515,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
                                                         HpcFileLocation archiveLocation,
                                                         String dataTransferRequestId,
                                                         HpcDataTransferUploadStatus dataTransferStatus,
-                                                        HpcDataTransferType dataTransferType) 
+                                                        HpcDataTransferType dataTransferType,
+                                                        HpcMetadataOrigin metadataOrigin) 
                                                         throws HpcException
 	{
        	// Input validation.
@@ -544,6 +561,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        		  	                            dataTransferType.value()));
        	}
        	
+       	if(metadataOrigin != null) {
+           // Update the Metadata Origin.
+       		metadataEntries.add(generateMetadataOriginMetadata(metadataOrigin));
+       	}
+       	
 		dataManagementProxy.updateDataObjectMetadata(getAuthenticatedToken(),
 		                                             path, metadataEntries);
 	}
@@ -558,16 +580,51 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		                          HpcErrorType.INVALID_REQUEST_INPUT);
     	}	
     	
-    	return getDataObjectSystemGeneratedMetadata(getDataObjectMetadata(path));
+    	return toSystemGeneratedMetadata(getDataObjectMetadata(path));
 	}
     
     @Override
     public HpcSystemGeneratedMetadata 
-              getDataObjectSystemGeneratedMetadata(List<HpcMetadataEntry> dataObjectMetadata) 
-            		                              throws HpcException
+              getCollectionSystemGeneratedMetadata(String path) throws HpcException
+	{
+    	// Input validation.
+    	if(getCollection(path) == null) {
+           throw new HpcException("Collection not found: " + path, 
+		                          HpcErrorType.INVALID_REQUEST_INPUT);
+    	}	
+    	
+    	return toSystemGeneratedMetadata(getCollectionMetadata(path));
+	}
+    
+    @Override
+    public void updateCollectionSystemGeneratedMetadata(String path, 
+                                                        HpcMetadataOrigin metadataOrigin) 
+                                                        throws HpcException
+	{
+       	// Input validation.
+       	if(path == null) {
+       	   throw new HpcException("Invalid updated system generated metadata for collectiont", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+       	List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+       	
+       	if(metadataOrigin != null) {
+           // Update the Metadata Origin.
+       		metadataEntries.add(generateMetadataOriginMetadata(metadataOrigin));
+       	}
+       	
+		dataManagementProxy.updateCollectionMetadata(getAuthenticatedToken(),
+		                                             path, metadataEntries);
+	}
+    
+    @Override
+    public HpcSystemGeneratedMetadata 
+              toSystemGeneratedMetadata(List<HpcMetadataEntry> systemGeneratedMetadataEntries) 
+            	                       throws HpcException
 	{
     	// Extract the system generated data-object metadata entries from the entire set.
-    	Map<String, String> metadataMap = toMap(dataObjectMetadata);
+    	Map<String, String> metadataMap = toMap(systemGeneratedMetadataEntries);
     	HpcSystemGeneratedMetadata systemGeneratedMetadata = new HpcSystemGeneratedMetadata();
     	systemGeneratedMetadata.setObjectId(metadataMap.get(ID_ATTRIBUTE));
     	systemGeneratedMetadata.setRegistrarId(metadataMap.get(REGISTRAR_ID_ATTRIBUTE));
@@ -590,15 +647,15 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	
     	systemGeneratedMetadata.setDataTransferRequestId(metadataMap.get(DATA_TRANSFER_REQUEST_ID_ATTRIBUTE));
     	if(metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE) != null) {
-    		try {
-    		     systemGeneratedMetadata.setDataTransferStatus(
-    				   HpcDataTransferUploadStatus.fromValue(
-    						                metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE)));
+    	   try {
+    		    systemGeneratedMetadata.setDataTransferStatus(
+    			      HpcDataTransferUploadStatus.fromValue(
+    						               metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE)));
     		     
-    		} catch(Exception e) {
-    			    logger.error("Unable to determine data transfer status: "+ 
-    		                     metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE), e);
-    			    systemGeneratedMetadata.setDataTransferStatus(HpcDataTransferUploadStatus.UNKNOWN);
+    	   } catch(Exception e) {
+    			   logger.error("Unable to determine data transfer status: "+ 
+    		                    metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE), e);
+    			   systemGeneratedMetadata.setDataTransferStatus(HpcDataTransferUploadStatus.UNKNOWN);
     		}
     	}
     	
@@ -619,6 +676,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		  Long.valueOf(metadataMap.get(SOURCE_FILE_SIZE_ATTRIBUTE)) : null);
     	systemGeneratedMetadata.setCallerObjectId(
       		  metadataMap.get(CALLER_OBJECT_ID_ATTRIBUTE));
+    	systemGeneratedMetadata.setMetadataOrigin(fromJSON(
+    		  metadataMap.get(METADATA_ORIGIN_ATTRIBUTE)));
     		  
 		return systemGeneratedMetadata;
 	}
@@ -968,8 +1027,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 			  jsonParentMetadataAttributes.addAll(metadataOrigin.getParentMetadataAttributes());
 		   }
 		   
-		   jsonMetadataOrigin.put("metadataAttributes", jsonMetadataAttributes);
-		   jsonMetadataOrigin.put("parentMetadataAttributes", jsonParentMetadataAttributes);
+		   jsonMetadataOrigin.put(JSON_METADATA_ATTRIBUTES, jsonMetadataAttributes);
+		   jsonMetadataOrigin.put(JSON_PARENT_METADATA_ATTRIBUTES, jsonParentMetadataAttributes);
 		}
 		
 		return toMetadataEntry(METADATA_ORIGIN_ATTRIBUTE, jsonMetadataOrigin.toJSONString());
@@ -1033,5 +1092,70 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	    query.setValue(value);
 	    
 	    return query;
+    }
+    
+    /** 
+     * Convert JSON string to HpcMetadataOrigin object.
+     * 
+     * @param jsonMetadataOriginStr The metadata origin JSON String.
+     * @return HpcMetadataOrigin
+     */
+	@SuppressWarnings("unchecked")
+	private HpcMetadataOrigin fromJSON(String jsonMetadataOriginStr)
+	{
+		HpcMetadataOrigin metadataOrigin = new HpcMetadataOrigin();
+		if(jsonMetadataOriginStr == null || jsonMetadataOriginStr.isEmpty()) {
+		   return metadataOrigin;
+		}
+		
+		// Parse the JSON string.
+		JSONObject jsonMetadataOrigin = null;
+		try {
+			 jsonMetadataOrigin = (JSONObject) (new JSONParser().parse(jsonMetadataOriginStr));
+			 
+		} catch(ParseException e) {
+			    return metadataOrigin;
+		}
+		
+		JSONArray jsonMetadataAttributes = 
+				  (JSONArray) jsonMetadataOrigin.get(JSON_METADATA_ATTRIBUTES);
+		if(jsonMetadataAttributes != null) {
+			metadataOrigin.getMetadataAttributes().addAll(jsonMetadataAttributes);	
+		}
+		JSONArray jsonParentMetadataAttributes = 
+				  (JSONArray) jsonMetadataOrigin.get(JSON_PARENT_METADATA_ATTRIBUTES);
+		if(jsonParentMetadataAttributes != null) {
+			metadataOrigin.getParentMetadataAttributes().addAll(jsonParentMetadataAttributes);	
+		}
+
+		return metadataOrigin;
+	}	
+	
+    /** 
+     * Update a MetadataOrigin object with updated entries.
+     * 
+     * @param metadataOrigin The metadata origin object.
+     * @param metadataEntries The updated metadata entries.
+     * @return HpcMetadataOrigin
+     */
+    private void updateMetadataOrigin(HpcMetadataOrigin metadataOrigin, 
+    		                          List<HpcMetadataEntry> metadataEntries) 
+    {
+    	Set<String> metadataAttributes = new HashSet<>();
+    	metadataAttributes.addAll(metadataOrigin.getMetadataAttributes());
+    	metadataOrigin.getMetadataAttributes().clear();
+    	
+    	Set<String> parentMetadataAttributes = new HashSet<>();
+    	parentMetadataAttributes.addAll(metadataOrigin.getParentMetadataAttributes());
+    	metadataOrigin.getParentMetadataAttributes().clear();
+    	
+    	// Update the origin for the entries on the list.
+    	for(HpcMetadataEntry metadataEntry : metadataEntries) {
+    		metadataAttributes.add(metadataEntry.getAttribute());
+    		parentMetadataAttributes.remove(metadataEntry.getAttribute());
+    	}
+    	
+    	metadataOrigin.getMetadataAttributes().addAll(metadataAttributes);
+    	metadataOrigin.getParentMetadataAttributes().addAll(parentMetadataAttributes);
     }
 }

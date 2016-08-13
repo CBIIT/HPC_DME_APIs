@@ -146,7 +146,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	       }
        	   
     	} else {
-    		    dataManagementService.updateCollectionMetadata(path, metadataEntries);
+    		    updateCollection(path, metadataEntries);
     	}
     	
     	return created;
@@ -315,7 +315,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		
     	return toDTO(dataObject, metadataEntries, 
     			     getDataTransferUploadPercentCompletion(
-    			        dataManagementService.getDataObjectSystemGeneratedMetadata(metadataEntries)));
+    			        dataManagementService.toSystemGeneratedMetadata(metadataEntries)));
     }
     
     @Override
@@ -349,7 +349,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		dataObjectsDTO.getDataObjects().add(
     			toDTO(dataObject, metadataEntries,
     			      getDataTransferUploadPercentCompletion(
-    			       	 dataManagementService.getDataObjectSystemGeneratedMetadata(metadataEntries))));
+    			       	 dataManagementService.toSystemGeneratedMetadata(metadataEntries))));
     	}
     	
     	return dataObjectsDTO;
@@ -647,6 +647,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		return null;
 	}
+	
+    /**
+     * Update a Collection.
+     *
+     * @param path The collection's path.
+     * @param metadataEntries A list of metadata entries to update.
+     * 
+     * @throws HpcException
+     */
+    private void updateCollection(String path,
+                                  List<HpcMetadataEntry> metadataEntries)  
+                                 throws HpcException
+    {
+    	dataManagementService.updateCollectionMetadata(path, metadataEntries);
+    }
 }
 
  
