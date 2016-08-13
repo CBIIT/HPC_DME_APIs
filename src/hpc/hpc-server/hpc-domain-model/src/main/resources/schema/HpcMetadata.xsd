@@ -23,27 +23,10 @@
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datatransfer"
 		        schemaLocation="HpcDataTransferTypes.xsd" />
 		
-	<xsd:element name="HpcMetadataValidationRules">
+	<xsd:element name="HpcSystemGeneratedMetadata">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="collectionMetadataValidationRules" 
-			                 type="hpc-domain-metadata:HpcMetadataValidationRule" 
-			                 minOccurs="0" maxOccurs="unbounded" />
-			    <xsd:element name="dataObjectMetadataValidationRules" 
-			                 type="hpc-domain-metadata:HpcMetadataValidationRule" 
-			                 minOccurs="0" maxOccurs="unbounded" />
-			    <xsd:element name="collectionSystemGeneratedMetadataAttributes" type="xsd:string"
-			                 minOccurs="0" maxOccurs="unbounded" />
-			    <xsd:element name="dataObjectSystemGeneratedMetadataAttributes" type="xsd:string"
-			                 minOccurs="0" maxOccurs="unbounded" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-	
-	<xsd:element name="HpcDataObjectSystemGeneratedMetadata">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="dataObjectId" type="xsd:string" />
+				<xsd:element name="objectId" type="xsd:string" />
 				<xsd:element name="registrarId" type="xsd:string" />
 				<xsd:element name="registrarName" type="xsd:string" />
 				<xsd:element name="registrarDOC" type="xsd:string" />
@@ -54,6 +37,7 @@
 				<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 				<xsd:element name="sourceSize" type="xsd:long" minOccurs="0" maxOccurs="1"/>
 				<xsd:element name="callerObjectId" type="xsd:string" />
+				<xsd:element name="metadataOrigin" type="hpc-domain-metadata:HpcMetadataOrigin" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

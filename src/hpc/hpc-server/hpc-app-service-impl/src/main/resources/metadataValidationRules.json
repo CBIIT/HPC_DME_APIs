@@ -501,27 +501,6 @@
 	     "ruleEnabled":true,
 	     "DOC":"DOC-NAME"
          }
-      ],
-      "collectionSystemGeneratedMetadataAttributes" : [ "uuid",
-                                                        "registered_by",
-                                                        "registered_by_name",
-                                                        "registered_by_doc",
-                                                        "metadata_origin"
-                                                      ],
-      "dataObjectSystemGeneratedMetadataAttributes" : [ "uuid",
-                                                        "registered_by",
-                                                        "registered_by_name",
-                                                        "registered_by_doc",
-                                                        "source_file_container_id",
-                                                        "source_file_id",
-                                                        "archive_file_container_id",
-                                                        "archive_file_id",
-                                                        "data_transfer_request_id",
-                                                        "data_transfer_status",
-                                                        "data_transfer_type",
-                                                        "source_file_size",
-                                                        "archive_caller_object_id",
-                                                        "metadata_origin"
-                                                      ]
+      ]
    }
 }

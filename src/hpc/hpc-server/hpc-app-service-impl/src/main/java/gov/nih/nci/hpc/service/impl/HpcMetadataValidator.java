@@ -13,16 +13,17 @@ package gov.nih.nci.hpc.service.impl;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
-import gov.nih.nci.hpc.domain.model.HpcMetadataValidationRules;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -46,12 +47,42 @@ public class HpcMetadataValidator
     // Collection type attribute name.
 	private static final String COLLECTION_TYPE_ATTRIBUTE = "collection_type"; 
 	
+    // System generated metadata attributes.
+	public static final String ID_ATTRIBUTE = "uuid";
+	public static final String REGISTRAR_ID_ATTRIBUTE = "registered_by";
+	public static final String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
+	public static final String REGISTRAR_DOC_ATTRIBUTE = "registered_by_doc";
+	public static final String SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
+                               "source_file_container_id"; 
+	public static final String SOURCE_LOCATION_FILE_ID_ATTRIBUTE = 
+                               "source_file_id"; 
+	public static final String ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
+			                   "archive_file_container_id"; 
+	public static final String ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE = 
+			                   "archive_file_id"; 
+	public static final String DATA_TRANSFER_REQUEST_ID_ATTRIBUTE = 
+                               "data_transfer_request_id";
+	public static final String DATA_TRANSFER_STATUS_ATTRIBUTE = 
+                               "data_transfer_status";
+	public static final String DATA_TRANSFER_TYPE_ATTRIBUTE = 
+                               "data_transfer_type";
+	public static final String SOURCE_FILE_SIZE_ATTRIBUTE = 
+                               "source_file_size";
+	public static final String CALLER_OBJECT_ID_ATTRIBUTE = 
+                               "archive_caller_object_id";
+	public static final String METADATA_ORIGIN_ATTRIBUTE = 
+                               "metadata_origin";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
-	// Metadata validation rules collection.
-	private HpcMetadataValidationRules metadataValidationRules = new HpcMetadataValidationRules();
+	// Metadata validation rules.
+	List<HpcMetadataValidationRule> collectionMetadataValidationRules = new ArrayList<>();
+	List<HpcMetadataValidationRule> dataObjectMetadataValidationRules = new ArrayList<>();
+	
+	// Set of system generated metadata attributes.
+	Set<String> systemGeneratedMetadataAttributes = new HashSet<>();
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -81,21 +112,27 @@ public class HpcMetadataValidator
 		try {
 	         JSONObject jsonMetadataValidationRules = getMetadataValidationRulesJSON(metadataValidationRulesPath);
 	         
-	         metadataValidationRules.getCollectionMetadataValidationRules().addAll(
-	        		 rulesFromJSON((JSONArray) jsonMetadataValidationRules.get("collectionMetadataValidationRules")));
-	         metadataValidationRules.getDataObjectMetadataValidationRules().addAll(
-	        		 rulesFromJSON((JSONArray) jsonMetadataValidationRules.get("dataObjectMetadataValidationRules")));
-	         metadataValidationRules.getCollectionSystemGeneratedMetadataAttributes().addAll(
-	        		 stringsFromJSON((JSONArray) jsonMetadataValidationRules.get("collectionSystemGeneratedMetadataAttributes")));
-	         metadataValidationRules.getDataObjectSystemGeneratedMetadataAttributes().addAll(
-	        		 stringsFromJSON((JSONArray) jsonMetadataValidationRules.get("dataObjectSystemGeneratedMetadataAttributes")));
+	         collectionMetadataValidationRules.addAll(
+	        		   rulesFromJSON((JSONArray) jsonMetadataValidationRules.get("collectionMetadataValidationRules")));
+	         dataObjectMetadataValidationRules.addAll(
+	        		   rulesFromJSON((JSONArray) jsonMetadataValidationRules.get("dataObjectMetadataValidationRules")));
+	         
+	         List<String> attributes = 
+	              Arrays.asList(ID_ATTRIBUTE, REGISTRAR_ID_ATTRIBUTE, REGISTRAR_NAME_ATTRIBUTE,
+	            		        REGISTRAR_DOC_ATTRIBUTE, SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE,
+	            		        SOURCE_LOCATION_FILE_ID_ATTRIBUTE, ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE,
+	            		        ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE, DATA_TRANSFER_REQUEST_ID_ATTRIBUTE,
+	            		        DATA_TRANSFER_STATUS_ATTRIBUTE, DATA_TRANSFER_TYPE_ATTRIBUTE,
+	            		        SOURCE_FILE_SIZE_ATTRIBUTE, CALLER_OBJECT_ID_ATTRIBUTE, 
+	            		        METADATA_ORIGIN_ATTRIBUTE);
+	         
+	         systemGeneratedMetadataAttributes.addAll(attributes);
 	         
 		} catch(Exception e) {
 			    throw new HpcException("Could not open or parse: " + metadataValidationRulesPath,
                                        HpcErrorType.SPRING_CONFIGURATION_ERROR, e);
 		}
-    }		
-
+    }	
     
     //---------------------------------------------------------------------//
     // Methods
@@ -117,8 +154,7 @@ public class HpcMetadataValidator
     {
     	validateMetadata(existingMetadataEntries, 
     			         addUpdateMetadataEntries,
-    			         metadataValidationRules.getCollectionMetadataValidationRules(),
-    			         metadataValidationRules.getCollectionSystemGeneratedMetadataAttributes());
+    			         collectionMetadataValidationRules);
     }
     
     /**
@@ -137,8 +173,17 @@ public class HpcMetadataValidator
     {
     	validateMetadata(existingMetadataEntries, 
     			         addUpdateMetadataEntries,
-    			         metadataValidationRules.getDataObjectMetadataValidationRules(),
-    			         metadataValidationRules.getDataObjectSystemGeneratedMetadataAttributes());
+    			         dataObjectMetadataValidationRules);
+    }
+    
+    /**
+     * Return the set of system generated metadata attributes
+     *
+     * @return The set of system generated metadata attributes.
+     */
+    public Set<String> getSystemGeneratedMetadataAttributes()
+    {
+    	return systemGeneratedMetadataAttributes;
     }
     		                               
     //---------------------------------------------------------------------//
@@ -158,8 +203,7 @@ public class HpcMetadataValidator
      */
     private void validateMetadata(List<HpcMetadataEntry> existingMetadataEntries,
     		                      List<HpcMetadataEntry> addUpdateMetadataEntries,
-    		                      List<HpcMetadataValidationRule> metadataValidationRules,
-    		                      List<String> systemGeneratedMetadataAttributes) 
+    		                      List<HpcMetadataValidationRule> metadataValidationRules) 
     		                     throws HpcException
     {
     	// Crate a metadata <attribute, value> map. Put existing entries first.
@@ -346,25 +390,6 @@ public class HpcMetadataValidator
     }
     
     /**
-     * Map JSON array of strings to List<String>.
-     *
-     * @param jsonStringArray The JSON array of strings
-     * @return List<String> 
-     * @throws HpcException If failed to parse the JSON
-     */
-    @SuppressWarnings("unchecked")
-	private List<String> stringsFromJSON(JSONArray jsonStringArray) throws HpcException
-    {
-    	List<String> values = new ArrayList<>();
-    	Iterator<String> valuesIterator = jsonStringArray.iterator();
-	    while(valuesIterator.hasNext()) {
-	    	  values.add(valuesIterator.next());
-	    }
-    	
-    	return values;
-    }
-    
-    /**
      * Load the metadata validation rules from file.
      * 
      * @param metadataValidationRulesPath The path to the validation rules JSON.
@@ -382,16 +407,11 @@ public class HpcMetadataValidator
 	                                   HpcErrorType.SPRING_CONFIGURATION_ERROR); 
 	         }
 	         
-	         List<String> keys = Arrays.asList("collectionMetadataValidationRules", 
-	        		                           "dataObjectMetadataValidationRules",
-	        		                           "collectionSystemGeneratedMetadataAttributes",
-	        		                           "dataObjectSystemGeneratedMetadataAttributes");
-	         for(String key : keys) {
-	             if(!jsonMetadataValidationRules.containsKey(key)) {
-	       	        throw new HpcException("Invalid JSON rules: " + jsonMetadataValidationRules,
+             if(!jsonMetadataValidationRules.containsKey("collectionMetadataValidationRules") ||
+                !jsonMetadataValidationRules.containsKey("dataObjectMetadataValidationRules")) {
+	       	    throw new HpcException("Invalid JSON rules: " + jsonMetadataValidationRules,
 	                                   HpcErrorType.SPRING_CONFIGURATION_ERROR);
-	             }
-	         }
+             }
 	         
 	         return jsonMetadataValidationRules;
 	         
