@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -250,7 +252,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public void addSystemGeneratedMetadataToCollection(String path) 
+    public void addSystemGeneratedMetadataToCollection(String path,
+    		                                           HpcMetadataOrigin metadataOrigin) 
                                                       throws HpcException
     {
        	// Input validation.
@@ -266,6 +269,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	
        	// Create and add the registrar ID, name and DOC metadata.
        	metadataEntries.addAll(generateRegistrarMetadata());
+       	
+       	// Add the metadata origin metadata.
+       	metadataEntries.add(generateMetadataOriginMetadata(metadataOrigin));
        	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToCollection(getAuthenticatedToken(), 
@@ -410,7 +416,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		                                           String dataTransferRequestId,
     		                                           HpcDataTransferUploadStatus dataTransferStatus,
     		                                           HpcDataTransferType dataTransferType,
-    		                                           Long sourceSize, String callerObjectId) 
+    		                                           Long sourceSize, String callerObjectId,
+    		                                           HpcMetadataOrigin metadataOrigin) 
                                                       throws HpcException
     {
        	// Input validation.
@@ -431,6 +438,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	
        	// Create and add the registrar ID, name and DOC metadata.
        	metadataEntries.addAll(generateRegistrarMetadata());
+       	
+       	// Add the metadata origin metadata.
+       	metadataEntries.add(generateMetadataOriginMetadata(metadataOrigin));
        	
        	if(sourceLocation != null) {
        	   // Create the source location file-container-id metadata.
@@ -478,7 +488,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
         addMetadataEntry(metadataEntries,
         		         toMetadataEntry(CALLER_OBJECT_ID_ATTRIBUTE, 
         	                             callerObjectId));
-       	
+        
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToDataObject(getAuthenticatedToken(), 
        			                                    path, metadataEntries);    	
@@ -936,6 +946,34 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	
        	return metadataEntries;
     }
+    
+    /** 
+     * Generate 'Metadata Origin' Metadata
+     * 
+     * @param metadataOrigin the metadata origin object
+     * @return A JSON representation of object.
+     */
+	@SuppressWarnings("unchecked")
+	private HpcMetadataEntry generateMetadataOriginMetadata(HpcMetadataOrigin metadataOrigin)
+	{
+		// Generate a JSON string from the metadataOrigin object.
+		JSONObject jsonMetadataOrigin = new JSONObject();
+		if(metadataOrigin != null) {
+		   JSONArray jsonMetadataAttributes = new JSONArray();
+		   if(metadataOrigin.getMetadataAttributes() != null) {
+			  jsonMetadataAttributes.addAll(metadataOrigin.getMetadataAttributes());
+		   }
+		   JSONArray jsonParentMetadataAttributes = new JSONArray();
+		   if(metadataOrigin.getParentMetadataAttributes() != null) {
+			  jsonParentMetadataAttributes.addAll(metadataOrigin.getParentMetadataAttributes());
+		   }
+		   
+		   jsonMetadataOrigin.put("metadataAttributes", jsonMetadataAttributes);
+		   jsonMetadataOrigin.put("parentMetadataAttributes", jsonParentMetadataAttributes);
+		}
+		
+		return toMetadataEntry(METADATA_ORIGIN_ATTRIBUTE, jsonMetadataOrigin.toJSONString());
+	}
     
     /**
      * Generate a metadata entry from attribute/value pair.

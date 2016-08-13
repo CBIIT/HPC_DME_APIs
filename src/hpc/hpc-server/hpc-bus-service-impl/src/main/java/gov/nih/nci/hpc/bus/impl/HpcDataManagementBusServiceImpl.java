@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
@@ -129,10 +130,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	        dataManagementService.addMetadataToCollection(path, metadataEntries);
     	        
 			    // Attach the parent metadata.
-		        dataManagementService.addParentMetadata(path);
+		        HpcMetadataOrigin metadataOrigin = dataManagementService.addParentMetadata(path);
        	   
     	        // Generate system metadata and attach to the collection.
-       	        dataManagementService.addSystemGeneratedMetadataToCollection(path);
+       	        dataManagementService.addSystemGeneratedMetadataToCollection(path,
+       	        		                                                     metadataOrigin);
        	        
        	        registrationCompleted = true;
        	        
@@ -240,7 +242,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		    			                 dataObjectRegistrationDTO.getMetadataEntries());
 		        
 			    // Attach the parent metadata.
-		        dataManagementService.addParentMetadata(path);
+		        HpcMetadataOrigin metadataOrigin = dataManagementService.addParentMetadata(path);
 		        
 		        // Extract the source location.
 		        HpcFileLocation source = dataObjectRegistrationDTO.getSource();
@@ -264,7 +266,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			    			                   uploadResponse.getDataTransferType(),
 			    			                   getSourceSize(source, uploadResponse.getDataTransferType(),
 				                                             dataObjectFile), 
-			    			                   dataObjectRegistrationDTO.getCallerObjectId()); 
+			    			                   dataObjectRegistrationDTO.getCallerObjectId(),
+			    			                   metadataOrigin); 
 	
 			    registrationCompleted = true;
 			     
