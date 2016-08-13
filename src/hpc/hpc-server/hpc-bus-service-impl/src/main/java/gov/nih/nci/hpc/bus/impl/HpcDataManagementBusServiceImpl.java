@@ -127,6 +127,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		    
     		    // Add user provided metadata.
     	        dataManagementService.addMetadataToCollection(path, metadataEntries);
+    	        
+			    // Attach the parent metadata.
+		        dataManagementService.addParentMetadata(path);
        	   
     	        // Generate system metadata and attach to the collection.
        	        dataManagementService.addSystemGeneratedMetadataToCollection(path);
@@ -236,6 +239,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		    	   		                 path, 
 		    			                 dataObjectRegistrationDTO.getMetadataEntries());
 		        
+			    // Attach the parent metadata.
+		        dataManagementService.addParentMetadata(path);
+		        
 		        // Extract the source location.
 		        HpcFileLocation source = dataObjectRegistrationDTO.getSource();
 				if(source != null && 
@@ -259,11 +265,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			    			                   getSourceSize(source, uploadResponse.getDataTransferType(),
 				                                             dataObjectFile), 
 			    			                   dataObjectRegistrationDTO.getCallerObjectId()); 
-			    
-			    // Attach the parent hierarchy metadata.
-		        dataManagementService.addParentHierarchyMetadataToDataObject(path);
 	
-			     registrationCompleted = true;
+			    registrationCompleted = true;
 			     
 	    	} finally {
 	    			   if(!registrationCompleted) {
