@@ -31,6 +31,7 @@
 		<prop key="hpc.service.notification.formatsPath">${karaf.base}/etc/hpc-server/notificationFormats.json</prop>
 		<prop key="hpc.service.notification.mail.host">mailfwd.nih.gov</prop>
 		<prop key="hpc.service.notification.mail.port">25</prop>
+		<prop key="hpc.service.dataManagement.replicateParentMetadata">false</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

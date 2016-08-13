@@ -46,6 +46,9 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcMetadataValidationRule']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcMetadataOrigin']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin"/>
+		</jxb:bindings>
     </jxb:bindings>
     
     <jxb:bindings schemaLocation="HpcDataTransferTypes.xsd">

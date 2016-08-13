@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
@@ -124,14 +125,14 @@ public interface HpcDataManagementService
     		                           throws HpcException; 
     
     /**
-     * Add parent hierarchy metadata to a data object.
+     * Add parent metadata to a either a collection or a data object.
      *
-     * @param path The data object path.
-     * 
+     * @param path The collection or data object path.
+     * @return HpcMetadataOrigin An object listing the origin of the collection / data object
+     *                           metadata after the change.
      * @throws HpcException
      */
-    public void addParentHierarchyMetadataToDataObject(String path) 
-    		                                          throws HpcException; 
+    public HpcMetadataOrigin addParentMetadata(String path) throws HpcException; 
     
     /**
      * Update a data object's metadata.

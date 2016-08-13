@@ -22,7 +22,6 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
-import gov.nih.nci.hpc.domain.model.HpcParentPathMetadata;
 import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
 import gov.nih.nci.hpc.domain.user.HpcGroupUserResponse;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -501,21 +500,16 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	}
     
     @Override
-    public HpcParentPathMetadata getParentPathMetadata(Object authenticatedToken, 
-                                                       String path) 
-                                                      throws HpcException
+    public List<HpcMetadataEntry> getParentPathMetadata(Object authenticatedToken, 
+                                                        String path) 
+                                                       throws HpcException
     {
 		IRODSFile parentPath = getParentPath(authenticatedToken, path);
 		if(parentPath == null || !parentPath.isDirectory()) {
 		   return null;
 		}
 		
-		HpcParentPathMetadata parentPathMetadata = new HpcParentPathMetadata();
-		parentPathMetadata.setParentPath(parentPath.getPath());
-		parentPathMetadata.getMetadataEntries().addAll(
-				  getCollectionMetadata(authenticatedToken, parentPath.getPath()));
-		
-		return parentPathMetadata;
+		return getCollectionMetadata(authenticatedToken, parentPath.getPath());
     }
     
     @Override
