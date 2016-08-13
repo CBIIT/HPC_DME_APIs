@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.*;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueries;
@@ -28,9 +29,9 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
-import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
+import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -65,30 +66,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     //---------------------------------------------------------------------//
     // Constants
     //---------------------------------------------------------------------//
-	
-    // System generated metadata attributes.
-	private static final String ID_ATTRIBUTE = "uuid";
-	private static final String REGISTRAR_ID_ATTRIBUTE = "registered_by";
-	private static final String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
-	private static final String REGISTRAR_DOC_ATTRIBUTE = "registered_by_doc";
-	private static final String SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
-                                "source_file_container_id"; 
-	private static final String SOURCE_LOCATION_FILE_ID_ATTRIBUTE = 
-                                "source_file_id"; 
-	private static final String ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
-			                    "archive_file_container_id"; 
-	private static final String ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE = 
-			                    "archive_file_id"; 
-	private static final String DATA_TRANSFER_REQUEST_ID_ATTRIBUTE = 
-                                "data_transfer_request_id";
-	private static final String DATA_TRANSFER_STATUS_ATTRIBUTE = 
-                                "data_transfer_status";
-	private static final String DATA_TRANSFER_TYPE_ATTRIBUTE = 
-                                "data_transfer_type";
-	private static final String SOURCE_FILE_SIZE_ATTRIBUTE = 
-                                "source_file_size";
-	private static final String CALLER_OBJECT_ID_ATTRIBUTE = 
-                                "archive_caller_object_id";
 	
 	private static final String EQUAL_OPERATOR = "EQUAL";
 	private static final String INVALID_PATH_METADATA_MSG = 
@@ -371,11 +348,17 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
         List<HpcMetadataEntry> parentMetadataEntries = 
         	dataManagementProxy.getParentPathMetadata(authenticatedToken, path);
         
+        // Get the set of system generated metadata attributes.
+        Set<String> systemGeneratedMetadataAttributes = 
+        	        metadataValidator.getSystemGeneratedMetadataAttributes();
+        
         // Prepare a list a metadata entries from the parent to be added. 
         // Note: only parent entries that don't already exist as child entries are added. 
+        //       Also - system generated metadata are not replicated.
         List<HpcMetadataEntry> addMetadataEntries = new ArrayList<>();
        	for(HpcMetadataEntry parentMetadataEntry : parentMetadataEntries) {
-			if(!metadataAttributeSet.contains(parentMetadataEntry.getAttribute())) {
+			if(!metadataAttributeSet.contains(parentMetadataEntry.getAttribute()) &&
+			   !systemGeneratedMetadataAttributes.contains(parentMetadataEntry.getAttribute())) {
 			   if(parentMetadataEntry.getUnit() == null) {
 				  parentMetadataEntry.setUnit("");
 			   }
@@ -556,7 +539,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	}
     
     @Override
-    public HpcDataObjectSystemGeneratedMetadata 
+    public HpcSystemGeneratedMetadata 
               getDataObjectSystemGeneratedMetadata(String path) throws HpcException
 	{
     	// Input validation.
@@ -569,14 +552,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	}
     
     @Override
-    public HpcDataObjectSystemGeneratedMetadata 
+    public HpcSystemGeneratedMetadata 
               getDataObjectSystemGeneratedMetadata(List<HpcMetadataEntry> dataObjectMetadata) 
             		                              throws HpcException
 	{
     	// Extract the system generated data-object metadata entries from the entire set.
     	Map<String, String> metadataMap = toMap(dataObjectMetadata);
-    	HpcDataObjectSystemGeneratedMetadata systemGeneratedMetadata = new HpcDataObjectSystemGeneratedMetadata();
-    	systemGeneratedMetadata.setDataObjectId(metadataMap.get(ID_ATTRIBUTE));
+    	HpcSystemGeneratedMetadata systemGeneratedMetadata = new HpcSystemGeneratedMetadata();
+    	systemGeneratedMetadata.setObjectId(metadataMap.get(ID_ATTRIBUTE));
     	systemGeneratedMetadata.setRegistrarId(metadataMap.get(REGISTRAR_ID_ATTRIBUTE));
     	systemGeneratedMetadata.setRegistrarName(metadataMap.get(REGISTRAR_NAME_ATTRIBUTE));
     	systemGeneratedMetadata.setRegistrarDOC(metadataMap.get(REGISTRAR_DOC_ATTRIBUTE));

@@ -21,8 +21,8 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
-import gov.nih.nci.hpc.domain.model.HpcDataObjectSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
+import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -155,10 +155,10 @@ public interface HpcDataManagementService
      *      4. Registrar DOC.
      * 		5. Source location (file-container-id and file-id). (Optional)
      *      6. Archive location (file-container-id and file-id).
-     *      9. Data Transfer Request ID. (Optional)
-     *      10. Data Transfer Status.
-     *      11. Data Transfer Type.
-     *      11. Data Object File(s) size. (Optional)
+     *      7. Data Transfer Request ID. (Optional)
+     *      8. Data Transfer Status.
+     *      9. Data Transfer Type.
+     *      10. Data Object File(s) size. (Optional)
      *
      * @param path The data object path.
      * @param archiveLocation The physical file archive location.
@@ -206,7 +206,7 @@ public interface HpcDataManagementService
      * 
      * @throws HpcException
      */
-    public HpcDataObjectSystemGeneratedMetadata 
+    public HpcSystemGeneratedMetadata 
               getDataObjectSystemGeneratedMetadata(String path) throws HpcException; 
     
     /**
@@ -216,7 +216,7 @@ public interface HpcDataManagementService
      * 
      * @throws HpcException
      */
-    public HpcDataObjectSystemGeneratedMetadata 
+    public HpcSystemGeneratedMetadata 
               getDataObjectSystemGeneratedMetadata(List<HpcMetadataEntry> dataObjectMetadata) 
             		                              throws HpcException; 
     
