@@ -127,16 +127,6 @@ public interface HpcDataManagementService
     		                           throws HpcException; 
     
     /**
-     * Add parent metadata to a either a collection or a data object.
-     *
-     * @param path The collection or data object path.
-     * @return HpcMetadataOrigin An object listing the origin of the collection / data object
-     *                           metadata after the change.
-     * @throws HpcException
-     */
-    public HpcMetadataOrigin addParentMetadata(String path) throws HpcException; 
-    
-    /**
      * Update a data object's metadata.
      *
      * @param path The data object path.
@@ -250,6 +240,34 @@ public interface HpcDataManagementService
     public HpcSystemGeneratedMetadata 
               toSystemGeneratedMetadata(List<HpcMetadataEntry> systemGeneratedMetadataEntries) 
             	                       throws HpcException; 
+    
+    /**
+     * Add parent metadata to a either a collection or a data object.
+     *
+     * @param path The collection or data object path.
+     * @return HpcMetadataOrigin An object listing the origin of the collection / data object
+     *                           metadata after the change.
+     * @throws HpcException
+     */
+    public HpcMetadataOrigin addParentMetadata(String path) throws HpcException; 
+    
+    /**
+     * Update metadata tree. Propagate metadata changes to 'path' to the tree under it.
+     *
+     * @param path The collection path.
+     * @throws HpcException
+     */
+    public void updateMetadataTree(String path) throws HpcException; 
+    
+    /** 
+     * Update a MetadataOrigin object with updated entries.
+     * 
+     * @param metadataOrigin The metadata origin object.
+     * @param metadataEntries The updated metadata entries.
+     * @return HpcMetadataOrigin An updated metadata origin object.
+     */
+    public HpcMetadataOrigin updateMetadataOrigin(HpcMetadataOrigin metadataOrigin, 
+    		                                      List<HpcMetadataEntry> metadataEntries);
     
     /**
      * Get collection by its path.
