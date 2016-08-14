@@ -279,14 +279,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    	}
     	   
 	    } else {
-	    	if(dataObjectFile != null)
+	    	    if(dataObjectFile != null) {
 	    		   throw new HpcException("Data object cannot be updated. Only updating metadata is allowed.",
-			                  HpcErrorType.REQUEST_REJECTED);	
+			                              HpcErrorType.REQUEST_REJECTED);
+	    	    }
 	    	
-	    	    // Attach the user provided metadata.
-	            dataManagementService.updateDataObjectMetadata(
-	    	   	    	                    path, 
-	    			                        dataObjectRegistrationDTO.getMetadataEntries());
+	            updateDataObject(path, dataObjectRegistrationDTO.getMetadataEntries());
 	    }
 	    
 	    return created;
@@ -661,6 +659,39 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                  throws HpcException
     {
     	dataManagementService.updateCollectionMetadata(path, metadataEntries);
+    	
+       	// Update the metadata origin system metadata.
+       	HpcMetadataOrigin metadataOrigin =
+       	   dataManagementService.updateMetadataOrigin(
+       		   dataManagementService.getCollectionSystemGeneratedMetadata(path).getMetadataOrigin(), 
+       		   metadataEntries);
+       	dataManagementService.updateCollectionSystemGeneratedMetadata(path, metadataOrigin);
+       	
+       	// Propagate the metadata update to the tree below.
+       	dataManagementService.updateMetadataTree(path);
+    }
+    
+    /**
+     * Update a Data object.
+     *
+     * @param path The data object's path.
+     * @param metadataEntries A list of metadata entries to update.
+     * 
+     * @throws HpcException
+     */
+    private void updateDataObject(String path,
+                                  List<HpcMetadataEntry> metadataEntries)  
+                                 throws HpcException
+    {
+        dataManagementService.updateDataObjectMetadata(path, metadataEntries); 
+        
+       	// Update the metadata origin system metadata.
+       	HpcMetadataOrigin metadataOrigin =
+       	   dataManagementService.updateMetadataOrigin(
+       		   dataManagementService.getDataObjectSystemGeneratedMetadata(path).getMetadataOrigin(), 
+       		   metadataEntries);
+       	dataManagementService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, 
+       			                                                      null, metadataOrigin);
     }
 }
 

@@ -32,6 +32,7 @@ import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
@@ -360,6 +361,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			 attributes.setIsFile(file.isFile());
 			 attributes.setSize(-1);
 			 attributes.setIsAccessible(file.canWrite());
+			 attributes.getFiles().addAll(Arrays.asList(file.list()));
 			 
 			 return attributes;
 			 
