@@ -693,12 +693,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	HpcPathAttributes pathAttributes = dataManagementProxy.getPathAttributes(authenticatedToken, path);
     
     	// Update parent metadata for this path.
-    	updateCollectionSystemGeneratedMetadata(path, updateParentMetadata(authenticatedToken, 
-    			                                                           path, pathAttributes));
-    	if(pathAttributes.getIsDirectory() && pathAttributes.getFiles() != null) {
-    	   for(String subPath : pathAttributes.getFiles()) {
-    		   updateMetadataTree(subPath);
+    	HpcMetadataOrigin metadataOrigin = updateParentMetadata(authenticatedToken, path, pathAttributes);
+    	if(pathAttributes.getIsDirectory()) {
+    	   updateCollectionSystemGeneratedMetadata(path, metadataOrigin);
+    	   if(pathAttributes.getFiles() != null) {
+    	      for(String childFile : pathAttributes.getFiles()) {
+    		      updateMetadataTree(path + "/" + childFile);
+    	      }
     	   }
+    	} else if(pathAttributes.getIsFile()) {
+    		      updateDataObjectSystemGeneratedMetadata(path, null, null, null, null, metadataOrigin);
     	}
     }
     
