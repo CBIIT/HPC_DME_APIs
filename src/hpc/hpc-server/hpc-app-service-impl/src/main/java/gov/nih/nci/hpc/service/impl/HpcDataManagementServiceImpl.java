@@ -277,7 +277,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	metadataEntries.addAll(generateRegistrarMetadata());
        	
        	// Add the metadata origin metadata.
-       	metadataEntries.add(generateMetadataOriginMetadata(metadataOrigin));
+       	addMetadataEntry(metadataEntries,
+       			         generateMetadataOriginMetadata(metadataOrigin));
        	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToCollection(getAuthenticatedToken(), 
@@ -375,7 +376,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	metadataEntries.addAll(generateRegistrarMetadata());
        	
        	// Add the metadata origin metadata.
-       	metadataEntries.add(generateMetadataOriginMetadata(metadataOrigin));
+       	addMetadataEntry(metadataEntries,
+       	                 generateMetadataOriginMetadata(metadataOrigin));
        	
        	if(sourceLocation != null) {
        	   // Create the source location file-container-id metadata.
@@ -482,7 +484,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	
        	if(metadataOrigin != null) {
            // Update the Metadata Origin.
-       		metadataEntries.add(generateMetadataOriginMetadata(metadataOrigin));
+       	   addMetadataEntry(metadataEntries,	
+       		                generateMetadataOriginMetadata(metadataOrigin));
        	}
        	
        	if(!metadataEntries.isEmpty()) {
@@ -532,7 +535,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	
        	if(metadataOrigin != null) {
            // Update the Metadata Origin.
-       	   metadataEntries.add(generateMetadataOriginMetadata(metadataOrigin));
+       	   addMetadataEntry(metadataEntries,
+       	                    generateMetadataOriginMetadata(metadataOrigin));
        	}
        	
        	if(!metadataEntries.isEmpty()) {
@@ -1059,6 +1063,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	@SuppressWarnings("unchecked")
 	private HpcMetadataEntry generateMetadataOriginMetadata(HpcMetadataOrigin metadataOrigin)
 	{
+
 		// Generate a JSON string from the metadataOrigin object.
 		JSONObject jsonMetadataOrigin = new JSONObject();
 		if(metadataOrigin != null) {
@@ -1075,7 +1080,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		   jsonMetadataOrigin.put(JSON_PARENT_METADATA_ATTRIBUTES, jsonParentMetadataAttributes);
 		}
 		
-		return toMetadataEntry(METADATA_ORIGIN_ATTRIBUTE, jsonMetadataOrigin.toJSONString());
+		return toMetadataEntry(METADATA_ORIGIN_ATTRIBUTE, metadataOrigin != null ? 
+				                                          jsonMetadataOrigin.toJSONString() : null);
 	}
     
     /**
