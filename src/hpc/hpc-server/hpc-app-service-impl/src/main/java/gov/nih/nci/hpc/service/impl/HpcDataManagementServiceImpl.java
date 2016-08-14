@@ -302,11 +302,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	// Add Metadata to the DM system.
        	dataManagementProxy.updateCollectionMetadata(getAuthenticatedToken(),
        			                                     path, metadataEntries);
-       	
-       	// Update the metadata origin system metadata.
-       	HpcMetadataOrigin metadataOrigin = getCollectionSystemGeneratedMetadata(path).getMetadataOrigin();
-       	updateMetadataOrigin(metadataOrigin, metadataEntries);
-       	updateCollectionSystemGeneratedMetadata(path, metadataOrigin);
     }
     
     @Override
@@ -330,77 +325,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public HpcMetadataOrigin addParentMetadata(String path) throws HpcException
-    {
-    	// Check the parent metadata replication policy.
-    	if(!replicateParentMetadata) {
-    	   return null;
-    	}
-    	
-    	// Get the path attributes to determine if this is a collection or data object.
-    	Object authenticatedToken = getAuthenticatedToken();
-       	HpcMetadataOrigin metadataOrigin = new HpcMetadataOrigin();
-    	HpcPathAttributes pathAttributes = dataManagementProxy.getPathAttributes(authenticatedToken, path);
-    	
-    	// Get the existing metadata on the collection or data object.
-    	List<HpcMetadataEntry> metadataEntries = null;
-    	if(pathAttributes.getIsFile()) {
-    	   metadataEntries = getDataObjectMetadata(path);	
-    	} else if(pathAttributes.getIsDirectory()) {
-    		      metadataEntries = getCollectionMetadata(path);
-    	} else {
-    		    return null;
-    	}
-    	
-    	// Create a metadata attribute set of the collection or data object.
-    	Set<String> metadataAttributeSet = new HashSet<>();
-    	if(metadataEntries != null) {
-    	   for(HpcMetadataEntry metadataEntry : metadataEntries) {
-    		   metadataAttributeSet.add(metadataEntry.getAttribute());
-    		   metadataOrigin.getMetadataAttributes().add(metadataEntry.getAttribute());
-    	   }
-    	}
-       	
-       	// Get the parent metadata.
-        List<HpcMetadataEntry> parentMetadataEntries = 
-        	dataManagementProxy.getParentPathMetadata(authenticatedToken, path);
-        
-        // Get the set of system generated metadata attributes.
-        Set<String> systemGeneratedMetadataAttributes = 
-        	        metadataValidator.getSystemGeneratedMetadataAttributes();
-        
-        // Prepare a list a metadata entries from the parent to be added. 
-        // Note: only parent entries that don't already exist as child entries are added. 
-        //       Also - system generated metadata are not replicated.
-        List<HpcMetadataEntry> addMetadataEntries = new ArrayList<>();
-       	for(HpcMetadataEntry parentMetadataEntry : parentMetadataEntries) {
-			if(!metadataAttributeSet.contains(parentMetadataEntry.getAttribute()) &&
-			   !systemGeneratedMetadataAttributes.contains(parentMetadataEntry.getAttribute())) {
-			   if(parentMetadataEntry.getUnit() == null) {
-				  parentMetadataEntry.setUnit("");
-			   }
-			   
-			   addMetadataEntries.add(parentMetadataEntry);
-			   metadataAttributeSet.add(parentMetadataEntry.getAttribute());
-			   metadataOrigin.getParentMetadataAttributes().add(parentMetadataEntry.getAttribute());
-			}
-       	}
-		  
-        // Add Parent Metadata to the data object or collection. 
-       	if(!addMetadataEntries.isEmpty()) {
-    	   if(pathAttributes.getIsFile()) {
-       	      dataManagementProxy.addMetadataToDataObject(authenticatedToken, 
-       		     	                                      path, addMetadataEntries);
-    	   } else {
-    		       dataManagementProxy.addMetadataToCollection(authenticatedToken, 
-                                                               path, addMetadataEntries);
-    	   }
-       	}
-       	
-       	return metadataOrigin;
-    }
-    
-    @Override
     public void updateDataObjectMetadata(String path, 
     		                             List<HpcMetadataEntry> metadataEntries) 
     		                            throws HpcException
@@ -418,11 +342,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	// Update Metadata.
        	dataManagementProxy.updateDataObjectMetadata(getAuthenticatedToken(),
        			                                     path, metadataEntries);
-       	
-       	// Update the metadata origin system metadata.
-       	HpcMetadataOrigin metadataOrigin = getDataObjectSystemGeneratedMetadata(path).getMetadataOrigin();
-       	updateMetadataOrigin(metadataOrigin, metadataEntries);
-       	updateDataObjectSystemGeneratedMetadata(path, null, null, null, null, metadataOrigin);
     }
     
     @Override
@@ -566,8 +485,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        		metadataEntries.add(generateMetadataOriginMetadata(metadataOrigin));
        	}
        	
-		dataManagementProxy.updateDataObjectMetadata(getAuthenticatedToken(),
-		                                             path, metadataEntries);
+       	if(!metadataEntries.isEmpty()) {
+		   dataManagementProxy.updateDataObjectMetadata(getAuthenticatedToken(),
+		                                                path, metadataEntries);
+       	}
 	}
     
     @Override
@@ -611,11 +532,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	
        	if(metadataOrigin != null) {
            // Update the Metadata Origin.
-       		metadataEntries.add(generateMetadataOriginMetadata(metadataOrigin));
+       	   metadataEntries.add(generateMetadataOriginMetadata(metadataOrigin));
        	}
        	
-		dataManagementProxy.updateCollectionMetadata(getAuthenticatedToken(),
-		                                             path, metadataEntries);
+       	if(!metadataEntries.isEmpty()) {
+		   dataManagementProxy.updateCollectionMetadata(getAuthenticatedToken(),
+		                                                path, metadataEntries);
+       	}
 	}
     
     @Override
@@ -681,6 +604,127 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		  
 		return systemGeneratedMetadata;
 	}
+    
+    @Override
+    public HpcMetadataOrigin addParentMetadata(String path) throws HpcException
+    {
+    	// Check the parent metadata replication policy.
+    	if(!replicateParentMetadata) {
+    	   return null;
+    	}
+    	
+    	// Get the path attributes to determine if this is a collection or data object.
+    	Object authenticatedToken = getAuthenticatedToken();
+       	HpcMetadataOrigin metadataOrigin = new HpcMetadataOrigin();
+    	HpcPathAttributes pathAttributes = dataManagementProxy.getPathAttributes(authenticatedToken, path);
+    	
+    	// Get the existing metadata on the collection or data object.
+    	List<HpcMetadataEntry> metadataEntries = null;
+    	if(pathAttributes.getIsFile()) {
+    	   metadataEntries = getDataObjectMetadata(path);	
+    	} else if(pathAttributes.getIsDirectory()) {
+    		      metadataEntries = getCollectionMetadata(path);
+    	} else {
+    		    return null;
+    	}
+    	
+    	// Create a metadata attribute set of the collection or data object.
+    	Set<String> metadataAttributeSet = new HashSet<>();
+    	if(metadataEntries != null) {
+    	   for(HpcMetadataEntry metadataEntry : metadataEntries) {
+    		   metadataAttributeSet.add(metadataEntry.getAttribute());
+    		   metadataOrigin.getMetadataAttributes().add(metadataEntry.getAttribute());
+    	   }
+    	}
+       	
+       	// Get the parent metadata.
+        List<HpcMetadataEntry> parentMetadataEntries = 
+        	dataManagementProxy.getParentPathMetadata(authenticatedToken, path);
+        
+        // Get the set of system generated metadata attributes.
+        Set<String> systemGeneratedMetadataAttributes = 
+        	        metadataValidator.getSystemGeneratedMetadataAttributes();
+        
+        // Prepare a list a metadata entries from the parent to be added. 
+        // Note: only parent entries that don't already exist as child entries are added. 
+        //       Also - system generated metadata are not replicated.
+        List<HpcMetadataEntry> addMetadataEntries = new ArrayList<>();
+       	for(HpcMetadataEntry parentMetadataEntry : parentMetadataEntries) {
+			if(!metadataAttributeSet.contains(parentMetadataEntry.getAttribute()) &&
+			   !systemGeneratedMetadataAttributes.contains(parentMetadataEntry.getAttribute())) {
+			   if(parentMetadataEntry.getUnit() == null) {
+				  parentMetadataEntry.setUnit("");
+			   }
+			   
+			   addMetadataEntries.add(parentMetadataEntry);
+			   metadataAttributeSet.add(parentMetadataEntry.getAttribute());
+			   metadataOrigin.getParentMetadataAttributes().add(parentMetadataEntry.getAttribute());
+			}
+       	}
+		  
+        // Add Parent Metadata to the data object or collection. 
+       	if(!addMetadataEntries.isEmpty()) {
+    	   if(pathAttributes.getIsFile()) {
+       	      dataManagementProxy.addMetadataToDataObject(authenticatedToken, 
+       		     	                                      path, addMetadataEntries);
+    	   } else {
+    		       dataManagementProxy.addMetadataToCollection(authenticatedToken, 
+                                                               path, addMetadataEntries);
+    	   }
+       	}
+       	
+       	return metadataOrigin;
+    }
+    
+    @Override
+    public void updateMetadataTree(String path) throws HpcException
+    {
+    	// Check the parent metadata replication policy.
+    	if(!replicateParentMetadata) {
+    	   return;
+    	}
+    	
+    	// Get the path attributes to determine if this is a collection or data object.
+    	Object authenticatedToken = getAuthenticatedToken();
+    	HpcPathAttributes pathAttributes = dataManagementProxy.getPathAttributes(authenticatedToken, path);
+    
+    	// Update parent metadata for this path.
+    	updateCollectionSystemGeneratedMetadata(path, updateParentMetadata(authenticatedToken, 
+    			                                                           path, pathAttributes));
+    	if(pathAttributes.getIsDirectory() && pathAttributes.getFiles() != null) {
+    	   for(String subPath : pathAttributes.getFiles()) {
+    		   updateMetadataTree(subPath);
+    	   }
+    	}
+    }
+    
+    @Override
+    public HpcMetadataOrigin updateMetadataOrigin(HpcMetadataOrigin metadataOrigin, 
+    		                                      List<HpcMetadataEntry> metadataEntries) 
+    {
+    	// Check the parent metadata replication policy.
+    	if(!replicateParentMetadata) {
+    	   return null;
+    	}
+    	
+    	Set<String> metadataAttributesSet = new HashSet<>();
+    	metadataAttributesSet.addAll(metadataOrigin.getMetadataAttributes());
+    	
+    	Set<String> parentMetadataAttributesSet = new HashSet<>();
+    	parentMetadataAttributesSet.addAll(metadataOrigin.getParentMetadataAttributes());
+    	
+    	// Update the origin for the entries on the list.
+    	for(HpcMetadataEntry metadataEntry : metadataEntries) {
+    	    metadataAttributesSet.add(metadataEntry.getAttribute());
+    		parentMetadataAttributesSet.remove(metadataEntry.getAttribute());
+    	}
+
+    	// Return an updated metadata origin object.
+    	HpcMetadataOrigin updatedMetadataOrigin = new HpcMetadataOrigin();
+    	updatedMetadataOrigin.getMetadataAttributes().addAll(metadataAttributesSet);
+    	updatedMetadataOrigin.getParentMetadataAttributes().addAll(parentMetadataAttributesSet);
+    	return updatedMetadataOrigin;
+    }
     
     @Override
     public HpcCollection getCollection(String path) throws HpcException
@@ -1131,31 +1175,74 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		return metadataOrigin;
 	}	
 	
-    /** 
-     * Update a MetadataOrigin object with updated entries.
-     * 
-     * @param metadataOrigin The metadata origin object.
-     * @param metadataEntries The updated metadata entries.
-     * @return HpcMetadataOrigin
+    /**
+     * Update parent metadata to a either a collection or a data object.
+     *
+     * @param authenticatedToken DM authenticated token
+     * @param path The collection or data object path.
+     * @param pathAttributes The data object or collection path attributes.
+     * @return HpcMetadataOrigin An object listing the origin of the collection / data object
+     *                           metadata after the change.
+     * @throws HpcException
      */
-    private void updateMetadataOrigin(HpcMetadataOrigin metadataOrigin, 
-    		                          List<HpcMetadataEntry> metadataEntries) 
+    private HpcMetadataOrigin updateParentMetadata(Object authenticatedToken, String path,
+    		                                       HpcPathAttributes pathAttributes) throws HpcException
     {
-    	Set<String> metadataAttributes = new HashSet<>();
-    	metadataAttributes.addAll(metadataOrigin.getMetadataAttributes());
-    	metadataOrigin.getMetadataAttributes().clear();
-    	
-    	Set<String> parentMetadataAttributes = new HashSet<>();
-    	parentMetadataAttributes.addAll(metadataOrigin.getParentMetadataAttributes());
-    	metadataOrigin.getParentMetadataAttributes().clear();
-    	
-    	// Update the origin for the entries on the list.
-    	for(HpcMetadataEntry metadataEntry : metadataEntries) {
-    		metadataAttributes.add(metadataEntry.getAttribute());
-    		parentMetadataAttributes.remove(metadataEntry.getAttribute());
+    	// Get the current metadata origin object.
+       	HpcMetadataOrigin metadataOrigin;
+    	if(pathAttributes.getIsFile()) {
+    	   metadataOrigin = getDataObjectSystemGeneratedMetadata(path).getMetadataOrigin();
+    	} else if(pathAttributes.getIsDirectory()) {
+    		      metadataOrigin = getCollectionSystemGeneratedMetadata(path).getMetadataOrigin();
+    	} else {
+    		    return null;
     	}
     	
-    	metadataOrigin.getMetadataAttributes().addAll(metadataAttributes);
-    	metadataOrigin.getParentMetadataAttributes().addAll(parentMetadataAttributes);
+    	Set<String> metadataAttributesSet = new HashSet<>();
+    	metadataAttributesSet.addAll(metadataOrigin.getMetadataAttributes());
+    	
+    	Set<String> parentMetadataAttributesSet = new HashSet<>();
+    	parentMetadataAttributesSet.addAll(metadataOrigin.getParentMetadataAttributes());
+       	
+       	// Get the parent metadata.
+        List<HpcMetadataEntry> parentMetadataEntries = 
+        	dataManagementProxy.getParentPathMetadata(authenticatedToken, path);
+        
+        // Get the set of system generated metadata attributes.
+        Set<String> systemGeneratedMetadataAttributes = 
+        	        metadataValidator.getSystemGeneratedMetadataAttributes();
+        
+        // Prepare a list a metadata entries from the parent to be updated. 
+        // Note: only parent entries that don't already exist as child entries are updated. 
+        //       Also - system generated metadata are not replicated.
+        List<HpcMetadataEntry> updateMetadataEntries = new ArrayList<>();
+       	for(HpcMetadataEntry parentMetadataEntry : parentMetadataEntries) {
+			if(!metadataAttributesSet.contains(parentMetadataEntry.getAttribute()) &&
+			   !systemGeneratedMetadataAttributes.contains(parentMetadataEntry.getAttribute())) {
+			   if(parentMetadataEntry.getUnit() == null) {
+				  parentMetadataEntry.setUnit("");
+			   }
+			   
+			   updateMetadataEntries.add(parentMetadataEntry);
+			   parentMetadataAttributesSet.add(parentMetadataEntry.getAttribute());
+			}
+       	}
+		  
+        // Update Parent Metadata to the data object or collection. 
+       	if(!updateMetadataEntries.isEmpty()) {
+    	   if(pathAttributes.getIsFile()) {
+       	      dataManagementProxy.updateDataObjectMetadata(authenticatedToken, 
+       		     	                                       path, updateMetadataEntries);
+    	   } else {
+    		       dataManagementProxy.updateCollectionMetadata(authenticatedToken, 
+                                                                path, updateMetadataEntries);
+    	   }
+       	}
+       	
+    	// Return an updated metadata origin object.
+    	HpcMetadataOrigin updatedMetadataOrigin = new HpcMetadataOrigin();
+    	updatedMetadataOrigin.getMetadataAttributes().addAll(metadataAttributesSet);
+    	updatedMetadataOrigin.getParentMetadataAttributes().addAll(parentMetadataAttributesSet);
+    	return updatedMetadataOrigin;
     }
 }
