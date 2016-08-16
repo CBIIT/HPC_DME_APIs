@@ -158,11 +158,7 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
 		sdf.setLenient(false);
 
 		try {
-
-			//if not valid, it will throw ParseException
 			Date date = sdf.parse(dateToValidate);
-			System.out.println(date);
-
 		} catch (ParseException e) {
 
 			e.printStackTrace();
