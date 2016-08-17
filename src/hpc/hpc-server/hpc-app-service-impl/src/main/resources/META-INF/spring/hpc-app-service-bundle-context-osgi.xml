@@ -31,7 +31,7 @@
 		<prop key="hpc.service.notification.formatsPath">${karaf.base}/etc/hpc-server/notificationFormats.json</prop>
 		<prop key="hpc.service.notification.mail.host">mailfwd.nih.gov</prop>
 		<prop key="hpc.service.notification.mail.port">25</prop>
-		<prop key="hpc.service.dataManagement.replicateParentMetadata">false</prop>
+		<prop key="hpc.service.dataManagement.propagateParentMetadataPolicy">none</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
@@ -62,7 +62,9 @@
 	<osgi:reference id="hpcEventDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcEventDAO" />	                 
 	<osgi:reference id="hpcReportDAO" 
-	                interface="gov.nih.nci.hpc.dao.HpcReportsDAO" />	                 
+	                interface="gov.nih.nci.hpc.dao.HpcReportsDAO" />
+	<osgi:reference id="hpcMetadataDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcMetadataDAO" />		                 
 	<osgi:reference id="hpcGlobusDataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
 		            bean-name="hpcGlobusDataTransferProxy"/>
