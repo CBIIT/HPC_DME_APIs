@@ -23,7 +23,6 @@
 			<xsd:element name="attribute" type="xsd:string" />
 			<xsd:element name="value" type="xsd:string" />
 			<xsd:element name="unit" type="xsd:string" />
-			<xsd:element name="id" type="xsd:int" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
