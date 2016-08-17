@@ -1315,9 +1315,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
        	// Associate the parent metadata.
-    	for(HpcMetadataEntry metadataEntry : 
-    		dataManagementProxy.getParentPathMetadata(authenticatedToken, path)) {
-            metadataDAO.associateMetadata(objectId, metadataEntry.getId());
+    	for(int metadataId : dataManagementProxy.getParentPathMetadataIds(authenticatedToken, path)) {
+            metadataDAO.associateMetadata(objectId, metadataId);
     	}
        	
        	return null;
