@@ -871,6 +871,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		       metadataEntry.setValue(metadataValue.getAvuValue());
 		       String unit = metadataValue.getAvuUnit();
 		       metadataEntry.setUnit(unit != null && !unit.isEmpty() ? unit : null);
+		       metadataEntry.setId(metadataValue.getAvuId());
 		       metadataEntries.add(metadataEntry);
 		   }
 	    }
