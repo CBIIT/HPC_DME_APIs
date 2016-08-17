@@ -15,6 +15,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocatio
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
+import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
@@ -82,6 +83,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	private static final String JSON_METADATA_ATTRIBUTES = "metadataAttributes"; 
 	private static final String JSON_PARENT_METADATA_ATTRIBUTES = "parentMetadataAttributes"; 
 	
+	// Parent Metadata propagation policies
+	private static final String REPLICATE_PARENT_METADATA_POLICY = "replication";
+	private static final String ASSOCIATE_PARENT_METADATA_POLICY = "association";
+	private static final String NO_PARENT_METADATA_PROPAGATION_POLICY = "none";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -102,6 +108,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	@Autowired
 	private HpcSystemAccountLocator systemAccountLocator = null;
 	
+	// Metadata DAO.
+	@Autowired
+	private HpcMetadataDAO metadataDAO = null;
+	
 	// Prepared query to get data objects that have their data transfer in-progress to archive.
 	private List<HpcMetadataQuery> dataTransferInProgressToArchiveQuery = new ArrayList<>();
 	
@@ -111,9 +121,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	// Prepared query to get data objects that have their data in temporary archive.
 	private List<HpcMetadataQuery> dataTransferInTemporaryArchiveQuery = new ArrayList<>();
 	
-	// Policy to replicate parent metadata of data objects and collections 
+	// Policy to propagate parent metadata of data objects and collections.
 	// (when registering and updating metadata).
-	private boolean replicateParentMetadata = false;
+	private String propagateParentMetadataPolicy = null;
 
     // The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -125,12 +135,20 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param replicateParentMetadata Policy to replicate parent metadata of data objects
-     *                                and collections (when registering and updating metadata)
+     * @param propagateParentMetadataPolicy Policy to propagate parent metadata of data objects
+     *                                      and collections (when registering and updating metadata)
+     * @throws HpcException
      */
-    private HpcDataManagementServiceImpl(boolean replicateParentMetadata)
+    private HpcDataManagementServiceImpl(String propagateParentMetadataPolicy) throws HpcException
     {
-    	this.replicateParentMetadata = replicateParentMetadata;
+    	if(propagateParentMetadataPolicy == null ||
+    	   (!propagateParentMetadataPolicy.equals(ASSOCIATE_PARENT_METADATA_POLICY) &&
+    	    !propagateParentMetadataPolicy.equals(REPLICATE_PARENT_METADATA_POLICY) &&
+    	    !propagateParentMetadataPolicy.equals(NO_PARENT_METADATA_PROPAGATION_POLICY))) {
+    	   throw new HpcException("Invalid metadata propagation policy: " + propagateParentMetadataPolicy,
+    			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    	}
+    	this.propagateParentMetadataPolicy = propagateParentMetadataPolicy;
     	
     	// Prepare the query to get data objects in data transfer in-progress to archive.
         dataTransferInProgressToArchiveQuery.add(
@@ -613,78 +631,21 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public HpcMetadataOrigin addParentMetadata(String path) throws HpcException
     {
     	// Check the parent metadata replication policy.
-    	if(!replicateParentMetadata) {
-    	   return null;
+        if(propagateParentMetadataPolicy.equals(REPLICATE_PARENT_METADATA_POLICY)) {
+    	   return replicateParentMetadata(path);
     	}
-    	
-    	// Get the path attributes to determine if this is a collection or data object.
-    	Object authenticatedToken = getAuthenticatedToken();
-       	HpcMetadataOrigin metadataOrigin = new HpcMetadataOrigin();
-    	HpcPathAttributes pathAttributes = dataManagementProxy.getPathAttributes(authenticatedToken, path);
-    	
-    	// Get the existing metadata on the collection or data object.
-    	List<HpcMetadataEntry> metadataEntries = null;
-    	if(pathAttributes.getIsFile()) {
-    	   metadataEntries = getDataObjectMetadata(path);	
-    	} else if(pathAttributes.getIsDirectory()) {
-    		      metadataEntries = getCollectionMetadata(path);
-    	} else {
-    		    return null;
+    	if(propagateParentMetadataPolicy.equals(ASSOCIATE_PARENT_METADATA_POLICY)) {
+    	   return associateParentMetadata(path);
     	}
-    	
-    	// Create a metadata attribute set of the collection or data object.
-    	Set<String> metadataAttributeSet = new HashSet<>();
-    	if(metadataEntries != null) {
-    	   for(HpcMetadataEntry metadataEntry : metadataEntries) {
-    		   metadataAttributeSet.add(metadataEntry.getAttribute());
-    		   metadataOrigin.getMetadataAttributes().add(metadataEntry.getAttribute());
-    	   }
-    	}
-       	
-       	// Get the parent metadata.
-        List<HpcMetadataEntry> parentMetadataEntries = 
-        	dataManagementProxy.getParentPathMetadata(authenticatedToken, path);
-        
-        // Get the set of system generated metadata attributes.
-        Set<String> systemGeneratedMetadataAttributes = 
-        	        metadataValidator.getSystemGeneratedMetadataAttributes();
-        
-        // Prepare a list a metadata entries from the parent to be added. 
-        // Note: only parent entries that don't already exist as child entries are added. 
-        //       Also - system generated metadata are not replicated.
-        List<HpcMetadataEntry> addMetadataEntries = new ArrayList<>();
-       	for(HpcMetadataEntry parentMetadataEntry : parentMetadataEntries) {
-			if(!metadataAttributeSet.contains(parentMetadataEntry.getAttribute()) &&
-			   !systemGeneratedMetadataAttributes.contains(parentMetadataEntry.getAttribute())) {
-			   if(parentMetadataEntry.getUnit() == null) {
-				  parentMetadataEntry.setUnit("");
-			   }
-			   
-			   addMetadataEntries.add(parentMetadataEntry);
-			   metadataAttributeSet.add(parentMetadataEntry.getAttribute());
-			   metadataOrigin.getParentMetadataAttributes().add(parentMetadataEntry.getAttribute());
-			}
-       	}
-		  
-        // Add Parent Metadata to the data object or collection. 
-       	if(!addMetadataEntries.isEmpty()) {
-    	   if(pathAttributes.getIsFile()) {
-       	      dataManagementProxy.addMetadataToDataObject(authenticatedToken, 
-       		     	                                      path, addMetadataEntries);
-    	   } else {
-    		       dataManagementProxy.addMetadataToCollection(authenticatedToken, 
-                                                               path, addMetadataEntries);
-    	   }
-       	}
-       	
-       	return metadataOrigin;
+
+    	return null;
     }
     
     @Override
     public void updateMetadataTree(String path) throws HpcException
     {
-    	// Check the parent metadata replication policy.
-    	if(!replicateParentMetadata) {
+    	// Check the parent metadata propagation policy.
+    	if(!propagateParentMetadataPolicy.equals(REPLICATE_PARENT_METADATA_POLICY)) {
     	   return;
     	}
     	
@@ -710,8 +671,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public HpcMetadataOrigin updateMetadataOrigin(HpcMetadataOrigin metadataOrigin, 
     		                                      List<HpcMetadataEntry> metadataEntries) 
     {
-    	// Check the parent metadata replication policy.
-    	if(!replicateParentMetadata) {
+    	// Check the parent metadata propagation policy.
+    	if(!propagateParentMetadataPolicy.equals(REPLICATE_PARENT_METADATA_POLICY)) {
     	   return null;
     	}
     	
@@ -1254,5 +1215,111 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	updatedMetadataOrigin.getMetadataAttributes().addAll(metadataAttributesSet);
     	updatedMetadataOrigin.getParentMetadataAttributes().addAll(parentMetadataAttributesSet);
     	return updatedMetadataOrigin;
+    }
+    
+    /**
+     * Replicate parent metadata to a either a collection or a data object.
+     *
+     * @param path The collection or data object path.
+     * @return HpcMetadataOrigin An object listing the origin of the collection / data object
+     *                           metadata after the change.
+     * @throws HpcException
+     */
+    private HpcMetadataOrigin replicateParentMetadata(String path) throws HpcException
+    {
+    	// Get the path attributes to determine if this is a collection or data object.
+    	Object authenticatedToken = getAuthenticatedToken();
+       	HpcMetadataOrigin metadataOrigin = new HpcMetadataOrigin();
+    	HpcPathAttributes pathAttributes = dataManagementProxy.getPathAttributes(authenticatedToken, path);
+    	
+    	// Get the existing metadata on the collection or data object.
+    	List<HpcMetadataEntry> metadataEntries = null;
+    	if(pathAttributes.getIsFile()) {
+    	   metadataEntries = getDataObjectMetadata(path);	
+    	} else if(pathAttributes.getIsDirectory()) {
+    		      metadataEntries = getCollectionMetadata(path);
+    	} else {
+    		    return null;
+    	}
+    	
+    	// Create a metadata attribute set of the collection or data object.
+    	Set<String> metadataAttributeSet = new HashSet<>();
+    	if(metadataEntries != null) {
+    	   for(HpcMetadataEntry metadataEntry : metadataEntries) {
+    		   metadataAttributeSet.add(metadataEntry.getAttribute());
+    		   metadataOrigin.getMetadataAttributes().add(metadataEntry.getAttribute());
+    	   }
+    	}
+       	
+       	// Get the parent metadata.
+        List<HpcMetadataEntry> parentMetadataEntries = 
+        	dataManagementProxy.getParentPathMetadata(authenticatedToken, path);
+        
+        // Get the set of system generated metadata attributes.
+        Set<String> systemGeneratedMetadataAttributes = 
+        	        metadataValidator.getSystemGeneratedMetadataAttributes();
+        
+        // Prepare a list a metadata entries from the parent to be added. 
+        // Note: only parent entries that don't already exist as child entries are added. 
+        //       Also - system generated metadata are not replicated.
+        List<HpcMetadataEntry> addMetadataEntries = new ArrayList<>();
+       	for(HpcMetadataEntry parentMetadataEntry : parentMetadataEntries) {
+			if(!metadataAttributeSet.contains(parentMetadataEntry.getAttribute()) &&
+			   !systemGeneratedMetadataAttributes.contains(parentMetadataEntry.getAttribute())) {
+			   if(parentMetadataEntry.getUnit() == null) {
+				  parentMetadataEntry.setUnit("");
+			   }
+			   
+			   addMetadataEntries.add(parentMetadataEntry);
+			   metadataAttributeSet.add(parentMetadataEntry.getAttribute());
+			   metadataOrigin.getParentMetadataAttributes().add(parentMetadataEntry.getAttribute());
+			}
+       	}
+		  
+        // Add Parent Metadata to the data object or collection. 
+       	if(!addMetadataEntries.isEmpty()) {
+    	   if(pathAttributes.getIsFile()) {
+       	      dataManagementProxy.addMetadataToDataObject(authenticatedToken, 
+       		     	                                      path, addMetadataEntries);
+    	   } else {
+    		       dataManagementProxy.addMetadataToCollection(authenticatedToken, 
+                                                               path, addMetadataEntries);
+    	   }
+       	}
+       	
+       	return metadataOrigin;
+    }
+    
+    /**
+     * Associate parent metadata to a either a collection or a data object.
+     *
+     * @param path The collection or data object path.
+     * @return HpcMetadataOrigin An object listing the origin of the collection / data object
+     *                           metadata after the change.
+     * @throws HpcException
+     */
+    private HpcMetadataOrigin associateParentMetadata(String path) throws HpcException
+    {
+    	// Get the path attributes to determine if this is a collection or data object.
+    	Object authenticatedToken = getAuthenticatedToken();
+    	HpcPathAttributes pathAttributes = dataManagementProxy.getPathAttributes(authenticatedToken, path);
+    	
+    	// Get the ID of the collection or data object.
+    	int objectId = -1;
+    	if(pathAttributes.getIsFile()) {
+    	   objectId = getDataObject(path).getId();	
+    	} else if(pathAttributes.getIsDirectory()) {
+    		      objectId = getCollection(path).getCollectionId();
+    	} else {
+    		    return null;
+    	}
+    	
+       	// Associate the parent metadata.
+    	for(HpcMetadataEntry metadataEntry : 
+    		dataManagementProxy.getParentPathMetadata(authenticatedToken, path)) {
+            metadataDAO.associateMetadata(objectId, metadataEntry.getId());
+    	}
+       	
+       	return null;
     }
 }
