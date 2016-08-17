@@ -510,10 +510,41 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     {
 		IRODSFile parentPath = getParentPath(authenticatedToken, path);
 		if(parentPath == null || !parentPath.isDirectory()) {
-		   return null;
+		   return new ArrayList<>();
 		}
 		
 		return getCollectionMetadata(authenticatedToken, parentPath.getPath());
+    }
+    
+    @Override
+    public List<Integer> getParentPathMetadataIds(Object authenticatedToken, 
+                                                  String path) 
+                                                 throws HpcException
+    {
+    	List<Integer> metadataIds = new ArrayList<>();
+		IRODSFile parentPath = getParentPath(authenticatedToken, path);
+		if(parentPath == null || !parentPath.isDirectory()) {
+		   return metadataIds;
+		}
+		
+		try {
+			 path = addPath(path);
+			 List<MetaDataAndDomainData> metadataValues = 
+			      irodsConnection.getCollectionAO(authenticatedToken).
+		                                          findMetadataValuesForCollection(path);
+			 if(metadataValues != null) {
+			    for(MetaDataAndDomainData metadataValue : metadataValues) {
+			        metadataIds.add(metadataValue.getAvuId());
+			    }
+			 }
+			    
+			 return metadataIds;
+
+		} catch(Exception e) {
+	            throw new HpcException("Failed to get metadata of a collection: " + 
+                                     e.getMessage(),
+                                     HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} 
     }
     
     @Override
@@ -871,7 +902,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		       metadataEntry.setValue(metadataValue.getAvuValue());
 		       String unit = metadataValue.getAvuUnit();
 		       metadataEntry.setUnit(unit != null && !unit.isEmpty() ? unit : null);
-		       metadataEntry.setId(metadataValue.getAvuId());
 		       metadataEntries.add(metadataEntry);
 		   }
 	    }

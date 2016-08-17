@@ -295,6 +295,18 @@ public interface HpcDataManagementProxy
    		                                               throws HpcException;   
     
     /**
+     * Get metadata IDs of a the parent path.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param path The path.
+     * @return List of IDs.
+     * 
+     * @throws HpcException
+     */
+    public List<Integer> getParentPathMetadataIds(Object authenticatedToken, String path) 
+   		                                         throws HpcException;   
+    
+    /**
      * Get the user's role.
      *
      * @param authenticatedToken An authenticated token.
