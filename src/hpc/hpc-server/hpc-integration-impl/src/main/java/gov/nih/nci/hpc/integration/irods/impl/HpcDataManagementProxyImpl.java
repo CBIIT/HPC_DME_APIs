@@ -508,6 +508,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                                         String path) 
                                                        throws HpcException
     {
+    	path = addPath(path);
 		IRODSFile parentPath = getParentPath(authenticatedToken, path);
 		if(parentPath == null || !parentPath.isDirectory()) {
 		   return new ArrayList<>();
@@ -521,6 +522,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                                   String path) 
                                                  throws HpcException
     {
+    	path = addPath(path);
     	List<Integer> metadataIds = new ArrayList<>();
 		IRODSFile parentPath = getParentPath(authenticatedToken, path);
 		if(parentPath == null || !parentPath.isDirectory()) {
@@ -528,10 +530,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		}
 		
 		try {
-			 path = addPath(path);
 			 List<MetaDataAndDomainData> metadataValues = 
 			      irodsConnection.getCollectionAO(authenticatedToken).
-		                                          findMetadataValuesForCollection(path);
+		                                          findMetadataValuesForCollection(parentPath.getPath());
 			 if(metadataValues != null) {
 			    for(MetaDataAndDomainData metadataValue : metadataValues) {
 			        metadataIds.add(metadataValue.getAvuId());
