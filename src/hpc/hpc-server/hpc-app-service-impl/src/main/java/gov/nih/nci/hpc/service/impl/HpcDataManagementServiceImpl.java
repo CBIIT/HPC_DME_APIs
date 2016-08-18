@@ -1300,7 +1300,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
      */
     private HpcMetadataOrigin associateParentMetadata(String path) throws HpcException
     {
-    	logger.error("ERAN: start associating");
     	// Get the path attributes to determine if this is a collection or data object.
     	Object authenticatedToken = getAuthenticatedToken();
     	HpcPathAttributes pathAttributes = dataManagementProxy.getPathAttributes(authenticatedToken, path);
@@ -1315,11 +1314,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		    return null;
     	}
     	
-    	logger.error("ERAN: objectID: " + objectId);
-    	
        	// Associate the parent metadata.
     	List<Integer> ids = dataManagementProxy.getParentPathMetadataIds(authenticatedToken, path);
-    	logger.error("ERAN: ids: " + ids);
     	for(int metadataId : ids) {
             metadataDAO.associateMetadata(objectId, metadataId);
     	}
