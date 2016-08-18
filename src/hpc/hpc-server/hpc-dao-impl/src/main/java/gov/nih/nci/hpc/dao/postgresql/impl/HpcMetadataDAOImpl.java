@@ -80,12 +80,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     {
 		try {
 			 String now = String.valueOf((new Date()).getTime());
-			 logger.error("ERAN: associating: " + objectId + " -> " + metadataId);
 		     jdbcTemplate.update(ASSOCIATE_METADATA_SQL, objectId, metadataId, now, now);
-		     logger.error("ERAN: associating: success");
 		     
 		} catch(DataAccessException dae) {
-			    logger.error("ERAN: associating: failed");
 			    throw new HpcException("Failed to associate metadata: " + dae.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, dae);
 		}
