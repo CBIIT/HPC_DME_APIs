@@ -16,6 +16,8 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.Date;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -50,6 +52,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	@Autowired
 	private JdbcTemplate jdbcTemplate = null;
 	
+    // The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -75,11 +80,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     {
 		try {
 			 String now = String.valueOf((new Date()).getTime());
+			 logger.error("ERAN: associating: " + objectId + " -> " + metadataId);
 		     jdbcTemplate.update(ASSOCIATE_METADATA_SQL, objectId, metadataId, now, now);
+		     logger.error("ERAN: associating: success");
 		     
-		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to associate metadata: " + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+		} catch(DataAccessException dae) {
+			    logger.error("ERAN: associating: failed");
+			    throw new HpcException("Failed to associate metadata: " + dae.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, dae);
 		}
     }
 }
