@@ -227,6 +227,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and b.object_id = c.data_id and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and b.object_id in " +
 					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by' and a.meta_attr_value=? and b.object_id = c.data_id and a.meta_id=b.meta_id and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ?)";
 	
+	private static final String USERS_SQL = "select \"USER_ID\" from public.\"HPC_USER\"";
+	
+	private static final String DOCS_SQL = "select distinct meta_attr_value from public.r_meta_main where meta_attr_name='registered_by_doc'";
+
 	//---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -420,8 +424,55 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		else return "0";
 	}	
 	
-	public HpcReport generatReport(HpcReportCriteria criteria)
+	public List<HpcReport> generatReport(HpcReportCriteria criteria)
 	{
+		List<HpcReport> reports = new ArrayList<HpcReport>();
+		
+		if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY) || criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE))
+			reports.add(getReport(criteria));
+		
+		if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC) || criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
+		{
+			if(criteria.getDocs().isEmpty())
+				criteria.getDocs().addAll(getDocs());
+			
+			for(String doc : criteria.getDocs())
+			{
+				criteria.getDocs().clear();
+				criteria.getDocs().add(doc);
+				HpcReport report = getReport(criteria);
+				reports.add(report);
+			}
+		}
+			
+		if((criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER) || criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE)) &&
+					criteria.getDocs().isEmpty())
+		{
+				criteria.getDocs().addAll(getUsers());
+				for(String user : criteria.getUsers())
+				{
+					criteria.getUsers().clear();
+					criteria.getUsers().add(user);
+					HpcReport report = getReport(criteria);
+					reports.add(report);
+				}
+		}
+		return reports;
+	}
+
+	private List<String> getUsers()
+	{
+		return jdbcTemplate.queryForList(USERS_SQL, String.class);
+	}
+	
+	private List<String> getDocs()
+	{
+		return jdbcTemplate.queryForList(DOCS_SQL, String.class);
+	}
+
+	public HpcReport getReport(HpcReportCriteria criteria)
+	{
+		List<HpcReport> reports = new ArrayList<HpcReport>();
 		HpcReport report = new HpcReport();
 
 		//Total Users
@@ -437,18 +488,18 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		dateArgs[1] = toDate;
 
 		String[] docArg = new String[1];
-		docArg[0] = criteria.getDoc();
+		docArg[0] = criteria.getDocs().get(0);
 		
 		Object[] docDateArgs = new Object[3];
-		docDateArgs[0] = criteria.getDoc();
+		docDateArgs[0] = criteria.getDocs().get(0);
 		docDateArgs[1] = fromDate;
 		docDateArgs[2] = toDate;
 		
 		String[] userArg = new String[1];
-		docArg[0] = criteria.getUser();
+		docArg[0] = criteria.getUsers().get(0);
 		
 		Object[] userDateArgs = new Object[3];
-		docDateArgs[0] = criteria.getUser();
+		docDateArgs[0] = criteria.getUsers().get(0);
 		docDateArgs[1] = fromDate;
 		docDateArgs[2] = toDate;
 		
@@ -528,24 +579,24 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		Object[] filesizedocArgs = new Object[3];
 		filesizedocArgs[0] = lower;
 		filesizedocArgs[1] = upper;
-		filesizedateArgs[2] = criteria.getDoc();
+		filesizedateArgs[2] = criteria.getDocs().get(0);
 
 		Object[] filesizedocDateArgs = new Object[5];
 		filesizedocDateArgs[0] = lower;
 		filesizedocDateArgs[1] = upper;
-		filesizedocDateArgs[2] = criteria.getDoc();
+		filesizedocDateArgs[2] = criteria.getDocs().get(0);
 		filesizedocDateArgs[3] = fromDate;
 		filesizedocDateArgs[4] = toDate;
 
 		Object[] filesizeuserArgs = new Object[3];
 		filesizeuserArgs[0] = lower;
 		filesizeuserArgs[1] = upper;
-		filesizeuserArgs[2] = criteria.getUser();
+		filesizeuserArgs[2] = criteria.getUsers().get(0);
 
 		Object[] filesizeuserDateArgs = new Object[5];
 		filesizeuserDateArgs[0] = lower;
 		filesizeuserDateArgs[1] = upper;
-		filesizeuserDateArgs[2] = criteria.getUser();
+		filesizeuserDateArgs[2] = criteria.getUsers().get(0);
 		filesizeuserDateArgs[3] = fromDate;
 		filesizeuserDateArgs[4] = toDate;
 		
@@ -717,8 +768,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		overtengbEntry.setValue(getFileSize(criteria, fileSizeArgs, filesizedateArgs, filesizedocArgs, filesizedocDateArgs, filesizeuserArgs, filesizeuserDateArgs));
 
 		report.setGeneratedOn(Calendar.getInstance());
-		report.setDoc(criteria.getDoc());
-		report.setUser(criteria.getUser());
+		report.setDoc(criteria.getDocs().get(0));
+		report.setUser(criteria.getUsers().get(0));
 		report.setType(criteria.getType());
 		if(criteria.getFromDate() != null)
 			report.setFromDate(criteria.getFromDate());
@@ -743,7 +794,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		
 		return report;
 	}
-
 	private HpcReport generateUsageSummaryReportByDateRange(HpcReportCriteria criteria)
 	{
 		return jdbcTemplate.queryForObject(SUM_OF_DATA_SQL, reportRowMapper);

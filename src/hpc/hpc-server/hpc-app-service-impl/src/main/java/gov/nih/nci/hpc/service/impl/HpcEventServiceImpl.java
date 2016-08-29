@@ -235,7 +235,11 @@ public class HpcEventServiceImpl implements HpcEventService
 		if(type == null)
 			throw new HpcException("Invalid report type", HpcErrorType.INVALID_REQUEST_INPUT);
 		event.setType(type);
-		HpcReport report = reportsDAO.generatReport(criteria);
+		HpcReport report = new HpcReport();
+		List<HpcReport> reports = reportsDAO.generatReport(criteria);
+		if(reports != null)
+			report = reports.get(0); 
+		
 		if(report.getDoc() != null)
 			event.getPayloadEntries().add(toPayloadEntry(HpcReportEntryAttribute.DOC.name(), 
                    report.getDoc()));
