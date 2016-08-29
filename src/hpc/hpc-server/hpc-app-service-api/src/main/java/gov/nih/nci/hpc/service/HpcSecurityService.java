@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
+import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -64,6 +65,16 @@ public interface HpcSecurityService
      */
     public HpcUser getUser(String nciUserId) throws HpcException;
     
+    /**
+     * Get user role.
+     *
+     * @param nciUserId The registered user NCI ID.
+     * @return user role.
+     * 
+     * @throws HpcException
+     */
+    public HpcUserRole getUserRole(String nciUserId) throws HpcException;
+
     /**
      * Get the request invoker (user).
      *

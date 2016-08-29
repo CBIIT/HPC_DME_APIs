@@ -131,13 +131,13 @@ public class HpcScheduledTasks
      * Process Events Task.
      * 
      */  
-    @Scheduled(cron = "${hpc.scheduler.cron.generateReports.delay}")
-    private void generateReports()
+    @Scheduled(cron = "${hpc.scheduler.cron.summaryreport.delay}")
+    private void generateSummaryReport()
     {
         logger.info("Generating reports...");
 
         try { 
-		     systemBusService.generateReportsEvents();
+		     systemBusService.generateSummaryReportEvent();
 		     
         } catch(HpcException e) {
         	    logger.error("Process Events task failed", e);
@@ -150,6 +150,28 @@ public class HpcScheduledTasks
     }
     
     /**
+     * Process Events Task.
+     * 
+     */  
+    @Scheduled(cron = "${hpc.scheduler.cron.weeklysummaryreport.delay}")
+    private void generateWeeklySummaryReport()
+    {
+        logger.info("Generating weekly summary reports...");
+
+        try { 
+		     systemBusService.generateWeeklySummaryReportEvent();
+		     
+        } catch(HpcException e) {
+        	    logger.error("Process Events task failed", e);
+        	    
+        } finally {
+        	       // TODO - make this AOP.
+        	       dataManagementBusService.closeConnection();
+        	       logger.info("Completed Process Events Task...");	
+        }
+    }
+
+     /**
      * Process Events Task.
      * 
      */  

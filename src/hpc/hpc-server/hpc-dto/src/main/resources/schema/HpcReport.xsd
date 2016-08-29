@@ -34,6 +34,14 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
+
+	<xsd:complexType name="HpcReportsDTO">
+			<xsd:sequence>
+				<xsd:element name="reports"
+				             type="hpc-domain-report:HpcReport"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+	</xsd:complexType>
 	
 	<xsd:element name="HpcReportDTO">
 		<xsd:complexType>

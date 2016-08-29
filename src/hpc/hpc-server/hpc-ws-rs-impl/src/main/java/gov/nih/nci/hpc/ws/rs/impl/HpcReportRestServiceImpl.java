@@ -20,6 +20,7 @@ import gov.nih.nci.hpc.bus.HpcReportBusService;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.dto.report.HpcReportDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportRequestDTO;
+import gov.nih.nci.hpc.dto.report.HpcReportsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcReportRestService;
 
@@ -68,7 +69,7 @@ public class HpcReportRestServiceImpl extends HpcRestServiceImpl implements HpcR
 	@Override
 	public Response generateReport(HpcReportRequestDTO reportDTO) {
 		logger.info("Invoking RS: POST /report: " + reportDTO);
-		HpcReportDTO report = null;
+		HpcReportsDTO report = null;
 		try {
 			 report = reportBusService.generateReport(reportDTO);
 

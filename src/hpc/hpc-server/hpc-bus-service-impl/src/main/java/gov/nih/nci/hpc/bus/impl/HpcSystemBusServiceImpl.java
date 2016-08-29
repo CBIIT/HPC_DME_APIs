@@ -285,23 +285,83 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     }
     
     @Override
-	public void generateReportsEvents() throws HpcException
+	public void generateSummaryReportEvent() throws HpcException
 	{
     	List<String> summaryReportUsers = notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_REPORT);
-    	logger.error("Reports: "+summaryReportUsers);
     	if(summaryReportUsers != null && summaryReportUsers.size() > 0)
     	{
     		HpcReportCriteria criteria = new HpcReportCriteria();
     		criteria.setType(HpcReportType.USAGE_SUMMARY);
     		eventService.generateReportsEvents(summaryReportUsers, criteria);
     	}
+	}
 
+    @Override
+	public void generateWeeklySummaryReportEvent() throws HpcException
+	{
     	List<String> summaryReportByDateUsers = notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_BY_WEEKLY_REPORT);
-    	logger.error("summaryReportByDateUsers: "+summaryReportByDateUsers);
     	if(summaryReportByDateUsers != null && summaryReportByDateUsers.size() > 0)
     	{
     		HpcReportCriteria criteria = new HpcReportCriteria();
     		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE);
+    		Calendar today = Calendar.getInstance();
+    		Calendar oneWeekbefore = Calendar.getInstance();
+    		oneWeekbefore.add(Calendar.DATE, -7);
+    		criteria.setFromDate(oneWeekbefore);
+    		criteria.setToDate(today);
+    		eventService.generateReportsEvents(summaryReportByDateUsers, criteria);
+    	}
+	}
+    
+    @Override
+	public void generateDocReportEvent() throws HpcException
+	{
+    	List<String> summaryReportUsers = notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_BY_DOC_REPORT);
+    	if(summaryReportUsers != null && summaryReportUsers.size() > 0)
+    	{
+    		HpcReportCriteria criteria = new HpcReportCriteria();
+    		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_DOC);
+    		eventService.generateReportsEvents(summaryReportUsers, criteria);
+    	}
+	}
+    
+    @Override
+	public void generateWeeklyDocReportEvent() throws HpcException
+	{
+    	List<String> summaryReportByDateUsers = notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_BY_DOC_BY_WEEKLY_REPORT);
+    	if(summaryReportByDateUsers != null && summaryReportByDateUsers.size() > 0)
+    	{
+    		HpcReportCriteria criteria = new HpcReportCriteria();
+    		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE);
+    		Calendar today = Calendar.getInstance();
+    		Calendar oneWeekbefore = Calendar.getInstance();
+    		oneWeekbefore.add(Calendar.DATE, -7);
+    		criteria.setFromDate(oneWeekbefore);
+    		criteria.setToDate(today);
+    		eventService.generateReportsEvents(summaryReportByDateUsers, criteria);
+    	}
+	}
+    
+    @Override
+	public void generateUserReportEvent() throws HpcException
+	{
+    	List<String> summaryReportUsers = notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_BY_USER_REPORT);
+    	if(summaryReportUsers != null && summaryReportUsers.size() > 0)
+    	{
+    		HpcReportCriteria criteria = new HpcReportCriteria();
+    		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_USER);
+    		eventService.generateReportsEvents(summaryReportUsers, criteria);
+    	}
+	}
+    
+    @Override
+	public void generateWeeklyUserReportEvent() throws HpcException
+	{
+    	List<String> summaryReportByDateUsers = notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT);
+    	if(summaryReportByDateUsers != null && summaryReportByDateUsers.size() > 0)
+    	{
+    		HpcReportCriteria criteria = new HpcReportCriteria();
+    		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE);
     		Calendar today = Calendar.getInstance();
     		Calendar oneWeekbefore = Calendar.getInstance();
     		oneWeekbefore.add(Calendar.DATE, -7);
@@ -441,6 +501,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 			    logger.error("Failed to add a data transfer download event", e);
 		}
 	}
+
 }
 
  
