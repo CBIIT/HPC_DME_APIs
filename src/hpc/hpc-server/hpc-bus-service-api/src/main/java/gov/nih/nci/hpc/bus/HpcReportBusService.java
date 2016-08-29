@@ -10,8 +10,8 @@
 
 package gov.nih.nci.hpc.bus;
 
-import gov.nih.nci.hpc.dto.report.HpcReportDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportRequestDTO;
+import gov.nih.nci.hpc.dto.report.HpcReportsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -34,7 +34,7 @@ public interface HpcReportBusService
 	 * 
 	 * @throws HpcException
 	 */
-	public HpcReportDTO generateReport(HpcReportRequestDTO criteria) throws HpcException;
+	public HpcReportsDTO generateReport(HpcReportRequestDTO criteria) throws HpcException;
     
 }
 

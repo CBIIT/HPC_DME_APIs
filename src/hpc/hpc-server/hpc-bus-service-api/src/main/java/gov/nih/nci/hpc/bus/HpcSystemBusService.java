@@ -53,12 +53,47 @@ public interface HpcSystemBusService
      */
 	public void processEvents() throws HpcException;
 
-    /**
-     * Generate reports events.
+	/**
+     * Generate summary report event.
      *
      * @throws HpcException
      */
-	public void generateReportsEvents() throws HpcException;
+	public void generateSummaryReportEvent() throws HpcException;
+
+	/**
+     * Generate weekly summary report event.
+     *
+     * @throws HpcException
+     */
+	public void generateWeeklySummaryReportEvent() throws HpcException;
+
+	/**
+     * Generate summary by DOC report event.
+     *
+     * @throws HpcException
+     */
+	public void generateDocReportEvent() throws HpcException;
+
+	/**
+     * Generate summary by weekly DOC reports events.
+     *
+     * @throws HpcException
+     */
+	public void generateWeeklyDocReportEvent() throws HpcException;
+
+	/**
+     * Generate user summary report event.
+     *
+     * @throws HpcException
+     */
+	public void generateUserReportEvent() throws HpcException;
+
+	/**
+     * Generate weekly user summary report event.
+     *
+     * @throws HpcException
+     */
+	public void generateWeeklyUserReportEvent() throws HpcException;
 }
 
  

@@ -34,7 +34,7 @@ public interface HpcReportsDAO
      * 
      * @throws HpcException
      */
-    public HpcReport generatReport(HpcReportCriteria criteria) throws HpcException;
+    public List<HpcReport> generatReport(HpcReportCriteria criteria) throws HpcException;
     
 }
 
