@@ -27,22 +27,28 @@
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="type" type="hpc-domain-report:HpcReportType" />
-				<xsd:element name="doc" type="xsd:string" />
-				<xsd:element name="user" type="xsd:string" />
+				<xsd:element name="doc"
+				             type="xsd:string"
+					         minOccurs="1" maxOccurs="unbounded" />
+				<xsd:element name="user"
+				             type="xsd:string"
+					         minOccurs="1" maxOccurs="unbounded" />
 				<xsd:element name="fromDate" type="xsd:string" />
 				<xsd:element name="toDate" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
 
-	<xsd:complexType name="HpcReportsDTO">
+	<xsd:element name="HpcReportsDTO">
+		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="reports"
 				             type="hpc-domain-report:HpcReport"
 					         minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
-	</xsd:complexType>
-	
+		</xsd:complexType>
+	</xsd:element>
+
 	<xsd:element name="HpcReportDTO">
 		<xsd:complexType>
 			<xsd:sequence>
