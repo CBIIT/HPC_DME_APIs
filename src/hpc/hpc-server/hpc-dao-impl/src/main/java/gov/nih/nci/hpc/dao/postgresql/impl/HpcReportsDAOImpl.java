@@ -547,7 +547,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		//Total number of collections - TOTAL_NUM_OF_COLLECTIONS
 		List<Map<String, Object>> list = getTotalCollectionsSize(criteria, dateArgs, docArg, docDateArgs, userArg, userDateArgs);
 		StringBuffer str = new StringBuffer();
-        str.append("\n");
+        str.append("[");
         if(list != null)
         {
                 for(Map<String, Object> listEntry : list)
@@ -565,9 +565,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
                                 } else
                                         type = (String) listEntry.get(name);
                         }
-                        str.append("\t"+type + ": "+ count + "\n");
+                        str.append("{"+type + ": "+ count + "}");
                 }
         }
+        str.append("]");
 		HpcReportEntry numOfCollEntry = new HpcReportEntry();
 		numOfCollEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUM_OF_COLLECTIONS);
 		numOfCollEntry.setValue(str.toString());
