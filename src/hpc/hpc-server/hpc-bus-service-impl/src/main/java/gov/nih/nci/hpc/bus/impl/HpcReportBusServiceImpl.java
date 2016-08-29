@@ -117,7 +117,7 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
 					HpcErrorType.INVALID_REQUEST_INPUT);
 
 		HpcReportCriteria criteria = new HpcReportCriteria(); 
-		criteria.setDoc(criteriaDTO.getDoc());
+		criteria.getDocs().addAll(criteriaDTO.getDoc());
 		criteria.setType(criteriaDTO.getType());
 		Calendar fromcal = null;
 		Calendar tocal = null; 
@@ -137,7 +137,7 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
 					"Failed to parse date value "+e.getMessage(),
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		criteria.setUser(criteriaDTO.getUser());
+		criteria.getUsers().addAll(criteriaDTO.getUser());
 		List<HpcReport> reports = reportService.generateReport(criteria);
 		HpcReportsDTO dto = new HpcReportsDTO();
 		for(HpcReport report : reports)
