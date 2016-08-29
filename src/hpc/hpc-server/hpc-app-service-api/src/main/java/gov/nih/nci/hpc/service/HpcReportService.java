@@ -10,6 +10,8 @@
 
 package gov.nih.nci.hpc.service;
 
+import java.util.List;
+
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -33,6 +35,6 @@ public interface HpcReportService {
 	 * 
 	 * @throws HpcException
 	 */
-	public HpcReport generateReport(HpcReportCriteria criteria) throws HpcException;
+	public List<HpcReport> generateReport(HpcReportCriteria criteria) throws HpcException;
 
 }

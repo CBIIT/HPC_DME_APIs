@@ -24,6 +24,7 @@ import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
+import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
@@ -234,6 +235,18 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     }
 
     @Override
+    public HpcUserRole getUserRole(String nciUserId) throws HpcException
+    {
+    	// Input validation.
+    	if(nciUserId == null) {
+    	   throw new HpcException("Null NCI user ID",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+
+    	return dataManagementProxy.getUserRole(getAuthenticatedToken(), nciUserId);
+    }
+
+    @Override
     public HpcRequestInvoker getRequestInvoker()
     {
     	return HpcRequestContext.getRequestInvoker();
@@ -393,5 +406,42 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	user.setLastUpdated(Calendar.getInstance());
     	userDAO.upsert(user);
     }
+    
+    /**
+     * Get the data management authenticated token from the request context.
+     * If it's not in the context, get a token by authenticating.
+     *
+     * @throws HpcException If it failed to obtain an authentication token.
+     */
+    private Object getAuthenticatedToken() throws HpcException
+    {
+    	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+    	if(invoker == null) {
+	       throw new HpcException("Unknown user",
+			                      HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
+    	}
+    	
+    	if(invoker.getDataManagementAuthenticatedToken() != null) {
+    	   return invoker.getDataManagementAuthenticatedToken();
+    	}
+    	
+    	// No authenticated token found in the request token. Authenticate the invoker.
+    	if(invoker.getDataManagementAccount() == null) {
+    		throw new HpcException("Unknown data management account",
+                                   HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
+    	}
+    	
+    	// Authenticate w/ data management
+    	Object token = dataManagementProxy.authenticate(invoker.getDataManagementAccount(),
+    			                                        invoker.getLdapAuthenticated());
+    	if(token == null) {
+    	   throw new HpcException("Invalid data management account credentials",
+                                  HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
+    	}
+    	
+    	// Store token on the request context.
+    	invoker.setDataManagementAuthenticatedToken(token);
+    	return token;
+    }    
 }
 

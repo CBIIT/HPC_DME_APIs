@@ -14,6 +14,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.dto.report.HpcReportDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportRequestDTO;
+import gov.nih.nci.hpc.dto.report.HpcReportsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
@@ -73,7 +75,7 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public HpcReportDTO generateReport(HpcReportRequestDTO criteriaDTO) throws HpcException {
+	public HpcReportsDTO generateReport(HpcReportRequestDTO criteriaDTO) throws HpcException {
 		if (criteriaDTO == null)
 			throw new HpcException("Invalid criteria to generate report", HpcErrorType.INVALID_REQUEST_INPUT);
 
@@ -136,15 +138,20 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		criteria.setUser(criteriaDTO.getUser());
-		HpcReport report = reportService.generateReport(criteria);
-		HpcReportDTO dto = new HpcReportDTO();
-		dto.setDoc(report.getDoc());
-		dto.setFromDate(fromcal);
-		dto.setGeneratedOn(report.getGeneratedOn());
-		dto.setToDate(tocal);
-		dto.setType(report.getType());
-		dto.setUser(report.getUser());
-		dto.getReportEntries().addAll(report.getReportEntries());
+		List<HpcReport> reports = reportService.generateReport(criteria);
+		HpcReportsDTO dto = new HpcReportsDTO();
+		for(HpcReport report : reports)
+		{
+			HpcReport dtoreport = new HpcReport();
+			dtoreport.setDoc(report.getDoc());
+			dtoreport.setFromDate(fromcal);
+			dtoreport.setGeneratedOn(report.getGeneratedOn());
+			dtoreport.setToDate(tocal);
+			dtoreport.setType(report.getType());
+			dtoreport.setUser(report.getUser());
+			dtoreport.getReportEntries().addAll(report.getReportEntries());
+			dto.getReports().add(dtoreport);
+		}
 		return dto;
 	}
 
