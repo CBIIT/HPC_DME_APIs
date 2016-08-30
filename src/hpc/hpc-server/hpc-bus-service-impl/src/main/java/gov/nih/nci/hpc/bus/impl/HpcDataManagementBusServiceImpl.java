@@ -264,7 +264,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			    			                   source, uploadResponse.getDataTransferRequestId(), 
 			    			                   uploadResponse.getDataTransferStatus(),
 			    			                   uploadResponse.getDataTransferType(),
-			    			                   getSourceSize(source, uploadResponse.getDataTransferType(),
+			    			                   getSourceSize(uploadResponse.getDataTransferRequestId(), source, uploadResponse.getDataTransferType(),
 				                                             dataObjectFile), 
 			    			                   dataObjectRegistrationDTO.getCallerObjectId(),
 			    			                   metadataOrigin); 
@@ -633,12 +633,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * 
      * @return The source size in bytes.
      */
-	private Long getSourceSize(HpcFileLocation source, HpcDataTransferType dataTransferType,
+	private Long getSourceSize(String requestId, HpcFileLocation source, HpcDataTransferType dataTransferType,
 			                   File dataObjectFile) throws HpcException
 	{
 		if(source != null) {
-	       return dataTransferService.getPathAttributes(dataTransferType, 
-	        		                                    source, true).getSize();
+		     return dataTransferService.getDataTransferSize(
+		    		 dataTransferType,
+		    		 requestId);
 		}
 		if(dataObjectFile != null) {
            return dataObjectFile.length();
