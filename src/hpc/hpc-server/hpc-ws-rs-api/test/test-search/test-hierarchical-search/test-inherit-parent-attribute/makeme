@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+#Clean previous results
+./cleanme
+source ../../utils/search-functions
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+PARENT_PATH=parent-$NAME
+CHILD_PATH="$PARENT_PATH/child-project"
+
+register_project parent-project.json "$PARENT_PATH"
+mv registered-project-path.tmp parent-project-path.tmp
+mv collection-registration-response-header.tmp parent-registration-response-header.tmp
+
+register_project child-project.json "$CHILD_PATH"
+mv registered-project-path.tmp child-project-path.tmp
+mv collection-registration-response-header.tmp child-registration-response-header.tmp
