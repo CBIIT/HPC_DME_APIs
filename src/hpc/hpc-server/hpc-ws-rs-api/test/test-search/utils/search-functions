@@ -9,12 +9,22 @@
 #
 
 
+#Register a project in the "project-search"  path
+
+#Arguments:<project-description.json>
+#          [subpath] subpath to append to the path
 function register_project {
 
     source ../../../utils/functions
     PROJECT_DESCRIPTION=$1
     USERID=`get_username ../../../utils/config`
     DESTINATION_PATH="/FNL_SF_Archive/${USERID}/dice-unit-test/project-search"
+
+    SUB_PATH="$2"   
+    if [ ! -z "$SUB_PATH" ]
+    then
+        DESTINATION_PATH=$DESTINATION_PATH/$SUB_PATH
+    fi
     echo "$DESTINATION_PATH" > registered-project-path.tmp
     curl_register "$PROJECT_DESCRIPTION" "$DESTINATION_PATH" collection
 
