@@ -93,7 +93,7 @@ function get_json_hier_array_value {
 
 #Return the value for a one line json file with the format "attribute"  "value"
 #Inputs: <input-file.json or json string> 
-#Inputs: <attribute name > 
+#Inputs: <attribute name> 
 function get_json_attribute_value {
 
     if [ -z "$1" ] || [ -z "$2" ]
@@ -147,7 +147,15 @@ function get_username {
         CURL_CONFIG_FILE="$1"
     fi
 
-    USER_NAME=`grep '\-u' "$CURL_CONFIG_FILE" | sed "s/.*\-u[   ]*\([a-zA-Z]*\).*/\1/"`
+    #Make sure the line I get from config is not a token with -u. If the -u is for a username, then the number of 
+    #characters  should be less than 40
+
+    USER_NAME_LINE=`grep '\-u' "$CURL_CONFIG_FILE"`
+    N_CHAR=${#USER_NAME_LINE}
+    if [ "$N_CHAR" -lt "40" ]
+    then
+        USER_NAME=$(echo "$USER_NAME_LINE" | sed "s/.*\-u[   ]*\([a-zA-Z]*\).*/\1/")
+    fi
 
     #If the username is not in the $CURL_CONFIG_FILE look in the general configuration
     if [ -z "$USER_NAME" ]
@@ -449,7 +457,7 @@ function add_user_to_group {
 }
 
 #Register a new user and a group from template:
-function register-user-and-group {
+function register_user_and_group {
 
 
     register_user_from_template
@@ -605,12 +613,12 @@ function download_dataobject_async {
 
     if [ -z $RESPONSE_HEADER ] 
     then
-        $RESPONSE_HEADER=download-dataobject-response-header.tmp
+        RESPONSE_HEADER=download-dataobject-response-header.tmp
     fi
 
     if [ -z $RESPONSE_MSG ] 
     then
-        $RESPONSE_MSG=download-dataobject-response-message.json.tmp
+        RESPONSE_MSG=download-dataobject-response-message.json.tmp
     fi
 
     OBJECT_PATH="$1"
@@ -642,7 +650,131 @@ function download_dataobject_async {
 }
 
 
+#Subscribe to all the notifications mentioned in the $HPC_DM_TEST/utils/templates/notifications-template.json
+#Inputs: notification_file 
+#        [userID]
+function subscribe_to_notifications {
 
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR: using subscribe_to_notifications"
+        echo "USAGE: subscribe_to_notifications <notification_file>"
+        exit
+    fi
+
+    INPUT_FILE="$1"
+
+    if ! [ -e "$INPUT_FILE" ]  
+    then
+        echo "ERROR the input file \"$INPUT_FILE\" does not exist."
+        exit
+    fi
+
+    if [ -z $RESPONSE_HEADER ] 
+    then
+        RESPONSE_HEADER=subscribe-notifications-response-header.tmp
+    fi
+
+    if [ -z $RESPONSE_MSG ] 
+    then
+        RESPONSE_MSG=subscribe-notifications-response-message.json.tmp
+    fi
+
+    if [ -z "$2" ] 
+    then
+        USERID=`get_username $HPC_DM_TEST/utils/config`
+    else
+        USERID="$2"
+    fi
+
+    NOTIFICATION_INPUT=dxdice-notification-input.json.tmp  
+    cp $INPUT_FILE $NOTIFICATION_INPUT 
+
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+
+    curl -H "Content-Type: application/json" -d @$NOTIFICATION_INPUT -X POST ${SERVER}/hpc-server/notification/$USERID  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+
+    check_connection $RESPONSE_HEADER
+}
+
+#Get the notifications for a particular user
+function get_notifications {
+
+    if [ -z $RESPONSE_HEADER ] 
+    then
+        RESPONSE_HEADER=subscribe-notifications-response-header.tmp
+    fi
+
+    if [ -z $RESPONSE_MSG ] 
+    then
+        RESPONSE_MSG=subscribe-notifications-response-message.json.tmp
+    fi
+
+    USERID=`get_username $HPC_DM_TEST/utils/config`
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+
+
+    curl -G -X GET $SERVER/hpc-server/notification/$USERID --config $HPC_DM_TEST/utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+
+    check_connection $RESPONSE_HEADER
+}
+
+
+
+#search  for a collection of an object by metadata
+# Arguments :<type> Either collection or dataObject
+#           :<query>
+function search_by_metadata {
+    if [ -z "$1" ] || [ -z "$2" ]
+    then 
+        echo "ERROR: using search_by_metadata"
+        echo "USAGE: search_by_metadata <type> <query>"     
+        exit
+    fi
+
+    TYPE="$1"
+    QUERY="$2"
+
+    if [ "$TYPE" != "collection" ] && [ "$TYPE" != "dataObject" ]
+    then
+        echo "ERROR: type shoube be either collection or dataObject"
+        exit
+    fi
+
+    if [ ! -e "$QUERY" ]
+    then
+        echo "ERROR: the query file $QUERY does not exist"
+        exit
+    fi
+
+
+    if [ -z "$RESPONSE_HEADER" ]
+    then
+        RESPONSE_HEADER=search-response-header.tmp
+    fi
+
+
+    if [ -z "$RESPONSE_MSG" ]
+    then
+        RESPONSE_MSG=search-response-msg.json.tmp
+    fi
+
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+    CONFIG=$HPC_DM_TEST/utils/config 
+
+    curl -G -X GET $SERVER/hpc-server/$TYPE --data-urlencode metadataQuery@$QUERY  --config $CONFIG   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    check_connection $RESPONSE_HEADER
+}
+
+
+#Subscribe to notifications using template
+function subscribe_to_template_notifications {
+
+    SUBSCRIPTION_TEMPLATE=$HPC_DM_TEST/utils/templates/notifications_template.json
+    cp $SUBSCRIPTION_TEMPLATE notification_input.json.tmp
+    subscribe_to_notifications notification_input.json.tmp 
+}
 
 #Get an item (collection or dataObject) from the archive
 #Inputs: item-path (should have a prefix of "dataObject" or "collection:)
