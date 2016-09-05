@@ -20,7 +20,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
@@ -172,6 +171,27 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
+    public Response queryCollections(List<HpcMetadataQuery> metadataQueries)
+    {
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: POST /collection/query" + metadataQueries);
+    	
+    	HpcCollectionListDTO collections = null;
+		try {
+			 collections = dataManagementBusService.getCollections(metadataQueries);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /collection/query" + metadataQueries + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " getCollections: Total time - " + metadataQueries);
+		
+		return okResponse(!collections.getCollections().isEmpty() ? collections : null , true);
+    }
+    
+    @Override
     public Response registerDataObject(String path, 
     		                           HpcDataObjectRegistrationDTO dataObjectRegistration,
     		                           InputStream dataObjectInputStream)
@@ -233,8 +253,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getDataObjects(List<HpcMetadataQueryParam> metadataQueries,
-    		                       List<HpcMetadataQueryParam> collectionMetadataQueries)
+    public Response getDataObjects(List<HpcMetadataQueryParam> metadataQueries)
     {
     	long start = System.currentTimeMillis();
     	logger.info("Invoking RS: GET /dataObject/" + metadataQueries);
@@ -242,8 +261,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	HpcDataObjectListDTO dataObjects = null;
 		try {
 			 dataObjects = dataManagementBusService.getDataObjects(
-					                     unmarshallQueryParams(metadataQueries),
-					                     unmarshallQueryParams(collectionMetadataQueries));
+					                     unmarshallQueryParams(metadataQueries));
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /dataObject/" + metadataQueries + 
@@ -257,24 +275,22 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response queryDataObjects(HpcDataObjectQueryDTO dataObjectQuery)
+    public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries)
     {
     	long start = System.currentTimeMillis();
-    	logger.info("Invoking RS: POST /dataObject/query" + dataObjectQuery);
+    	logger.info("Invoking RS: POST /dataObject/query" + metadataQueries);
     	
     	HpcDataObjectListDTO dataObjects = null;
 		try {
-			 dataObjects = dataManagementBusService.getDataObjects(
-					           dataObjectQuery.getMetadataQueries(),
-					           dataObjectQuery.getCollectionMetadataQueries());
+			 dataObjects = dataManagementBusService.getDataObjects(metadataQueries);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /dataObject/query" + dataObjectQuery + 
+			    logger.error("RS: POST /dataObject/query" + metadataQueries + 
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " queryDataObjects" + dataObjectQuery);
+		logger.info((stop-start) + " queryDataObjects" + metadataQueries);
 		
 		return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null, true);
     }

@@ -317,12 +317,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries,
-    		                                   List<HpcMetadataQuery> collectionMetadataQueries) 
-                                           throws HpcException
+    public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries) 
+                                              throws HpcException
     {
-    	logger.info("Invoking getDataObjects(List<HpcMetadataQuery>, List<HpcMetadataQuery>): " + 
-    			    metadataQueries + "***" + collectionMetadataQueries);
+    	logger.info("Invoking getDataObjects(List<HpcMetadataQuery>): " + metadataQueries);
     	
     	// Input validation.
     	if(metadataQueries == null) {
