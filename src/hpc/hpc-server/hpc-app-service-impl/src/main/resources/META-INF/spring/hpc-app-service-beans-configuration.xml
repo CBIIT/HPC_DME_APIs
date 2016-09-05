@@ -76,7 +76,7 @@
 		<constructor-arg value="${hpc.service.dataTransfer.downloadDirectory}" index="1" />
 	</bean>
 	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl">
-		<constructor-arg value="${hpc.service.dataManagement.propagateParentMetadataPolicy}" index="0" />
+		<constructor-arg value="${hpc.service.dataManagement.hierarchicalMetadataPolicy}" index="0" />
 	</bean>
 	<bean id="hpcNotificationService" class="gov.nih.nci.hpc.service.impl.HpcNotificationServiceImpl">
 		<constructor-arg ref="hpcNotificationSenders" index="0" />

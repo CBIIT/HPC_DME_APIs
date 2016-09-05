@@ -12,15 +12,17 @@ package gov.nih.nci.hpc.dao.postgresql.impl;
 
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 
 /**
  * <p>
@@ -38,11 +40,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     //---------------------------------------------------------------------//    
     
     // SQL Queries.
-	public static final String ASSOCIATE_METADATA_SQL = 
-		   "insert into public.\"r_objt_metamap\" ( " +
-                   "\"object_id\", \"meta_id\", \"create_ts\", \"modify_ts\" ) " +
-                   "values (?, ?, ?, ?) " +
-           "on conflict(\"object_id\", \"meta_id\") do nothing";
+	public static final String GET_COLLECTION_IDS_SQL = 
+		   "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+	       "where collection.meta_attr_name = ? and collection.meta_attr_value = ?";
+	
+	public static final String GET_DATA_OBJECT_IDS_SQL = 
+			   "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+		       "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value = ?";
+		   
 
     //---------------------------------------------------------------------//
     // Instance members
@@ -52,8 +57,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	@Autowired
 	private JdbcTemplate jdbcTemplate = null;
 	
-    // The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	// Row mappers.
+	private RowMapper<Integer> objectIdRowMapper = new SingleColumnRowMapper<>();
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -76,16 +81,37 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void associateMetadata(int objectId, int metadataId) throws HpcException
+    public List<Integer> getCollectionIds(List<HpcMetadataQuery> metadataQueries) 
+                                         throws HpcException
     {
 		try {
-			 String now = String.valueOf((new Date()).getTime());
-		     jdbcTemplate.update(ASSOCIATE_METADATA_SQL, objectId, metadataId, now, now);
+			 Iterator<HpcMetadataQuery> metadataQueriesIter = metadataQueries.iterator();
+			 HpcMetadataQuery query = metadataQueriesIter.next();
+		     return jdbcTemplate.query(GET_COLLECTION_IDS_SQL, objectIdRowMapper,
+		    		                   query.getAttribute(), query.getValue());
 		     
-		} catch(DataAccessException dae) {
-			    throw new HpcException("Failed to associate metadata: " + dae.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, dae);
-		}
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get collection IDs: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}		
+    }
+
+	@Override 
+	public List<Integer> getDataObjectIds(List<HpcMetadataQuery> metadataQueries) 
+                                         throws HpcException
+    {
+		try {
+			 Iterator<HpcMetadataQuery> metadataQueriesIter = metadataQueries.iterator();
+			 HpcMetadataQuery query = metadataQueriesIter.next();
+		     return jdbcTemplate.query(GET_DATA_OBJECT_IDS_SQL, objectIdRowMapper,
+		    		                   query.getAttribute(), query.getValue());
+		     
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get data object IDs: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}		
     }
 }
 
