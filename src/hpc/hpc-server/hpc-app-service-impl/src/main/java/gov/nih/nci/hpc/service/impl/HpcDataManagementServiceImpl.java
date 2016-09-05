@@ -83,10 +83,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	private static final String JSON_METADATA_ATTRIBUTES = "metadataAttributes"; 
 	private static final String JSON_PARENT_METADATA_ATTRIBUTES = "parentMetadataAttributes"; 
 	
-	// Parent Metadata propagation policies
-	private static final String REPLICATE_PARENT_METADATA_POLICY = "replication";
-	private static final String ASSOCIATE_PARENT_METADATA_POLICY = "association";
-	private static final String NO_PARENT_METADATA_PROPAGATION_POLICY = "none";
+	// Hierarchical metadata policies. 
+	private static final String METADATA_REPLICATION_POLICY = "replication";
+	private static final String METADATA_VIEWS_POLICY = "views";
+	private static final String NO_HIERARCHICAL_METADATA_POLICY = "none";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -121,9 +121,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	// Prepared query to get data objects that have their data in temporary archive.
 	private List<HpcMetadataQuery> dataTransferInTemporaryArchiveQuery = new ArrayList<>();
 	
-	// Policy to propagate parent metadata of data objects and collections.
-	// (when registering and updating metadata).
-	private String propagateParentMetadataPolicy = null;
+	// Policy to support hierarchical metadata search. Policies are:
+	// 1. 'replication' - metadata at a collection level are propagated through the hierarchy.
+	// 2. 'views' - Custom DB views (on top of iRODS DB) are used to support hierarchical metadata search.
+	// 3. 'none' - Hierarchical metadata search not supported.
+	private String hierarchicalMetadataPolicy = null;
 
     // The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -135,20 +137,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param propagateParentMetadataPolicy Policy to propagate parent metadata of data objects
-     *                                      and collections (when registering and updating metadata)
+     * @param hierarchicalMetadataPolicy The desired hierarchical metadata policy.
      * @throws HpcException
      */
-    private HpcDataManagementServiceImpl(String propagateParentMetadataPolicy) throws HpcException
+    private HpcDataManagementServiceImpl(String hierarchicalMetadataPolicy) throws HpcException
     {
-    	if(propagateParentMetadataPolicy == null ||
-    	   (!propagateParentMetadataPolicy.equals(ASSOCIATE_PARENT_METADATA_POLICY) &&
-    	    !propagateParentMetadataPolicy.equals(REPLICATE_PARENT_METADATA_POLICY) &&
-    	    !propagateParentMetadataPolicy.equals(NO_PARENT_METADATA_PROPAGATION_POLICY))) {
-    	   throw new HpcException("Invalid metadata propagation policy: " + propagateParentMetadataPolicy,
+    	if(hierarchicalMetadataPolicy == null ||
+    	   (!hierarchicalMetadataPolicy.equals(METADATA_REPLICATION_POLICY) &&
+    	    !hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY) &&
+    	    !hierarchicalMetadataPolicy.equals(NO_HIERARCHICAL_METADATA_POLICY))) {
+    	   throw new HpcException("Invalid hierarchical metadata policy: " + hierarchicalMetadataPolicy,
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
-    	this.propagateParentMetadataPolicy = propagateParentMetadataPolicy;
+    	this.hierarchicalMetadataPolicy = hierarchicalMetadataPolicy;
     	
     	// Prepare the query to get data objects in data transfer in-progress to archive.
         dataTransferInProgressToArchiveQuery.add(
@@ -630,12 +631,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     @Override
     public HpcMetadataOrigin addParentMetadata(String path) throws HpcException
     {
-    	// Check the parent metadata replication policy.
-        if(propagateParentMetadataPolicy.equals(REPLICATE_PARENT_METADATA_POLICY)) {
+    	// Only applicable for hierarchical metadata replication policy.
+        if(hierarchicalMetadataPolicy.equals(METADATA_REPLICATION_POLICY)) {
     	   return replicateParentMetadata(path);
-    	}
-    	if(propagateParentMetadataPolicy.equals(ASSOCIATE_PARENT_METADATA_POLICY)) {
-    	   return associateParentMetadata(path);
     	}
 
     	return null;
@@ -644,8 +642,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     @Override
     public void updateMetadataTree(String path) throws HpcException
     {
-    	// Check the parent metadata propagation policy.
-    	if(!propagateParentMetadataPolicy.equals(REPLICATE_PARENT_METADATA_POLICY)) {
+    	// Only applicable for hierarchical metadata replication policy.
+    	if(!hierarchicalMetadataPolicy.equals(METADATA_REPLICATION_POLICY)) {
     	   return;
     	}
     	
@@ -671,8 +669,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public HpcMetadataOrigin updateMetadataOrigin(HpcMetadataOrigin metadataOrigin, 
     		                                      List<HpcMetadataEntry> metadataEntries) 
     {
-    	// Check the parent metadata propagation policy.
-    	if(!propagateParentMetadataPolicy.equals(REPLICATE_PARENT_METADATA_POLICY)) {
+    	// Only applicable for hierarchical metadata replication policy.
+    	if(!hierarchicalMetadataPolicy.equals(METADATA_REPLICATION_POLICY)) {
     	   return null;
     	}
     	
@@ -715,8 +713,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
         			              HpcErrorType.INVALID_REQUEST_INPUT);
         }
        	
-    	return dataManagementProxy.getCollections(getAuthenticatedToken(),
-    			                                  metadataQueries);
+       	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
+       	   // Use the hierarchical metadata views to perform the search.
+       	   return getCollectionsByIds(metadataDAO.getCollectionIds(metadataQueries));
+       		
+       	} else {
+    	        return dataManagementProxy.getCollections(getAuthenticatedToken(),
+    			                                          metadataQueries);
+       	}
     }
     
     @Override
@@ -1291,35 +1295,20 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     /**
-     * Associate parent metadata to a either a collection or a data object.
+     * Get collections by IDs.
      *
-     * @param path The collection or data object path.
-     * @return HpcMetadataOrigin An object listing the origin of the collection / data object
-     *                           metadata after the change.
+     * @param ids The list of collection IDs.
+     * @return List<HpcCollection>
      * @throws HpcException
      */
-    private HpcMetadataOrigin associateParentMetadata(String path) throws HpcException
+    private List<HpcCollection> getCollectionsByIds(List<Integer> ids) throws HpcException
     {
-    	// Get the path attributes to determine if this is a collection or data object.
     	Object authenticatedToken = getAuthenticatedToken();
-    	HpcPathAttributes pathAttributes = dataManagementProxy.getPathAttributes(authenticatedToken, path);
-    	
-    	// Get the ID of the collection or data object.
-    	int objectId = -1;
-    	if(pathAttributes.getIsFile()) {
-    	   objectId = getDataObject(path).getId();	
-    	} else if(pathAttributes.getIsDirectory()) {
-    		      objectId = getCollection(path).getCollectionId();
-    	} else {
-    		    return null;
+    	List<HpcCollection> collections = new ArrayList<>();
+    	for(int id : ids) {
+    		collections.add(dataManagementProxy.getCollection(authenticatedToken, id));
     	}
     	
-       	// Associate the parent metadata.
-    	List<Integer> ids = dataManagementProxy.getParentPathMetadataIds(authenticatedToken, path);
-    	for(int metadataId : ids) {
-            metadataDAO.associateMetadata(objectId, metadataId);
-    	}
-       	
-       	return null;
+    	return collections;
     }
 }

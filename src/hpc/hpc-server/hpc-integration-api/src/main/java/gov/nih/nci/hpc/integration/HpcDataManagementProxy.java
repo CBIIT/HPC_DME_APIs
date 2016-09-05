@@ -212,8 +212,19 @@ public interface HpcDataManagementProxy
      * 
      * @throws HpcException
      */
-    public HpcCollection getCollection(Object authenticatedToken,
-    		                           String path) 
+    public HpcCollection getCollection(Object authenticatedToken, String path) 
+    		                          throws HpcException;
+    
+    /**
+     * Get collection by its ID.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param id The collection's ID.
+     * @return HpcCollection.
+     * 
+     * @throws HpcException
+     */
+    public HpcCollection getCollection(Object authenticatedToken, int id) 
     		                          throws HpcException;
     
     /**
