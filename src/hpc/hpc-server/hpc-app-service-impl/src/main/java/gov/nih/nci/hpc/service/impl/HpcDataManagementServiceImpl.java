@@ -45,6 +45,7 @@ import gov.nih.nci.hpc.service.HpcDataManagementService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1305,6 +1306,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	Object authenticatedToken = getAuthenticatedToken();
     	List<HpcCollection> collections = new ArrayList<>();
+    	logger.error("ERAN: " + ids);
+    	Iterator<Integer> iter = ids.iterator();
+    	Integer i = iter.next();
+    	logger.error("ROSENBERG: " + i);
     	for(Integer id : ids) {
     		collections.add(dataManagementProxy.getCollection(authenticatedToken, id));
     	}
