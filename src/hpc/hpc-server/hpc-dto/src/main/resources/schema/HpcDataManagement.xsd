@@ -160,16 +160,4 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
-	<!--  Data Object Query -->
-	<xsd:complexType name="HpcDataObjectQueryDTO"> 
-		<xsd:sequence>
-			<xsd:element name="metadataQueries"
-			             type="hpc-domain-metadata:HpcMetadataQuery"
-				         minOccurs="0" maxOccurs="unbounded" />
-			<xsd:element name="collectionMetadataQueries"
-			             type="hpc-domain-metadata:HpcMetadataQuery"
-				         minOccurs="0" maxOccurs="unbounded" />
-		</xsd:sequence>
-	</xsd:complexType>
-	
 </xsd:schema>
