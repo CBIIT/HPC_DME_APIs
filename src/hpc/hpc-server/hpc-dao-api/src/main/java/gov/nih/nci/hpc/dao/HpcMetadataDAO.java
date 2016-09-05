@@ -10,7 +10,10 @@
 
 package gov.nih.nci.hpc.dao;
 
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.util.List;
 
 /**
  * <p>
@@ -24,14 +27,26 @@ import gov.nih.nci.hpc.exception.HpcException;
 public interface HpcMetadataDAO 
 {    
     /**
-     * Associate an iRODS object to metadata.
+     * Get collection IDs by metadata query.
      *
-     * @param objectId The object ID.
-     * @param objectId The metadata ID.
+     * @param metadataQueries The metadata entries to query for.
+     * @return List of collectiont IDs.
      * 
      * @throws HpcException
      */
-    public void associateMetadata(int objectId, int metadataId) throws HpcException;
+    public List<Integer> getCollectionIds(List<HpcMetadataQuery> metadataQueries) 
+    		                             throws HpcException;
+    
+    /**
+     * Get data object IDs by metadata query.
+     *
+     * @param metadataQueries The metadata entries to query for.
+     * @return List of data object IDs.
+     * 
+     * @throws HpcException
+     */
+    public List<Integer> getDataObjectIds(List<HpcMetadataQuery> metadataQueries) 
+    		                             throws HpcException;
 }
 
  
