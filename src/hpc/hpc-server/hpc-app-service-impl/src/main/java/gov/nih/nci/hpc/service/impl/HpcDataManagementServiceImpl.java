@@ -10,11 +10,24 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.*;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CALLER_OBJECT_ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_REQUEST_ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_TYPE_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.METADATA_ORIGIN_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_DOC_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_NAME_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_SIZE_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
@@ -45,7 +58,6 @@ import gov.nih.nci.hpc.service.HpcDataManagementService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -757,8 +769,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
         			              HpcErrorType.INVALID_REQUEST_INPUT);
         }
        	
-    	return dataManagementProxy.getDataObjects(getAuthenticatedToken(),
-    			                                  metadataQueries);
+       	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
+           // Use the hierarchical metadata views to perform the search.
+           return getDataObjectsByIds(metadataDAO.getDataObjectIds(metadataQueries));
+        		
+        } else {
+    	        return dataManagementProxy.getDataObjects(getAuthenticatedToken(),
+    			                                          metadataQueries);
+        }
     }
     
     @Override
@@ -1306,14 +1324,28 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	Object authenticatedToken = getAuthenticatedToken();
     	List<HpcCollection> collections = new ArrayList<>();
-    	logger.error("ERAN: " + ids);
-    	Iterator<Integer> iter = ids.iterator();
-    	Integer i = iter.next();
-    	logger.error("ROSENBERG: " + i);
     	for(Integer id : ids) {
     		collections.add(dataManagementProxy.getCollection(authenticatedToken, id));
     	}
     	
     	return collections;
+    }
+    
+    /**
+     * Get data objects by IDs.
+     *
+     * @param ids The list of data object IDs.
+     * @return List<HpcCollection>
+     * @throws HpcException
+     */
+    private List<HpcDataObject> getDataObjectsByIds(List<Integer> ids) throws HpcException
+    {
+    	Object authenticatedToken = getAuthenticatedToken();
+    	List<HpcDataObject> dataObjects = new ArrayList<>();
+    	for(Integer id : ids) {
+    		dataObjects.add(dataManagementProxy.getDataObject(authenticatedToken, id));
+    	}
+    	
+    	return dataObjects;
     }
 }

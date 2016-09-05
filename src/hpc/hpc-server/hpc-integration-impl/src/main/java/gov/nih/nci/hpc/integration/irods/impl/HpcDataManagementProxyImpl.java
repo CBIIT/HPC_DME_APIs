@@ -453,14 +453,27 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public HpcDataObject getDataObject(Object authenticatedToken,
-    		                           String path) 
+    public HpcDataObject getDataObject(Object authenticatedToken, String path) 
     	                              throws HpcException
     {
     	try {
     		 path = addPath(path);
              return toHpcDataObject(irodsConnection.getDataObjectAO(authenticatedToken).
             		                                findByAbsolutePath(path));
+             
+		} catch(Exception e) {
+	            throw new HpcException("Failed to get Data Object: " + 
+                                        e.getMessage(),
+                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} 
+    }
+    
+    @Override
+    public HpcDataObject getDataObject(Object authenticatedToken, int id) 
+    	                              throws HpcException
+    {
+    	try {
+             return toHpcDataObject(irodsConnection.getDataObjectAO(authenticatedToken).findById(id));
              
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get Data Object: " + 
