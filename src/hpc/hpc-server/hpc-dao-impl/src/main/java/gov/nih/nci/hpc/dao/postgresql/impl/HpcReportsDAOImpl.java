@@ -10,6 +10,13 @@
 
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
+import gov.nih.nci.hpc.dao.HpcReportsDAO;
+import gov.nih.nci.hpc.domain.report.HpcReport;
+import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
+import gov.nih.nci.hpc.domain.report.HpcReportEntry;
+import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
+import gov.nih.nci.hpc.domain.report.HpcReportType;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -20,20 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
-
-import gov.nih.nci.hpc.dao.HpcReportsDAO;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.report.HpcReport;
-import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
-import gov.nih.nci.hpc.domain.report.HpcReportEntry;
-import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
-import gov.nih.nci.hpc.domain.report.HpcReportType;
-import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
