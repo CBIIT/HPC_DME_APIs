@@ -262,8 +262,19 @@ public interface HpcDataManagementProxy
      * 
      * @throws HpcException
      */
-    public HpcDataObject getDataObject(Object authenticatedToken,
-    		                           String path) 
+    public HpcDataObject getDataObject(Object authenticatedToken, String path) 
+    		                          throws HpcException;
+    
+    /**
+     * Get data object by its id.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param id The data object's ID.
+     * @return HpcDataObject.
+     * 
+     * @throws HpcException
+     */
+    public HpcDataObject getDataObject(Object authenticatedToken, int id) 
     		                          throws HpcException;
     
     /**
