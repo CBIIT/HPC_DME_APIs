@@ -1305,7 +1305,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	Object authenticatedToken = getAuthenticatedToken();
     	List<HpcCollection> collections = new ArrayList<>();
-    	for(int id : ids) {
+    	for(Integer id : ids) {
     		collections.add(dataManagementProxy.getCollection(authenticatedToken, id));
     	}
     	
