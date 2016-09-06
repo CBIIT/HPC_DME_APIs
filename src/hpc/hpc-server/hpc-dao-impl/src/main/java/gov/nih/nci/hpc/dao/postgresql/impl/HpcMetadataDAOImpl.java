@@ -43,11 +43,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     // SQL Queries.
 	public static final String GET_COLLECTION_IDS_SQL = 
 		   "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
-	       "where collection.meta_attr_name = ? and collection.meta_attr_value = ?";
+	       "where collection.meta_attr_name = ? and collection.meta_attr_value ? ?";
 	
 	public static final String GET_DATA_OBJECT_IDS_SQL = 
 			   "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
-		       "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value = ?";
+		       "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value ? ?";
 		   
 
     //---------------------------------------------------------------------//
@@ -89,7 +89,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			 Iterator<HpcMetadataQuery> metadataQueriesIter = metadataQueries.iterator();
 			 HpcMetadataQuery query = metadataQueriesIter.next();
 		     return jdbcTemplate.query(GET_COLLECTION_IDS_SQL, objectIdRowMapper,
-		    		                   query.getAttribute(), query.getValue());
+		    		                   query.getAttribute(), query.getOperator(), query.getValue());
 		     
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get collection IDs: " + 
@@ -106,7 +106,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			 Iterator<HpcMetadataQuery> metadataQueriesIter = metadataQueries.iterator();
 			 HpcMetadataQuery query = metadataQueriesIter.next();
 		     return jdbcTemplate.query(GET_DATA_OBJECT_IDS_SQL, objectIdRowMapper,
-		    		                   query.getAttribute(), query.getValue());
+		    		                   query.getAttribute(), query.getOperator(), query.getValue());
 		     
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get data object IDs: " + 
