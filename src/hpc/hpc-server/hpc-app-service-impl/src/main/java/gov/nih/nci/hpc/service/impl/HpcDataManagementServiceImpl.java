@@ -1325,7 +1325,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	Object authenticatedToken = getAuthenticatedToken();
     	List<HpcCollection> collections = new ArrayList<>();
     	for(Integer id : ids) {
-    		collections.add(dataManagementProxy.getCollection(authenticatedToken, id));
+    		HpcCollection collection = dataManagementProxy.getCollection(authenticatedToken, id);
+    		if(collection != null) {
+    		   collections.add(collection);
+    		}
     	}
     	
     	return collections;
@@ -1343,7 +1346,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	Object authenticatedToken = getAuthenticatedToken();
     	List<HpcDataObject> dataObjects = new ArrayList<>();
     	for(Integer id : ids) {
-    		dataObjects.add(dataManagementProxy.getDataObject(authenticatedToken, id));
+    		HpcDataObject dataObject = dataManagementProxy.getDataObject(authenticatedToken, id);
+    		if(dataObject != null) {
+    		   dataObjects.add(dataObject);
+    		}
     	}
     	
     	return dataObjects;
