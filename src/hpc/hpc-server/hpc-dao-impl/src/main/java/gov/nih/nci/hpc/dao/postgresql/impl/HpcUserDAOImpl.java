@@ -47,21 +47,21 @@ public class HpcUserDAOImpl implements HpcUserDAO
     //---------------------------------------------------------------------//    
     
     // SQL Queries.
-	public static final String UPSERT_SQL = 
-		   "insert into public.\"HPC_USER\" ( " +
+	private static final String UPSERT_SQL = 
+		    "insert into public.\"HPC_USER\" ( " +
                     "\"USER_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"DOC\", " +
                     "\"IRODS_USERNAME\", \"IRODS_PASSWORD\", " +
                     "\"CREATED\", \"LAST_UPDATED\") " +
                     "values (?, ?, ?, ?, ?, ?, ?, ?) " +
-           "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", " +
-                                                  "\"DOC\"=excluded.\"DOC\", " +
-                                                  "\"LAST_NAME\"=excluded.\"LAST_NAME\", " +
-                                                  "\"IRODS_USERNAME\"=excluded.\"IRODS_USERNAME\", " +
-                                                  "\"IRODS_PASSWORD\"=excluded.\"IRODS_PASSWORD\", " +
-                                                  "\"CREATED\"=excluded.\"CREATED\", " +
-                                                  "\"LAST_UPDATED\"=excluded.\"LAST_UPDATED\"";
+            "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", " +
+                                                   "\"DOC\"=excluded.\"DOC\", " +
+                                                   "\"LAST_NAME\"=excluded.\"LAST_NAME\", " +
+                                                   "\"IRODS_USERNAME\"=excluded.\"IRODS_USERNAME\", " +
+                                                   "\"IRODS_PASSWORD\"=excluded.\"IRODS_PASSWORD\", " +
+                                                   "\"CREATED\"=excluded.\"CREATED\", " +
+                                                   "\"LAST_UPDATED\"=excluded.\"LAST_UPDATED\"";
 
-	public static final String GET_SQL = "select * from public.\"HPC_USER\" where \"USER_ID\" = ?";
+	private static final String GET_SQL = "select * from public.\"HPC_USER\" where \"USER_ID\" = ?";
 	
     //---------------------------------------------------------------------//
     // Instance members
