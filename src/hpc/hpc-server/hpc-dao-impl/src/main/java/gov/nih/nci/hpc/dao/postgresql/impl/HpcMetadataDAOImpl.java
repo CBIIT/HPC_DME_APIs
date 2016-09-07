@@ -17,8 +17,10 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -40,14 +42,26 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     // Constants
     //---------------------------------------------------------------------//    
     
+	// Metadata Query Operators
+	private static final String EQUAL_OPERATOR = "EQUAL"; 
+	private static final String LIKE_OPERATOR = "LIKE"; 
+			
     // SQL Queries.
-	public static final String GET_COLLECTION_IDS_SQL = 
-		   "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
-	       "where collection.meta_attr_name = ? and collection.meta_attr_value ? ?";
+	private static final String GET_COLLECTION_IDS_EQUAL_SQL = 
+		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+	        "where collection.meta_attr_name = ? and collection.meta_attr_value = ?";
 	
-	public static final String GET_DATA_OBJECT_IDS_SQL = 
-			   "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
-		       "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value ? ?";
+	private static final String GET_COLLECTION_IDS_LIKE_SQL = 
+			"select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+		    "where collection.meta_attr_name = ? and collection.meta_attr_value like ?";
+	
+	private static final String GET_DATA_OBJECT_IDS_EQUAL_SQL = 
+			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+		    "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value = ?";
+	
+	private static final String GET_DATA_OBJECT_IDS_LIKE_SQL = 
+			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+		    "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value like ?";
 		   
 
     //---------------------------------------------------------------------//
@@ -61,6 +75,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	// Row mappers.
 	private HpcObjectIdRowMapper objectIdRowMapper = new HpcObjectIdRowMapper();
 	
+	// Maps between metadata query operator to its SQL query
+	private Map<String, String> dataObjectQueries = new HashMap<>();
+	private Map<String, String> collectionQueries = new HashMap<>();
+	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -71,6 +89,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      */
     private HpcMetadataDAOImpl()
     {
+    	dataObjectQueries.put(EQUAL_OPERATOR, GET_DATA_OBJECT_IDS_EQUAL_SQL);
+    	dataObjectQueries.put(LIKE_OPERATOR, GET_DATA_OBJECT_IDS_LIKE_SQL);
+    	
+    	collectionQueries.put(EQUAL_OPERATOR, GET_COLLECTION_IDS_EQUAL_SQL);
+    	collectionQueries.put(LIKE_OPERATOR, GET_COLLECTION_IDS_LIKE_SQL);
     }   
     
     //---------------------------------------------------------------------//
@@ -88,8 +111,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		try {
 			 Iterator<HpcMetadataQuery> metadataQueriesIter = metadataQueries.iterator();
 			 HpcMetadataQuery query = metadataQueriesIter.next();
-		     return jdbcTemplate.query(GET_COLLECTION_IDS_SQL, objectIdRowMapper,
-		    		                   query.getAttribute(), query.getOperator(), query.getValue());
+		     return jdbcTemplate.query(collectionQueries.get(query.getOperator()), objectIdRowMapper,
+		    		                   query.getAttribute(), query.getValue());
 		     
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get collection IDs: " + 
@@ -105,8 +128,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		try {
 			 Iterator<HpcMetadataQuery> metadataQueriesIter = metadataQueries.iterator();
 			 HpcMetadataQuery query = metadataQueriesIter.next();
-		     return jdbcTemplate.query(GET_DATA_OBJECT_IDS_SQL, objectIdRowMapper,
-		    		                   query.getAttribute(), query.getOperator(), query.getValue());
+		     return jdbcTemplate.query(dataObjectQueries.get(query.getOperator()), objectIdRowMapper,
+		    		                   query.getAttribute(), query.getValue());
 		     
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get data object IDs: " + 
