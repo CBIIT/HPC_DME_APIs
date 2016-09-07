@@ -17,8 +17,8 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -76,8 +76,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private HpcObjectIdRowMapper objectIdRowMapper = new HpcObjectIdRowMapper();
 	
 	// Maps between metadata query operator to its SQL query
-	private Map<String, String> dataObjectQueries = new HashMap<>();
-	private Map<String, String> collectionQueries = new HashMap<>();
+	private Map<String, String> dataObjectSQLQueries = new HashMap<>();
+	private Map<String, String> collectionSQLQueries = new HashMap<>();
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -89,11 +89,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      */
     private HpcMetadataDAOImpl()
     {
-    	dataObjectQueries.put(EQUAL_OPERATOR, GET_DATA_OBJECT_IDS_EQUAL_SQL);
-    	dataObjectQueries.put(LIKE_OPERATOR, GET_DATA_OBJECT_IDS_LIKE_SQL);
+    	dataObjectSQLQueries.put(EQUAL_OPERATOR, GET_DATA_OBJECT_IDS_EQUAL_SQL);
+    	dataObjectSQLQueries.put(LIKE_OPERATOR, GET_DATA_OBJECT_IDS_LIKE_SQL);
     	
-    	collectionQueries.put(EQUAL_OPERATOR, GET_COLLECTION_IDS_EQUAL_SQL);
-    	collectionQueries.put(LIKE_OPERATOR, GET_COLLECTION_IDS_LIKE_SQL);
+    	collectionSQLQueries.put(EQUAL_OPERATOR, GET_COLLECTION_IDS_EQUAL_SQL);
+    	collectionSQLQueries.put(LIKE_OPERATOR, GET_COLLECTION_IDS_LIKE_SQL);
     }   
     
     //---------------------------------------------------------------------//
@@ -109,10 +109,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
                                          throws HpcException
     {
 		try {
-			 Iterator<HpcMetadataQuery> metadataQueriesIter = metadataQueries.iterator();
-			 HpcMetadataQuery query = metadataQueriesIter.next();
-		     return jdbcTemplate.query(collectionQueries.get(query.getOperator()), objectIdRowMapper,
-		    		                   query.getAttribute(), query.getValue());
+			 HpcPreparedQuery prepareQuery = prepareQuery(collectionSQLQueries, metadataQueries);
+		     return jdbcTemplate.query(prepareQuery.sql, objectIdRowMapper, prepareQuery.args);
 		     
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get collection IDs: " + 
@@ -126,10 +124,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
                                          throws HpcException
     {
 		try {
-			 Iterator<HpcMetadataQuery> metadataQueriesIter = metadataQueries.iterator();
-			 HpcMetadataQuery query = metadataQueriesIter.next();
-		     return jdbcTemplate.query(dataObjectQueries.get(query.getOperator()), objectIdRowMapper,
-		    		                   query.getAttribute(), query.getValue());
+			 HpcPreparedQuery prepareQuery = prepareQuery(dataObjectSQLQueries, metadataQueries);
+		     return jdbcTemplate.query(prepareQuery.sql, objectIdRowMapper, prepareQuery.args);
 		     
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get data object IDs: " + 
@@ -152,6 +148,50 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			return objectId != null ? objectId.intValue() : null;
 		}
 	}
+	
+	// Prepared query.
+	private class HpcPreparedQuery
+	{
+		public String sql = null;
+		public Object[] args = null;
+	}
+	
+    /**
+     * Prepare a SQL query. Map operators to SQL and concatenate them with 'intersect'.
+     *
+     * @param sqlQueries The map from metadata query operator to SQL queries.
+     * @param metadataQueries The metadata queries
+     * 
+     * @throws HpcException
+     */
+    private HpcPreparedQuery prepareQuery(Map<String, String> sqlQueries, 
+    		                              List<HpcMetadataQuery> metadataQueries) 
+    		                             throws HpcException
+    {
+    	StringBuilder sqlQueryBuilder = new StringBuilder();
+    	List<String> args = new ArrayList<>();
+    	
+    	for(HpcMetadataQuery metadataQuery : metadataQueries) {
+    		String sqlQuery = sqlQueries.get(metadataQuery.getOperator());
+    		if(sqlQuery == null) {
+    		   throw new HpcException("Invalid metadata query operator: " + metadataQuery.getOperator(),
+    				                  HpcErrorType.INVALID_REQUEST_INPUT);
+    		}
+    		
+    		if(!args.isEmpty()) {
+    			sqlQueryBuilder.append(" INTERSECT ");
+    		}
+    		sqlQueryBuilder.append(sqlQuery);
+    		
+    		args.add(metadataQuery.getAttribute());
+    		args.add(metadataQuery.getValue());
+    	}
+    	
+    	HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
+    	preparedQuery.sql = sqlQueryBuilder.toString();
+    	preparedQuery.args = args.toArray();
+    	return preparedQuery;
+    }
 }
 
  
