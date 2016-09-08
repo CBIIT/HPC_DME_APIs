@@ -728,7 +728,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	
        	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
        	   // Use the hierarchical metadata views to perform the search.
-       	   return getCollectionsByIds(metadataDAO.getCollectionIds(metadataQueries));
+       	   String dataManagementUsername = 
+       			  HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+       	   return getCollectionsByIds(metadataDAO.getCollectionIds(metadataQueries, dataManagementUsername));
        		
        	} else {
     	        return dataManagementProxy.getCollections(getAuthenticatedToken(),
@@ -771,7 +773,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	
        	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
            // Use the hierarchical metadata views to perform the search.
-           return getDataObjectsByIds(metadataDAO.getDataObjectIds(metadataQueries));
+       		String dataManagementUsername = 
+         		   HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+           return getDataObjectsByIds(metadataDAO.getDataObjectIds(metadataQueries, dataManagementUsername));
         		
         } else {
     	        return dataManagementProxy.getDataObjects(getAuthenticatedToken(),
