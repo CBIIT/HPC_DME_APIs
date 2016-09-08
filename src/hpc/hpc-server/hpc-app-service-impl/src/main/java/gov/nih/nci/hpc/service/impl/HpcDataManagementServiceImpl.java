@@ -752,6 +752,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
+    public List<HpcMetadataEntry> getParentCollectionMetadata(String path) throws HpcException
+    {
+    	return null;
+    }
+    
+    @Override
     public HpcDataObject getDataObject(String path) throws HpcException
     {
     	Object authenticatedToken = getAuthenticatedToken();
@@ -812,6 +818,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	
     	return dataManagementProxy.getDataObjectMetadata(getAuthenticatedToken(),
                                                          path);
+    }
+    
+    @Override
+    public List<HpcMetadataEntry> getParentDataObjectMetadata(String path) throws HpcException
+    {
+    	return null;
     }
     
     @Override

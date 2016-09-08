@@ -36,6 +36,9 @@
 			<xsd:element name="metadataEntries" 
 			             type="hpc-domain-metadata:HpcMetadataEntry" 
 				         maxOccurs="unbounded" />
+			<xsd:element name="parentMetadataEntries" 
+			             type="hpc-domain-metadata:HpcMetadataEntry" 
+				         maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -68,6 +71,9 @@
 			<xsd:element name="dataObject" 
 			             type="hpc-domain-datamanagement:HpcDataObject" />
 			<xsd:element name="metadataEntries" 
+			             type="hpc-domain-metadata:HpcMetadataEntry" 
+				         maxOccurs="unbounded" />
+			<xsd:element name="parentMetadataEntries" 
 			             type="hpc-domain-metadata:HpcMetadataEntry" 
 				         maxOccurs="unbounded" />
 			<xsd:element name="transferPercentCompletion" type="xsd:string"
