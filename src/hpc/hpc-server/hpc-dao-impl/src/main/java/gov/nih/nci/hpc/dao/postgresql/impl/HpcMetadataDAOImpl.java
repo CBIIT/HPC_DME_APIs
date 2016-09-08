@@ -44,12 +44,17 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     
 	// Metadata Query Operators
 	private static final String EQUAL_OPERATOR = "EQUAL"; 
+	private static final String NOT_EQUAL_OPERATOR = "NOT_EQUAL"; 
 	private static final String LIKE_OPERATOR = "LIKE"; 
 			
     // SQL Queries.
 	private static final String GET_COLLECTION_IDS_EQUAL_SQL = 
 		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
 	        "where collection.meta_attr_name = ? and collection.meta_attr_value = ?";
+	
+	private static final String GET_COLLECTION_IDS_NOT_EQUAL_SQL = 
+		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+	        "where collection.meta_attr_name = ? and collection.meta_attr_value <> ?";
 	
 	private static final String GET_COLLECTION_IDS_LIKE_SQL = 
 			"select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
@@ -59,11 +64,18 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
 		    "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value = ?";
 	
+	private static final String GET_DATA_OBJECT_IDS_NOT_EQUAL_SQL = 
+			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+		    "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value <> ?";
+	
 	private static final String GET_DATA_OBJECT_IDS_LIKE_SQL = 
 			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
 		    "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value like ?";
 		   
-
+	private static final String ENTITY_USER_ACCESS_SQL = 
+			"select access.object_id from public.\"r_objt_access\" access, public.\"r_user_main\" account " +
+	        "where account.user_name = ? and access.user_id = account.user_id";
+			 
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -90,9 +102,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     private HpcMetadataDAOImpl()
     {
     	dataObjectSQLQueries.put(EQUAL_OPERATOR, GET_DATA_OBJECT_IDS_EQUAL_SQL);
+    	dataObjectSQLQueries.put(NOT_EQUAL_OPERATOR, GET_DATA_OBJECT_IDS_NOT_EQUAL_SQL);
     	dataObjectSQLQueries.put(LIKE_OPERATOR, GET_DATA_OBJECT_IDS_LIKE_SQL);
     	
     	collectionSQLQueries.put(EQUAL_OPERATOR, GET_COLLECTION_IDS_EQUAL_SQL);
+    	collectionSQLQueries.put(NOT_EQUAL_OPERATOR, GET_COLLECTION_IDS_NOT_EQUAL_SQL);
     	collectionSQLQueries.put(LIKE_OPERATOR, GET_COLLECTION_IDS_LIKE_SQL);
     }   
     
@@ -105,11 +119,13 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     //---------------------------------------------------------------------//  
     
 	@Override
-    public List<Integer> getCollectionIds(List<HpcMetadataQuery> metadataQueries) 
+    public List<Integer> getCollectionIds(List<HpcMetadataQuery> metadataQueries,
+    		                              String dataManagementUsername) 
                                          throws HpcException
     {
 		try {
-			 HpcPreparedQuery prepareQuery = prepareQuery(collectionSQLQueries, metadataQueries);
+			 HpcPreparedQuery prepareQuery = prepareQuery(collectionSQLQueries, metadataQueries,
+					                                      dataManagementUsername);
 		     return jdbcTemplate.query(prepareQuery.sql, objectIdRowMapper, prepareQuery.args);
 		     
 		} catch(DataAccessException e) {
@@ -120,11 +136,13 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     }
 
 	@Override 
-	public List<Integer> getDataObjectIds(List<HpcMetadataQuery> metadataQueries) 
+	public List<Integer> getDataObjectIds(List<HpcMetadataQuery> metadataQueries,
+			                              String dataManagementUsername) 
                                          throws HpcException
     {
 		try {
-			 HpcPreparedQuery prepareQuery = prepareQuery(dataObjectSQLQueries, metadataQueries);
+			 HpcPreparedQuery prepareQuery = prepareQuery(dataObjectSQLQueries, metadataQueries, 
+					                                      dataManagementUsername);
 		     return jdbcTemplate.query(prepareQuery.sql, objectIdRowMapper, prepareQuery.args);
 		     
 		} catch(DataAccessException e) {
@@ -160,17 +178,20 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      * Prepare a SQL query. Map operators to SQL and concatenate them with 'intersect'.
      *
      * @param sqlQueries The map from metadata query operator to SQL queries.
-     * @param metadataQueries The metadata queries
+     * @param metadataQueries The metadata queries.
+     * @param dataManagementUsername The data management user name.
      * 
      * @throws HpcException
      */
     private HpcPreparedQuery prepareQuery(Map<String, String> sqlQueries, 
-    		                              List<HpcMetadataQuery> metadataQueries) 
+    		                              List<HpcMetadataQuery> metadataQueries,
+    		                              String dataManagementUsername) 
     		                             throws HpcException
     {
     	StringBuilder sqlQueryBuilder = new StringBuilder();
     	List<String> args = new ArrayList<>();
     	
+    	// Combine the metadata queries into a single SQL statement.
     	for(HpcMetadataQuery metadataQuery : metadataQueries) {
     		String sqlQuery = sqlQueries.get(metadataQuery.getOperator());
     		if(sqlQuery == null) {
@@ -186,6 +207,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     		args.add(metadataQuery.getAttribute());
     		args.add(metadataQuery.getValue());
     	}
+    	
+    	// Add a query to only include entities the user can access.
+    	sqlQueryBuilder.append(" INTERSECT ");
+    	sqlQueryBuilder.append(ENTITY_USER_ACCESS_SQL);
+    	args.add(dataManagementUsername);
     	
     	HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
     	preparedQuery.sql = sqlQueryBuilder.toString();
