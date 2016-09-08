@@ -164,16 +164,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Get the collection.
-    	HpcCollection collection = dataManagementService.getCollection(path);
-    	if(collection == null) {
-    	   return null;
-    	}
-    		
-    	// Get the metadata for this collection.
-    	List<HpcMetadataEntry> metadataEntries = 
-    		                   dataManagementService.getCollectionMetadata(path);
-    		
-    	return toDTO(collection, metadataEntries);
+    	return getCollection(dataManagementService.getCollection(path));
     }
     
     @Override
@@ -193,19 +184,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	HpcCollectionListDTO collectionsDTO = new HpcCollectionListDTO();
     	for(HpcCollection collection : dataManagementService.getCollections(metadataQueries)) {
     		// Get the metadata for this collection.
-    		try
-    		{
-    			List<HpcMetadataEntry> metadataEntries = 
-    					dataManagementService.getCollectionMetadata(collection.getAbsolutePath());
-    		
-    			// Combine collection attributes and metadata into a single DTO.
-    			collectionsDTO.getCollections().add(toDTO(collection, metadataEntries));
-    		}
-    		catch(HpcException e)
-    		{
-    			// Failed to get metadata.
-    			logger.error("Failed to fetch metadata for "+ collection.getAbsolutePath(), e);
-    			continue;
+    		try {
+    			 // Combine collection attributes and metadata into a single DTO.
+    			 collectionsDTO.getCollections().add(getCollection(collection));
+    			 
+    		} catch(HpcException e) {
+    			    // Failed to get metadata.
+    			    logger.error("Failed to fetch metadata for "+ collection.getAbsolutePath(), e);
+    			    continue;
     		}
     	}
     	
@@ -302,18 +288,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Get the data object.
-    	HpcDataObject dataObject = dataManagementService.getDataObject(path);
-    	if(dataObject == null) {
-    	   return null;
-    	}
-    		
-    	// Get the metadata for this data object.
-    	List<HpcMetadataEntry> metadataEntries = 
-    		                   dataManagementService.getDataObjectMetadata(path);
-    		
-    	return toDTO(dataObject, metadataEntries, 
-    			     getDataTransferUploadPercentCompletion(
-    			        dataManagementService.toSystemGeneratedMetadata(metadataEntries)));
+    	return getDataObject(dataManagementService.getDataObject(path));
     }
     
     @Override
@@ -331,21 +306,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Construct the DTO.
     	HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
     	for(HpcDataObject dataObject : dataManagementService.getDataObjects(metadataQueries)) {
-    		List<HpcMetadataEntry> metadataEntries = null;
     		try {
-    			 // Get the metadata for this data object.
-    		     metadataEntries = 
-    		             dataManagementService.getDataObjectMetadata(dataObject.getAbsolutePath());
+    			 // Combine data object attributes and metadata into a single DTO.
+        		 dataObjectsDTO.getDataObjects().add(getDataObject(dataObject));
+
     		} catch(HpcException e) {
-    			    // Unable to find metadata for the object
+    			    // Failed to get metadata for data object.
+    			    logger.error("Failed to fetch metadata for "+ dataObject.getAbsolutePath(), e);
     			    continue;
     		}
-    		
-    		// Combine data object attributes and metadata into a single DTO.
-    		dataObjectsDTO.getDataObjects().add(
-    			toDTO(dataObject, metadataEntries,
-    			      getDataTransferUploadPercentCompletion(
-    			       	 dataManagementService.toSystemGeneratedMetadata(metadataEntries))));
     	}
     	
     	return dataObjectsDTO;
@@ -461,42 +430,66 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     //---------------------------------------------------------------------//
     
     /**
-     * Create a collection DTO from domain objects.
+     * Create a collection DTO from a domain object.
      * 
      * @param collection The collection domain object.
-     * @param metadataEntries The list of metadata domain objects.
      *
      * @return The DTO.
+     * @throws HpcException If it failed to get the metadata
      */
-    private HpcCollectionDTO toDTO(HpcCollection collection, List<HpcMetadataEntry> metadataEntries) 
+    private HpcCollectionDTO getCollection(HpcCollection collection) throws HpcException
     {
+    	if(collection == null) {
+     	   return null;
+     	}
+    	
+    	// Get the metadata.
+    	List<HpcMetadataEntry> metadataEntries = 
+				dataManagementService.getCollectionMetadata(collection.getAbsolutePath());
+		List<HpcMetadataEntry> parentMetadataEntries = 
+				dataManagementService.getParentCollectionMetadata(collection.getAbsolutePath());
+		
     	HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
     	collectionDTO.setCollection(collection);
     	if(metadataEntries != null) {
     	   collectionDTO.getMetadataEntries().addAll(metadataEntries);
     	}
+    	if(parentMetadataEntries != null) {
+     	   collectionDTO.getParentMetadataEntries().addAll(parentMetadataEntries);
+     	}
     	
     	return collectionDTO;
     }
     
     /**
-     * Create a data object DTO from domain objects.
+     * Create a data object DTO from domain object.
      * 
      * @param data object The data object domain object.
-     * @param metadataEntries The list of metadata domain objects.
-     * transferPercentCompletion The data transfer % completion.
      *
      * @return The DTO.
      */
-    private HpcDataObjectDTO toDTO(HpcDataObject dataObject, 
-    		                       List<HpcMetadataEntry> metadataEntries,
-    		                       String transferPercentCompletion) 
+    private HpcDataObjectDTO getDataObject(HpcDataObject dataObject) throws HpcException
     {
+    	if(dataObject == null) {
+     	   return null;
+     	}
+    	
+    	// Get the metadata for this data object.
+    	List<HpcMetadataEntry> metadataEntries = 
+    		                   dataManagementService.getDataObjectMetadata(dataObject.getAbsolutePath());
+    	List<HpcMetadataEntry> parentMetadataEntries = 
+				               dataManagementService.getParentDataObjectMetadata(dataObject.getAbsolutePath());
+    	String transferPercentCompletion = getDataTransferUploadPercentCompletion(
+		                                      dataManagementService.toSystemGeneratedMetadata(metadataEntries));
+    		
     	HpcDataObjectDTO dataObjectDTO = new HpcDataObjectDTO();
     	dataObjectDTO.setDataObject(dataObject);
     	if(metadataEntries != null) {
     	   dataObjectDTO.getMetadataEntries().addAll(metadataEntries);
     	}
+    	if(parentMetadataEntries != null) {
+     	   dataObjectDTO.getParentMetadataEntries().addAll(parentMetadataEntries);
+     	}
     	dataObjectDTO.setTransferPercentCompletion(transferPercentCompletion);
     	
     	return dataObjectDTO;
