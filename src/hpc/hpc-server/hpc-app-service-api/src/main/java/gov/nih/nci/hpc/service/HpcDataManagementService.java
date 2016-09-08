@@ -301,6 +301,17 @@ public interface HpcDataManagementService
     public List<HpcMetadataEntry> getCollectionMetadata(String path) throws HpcException;
     
     /**
+     * Get metadata of a collection's parent hierarchy. 
+     * Note: all metadata from the collection's parent through the root collection will be returned.
+     *
+     * @param path The collection path.
+     * @return HpcMetadataEntry collection.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcMetadataEntry> getParentCollectionMetadata(String path) throws HpcException;
+    
+    /**
      * Get data object by its path.
      *
      * @param path The data object's path.
@@ -348,6 +359,17 @@ public interface HpcDataManagementService
      * @throws HpcException
      */
     public List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException;
+    
+    /**
+     * Get metadata of a data object's parent hierarchy. 
+     * Note: all metadata from the data object's parent collection through the root collection will be returned.
+     *
+     * @param path The data object path.
+     * @return HpcMetadataEntry collection.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcMetadataEntry> getParentDataObjectMetadata(String path) throws HpcException;
     
     /**
      * Get the role of a given user's name.
