@@ -26,6 +26,13 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:complexType name="HpcHierarchicalMetadataEntry">
+		<xsd:sequence>
+			<xsd:element name="metadataEntry" type="hpc-domain-metadata:HpcMetadataEntry" />
+			<xsd:element name="level" type="xsd:int" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
 	<xsd:complexType name="HpcMetadataEntries">
 		<xsd:sequence>
 				<xsd:element name="selfMetadataEntries" 

@@ -12,6 +12,8 @@ package gov.nih.nci.hpc.dao.postgresql.impl;
 
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcHierarchicalMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -75,6 +77,18 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String ENTITY_USER_ACCESS_SQL = 
 			"select access.object_id from public.\"r_objt_access\" access, public.\"r_user_main\" account " +
 	        "where account.user_name = ? and access.user_id = account.user_id";
+	
+	private static final String GET_COLLECTION_METADATA_SQL = 
+			"select coll_metadata.meta_attr_name,  coll_metadata.meta_attr_value, coll_metadata.level " + 
+	        "from public.\"r_coll_hierarchy_meta_main\" coll_metadata,  " +
+			"public.\"r_coll_main\" collection where collection.coll_name = ? " +
+	        "and collection.coll_id = coll_metadata.object_id";
+	
+	private static final String GET_DATA_OBJECT_METADATA_SQL = 
+			"select dataObject_metadata.meta_attr_name,  dataObject_metadata.meta_attr_value, dataObject_metadata.level " + 
+	        "from public.\"r_data_hierarchy_meta_main\" dataObject_metadata,  " +
+			"public.\"r_data_main\" dataObject where dataObject.data_name = ? " +
+	        "and dataObject.data_id = dataObject_metadata.object_id";
 			 
     //---------------------------------------------------------------------//
     // Instance members
@@ -86,6 +100,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	
 	// Row mappers.
 	private HpcObjectIdRowMapper objectIdRowMapper = new HpcObjectIdRowMapper();
+	HpcHierarchicalMetadataEntryRowMapper hierarchicalMetadataEntryRowMapper = 
+			                              new HpcHierarchicalMetadataEntryRowMapper();
 	
 	// Maps between metadata query operator to its SQL query
 	private Map<String, String> dataObjectSQLQueries = new HashMap<>();
@@ -152,6 +168,32 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		}		
     }
 	
+    @Override
+    public List<HpcHierarchicalMetadataEntry> getCollectionMetadata(String path) throws HpcException
+    {
+		try {
+		     return jdbcTemplate.query(GET_COLLECTION_METADATA_SQL, hierarchicalMetadataEntryRowMapper, path);
+		     
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get collection hierarchical metadata: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}	
+    }
+    
+    @Override
+    public List<HpcHierarchicalMetadataEntry> getDataObjectMetadata(String path) throws HpcException
+    {
+		try {
+		     return jdbcTemplate.query(GET_DATA_OBJECT_METADATA_SQL, hierarchicalMetadataEntryRowMapper, path);
+		     
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get data object hierarchical metadata: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}	
+    }
+	
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -164,6 +206,23 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		{
 			Long objectId = rs.getLong("OBJECT_ID");
 			return objectId != null ? objectId.intValue() : null;
+		}
+	}
+	
+	private class HpcHierarchicalMetadataEntryRowMapper implements RowMapper<HpcHierarchicalMetadataEntry>
+	{
+		@Override
+		public HpcHierarchicalMetadataEntry mapRow(ResultSet rs, int rowNum) throws SQLException 
+		{
+			HpcHierarchicalMetadataEntry hierarchicalMetadataEntry = new HpcHierarchicalMetadataEntry();
+			Long objectId = rs.getLong("OBJECT_ID");
+			hierarchicalMetadataEntry.setLevel(objectId != null ? objectId.intValue() : null);
+			HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
+			metadataEntry.setAttribute(rs.getString("META_ATTR_NAME"));
+			metadataEntry.setAttribute(rs.getString("META_ATTR_VALUE"));
+			hierarchicalMetadataEntry.setMetadataEntry(metadataEntry);
+			
+			return hierarchicalMetadataEntry;
 		}
 	}
 	
