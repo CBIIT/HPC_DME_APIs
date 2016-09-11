@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.dao;
 
+import gov.nih.nci.hpc.domain.metadata.HpcHierarchicalMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -51,6 +52,26 @@ public interface HpcMetadataDAO
     public List<Integer> getDataObjectIds(List<HpcMetadataQuery> metadataQueries,
     		                              String dataManagementUsername) 
     		                             throws HpcException;
+    
+    /**
+     * Get collection hierarchical metadata entries.
+     *
+     * @param path The collection's path
+     * @return List of HpcHierarchicalMetadataEntry.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcHierarchicalMetadataEntry> getCollectionMetadata(String path) throws HpcException;
+    
+    /**
+     * Get data object hierarchical metadata entries.
+     *
+     * @param path The data object's path
+     * @return List of HpcHierarchicalMetadataEntry.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcHierarchicalMetadataEntry> getDataObjectMetadata(String path) throws HpcException;
 }
 
  

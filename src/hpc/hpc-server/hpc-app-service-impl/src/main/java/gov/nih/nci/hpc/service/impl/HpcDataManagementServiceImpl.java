@@ -39,6 +39,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcHierarchicalMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
@@ -744,10 +745,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	// Construct HpcMetadataEntries based on the hierarchichal metadata policy.
     	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
-    	   // TODO: call DAO to get metadata
-    	   return null;
+    	   return fromHierarchicalMetadataEntries(metadataDAO.getCollectionMetadata(path));
     	} else {
-                return toMetadataEntries(dataManagementProxy.getCollectionMetadata(getAuthenticatedToken(), path));
+                return fromMetadataEntries(dataManagementProxy.getCollectionMetadata(getAuthenticatedToken(), path));
     	}        	    
     }
     
@@ -806,13 +806,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	// Construct HpcMetadataEntries based on the hierarchichal metadata policy.
     	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
-    	   // TODO: call DAO to get metadata
-    	   return null;
+    	   return fromHierarchicalMetadataEntries(metadataDAO.getDataObjectMetadata(path));
     	} else {
-                return toMetadataEntries(dataManagementProxy.getDataObjectMetadata(getAuthenticatedToken(), path));
+                return fromMetadataEntries(dataManagementProxy.getDataObjectMetadata(getAuthenticatedToken(), path));
     	}        	    
     }
-    
     
     @Override
     public HpcDataManagementAccount getHpcDataManagementAccount(Object irodsAccount) throws HpcException
@@ -1408,8 +1406,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
      * 
      * @throws HpcException
      */
-    private HpcMetadataEntries toMetadataEntries(List<HpcMetadataEntry> metadataEntriesList) 
-                                                throws HpcException
+    private HpcMetadataEntries fromMetadataEntries(List<HpcMetadataEntry> metadataEntriesList) 
+                                                  throws HpcException
     {
     	HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
     	
@@ -1423,6 +1421,33 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     			metadataEntries.getParentMetadataEntries().add(metadataEntry);	
     		} else {
     			    metadataEntries.getSelfMetadataEntries().add(metadataEntry);	
+    		}
+    	}
+    	
+    	return metadataEntries;
+    }
+    
+    /**
+     * Get metadata entries object from a list of hierarchical entries. It splits the list to self and parent 
+     * metadata entries.
+     *
+     * @param metadataEntriesList A list of metadata entries (include self and parent metadata entries)
+     * @return HpcMetadataEntries The metadata entries object.
+     * 
+     * @throws HpcException
+     */
+    private HpcMetadataEntries fromHierarchicalMetadataEntries(
+    		                       List<HpcHierarchicalMetadataEntry> hierarchicalMetadataEntriesList) 
+                                   throws HpcException
+    {
+    	HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
+    	
+    	// Split the list to 'self' and 'parent' metadata.
+    	for(HpcHierarchicalMetadataEntry hierarchicalMetadataEntry : hierarchicalMetadataEntriesList) {
+    		if(hierarchicalMetadataEntry.getLevel() > 1) {
+    		   metadataEntries.getParentMetadataEntries().add(hierarchicalMetadataEntry.getMetadataEntry());	
+    		} else {
+    			    metadataEntries.getSelfMetadataEntries().add(hierarchicalMetadataEntry.getMetadataEntry());	
     		}
     	}
     	
