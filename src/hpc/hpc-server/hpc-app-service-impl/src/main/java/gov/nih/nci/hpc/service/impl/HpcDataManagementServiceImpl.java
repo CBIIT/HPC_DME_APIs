@@ -745,7 +745,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	// Construct HpcMetadataEntries based on the hierarchichal metadata policy.
     	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
-    	   return fromHierarchicalMetadataEntries(metadataDAO.getCollectionMetadata(path));
+    	   return fromHierarchicalMetadataEntries(
+    			      metadataDAO.getCollectionMetadata(dataManagementProxy.getAbsolutePath(path)));
     	} else {
                 return fromMetadataEntries(dataManagementProxy.getCollectionMetadata(getAuthenticatedToken(), path));
     	}        	    

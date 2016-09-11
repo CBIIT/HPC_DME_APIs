@@ -819,6 +819,12 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		}
 		return response;
 	}
+	
+	@Override
+	public String getAbsolutePath(String path)
+	{
+		return addPath(path);
+	}
     
     //---------------------------------------------------------------------//
     // Helper Methods
