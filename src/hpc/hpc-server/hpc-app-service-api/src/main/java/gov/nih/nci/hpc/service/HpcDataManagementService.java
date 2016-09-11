@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -293,23 +294,12 @@ public interface HpcDataManagementService
     /**
      * Get metadata of a collection.
      *
-     * @param path The collection path.
-     * @return HpcMetadataEntry collection.
+     * @param path The collection's path.
+     * @return HpcMetadataEntries The collection's metadata entries.
      * 
      * @throws HpcException
      */
-    public List<HpcMetadataEntry> getCollectionMetadata(String path) throws HpcException;
-    
-    /**
-     * Get metadata of a collection's parent hierarchy. 
-     * Note: all metadata from the collection's parent through the root collection will be returned.
-     *
-     * @param path The collection path.
-     * @return HpcMetadataEntry collection.
-     * 
-     * @throws HpcException
-     */
-    public List<HpcMetadataEntry> getParentCollectionMetadata(String path) throws HpcException;
+    public HpcMetadataEntries getCollectionMetadataEntries(String path) throws HpcException;
     
     /**
      * Get data object by its path.
@@ -353,23 +343,12 @@ public interface HpcDataManagementService
     /**
      * Get metadata of a data object.
      *
-     * @param path The collection path.
-     * @return HpcMetadataEntry collection.
+     * @param path The data object's path.
+     * @return HpcMetadataEntries The data object's metadata entries.
      * 
      * @throws HpcException
      */
-    public List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException;
-    
-    /**
-     * Get metadata of a data object's parent hierarchy. 
-     * Note: all metadata from the data object's parent collection through the root collection will be returned.
-     *
-     * @param path The data object path.
-     * @return HpcMetadataEntry collection.
-     * 
-     * @throws HpcException
-     */
-    public List<HpcMetadataEntry> getParentDataObjectMetadata(String path) throws HpcException;
+    public HpcMetadataEntries getDataObjectMetadataEntries(String path) throws HpcException;
     
     /**
      * Get the role of a given user's name.
