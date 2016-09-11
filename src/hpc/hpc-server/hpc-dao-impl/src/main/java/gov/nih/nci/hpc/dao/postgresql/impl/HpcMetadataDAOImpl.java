@@ -221,8 +221,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		public HpcHierarchicalMetadataEntry mapRow(ResultSet rs, int rowNum) throws SQLException 
 		{
 			HpcHierarchicalMetadataEntry hierarchicalMetadataEntry = new HpcHierarchicalMetadataEntry();
-			Long objectId = rs.getLong("OBJECT_ID");
-			hierarchicalMetadataEntry.setLevel(objectId != null ? objectId.intValue() : null);
+			Long level = rs.getLong("LEVEL");
+			hierarchicalMetadataEntry.setLevel(level != null ? level.intValue() : null);
 			HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
 			metadataEntry.setAttribute(rs.getString("META_ATTR_NAME"));
 			metadataEntry.setAttribute(rs.getString("META_ATTR_VALUE"));
