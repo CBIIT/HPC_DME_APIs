@@ -418,6 +418,13 @@ public interface HpcDataManagementProxy
             HpcGroup hpcGroup, List<String> addUserIds, List<String> removeUserIds) 
            throws HpcException;
     
+    /**
+     * Get absolute path (append the iRODs base path, to the user provided path).
+     *
+     * @param path The path to get the absolute path from.
+     * @return The absolute path.
+     */
+    public String getAbsolutePath(String path); 
 }
 
  
