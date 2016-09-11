@@ -39,6 +39,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -739,22 +740,15 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<HpcMetadataEntry> getCollectionMetadata(String path) throws HpcException
+    public HpcMetadataEntries getCollectionMetadataEntries(String path) throws HpcException
     {
-       	// Input validation.
-       	if(path == null) {
-       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
-       			                  HpcErrorType.INVALID_REQUEST_INPUT);
-       	}	
-       	
-    	return dataManagementProxy.getCollectionMetadata(getAuthenticatedToken(),
-                                                         path);
-    }
-    
-    @Override
-    public List<HpcMetadataEntry> getParentCollectionMetadata(String path) throws HpcException
-    {
-    	return null;
+    	// Construct HpcMetadataEntries based on the hierarchichal metadata policy.
+    	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
+    	   // TODO: call DAO to get metadata
+    	   return null;
+    	} else {
+                return toMetadataEntries(dataManagementProxy.getCollectionMetadata(getAuthenticatedToken(), path));
+    	}        	    
     }
     
     @Override
@@ -808,23 +802,17 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException
+    public HpcMetadataEntries getDataObjectMetadataEntries(String path) throws HpcException
     {
-       	// Input validation.
-       	if(path == null) {
-       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
-       			                  HpcErrorType.INVALID_REQUEST_INPUT);
-       	}	
-       	
-    	return dataManagementProxy.getDataObjectMetadata(getAuthenticatedToken(),
-                                                         path);
+    	// Construct HpcMetadataEntries based on the hierarchichal metadata policy.
+    	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
+    	   // TODO: call DAO to get metadata
+    	   return null;
+    	} else {
+                return toMetadataEntries(dataManagementProxy.getDataObjectMetadata(getAuthenticatedToken(), path));
+    	}        	    
     }
     
-    @Override
-    public List<HpcMetadataEntry> getParentDataObjectMetadata(String path) throws HpcException
-    {
-    	return null;
-    }
     
     @Override
     public HpcDataManagementAccount getHpcDataManagementAccount(Object irodsAccount) throws HpcException
@@ -1369,5 +1357,75 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	return dataObjects;
+    }
+    
+    /**
+     * Get metadata of a collection.
+     *
+     * @param path The collection's path.
+     * @return HpcMetadataEntries The collection's metadata entries.
+     * 
+     * @throws HpcException
+     */
+    private List<HpcMetadataEntry> getCollectionMetadata(String path) throws HpcException
+    {
+       	// Input validation.
+       	if(path == null) {
+       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+    	return dataManagementProxy.getCollectionMetadata(getAuthenticatedToken(),
+                                                         path);
+    }
+    
+    /**
+     * Get metadata of a data object.
+     *
+     * @param path The data object's path.
+     * @return HpcMetadataEntries The data object's metadata entries.
+     * 
+     * @throws HpcException
+     */
+    private List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException
+    {
+       	// Input validation.
+       	if(path == null) {
+       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+    	return dataManagementProxy.getDataObjectMetadata(getAuthenticatedToken(),
+                                                         path);
+    }
+    
+    /**
+     * Get metadata entries object from a list of entries. It splits the list to self and parent 
+     * metadata entries
+     *
+     * @param metadataEntriesList A list of metadata entries (include self and parent metadata entries)
+     * @return HpcMetadataEntries The metadata entries object.
+     * 
+     * @throws HpcException
+     */
+    private HpcMetadataEntries toMetadataEntries(List<HpcMetadataEntry> metadataEntriesList) 
+                                                throws HpcException
+    {
+    	HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
+    	
+    	// Get the list of parent metadata attributes from the system generated metadata 'metadata origin'.
+    	List<String> parentMetadataAttributes = 
+	         toSystemGeneratedMetadata(metadataEntriesList).getMetadataOrigin().getParentMetadataAttributes();
+    	
+    	// Split the list to 'self' and 'parent' metadata.
+    	for(HpcMetadataEntry metadataEntry : metadataEntriesList) {
+    		if(parentMetadataAttributes.contains(metadataEntry.getAttribute())) {
+    			metadataEntries.getParentMetadataEntries().add(metadataEntry);	
+    		} else {
+    			    metadataEntries.getSelfMetadataEntries().add(metadataEntry);	
+    		}
+    	}
+    	
+    	return metadataEntries;
     }
 }
