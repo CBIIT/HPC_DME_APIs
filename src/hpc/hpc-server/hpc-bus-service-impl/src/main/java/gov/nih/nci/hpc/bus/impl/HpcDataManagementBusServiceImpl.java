@@ -22,6 +22,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
@@ -444,19 +445,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      	}
     	
     	// Get the metadata.
-    	List<HpcMetadataEntry> metadataEntries = 
-				dataManagementService.getCollectionMetadata(collection.getAbsolutePath());
-		List<HpcMetadataEntry> parentMetadataEntries = 
-				dataManagementService.getParentCollectionMetadata(collection.getAbsolutePath());
+    	HpcMetadataEntries metadataEntries = 
+    	   dataManagementService.getCollectionMetadataEntries(collection.getAbsolutePath());
 		
     	HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
     	collectionDTO.setCollection(collection);
-    	if(metadataEntries != null) {
-    	   collectionDTO.getMetadataEntries().addAll(metadataEntries);
-    	}
-    	if(parentMetadataEntries != null) {
-     	   collectionDTO.getParentMetadataEntries().addAll(parentMetadataEntries);
-     	}
+        collectionDTO.setMetadataEntries(metadataEntries);
     	
     	return collectionDTO;
     }
@@ -475,21 +469,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      	}
     	
     	// Get the metadata for this data object.
-    	List<HpcMetadataEntry> metadataEntries = 
-    		                   dataManagementService.getDataObjectMetadata(dataObject.getAbsolutePath());
-    	List<HpcMetadataEntry> parentMetadataEntries = 
-				               dataManagementService.getParentDataObjectMetadata(dataObject.getAbsolutePath());
+    	HpcMetadataEntries metadataEntries = 
+    		               dataManagementService.getDataObjectMetadataEntries(dataObject.getAbsolutePath());
     	String transferPercentCompletion = getDataTransferUploadPercentCompletion(
-		                                      dataManagementService.toSystemGeneratedMetadata(metadataEntries));
+		               dataManagementService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries()));
     		
     	HpcDataObjectDTO dataObjectDTO = new HpcDataObjectDTO();
     	dataObjectDTO.setDataObject(dataObject);
-    	if(metadataEntries != null) {
-    	   dataObjectDTO.getMetadataEntries().addAll(metadataEntries);
-    	}
-    	if(parentMetadataEntries != null) {
-     	   dataObjectDTO.getParentMetadataEntries().addAll(parentMetadataEntries);
-     	}
+    	dataObjectDTO.setMetadataEntries(metadataEntries);
     	dataObjectDTO.setTransferPercentCompletion(transferPercentCompletion);
     	
     	return dataObjectDTO;
