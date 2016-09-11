@@ -81,16 +81,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	        "where account.user_name = ? and access.user_id = account.user_id";
 	
 	private static final String GET_COLLECTION_METADATA_SQL = 
-			"select coll_metadata.meta_attr_name,  coll_metadata.meta_attr_value, coll_metadata.level " + 
-	        "from public.\"r_coll_hierarchy_meta_main\" coll_metadata,  " +
-			"public.\"r_coll_main\" collection where collection.coll_name = ? " +
-	        "and collection.coll_id = coll_metadata.object_id";
+			"select meta_attr_name,  meta_attr_value, level " + 
+	        "from public.\"r_coll_hierarchy_meta_main\" where object_path = ? ";
 	
 	private static final String GET_DATA_OBJECT_METADATA_SQL = 
-			"select dataObject_metadata.meta_attr_name,  dataObject_metadata.meta_attr_value, dataObject_metadata.level " + 
-	        "from public.\"r_data_hierarchy_meta_main\" dataObject_metadata,  " +
-			"public.\"r_data_main\" dataObject where dataObject.data_name = ? " +
-	        "and dataObject.data_id = dataObject_metadata.object_id";
+			"select meta_attr_name, meta_attr_value, level " + 
+	        "from public.\"r_data_hierarchy_meta_main\" where object_path = ? ";
 			 
     //---------------------------------------------------------------------//
     // Instance members
