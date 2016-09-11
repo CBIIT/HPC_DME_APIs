@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -107,6 +109,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private Map<String, String> dataObjectSQLQueries = new HashMap<>();
 	private Map<String, String> collectionSQLQueries = new HashMap<>();
 	
+    // The logger instance.
+	private final Logger logger = 
+			             LoggerFactory.getLogger(this.getClass().getName());
+	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -184,6 +190,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     @Override
     public List<HpcHierarchicalMetadataEntry> getDataObjectMetadata(String path) throws HpcException
     {
+    	logger.error("ERAN: QUERY: " + GET_DATA_OBJECT_METADATA_SQL);
+    	logger.error("ERAN: PATH: " + path);
+    	
 		try {
 		     return jdbcTemplate.query(GET_DATA_OBJECT_METADATA_SQL, hierarchicalMetadataEntryRowMapper, path);
 		     
@@ -214,6 +223,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		@Override
 		public HpcHierarchicalMetadataEntry mapRow(ResultSet rs, int rowNum) throws SQLException 
 		{
+			logger.error("ERAN: RS: " + rs);
 			HpcHierarchicalMetadataEntry hierarchicalMetadataEntry = new HpcHierarchicalMetadataEntry();
 			Long level = rs.getLong("LEVEL");
 			hierarchicalMetadataEntry.setLevel(level != null ? level.intValue() : null);
