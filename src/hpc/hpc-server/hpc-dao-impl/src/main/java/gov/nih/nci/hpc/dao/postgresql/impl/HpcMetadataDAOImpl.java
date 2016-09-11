@@ -225,7 +225,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			hierarchicalMetadataEntry.setLevel(level != null ? level.intValue() : null);
 			HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
 			metadataEntry.setAttribute(rs.getString("META_ATTR_NAME"));
-			metadataEntry.setAttribute(rs.getString("META_ATTR_VALUE"));
+			metadataEntry.setValue(rs.getString("META_ATTR_VALUE"));
 			hierarchicalMetadataEntry.setMetadataEntry(metadataEntry);
 			
 			return hierarchicalMetadataEntry;
