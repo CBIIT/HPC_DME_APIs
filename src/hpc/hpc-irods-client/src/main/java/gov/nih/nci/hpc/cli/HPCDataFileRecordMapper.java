@@ -77,8 +77,7 @@ public class HPCDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
 			if (StringUtils.isNotBlank(cellVal))
 				listOfhpcCollection.add(hpcMetadataEntry);
 		}
-		//System.out.println("Processing record: "+objectPath);
-
+		
 		HPCDataObject dataObject = new HPCDataObject();
 		dataObject.setAuthToken(authToken);
 		dataObject.setBasePath(basePath);
