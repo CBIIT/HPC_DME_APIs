@@ -131,6 +131,7 @@ public class HpcClientUtil {
 		FileInputStream fis = null;
 		try {
 			if (hpcCertPath != null && hpcCertPassword != null) {
+				System.out.println("secure connection....");
 				fis = new java.io.FileInputStream(hpcCertPath);
 				KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
 				keyStore.load(fis, hpcCertPassword.toCharArray());
@@ -153,6 +154,7 @@ public class HpcClientUtil {
 				restTemplate = new RestTemplate(requestFactory);
 			} else {
 
+				System.out.println("not secure connection....");
 				@SuppressWarnings("deprecation")
 				SSLContextBuilder builder = new SSLContextBuilder();
 				builder.loadTrustMaterial(null, new TrustStrategy() {
