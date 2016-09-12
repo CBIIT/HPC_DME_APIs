@@ -47,6 +47,8 @@ public class HPCDataFileRecordProcessor implements RecordProcessor{
 		List<Attachment> atts = new LinkedList<Attachment>();
 		if (hpcDataObjectRegistrationDTO.getSource().getFileContainerId() == null) {
 			if (hpcDataObjectRegistrationDTO.getSource().getFileId() == null) {
+				HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(), hpcObject.getCsvRecord(), hpcObject.getHeadersMap());
+				HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(), "Record: "+  record.getHeader().getNumber() + " with path: " + hpcObject.getObjectPath() + "\n Invalid or missing fileContainerId or/and fileId.");
 				throw new RecordMappingException("Invalid or missing file source location");
 			} else {
 
@@ -68,6 +70,13 @@ public class HPCDataFileRecordProcessor implements RecordProcessor{
 				}
 			}
 		}
+		else if(hpcDataObjectRegistrationDTO.getSource().getFileId() == null)
+		{
+			HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(), hpcObject.getCsvRecord(), hpcObject.getHeadersMap());
+			HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(), "Record: "+  record.getHeader().getNumber() + " with path: " + hpcObject.getObjectPath() + "\n Invalid or missing fileContainerId or/and fileId");	
+			throw new RecordMappingException("Invalid or missing file source location");
+		}
+		
 		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration", "application/json",
 				hpcDataObjectRegistrationDTO));
 		long start = System.currentTimeMillis();
