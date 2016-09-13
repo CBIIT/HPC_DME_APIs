@@ -12,23 +12,34 @@
 -- @version $Id$
 --
 
--- Hierarchy data metamap.
+
+-- Drop all views first.
+DROP VIEW r_coll_hierarchy_meta_main;
+DROP VIEW r_coll_hierarchy_meta_main_ovrd;
+DROP VIEW r_coll_hierarchy_metamap;
+DROP VIEW r_data_hierarchy_meta_main;
+DROP VIEW r_data_hierarchy_meta_main_ovrd;
 DROP VIEW r_data_hierarchy_metamap;
+
+-- Hierarchy data metamap.
 CREATE VIEW r_data_hierarchy_metamap AS
-WITH RECURSIVE r_data_hierarchy(parent_coll_name, coll_name, coll_id, object_id, level)
-AS (SELECT data_coll.coll_name, cast(null as varchar), cast(null as bigint), data_base.data_id, 1 
+WITH RECURSIVE r_data_hierarchy(parent_coll_name, coll_name, coll_id, object_id, object_path, level)
+AS (SELECT data_coll.coll_name, cast(null as varchar), cast(null as bigint), data_base.data_id, 
+           data_coll.coll_name || '/' || data_base.data_name, 1 
     FROM r_data_main data_base, r_coll_main data_coll 
     WHERE data_base.coll_id = data_coll.coll_id
     UNION ALL SELECT coll_iter.parent_coll_name, coll_iter.coll_name, coll_iter.coll_id, 
-                     coll_hierarchy_iter.object_id, coll_hierarchy_iter.level + 1 
+                     coll_hierarchy_iter.object_id, coll_hierarchy_iter.object_path, coll_hierarchy_iter.level + 1 
                      FROM r_coll_main coll_iter, r_data_hierarchy coll_hierarchy_iter
                      WHERE coll_iter.coll_name != '/' AND coll_iter.coll_name = coll_hierarchy_iter.parent_coll_name)
-SELECT data_hierarchy.object_id, metamap.meta_id, data_hierarchy.coll_id, data_hierarchy.level 
+SELECT data_hierarchy.object_id, data_hierarchy.object_path, metamap.meta_id, data_hierarchy.coll_id, data_hierarchy.level 
 FROM r_data_hierarchy data_hierarchy, r_objt_metamap metamap 
 WHERE ((data_hierarchy.object_id = metamap.object_id and data_hierarchy.coll_id is null) or 
        data_hierarchy.coll_id = metamap.object_id);
 COMMENT ON COLUMN r_data_hierarchy_metamap.object_id IS 
                   'Data object Hierarchy ID: r_data_main.data_id';
+COMMENT ON COLUMN r_data_hierarchy_metamap.object_path IS 
+                  'Data object Hierarchy Path:  r_coll_main.coll_name / r_data_main.data_name';
 COMMENT ON COLUMN r_data_hierarchy_metamap.meta_id IS 
                   'Metadata ID: r_meta_main.meta_id';
 COMMENT ON COLUMN r_data_hierarchy_metamap.coll_id IS 
@@ -37,9 +48,9 @@ COMMENT ON COLUMN r_data_hierarchy_metamap.level IS
                   'The level of the metadata in the hierarchy, starting with 1 at the data-object level';
 
 -- Hierarchy data meta_main w/ override rules
-DROP VIEW r_data_hierarchy_meta_main_ovrd;
 CREATE VIEW r_data_hierarchy_meta_main_ovrd AS
 SELECT data_hierarchy_metamap.object_id, 
+	   (array_agg(data_hierarchy_metamap.object_path order by data_hierarchy_metamap.level))[1] AS object_path, 
        (array_agg(data_hierarchy_metamap.coll_id order by data_hierarchy_metamap.level))[1] AS coll_id, 
        (array_agg(data_hierarchy_metamap.meta_id order by data_hierarchy_metamap.level))[1] AS meta_id, 
        min(data_hierarchy_metamap.level) AS level, 
@@ -51,6 +62,8 @@ GROUP BY data_hierarchy_metamap.object_id, meta_main.meta_attr_name
 ORDER BY data_hierarchy_metamap.object_id;
 COMMENT ON COLUMN r_data_hierarchy_meta_main_ovrd.object_id IS 
                   'Data object Hierarchy ID: r_data_main.data_id';
+COMMENT ON COLUMN r_data_hierarchy_metamap.object_path IS 
+                  'Data object Hierarchy Path:  r_coll_main.coll_name / r_data_main.data_name';
 COMMENT ON COLUMN r_data_hierarchy_meta_main_ovrd.meta_id IS 
                   'Metadata ID: r_meta_main.meta_id';
 COMMENT ON COLUMN r_data_hierarchy_meta_main_ovrd.coll_id IS 
@@ -63,15 +76,16 @@ COMMENT ON COLUMN r_data_hierarchy_meta_main_ovrd.meta_attr_value IS
                   'Metadata value: r_meta_main.meta_attr_value';
 
 -- Hierarchy data meta_main w/o override rules
-DROP VIEW r_data_hierarchy_meta_main;
 CREATE VIEW r_data_hierarchy_meta_main AS
-SELECT data_hierarchy_metamap.object_id, data_hierarchy_metamap.coll_id, data_hierarchy_metamap.meta_id, 
-       data_hierarchy_metamap.level, meta_main.meta_attr_name, meta_main.meta_attr_value
+SELECT data_hierarchy_metamap.object_id, data_hierarchy_metamap.object_path, data_hierarchy_metamap.coll_id, 
+       data_hierarchy_metamap.meta_id, data_hierarchy_metamap.level, meta_main.meta_attr_name, meta_main.meta_attr_value
 FROM r_meta_main meta_main, r_data_hierarchy_metamap data_hierarchy_metamap 
 WHERE data_hierarchy_metamap.meta_id = meta_main.meta_id 
 ORDER BY data_hierarchy_metamap.object_id;
 COMMENT ON COLUMN r_data_hierarchy_meta_main.object_id IS 
                   'Data object Hierarchy ID: r_data_main.data_id';
+COMMENT ON COLUMN r_data_hierarchy_metamap.object_path IS 
+                  'Data object Hierarchy Path:  r_coll_main.coll_name / r_data_main.data_name';
 COMMENT ON COLUMN r_data_hierarchy_meta_main.meta_id IS 
                   'Metadata ID: r_meta_main.meta_id';
 COMMENT ON COLUMN r_data_hierarchy_meta_main.coll_id IS 
@@ -84,20 +98,21 @@ COMMENT ON COLUMN r_data_hierarchy_meta_main.meta_attr_value IS
                   'Metadata value: r_meta_main.meta_attr_value';
 
 -- Hierarchy collection metamap.
-DROP VIEW r_coll_hierarchy_metamap;
 CREATE VIEW r_coll_hierarchy_metamap AS
-WITH RECURSIVE r_coll_hierarchy(parent_coll_name, coll_name, coll_id, object_id, level)
-AS (SELECT coll_base.parent_coll_name, coll_base.coll_name, coll_base.coll_id, coll_base.coll_id, 1 
+WITH RECURSIVE r_coll_hierarchy(parent_coll_name, coll_name, coll_id, object_id, object_path, level)
+AS (SELECT coll_base.parent_coll_name, coll_base.coll_name, coll_base.coll_id, coll_base.coll_id, coll_base.coll_name, 1 
     FROM r_coll_main coll_base
     UNION ALL SELECT coll_iter.parent_coll_name, coll_iter.coll_name, coll_iter.coll_id, 
-                     coll_hierarchy_iter.object_id, coll_hierarchy_iter.level + 1 
+                     coll_hierarchy_iter.object_id, coll_hierarchy_iter.object_path, coll_hierarchy_iter.level + 1 
                      FROM r_coll_main coll_iter, r_coll_hierarchy coll_hierarchy_iter
                      WHERE coll_iter.coll_name != '/' AND coll_iter.coll_name = coll_hierarchy_iter.parent_coll_name)
-SELECT coll_hierarchy.object_id, metamap.meta_id, coll_hierarchy.coll_id, coll_hierarchy.level 
+SELECT coll_hierarchy.object_id, coll_hierarchy.object_path, metamap.meta_id, coll_hierarchy.coll_id, coll_hierarchy.level 
 FROM r_coll_hierarchy coll_hierarchy, r_objt_metamap metamap 
 WHERE coll_hierarchy.coll_id = metamap.object_id;
 COMMENT ON COLUMN r_coll_hierarchy_metamap.object_id IS 
                   'Collection Hierarchy ID: r_coll_main.coll_id';
+COMMENT ON COLUMN r_coll_hierarchy_metamap.object_path IS 
+                  'Collection Hierarchy Path: r_coll_main.coll_name';
 COMMENT ON COLUMN r_coll_hierarchy_metamap.meta_id IS 
                   'Metadata ID: r_meta_main.meta_id';
 COMMENT ON COLUMN r_coll_hierarchy_metamap.coll_id IS 
@@ -106,9 +121,9 @@ COMMENT ON COLUMN r_coll_hierarchy_metamap.level IS
                   'The level of the metadata in the hierarchy, starting with 1 at the collection level';
 
 -- Hierarchy collection meta_main w/ override rules
-DROP VIEW r_coll_hierarchy_meta_main_ovrd;
 CREATE VIEW r_coll_hierarchy_meta_main_ovrd AS
 SELECT coll_hierarchy_metamap.object_id, 
+       (array_agg(coll_hierarchy_metamap.object_path order by coll_hierarchy_metamap.level))[1] AS object_path, 
        (array_agg(coll_hierarchy_metamap.coll_id order by coll_hierarchy_metamap.level))[1] AS coll_id, 
        (array_agg(coll_hierarchy_metamap.meta_id order by coll_hierarchy_metamap.level))[1] AS meta_id, 
        min(coll_hierarchy_metamap.level) AS level, 
@@ -120,6 +135,8 @@ GROUP BY coll_hierarchy_metamap.object_id, meta_main.meta_attr_name
 ORDER BY coll_hierarchy_metamap.object_id;
 COMMENT ON COLUMN r_coll_hierarchy_meta_main_ovrd.object_id IS 
                   'Collection Hierarchy ID: r_coll_main.coll_id';
+COMMENT ON COLUMN r_coll_hierarchy_meta_main_ovrd.object_path IS 
+                  'Collection Hierarchy Path: r_coll_main.coll_name';
 COMMENT ON COLUMN r_coll_hierarchy_meta_main_ovrd.meta_id IS 
                   'Metadata ID: r_meta_main.meta_id';
 COMMENT ON COLUMN r_coll_hierarchy_meta_main_ovrd.coll_id IS 
@@ -132,15 +149,16 @@ COMMENT ON COLUMN r_coll_hierarchy_meta_main_ovrd.meta_attr_value IS
                   'Metadata value: r_meta_main.meta_attr_value';
 
 -- Hierarchy collection meta_main w/o override rules
-DROP VIEW r_coll_hierarchy_meta_main;
 CREATE VIEW r_coll_hierarchy_meta_main AS
-SELECT coll_hierarchy_metamap.object_id, coll_hierarchy_metamap.coll_id, coll_hierarchy_metamap.meta_id, 
-       coll_hierarchy_metamap.level, meta_main.meta_attr_name, meta_main.meta_attr_value
+SELECT coll_hierarchy_metamap.object_id, coll_hierarchy_metamap.object_path, coll_hierarchy_metamap.coll_id, 
+       coll_hierarchy_metamap.meta_id, coll_hierarchy_metamap.level, meta_main.meta_attr_name, meta_main.meta_attr_value
 FROM r_meta_main meta_main, r_coll_hierarchy_metamap coll_hierarchy_metamap 
 WHERE coll_hierarchy_metamap.meta_id = meta_main.meta_id 
 ORDER BY coll_hierarchy_metamap.object_id;
 COMMENT ON COLUMN r_coll_hierarchy_meta_main.object_id IS 
                   'Collection Hierarchy ID: r_coll_main.coll_id';
+COMMENT ON COLUMN r_coll_hierarchy_meta_main.object_path IS 
+                  'Collection Hierarchy Path: r_coll_main.coll_name';
 COMMENT ON COLUMN r_coll_hierarchy_meta_main.meta_id IS 
                   'Metadata ID: r_meta_main.meta_id';
 COMMENT ON COLUMN r_coll_hierarchy_meta_main.coll_id IS 
