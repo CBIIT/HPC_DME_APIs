@@ -169,7 +169,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcCollectionListDTO getCollections(List<HpcMetadataQuery> metadataQueries) 
+    public HpcCollectionListDTO getCollections(List<HpcMetadataQuery> metadataQueries,
+    		                                   boolean detailedResponse) 
                                               throws HpcException
     {
     	logger.info("Invoking getCollections(List<HpcMetadataQuery>): " + 
@@ -186,8 +187,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	for(HpcCollection collection : dataManagementService.getCollections(metadataQueries)) {
     		// Get the metadata for this collection.
     		try {
-    			 // Combine collection attributes and metadata into a single DTO.
-    			 collectionsDTO.getCollections().add(getCollection(collection));
+    			 if(detailedResponse) {
+    			    // Combine collection attributes and metadata into a single DTO.
+    			    collectionsDTO.getCollections().add(getCollection(collection));
+    			 } else {
+    				     collectionsDTO.getCollectionPaths().add(collection.getAbsolutePath());
+    			 }
     			 
     		} catch(HpcException e) {
     			    // Failed to get metadata.
@@ -293,7 +298,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries) 
+    public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries, 
+    		                                   boolean detailedResponse) 
                                               throws HpcException
     {
     	logger.info("Invoking getDataObjects(List<HpcMetadataQuery>): " + metadataQueries);
@@ -308,8 +314,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
     	for(HpcDataObject dataObject : dataManagementService.getDataObjects(metadataQueries)) {
     		try {
-    			 // Combine data object attributes and metadata into a single DTO.
-        		 dataObjectsDTO.getDataObjects().add(getDataObject(dataObject));
+    			 if(detailedResponse) {
+    				// Combine data object attributes and metadata into a single DTO.
+        		    dataObjectsDTO.getDataObjects().add(getDataObject(dataObject));
+    			 } else {
+    				     dataObjectsDTO.getDataObjectPaths().add(dataObject.getAbsolutePath());
+    			 }
 
     		} catch(HpcException e) {
     			    // Failed to get metadata for data object.

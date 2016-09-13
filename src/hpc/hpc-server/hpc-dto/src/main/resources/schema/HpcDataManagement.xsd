@@ -39,9 +39,13 @@
 	<xsd:element name="HpcCollectionListDTO">
 		<xsd:complexType>
 			<xsd:sequence>
+				<xsd:choice>
 				<xsd:element name="collections"
 				             type="hpc-dto-datamanagement:HpcCollectionDTO"
 					         minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="collectionPaths" type="xsd:string"
+					         minOccurs="0" maxOccurs="unbounded" />
+				</xsd:choice>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
@@ -73,9 +77,13 @@
 	<xsd:element name="HpcDataObjectListDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="dataObjects"
-				             type="hpc-dto-datamanagement:HpcDataObjectDTO"
-					         minOccurs="0" maxOccurs="unbounded" />
+				<xsd:choice>
+					<xsd:element name="dataObjects"
+				             	 type="hpc-dto-datamanagement:HpcDataObjectDTO"
+					             minOccurs="0" maxOccurs="unbounded" />
+					<xsd:element name="dataObjectPaths" type="xsd:string"
+					             minOccurs="0" maxOccurs="unbounded" />
+				</xsd:choice>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	

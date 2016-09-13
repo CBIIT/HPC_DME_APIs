@@ -65,11 +65,13 @@ public interface HpcDataManagementBusService
      * Get Collections by metadata query.
      *
      * @param metadataQueries The metadata queries.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @return A list of HpcCollectionDTO
      * 
      * @throws HpcException
      */
-    public HpcCollectionListDTO getCollections(List<HpcMetadataQuery> metadataQueries) 
+    public HpcCollectionListDTO getCollections(List<HpcMetadataQuery> metadataQueries,
+    		                                   boolean detailedResponse) 
     		                                  throws HpcException;
     
     /**
@@ -104,11 +106,13 @@ public interface HpcDataManagementBusService
      * Get data objects by metadata query.
      *
      * @param metadataQueries The metadata queries.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @return A list of HpcDataObjectDTO.
      * 
      * @throws HpcException
      */
-    public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries) 
+    public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries,
+    		                                   boolean detailedResponse) 
     		                                  throws HpcException;
     
     /**
