@@ -78,26 +78,29 @@ public interface HpcDataManagementRestService
      * GET Collections by metadata query.
      *
      * @param metadataQueries A list of metadata entries to query for.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @return Response The REST service response.
      */
 	@GET
 	@Path("/collection")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getCollections(
-			           @QueryParam("metadataQuery")
-			           List<HpcMetadataQueryParam> metadataQueries);
+			           @QueryParam("metadataQuery") List<HpcMetadataQueryParam> metadataQueries,
+			           @QueryParam("detailedResponse") Boolean detailedResponse);
 	
     /**
      * POST Collections query.
      *
      * @param metadataQueries A list of metadata entries to query for.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @return Response The REST service response.
      */
 	@POST
 	@Path("/collection/query")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response queryCollections(List<HpcMetadataQuery> metadataQueries);
+	public Response queryCollections(List<HpcMetadataQuery> metadataQueries,
+			                         @QueryParam("detailedResponse") Boolean detailedResponse);
 
     /**
      * PUT Data object registration request.
@@ -134,25 +137,29 @@ public interface HpcDataManagementRestService
      * GET Data objects by metadata query.
      *
      * @param metadataQueries A list of metadata entries to query for.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @return Response The REST service response.
      */
 	@GET
 	@Path("/dataObject")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getDataObjects(
-			           @QueryParam("metadataQuery")
-			           List<HpcMetadataQueryParam> metadataQueries);
+			           @QueryParam("metadataQuery") List<HpcMetadataQueryParam> metadataQueries,
+			           @QueryParam("detailedResponse") Boolean detailedResponse);
 	
     /**
      * POST Data objects query.
      *
      * @param metadataQueries A list of metadata entries to query for.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @return Response The REST service response.
      */
 	@POST
 	@Path("/dataObject/query")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries);
+	public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries,
+			                         @QueryParam("detailedResponse") Boolean detailedResponse);
 
     /**
      * POST Download Data Object.
