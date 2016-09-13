@@ -149,7 +149,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getCollections(List<HpcMetadataQueryParam> metadataQueries)
+    public Response getCollections(List<HpcMetadataQueryParam> metadataQueries, 
+    		                       Boolean detailedResponse)
     {
     	long start = System.currentTimeMillis();
     	logger.info("Invoking RS: GET /collection/" + metadataQueries);
@@ -157,7 +158,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	HpcCollectionListDTO collections = null;
 		try {
 			 collections = dataManagementBusService.getCollections(
-					                     unmarshallQueryParams(metadataQueries));
+					                     unmarshallQueryParams(metadataQueries), 
+					                     detailedResponse != null ? detailedResponse : false);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /collection/" + metadataQueries + 
@@ -171,14 +173,17 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response queryCollections(List<HpcMetadataQuery> metadataQueries)
+    public Response queryCollections(List<HpcMetadataQuery> metadataQueries,
+    		                         Boolean detailedResponse)
     {
     	long start = System.currentTimeMillis();
     	logger.info("Invoking RS: POST /collection/query" + metadataQueries);
     	
     	HpcCollectionListDTO collections = null;
 		try {
-			 collections = dataManagementBusService.getCollections(metadataQueries);
+			 collections = dataManagementBusService.getCollections(metadataQueries,
+					                                               detailedResponse != null ? 
+					                                               detailedResponse : false);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /collection/query" + metadataQueries + 
@@ -253,7 +258,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getDataObjects(List<HpcMetadataQueryParam> metadataQueries)
+    public Response getDataObjects(List<HpcMetadataQueryParam> metadataQueries,
+    		                       Boolean detailedResponse)
     {
     	long start = System.currentTimeMillis();
     	logger.info("Invoking RS: GET /dataObject/" + metadataQueries);
@@ -261,7 +267,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	HpcDataObjectListDTO dataObjects = null;
 		try {
 			 dataObjects = dataManagementBusService.getDataObjects(
-					                     unmarshallQueryParams(metadataQueries));
+					                     unmarshallQueryParams(metadataQueries),
+					                     detailedResponse != null ? detailedResponse : false);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /dataObject/" + metadataQueries + 
@@ -275,14 +282,17 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries)
+    public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries,
+    		                         Boolean detailedResponse)
     {
     	long start = System.currentTimeMillis();
     	logger.info("Invoking RS: POST /dataObject/query" + metadataQueries);
     	
     	HpcDataObjectListDTO dataObjects = null;
 		try {
-			 dataObjects = dataManagementBusService.getDataObjects(metadataQueries);
+			 dataObjects = dataManagementBusService.getDataObjects(metadataQueries,
+					                                               detailedResponse != null ? 
+					                                               detailedResponse : false);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /dataObject/query" + metadataQueries + 
