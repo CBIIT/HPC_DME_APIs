@@ -169,7 +169,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " getCollections: Total time - " + metadataQueries);
 		
-		return okResponse(!collections.getCollections().isEmpty() ? collections : null , true);
+		return okResponse(!collections.getCollections().isEmpty() ||
+				          !collections.getCollectionPaths().isEmpty() ? collections : null , true);
     }
     
     @Override
@@ -193,7 +194,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " getCollections: Total time - " + metadataQueries);
 		
-		return okResponse(!collections.getCollections().isEmpty() ? collections : null , true);
+		return okResponse(!collections.getCollections().isEmpty() ||
+				          !collections.getCollectionPaths().isEmpty() ? collections : null , true);
     }
     
     @Override
@@ -278,7 +280,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " getDataObjects" + metadataQueries);
 		
-		return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null, true);
+		return okResponse(!dataObjects.getDataObjects().isEmpty() ||
+				          !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects : null, true);
     }
     
     @Override
@@ -302,7 +305,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " queryDataObjects" + metadataQueries);
 		
-		return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null, true);
+		return okResponse(!dataObjects.getDataObjects().isEmpty() ||
+				          !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects : null, true);
     }
     
     @Override
