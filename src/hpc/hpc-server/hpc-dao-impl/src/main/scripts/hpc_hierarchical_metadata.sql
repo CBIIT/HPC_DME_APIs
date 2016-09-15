@@ -180,14 +180,42 @@ COMMENT ON COLUMN r_coll_hierarchy_meta_main.meta_attr_name IS
 COMMENT ON COLUMN r_coll_hierarchy_meta_main.meta_attr_value IS 
                   'Metadata value: r_meta_main.meta_attr_value';
                   
--- Define a function to check for numeric values.
-CREATE OR REPLACE FUNCTION less_than(text, text) RETURNS BOOLEAN AS $$
+-- Numerical comparison functions based on string input
+CREATE OR REPLACE FUNCTION num_less_than(text, text) RETURNS BOOLEAN AS $$
 DECLARE attribute NUMERIC;
 DECLARE value NUMERIC;
 BEGIN
-    attribute = $1::NUMERIC;
+    attr_value = $1::NUMERIC;
     value = $2::NUMERIC;
-    RETURN attribute < value;
+    RETURN attr_value < value;
+EXCEPTION WHEN others THEN
+    RETURN FALSE;
+END;
+$$
+STRICT
+LANGUAGE plpgsql IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION num_less_or_equal(text, text) RETURNS BOOLEAN AS $$
+DECLARE attribute NUMERIC;
+DECLARE value NUMERIC;
+BEGIN
+    attr_value = $1::NUMERIC;
+    value = $2::NUMERIC;
+    RETURN attr_value <= value;
+EXCEPTION WHEN others THEN
+    RETURN FALSE;
+END;
+$$
+STRICT
+LANGUAGE plpgsql IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION num_greater_or_equal(text, text) RETURNS BOOLEAN AS $$
+DECLARE attr_value NUMERIC;
+DECLARE value NUMERIC;
+BEGIN
+    attr_value = $1::NUMERIC;
+    value = $2::NUMERIC;
+    RETURN attribute >= value;
 EXCEPTION WHEN others THEN
     RETURN FALSE;
 END;
