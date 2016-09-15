@@ -50,6 +50,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String EQUAL_OPERATOR = "EQUAL"; 
 	private static final String NOT_EQUAL_OPERATOR = "NOT_EQUAL"; 
 	private static final String LIKE_OPERATOR = "LIKE"; 
+	private static final String NUM_LESS_THAN_OPERATOR = "NUM_LESS_THAN"; 
+	private static final String NUM_LESS_OR_EQUAL_OPERATOR = "NUM_LESS_OR_EQUAL"; 
+	private static final String NUM_GREATER_OR_EQUAL_OPERATOR = "NUM_GREATER_OR_EQUAL"; 
 			
     // SQL Queries.
 	private static final String GET_COLLECTION_IDS_EQUAL_SQL = 
@@ -64,6 +67,18 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			"select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
 		    "where collection.meta_attr_name = ? and collection.meta_attr_value like ?";
 	
+	private static final String GET_COLLECTION_IDS_NUM_LESS_THAN_SQL = 
+		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+	        "where collection.meta_attr_name = ? and num_less_than(collection.meta_attr_value, ?) = true";
+	
+	private static final String GET_COLLECTION_IDS_NUM_LESS_OR_EQUAL_SQL = 
+		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+	        "where collection.meta_attr_name = ? and num_less_or_equal(collection.meta_attr_value, ?) = true";
+	
+	private static final String GET_COLLECTION_IDS_NUM_GREATER_OR_EQUAL_SQL = 
+		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+	        "where collection.meta_attr_name = ? and num_greater_or_equal(collection.meta_attr_value, ?) = true";
+	
 	private static final String GET_DATA_OBJECT_IDS_EQUAL_SQL = 
 			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
 		    "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value = ?";
@@ -75,6 +90,18 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String GET_DATA_OBJECT_IDS_LIKE_SQL = 
 			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
 		    "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value like ?";
+	
+	private static final String GET_DATA_OBJECT_IDS_NUM_LESS_THAN_SQL = 
+		    "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+	        "where dataObject.meta_attr_name = ? and num_less_than(dataObject.meta_attr_value, ?) = true";
+	
+	private static final String GET_DATA_OBJECT_IDS_NUM_LESS_OR_EQUAL_SQL = 
+		    "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+	        "where dataObject.meta_attr_name = ? and num_less_or_equal(dataObject.meta_attr_value, ?) = true";
+	
+	private static final String GET_DATA_OBJECT_IDS_NUM_GREATER_OR_EQUAL_SQL = 
+		    "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+	        "where dataObject.meta_attr_name = ? and num_greater_or_equal(dataObject.meta_attr_value, ?) = true";
 		   
 	private static final String ENTITY_USER_ACCESS_SQL = 
 			"select access.object_id from public.\"r_objt_access\" access, public.\"r_user_main\" account " +
@@ -122,11 +149,17 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     	dataObjectSQLQueries.put(EQUAL_OPERATOR, GET_DATA_OBJECT_IDS_EQUAL_SQL);
     	dataObjectSQLQueries.put(NOT_EQUAL_OPERATOR, GET_DATA_OBJECT_IDS_NOT_EQUAL_SQL);
     	dataObjectSQLQueries.put(LIKE_OPERATOR, GET_DATA_OBJECT_IDS_LIKE_SQL);
+    	dataObjectSQLQueries.put(NUM_LESS_THAN_OPERATOR, GET_DATA_OBJECT_IDS_NUM_LESS_THAN_SQL);
+    	dataObjectSQLQueries.put(NUM_LESS_OR_EQUAL_OPERATOR, GET_DATA_OBJECT_IDS_NUM_LESS_OR_EQUAL_SQL);
+    	dataObjectSQLQueries.put(NUM_GREATER_OR_EQUAL_OPERATOR, GET_DATA_OBJECT_IDS_NUM_GREATER_OR_EQUAL_SQL);
     	
     	collectionSQLQueries.put(EQUAL_OPERATOR, GET_COLLECTION_IDS_EQUAL_SQL);
     	collectionSQLQueries.put(NOT_EQUAL_OPERATOR, GET_COLLECTION_IDS_NOT_EQUAL_SQL);
     	collectionSQLQueries.put(LIKE_OPERATOR, GET_COLLECTION_IDS_LIKE_SQL);
-    }   
+    	collectionSQLQueries.put(NUM_LESS_THAN_OPERATOR, GET_COLLECTION_IDS_NUM_LESS_THAN_SQL);
+    	collectionSQLQueries.put(NUM_LESS_OR_EQUAL_OPERATOR, GET_COLLECTION_IDS_NUM_LESS_OR_EQUAL_SQL);
+    	collectionSQLQueries.put(NUM_GREATER_OR_EQUAL_OPERATOR, GET_COLLECTION_IDS_NUM_GREATER_OR_EQUAL_SQL);
+    }  
     
     //---------------------------------------------------------------------//
     // Methods
