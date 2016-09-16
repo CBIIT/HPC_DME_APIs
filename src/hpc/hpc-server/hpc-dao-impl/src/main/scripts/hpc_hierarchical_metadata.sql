@@ -182,7 +182,7 @@ COMMENT ON COLUMN r_coll_hierarchy_meta_main.meta_attr_value IS
                   
 -- Numerical comparison functions based on string input
 CREATE OR REPLACE FUNCTION num_less_than(text, text) RETURNS BOOLEAN AS $$
-DECLARE attribute NUMERIC;
+DECLARE attr_value NUMERIC;
 DECLARE value NUMERIC;
 BEGIN
     attr_value = $1::NUMERIC;
@@ -196,7 +196,7 @@ STRICT
 LANGUAGE plpgsql IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION num_less_or_equal(text, text) RETURNS BOOLEAN AS $$
-DECLARE attribute NUMERIC;
+DECLARE attr_value NUMERIC;
 DECLARE value NUMERIC;
 BEGIN
     attr_value = $1::NUMERIC;
@@ -215,7 +215,7 @@ DECLARE value NUMERIC;
 BEGIN
     attr_value = $1::NUMERIC;
     value = $2::NUMERIC;
-    RETURN attribute >= value;
+    RETURN attr_value >= value;
 EXCEPTION WHEN others THEN
     RETURN FALSE;
 END;
