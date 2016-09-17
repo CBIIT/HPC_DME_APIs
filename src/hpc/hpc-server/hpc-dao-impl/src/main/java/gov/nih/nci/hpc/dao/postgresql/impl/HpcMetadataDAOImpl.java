@@ -24,8 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -106,12 +104,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		   
 	private static final String COLLECTION_USER_ACCESS_SQL = 
 			"select distinct collection.object_path from public.\"r_coll_hierarchy_meta_main\" collection " +
-	        "where collection.object_id in (select access.object_id from public.\"r_objt_access access\", " +
+	        "where collection.object_id in (select access.object_id from public.\"r_objt_access\" access, " +
 			"public.\"r_user_main account\" where account.user_name = ? and access.user_id = account.user_id)";
 	
 	private static final String DATA_OBJECT_USER_ACCESS_SQL = 
 			"select distinct dataObject.object_path from public.\"r_data_hierarchy_meta_main\" dataObject " +
-			"where dataObject.object_id in (select access.object_id from public.\"r_objt_access access\", " +
+			"where dataObject.object_id in (select access.object_id from public.\"r_objt_access\" access, " +
 			"public.\"r_user_main account\" where account.user_name = ? and access.user_id = account.user_id)";
 	
 	private static final String GET_COLLECTION_METADATA_SQL = 
@@ -138,10 +136,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	// Maps between metadata query operator to its SQL query
 	private Map<String, String> dataObjectSQLQueries = new HashMap<>();
 	private Map<String, String> collectionSQLQueries = new HashMap<>();
-	
-    // The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -201,8 +195,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		try {
 			 HpcPreparedQuery prepareQuery = prepareQuery(dataObjectSQLQueries, metadataQueries, 
 					                                      DATA_OBJECT_USER_ACCESS_SQL, dataManagementUsername);
-			 logger.error("ERAN: query=" + prepareQuery.sql);
-			 logger.error("ERAN: args=" + prepareQuery.args);
 		     return jdbcTemplate.query(prepareQuery.sql, objectPathRowMapper, prepareQuery.args);
 		     
 		} catch(DataAccessException e) {
