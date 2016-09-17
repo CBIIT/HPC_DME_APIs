@@ -187,7 +187,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		     return jdbcTemplate.query(prepareQuery.sql, objectPathRowMapper, prepareQuery.args);
 		     
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get collection IDs: " + 
+		        throw new HpcException("Failed to get collection Paths: " + 
 		                               e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, e);
 		}		
@@ -204,7 +204,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		     return jdbcTemplate.query(prepareQuery.sql, objectPathRowMapper, prepareQuery.args);
 		     
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get data object IDs: " + 
+		        throw new HpcException("Failed to get data object Paths: " + 
 		                               e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, e);
 		}		
@@ -226,9 +226,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     @Override
     public List<HpcHierarchicalMetadataEntry> getDataObjectMetadata(String path) throws HpcException
     {
-    	logger.error("ERAN: QUERY: " + GET_DATA_OBJECT_METADATA_SQL);
-    	logger.error("ERAN: PATH: " + path);
-    	
 		try {
 		     return jdbcTemplate.query(GET_DATA_OBJECT_METADATA_SQL, hierarchicalMetadataEntryRowMapper, path);
 		     
@@ -249,7 +246,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		@Override
 		public HpcHierarchicalMetadataEntry mapRow(ResultSet rs, int rowNum) throws SQLException 
 		{
-			logger.error("ERAN: RS: " + rs);
 			HpcHierarchicalMetadataEntry hierarchicalMetadataEntry = new HpcHierarchicalMetadataEntry();
 			Long level = rs.getLong("LEVEL");
 			hierarchicalMetadataEntry.setLevel(level != null ? level.intValue() : null);
