@@ -105,14 +105,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	        "where dataObject.meta_attr_name = ? and num_greater_or_equal(dataObject.meta_attr_value, ?) = true";
 		   
 	private static final String COLLECTION_USER_ACCESS_SQL = 
-			"select distinct collection.object_path  from public.\"r_objt_access\" access, " +
-	        "public.\"r_user_main\" account,  public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
-	        "where account.user_name = ? and access.user_id = account.user_id and access.object_id = collection.object_id";
+			"select distinct collection.object_path from public.\"r_coll_hierarchy_meta_main\" collection " +
+	        "where collection.object_id in (select access.object_id from public.\"r_objt_access access\", " +
+			"public.\"r_user_main account\" where account.user_name = ? and access.user_id = account.user_id)";
 	
 	private static final String DATA_OBJECT_USER_ACCESS_SQL = 
-			"select distinct dataObject.object_path  from public.\"r_objt_access\" access, " +
-	        "public.\"r_user_main\" account,  public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
-	        "where account.user_name = ? and access.user_id = account.user_id and access.object_id = dataObject.object_id";
+			"select distinct dataObject.object_path from public.\"r_data_hierarchy_meta_main\" dataObject " +
+			"where dataObject.object_id in (select access.object_id from public.\"r_objt_access access\", " +
+			"public.\"r_user_main account\" where account.user_name = ? and access.user_id = account.user_id)";
 	
 	private static final String GET_COLLECTION_METADATA_SQL = 
 			"select meta_attr_name,  meta_attr_value, level " + 
