@@ -28,30 +28,30 @@ import java.util.List;
 public interface HpcMetadataDAO 
 {    
     /**
-     * Get collection IDs by metadata query. Only collection IDs accessible to the user are returned. 
+     * Get collection Paths by metadata query. Only collection Paths accessible to the user are returned. 
      *
      * @param metadataQueries The metadata entries to query for.
      * @param dataManagementUsername The Data Management user name. 
-     * @return List of collection IDs.
+     * @return List of collection Paths.
      * 
      * @throws HpcException
      */
-    public List<Integer> getCollectionIds(List<HpcMetadataQuery> metadataQueries,
-    		                              String dataManagementUsername) 
-    		                             throws HpcException;
+    public List<String> getCollectionPaths(List<HpcMetadataQuery> metadataQueries,
+    		                               String dataManagementUsername) 
+    		                              throws HpcException;
     
     /**
-     * Get data object IDs by metadata query. Only data object IDs accessible to the user are returned. 
+     * Get data object Paths by metadata query. Only data object Paths accessible to the user are returned. 
      *
      * @param metadataQueries The metadata entries to query for.
      * @param dataManagementUsername The Data Management user name. 
-     * @return List of data object IDs.
+     * @return List of data object Paths.
      * 
      * @throws HpcException
      */
-    public List<Integer> getDataObjectIds(List<HpcMetadataQuery> metadataQueries,
-    		                              String dataManagementUsername) 
-    		                             throws HpcException;
+    public List<String> getDataObjectPaths(List<HpcMetadataQuery> metadataQueries,
+    		                               String dataManagementUsername) 
+    		                              throws HpcException;
     
     /**
      * Get collection hierarchical metadata entries.

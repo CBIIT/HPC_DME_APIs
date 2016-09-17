@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 
 /**
  * <p>
@@ -55,52 +56,52 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String NUM_GREATER_OR_EQUAL_OPERATOR = "NUM_GREATER_OR_EQUAL"; 
 			
     // SQL Queries.
-	private static final String GET_COLLECTION_IDS_EQUAL_SQL = 
-		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+	private static final String GET_COLLECTION_PATHS_EQUAL_SQL = 
+		    "select distinct collection.object_path from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
 	        "where collection.meta_attr_name = ? and collection.meta_attr_value = ?";
 	
-	private static final String GET_COLLECTION_IDS_NOT_EQUAL_SQL = 
-		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+	private static final String GET_COLLECTION_PATHS_NOT_EQUAL_SQL = 
+		    "select distinct collection.object_path from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
 	        "where collection.meta_attr_name = ? and collection.meta_attr_value <> ?";
 	
-	private static final String GET_COLLECTION_IDS_LIKE_SQL = 
-			"select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+	private static final String GET_COLLECTION_PATHS_LIKE_SQL = 
+			"select distinct collection.object_path from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
 		    "where collection.meta_attr_name = ? and collection.meta_attr_value like ?";
 	
-	private static final String GET_COLLECTION_IDS_NUM_LESS_THAN_SQL = 
-		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+	private static final String GET_COLLECTION_PATHS_NUM_LESS_THAN_SQL = 
+		    "select distinct collection.object_path from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
 	        "where collection.meta_attr_name = ? and num_less_than(collection.meta_attr_value, ?) = true";
 	
-	private static final String GET_COLLECTION_IDS_NUM_LESS_OR_EQUAL_SQL = 
-		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+	private static final String GET_COLLECTION_PATHS_NUM_LESS_OR_EQUAL_SQL = 
+		    "select distinct collection.object_path from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
 	        "where collection.meta_attr_name = ? and num_less_or_equal(collection.meta_attr_value, ?) = true";
 	
-	private static final String GET_COLLECTION_IDS_NUM_GREATER_OR_EQUAL_SQL = 
-		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+	private static final String GET_COLLECTION_PATHS_NUM_GREATER_OR_EQUAL_SQL = 
+		    "select distinct collection.object_path from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
 	        "where collection.meta_attr_name = ? and num_greater_or_equal(collection.meta_attr_value, ?) = true";
 	
-	private static final String GET_DATA_OBJECT_IDS_EQUAL_SQL = 
-			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+	private static final String GET_DATA_OBJECT_PATHS_EQUAL_SQL = 
+			"select distinct dataObject.object_path from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
 		    "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value = ?";
 	
-	private static final String GET_DATA_OBJECT_IDS_NOT_EQUAL_SQL = 
-			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+	private static final String GET_DATA_OBJECT_PATHS_NOT_EQUAL_SQL = 
+			"select distinct dataObject.object_path from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
 		    "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value <> ?";
 	
-	private static final String GET_DATA_OBJECT_IDS_LIKE_SQL = 
-			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+	private static final String GET_DATA_OBJECT_PATHS_LIKE_SQL = 
+			"select distinct dataObject.object_path from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
 		    "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value like ?";
 	
-	private static final String GET_DATA_OBJECT_IDS_NUM_LESS_THAN_SQL = 
-		    "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+	private static final String GET_DATA_OBJECT_PATHS_NUM_LESS_THAN_SQL = 
+		    "select distinct dataObject.object_path from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
 	        "where dataObject.meta_attr_name = ? and num_less_than(dataObject.meta_attr_value, ?) = true";
 	
-	private static final String GET_DATA_OBJECT_IDS_NUM_LESS_OR_EQUAL_SQL = 
-		    "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+	private static final String GET_DATA_OBJECT_PATHS_NUM_LESS_OR_EQUAL_SQL = 
+		    "select distinct dataObject.object_path from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
 	        "where dataObject.meta_attr_name = ? and num_less_or_equal(dataObject.meta_attr_value, ?) = true";
 	
-	private static final String GET_DATA_OBJECT_IDS_NUM_GREATER_OR_EQUAL_SQL = 
-		    "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+	private static final String GET_DATA_OBJECT_PATHS_NUM_GREATER_OR_EQUAL_SQL = 
+		    "select distinct dataObject.object_path from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
 	        "where dataObject.meta_attr_name = ? and num_greater_or_equal(dataObject.meta_attr_value, ?) = true";
 		   
 	private static final String ENTITY_USER_ACCESS_SQL = 
@@ -124,7 +125,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private JdbcTemplate jdbcTemplate = null;
 	
 	// Row mappers.
-	private HpcObjectIdRowMapper objectIdRowMapper = new HpcObjectIdRowMapper();
+	private SingleColumnRowMapper<String> objectPathRowMapper = new SingleColumnRowMapper<>();
 	HpcHierarchicalMetadataEntryRowMapper hierarchicalMetadataEntryRowMapper = 
 			                              new HpcHierarchicalMetadataEntryRowMapper();
 	
@@ -146,19 +147,19 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      */
     private HpcMetadataDAOImpl()
     {
-    	dataObjectSQLQueries.put(EQUAL_OPERATOR, GET_DATA_OBJECT_IDS_EQUAL_SQL);
-    	dataObjectSQLQueries.put(NOT_EQUAL_OPERATOR, GET_DATA_OBJECT_IDS_NOT_EQUAL_SQL);
-    	dataObjectSQLQueries.put(LIKE_OPERATOR, GET_DATA_OBJECT_IDS_LIKE_SQL);
-    	dataObjectSQLQueries.put(NUM_LESS_THAN_OPERATOR, GET_DATA_OBJECT_IDS_NUM_LESS_THAN_SQL);
-    	dataObjectSQLQueries.put(NUM_LESS_OR_EQUAL_OPERATOR, GET_DATA_OBJECT_IDS_NUM_LESS_OR_EQUAL_SQL);
-    	dataObjectSQLQueries.put(NUM_GREATER_OR_EQUAL_OPERATOR, GET_DATA_OBJECT_IDS_NUM_GREATER_OR_EQUAL_SQL);
+    	dataObjectSQLQueries.put(EQUAL_OPERATOR, GET_DATA_OBJECT_PATHS_EQUAL_SQL);
+    	dataObjectSQLQueries.put(NOT_EQUAL_OPERATOR, GET_DATA_OBJECT_PATHS_NOT_EQUAL_SQL);
+    	dataObjectSQLQueries.put(LIKE_OPERATOR, GET_DATA_OBJECT_PATHS_LIKE_SQL);
+    	dataObjectSQLQueries.put(NUM_LESS_THAN_OPERATOR, GET_DATA_OBJECT_PATHS_NUM_LESS_THAN_SQL);
+    	dataObjectSQLQueries.put(NUM_LESS_OR_EQUAL_OPERATOR, GET_DATA_OBJECT_PATHS_NUM_LESS_OR_EQUAL_SQL);
+    	dataObjectSQLQueries.put(NUM_GREATER_OR_EQUAL_OPERATOR, GET_DATA_OBJECT_PATHS_NUM_GREATER_OR_EQUAL_SQL);
     	
-    	collectionSQLQueries.put(EQUAL_OPERATOR, GET_COLLECTION_IDS_EQUAL_SQL);
-    	collectionSQLQueries.put(NOT_EQUAL_OPERATOR, GET_COLLECTION_IDS_NOT_EQUAL_SQL);
-    	collectionSQLQueries.put(LIKE_OPERATOR, GET_COLLECTION_IDS_LIKE_SQL);
-    	collectionSQLQueries.put(NUM_LESS_THAN_OPERATOR, GET_COLLECTION_IDS_NUM_LESS_THAN_SQL);
-    	collectionSQLQueries.put(NUM_LESS_OR_EQUAL_OPERATOR, GET_COLLECTION_IDS_NUM_LESS_OR_EQUAL_SQL);
-    	collectionSQLQueries.put(NUM_GREATER_OR_EQUAL_OPERATOR, GET_COLLECTION_IDS_NUM_GREATER_OR_EQUAL_SQL);
+    	collectionSQLQueries.put(EQUAL_OPERATOR, GET_COLLECTION_PATHS_EQUAL_SQL);
+    	collectionSQLQueries.put(NOT_EQUAL_OPERATOR, GET_COLLECTION_PATHS_NOT_EQUAL_SQL);
+    	collectionSQLQueries.put(LIKE_OPERATOR, GET_COLLECTION_PATHS_LIKE_SQL);
+    	collectionSQLQueries.put(NUM_LESS_THAN_OPERATOR, GET_COLLECTION_PATHS_NUM_LESS_THAN_SQL);
+    	collectionSQLQueries.put(NUM_LESS_OR_EQUAL_OPERATOR, GET_COLLECTION_PATHS_NUM_LESS_OR_EQUAL_SQL);
+    	collectionSQLQueries.put(NUM_GREATER_OR_EQUAL_OPERATOR, GET_COLLECTION_PATHS_NUM_GREATER_OR_EQUAL_SQL);
     }  
     
     //---------------------------------------------------------------------//
@@ -170,14 +171,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     //---------------------------------------------------------------------//  
     
 	@Override
-    public List<Integer> getCollectionIds(List<HpcMetadataQuery> metadataQueries,
-    		                              String dataManagementUsername) 
-                                         throws HpcException
+    public List<String> getCollectionPaths(List<HpcMetadataQuery> metadataQueries,
+    		                               String dataManagementUsername) 
+                                          throws HpcException
     {
 		try {
 			 HpcPreparedQuery prepareQuery = prepareQuery(collectionSQLQueries, metadataQueries,
 					                                      dataManagementUsername);
-		     return jdbcTemplate.query(prepareQuery.sql, objectIdRowMapper, prepareQuery.args);
+		     return jdbcTemplate.query(prepareQuery.sql, objectPathRowMapper, prepareQuery.args);
 		     
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get collection IDs: " + 
@@ -187,14 +188,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     }
 
 	@Override 
-	public List<Integer> getDataObjectIds(List<HpcMetadataQuery> metadataQueries,
-			                              String dataManagementUsername) 
-                                         throws HpcException
+	public List<String> getDataObjectPaths(List<HpcMetadataQuery> metadataQueries,
+			                               String dataManagementUsername) 
+                                          throws HpcException
     {
 		try {
 			 HpcPreparedQuery prepareQuery = prepareQuery(dataObjectSQLQueries, metadataQueries, 
 					                                      dataManagementUsername);
-		     return jdbcTemplate.query(prepareQuery.sql, objectIdRowMapper, prepareQuery.args);
+		     return jdbcTemplate.query(prepareQuery.sql, objectPathRowMapper, prepareQuery.args);
 		     
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get data object IDs: " + 
@@ -236,17 +237,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     // Helper Methods
     //---------------------------------------------------------------------//  
 	
-	// Map Object ID (from Long to Integer)
-	private class HpcObjectIdRowMapper implements RowMapper<Integer>
-	{
-		@Override
-		public Integer mapRow(ResultSet rs, int rowNum) throws SQLException 
-		{
-			Long objectId = rs.getLong("OBJECT_ID");
-			return objectId != null ? objectId.intValue() : null;
-		}
-	}
-	
+	// Row Mapper
 	private class HpcHierarchicalMetadataEntryRowMapper implements RowMapper<HpcHierarchicalMetadataEntry>
 	{
 		@Override
