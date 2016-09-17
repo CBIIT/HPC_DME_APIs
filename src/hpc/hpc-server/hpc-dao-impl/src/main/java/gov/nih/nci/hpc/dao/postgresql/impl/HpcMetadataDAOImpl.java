@@ -106,7 +106,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		   
 	private static final String COLLECTION_USER_ACCESS_SQL = 
 			"select distinct collection.object_path  from public.\"r_objt_access\" access, " +
-	        "public.\"r_user_main\" account,  public.\"r_collection_hierarchy_meta_main_ovrd\" collection " +
+	        "public.\"r_user_main\" account,  public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
 	        "where account.user_name = ? and access.user_id = account.user_id and access.object_id = collection.object_id";
 	
 	private static final String DATA_OBJECT_USER_ACCESS_SQL = 
