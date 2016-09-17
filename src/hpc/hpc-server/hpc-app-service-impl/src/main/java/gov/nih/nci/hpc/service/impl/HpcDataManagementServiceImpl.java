@@ -776,6 +776,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
            // Use the hierarchical metadata views to perform the search.
        		String dataManagementUsername = 
          		   HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+       		logger.error("ERAN: BEFORE QUERY");
            return getDataObjectsByPaths(metadataDAO.getDataObjectPaths(metadataQueries, dataManagementUsername));
         		
         } else {
@@ -1347,6 +1348,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
      */
     private List<HpcDataObject> getDataObjectsByPaths(List<String> paths) throws HpcException
     {
+    	logger.error("ERAN: AFTER QUERY: " + paths);
     	Object authenticatedToken = getAuthenticatedToken();
     	List<HpcDataObject> dataObjects = new ArrayList<>();
     	for(String path : paths) {
