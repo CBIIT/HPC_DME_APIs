@@ -201,6 +201,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		try {
 			 HpcPreparedQuery prepareQuery = prepareQuery(dataObjectSQLQueries, metadataQueries, 
 					                                      DATA_OBJECT_USER_ACCESS_SQL, dataManagementUsername);
+			 logger.error("ERAN: query=" + prepareQuery.sql);
+			 logger.error("ERAN: args=" + prepareQuery.args);
 		     return jdbcTemplate.query(prepareQuery.sql, objectPathRowMapper, prepareQuery.args);
 		     
 		} catch(DataAccessException e) {
