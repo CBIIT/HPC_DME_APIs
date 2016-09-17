@@ -64,7 +64,7 @@ WHERE data_hierarchy_metamap.meta_id = meta_main.meta_id
 GROUP BY data_hierarchy_metamap.object_id, meta_main.meta_attr_name 
 ORDER BY data_hierarchy_metamap.object_id;
 CREATE UNIQUE INDEX r_data_hierarchy_meta_main_ovrd_unique ON r_data_hierarchy_meta_main_ovrd (object_id, meta_id, level);
-CREATE INDEX r_data_hierarchy_meta_main_ovrd_query ON r_data_hierarchy_meta_main_ovrd (meta_attr_name, meta_attr_value);
+CREATE INDEX r_data_hierarchy_meta_main_ovrd_metadata_query ON r_data_hierarchy_meta_main_ovrd (meta_attr_name, meta_attr_value);
 COMMENT ON COLUMN r_data_hierarchy_meta_main_ovrd.object_id IS 
                   'Data object Hierarchy ID: r_data_main.data_id';
 COMMENT ON COLUMN r_data_hierarchy_metamap.object_path IS 
@@ -88,6 +88,8 @@ FROM r_meta_main meta_main, r_data_hierarchy_metamap data_hierarchy_metamap
 WHERE data_hierarchy_metamap.meta_id = meta_main.meta_id 
 ORDER BY data_hierarchy_metamap.object_id;
 CREATE UNIQUE INDEX r_data_hierarchy_meta_main_unique ON r_data_hierarchy_meta_main (object_id, meta_id, level);
+CREATE INDEX r_data_hierarchy_meta_main_path_query ON r_data_hierarchy_meta_main (object_path);
+CREATE INDEX r_data_hierarchy_meta_main_id_query ON r_data_hierarchy_meta_main (object_id);
 COMMENT ON COLUMN r_data_hierarchy_meta_main.object_id IS 
                   'Data object Hierarchy ID: r_data_main.data_id';
 COMMENT ON COLUMN r_data_hierarchy_metamap.object_path IS 
@@ -141,7 +143,7 @@ WHERE coll_hierarchy_metamap.meta_id = meta_main.meta_id
 GROUP BY coll_hierarchy_metamap.object_id, meta_main.meta_attr_name 
 ORDER BY coll_hierarchy_metamap.object_id;
 CREATE UNIQUE INDEX r_coll_hierarchy_meta_main_ovrd_unique ON r_coll_hierarchy_meta_main_ovrd (object_id, meta_id, level);
-CREATE INDEX r_coll_hierarchy_meta_main_ovrd_query ON r_coll_hierarchy_meta_main_ovrd (meta_attr_name, meta_attr_value);
+CREATE INDEX r_coll_hierarchy_meta_main_ovrd_metadata_query ON r_coll_hierarchy_meta_main_ovrd (meta_attr_name, meta_attr_value);
 COMMENT ON COLUMN r_coll_hierarchy_meta_main_ovrd.object_id IS 
                   'Collection Hierarchy ID: r_coll_main.coll_id';
 COMMENT ON COLUMN r_coll_hierarchy_meta_main_ovrd.object_path IS 
@@ -165,6 +167,8 @@ FROM r_meta_main meta_main, r_coll_hierarchy_metamap coll_hierarchy_metamap
 WHERE coll_hierarchy_metamap.meta_id = meta_main.meta_id 
 ORDER BY coll_hierarchy_metamap.object_id;
 CREATE UNIQUE INDEX r_coll_hierarchy_meta_main_unique ON r_coll_hierarchy_meta_main (object_id, meta_id, level);
+CREATE INDEX r_coll_hierarchy_meta_main_path_query ON r_coll_hierarchy_meta_main (object_path);
+CREATE INDEX r_coll_hierarchy_meta_main_id_query ON r_coll_hierarchy_meta_main (object_id);
 COMMENT ON COLUMN r_coll_hierarchy_meta_main.object_id IS 
                   'Collection Hierarchy ID: r_coll_main.coll_id';
 COMMENT ON COLUMN r_coll_hierarchy_meta_main.object_path IS 
