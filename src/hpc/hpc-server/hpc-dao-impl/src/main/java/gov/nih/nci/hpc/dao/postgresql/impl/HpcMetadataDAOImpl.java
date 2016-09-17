@@ -104,9 +104,15 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		    "select distinct dataObject.object_path from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
 	        "where dataObject.meta_attr_name = ? and num_greater_or_equal(dataObject.meta_attr_value, ?) = true";
 		   
-	private static final String ENTITY_USER_ACCESS_SQL = 
-			"select access.object_id from public.\"r_objt_access\" access, public.\"r_user_main\" account " +
-	        "where account.user_name = ? and access.user_id = account.user_id";
+	private static final String COLLECTION_USER_ACCESS_SQL = 
+			"select distinct collection.object_path  from public.\"r_objt_access\" access, " +
+	        "public.\"r_user_main\" account,  public.\"r_collection_hierarchy_meta_main_ovrd\" collection " +
+	        "where account.user_name = ? and access.user_id = account.user_id and access.object_id = collection.object_id";
+	
+	private static final String DATA_OBJECT_USER_ACCESS_SQL = 
+			"select distinct dataObject.object_path  from public.\"r_objt_access\" access, " +
+	        "public.\"r_user_main\" account,  public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+	        "where account.user_name = ? and access.user_id = account.user_id and access.object_id = dataObject.object_id";
 	
 	private static final String GET_COLLECTION_METADATA_SQL = 
 			"select meta_attr_name,  meta_attr_value, level " + 
@@ -177,7 +183,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     {
 		try {
 			 HpcPreparedQuery prepareQuery = prepareQuery(collectionSQLQueries, metadataQueries,
-					                                      dataManagementUsername);
+					                                      COLLECTION_USER_ACCESS_SQL, dataManagementUsername);
 		     return jdbcTemplate.query(prepareQuery.sql, objectPathRowMapper, prepareQuery.args);
 		     
 		} catch(DataAccessException e) {
@@ -194,7 +200,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     {
 		try {
 			 HpcPreparedQuery prepareQuery = prepareQuery(dataObjectSQLQueries, metadataQueries, 
-					                                      dataManagementUsername);
+					                                      DATA_OBJECT_USER_ACCESS_SQL, dataManagementUsername);
 		     return jdbcTemplate.query(prepareQuery.sql, objectPathRowMapper, prepareQuery.args);
 		     
 		} catch(DataAccessException e) {
@@ -268,12 +274,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      *
      * @param sqlQueries The map from metadata query operator to SQL queries.
      * @param metadataQueries The metadata queries.
+     * @param userAccessQuery The user access query to append.
      * @param dataManagementUsername The data management user name.
      * 
      * @throws HpcException
      */
     private HpcPreparedQuery prepareQuery(Map<String, String> sqlQueries, 
     		                              List<HpcMetadataQuery> metadataQueries,
+    		                              String userAccessQuery,
     		                              String dataManagementUsername) 
     		                             throws HpcException
     {
@@ -299,7 +307,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     	
     	// Add a query to only include entities the user can access.
     	sqlQueryBuilder.append(" INTERSECT ");
-    	sqlQueryBuilder.append(ENTITY_USER_ACCESS_SQL);
+    	sqlQueryBuilder.append(userAccessQuery);
     	args.add(dataManagementUsername);
     	
     	HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
