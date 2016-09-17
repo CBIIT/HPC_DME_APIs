@@ -391,20 +391,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public HpcCollection getCollection(Object authenticatedToken, int id) 
-    		                          throws HpcException
-    {
-    	try {
-             return toHpcCollection(irodsConnection.getCollectionAO(authenticatedToken).findById(id));
-             
-		} catch(Exception e) {
-	            throw new HpcException("Failed to get Collection: " + 
-                                        e.getMessage(),
-                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} 
-    }
-    
-    @Override
     public List<HpcCollection> getCollections(Object authenticatedToken,
     		                                  List<HpcMetadataQuery> metadataQueries) 
     		                                 throws HpcException

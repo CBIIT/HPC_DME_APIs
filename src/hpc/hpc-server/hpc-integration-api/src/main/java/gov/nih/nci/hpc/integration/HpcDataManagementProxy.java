@@ -216,18 +216,6 @@ public interface HpcDataManagementProxy
     		                          throws HpcException;
     
     /**
-     * Get collection by its ID.
-     *
-     * @param authenticatedToken An authenticated token.
-     * @param id The collection's ID.
-     * @return HpcCollection.
-     * 
-     * @throws HpcException
-     */
-    public HpcCollection getCollection(Object authenticatedToken, int id) 
-    		                          throws HpcException;
-    
-    /**
      * Get collections by metadata query.
      *
      * @param authenticatedToken An authenticated token.

@@ -732,7 +732,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	   // Use the hierarchical metadata views to perform the search.
        	   String dataManagementUsername = 
        			  HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
-       	   return getCollectionsByIds(metadataDAO.getCollectionIds(metadataQueries, dataManagementUsername));
+       	   return getCollectionsByPaths(metadataDAO.getCollectionPaths(metadataQueries, dataManagementUsername));
        		
        	} else {
     	        return dataManagementProxy.getCollections(getAuthenticatedToken(),
@@ -776,7 +776,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
            // Use the hierarchical metadata views to perform the search.
        		String dataManagementUsername = 
          		   HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
-           return getDataObjectsByIds(metadataDAO.getDataObjectIds(metadataQueries, dataManagementUsername));
+           return getDataObjectsByPaths(metadataDAO.getDataObjectPaths(metadataQueries, dataManagementUsername));
         		
         } else {
     	        return dataManagementProxy.getDataObjects(getAuthenticatedToken(),
@@ -1320,16 +1320,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     /**
      * Get collections by IDs.
      *
-     * @param ids The list of collection IDs.
+     * @param paths The list of collection Paths.
      * @return List<HpcCollection>
      * @throws HpcException
      */
-    private List<HpcCollection> getCollectionsByIds(List<Integer> ids) throws HpcException
+    private List<HpcCollection> getCollectionsByPaths(List<String> paths) throws HpcException
     {
     	Object authenticatedToken = getAuthenticatedToken();
     	List<HpcCollection> collections = new ArrayList<>();
-    	for(Integer id : ids) {
-    		HpcCollection collection = dataManagementProxy.getCollection(authenticatedToken, id);
+    	for(String path : paths) {
+    		HpcCollection collection = dataManagementProxy.getCollection(authenticatedToken, path);
     		if(collection != null) {
     		   collections.add(collection);
     		}
@@ -1339,18 +1339,18 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     /**
-     * Get data objects by IDs.
+     * Get data objects by Paths.
      *
-     * @param ids The list of data object IDs.
+     * @param paths The list of data object Paths.
      * @return List<HpcCollection>
      * @throws HpcException
      */
-    private List<HpcDataObject> getDataObjectsByIds(List<Integer> ids) throws HpcException
+    private List<HpcDataObject> getDataObjectsByPaths(List<String> paths) throws HpcException
     {
     	Object authenticatedToken = getAuthenticatedToken();
     	List<HpcDataObject> dataObjects = new ArrayList<>();
-    	for(Integer id : ids) {
-    		HpcDataObject dataObject = dataManagementProxy.getDataObject(authenticatedToken, id);
+    	for(String path : paths) {
+    		HpcDataObject dataObject = dataManagementProxy.getDataObject(authenticatedToken, path);
     		if(dataObject != null) {
     		   dataObjects.add(dataObject);
     		}
