@@ -184,21 +184,23 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Construct the DTO.
     	HpcCollectionListDTO collectionsDTO = new HpcCollectionListDTO();
-    	for(HpcCollection collection : dataManagementService.getCollections(metadataQueries)) {
-    		// Get the metadata for this collection.
-    		try {
-    			 if(detailedResponse) {
+    	if(detailedResponse) {
+    	   for(HpcCollection collection : dataManagementService.getCollections(metadataQueries)) {
+    		   // Get the metadata for this collection.
+    		   try {
     			    // Combine collection attributes and metadata into a single DTO.
     			    collectionsDTO.getCollections().add(getCollection(collection));
-    			 } else {
-    				     collectionsDTO.getCollectionPaths().add(collection.getAbsolutePath());
-    			 }
     			 
-    		} catch(HpcException e) {
-    			    // Failed to get metadata.
-    			    logger.error("Failed to fetch metadata for "+ collection.getAbsolutePath(), e);
-    			    continue;
-    		}
+	    	   } catch(HpcException e) {
+	    			   // Failed to get metadata.
+	    			   logger.error("Failed to fetch metadata for "+ collection.getAbsolutePath(), e);
+	    			   continue;
+	    	   }
+    	   }
+    	} else {
+    		    for(String collectionPath : dataManagementService.getCollectionPaths(metadataQueries)) {
+		            collectionsDTO.getCollectionPaths().add(collectionPath);
+    		    }
     	}
     	
     	return collectionsDTO;
@@ -312,24 +314,27 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Construct the DTO.
     	HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
-    	for(HpcDataObject dataObject : dataManagementService.getDataObjects(metadataQueries)) {
-    		try {
-    			 if(detailedResponse) {
+    	if(detailedResponse) {
+    	   for(HpcDataObject dataObject : dataManagementService.getDataObjects(metadataQueries)) {
+    		   try {
     				// Combine data object attributes and metadata into a single DTO.
         		    dataObjectsDTO.getDataObjects().add(getDataObject(dataObject));
-    			 } else {
-    				     dataObjectsDTO.getDataObjectPaths().add(dataObject.getAbsolutePath());
-    			 }
 
-    		} catch(HpcException e) {
-    			    // Failed to get metadata for data object.
-    			    logger.error("Failed to fetch metadata for "+ dataObject.getAbsolutePath(), e);
-    			    continue;
-    		}
+    		   } catch(HpcException e) {
+    			       // Failed to get metadata for data object.
+    			       logger.error("Failed to fetch metadata for "+ dataObject.getAbsolutePath(), e);
+    			       continue;
+    		   }
+    	   }
+    	} else {
+    		    for(String dataObjectPath : dataManagementService.getDataObjectPaths(metadataQueries)) {
+			        dataObjectsDTO.getDataObjectPaths().add(dataObjectPath);
+    		    }
     	}
     	
     	return dataObjectsDTO;
     }
+    
     @Override
     public HpcDataObjectDownloadResponseDTO 
               downloadDataObject(String path,

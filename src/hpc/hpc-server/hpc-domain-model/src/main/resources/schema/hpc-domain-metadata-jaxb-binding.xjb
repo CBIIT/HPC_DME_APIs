@@ -49,6 +49,12 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcMetadataQuery']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcCompoundMetadataQueryOperator']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator"/>
+        </jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcCompoundMetadataQuery']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery"/>
+		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcMetadataValidationRule']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule"/>
 		</jxb:bindings>
