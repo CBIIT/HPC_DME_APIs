@@ -39,7 +39,7 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
  * @version $Id$
  */
 
-public class HpcMetadataDAOImpl implements HpcMetadataDAO
+public class HpcMetadataDAOImpl implements HpcMetadataDAO 
 { 
     //---------------------------------------------------------------------//
     // Constants
@@ -111,10 +111,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			"public.\"r_user_main\" account where account.user_name = ? and access.user_id = account.user_id";
 	
 	private static final String GET_COLLECTION_PATHS_SQL = 
-			"select object_path from public.\"r_coll_hierarchy_meta_main\" where object_id in ";
+			"select distinct object_path from public.\"r_coll_hierarchy_meta_main\" where object_id in ";
 	
 	private static final String GET_DATA_OBJECT_PATHS_SQL = 
-			"select object_path from public.\"r_data_hierarchy_meta_main\" where object_id in ";
+			"select distinct object_path from public.\"r_data_hierarchy_meta_main\" where object_id in ";
 	
 	private static final String GET_COLLECTION_METADATA_SQL = 
 			"select meta_attr_name,  meta_attr_value, level " + 
