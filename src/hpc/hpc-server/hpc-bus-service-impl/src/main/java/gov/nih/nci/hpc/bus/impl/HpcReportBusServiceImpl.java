@@ -95,23 +95,21 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
 			throw new HpcException("Invalid toDate format. Valid format is mm/dd/yyyy",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 
-		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC)
-				&& (criteriaDTO.getDoc() == null || criteriaDTO.getDoc().isEmpty()))
-			throw new HpcException("DOC value is missing for USAGE_SUMMARY_BY_DOC report",
+//		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC)
+//				&& (criteriaDTO.getDoc() == null || criteriaDTO.getDoc().isEmpty()))
+//			throw new HpcException("DOC value is missing for USAGE_SUMMARY_BY_DOC report",
+//					HpcErrorType.INVALID_REQUEST_INPUT);
+
+		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE) && (criteriaDTO.getDoc().isEmpty() || criteriaDTO.getFromDate() == null || criteriaDTO.getToDate() == null))
+			throw new HpcException("Date range is missing for USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE report",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 
-		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE) && (criteriaDTO.getDoc() == null
-				|| criteriaDTO.getDoc().isEmpty() || criteriaDTO.getFromDate() == null || criteriaDTO.getToDate() == null))
-			throw new HpcException("DOC value or date range is missing for USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE report",
-					HpcErrorType.INVALID_REQUEST_INPUT);
+//		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER)
+//				&& (criteriaDTO.getUser() == null || criteriaDTO.getUser().isEmpty()))
+//			throw new HpcException("UserId value is missing for USAGE_SUMMARY_BY_USER report",
+//					HpcErrorType.INVALID_REQUEST_INPUT);
 
-		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER)
-				&& (criteriaDTO.getUser() == null || criteriaDTO.getUser().isEmpty()))
-			throw new HpcException("UserId value is missing for USAGE_SUMMARY_BY_USER report",
-					HpcErrorType.INVALID_REQUEST_INPUT);
-
-		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE) && (criteriaDTO.getUser() == null
-				|| criteriaDTO.getUser().isEmpty() || criteriaDTO.getFromDate() == null || criteriaDTO.getToDate() == null))
+		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE) && (criteriaDTO.getFromDate() == null || criteriaDTO.getToDate() == null))
 			throw new HpcException(
 					"UserId value or date range is missing for USAGE_SUMMARY_BY_USER_BY_DATE_RANGE report",
 					HpcErrorType.INVALID_REQUEST_INPUT);
