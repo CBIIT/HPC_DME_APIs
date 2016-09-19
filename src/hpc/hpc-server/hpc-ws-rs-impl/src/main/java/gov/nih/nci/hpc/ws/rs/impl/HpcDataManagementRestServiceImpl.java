@@ -12,6 +12,8 @@ package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
@@ -196,6 +198,39 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		
 		return okResponse(!collections.getCollections().isEmpty() ||
 				          !collections.getCollectionPaths().isEmpty() ? collections : null , true);
+    }
+    
+    @Override
+    public Response queryCollections(HpcCompoundMetadataQuery compoundMetadataQuery,
+    		                         Boolean detailedResponse)
+    {
+    	HpcMetadataQuery q1 = new HpcMetadataQuery();
+    	q1.setAttribute("ATTR 1");
+    	q1.setOperator("EQUAL");
+    	q1.setValue("VAL 1");
+    	HpcMetadataQuery q2 = new HpcMetadataQuery();
+    	q1.setAttribute("ATTR 2");
+    	q1.setOperator("LIKE");
+    	q1.setValue("VAL 2");
+    	
+    	HpcCompoundMetadataQuery cq1 = new HpcCompoundMetadataQuery();
+    	cq1.getQueries().add(q1);
+    	cq1.getQueries().add(q2);
+    	cq1.setOperator(HpcCompoundMetadataQueryOperator.ALL);
+    	
+    	HpcCompoundMetadataQuery cq2 = new HpcCompoundMetadataQuery();
+    	cq2.getQueries().add(q1);
+    	cq2.getQueries().add(q2);
+    	cq2.setOperator(HpcCompoundMetadataQueryOperator.ANY);
+    	
+    	HpcCompoundMetadataQuery cq = new HpcCompoundMetadataQuery();
+    	cq.getQueries().add(q1);
+    	cq.getQueries().add(q2);
+    	cq.getCompoundQueries().add(cq1);
+    	cq.getCompoundQueries().add(cq2);
+    	cq2.setOperator(HpcCompoundMetadataQueryOperator.ALL);
+    	
+    	return okResponse(cq, true);
     }
     
     @Override

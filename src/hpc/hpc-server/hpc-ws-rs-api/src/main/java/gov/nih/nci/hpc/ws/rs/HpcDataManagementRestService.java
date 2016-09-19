@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
@@ -91,15 +92,29 @@ public interface HpcDataManagementRestService
     /**
      * POST Collections query.
      *
-     * @param metadataQueries A list of metadata entries to query for.
+     * @param metadataQueries A list of metadata entries to query for. 
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @return Response The REST service response.
      */
 	@POST
-	@Path("/collection/query")
+	@Path("/collection/query/simple")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response queryCollections(List<HpcMetadataQuery> metadataQueries,
+			                         @QueryParam("detailedResponse") Boolean detailedResponse);
+	
+    /**
+     * POST Collections query.
+     *
+     * @param compoundMetadataQuery A compund metadata query.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @return Response The REST service response.
+     */
+	@POST
+	@Path("/collection/query/compound")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response queryCollections(HpcCompoundMetadataQuery compoundMetadataQuery,
 			                         @QueryParam("detailedResponse") Boolean detailedResponse);
 
     /**

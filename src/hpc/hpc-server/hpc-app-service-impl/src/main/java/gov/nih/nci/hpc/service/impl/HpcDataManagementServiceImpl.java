@@ -741,6 +741,27 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
+    public List<String> getCollectionPaths(
+    		               List<HpcMetadataQuery> metadataQueries) throws HpcException
+    {
+       	if(!isValidMetadataQueries(metadataQueries) || metadataQueries.isEmpty()) {
+           throw new HpcException("Invalid or empty metadata queries", 
+        			              HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+       	
+       	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
+       	   // Use the hierarchical metadata views to perform the search.
+       	   String dataManagementUsername = 
+       			  HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+       	   return metadataDAO.getCollectionPaths(metadataQueries, dataManagementUsername);
+       		
+       	} else {
+    	        return toCollectionPaths(dataManagementProxy.getCollections(getAuthenticatedToken(),
+    			                                                            metadataQueries));
+       	}
+    }
+    
+    @Override
     public HpcMetadataEntries getCollectionMetadataEntries(String path) throws HpcException
     {
     	// Construct HpcMetadataEntries based on the hierarchichal metadata policy.
@@ -781,6 +802,27 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
         } else {
     	        return dataManagementProxy.getDataObjects(getAuthenticatedToken(),
     			                                          metadataQueries);
+        }
+    }
+    
+    @Override
+    public List<String> getDataObjectPaths(
+    		               List<HpcMetadataQuery> metadataQueries) throws HpcException
+    {
+       	if(!isValidMetadataQueries(metadataQueries) || metadataQueries.isEmpty()) {
+           throw new HpcException("Invalid or empty metadata queries", 
+        			              HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+       	
+       	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
+           // Use the hierarchical metadata views to perform the search.
+       	   String dataManagementUsername = 
+         	      HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+           return metadataDAO.getDataObjectPaths(metadataQueries, dataManagementUsername);
+        		
+        } else {
+    	        return toDataObjectPaths(dataManagementProxy.getDataObjects(getAuthenticatedToken(),
+    			                                                            metadataQueries));
         }
     }
     
@@ -1339,6 +1381,22 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     /**
+     * Convert a list of HpcCollection to a list of collection paths.
+     *
+     * @param collections The list of collections.
+     * @return List<String>
+     */
+    private List<String> toCollectionPaths(List<HpcCollection> collections)
+    {
+    	List<String> collectionPaths = new ArrayList<>();
+    	for(HpcCollection collection : collections) {
+    		collectionPaths.add(collection.getAbsolutePath());
+    	}
+    	
+    	return collectionPaths;
+    }
+    
+    /**
      * Get data objects by Paths.
      *
      * @param paths The list of data object Paths.
@@ -1357,6 +1415,22 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	return dataObjects;
+    }
+    
+    /**
+     * Convert a list of data-objects to data-object paths.
+     *
+     * @param dataObjects The list of data object.
+     * @return List<String>
+     */
+    private List<String> toDataObjectPaths(List<HpcDataObject> dataObjects) 
+    {
+    	List<String> dataObjectPaths = new ArrayList<>();
+    	for(HpcDataObject dataObject : dataObjects) {
+    		dataObjectPaths.add(dataObject.getAbsolutePath());
+    	}
+    	
+    	return dataObjectPaths;
     }
     
     /**

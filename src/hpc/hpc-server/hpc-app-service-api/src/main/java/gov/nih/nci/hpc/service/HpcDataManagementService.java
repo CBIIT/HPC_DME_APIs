@@ -292,6 +292,17 @@ public interface HpcDataManagementService
     		    List<HpcMetadataQuery> metadataQueries) throws HpcException;
     
     /**
+     * Get collection paths by metadata query.
+     *
+     * @param metadataQueries The metadata queries.
+     * @return Collection path list.
+     * 
+     * @throws HpcException
+     */
+    public List<String> getCollectionPaths(
+    		               List<HpcMetadataQuery> metadataQueries) throws HpcException;
+    
+    /**
      * Get metadata of a collection.
      *
      * @param path The collection's path.
@@ -321,6 +332,17 @@ public interface HpcDataManagementService
      */
     public List<HpcDataObject> getDataObjects(
     		    List<HpcMetadataQuery> metadataQueries) throws HpcException;
+    
+    /**
+     * Get data object paths by metadata query.
+     *
+     * @param metadataQueries The metadata queries.
+     * @return Data Object path list.
+     * 
+     * @throws HpcException
+     */
+    public List<String> getDataObjectPaths(
+    		               List<HpcMetadataQuery> metadataQueries) throws HpcException;
     
     /**
      * Get data objects that have their data transfer in-progress.
