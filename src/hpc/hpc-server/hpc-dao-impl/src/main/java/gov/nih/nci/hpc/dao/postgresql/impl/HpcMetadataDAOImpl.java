@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcHierarchicalMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
@@ -24,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -123,6 +126,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String GET_DATA_OBJECT_METADATA_SQL = 
 			"select meta_attr_name, meta_attr_value, level " + 
 	        "from public.\"r_data_hierarchy_meta_main\" where object_path = ? ";
+	
+	private static final String REFRESH_VIEW_SQL = "refresh materialized view concurrently";
 			 
     //---------------------------------------------------------------------//
     // Instance members
@@ -140,6 +145,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	// Maps between metadata query operator to its SQL query
 	private Map<String, String> dataObjectSQLQueries = new HashMap<>();
 	private Map<String, String> collectionSQLQueries = new HashMap<>();
+	
+    // The logger instance.
+	private final Logger logger = 
+			             LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -234,6 +243,30 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		                               e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, e);
 		}	
+    }
+    
+	@Override
+	public void refreshViews() throws HpcException
+    {
+		try {
+			logger.error("ERAN 1");
+		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_coll_hierarchy_metamap");
+		     logger.error("ERAN 2");
+		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_coll_hierarchy_meta_main_ovrd");
+		     logger.error("ERAN 3");
+		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_coll_hierarchy_meta_main");
+		     logger.error("ERAN 4");
+		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_data_hierarchy_metamap");
+		     logger.error("ERAN 5");
+		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_data_hierarchy_meta_main_ovrd");
+		     logger.error("ERAN 6");
+		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_data_hierarchy_meta_main");
+		     logger.error("ERAN 7");
+		     
+		} catch(DataAccessException e) {
+			    throw new HpcException("Failed to refresh materialized views: " + e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, e);
+		}
     }
 	
     //---------------------------------------------------------------------//
