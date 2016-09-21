@@ -197,7 +197,7 @@ public class HpcScheduledTasks
      * Refresh Materialized Views.
      * 
      */    
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 900000)
     private void refreshViewsTask()
     {
         logger.info("Starting Refreshing Materialized Views Task...");
