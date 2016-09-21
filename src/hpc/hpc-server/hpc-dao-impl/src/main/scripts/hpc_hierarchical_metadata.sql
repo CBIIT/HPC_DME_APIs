@@ -229,10 +229,12 @@ LANGUAGE plpgsql IMMUTABLE;
 
 
 -- Refresh views
--- REFRESH MATERIALIZED VIEW CONCURRENTLY r_coll_hierarchy_meta_main;
--- REFRESH MATERIALIZED VIEW CONCURRENTLY r_coll_hierarchy_meta_main_ovrd;
 -- REFRESH MATERIALIZED VIEW CONCURRENTLY r_coll_hierarchy_metamap;
--- REFRESH MATERIALIZED VIEW CONCURRENTLY r_data_hierarchy_meta_main;
--- REFRESH MATERIALIZED VIEW CONCURRENTLY r_data_hierarchy_meta_main_ovrd;
+-- REFRESH MATERIALIZED VIEW CONCURRENTLY r_coll_hierarchy_meta_main_ovrd;
+-- REFRESH MATERIALIZED VIEW CONCURRENTLY r_coll_hierarchy_meta_main;
 -- REFRESH MATERIALIZED VIEW CONCURRENTLY r_data_hierarchy_metamap;
+-- REFRESH MATERIALIZED VIEW CONCURRENTLY r_data_hierarchy_meta_main_ovrd;
+-- REFRESH MATERIALIZED VIEW CONCURRENTLY r_data_hierarchy_meta_main;
+
+
 

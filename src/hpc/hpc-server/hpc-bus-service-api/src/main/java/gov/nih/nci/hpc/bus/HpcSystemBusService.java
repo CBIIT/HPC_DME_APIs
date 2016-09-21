@@ -94,6 +94,13 @@ public interface HpcSystemBusService
      * @throws HpcException
      */
 	public void generateWeeklyUserReportEvent() throws HpcException;
+	
+    /**
+     * Refresh the materialized views.
+     *
+     * @throws HpcException
+     */
+	public void refreshViews() throws HpcException;
 }
 
  

@@ -1001,6 +1001,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	return metadataMap;
     }
     
+    @Override
+    public void refreshViews() throws HpcException
+    {
+    	metadataDAO.refreshViews();
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  

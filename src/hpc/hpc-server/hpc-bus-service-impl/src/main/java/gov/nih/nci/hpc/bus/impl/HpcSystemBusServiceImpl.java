@@ -370,6 +370,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		eventService.generateReportsEvents(summaryReportByDateUsers, criteria);
     	}
 	}
+    
+    @Override
+    public void refreshViews()
+    {
+    	
+    }
 
     //---------------------------------------------------------------------//
     // Helper Methods
