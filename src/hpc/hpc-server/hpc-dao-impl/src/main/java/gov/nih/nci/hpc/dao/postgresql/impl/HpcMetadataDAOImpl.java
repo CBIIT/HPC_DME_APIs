@@ -249,19 +249,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	public void refreshViews() throws HpcException
     {
 		try {
-			logger.error("ERAN 1");
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_coll_hierarchy_metamap");
-		     logger.error("ERAN 2");
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_coll_hierarchy_meta_main_ovrd");
-		     logger.error("ERAN 3");
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_coll_hierarchy_meta_main");
-		     logger.error("ERAN 4");
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_data_hierarchy_metamap");
-		     logger.error("ERAN 5");
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_data_hierarchy_meta_main_ovrd");
-		     logger.error("ERAN 6");
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_data_hierarchy_meta_main");
-		     logger.error("ERAN 7");
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to refresh materialized views: " + e.getMessage(),
