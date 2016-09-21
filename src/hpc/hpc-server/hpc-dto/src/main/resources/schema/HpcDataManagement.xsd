@@ -36,6 +36,8 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:element name="HpcCompoundMetadataQueryDTO" type="hpc-domain-metadata:HpcCompoundMetadataQuery" />
+	
 	<xsd:element name="HpcCollectionListDTO">
 		<xsd:complexType>
 			<xsd:sequence>

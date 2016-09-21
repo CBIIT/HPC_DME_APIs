@@ -72,6 +72,13 @@ public interface HpcMetadataDAO
      * @throws HpcException
      */
     public List<HpcHierarchicalMetadataEntry> getDataObjectMetadata(String path) throws HpcException;
+    
+    /**
+     * Refresh all materialized views.
+     *
+     * @throws HpcException
+     */
+    public void refreshViews() throws HpcException;
 }
 
  
