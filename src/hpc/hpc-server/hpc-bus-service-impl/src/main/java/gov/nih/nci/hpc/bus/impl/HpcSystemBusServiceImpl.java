@@ -287,6 +287,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     @Override
 	public void generateSummaryReportEvent() throws HpcException
 	{
+    	// Use system account to perform this service.
+        // TODO: Make this AOP. 
+    	securityService.setSystemRequestInvoker();
+    	
     	List<String> summaryReportUsers = notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_REPORT);
     	if(summaryReportUsers != null && summaryReportUsers.size() > 0)
     	{
@@ -299,6 +303,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     @Override
 	public void generateWeeklySummaryReportEvent() throws HpcException
 	{
+    	// Use system account to perform this service.
+        // TODO: Make this AOP. 
+    	securityService.setSystemRequestInvoker();
+    	
     	List<String> summaryReportByDateUsers = notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_BY_WEEKLY_REPORT);
     	if(summaryReportByDateUsers != null && summaryReportByDateUsers.size() > 0)
     	{
@@ -316,6 +324,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     @Override
 	public void generateDocReportEvent() throws HpcException
 	{
+    	// Use system account to perform this service.
+        // TODO: Make this AOP. 
+    	securityService.setSystemRequestInvoker();
+    	
     	List<String> summaryReportUsers = notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_BY_DOC_REPORT);
     	if(summaryReportUsers != null && summaryReportUsers.size() > 0)
     	{
@@ -328,6 +340,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     @Override
 	public void generateWeeklyDocReportEvent() throws HpcException
 	{
+    	// Use system account to perform this service.
+        // TODO: Make this AOP. 
+    	securityService.setSystemRequestInvoker();
+    	
     	List<String> summaryReportByDateUsers = notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_BY_DOC_BY_WEEKLY_REPORT);
     	if(summaryReportByDateUsers != null && summaryReportByDateUsers.size() > 0)
     	{
@@ -345,6 +361,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     @Override
 	public void generateUserReportEvent() throws HpcException
 	{
+    	// Use system account to perform this service.
+        // TODO: Make this AOP. 
+    	securityService.setSystemRequestInvoker();
+    	
     	List<String> summaryReportUsers = notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_BY_USER_REPORT);
     	if(summaryReportUsers != null && summaryReportUsers.size() > 0)
     	{
@@ -357,6 +377,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     @Override
 	public void generateWeeklyUserReportEvent() throws HpcException
 	{
+    	// Use system account to perform this service.
+        // TODO: Make this AOP. 
+    	securityService.setSystemRequestInvoker();
+    	
     	List<String> summaryReportByDateUsers = notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT);
     	if(summaryReportByDateUsers != null && summaryReportByDateUsers.size() > 0)
     	{
@@ -372,9 +396,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	}
     
     @Override
-    public void refreshViews()
+    public void refreshViews() throws HpcException
     {
+    	// Use system account to perform this service.
+        // TODO: Make this AOP. 
+    	securityService.setSystemRequestInvoker();
     	
+    	dataManagementService.refreshViews();
     }
 
     //---------------------------------------------------------------------//
