@@ -482,6 +482,13 @@ public interface HpcDataManagementService
      */
     public Object getProxyManagementAccount(HpcDataManagementAccount managementAccount) throws HpcException;
     
+    /**
+     * Refresh all materialized views.
+     *
+     * @throws HpcException
+     */
+    public void refreshViews() throws HpcException;
+    
 }
 
  

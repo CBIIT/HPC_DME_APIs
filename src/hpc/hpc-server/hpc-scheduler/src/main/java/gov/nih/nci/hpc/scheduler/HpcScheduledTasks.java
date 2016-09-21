@@ -193,6 +193,27 @@ public class HpcScheduledTasks
         }
     }
     
+    /**
+     * Refresh Materialized Views.
+     * 
+     */    
+    @Scheduled(cron = "${hpc.scheduler.cron.refreshMaterializedViews.delay}")
+    private void refreshViewsTask()
+    {
+        logger.info("Starting Refreshing Materialized Views Task...");
+
+        try { 
+		     systemBusService.refreshViews();
+		     
+        } catch(HpcException e) {
+        	    logger.error("Update Data Transfer Upload Status task failed", e);
+        	    
+        } finally {
+        	       dataManagementBusService.closeConnection();
+        	       logger.info("Completed Refreshing Materialized Views Task...");	
+        }
+    }
+    
 }
 
  
