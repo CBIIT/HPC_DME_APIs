@@ -202,11 +202,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQuery)
     {
-    	List<String> paths = new ArrayList<>();
-    	paths.add("/project-A/dataset-B");
-    	paths.add("/project-1/dataset-2");
+    	HpcCollectionListDTO collections = new HpcCollectionListDTO();
+    	collections.getCollectionPaths().add("/project-A/dataset-B");
+    	collections.getCollectionPaths().add("/project-1/dataset-2");
     	
-    	return okResponse(paths, true);
+    	return okResponse(collections, true);
     }
     
     @Override
