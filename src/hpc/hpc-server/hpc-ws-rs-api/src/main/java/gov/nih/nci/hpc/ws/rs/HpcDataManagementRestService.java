@@ -10,9 +10,9 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
-import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
@@ -114,8 +114,7 @@ public interface HpcDataManagementRestService
 	@Path("/collection/query/compound")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response queryCollections(HpcCompoundMetadataQuery compoundMetadataQuery,
-			                         @QueryParam("detailedResponse") Boolean detailedResponse);
+	public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQuery);
 
     /**
      * PUT Data object registration request.
