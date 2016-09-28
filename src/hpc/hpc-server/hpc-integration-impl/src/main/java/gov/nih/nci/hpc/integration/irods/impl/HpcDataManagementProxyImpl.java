@@ -1146,6 +1146,11 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		        
 		}    
     }
+
+	@Override
+	public String getBasePath() {
+		return irodsConnection.getBasePath();
+	}
 }
 
  

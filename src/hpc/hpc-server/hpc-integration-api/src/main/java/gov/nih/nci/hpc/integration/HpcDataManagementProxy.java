@@ -413,6 +413,15 @@ public interface HpcDataManagementProxy
      * @return The absolute path.
      */
     public String getAbsolutePath(String path); 
+
+    /**
+     * Get Base path 
+     *
+     * @param path The path to build the absolute path to the middleware (iRODS).
+     * @return The absolute path.
+     */
+    public String getBasePath(); 
+
 }
 
  
