@@ -75,7 +75,8 @@
           <value>collectionPaths</value>
           <value>dataObjects</value>
           <value>dataObjectPaths</value>
-          <value>metadataEntries</value>
+          <value>parentMetadataEntries</value>
+          <value>selfMetadataEntries</value>
           <value>userPermissionResponses</value>
           <value>groupPermissionResponses</value>
           <value>entityPermissionResponses</value>
