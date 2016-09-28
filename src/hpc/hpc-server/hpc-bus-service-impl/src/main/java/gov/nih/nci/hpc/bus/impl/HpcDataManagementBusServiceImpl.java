@@ -184,6 +184,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Construct the DTO.
     	HpcCollectionListDTO collectionsDTO = new HpcCollectionListDTO();
+    	
     	if(detailedResponse) {
     	   for(HpcCollection collection : dataManagementService.getCollections(metadataQueries)) {
     		   // Get the metadata for this collection.
@@ -198,12 +199,25 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    	   }
     	   }
     	} else {
+    		String basePath = dataManagementService.getBasePath();
     		    for(String collectionPath : dataManagementService.getCollectionPaths(metadataQueries)) {
-		            collectionsDTO.getCollectionPaths().add(collectionPath);
+		            collectionsDTO.getCollectionPaths().add(getRelativePath(collectionPath, basePath));
     		    }
     	}
     	
     	return collectionsDTO;
+    }
+    
+    private String getRelativePath(String absolutePath, String basePath)
+    {
+    	if(absolutePath == null)
+    		return absolutePath;
+    	
+    	if(absolutePath.startsWith(basePath))
+    		return absolutePath.substring(basePath.length());
+    	else
+    		return absolutePath;
+    	
     }
     
     @Override
@@ -314,6 +328,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Construct the DTO.
     	HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
+    	
     	if(detailedResponse) {
     	   for(HpcDataObject dataObject : dataManagementService.getDataObjects(metadataQueries)) {
     		   try {
@@ -327,8 +342,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		   }
     	   }
     	} else {
+    			String basePath = dataManagementService.getBasePath();
     		    for(String dataObjectPath : dataManagementService.getDataObjectPaths(metadataQueries)) {
-			        dataObjectsDTO.getDataObjectPaths().add(dataObjectPath);
+			        dataObjectsDTO.getDataObjectPaths().add(getRelativePath(dataObjectPath, basePath));
     		    }
     	}
     	
