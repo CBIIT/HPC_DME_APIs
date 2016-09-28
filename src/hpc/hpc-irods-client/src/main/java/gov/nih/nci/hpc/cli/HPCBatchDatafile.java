@@ -50,11 +50,11 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 @Component
-public class HPCDatafiles extends HPCBatchClient {
+public class HPCBatchDatafile extends HPCBatchClient {
 	@Autowired
 	private HpcConfigProperties configProperties;
 
-	public HPCDatafiles() {
+	public HPCBatchDatafile() {
 		super();
 	}
 
@@ -75,7 +75,7 @@ public class HPCDatafiles extends HPCBatchClient {
 		}
 		try {
 			String authToken =  HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL);
-			success = new HPCDataFileProcessor(fileName, threadCount, hpcServerURL+ "/" + hpcDataService,
+			success = new HPCBatchDataFileProcessor(fileName, threadCount, hpcServerURL+ "/" + hpcDataService,
 					hpcCertPath, hpcCertPassword, null, null, logFile, logRecordsFile, authToken).processData();
 		} catch (Exception e) {
 			System.out.println("Cannot read the input file");
