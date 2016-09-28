@@ -37,9 +37,9 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 @Component
-public class HPCCollections extends HPCBatchClient {
+public class HPCBatchCollection extends HPCBatchClient {
 	
-	public HPCCollections() {
+	public HPCBatchCollection() {
 		super();
 	}
 

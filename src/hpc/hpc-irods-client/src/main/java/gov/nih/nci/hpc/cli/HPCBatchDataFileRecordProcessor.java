@@ -35,7 +35,7 @@ import gov.nih.nci.hpc.cli.util.HpcLogWriter;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
-public class HPCDataFileRecordProcessor implements RecordProcessor{
+public class HPCBatchDataFileRecordProcessor implements RecordProcessor{
 
 	@Override
 	public Record processRecord(Record record) throws RecordProcessingException {
