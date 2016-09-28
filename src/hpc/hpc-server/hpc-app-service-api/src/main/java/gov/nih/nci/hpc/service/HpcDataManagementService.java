@@ -483,12 +483,20 @@ public interface HpcDataManagementService
     public Object getProxyManagementAccount(HpcDataManagementAccount managementAccount) throws HpcException;
     
     /**
+     * Get Base path 
+     *
+     * @param path The path to build the absolute path to the middleware (iRODS).
+     * @return The absolute path.
+     */
+    public String getBasePath(); 
+    
+    
+    /**
      * Refresh all materialized views.
      *
      * @throws HpcException
      */
     public void refreshViews() throws HpcException;
-    
 }
 
  
