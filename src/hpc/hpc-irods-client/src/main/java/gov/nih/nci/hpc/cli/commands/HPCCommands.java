@@ -8,8 +8,10 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
 
-import gov.nih.nci.hpc.cli.HPCCollections;
-import gov.nih.nci.hpc.cli.HPCDatafiles;
+import gov.nih.nci.hpc.cli.HPCBatchCollection;
+import gov.nih.nci.hpc.cli.HPCBatchDatafile;
+import gov.nih.nci.hpc.cli.HPCCmdCollection;
+import gov.nih.nci.hpc.cli.HPCCmdDatafile;
 import gov.nih.nci.hpc.cli.HPCPermissions;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
 
@@ -20,81 +22,62 @@ public class HPCCommands implements CommandMarker {
 	@Autowired
 	private HpcConfigProperties configProperties;
 	@Autowired
-	private HPCCollections putCollections;
+	private HPCBatchCollection putCollections;
 	@Autowired
-	private HPCDatafiles putDatafiles;
+	private HPCCmdCollection getCollections;
+	@Autowired
+	private HPCCmdDatafile getDatafiles;
+	@Autowired
+	private HPCBatchDatafile putDatafiles;
 	@Autowired
 	private HPCPermissions putPermissions;
 
 	protected final Logger LOG = Logger.getLogger(getClass().getName());
 
-/*
-	@CliAvailabilityIndicator({ "hpcput" })
-	public boolean isHpcputAvailable() {
-		if (hpcinitCommandExecuted) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	@CliAvailabilityIndicator({ "hpcmeta" })
-	public boolean isHpcmetaAvailable() {
-		if (hpcinitCommandExecuted) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-*/
-	/*
-	 * @CliCommand(value = "hpcget", help = "transfer file from irods ") public
-	 * String hpcget(
-	 * 
-	 * @CliOption(key = { "file" }, mandatory = true, help =
-	 * "Filename to transfer") final String filename,
-	 * 
-	 * @CliOption(key = { "location" }, mandatory = false, help =
-	 * "Location of the file") final String location) { return "file = [" +
-	 * filename + "] Location = [" + location + "]"; }
-	 */
-	/*
-	@CliCommand(value = "hpcput", help = "Create/Add data to HPC Archive")
-	public String hpcput(
+	@CliCommand(value = "getCollection", help = "Get Collection from HPC Archive. Usage: getCollection --path <collection path> --outputfile <output file full path> --format <json|csv>")
+	public String getCollection(@CliOption(key = {
+			"path" }, mandatory = true, help = "Please provide collection path. Usage: getCollection --path <collection path> --outputfile <output file full path> --format <json|csv>") final String path,
 			@CliOption(key = {
-					"source" }, mandatory = false, help = "Source location for transfer") final String source,
-			// @CliOption(key = { "collection"}, mandatory = true, help =
-			// "Location/Collection of the file") final String collection,
-			@CliOption(key = { "metadata" }, mandatory = true, help = "Metadata filename") final String metadata) {
-		HPCDataObject hpcDataObject = new HPCDataObject(source, metadata);
-		irodsClient.setHPCDataObject(hpcDataObject);
-		try {
-			irodsClient.setHPCAccount();
-		} catch (NumberFormatException e) {
-			// Handle this
-			e.printStackTrace();
-		} catch (JargonException e) {
-			// Handle this
-			e.printStackTrace();
-		}
-		return irodsClient.processDataObject();
+			"outputfile" }, mandatory = false, help = "Please provide outputfile path. Usage: getCollection --path <collection path> --outputfile <output file full path> --format <json|csv>") final String outputfile,
+			@CliOption(key = {
+			"format" }, mandatory = false, help = "Please provide outputfile path. Usage: getCollection --format <collection path> --outputfile <output file full path> --format <json|csv>") final String format) {
+		return getCollections.process("getCollection", path, outputfile, format, null);
+	}
+	 	
+	@CliCommand(value = "getCollections", help = "Get Collections from HPC Archive. Usage: getCollections --criteria <metadata criteria> --outputfile <output file full path> --format <json|csv> --detail <yes|no>")
+	public String getCollections(@CliOption(key = {
+			"criteria" }, mandatory = true, help = "Please provide metadata criteria. Usage: getCollections --criteria <metadata criteria> --outputfile <output file full path> --format <json|csv> --detail <yes|no>") final String criteria,
+			@CliOption(key = {
+			"outputfile" }, mandatory = false, help = "Please provide outputfile path. Usage: getCollection --criteria <metadata criteria> --outputfile <output file full path> --format <json|csv> --detail <yes|no>") final String outputfile,
+			@CliOption(key = {
+			"format" }, mandatory = false, help = "Please provide outputfile path. Usage: getCollection --format <collection path> --outputfile <output file full path> --format <json|csv>") final String format,
+			@CliOption(key = {
+			"detail" }, mandatory = false, help = "Please provide metadata criteria. Usage: getCollections --criteria <metadata criteria>  --outputfile <output file full path> --format <json|csv> --detail <yes|no>") final String detail) {
+		return getCollections.process("getCollections", criteria, outputfile, format, detail);
 	}
 
-	@CliCommand(value = "hpcinit", help = "Initialize HPC configuration ")
-	public String hpcinit(
-			@CliOption(key = { "username" }, mandatory = true, help = "Username for storage") final String username,
-			@CliOption(key = { "password" }, mandatory = true, help = "Password for storage") final String password) {
-		hpcinitCommandExecuted = true;
-
-		configProperties.setProperty("irods.username", username);
-		String token = DatatypeConverter.printBase64Binary(password.getBytes());
-		// ConfigurationDecoder.decode(password);
-		configProperties.setProperty("irods.password", token);
-		configProperties.save();
-
-		return "HPC User  [" + configProperties.getProperty("irods.username") + "] initialized ";
+	@CliCommand(value = "getDatafile", help = "Get Collection from HPC Archive. Usage: getDatafile --path <data file path> --outputfile <output file full path> --format <json|csv>")
+	public String getDatafile(@CliOption(key = {
+			"path" }, mandatory = true, help = "Please provide collection path. Usage: getDatafile --path <data file path> --outputfile <output file full path> --format <json|csv>") final String path,
+			@CliOption(key = {
+			"outputfile" }, mandatory = false, help = "Please provide outputfile path. Usage: getDatafile --path <data file path> --outputfile <output file full path> --format <json|csv>") final String outputfile,
+			@CliOption(key = {
+			"format" }, mandatory = false, help = "Please provide outputfile path. Usage: getDatafile --format <data file path> --outputfile <output file full path> --format <json|csv>") final String format) {
+		return getDatafiles.process("getDatafile", path, outputfile, format, null);
 	}
-	*/
+
+	@CliCommand(value = "getDatafiles", help = "Get Data files from HPC Archive. Usage: getDatafiles --criteria <metadata criteria> --outputfile <output file full path> --format <json|csv> --detail <yes|no>")
+	public String getDatafiles(@CliOption(key = {
+			"criteria" }, mandatory = true, help = "Please provide metadata criteria. Usage: getDatafiles --criteria <metadata criteria> --outputfile <output file full path> --format <json|csv> --detail <yes|no>") final String criteria,
+			@CliOption(key = {
+			"outputfile" }, mandatory = false, help = "Please provide outputfile path. Usage: getDatafiles --criteria <metadata criteria> --outputfile <output file full path> --format <json|csv> --detail <yes|no>") final String outputfile,
+			@CliOption(key = {
+			"format" }, mandatory = false, help = "Please provide outputfile path. Usage: getDatafiles --format <collection path> --outputfile <output file full path> --format <json|csv>") final String format,
+			@CliOption(key = {
+			"detail" }, mandatory = false, help = "Please provide metadata criteria. Usage: getDatafiles --criteria <metadata criteria>  --outputfile <output file full path> --format <json|csv> --detail <yes|no>") final String detail) {
+		return getDatafiles.process("getDatafiles", criteria, outputfile, format, detail);
+	}
+
 	@CliCommand(value = "putCollections", help = "Batch upload Collections to HPC Archive. Usage: putCollections --source <file path>")
 	public String putCollections(@CliOption(key = {
 			"source" }, mandatory = true, help = "Please provide file location for collections. Usage: putCollections --source <file path>") final String source) {
@@ -112,20 +95,4 @@ public class HPCCommands implements CommandMarker {
 			"source" }, mandatory = true, help = "Please provide file location for daatafiles. Usage: putDatafiles --source <file path>") final String source) {
 		return putDatafiles.process(source);
 	}
-	/*
-	 * @CliCommand(value = "hpc init", help = "Initialize HPC configuration")
-	 * public String einit(
-	 * 
-	 * @CliOption(key = { "message" }, mandatory = true, help =
-	 * "Initialize HPC configuration") final MessageType message){ return
-	 * "Initialize HPC configuration " + message; }
-	 * 
-	 * enum MessageType { Type1("type1"), Type2("type2"), Type3("type3");
-	 * 
-	 * private String type;
-	 * 
-	 * private MessageType(String type){ this.type = type; }
-	 * 
-	 * public String getType(){ return type; } }
-	 */
 }

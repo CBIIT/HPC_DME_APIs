@@ -27,7 +27,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 
-public class HPCDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
+public class HPCBatchDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
 
 	Map<String, Integer> headersMap;
 	private String basePath;
@@ -39,7 +39,7 @@ public class HPCDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
 	private String logFile;
 	private String errorRecordsFile;
 
-	public HPCDataFileRecordMapper(Class recordClass, Map<String, Integer> headersMap, String basePath,
+	public HPCBatchDataFileRecordMapper(Class recordClass, Map<String, Integer> headersMap, String basePath,
 			String hpcCertPath, String hpcCertPassword, String userId, String password, String authToken, String logFile, String errorRecordsFile) {
 		super(recordClass);
 		this.headersMap = headersMap;

@@ -39,7 +39,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
-public class HPCDataFileThread implements Runnable {
+public class HPCBatchDataFileThread implements Runnable {
 	private Thread t;
 	private String threadName;
 	Map<String, Integer> headersMap;
@@ -53,7 +53,7 @@ public class HPCDataFileThread implements Runnable {
 	String userId;
 	String password;
 
-	HPCDataFileThread(String name, Map<String, Integer> headersMap, int recordId, CSVRecord record,
+	HPCBatchDataFileThread(String name, Map<String, Integer> headersMap, int recordId, CSVRecord record,
 			String basePath, String fileLogWriter, String csvFilePrinter, String hpcCertPath, String hpcCertPassword,
 			String userId, String password) {
 		threadName = name;

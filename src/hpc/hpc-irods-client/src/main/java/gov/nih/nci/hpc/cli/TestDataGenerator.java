@@ -14,7 +14,7 @@ public class TestDataGenerator {
 	private static final String DATASET_PART2 = ",,konkapv,FNLCR,FNLCR,2/15/2010,FNLCR,PHI Not Present,PII Not Present,Not Encrypted,Not Compressed,CCR,The dataset is missing BAM file.,FastQ,FlowCell ID 1,Run_ID 1,2/10/2010,Illumina-MiSeq,Exome,Library ID 1,Illumina TrueSeq,Illumina TrueSeq,Illumina TrueSeq,Raw ,125bp";
 
 	private static final String DATAFILE_PART1 = "/FNL_SF_Archive/ProjectX1/";
-	private static final String DATAFILE_PART_SEQUENCE_1 = "Dataset1";
+	private static final String DATAFILE_PART_SEQUENCE_1 = "Dataset2";
 	private static final String DATAFILE_PART_SEQUENCE_2 = "/";
 	private static final String DATAFILE_PART_SEQUENCE_3 = "";
 	private static final String DATAFILE_PART_SEQUENCE_4 = "data file description";
@@ -24,7 +24,7 @@ public class TestDataGenerator {
 
 	}
 
-	private void generateInputFile(String arg, String filePath, String type, String start) {
+	private void generateInputFile(String recCount, String filePath, String type, String start) {
 		try {
 
 			String content = "This is the content to write into file";
@@ -36,7 +36,7 @@ public class TestDataGenerator {
 				file.createNewFile();
 			}
 
-			int count = Integer.parseInt(arg);
+			int count = Integer.parseInt(recCount);
 			int startIndex = Integer.parseInt(start);
 			FileWriter fw = new FileWriter(file.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);

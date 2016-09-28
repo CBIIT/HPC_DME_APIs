@@ -38,7 +38,7 @@ import org.easybatch.tools.reporting.JobReportMerger;
 import gov.nih.nci.hpc.cli.domain.HPCDataObject;
 import gov.nih.nci.hpc.cli.util.HpcBatchException;
 
-public class HPCDataFileProcessor {
+public class HPCBatchDataFileProcessor {
 
 	String inputFileName;
 	int threadPoolSize;
@@ -51,7 +51,7 @@ public class HPCDataFileProcessor {
 	private String errorRecordsFile;
 	private String logFile;
 
-	public HPCDataFileProcessor(String inputFileName, int threadPoolSize, String basePath, String hpcCertPath, 
+	public HPCBatchDataFileProcessor(String inputFileName, int threadPoolSize, String basePath, String hpcCertPath, 
 			String hpcCertPassword, String userId, String password, String logFile, String errorRecordsFile, String authToken) {
 		this.inputFileName = inputFileName;
 		this.threadPoolSize = threadPoolSize;
@@ -96,7 +96,7 @@ public class HPCDataFileProcessor {
 		// and dispatch them to worker jobs
 		Job masterJob = JobBuilder.aNewJob().named("master-job").reader(new ApacheCommonCsvRecordReader(csvFileParser))
 				//.filter(new HeaderRecordFilter()).mapper(new HPCDataFileRecordMapper(HPCDataObject.class, headersMap, basePath, hpcCertPath, hpcCertPassword, userId, password, authToken))
-				.mapper(new HPCDataFileRecordMapper(HPCDataObject.class, headersMap, basePath, hpcCertPath, hpcCertPassword, userId, password, authToken, logFile, errorRecordsFile))
+				.mapper(new HPCBatchDataFileRecordMapper(HPCDataObject.class, headersMap, basePath, hpcCertPath, hpcCertPassword, userId, password, authToken, logFile, errorRecordsFile))
 				.dispatcher(roundRobinRecordDispatcher)
 				.jobListener(new PoisonRecordBroadcaster<>(queueList))
 				.build();
@@ -174,7 +174,7 @@ public class HPCDataFileProcessor {
 //		return JobBuilder.aNewJob().named(jobName).silentMode(true).reader(new BlockingQueueRecordReader(queue))
 //				.filter(new PoisonRecordFilter()).processor(new HPCDataFileRecordProcessor()).build();
 		return JobBuilder.aNewJob().named(jobName).silentMode(true).reader(new BlockingQueueRecordReader(queue))
-				.filter(new PoisonRecordFilter()).processor(new HPCDataFileRecordProcessor()).build();
+				.filter(new PoisonRecordFilter()).processor(new HPCBatchDataFileRecordProcessor()).build();
 
 	}
 }
