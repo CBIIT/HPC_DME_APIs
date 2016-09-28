@@ -1002,6 +1002,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
+    public String getBasePath()
+    {
+    	return dataManagementProxy.getBasePath();
+    }
+
+    @Override
     public void refreshViews() throws HpcException
     {
     	metadataDAO.refreshViews();
