@@ -11,23 +11,22 @@
 # Usage: runme [no arguments]
 
 #import common functions
-source ../../../utils/functions
-source ../../utils/search-functions
+source $HPC_DM_TEST/utils/functions
+source $HPC_DM_TEST/test-search/utils/search-functions
 
-#Check if the register_project function called in makeme was successful.
-check_registration
+#Check if the collection registration function called in makeme was successful.
+#check_registration
 
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
-SERVER=`cat ../../../utils/server`
 
-search_by_metadata collection input.json
+search_by_metadata collection input.json dice_user_sys_admin
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 echo $HTTP_CODE
 
 ATTRIBUTE="name"
-VALUE="dxtest-project-name"
+VALUE="dice test project 1"
 
 #Make sure the response does not include the project named "dxtest-project-name".
 RESPONSE_GROUPS=`cat $RESPONSE_MSG | tr "{" "\n"`
@@ -35,7 +34,7 @@ PROJECT_GROUPS=`echo "$RESPONSE_GROUPS" | grep "$ATTRIBUTE"`
 PROJECT_NAMES=`get_json_value "$PROJECT_GROUPS" value`
 
 PROJECT_FOUND="FALSE"
-for project in $PROJECT_NAMES; do
+for project in "$PROJECT_NAMES"; do
     if [[ $project == *"$VALUE"*  ]]
     then
         PROJECT_FOUND="TRUE"
@@ -43,7 +42,7 @@ for project in $PROJECT_NAMES; do
     fi
 done 
 
-if [ "$PROJECT_FOUND" == "TRUE" ] 
+if [ "$PROJECT_FOUND" == "FALSE" ] 
 then
-    echo "ERROR: PROJECT \"dxtest-project-name\" IS PART OF THE RESULTS."  1>&2
+    echo "ERROR: PROJECT \"$VALUE\" IS NOT PART OF THE RESULTS."  1>&2
 fi
