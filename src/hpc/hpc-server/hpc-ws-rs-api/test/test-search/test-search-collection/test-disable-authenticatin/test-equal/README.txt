@@ -13,5 +13,11 @@
 @ddblock_end copyright
 ******************************/
 
-Register the project before searching. 
-Search for a project using the "NOT_EQUAL" comparator. Should return the HTTP code 200, and the "dxtest-project-name" project should be part of the result.
+The project is already registered under the path:
+/FNL_SF_Archive/dice_project_1
+
+And it has the attributes defined in: project1_metadata.json
+
+Search for a project using the "EQUAL" comparator. Should return the HTTP code 200
+
+This test should run when LDAP authentication is turned off

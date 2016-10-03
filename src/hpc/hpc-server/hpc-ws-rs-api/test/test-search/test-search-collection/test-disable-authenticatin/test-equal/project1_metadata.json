@@ -1,0 +1,48 @@
+{
+    "metadataEntries": [
+        {
+         "attribute": "name",
+         "value": "dice test project 1"
+        },
+        {
+         "attribute": "collection_type",
+         "value": "Project"
+        },
+        {
+         "attribute": "description",
+         "value": "dice test project 1 desc"
+        },
+        {
+         "attribute": "internal_project_id",
+         "value": "dice internal project 1"
+        },
+        {
+         "attribute": "source_lab_pi",
+         "value": "dice"
+        },
+        {
+         "attribute": "lab_branch",
+         "value": "Lab Branch Name"
+        },
+        {
+         "attribute": "pi_doc",
+         "value": "FNLCR"
+        },
+        {
+         "attribute": "pi_name",
+         "value": "test"
+        },
+        {
+         "attribute": "project_id_CSAS",
+         "value": "project_id_CSAS"
+        },
+        {
+         "attribute": "attr3",
+         "value": "attr3"
+        },
+        {
+         "attribute": "attr4",
+         "value": "attr4"
+        }
+    ]
+}

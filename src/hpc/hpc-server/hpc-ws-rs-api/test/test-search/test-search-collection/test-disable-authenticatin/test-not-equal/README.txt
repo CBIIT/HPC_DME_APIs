@@ -13,5 +13,9 @@
 @ddblock_end copyright
 ******************************/
 
-Register the project before searching. 
-Search for a project using the "EQUAL" comparator. Should return the HTTP code 200
+
+The project is already registered and the user "dice_user" has read access
+
+Search for a project using the "NOT_EQUAL" comparator. Should return the HTTP
+code 200, and the "dice test project 2" project should not be part of the
+result.
