@@ -13,5 +13,7 @@
 @ddblock_end copyright
 ******************************/
 
-Register the dataObject and the collection before searching. 
+The dataObject is already registered as part of the server setup.
+ObjectPath:/FNL_SF_Archive/dice_project_1/dice_object_1
+
 Search for a dataObject using the "EQUAL" comparator. Should return the HTTP code 200

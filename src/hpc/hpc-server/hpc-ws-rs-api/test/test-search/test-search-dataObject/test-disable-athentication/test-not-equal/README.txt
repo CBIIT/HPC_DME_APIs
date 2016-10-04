@@ -13,4 +13,6 @@
 @ddblock_end copyright
 ******************************/
 
-Search for a dataObject using the "NOT_EQUAL" comparator. Should return the HTTP code 200, and the correct value for the attribute "name" should be part of the result.
+Search for a dataObject using the "NOT_EQUAL" comparator. 
+
+Should return the HTTP code 204 or 200, and the correct value for the attribute "name" should be part of the result.

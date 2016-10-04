@@ -8,6 +8,9 @@
 # See http://ncip.github.com/HPC/LICENSE.txt for details.
 #
 
-#Clean previous results
-../../../utils/maketest
-../utils/maketest
+
+# Script to clean the resutls of this test
+# Usage: cleanme [no arguments]
+
+$HPC_DM_TEST/utils/cleantest
+$HPC_DM_TEST/test-search/utils/cleantest
