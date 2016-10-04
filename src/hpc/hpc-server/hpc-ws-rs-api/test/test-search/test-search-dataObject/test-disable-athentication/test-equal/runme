@@ -11,24 +11,21 @@
 # Usage: runme [no arguments]
 
 #import common functions
-source ../../../utils/functions
-source ../../utils/search-functions
+source $HPC_DM_TEST/utils/functions
+source $HPC_DM_TEST/test-search/utils/search-functions
 
 #Check if the collection and the dataObject registration functions called in makeme were successful.
-check_registration
-check_dataobject_registration
 
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
-SERVER=`cat ../../../utils/server`
 
-search_by_metadata dataObject input.json.tmp
+search_by_metadata dataObject input.json dice_user_sys_admin
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 echo $HTTP_CODE
 
 ATTRIBUTE="\"name\""
-VALUE=`cat value.tmp`
+VALUE="dice test data file 1"
 
 #Make sure the response does include the object
 RESPONSE_GROUPS=`cat $RESPONSE_MSG | tr "{" "\n"`
@@ -37,7 +34,7 @@ OBJECT_NAMES=`get_json_value "$OBJECT_GROUPS" value`
 
 
 OBJECT_FOUND="FALSE"
-for object in $OBJECT_NAMES; do
+for object in "$OBJECT_NAMES"; do
     if [[ $object == *"$VALUE"*  ]]
     then
         OBJECT_FOUND="TRUE"
