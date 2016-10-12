@@ -724,7 +724,8 @@ function get_notifications {
 
 #search  for a collection of an object by metadata
 # Arguments :<type> Either collection or dataObject
-#           :<query>
+#           :<query> The .json query file
+#           :[user] The user to submit the query  
 function search_by_metadata {
     if [ -z "$1" ] || [ -z "$2" ]
     then 
@@ -735,6 +736,15 @@ function search_by_metadata {
 
     TYPE="$1"
     QUERY="$2"
+
+    if [ -z "$3" ]
+    then
+        CONFIG="--config $HPC_DM_TEST/utils/config"
+    else
+        USER=$3
+        #TODO: note -k is not required, this is a random password
+        CONFIG="-k -u ${USER}:password"
+    fi
 
     if [ "$TYPE" != "collection" ] && [ "$TYPE" != "dataObject" ]
     then
@@ -761,9 +771,10 @@ function search_by_metadata {
     fi
 
     SERVER=`cat $HPC_DM_TEST/utils/server`
-    CONFIG=$HPC_DM_TEST/utils/config 
+    #CONFIG=$HPC_DM_TEST/utils/config 
 
-    curl -G -X GET $SERVER/hpc-server/$TYPE --data-urlencode metadataQuery@$QUERY  --config $CONFIG   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -G -X GET $SERVER/hpc-server/$TYPE?detailedResponse=true --data-urlencode metadataQuery@$QUERY $CONFIG   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+
     check_connection $RESPONSE_HEADER
 }
 
@@ -772,9 +783,18 @@ function search_by_metadata {
 function subscribe_to_template_notifications {
 
     SUBSCRIPTION_TEMPLATE=$HPC_DM_TEST/utils/templates/notifications_template.json
-    cp $SUBSCRIPTION_TEMPLATE notification_input.json.tmp
-    subscribe_to_notifications notification_input.json.tmp 
+    cp $SUBSCRIPTION_TEMPLATE  subscribe-notification_input.json.tmp
+    subscribe_to_notifications subscribe-notification_input.json.tmp 
 }
+
+#Unsubscribe to notifications using template
+function unsubscribe_to_template_notifications {
+
+    UNSUBSCRIPTION_TEMPLATE=$HPC_DM_TEST/utils/templates/delete-notification-template.json
+    cp $UNSUBSCRIPTION_TEMPLATE unsubscribe-notification_input.json.tmp
+    subscribe_to_notifications  unsubscribe-notification_input.json.tmp 
+}
+
 
 #Get an item (collection or dataObject) from the archive
 #Inputs: item-path (should have a prefix of "dataObject" or "collection:)
@@ -800,4 +820,5 @@ function get_item {
     curl -G -X GET "$SERVER/$TOTAL_PATH"  --config $HPC_DM_TEST/utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     check_connection $RESPONSE_HEADER
 }
+
 
