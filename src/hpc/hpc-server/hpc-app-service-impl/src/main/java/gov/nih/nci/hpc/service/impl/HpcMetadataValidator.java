@@ -302,6 +302,15 @@ public class HpcMetadataValidator
 		   return true;
 		}
 		
+	    // Skip rules for other DOCs.
+		String doc = metadataEntriesMap.get(REGISTRAR_DOC_ATTRIBUTE);
+		if(doc != null &&
+		   metadataValidationRule.getDOC() != null &&
+		   !metadataValidationRule.getDOC().isEmpty() &&
+		   !metadataValidationRule.getDOC().contains(doc)) {
+		   return true;
+		}
+		
 		return false;
 	}
     
@@ -363,9 +372,17 @@ public class HpcMetadataValidator
 	    	  metadataValidationRule.setAttribute((String) jsonMetadataValidationRule.get("attribute"));
 	    	  metadataValidationRule.setMandatory((Boolean) jsonMetadataValidationRule.get("mandatory"));
 	    	  metadataValidationRule.setRuleEnabled((Boolean) jsonMetadataValidationRule.get("ruleEnabled"));
-	    	  metadataValidationRule.setDOC((String) jsonMetadataValidationRule.get("DOC"));
 	    	  metadataValidationRule.setDefaultValue((String) jsonMetadataValidationRule.get("defaultValue"));
 	    	  metadataValidationRule.setDefaultUnit((String) jsonMetadataValidationRule.get("defaultUnit"));
+	    	  
+	    	  JSONArray jsonDOC = (JSONArray) jsonMetadataValidationRule.get("DOC");
+	    	  if(jsonDOC != null) {
+		    	 Iterator<String> docIterator = jsonDOC.iterator();
+		    	 while(docIterator.hasNext()) {
+		    	   	   metadataValidationRule.getDOC().add(docIterator.next());
+		    	 }
+	    	  }
+	    	  
 	    	  JSONArray jsonCollectionTypes = (JSONArray) jsonMetadataValidationRule.get("collectionTypes");
 	    	  if(jsonCollectionTypes != null) {
 		    	 Iterator<String> collectionTypeIterator = jsonCollectionTypes.iterator();
