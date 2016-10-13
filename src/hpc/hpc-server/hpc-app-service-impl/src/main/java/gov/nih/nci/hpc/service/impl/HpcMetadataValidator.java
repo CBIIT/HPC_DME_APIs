@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.service.impl;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.io.FileReader;
@@ -304,6 +305,13 @@ public class HpcMetadataValidator
 		
 	    // Skip rules for other DOCs.
 		String doc = metadataEntriesMap.get(REGISTRAR_DOC_ATTRIBUTE);
+		if(doc == null) {
+		   // In registration case, the DOC system generated metadata is assigned after user generated
+		   // metadata is validated, so we get it from the request invoker directly.
+       	   HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+       	   doc = invoker != null ? invoker.getNciAccount().getDOC() : null;
+		}
+       	
 		if(doc != null &&
 		   metadataValidationRule.getDOC() != null &&
 		   !metadataValidationRule.getDOC().isEmpty() &&
