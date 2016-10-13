@@ -12,7 +12,7 @@
 					"Folder"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"name",
@@ -24,7 +24,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"description",
@@ -36,7 +36,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"project_type",
@@ -55,7 +55,7 @@
 					"Analysis"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"pi_name",
@@ -64,7 +64,7 @@
 					"PI_Lab"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"contact_name",
@@ -73,7 +73,7 @@
 					"PI_Lab"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"project_id_CSAS",
@@ -82,7 +82,7 @@
 					"Project"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"bioinformatics_contact",
@@ -91,7 +91,7 @@
 					"Project"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"project_start_date",
@@ -101,7 +101,7 @@
 					"Project"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"grant_funding_agent",
@@ -110,7 +110,7 @@
 					"Project"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"flowcell_id",
@@ -119,7 +119,7 @@
 					"Run"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"run_name",
@@ -128,7 +128,7 @@
 					"Run"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"run_date",
@@ -137,7 +137,7 @@
 					"Run"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"sequencing_platform",
@@ -146,7 +146,7 @@
 					"Run"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"sequencing_application_type",
@@ -155,7 +155,7 @@
 					"Run"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"sequencing_run_protocol",
@@ -164,7 +164,7 @@
 					"Run"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"avg_read_length",
@@ -173,7 +173,7 @@
 					"Run"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"sample_id",
@@ -182,7 +182,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"sample_name",
@@ -191,7 +191,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"initial_sample_concentration",
@@ -200,7 +200,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"initial_sample_volume",
@@ -209,7 +209,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"sfqc_sample_concentration",
@@ -218,7 +218,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"sfqc_sample_volume",
@@ -227,7 +227,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"sfqc_sample_size",
@@ -236,7 +236,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"library_id",
@@ -245,7 +245,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"library_name",
@@ -254,7 +254,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"library_type",
@@ -263,7 +263,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"library_protocol",
@@ -272,7 +272,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"sfqc_library_concentration",
@@ -281,7 +281,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"sfqc_library_volume",
@@ -290,7 +290,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"sfqc_library_size",
@@ -299,7 +299,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"source_id",
@@ -308,7 +308,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"source_name",
@@ -317,7 +317,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"source_organism",
@@ -326,7 +326,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"source_provider",
@@ -335,7 +335,7 @@
 					"Sample"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			}
 		],
 		"dataObjectMetadataValidationRules":[
@@ -343,37 +343,37 @@
 				"attribute":"file_type",
 				"mandatory":false,
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"description",
 				"mandatory":false,
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"reference_genome",
 				"mandatory":false,
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"reference_annotation",
 				"mandatory":false,
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"software_tool",
 				"mandatory":false,
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"md5_checksum",
 				"mandatory":false,
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"phi_content",
@@ -389,7 +389,7 @@
 					"Not Specified"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"pii_content",
@@ -405,7 +405,7 @@
 					"Not Specified"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"data_encryption_status",
@@ -421,7 +421,7 @@
 					"Not Specified"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			},
 			{
 				"attribute":"data_compression_status",
@@ -437,7 +437,7 @@
 					"Not Specified"
 				],
 				"ruleEnabled":true,
-				"DOC":"FNLCR"
+				"DOC":["FNLCR"]
 			}
 		]
 	}
