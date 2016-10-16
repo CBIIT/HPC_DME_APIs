@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
@@ -288,8 +289,19 @@ public interface HpcDataManagementService
      * 
      * @throws HpcException
      */
-    public List<HpcCollection> getCollections(
-    		    List<HpcMetadataQuery> metadataQueries) throws HpcException;
+    public List<HpcCollection> getCollections(List<HpcMetadataQuery> metadataQueries) 
+    		                                 throws HpcException;
+    
+    /**
+     * Get collections by compound metadata query.
+     *
+     * @param compoundMetadataQuery The compound metadata query.
+     * @return HpcCollection list.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcCollection> getCollections(HpcCompoundMetadataQuery compoundMetadataQuery) 
+    		                                 throws HpcException;
     
     /**
      * Get collection paths by metadata query.
@@ -299,8 +311,19 @@ public interface HpcDataManagementService
      * 
      * @throws HpcException
      */
-    public List<String> getCollectionPaths(
-    		               List<HpcMetadataQuery> metadataQueries) throws HpcException;
+    public List<String> getCollectionPaths(List<HpcMetadataQuery> metadataQueries) 
+    		                              throws HpcException;
+    
+    /**
+     * Get collection paths by compound metadata query.
+     *
+     * @param compoundMetadataQuery The compound metadata query.
+     * @return Collection path list.
+     * 
+     * @throws HpcException
+     */
+    public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery) 
+    		                              throws HpcException;
     
     /**
      * Get metadata of a collection.
@@ -330,8 +353,19 @@ public interface HpcDataManagementService
      * 
      * @throws HpcException
      */
-    public List<HpcDataObject> getDataObjects(
-    		    List<HpcMetadataQuery> metadataQueries) throws HpcException;
+    public List<HpcDataObject> getDataObjects(List<HpcMetadataQuery> metadataQueries) 
+    		                                 throws HpcException;
+    
+    /**
+     * Get data objects by compound metadata query.
+     *
+     * @param compoundMetadataQuery The compound metadata query.
+     * @return HpcDataObject list.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcDataObject> getDataObjects(HpcCompoundMetadataQuery compoundMetadataQuery) 
+    		                                 throws HpcException;
     
     /**
      * Get data object paths by metadata query.
@@ -341,8 +375,19 @@ public interface HpcDataManagementService
      * 
      * @throws HpcException
      */
-    public List<String> getDataObjectPaths(
-    		               List<HpcMetadataQuery> metadataQueries) throws HpcException;
+    public List<String> getDataObjectPaths(List<HpcMetadataQuery> metadataQueries) 
+    		                              throws HpcException;
+    
+    /**
+     * Get data object paths by compound metadata query.
+     *
+     * @param compoundMetadataQuerys The compound metadata queries.
+     * @return Data Object path list.
+     * 
+     * @throws HpcException
+     */
+    public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuerys) 
+    		                              throws HpcException;
     
     /**
      * Get data objects that have their data transfer in-progress.

@@ -200,13 +200,25 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQuery)
+    public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
     {
-    	HpcCollectionListDTO collections = new HpcCollectionListDTO();
-    	collections.getCollectionPaths().add("/project-A/dataset-B");
-    	collections.getCollectionPaths().add("/project-1/dataset-2");
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: POST /collection/query/compound" + compoundMetadataQueryDTO);
     	
-    	return okResponse(collections, true);
+    	HpcCollectionListDTO collections = null;
+		try {
+			 collections = dataManagementBusService.getCollections(compoundMetadataQueryDTO);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /collection/query/compound" + compoundMetadataQueryDTO + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " getCollections: Total time - " + compoundMetadataQueryDTO);
+		
+		return okResponse(!collections.getCollections().isEmpty() ||
+				          !collections.getCollectionPaths().isEmpty() ? collections : null , true);
     }
     
     @Override
@@ -315,6 +327,28 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " queryDataObjects" + metadataQueries);
+		
+		return okResponse(!dataObjects.getDataObjects().isEmpty() ||
+				          !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects : null, true);
+    }
+    
+    @Override
+    public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+    {
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: POST /dataObject/query/compound" + compoundMetadataQueryDTO);
+    	
+    	HpcDataObjectListDTO dataObjects = null;
+		try {
+			 dataObjects = dataManagementBusService.getDataObjects(compoundMetadataQueryDTO);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /dataObject/query/compound" + compoundMetadataQueryDTO + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " queryDataObjects" + compoundMetadataQueryDTO);
 		
 		return okResponse(!dataObjects.getDataObjects().isEmpty() ||
 				          !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects : null, true);

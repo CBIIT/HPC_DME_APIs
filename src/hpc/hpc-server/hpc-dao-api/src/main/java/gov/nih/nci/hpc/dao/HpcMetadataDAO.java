@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.dao;
 
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcHierarchicalMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -41,6 +42,19 @@ public interface HpcMetadataDAO
     		                              throws HpcException;
     
     /**
+     * Get collection Paths by compound metadata query. Only collection Paths accessible to the user are returned. 
+     *
+     * @param compoundMetadataQuery The compound metadata query.
+     * @param dataManagementUsername The Data Management user name. 
+     * @return List of collection Paths.
+     * 
+     * @throws HpcException
+     */
+    public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
+    		                               String dataManagementUsername) 
+    		                              throws HpcException;
+    
+    /**
      * Get data object Paths by metadata query. Only data object Paths accessible to the user are returned. 
      *
      * @param metadataQueries The metadata entries to query for.
@@ -50,6 +64,19 @@ public interface HpcMetadataDAO
      * @throws HpcException
      */
     public List<String> getDataObjectPaths(List<HpcMetadataQuery> metadataQueries,
+    		                               String dataManagementUsername) 
+    		                              throws HpcException;
+    
+    /**
+     * Get data object Paths by compound metadata query. Only data object Paths accessible to the user are returned. 
+     *
+     * @param compoundMetadataQuery The compound metadata query.
+     * @param dataManagementUsername The Data Management user name. 
+     * @return List of data object Paths.
+     * 
+     * @throws HpcException
+     */
+    public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
     		                               String dataManagementUsername) 
     		                              throws HpcException;
     
