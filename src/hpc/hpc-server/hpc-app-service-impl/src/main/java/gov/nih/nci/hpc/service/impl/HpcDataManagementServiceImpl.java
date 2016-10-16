@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.service.impl;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueries;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidCompoundMetadataQuery;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE;
@@ -39,6 +40,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcHierarchicalMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -138,7 +140,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	
 	// Policy to support hierarchical metadata search. Policies are:
 	// 1. 'replication' - metadata at a collection level are propagated through the hierarchy.
-	// 2. 'views' - Custom DB views (on top of iRODS DB) are used to support hierarchical metadata search.
+	// 2. 'views' - Custom DB materialized views (on top of iRODS DB) are used to support hierarchical metadata search.
 	// 3. 'none' - Hierarchical metadata search not supported.
 	private String hierarchicalMetadataPolicy = null;
 
@@ -720,8 +722,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<HpcCollection> getCollections(
-    		    List<HpcMetadataQuery> metadataQueries) throws HpcException
+    public List<HpcCollection> getCollections(List<HpcMetadataQuery> metadataQueries) 
+    		                                 throws HpcException
     {
        	if(!isValidMetadataQueries(metadataQueries) || metadataQueries.isEmpty()) {
            throw new HpcException("Invalid or empty metadata queries", 
@@ -741,8 +743,29 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<String> getCollectionPaths(
-    		               List<HpcMetadataQuery> metadataQueries) throws HpcException
+    public List<HpcCollection> getCollections(HpcCompoundMetadataQuery compoundMetadataQuery) 
+    		                                 throws HpcException
+    {
+       	if(!isValidCompoundMetadataQuery(compoundMetadataQuery)) {
+           throw new HpcException("Invalid or null compound metadata query", 
+        			              HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+       	
+       	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
+       	   // Use the hierarchical metadata views to perform the search.
+       	   String dataManagementUsername = 
+       			  HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+       	   return getCollectionsByPaths(metadataDAO.getCollectionPaths(compoundMetadataQuery, dataManagementUsername));
+       		
+       	} else {
+	            throw new HpcException("Compound metadata search not supported for policy: " +
+                                       hierarchicalMetadataPolicy, HpcErrorType.REQUEST_REJECTED);
+       	}
+    }
+    
+    @Override
+    public List<String> getCollectionPaths(List<HpcMetadataQuery> metadataQueries) 
+    		                              throws HpcException
     {
        	if(!isValidMetadataQueries(metadataQueries) || metadataQueries.isEmpty()) {
            throw new HpcException("Invalid or empty metadata queries", 
@@ -758,6 +781,27 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	} else {
     	        return toCollectionPaths(dataManagementProxy.getCollections(getAuthenticatedToken(),
     			                                                            metadataQueries));
+       	}
+    }
+    
+    @Override
+    public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery) 
+    		                              throws HpcException
+    {
+       	if(!isValidCompoundMetadataQuery(compoundMetadataQuery)) {
+           throw new HpcException("Invalid or null metadata query", 
+        			              HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+       	
+       	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
+       	   // Use the hierarchical metadata views to perform the search.
+       	   String dataManagementUsername = 
+       			  HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+       	   return metadataDAO.getCollectionPaths(compoundMetadataQuery, dataManagementUsername);
+       		
+       	} else {
+                throw new HpcException("Compound metadata search not supported for policy: " +
+                                       hierarchicalMetadataPolicy, HpcErrorType.REQUEST_REJECTED);
        	}
     }
     
@@ -785,8 +829,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<HpcDataObject> getDataObjects(
-    		    List<HpcMetadataQuery> metadataQueries) throws HpcException
+    public List<HpcDataObject> getDataObjects(List<HpcMetadataQuery> metadataQueries) 
+    		                                 throws HpcException
     {
        	if(!isValidMetadataQueries(metadataQueries) || metadataQueries.isEmpty()) {
            throw new HpcException("Invalid or empty metadata queries", 
@@ -806,8 +850,29 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<String> getDataObjectPaths(
-    		               List<HpcMetadataQuery> metadataQueries) throws HpcException
+    public List<HpcDataObject> getDataObjects(HpcCompoundMetadataQuery compoundMetadataQuery) 
+    		                                 throws HpcException
+    {
+       	if(!isValidCompoundMetadataQuery(compoundMetadataQuery)) {
+           throw new HpcException("Invalid or null compound metadata query", 
+        			              HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+       	
+       	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
+           // Use the hierarchical metadata views to perform the search.
+       	   String dataManagementUsername = 
+         	      HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+           return getDataObjectsByPaths(metadataDAO.getDataObjectPaths(compoundMetadataQuery, dataManagementUsername));
+        		
+        } else {
+    	        throw new HpcException("Compound metadata search not supported for policy: " +
+                                       hierarchicalMetadataPolicy, HpcErrorType.REQUEST_REJECTED);
+        }
+    }
+    
+    @Override
+    public List<String> getDataObjectPaths(List<HpcMetadataQuery> metadataQueries) 
+    		                              throws HpcException
     {
        	if(!isValidMetadataQueries(metadataQueries) || metadataQueries.isEmpty()) {
            throw new HpcException("Invalid or empty metadata queries", 
@@ -823,6 +888,27 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
         } else {
     	        return toDataObjectPaths(dataManagementProxy.getDataObjects(getAuthenticatedToken(),
     			                                                            metadataQueries));
+        }
+    }
+    
+    @Override
+    public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery) 
+    		                              throws HpcException
+    {
+       	if(!isValidCompoundMetadataQuery(compoundMetadataQuery)) {
+           throw new HpcException("Invalid or null compound metadata query", 
+        			              HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+       	
+       	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
+           // Use the hierarchical metadata views to perform the search.
+       	   String dataManagementUsername = 
+         	      HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+           return metadataDAO.getDataObjectPaths(compoundMetadataQuery, dataManagementUsername);
+        		
+        } else {
+	            throw new HpcException("Compound metadata search not supported for policy: " +
+                                       hierarchicalMetadataPolicy, HpcErrorType.REQUEST_REJECTED);
         }
     }
     

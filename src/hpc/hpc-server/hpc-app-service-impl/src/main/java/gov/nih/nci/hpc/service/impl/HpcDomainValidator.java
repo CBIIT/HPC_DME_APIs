@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcUser;
@@ -177,6 +178,33 @@ public class HpcDomainValidator
     		   return false;
     		}
     	}
+     	return true;
+    }
+    
+    /**
+     * Validate compound metadata query.
+     *
+     * @param compoundMetadataQuery Compound Metadata query.
+     * @return true if valid, false otherwise.
+     */
+    public static boolean isValidCompoundMetadataQuery(HpcCompoundMetadataQuery compoundMetadataQuery) 
+    {
+    	if(compoundMetadataQuery == null || compoundMetadataQuery.getOperator() == null ||
+    	   ((compoundMetadataQuery.getQueries() == null ||  
+    	     compoundMetadataQuery.getQueries().isEmpty()) && 
+    	    (compoundMetadataQuery.getCompoundQueries() == null || 
+    	     compoundMetadataQuery.getCompoundQueries().isEmpty()))) {
+    	   return false;
+     	}
+    	
+    	if(compoundMetadataQuery.getCompoundQueries() != null) {
+    	   for(HpcCompoundMetadataQuery subQuery : compoundMetadataQuery.getCompoundQueries()) {
+    		   if(!isValidCompoundMetadataQuery(subQuery)) {
+    			  return false;
+    		   }
+    	   }
+    	}
+    	
      	return true;
     }
     
