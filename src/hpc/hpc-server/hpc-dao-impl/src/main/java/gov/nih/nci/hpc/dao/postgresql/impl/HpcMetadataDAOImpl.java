@@ -417,7 +417,13 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		   if(!args.isEmpty()) {
 			  sqlQueryBuilder.append(" " + toSQLOperator(compoundMetadataQuery.getOperator()) + " ");
 		   }
+		   boolean firstNestedQuery = true;
 		   for(HpcCompoundMetadataQuery nestedCompoundQuery : compoundMetadataQuery.getCompoundQueries()) {
+			   if(!firstNestedQuery) {
+				  sqlQueryBuilder.append(" " + toSQLOperator(compoundMetadataQuery.getOperator()) + " ");
+			   } else {
+				       firstNestedQuery = false;
+			   }
 			   HpcPreparedQuery query = toQuery(sqlQueries,  nestedCompoundQuery);	
                sqlQueryBuilder.append(query.sql);
                args.addAll(Arrays.asList(query.args));			   
