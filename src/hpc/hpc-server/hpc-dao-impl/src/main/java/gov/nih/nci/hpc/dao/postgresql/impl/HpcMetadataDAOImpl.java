@@ -192,7 +192,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		HpcPreparedQuery q = toQuery(collectionSQLQueries, metadataQueries, 
        		                         HpcCompoundMetadataQueryOperator.ALL);
 		logger.error("ERAN SQL:" + q.sql);
-		logger.error("ERAN ARGS: " + q.args);
+		logger.error("ERAN ARGS: " + Arrays.asList(q.args));
 		
 		return getPaths(prepareQuery(GET_COLLECTION_PATHS_SQL, 
                                      toQuery(collectionSQLQueries, metadataQueries, 
@@ -208,7 +208,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     {
 		HpcPreparedQuery q = toQuery(collectionSQLQueries, compoundMetadataQuery);
 		logger.error("ERAN SQL:" + q.sql);
-		logger.error("ERAN ARGS: " + q.args);
+		logger.error("ERAN ARGS: " + Arrays.asList(q.args));
 
 		return getPaths(prepareQuery(GET_COLLECTION_PATHS_SQL, 
                                      toQuery(collectionSQLQueries, compoundMetadataQuery),
