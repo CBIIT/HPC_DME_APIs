@@ -106,15 +106,14 @@ public interface HpcDataManagementRestService
     /**
      * POST Collections query.
      *
-     * @param compoundMetadataQuery A compund metadata query.
-     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param compoundMetadataQueryDTO A compund metadata query DTO.
      * @return Response The REST service response.
      */
 	@POST
 	@Path("/collection/query/compound")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQuery);
+	public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
 
     /**
      * PUT Data object registration request.
@@ -174,6 +173,18 @@ public interface HpcDataManagementRestService
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries,
 			                         @QueryParam("detailedResponse") Boolean detailedResponse);
+	
+    /**
+     * POST Data objects query.
+     *
+     * @param compoundMetadataQueryDTO A compund metadata query DTO.
+     * @return Response The REST service response.
+     */
+	@POST
+	@Path("/dataObject/query/compound")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
 
     /**
      * POST Download Data Object.

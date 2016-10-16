@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
@@ -75,6 +76,17 @@ public interface HpcDataManagementBusService
     		                                  throws HpcException;
     
     /**
+     * Get Collections by compound metadata query.
+     *
+     * @param compoundMetadataQueryDTO The compound metadata query DTO.
+     * @return A list of HpcCollectionDTO
+     * 
+     * @throws HpcException
+     */
+    public HpcCollectionListDTO getCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
+    		                                  throws HpcException;
+    
+    /**
      * Register a Data object.
      *
      * @param path The data object's path.
@@ -115,6 +127,16 @@ public interface HpcDataManagementBusService
     		                                   boolean detailedResponse) 
     		                                  throws HpcException;
     
+    /**
+     * Get data objects by compound metadata query.
+     *
+     * @param compoundMetadataQueryDTO The compound metadata query DTO.
+     * @return A list of HpcDataObjectDTO.
+     * 
+     * @throws HpcException
+     */
+    public HpcDataObjectListDTO getDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
+    		                                  throws HpcException;
     /**
      * Download Data Object.
      *

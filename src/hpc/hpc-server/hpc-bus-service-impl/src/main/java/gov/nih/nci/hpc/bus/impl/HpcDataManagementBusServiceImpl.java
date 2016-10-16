@@ -29,6 +29,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
@@ -173,7 +174,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		                                   boolean detailedResponse) 
                                               throws HpcException
     {
-    	logger.info("Invoking getCollections(List<HpcMetadataQuery>): " + 
+    	logger.info("Invoking getCollections(List<HpcMetadataQuery>, boolean): " + 
     			    metadataQueries);
     	
     	// Input validation.
@@ -182,30 +183,33 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Construct the DTO.
-    	HpcCollectionListDTO collectionsDTO = new HpcCollectionListDTO();
-    	
     	if(detailedResponse) {
-    	   for(HpcCollection collection : dataManagementService.getCollections(metadataQueries)) {
-    		   // Get the metadata for this collection.
-    		   try {
-    			    // Combine collection attributes and metadata into a single DTO.
-    			    collectionsDTO.getCollections().add(getCollection(collection));
-    			 
-	    	   } catch(HpcException e) {
-	    			   // Failed to get metadata.
-	    			   logger.error("Failed to fetch metadata for "+ collection.getAbsolutePath(), e);
-	    			   continue;
-	    	   }
-    	   }
+    	   return toCollectionListDTO(dataManagementService.getCollections(metadataQueries), null);
     	} else {
-    		String basePath = dataManagementService.getBasePath();
-    		    for(String collectionPath : dataManagementService.getCollectionPaths(metadataQueries)) {
-		            collectionsDTO.getCollectionPaths().add(getRelativePath(collectionPath, basePath));
-    		    }
+       		    return toCollectionListDTO(null, dataManagementService.getCollectionPaths(metadataQueries));
+    	}
+    }
+    
+    @Override
+    public HpcCollectionListDTO getCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
+                                              throws HpcException
+    {
+    	logger.info("Invoking getCollections(HpcCompoundMetadataQueryDTO>): " + compoundMetadataQueryDTO);
+    	
+    	// Input validation.
+    	if(compoundMetadataQueryDTO == null) {
+    	   throw new HpcException("Null compound metadata query",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	return collectionsDTO;
+      	boolean detailedResponse = compoundMetadataQueryDTO.getDetailedResponse() != null && 
+                                   compoundMetadataQueryDTO.getDetailedResponse();
+    	if(detailedResponse) {
+    	   return toCollectionListDTO(dataManagementService.getCollections(compoundMetadataQueryDTO.getQuery()), null);
+    	} else {
+       		    return toCollectionListDTO(null, dataManagementService.getCollectionPaths(
+       		    		                                                  compoundMetadataQueryDTO.getQuery()));
+    	}
     }
     
     private String getRelativePath(String absolutePath, String basePath)
@@ -318,7 +322,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		                                   boolean detailedResponse) 
                                               throws HpcException
     {
-    	logger.info("Invoking getDataObjects(List<HpcMetadataQuery>): " + metadataQueries);
+    	logger.info("Invoking getDataObjects(List<HpcMetadataQuery>, boolean): " + metadataQueries);
     	
     	// Input validation.
     	if(metadataQueries == null) {
@@ -326,29 +330,33 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Construct the DTO.
-    	HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
-    	
     	if(detailedResponse) {
-    	   for(HpcDataObject dataObject : dataManagementService.getDataObjects(metadataQueries)) {
-    		   try {
-    				// Combine data object attributes and metadata into a single DTO.
-        		    dataObjectsDTO.getDataObjects().add(getDataObject(dataObject));
-
-    		   } catch(HpcException e) {
-    			       // Failed to get metadata for data object.
-    			       logger.error("Failed to fetch metadata for "+ dataObject.getAbsolutePath(), e);
-    			       continue;
-    		   }
-    	   }
+    	   return toDataObjectListDTO(dataManagementService.getDataObjects(metadataQueries), null);
     	} else {
-    			String basePath = dataManagementService.getBasePath();
-    		    for(String dataObjectPath : dataManagementService.getDataObjectPaths(metadataQueries)) {
-			        dataObjectsDTO.getDataObjectPaths().add(getRelativePath(dataObjectPath, basePath));
-    		    }
+    		    return toDataObjectListDTO(null, dataManagementService.getDataObjectPaths(metadataQueries));
+    	}
+    }
+    
+    @Override
+    public HpcDataObjectListDTO getDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
+                                              throws HpcException
+    {
+    	logger.info("Invoking getDataObjects(HpcCompoundMetadataQueryDTO): " + compoundMetadataQueryDTO);
+    	
+    	// Input validation.
+    	if(compoundMetadataQueryDTO == null) {
+    	   throw new HpcException("Null compound metadata query",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	return dataObjectsDTO;
+    	boolean detailedResponse = compoundMetadataQueryDTO.getDetailedResponse() != null && 
+    			                   compoundMetadataQueryDTO.getDetailedResponse();
+    	if(detailedResponse) {
+    	   return toDataObjectListDTO(dataManagementService.getDataObjects(compoundMetadataQueryDTO.getQuery()), null);
+    	} else {
+    		    return toDataObjectListDTO(null, dataManagementService.getDataObjectPaths(
+    		    		                                                  compoundMetadataQueryDTO.getQuery()));
+    	}
     }
     
     @Override
@@ -702,6 +710,79 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
        		   metadataEntries);
        	dataManagementService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, 
        			                                                      null, metadataOrigin);
+    }
+    
+    
+    /**
+     * Construct a collection list DTO.
+     *
+     * @param collections A list of collection domain objects.
+     * @param collectionPaths A list of collection paths.
+     */
+    private HpcCollectionListDTO toCollectionListDTO(List<HpcCollection> collections,
+    		                                         List<String> collectionPaths)
+    {
+		HpcCollectionListDTO collectionsDTO = new HpcCollectionListDTO();
+		
+		if(collections != null) {
+		   for(HpcCollection collection : collections) {
+			   // Get the metadata for this collection.
+			   try {
+				    // Combine collection attributes and metadata into a single DTO.
+				    collectionsDTO.getCollections().add(getCollection(collection));
+				 
+	    	   } catch(HpcException e) {
+	    			   // Failed to get metadata.
+	    			   logger.error("Failed to fetch metadata for "+ collection.getAbsolutePath(), e);
+	    			   continue;
+	    	   }
+		   }
+		} 
+		
+		if(collectionPaths != null) {
+		   String basePath = dataManagementService.getBasePath();
+		   for(String collectionPath : collectionPaths) {
+		       collectionsDTO.getCollectionPaths().add(getRelativePath(collectionPath, basePath));
+		   }
+		}
+		
+		return collectionsDTO;
+    }
+    
+    /**
+     * Construct a data object list DTO.
+     *
+     * @param dataObjects A list of data object domain objects.
+     * @param dataObjectPaths A list of data object paths.
+     */
+    private HpcDataObjectListDTO toDataObjectListDTO(List<HpcDataObject> dataObjects,
+    		                                         List<String> dataObjectPaths)
+    {
+		// Construct the DTO.
+		HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
+		
+		if(dataObjects != null) {
+		   for(HpcDataObject dataObject : dataObjects) {
+			   try {
+					// Combine data object attributes and metadata into a single DTO.
+	    		    dataObjectsDTO.getDataObjects().add(getDataObject(dataObject));
+	
+			   } catch(HpcException e) {
+				       // Failed to get metadata for data object.
+				       logger.error("Failed to fetch metadata for "+ dataObject.getAbsolutePath(), e);
+				       continue;
+			   }
+		   }
+		}
+		
+		if(dataObjectPaths != null) {
+		   String basePath = dataManagementService.getBasePath();
+		   for(String dataObjectPath : dataObjectPaths) {
+		       dataObjectsDTO.getDataObjectPaths().add(getRelativePath(dataObjectPath, basePath));
+		   }
+		}
+		
+		return dataObjectsDTO;
     }
 }
 

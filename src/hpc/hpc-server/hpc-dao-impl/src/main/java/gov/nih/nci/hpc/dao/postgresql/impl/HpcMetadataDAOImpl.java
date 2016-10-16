@@ -12,21 +12,21 @@ package gov.nih.nci.hpc.dao.postgresql.impl;
 
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcHierarchicalMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
-import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -146,10 +146,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private Map<String, String> dataObjectSQLQueries = new HashMap<>();
 	private Map<String, String> collectionSQLQueries = new HashMap<>();
 	
-    // The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -188,17 +184,22 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     		                               String dataManagementUsername) 
                                           throws HpcException
     {
-		try {
-			 HpcPreparedQuery prepareQuery = prepareQuery(collectionSQLQueries, GET_COLLECTION_PATHS_SQL, 
-					                                      metadataQueries, COLLECTION_USER_ACCESS_SQL, 
-					                                      dataManagementUsername);
-		     return jdbcTemplate.query(prepareQuery.sql, objectPathRowMapper, prepareQuery.args);
-		     
-		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get collection Paths: " + 
-		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
-		}		
+		return getPaths(prepareQuery(GET_COLLECTION_PATHS_SQL, 
+                                     toQuery(collectionSQLQueries, metadataQueries, 
+                                    		 HpcCompoundMetadataQueryOperator.ALL),
+                                     COLLECTION_USER_ACCESS_SQL, 
+                                     dataManagementUsername));
+    }
+	
+	@Override
+    public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
+    		                               String dataManagementUsername) 
+                                          throws HpcException
+    {
+		return getPaths(prepareQuery(GET_COLLECTION_PATHS_SQL, 
+                                     toQuery(collectionSQLQueries, compoundMetadataQuery),
+                                     COLLECTION_USER_ACCESS_SQL, 
+                                     dataManagementUsername));
     }
 
 	@Override 
@@ -206,17 +207,22 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			                               String dataManagementUsername) 
                                           throws HpcException
     {
-		try {
-			 HpcPreparedQuery prepareQuery = prepareQuery(dataObjectSQLQueries, GET_DATA_OBJECT_PATHS_SQL, 
-					                                      metadataQueries, DATA_OBJECT_USER_ACCESS_SQL, 
-					                                      dataManagementUsername);
-		     return jdbcTemplate.query(prepareQuery.sql, objectPathRowMapper, prepareQuery.args);
-		     
-		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get data object Paths: " + 
-		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
-		}		
+		return getPaths(prepareQuery(GET_DATA_OBJECT_PATHS_SQL, 
+                                     toQuery(dataObjectSQLQueries, metadataQueries,
+                                    		 HpcCompoundMetadataQueryOperator.ALL),
+                                     DATA_OBJECT_USER_ACCESS_SQL, 
+                                     dataManagementUsername));
+    }
+	
+	@Override 
+	public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
+			                               String dataManagementUsername) 
+                                          throws HpcException
+    {
+		return getPaths(prepareQuery(GET_DATA_OBJECT_PATHS_SQL, 
+                                     toQuery(dataObjectSQLQueries, compoundMetadataQuery),
+                                     DATA_OBJECT_USER_ACCESS_SQL, 
+                                     dataManagementUsername));
     }
 	
     @Override
@@ -288,23 +294,21 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private class HpcPreparedQuery
 	{
 		public String sql = null;
-		public Object[] args = null;
+		public String[] args = null;
 	}
 	
     /**
      * Prepare a SQL query. Map operators to SQL and concatenate them with 'intersect'.
      *
-     * @param sqlQueries The map from metadata query operator to SQL queries.
      * @param getObjectPathsQuery The query to get object paths based on object IDs.
-     * @param metadataQueries The metadata queries.
+     * @param userQuery The calculated SQL query based on user input (represented by query domain objects).
      * @param userAccessQuery The user access query to append.
      * @param dataManagementUsername The data management user name.
      * 
      * @throws HpcException
      */
-    private HpcPreparedQuery prepareQuery(Map<String, String> sqlQueries, 
-    		                              String getObjectPathsQuery,
-    		                              List<HpcMetadataQuery> metadataQueries,
+    private HpcPreparedQuery prepareQuery(String getObjectPathsQuery,
+    		                              HpcPreparedQuery userQuery,
     		                              String userAccessQuery,
     		                              String dataManagementUsername) 
     		                             throws HpcException
@@ -314,21 +318,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     	
     	// Combine the metadata queries into a single SQL statement.
     	sqlQueryBuilder.append(getObjectPathsQuery + "(");
-    	for(HpcMetadataQuery metadataQuery : metadataQueries) {
-    		String sqlQuery = sqlQueries.get(metadataQuery.getOperator());
-    		if(sqlQuery == null) {
-    		   throw new HpcException("Invalid metadata query operator: " + metadataQuery.getOperator(),
-    				                  HpcErrorType.INVALID_REQUEST_INPUT);
-    		}
-    		
-    		if(!args.isEmpty()) {
-    			sqlQueryBuilder.append(" intersect ");
-    		}
-    		sqlQueryBuilder.append(sqlQuery);
-    		
-    		args.add(metadataQuery.getAttribute());
-    		args.add(metadataQuery.getValue());
-    	}
+    	sqlQueryBuilder.append(userQuery.sql);
+    	args.addAll(Arrays.asList(userQuery.args));
     	
     	// Add a query to only include entities the user can access.
     	sqlQueryBuilder.append(" intersect ");
@@ -337,8 +328,125 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     	
     	HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
     	preparedQuery.sql = sqlQueryBuilder.toString();
-    	preparedQuery.args = args.toArray();
+    	preparedQuery.args = args.toArray(new String[0]);
     	return preparedQuery;
+    }
+    
+    /**
+     * Create a SQL statement from List<HpcMetadataQuery>
+     *
+     * @param sqlQueries The map from metadata query operator to SQL queries.
+     * @param metadataQueries The metadata queries.
+     * @param operator The operator to use.
+     * 
+     * @throws HpcException
+     */
+    private HpcPreparedQuery toQuery(Map<String, String> sqlQueries, 
+    		                         List<HpcMetadataQuery> metadataQueries,
+    		                         HpcCompoundMetadataQueryOperator operator) 
+    		                        throws HpcException
+    {
+    	StringBuilder sqlQueryBuilder = new StringBuilder();
+    	List<String> args = new ArrayList<>();
+    
+		sqlQueryBuilder.append("(");
+		for(HpcMetadataQuery metadataQuery : metadataQueries) {
+			String sqlQuery = sqlQueries.get(metadataQuery.getOperator());
+			if(sqlQuery == null) {
+			   throw new HpcException("Invalid metadata query operator: " + metadataQuery.getOperator(),
+					                  HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			
+			if(!args.isEmpty()) {
+			   sqlQueryBuilder.append(" " + toSQLOperator(operator) + " ");
+			}
+			sqlQueryBuilder.append(sqlQuery);
+			
+			args.add(metadataQuery.getAttribute());
+			args.add(metadataQuery.getValue());
+		}
+		sqlQueryBuilder.append(")");
+		
+    	HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
+    	preparedQuery.sql = sqlQueryBuilder.toString();
+    	preparedQuery.args = args.toArray(new String[0]);
+    	return preparedQuery;
+    }
+    
+    /**
+     * Create a SQL statement from HpcCompoundMetadataQuery
+     *
+     * @param sqlQueries The map from metadata query operator to SQL queries.
+     * @param metadataQueries The metadata queries.
+     * 
+     * @throws HpcException
+     */
+    private HpcPreparedQuery toQuery(Map<String, String> sqlQueries, 
+    		                         HpcCompoundMetadataQuery compoundMetadataQuery) 
+    		                        throws HpcException
+    {
+    	StringBuilder sqlQueryBuilder = new StringBuilder();
+    	List<String> args = new ArrayList<>();
+    
+		sqlQueryBuilder.append("(");
+		// Append the simple queries.
+		if(compoundMetadataQuery.getQueries() != null && !compoundMetadataQuery.getQueries().isEmpty()) {
+			HpcPreparedQuery query = toQuery(sqlQueries, compoundMetadataQuery.getQueries(), 
+					                         compoundMetadataQuery.getOperator());	
+			sqlQueryBuilder.append(query.sql);
+			args.addAll(Arrays.asList(query.args));
+		}
+		
+		// Append the nested compound queries.
+		if(compoundMetadataQuery.getCompoundQueries() != null && 
+		   !compoundMetadataQuery.getCompoundQueries().isEmpty()){
+		   if(!args.isEmpty()) {
+			  sqlQueryBuilder.append(" " + toSQLOperator(compoundMetadataQuery.getOperator()) + " ");
+		   }
+		   for(HpcCompoundMetadataQuery nestedCompoundQuery : compoundMetadataQuery.getCompoundQueries()) {
+			   HpcPreparedQuery query = toQuery(sqlQueries,  nestedCompoundQuery);	
+               sqlQueryBuilder.append(query.sql);
+               args.addAll(Arrays.asList(query.args));			   
+		   }
+		}
+		sqlQueryBuilder.append(")");
+		
+    	HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
+    	preparedQuery.sql = sqlQueryBuilder.toString();
+    	preparedQuery.args = args.toArray(new String[0]);
+    	return preparedQuery;
+    }
+    
+    /**
+     * Execute a SQL query to get collection or data object paths
+     *
+     * @param prepareQuery The prepared query to execute.
+     * 
+     * @throws HpcException
+     */
+    private List<String> getPaths(HpcPreparedQuery prepareQuery) throws HpcException
+    {
+		try {
+		     return jdbcTemplate.query(prepareQuery.sql, objectPathRowMapper, 
+		    		                   (Object[]) prepareQuery.args);
+		     
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get collection/data-object Paths: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}		
+    }
+    
+    /**
+     * Coverts a query operator enum to SQL
+     *
+     * @param operator The operator to convert.
+     * 
+     * @throws HpcException
+     */
+    private String toSQLOperator(HpcCompoundMetadataQueryOperator operator)
+    {
+    	return operator.equals(HpcCompoundMetadataQueryOperator.ALL) ? "intersect" : "union";  
     }
 }
 
