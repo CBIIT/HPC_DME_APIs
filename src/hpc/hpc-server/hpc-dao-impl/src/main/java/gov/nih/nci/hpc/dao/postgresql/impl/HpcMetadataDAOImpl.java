@@ -27,8 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -148,9 +146,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private Map<String, String> dataObjectSQLQueries = new HashMap<>();
 	private Map<String, String> collectionSQLQueries = new HashMap<>();
 	
-    // The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -189,11 +184,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     		                               String dataManagementUsername) 
                                           throws HpcException
     {
-		HpcPreparedQuery q = toQuery(collectionSQLQueries, metadataQueries, 
-       		                         HpcCompoundMetadataQueryOperator.ALL);
-		logger.error("ERAN SQL:" + q.sql);
-		logger.error("ERAN ARGS: " + Arrays.asList(q.args));
-		
 		return getPaths(prepareQuery(GET_COLLECTION_PATHS_SQL, 
                                      toQuery(collectionSQLQueries, metadataQueries, 
                                     		 HpcCompoundMetadataQueryOperator.ALL),
@@ -206,10 +196,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     		                               String dataManagementUsername) 
                                           throws HpcException
     {
-		HpcPreparedQuery q = toQuery(collectionSQLQueries, compoundMetadataQuery);
-		logger.error("ERAN SQL:" + q.sql);
-		logger.error("ERAN ARGS: " + Arrays.asList(q.args));
-
 		return getPaths(prepareQuery(GET_COLLECTION_PATHS_SQL, 
                                      toQuery(collectionSQLQueries, compoundMetadataQuery),
                                      COLLECTION_USER_ACCESS_SQL, 
