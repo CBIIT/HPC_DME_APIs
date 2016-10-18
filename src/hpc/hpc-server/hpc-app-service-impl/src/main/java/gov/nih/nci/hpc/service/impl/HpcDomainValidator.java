@@ -36,6 +36,12 @@ import org.slf4j.LoggerFactory;
 public class HpcDomainValidator 
 {   
     //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//
+	
+	private static final int MAX_COMPOUND_METADATA_QUERY_DEPTH = 10;
+	
+    //---------------------------------------------------------------------//
     // Class members
     //---------------------------------------------------------------------//
 
@@ -189,23 +195,7 @@ public class HpcDomainValidator
      */
     public static boolean isValidCompoundMetadataQuery(HpcCompoundMetadataQuery compoundMetadataQuery) 
     {
-    	if(compoundMetadataQuery == null || compoundMetadataQuery.getOperator() == null ||
-    	   ((compoundMetadataQuery.getQueries() == null ||  
-    	     compoundMetadataQuery.getQueries().isEmpty()) && 
-    	    (compoundMetadataQuery.getCompoundQueries() == null || 
-    	     compoundMetadataQuery.getCompoundQueries().isEmpty()))) {
-    	   return false;
-     	}
-    	
-    	if(compoundMetadataQuery.getCompoundQueries() != null) {
-    	   for(HpcCompoundMetadataQuery subQuery : compoundMetadataQuery.getCompoundQueries()) {
-    		   if(!isValidCompoundMetadataQuery(subQuery)) {
-    			  return false;
-    		   }
-    	   }
-    	}
-    	
-     	return true;
+    	return isValidCompoundMetadataQuery(compoundMetadataQuery, 1); 
     }
     
     //---------------------------------------------------------------------//
@@ -244,6 +234,44 @@ public class HpcDomainValidator
     private static boolean isEmpty(String value) 
     {
     	return value == null ? false : value.isEmpty();
+    }
+    
+    /**
+     * Validate compound metadata query.
+     *
+     * @param compoundMetadataQuery Compound Metadata query.
+     * @param queryDepth The recursion depth of this method on the stack. (used to enforce a limit)
+     * @return true if valid, false otherwise.
+     */
+    private static boolean isValidCompoundMetadataQuery(HpcCompoundMetadataQuery compoundMetadataQuery, 
+    		                                            int queryDepth) 
+    {
+    	if(queryDepth > MAX_COMPOUND_METADATA_QUERY_DEPTH) {
+    	   return false;
+    	}
+    	
+    	if(compoundMetadataQuery == null || compoundMetadataQuery.getOperator() == null ||
+    	   ((compoundMetadataQuery.getQueries() == null ||  
+    	     compoundMetadataQuery.getQueries().isEmpty()) && 
+    	    (compoundMetadataQuery.getCompoundQueries() == null || 
+    	     compoundMetadataQuery.getCompoundQueries().isEmpty()))) {
+    	   return false;
+     	}
+    	
+    	if(compoundMetadataQuery.getQueries() != null &&
+    	   !isValidMetadataQueries(compoundMetadataQuery.getQueries())) {
+    	   return false;
+    	}
+    	
+    	if(compoundMetadataQuery.getCompoundQueries() != null) {
+    	   for(HpcCompoundMetadataQuery subQuery : compoundMetadataQuery.getCompoundQueries()) {
+    		   if(!isValidCompoundMetadataQuery(subQuery, queryDepth + 1)) {
+    			  return false;
+    		   }
+    	   }
+    	}
+    	
+     	return true;
     }
 }
 

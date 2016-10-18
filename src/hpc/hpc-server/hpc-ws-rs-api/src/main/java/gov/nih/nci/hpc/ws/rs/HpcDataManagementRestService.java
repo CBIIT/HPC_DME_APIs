@@ -168,7 +168,7 @@ public interface HpcDataManagementRestService
      * @return Response The REST service response.
      */
 	@POST
-	@Path("/dataObject/query")
+	@Path("/dataObject/query/simple")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries,
