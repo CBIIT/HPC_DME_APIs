@@ -14,3 +14,4 @@
 ******************************/
 
 Unsubscribe to notification then get them. 
+Should get HTTP 204 as there are no notifications. 
