@@ -27,19 +27,18 @@ RESPONSE_MSG=get-notifications-response-message.json.tmp
 get_notifications
 
 
-verify_registration $RESPONSE_HEADER
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 echo $HTTP_CODE
 
 
-NOTIFICATION_TYPES=$(get_possible_notifications)
-
-for notification in $NOTIFICATION_TYPES
-do 
-    LINE=$(grep "$notification" $RESPONSE_MSG)
-    if [ -z "$LINE" ]
-    then
-        echo "THE notificaiton \"$notification\" does not exist in the response message"
-    fi
-done
-
+#NOTIFICATION_TYPES=$(get_possible_notifications)
+#
+#for notification in $NOTIFICATION_TYPES
+#do 
+#    LINE=$(grep "$notification" $RESPONSE_MSG)
+#    if [ ! -z "$LINE" ]
+#    then
+#        echo "THE notificaiton \"$notification\" still exists in the response message"
+#    fi
+#done
+#
