@@ -184,7 +184,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
     
 	@Override
     public List<String> getSubscriptedUsers(HpcEventType eventType) 
-                                                      throws HpcException
+                                           throws HpcException
     {
 		try {
 		     return jdbcTemplate.query(GET_SUBSCRIPTION_USERS_SQL, 
