@@ -310,7 +310,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private class HpcPreparedQuery
 	{
 		public String sql = null;
-		public String[] args = null;
+		public Object[] args = null;
 	}
 	
     /**
@@ -330,7 +330,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     		                             throws HpcException
     {
     	StringBuilder sqlQueryBuilder = new StringBuilder();
-    	List<String> args = new ArrayList<>();
+    	List<Object> args = new ArrayList<>();
     	
     	// Combine the metadata queries into a single SQL statement.
     	sqlQueryBuilder.append(getObjectPathsQuery + "(");
@@ -365,7 +365,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     		                        throws HpcException
     {
     	StringBuilder sqlQueryBuilder = new StringBuilder();
-    	List<String> args = new ArrayList<>();
+    	List<Object> args = new ArrayList<>();
     
 		sqlQueryBuilder.append("(");
 		for(HpcMetadataQuery metadataQuery : metadataQueries) {
@@ -414,7 +414,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     		                        throws HpcException
     {
     	StringBuilder sqlQueryBuilder = new StringBuilder();
-    	List<String> args = new ArrayList<>();
+    	List<Object> args = new ArrayList<>();
     
 		sqlQueryBuilder.append("(");
 		// Append the simple queries.
