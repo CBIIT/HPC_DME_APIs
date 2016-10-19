@@ -388,7 +388,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			// Optionally add a filter for level.
 			if(metadataQuery.getLevel() != null) {
 			   sqlQueryBuilder.append(levelFilters.get(EQUAL_OPERATOR));
-			   args.add(metadataQuery.getLevel().toString());
+			   args.add(metadataQuery.getLevel());
 			}
 		}
 		sqlQueryBuilder.append(")");
