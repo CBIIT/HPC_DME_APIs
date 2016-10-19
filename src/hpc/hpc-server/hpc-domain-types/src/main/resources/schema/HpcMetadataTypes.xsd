@@ -49,6 +49,7 @@
 			<xsd:element name="attribute" type="xsd:string" />
 			<xsd:element name="value" type="xsd:string" />
 			<xsd:element name="operator" type="xsd:string" />
+			<xsd:element name="level" type="xsd:int" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
