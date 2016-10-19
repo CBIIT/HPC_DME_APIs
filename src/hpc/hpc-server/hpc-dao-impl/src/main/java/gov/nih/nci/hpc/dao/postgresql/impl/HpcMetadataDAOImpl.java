@@ -344,7 +344,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     	
     	HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
     	preparedQuery.sql = sqlQueryBuilder.toString();
-    	preparedQuery.args = args.toArray(new String[0]);
+    	preparedQuery.args = args.toArray();
     	return preparedQuery;
     }
     
@@ -395,7 +395,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		
     	HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
     	preparedQuery.sql = sqlQueryBuilder.toString();
-    	preparedQuery.args = args.toArray(new String[0]);
+    	preparedQuery.args = args.toArray();
     	return preparedQuery;
     }
     
@@ -447,7 +447,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		
     	HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
     	preparedQuery.sql = sqlQueryBuilder.toString();
-    	preparedQuery.args = args.toArray(new String[0]);
+    	preparedQuery.args = args.toArray();
     	return preparedQuery;
     }
     
@@ -461,8 +461,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     private List<String> getPaths(HpcPreparedQuery prepareQuery) throws HpcException
     {
 		try {
-		     return jdbcTemplate.query(prepareQuery.sql, objectPathRowMapper, 
-		    		                   (Object[]) prepareQuery.args);
+		     return jdbcTemplate.query(prepareQuery.sql, objectPathRowMapper, prepareQuery.args);
 		     
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get collection/data-object Paths: " + 
