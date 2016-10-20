@@ -418,7 +418,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			
 			// Optionally add a filter for level.
 			if(metadataQuery.getLevel() != null) {
-			   sqlQueryBuilder.append(levelFilters.get(HpcMetadataQueryOperator.EQUAL));
+			   String levelFilter = levelFilters.get(metadataQuery.getLevelOperator());
+			   if(levelFilter == null) {
+				  throw new HpcException("Invalid level operator: " + metadataQuery.getLevelOperator(),
+			                             HpcErrorType.INVALID_REQUEST_INPUT); 
+			   }
+			   sqlQueryBuilder.append(levelFilter);
 			   args.add(metadataQuery.getLevel());
 			}
 		}
