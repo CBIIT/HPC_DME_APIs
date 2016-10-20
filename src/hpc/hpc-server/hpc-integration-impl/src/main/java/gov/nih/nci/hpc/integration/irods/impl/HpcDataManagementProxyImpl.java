@@ -886,7 +886,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	try {
 		     // Prepare the Query.
 		     for(HpcMetadataQuery metadataQuery : metadataQueries) {
-			     AVUQueryOperatorEnum operator = valueOf(metadataQuery.getOperator());
+			     AVUQueryOperatorEnum operator = valueOf(metadataQuery.getOperator().value());
 			     queryElements.add(
 		              AVUQueryElement.instanceForValueQuery(AVUQueryPart.ATTRIBUTE, 
 		        		                                    operator, 

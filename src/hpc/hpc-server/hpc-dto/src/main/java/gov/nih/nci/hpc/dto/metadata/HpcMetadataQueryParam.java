@@ -12,11 +12,11 @@ package gov.nih.nci.hpc.dto.metadata;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 	
 /**
  * <p>
@@ -58,9 +58,9 @@ public class HpcMetadataQueryParam extends HpcMetadataQuery
             		    ((JSONObject) new JSONParser().parse(metadataEntryJSONString));
              setAttribute((String) jsonMetadataEntry.get("a"));
              setValue((String) jsonMetadataEntry.get("v"));
-             setOperator((String) jsonMetadataEntry.get("o"));
+             setOperator(HpcMetadataQueryOperator.fromValue((String) jsonMetadataEntry.get("o")));
              
-		} catch(ParseException e) {
+		} catch(Exception e) {
 			    jsonParsingException = 
 			    	new HpcException("Invalid metadata entry: " + metadataEntryJSONString,
 			    			         HpcErrorType.INVALID_REQUEST_INPUT, e);
