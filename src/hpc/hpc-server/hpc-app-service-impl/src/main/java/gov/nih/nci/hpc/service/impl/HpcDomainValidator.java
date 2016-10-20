@@ -180,7 +180,9 @@ public class HpcDomainValidator
     	for(HpcMetadataQuery metadataQuery : metadataQueries) {
     		if(isEmpty(metadataQuery.getAttribute()) || 
     		   isEmpty(metadataQuery.getValue()) ||
-    		   isEmpty(metadataQuery.getOperator())) {
+    		   metadataQuery.getOperator() == null ||
+    		   (metadataQuery.getLevel() != null && metadataQuery.getLevelOperator() == null) ||
+    		   (metadataQuery.getLevel() == null && metadataQuery.getLevelOperator() != null)) {
     		   return false;
     		}
     	}
