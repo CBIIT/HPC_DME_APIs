@@ -10,10 +10,10 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidCompoundMetadataQuery;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueries;
-import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidCompoundMetadataQuery;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE;
@@ -46,6 +46,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
@@ -89,7 +90,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     // Constants
     //---------------------------------------------------------------------//
 	
-	private static final String EQUAL_OPERATOR = "EQUAL";
 	private static final String INVALID_PATH_METADATA_MSG = 
 			                    "Invalid path or metadata entry";
 	
@@ -171,19 +171,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	// Prepare the query to get data objects in data transfer in-progress to archive.
         dataTransferInProgressToArchiveQuery.add(
             toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, 
-            		        EQUAL_OPERATOR, 
+            		        HpcMetadataQueryOperator.EQUAL, 
         	                HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE.value()));
         
         // Prepare the query to get data objects in data transfer in-progress to temporary archive.
         dataTransferInProgressToTemporaryArchiveQuery.add(
         	toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, 
-        			        EQUAL_OPERATOR, 
+        			        HpcMetadataQueryOperator.EQUAL, 
         			        HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE.value()));
         
         // Prepare the query to get data objects in temporary archive.
         dataTransferInTemporaryArchiveQuery.add(
         	toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, 
-        			        EQUAL_OPERATOR, 
+        			        HpcMetadataQueryOperator.EQUAL, 
         			        HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE.value()));
     }   
     
@@ -1266,7 +1266,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
      * @param value The metadata entry value.
      * @return HpcMetadataEntry instance
      */
-    private HpcMetadataQuery toMetadataQuery(String attribute, String operator, String value)
+    private HpcMetadataQuery toMetadataQuery(String attribute, HpcMetadataQueryOperator operator, 
+    		                                 String value)
     {
 		HpcMetadataQuery query = new HpcMetadataQuery();
 		query.setAttribute(attribute);
