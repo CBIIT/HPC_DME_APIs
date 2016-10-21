@@ -95,7 +95,7 @@ public class HPCPermissions extends HPCBatchClient {
 			// the header
 			Map<String, List<HpcUserPermission>> userPermissions = new HashMap<String, List<HpcUserPermission>>();
 			Map<String, List<HpcGroupPermission>> groupPermissions = new HashMap<String, List<HpcGroupPermission>>();
-			String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL);
+			String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath, hpcCertPassword);
 			for (int i = 0; i < csvRecords.size(); i++) {
 				CSVRecord record = csvRecords.get(i);
 				String path = record.get(Constants.PATH);

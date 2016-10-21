@@ -113,8 +113,9 @@ public class HPCCmdCollection extends HPCCmdClient {
 			}
 
 			System.out.println("Executing: " + serviceURL);
+			System.out.println("Executing: " + hpcCertPath + " "+hpcCertPassword);
 			try {
-				String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL);
+				String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath, hpcCertPassword);
 
 				WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
 				client.header("Authorization", "Bearer " + authToken);
