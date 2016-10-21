@@ -85,9 +85,8 @@ public class HpcClientUtil {
 			// params.setTrustManagers(new TrustManager[] { new
 			// TrustAllX509TrustManager() });
 			params.setTrustManagers(trustManagers);
-			conduit.setTlsClientParameters(params);
-
 			params.setDisableCNCheck(true);
+			conduit.setTlsClientParameters(params);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
