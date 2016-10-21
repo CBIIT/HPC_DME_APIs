@@ -93,7 +93,7 @@ public class HPCBatchCollection extends HPCBatchClient {
             String collectionPath = null;
             ResponseEntity<HpcExceptionDTO> response = null;
             //Read the CSV file records starting from the second record to skip the header
-		    String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL);
+		    String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath, hpcCertPassword);
             for (int i = 0; i < csvRecords.size(); i++) {
             	boolean processedRecordFlag = true;
             	CSVRecord record = csvRecords.get(i);

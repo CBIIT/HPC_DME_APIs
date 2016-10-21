@@ -114,7 +114,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 
 			System.out.println("Executing: " + serviceURL);
 			try {
-				String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL);
+				String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath, hpcCertPassword);
 
 				WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
 				client.header("Authorization", "Bearer " + authToken);
@@ -135,12 +135,10 @@ public class HPCCmdDatafile extends HPCCmdClient {
 						br.close();
 
 					} else if (format != null && format.equalsIgnoreCase("csv")) {
-						System.out.println("detail "+detail);
 						if (detail != null && detail.equalsIgnoreCase("no")) {
 							JsonParser parser = factory.createJsonParser((InputStream) restResponse.getEntity());
 							try {
 								HpcDataObjectListDTO dataobjects = parser.readValueAs(HpcDataObjectListDTO.class);
-								System.out.println("dataobjects1 "+dataobjects);
 								String[] header = { "dataObjectPaths" };
 								CsvFileWriter.writePathsCsvFile(logRecordsFile, header,
 										dataobjects.getDataObjectPaths());
@@ -161,7 +159,6 @@ public class HPCCmdDatafile extends HPCCmdClient {
 							JsonParser parser = factory.createJsonParser((InputStream) restResponse.getEntity());
 							try {
 								HpcDataObjectListDTO datafiles = parser.readValueAs(HpcDataObjectListDTO.class);
-								System.out.println("datafiles "+datafiles);
 								CsvFileWriter.writeDatafilesCsvFile(logRecordsFile,
 										getHeader(datafiles.getDataObjects()),
 										buildDatafiles(datafiles.getDataObjects()));
