@@ -3,6 +3,10 @@ This branch of tests requires disabling LDAB authentication before it runs.
 
 To run this test, these pre-registered collections, dataObjects, and users should exist:
 
+
+The attributes of these collections and dataObjects can be found at: 
+/HPC_Data_Management/branches/hpc-prototype-dev/src/hpc/hpc-server/hpc-ws-rs-api/test/sampledata
+
 Users:
 dice_user_group_admin
 dice_user_system_admin
