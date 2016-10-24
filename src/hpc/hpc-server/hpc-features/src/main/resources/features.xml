@@ -70,6 +70,7 @@
 		<configfile finalname="/etc/gov.nih.nci.hpc.cfg" override="false">mvn:${project.groupId}/hpc-features/${project.version}/properties/hpc-server</configfile>
 		<configfile finalname="/etc/hpc-server/metadataValidationRules.json" override="true">mvn:${project.groupId}/hpc-app-service-impl/${project.version}/json/metadataValidationRules</configfile>
 		<configfile finalname="/etc/hpc-server/notificationFormats.json" override="true">mvn:${project.groupId}/hpc-app-service-impl/${project.version}/json/notificationFormats</configfile>
+		<configfile finalname="/etc/hpc-server/dataHierarchyDefinitions.json" override="true">mvn:${project.groupId}/hpc-app-service-impl/${project.version}/json/dataHierarchyDefinitions</configfile>
 
 		<!-- Server Bundles -->
 		<bundle>mvn:${project.groupId}/hpc-common/${project.version}</bundle>

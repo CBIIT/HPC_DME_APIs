@@ -37,6 +37,15 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:complexType name="HpcDataHierarchy">
+		<xsd:sequence>
+			<xsd:element name="collectionType" type="xsd:string" />
+			<xsd:element name="isDataObjectContainer" type="xsd:boolean" />
+			<xsd:element name="subCollections" type="hpc-domain-datamanagement:HpcDataHierarchy" 
+			             minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
 	<xsd:complexType name="HpcDataObject">
 		<xsd:sequence>
 			<xsd:element name="id" type="xsd:int" />
@@ -64,7 +73,7 @@
 			<xsd:element name="specColType" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-
+	
 	<xsd:complexType name="HpcEntityPermission">
 		<xsd:sequence>
 			<xsd:element name="permission" type="xsd:string" /> 
@@ -101,5 +110,7 @@
 			<xsd:element name="files" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	
 
 </xsd:schema>
