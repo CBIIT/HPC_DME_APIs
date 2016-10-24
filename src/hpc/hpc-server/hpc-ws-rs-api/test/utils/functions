@@ -77,6 +77,60 @@ function get_json_array_value {
 }
 
 
+#Check the existance of an attribute/value metadata in a response message
+#Inputs: <RESPONSE_MSG>: The file that contains the response messge
+#        <ATTRIBE>: The attribute
+#        <VALUE>: The value to be checked
+#        [TEST]: TRUE if attribute should be found, FALSE if not
+#
+#Returns: echo "TRUE" or "FALSE" 
+function check_existance {
+
+    if [ ! -e "$1" ]
+    then
+        echo "ERROR: The response message file \"$1\" does not exists" >&2
+        exit
+    fi 
+
+    RESPONSE_MSG="$1"
+    if [ -z "$2" ] || [ -z "$3" ] 
+    then
+        echo "ERROR: missing input arguments" >&2
+        echo "USAGE: check_existance <response-msg> <attribute> <value>" >&2
+        exit
+    fi 
+    
+    ATTRIBUTE="$2"
+    VALUE="$3"
+
+    #Make sure the response does include the object
+    RESPONSE_GROUPS=`cat $RESPONSE_MSG | tr "{" "\n"`
+    OBJECT_GROUPS=`echo "$RESPONSE_GROUPS" | grep "$ATTRIBUTE"`
+    OBJECT_NAMES=`get_json_value "$OBJECT_GROUPS" value`
+
+    OBJECT_FOUND="FALSE"
+    for object in "$OBJECT_NAMES"; do
+        if [[ $object == *"$VALUE"*  ]]
+        then
+            OBJECT_FOUND="TRUE"
+            break
+        fi
+    done 
+      
+
+    if [ ! -z "$4" ] 
+    then
+        TEST="$4"
+        if [ ! "$OBJECT_FOUND" == "$TEST" ] 
+        then
+            echo "ERROR: OBJECT \"$VALUE\" does not pass the test $TEST"  1>&2
+        fi
+    fi
+
+    echo $OBJECT_FOUND 
+
+}
+
 #Return the hierarchical array value for a given attribute in a json string. 
 #Limited to two levels of hierarchy. Example "Attribute":[ []   []  ] 
 #Inputs: "Input string"  "attribute-name" 
