@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+#Check if the dataObject exists before searching 
+
+RESPONSE_HEADER=response-header
+RESPONSE_MSG=response-message.json
+
+search_by_metadata dataObject input.json dice_user
+
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+
+ATTRIBUTE="\"name\""
+VALUE="dice test data file 2"
+
+
+if [ ! "$HTTP_CODE" -eq "204" ]
+then
+    #Make sure the response does not include the object
+    RES=$(check_existance "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" "FALSE")
+fi
