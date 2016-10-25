@@ -29,6 +29,11 @@
 		<constructor-arg value="${hpc.service.metadataValidationRulesPath}" />
 	</bean>
 	
+	<!--  HPC Data Hierarchy Validator -->
+	<bean id="hpcDataHierarchyValidator" class="gov.nih.nci.hpc.service.impl.HpcDataHierarchyValidator">
+		<constructor-arg value="${hpc.service.dataHierarchyDefinitionsPath}" />
+	</bean>
+	
 	<!--  Map of HPC Data Transfer Proxies -->
 	<util:map id="hpcDataTransferProxies" 
 	          key-type="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType"
