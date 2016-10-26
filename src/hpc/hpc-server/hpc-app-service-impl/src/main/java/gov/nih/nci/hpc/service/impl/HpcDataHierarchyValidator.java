@@ -115,6 +115,17 @@ public class HpcDataHierarchyValidator
     {
     }
     
+    /**
+     * Get a data hierarchy for a DOC.
+     *
+     * @param doc The DOC.
+     * @return HpcDataHierarchy
+     */
+    public HpcDataHierarchy getDataHierarchy(String doc) 
+    {
+    	return dataHierarchyDefinitions.get(doc);
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  

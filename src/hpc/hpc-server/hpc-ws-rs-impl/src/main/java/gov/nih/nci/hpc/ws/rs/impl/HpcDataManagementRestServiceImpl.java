@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
@@ -407,6 +408,26 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		logger.info((stop-start) + " setPermissions: Total time - "+entityPermissionRequests);
 		
 		return okResponse(permissionResponseList, false);
+    }
+    
+    @Override
+    public Response getDataManagementModel(String doc)
+    {
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: GET /model/" + doc);
+    	
+    	HpcDataManagementModelDTO dataModel = null;
+		try {
+			 dataModel = dataManagementBusService.getDataManagementModel(doc);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /model/" + doc + " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " getDataManagementModel: " + doc);
+		
+		return okResponse(dataModel, true);
     }
     
     //---------------------------------------------------------------------//
