@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
@@ -167,6 +168,16 @@ public interface HpcDataManagementBusService
 	public HpcEntityPermissionResponseListDTO setPermissions(
 			                  List<HpcEntityPermissionRequestDTO> entityPermissionRequests)
 			                  throws HpcException;
+	
+    /**
+     * Get the Data Management Model (Metadata validation rules and hierarchy definition) for a DOC.
+     *
+     * @param doc The DOC to get the model for.
+     * @return HpcDataManagementModelDTO
+     *      
+     * @throws HpcException
+     */
+	public HpcDataManagementModelDTO getDataManagementModel(String doc) throws HpcException;
 }
 
  

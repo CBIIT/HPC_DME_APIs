@@ -163,12 +163,27 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
-	<!-- TODO: REMOVE -->
+	<!-- Compound Metadata Query -->
 	<xsd:element name="HpcCompoundMetadataQueryDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 			    <xsd:element name="query" type="hpc-domain-metadata:HpcCompoundMetadataQuery" />
 			    <xsd:element name="detailedResponse" type="xsd:boolean" minOccurs="0" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
+	<xsd:element name="HpcDataManagementModelDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="collectionMetadataValidationRules"
+				             type="hpc-domain-metadata:HpcMetadataValidationRule"
+					         minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="dataObjectMetadataValidationRules"
+				             type="hpc-domain-metadata:HpcMetadataValidationRule"
+					         minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="dataHierarchy"
+				             type="hpc-domain-datamanagement:HpcDataHierarchy" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	

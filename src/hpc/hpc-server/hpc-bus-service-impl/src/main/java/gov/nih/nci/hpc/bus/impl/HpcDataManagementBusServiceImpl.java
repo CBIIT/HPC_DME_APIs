@@ -30,6 +30,7 @@ import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
@@ -465,6 +466,26 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	return responses;
     }
     
+    @Override
+    public HpcDataManagementModelDTO getDataManagementModel(String doc) throws HpcException
+    {
+    	logger.info("Invoking getDataManagementMode(String): " + doc);
+    	
+    	// Input validation.
+    	if(doc == null || doc.isEmpty()) {
+    	   throw new HpcException("Null or empty DOC", HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	HpcDataManagementModelDTO dataManagementModel = new HpcDataManagementModelDTO();
+    	dataManagementModel.getCollectionMetadataValidationRules().addAll(
+    			               dataManagementService.getCollectionMetadataValidationRules(doc));
+    	dataManagementModel.getDataObjectMetadataValidationRules().addAll(
+	                           dataManagementService.getDataObjectMetadataValidationRules(doc));
+    	dataManagementModel.setDataHierarchy(dataManagementService.getDataHierarchy(doc));
+    	
+    	return dataManagementModel;
+    }
+    	
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
