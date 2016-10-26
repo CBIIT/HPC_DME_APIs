@@ -186,6 +186,26 @@ public class HpcMetadataValidator
     {
     	return systemGeneratedMetadataAttributes;
     }
+    
+    /**
+     * Return the collection metadata validation rules.
+     *
+     * @return List of HpcMetadataValidationRule
+     */
+    public List<HpcMetadataValidationRule> getCollectionMetadataValidationRules()
+    {
+    	return collectionMetadataValidationRules;
+    }
+    
+    /**
+     * Return the data object metadata validation rules.
+     *
+     * @return List of HpcMetadataValidationRule
+     */
+    public List<HpcMetadataValidationRule> getDataObjectMetadataValidationRules()
+    {
+    	return dataObjectMetadataValidationRules;
+    }
     		                               
     //---------------------------------------------------------------------//
     // Helper Methods

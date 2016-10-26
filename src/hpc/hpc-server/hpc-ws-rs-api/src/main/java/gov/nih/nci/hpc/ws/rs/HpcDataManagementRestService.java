@@ -71,7 +71,6 @@ public interface HpcDataManagementRestService
      */
 	@GET
 	@Path("/collection/{path:.*}")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getCollection(@PathParam("path") String path);
 
@@ -142,7 +141,6 @@ public interface HpcDataManagementRestService
      */
 	@GET
 	@Path("/dataObject/{path:.*}")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getDataObject(@PathParam("path") String path);
 
@@ -213,5 +211,16 @@ public interface HpcDataManagementRestService
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response setPermissions(List<HpcEntityPermissionRequestDTO> entityPermissionRequests);
+	
+    /**
+     * GET Data Management Model (Metadata validation rules and hierarchy definition).
+     *
+     * @param doc The DOC to get the model for.
+     * @return Response The REST service response.
+     */
+	@GET
+	@Path("/model/{doc}")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getDataManagementModel(@PathParam("doc") String doc);
 }
 
