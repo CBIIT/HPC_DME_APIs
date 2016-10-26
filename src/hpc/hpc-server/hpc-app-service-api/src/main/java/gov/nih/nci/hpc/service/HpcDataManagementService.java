@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
@@ -22,6 +23,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
@@ -542,6 +544,38 @@ public interface HpcDataManagementService
      * @throws HpcException
      */
     public void refreshViews() throws HpcException;
+    
+    /**
+     * Get colelction metadata validation rules for a DOC.
+     * 
+     * @param doc The DOC.
+     * @return A list of HpcMetadataValidationRule
+     *
+     * @throws HpcException
+     */
+    public List<HpcMetadataValidationRule> 
+           getCollectionMetadataValidationRules(String doc) throws HpcException;
+    
+    /**
+     * Get data object metadata validation rules for a DOC.
+     * 
+     * @param doc The DOC.
+     * @return A list of HpcMetadataValidationRule
+     *
+     * @throws HpcException
+     */
+    public List<HpcMetadataValidationRule> 
+           getDataObjectMetadataValidationRules(String doc) throws HpcException;
+    
+    /**
+     * Get data hierarchy of a DOC
+     * 
+     * @param doc The DOC.
+     * @return HpcDataHierarchy
+     *
+     * @throws HpcException
+     */
+    public HpcDataHierarchy getDataHierarchy(String doc) throws HpcException;
 }
 
  

@@ -31,6 +31,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
@@ -47,6 +48,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
@@ -116,6 +118,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	// Metadata Validator.
 	@Autowired
 	private HpcMetadataValidator metadataValidator = null;
+	
+	// Data Hierarchy Validator.
+	@Autowired
+	private HpcDataHierarchyValidator dataHierarchyValidator = null;
 	
 	// Key Generator.
 	@Autowired
@@ -1099,6 +1105,26 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	metadataDAO.refreshViews();
     }
     
+    @Override
+    public List<HpcMetadataValidationRule> 
+           getCollectionMetadataValidationRules(String doc) throws HpcException
+    {
+    	return rulesForDOC(metadataValidator.getCollectionMetadataValidationRules(), doc);
+    }
+    
+    @Override
+    public List<HpcMetadataValidationRule> 
+           getDataObjectMetadataValidationRules(String doc) throws HpcException
+    {
+    	return rulesForDOC(metadataValidator.getDataObjectMetadataValidationRules(), doc);
+    }
+
+    @Override
+    public HpcDataHierarchy getDataHierarchy(String doc) throws HpcException
+    {
+    	return dataHierarchyValidator.getDataHierarchy(doc);
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -1627,5 +1653,27 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	return metadataEntries;
+    }
+    
+    /**
+     * Filter a list of metadata validation rules by DOC.
+     *
+     * @param rules The list of rules to filter.
+     * @param doc The DOC to filter for.
+     * @return List of HpcMetadataValidationRule
+     * 
+     */
+    private List<HpcMetadataValidationRule> rulesForDOC(List<HpcMetadataValidationRule> rules,
+    		                                            String doc) 
+    {
+    	List<HpcMetadataValidationRule> docRules = new ArrayList<>();
+    	for(HpcMetadataValidationRule rule : rules) {
+    		if(rule.getDOC() == null || rule.getDOC().isEmpty() ||
+    		   rule.getDOC().contains(doc)) {
+    		   docRules.add(rule);
+    		}
+    	}
+    	
+    	return docRules;
     }
 }
