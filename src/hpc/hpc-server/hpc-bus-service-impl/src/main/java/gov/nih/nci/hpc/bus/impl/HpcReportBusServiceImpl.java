@@ -82,9 +82,19 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
 		if (criteriaDTO.getType() == null)
 			throw new HpcException("Report type is missing", HpcErrorType.INVALID_REQUEST_INPUT);
 
+		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY)
+				&& (criteriaDTO.getFromDate() != null || criteriaDTO.getToDate() != null || criteriaDTO.getDoc() != null))
+			throw new HpcException("Invalid request for USAGE_SUMMARY report. Doc or FromDate, ToDate are not allowed.",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+
 		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE)
 				&& (criteriaDTO.getFromDate() == null || criteriaDTO.getToDate() == null))
 			throw new HpcException("Date range is missing for USAGE_SUMMARY_BY_DATE_RANGE report",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+
+		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE)
+				&& (criteriaDTO.getDoc() != null))
+			throw new HpcException("Invalid request for USAGE_SUMMARY_BY_DATE_RANGE report. Doc is not allowed",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 
 		if(criteriaDTO.getFromDate() != null && !isDateValid(criteriaDTO.getFromDate(), "mm/dd/yyyy"))
@@ -95,23 +105,30 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
 			throw new HpcException("Invalid toDate format. Valid format is mm/dd/yyyy",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 
-//		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC)
-//				&& (criteriaDTO.getDoc() == null || criteriaDTO.getDoc().isEmpty()))
-//			throw new HpcException("DOC value is missing for USAGE_SUMMARY_BY_DOC report",
-//					HpcErrorType.INVALID_REQUEST_INPUT);
+		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE) && criteriaDTO.getDoc().isEmpty())
+			throw new HpcException("DOC is missing for USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE report",
+					HpcErrorType.INVALID_REQUEST_INPUT);
 
-		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE) && (criteriaDTO.getDoc().isEmpty() || criteriaDTO.getFromDate() == null || criteriaDTO.getToDate() == null))
+		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE) && (criteriaDTO.getFromDate() == null || criteriaDTO.getToDate() == null))
 			throw new HpcException("Date range is missing for USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE report",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 
-//		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER)
-//				&& (criteriaDTO.getUser() == null || criteriaDTO.getUser().isEmpty()))
-//			throw new HpcException("UserId value is missing for USAGE_SUMMARY_BY_USER report",
-//					HpcErrorType.INVALID_REQUEST_INPUT);
+		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE) && !criteriaDTO.getUser().isEmpty())
+			throw new HpcException("User is not allowed for USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE report",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+
+		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE) && criteriaDTO.getUser().isEmpty())
+			throw new HpcException(
+					"UserId value is missing for USAGE_SUMMARY_BY_USER_BY_DATE_RANGE report",
+					HpcErrorType.INVALID_REQUEST_INPUT);
 
 		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE) && (criteriaDTO.getFromDate() == null || criteriaDTO.getToDate() == null))
 			throw new HpcException(
-					"UserId value or date range is missing for USAGE_SUMMARY_BY_USER_BY_DATE_RANGE report",
+					"date range is missing for USAGE_SUMMARY_BY_USER_BY_DATE_RANGE report",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+
+		if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE) && !criteriaDTO.getDoc().isEmpty())
+			throw new HpcException("DOC is not allowed for USAGE_SUMMARY_BY_USER_BY_DATE_RANGE report",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 
 		HpcReportCriteria criteria = new HpcReportCriteria(); 
@@ -136,6 +153,8 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		criteria.getUsers().addAll(criteriaDTO.getUser());
+		
+		
 		List<HpcReport> reports = reportService.generateReport(criteria);
 		HpcReportsDTO dto = new HpcReportsDTO();
 		for(HpcReport report : reports)
