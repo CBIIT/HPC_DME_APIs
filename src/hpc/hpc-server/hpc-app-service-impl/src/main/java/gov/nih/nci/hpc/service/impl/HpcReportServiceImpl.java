@@ -11,8 +11,13 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.dao.HpcReportsDAO;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
+import gov.nih.nci.hpc.domain.report.HpcReportType;
+import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcReportService;
 
@@ -72,7 +77,27 @@ public class HpcReportServiceImpl implements HpcReportService {
 
 	@Override
 	public List<HpcReport> generateReport(HpcReportCriteria criteria) throws HpcException {
+    	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+    	if(invoker == null) {
+	       throw new HpcException("Unknown user",
+			                      HpcRequestRejectReason.NOT_AUTHORIZED);
+    	}
+    	if(!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))
+    	{
+	    	if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC) ||
+	    			criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
+	    	{
+	    		String doc = invoker.getNciAccount().getDOC();
+	    		List<String> docs = criteria.getDocs();
+	    		for(String criteriaDOC : docs)
+	    		{
+	    			if(!criteriaDOC.endsWith(doc))
+	    				throw new HpcException("Not authorized to generate report on the division: "+criteriaDOC, HpcErrorType.UNAUTHORIZED_REQUEST);
+	    		}
+	    	}
+    	}
 		return reportsDAO.generatReport(criteria);
 	}
 
 }
+	
