@@ -46,7 +46,7 @@ public class HpcMetadataValidator
     //---------------------------------------------------------------------//    
     
     // Collection type attribute name.
-	private static final String COLLECTION_TYPE_ATTRIBUTE = "collection_type"; 
+	public static final String COLLECTION_TYPE_ATTRIBUTE = "collection_type"; 
 	
     // System generated metadata attributes.
 	public static final String ID_ATTRIBUTE = "uuid";
