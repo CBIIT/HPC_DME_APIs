@@ -60,12 +60,11 @@ public interface HpcDataManagementService
      * Create a data object's file.
      *
      * @param path The data object path.
-     * @param createParentPathDirectory If set to true, create the directory for the file.
      * @return true if the data object file was created, or false if it already exists.
      * 
      * @throws HpcException
      */
-    public boolean createFile(String path, boolean createParentPathDirectory) 
+    public boolean createFile(String path) 
     		                 throws HpcException;
     
     /**
@@ -568,7 +567,7 @@ public interface HpcDataManagementService
            getDataObjectMetadataValidationRules(String doc) throws HpcException;
     
     /**
-     * Get data hierarchy of a DOC
+     * Get data hierarchy of a DOC.
      * 
      * @param doc The DOC.
      * @return HpcDataHierarchy
@@ -576,6 +575,17 @@ public interface HpcDataManagementService
      * @throws HpcException
      */
     public HpcDataHierarchy getDataHierarchy(String doc) throws HpcException;
+    
+    /**
+     * Validate a path against a hierarchy definition.
+     *
+     * @param path The collection path.
+     * @param dataObjectRegistration If true, the path is of a data object being registered, otherwise it's 
+     *                               a collection registration.
+     * 
+     * @throws HpcException If the hierarchy is invalid.
+     */
+    public void validateHierarchy(String path, boolean dataObjectRegistration) throws HpcException;
 }
 
  

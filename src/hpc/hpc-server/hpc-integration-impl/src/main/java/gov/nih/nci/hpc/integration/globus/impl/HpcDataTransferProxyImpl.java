@@ -118,13 +118,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		                                            List<HpcMetadataEntry> metadataEntries) 
     		                                           throws HpcException
     {
-    	// Verify the source exists. 
     	JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 
-    	//JSONTransferAPIClient client1 = globusConnection.getTransferClient(
-    	//globusConnection.authenticate("eranrosenberg@globusid.org", "AQBXYF_RAAAAAAADWxmuVCxLxsFPixcomyx4sNvT5zERR9z6jadnmASRHM81OywDsBro_U0-KkASvDiOyv_4"));
-    	//createACL(client1, uploadRequest.getSourceLocation());
-    			
     	// Calculate the archive destination.
     	HpcFileLocation archiveDestinationLocation = 
     	   getArchiveDestinationLocation(baseArchiveDestination.getFileLocation(), 
@@ -587,38 +582,4 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
     }
-    
-    /**
-     * Create an ACL rule to add RW permission.
-     *
-     * @param client Client API instance.
-     * @param fileLocation The file location.
-     * 
-     * @return The ACL rule ID.
-     * 
-     * @throws HpcException
-     */
-    private String createACL(JSONTransferAPIClient client, HpcFileLocation fileLocation)
-                            throws HpcException
-	{
-		try {
-			 JSONObject acl = new JSONObject();
-			 acl.put("DATA_TYPE", "access");
-			 //acl.put("principal_type", "identity");
-			 //acl.put("principal", "pkonka@globusid.org");
-			 acl.put("principal_type", "all_authenticated_users");
-			 acl.put("principal", "");
-			 acl.put("path", fileLocation.getFileId());
-			 acl.put("permissions", "r");
-		     
-			 JSONTransferAPIClient.Result result = client.postResult(BaseTransferAPIClient.endpointPath(fileLocation.getFileContainerId()) +"/access", acl, null);
-			 String accessId = result.document.getString("access_id");
-			
-			 return accessId;
-		
-		} catch(Exception e) {
-		        throw new HpcException("Failed to create ACL: " + fileLocation, 
-		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
-		}
-	}
 }

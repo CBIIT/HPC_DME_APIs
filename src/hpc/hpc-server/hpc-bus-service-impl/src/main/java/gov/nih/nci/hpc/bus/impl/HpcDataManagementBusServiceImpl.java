@@ -139,6 +139,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
        	        dataManagementService.addSystemGeneratedMetadataToCollection(path,
        	        		                                                     metadataOrigin);
        	        
+       	        // Validate the collection hierarchy.
+       	        dataManagementService.validateHierarchy(path, false);
+       	        
        	        registrationCompleted = true;
        	        
     	   } finally {
@@ -241,11 +244,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Create a data object file (in the data management system).
-	    boolean created = dataManagementService.createFile(path, false);
+	    boolean created = dataManagementService.createFile(path);
 	    
 	    if(created) {
     	   boolean registrationCompleted = false; 
     	   try {
+      	        // Validate the new collection meets the hierarchy definition.
+      	        dataManagementService.validateHierarchy(path, true);
+    		   
     		    // Assign system account as an additional owner of the data-object.
    		        dataManagementService.assignSystemAccountPermission(path);
    		  
