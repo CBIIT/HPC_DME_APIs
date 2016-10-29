@@ -237,8 +237,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public boolean createFile(String path, boolean createParentPathDirectory) 
-    		                 throws HpcException
+    public boolean createFile(String path) throws HpcException
     {
     	Object authenticatedToken = getAuthenticatedToken();
     	
@@ -257,15 +256,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	//  Validate the parent directory exists.
-    	if(!createParentPathDirectory && 
-    	   !dataManagementProxy.isParentPathDirectory(authenticatedToken, path)) {
+    	if(!dataManagementProxy.isParentPathDirectory(authenticatedToken, path)) {
     		throw new HpcException("Invalid data object path. Directory doesn't exist: " + path, 
                                    HpcRequestRejectReason.INVALID_DATA_OBJECT_PATH);
-    	}
-    	
-    	// Create the parent directory if it doesn't already exist.
-    	if(createParentPathDirectory) {
-    	   dataManagementProxy.createParentPathDirectory(authenticatedToken, path);
     	}
     	
     	// Create the data object file.
@@ -1125,6 +1118,31 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	return dataHierarchyValidator.getDataHierarchy(doc);
     }
     
+    @Override
+    public void validateHierarchy(String path, boolean dataObjectRegistration) throws HpcException
+    {
+    	// Calculate the collection path to validate.
+    	String validationCollectionPath = dataObjectRegistration ? 
+    			                          path.substring(0, path.lastIndexOf('/') - 1) : path;
+    	validationCollectionPath = dataManagementProxy.getAbsolutePath(validationCollectionPath);
+    	validationCollectionPath = validationCollectionPath.substring(getBasePath().length(), 
+    			                                                      validationCollectionPath.length() - 1);
+    	
+    	// Get the DOC.
+    	String doc = getCollectionSystemGeneratedMetadata(validationCollectionPath).getRegistrarDOC();
+    	
+    	// Build the collection path types list.
+    	List<String> collectionPathTypes = new ArrayList<>();
+    	String subCollectionPath = null;
+		for(String s : validationCollectionPath.split("/")) {
+			subCollectionPath += "/" + s;
+			collectionPathTypes.add(getCollectionType(subCollectionPath));
+		}
+
+		// Perform the hierarchy validation.
+		dataHierarchyValidator.validateHierarchy(doc, collectionPathTypes, dataObjectRegistration);
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -1675,5 +1693,25 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	return docRules;
+    }
+    
+    /**
+     * Get a collection type of a path
+     *
+     * @param path The collection path.
+     * @return The collection type.
+     * @throws HpcException if it failed to determine the collection type.
+     * 
+     */
+    private String getCollectionType(String path) throws HpcException
+    {
+    	for(HpcMetadataEntry metadataEntry : getCollectionMetadataEntries(path).getSelfMetadataEntries()) {
+    		if(metadataEntry.getAttribute().equals(HpcMetadataValidator.COLLECTION_TYPE_ATTRIBUTE)) {
+    		   return metadataEntry.getValue();
+    		}
+    	}
+    	
+    	throw new HpcException("Could not determine collection type for: " + path,
+    			               HpcErrorType.INVALID_REQUEST_INPUT);
     }
 }

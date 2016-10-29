@@ -15,8 +15,10 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.io.FileReader;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.json.simple.JSONArray;
@@ -102,17 +104,51 @@ public class HpcDataHierarchyValidator
     //---------------------------------------------------------------------//
     
     /**
-     * Validate collection metadata. Null unit values are converted to empty strings.
+     * Validate a collection path against a hierarchy definition for the DOC.
      *
-     * @param existingMetadataEntries Optional (can be null). The metadata entries currently associated 
-     *                                with the collection or data object.
-     * @param addUpdateMetadataEntries Optional (can be null) A list of metadata entries
-     *                                 that are being added or updated to 'metadataEntries'.
+     * @param doc The DOC.
+     * @param collectionPathTypes The collection types on the path. e.g /Project/Dataset/Folder.
+     * @param dataObjectRegistration If set to true, the validation will check if a data object is allowed
+     *                               to be registered to this path.
      * 
-     * @throws HpcException If the metadata is invalid.
+     * @throws HpcException If the hierarchy is invalid.
      */
-    public void validateHierarchy() throws HpcException
+    public void validateHierarchy(String doc, List<String> collectionPathTypes, 
+    		                      boolean dataObjectRegistration) 
+    		                     throws HpcException
     {
+    	HpcDataHierarchy dataHierarchy = getDataHierarchy(doc);
+    	if(dataHierarchy == null) {
+    	   // No hierarchy definition found for the DOC, so validation is not needed.
+    	   return;
+    	}
+    	
+    	List<HpcDataHierarchy> subCollectionsHierarchies = Arrays.asList(dataHierarchy);
+    	boolean isDataObjectContainer = false;
+    	
+    	// Iterate through the collection path types, and validate against the hierarchy definition.
+    	for(String collectionType : collectionPathTypes) {
+    		boolean collectionTypeValidated = false;
+    		for(HpcDataHierarchy collectionHierarchy : subCollectionsHierarchies) {
+    			if(collectionHierarchy.getCollectionType().equals(collectionType)) {
+    			   collectionTypeValidated = true;
+    			   subCollectionsHierarchies = collectionHierarchy.getSubCollectionsHierarchies();
+    			   isDataObjectContainer = collectionHierarchy.getIsDataObjectContainer();
+    			   break;
+    			}
+    		}
+    		
+    		if(!collectionTypeValidated) {
+    		   throw new HpcException("Invalid collection hierarchy", 
+    				                  HpcErrorType.INVALID_REQUEST_INPUT);
+    		}
+    	}   
+    	
+    	// Validate if data object registration is allowed to this path.
+    	if(dataObjectRegistration && !isDataObjectContainer) {
+    	   throw new HpcException("Data object is not allowed in this collection", 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
     }
     
     /**
@@ -158,7 +194,7 @@ public class HpcDataHierarchyValidator
   	    if(jsonSubCollections != null) {
 		   Iterator<JSONObject> subCollectionsIterator = jsonSubCollections.iterator();
 	       while(subCollectionsIterator.hasNext()) {
-	    	     dataHierarchy.getSubCollections().add(dataHierarchyFromJSON(subCollectionsIterator.next()));
+	    	     dataHierarchy.getSubCollectionsHierarchies().add(dataHierarchyFromJSON(subCollectionsIterator.next()));
 	       }
   	    }
   	    
