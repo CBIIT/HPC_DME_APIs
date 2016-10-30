@@ -338,7 +338,6 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	claims.put(TOKEN_DM_DEFAULT_RESC_STORAGE, authenticationTokenClaims.getDataManagementAccount().getDefaultStorageResource());
     	claims.put(TOKEN_DM_HOME_DIRECTORY, authenticationTokenClaims.getDataManagementAccount().getHomeDirectory());
     	
-    	
     	// Calculate the expiration date.
     	Calendar tokenExpiration = Calendar.getInstance();
     	tokenExpiration.add(Calendar.MINUTE, authenticationTokenExpirationPeriod);
@@ -386,6 +385,20 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     		    logger.error("Invalid Token: " + e);
     		    return null;
     	}
+    }
+    
+    @Override
+    public void authorizeUserService(String nciUserId) throws HpcException
+    {
+	  	// System admins allow to call this service for any user. Regular users allow to call this 
+		// on their own user-id only.
+		HpcRequestInvoker invoker = getRequestInvoker();
+		if(invoker == null || 
+		   (!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN) &&
+		    !invoker.getNciAccount().getUserId().equals(nciUserId))) {
+	 	   throw new HpcException("Unauthorized access request",
+	                  HpcErrorType.UNAUTHORIZED_REQUEST);
+		}
     }
 
     //---------------------------------------------------------------------//

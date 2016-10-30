@@ -233,6 +233,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	// Authorize calling this service w/ 'nciUserId'.
+    	securityService.authorizeUserService(nciUserId);
+    	
     	// System admins allow to call this service for any user. Regular users allow to call this 
     	// on their own user-id only.
     	HpcRequestInvoker invoker = securityService.getRequestInvoker();
