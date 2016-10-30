@@ -429,6 +429,25 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		
 		return okResponse(dataModel, true);
     }
+
+    @Override
+    public Response saveQuery(String nciUserId, String queryName,
+    		                  HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+    {
+    	return okResponse(null, false);
+    }
+    
+    @Override
+    public Response deleteQuery(String nciUserId, String queryName)
+    {
+    	return okResponse(null, false);
+    }
+
+    @Override
+    public Response getQueries(String nciUserId)
+    {
+    	return okResponse(null, false);
+    }
     
     //---------------------------------------------------------------------//
     // Helper Methods

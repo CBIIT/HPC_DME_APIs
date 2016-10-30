@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -222,5 +223,43 @@ public interface HpcDataManagementRestService
 	@Path("/model/{doc}")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getDataManagementModel(@PathParam("doc") String doc);
+	
+    /**
+     * Save a query for a user.
+     *
+     * @param nciUserId The user ID save the query for.
+     * @param queryName The query name.
+     * @param updateUserRequestDTO The update request DTO.
+     * @return Response The REST service response.
+     */
+    @POST
+    @Path("/query/{nciUserId}/{queryName}")
+    @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    public Response saveQuery(@PathParam("nciUserId") String nciUserId,
+    		                  @PathParam("queryName") String queryName,
+    		                  HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
+    
+    /**
+     * Delete a query for a user.
+     *
+     * @param nciUserId The user ID save the query for.
+     * @param queryName The query name.
+     * @return Response The REST service response.
+     */
+    @DELETE
+    @Path("/query/{nciUserId}/{queryName}")
+    public Response deleteQuery(@PathParam("nciUserId") String nciUserId,
+    		                    @PathParam("queryName") String queryName);
+
+    /**
+     * Get all saved queries for a user.
+     *
+     * @param nciUserId The registered user ID.
+     * @return Response The REST service response.
+     */
+    @GET
+    @Path("/query/{nciUserId}")
+    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    public Response getQueries(@PathParam("nciUserId") String nciUserId);
 }
 
