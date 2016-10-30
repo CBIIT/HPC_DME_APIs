@@ -1126,7 +1126,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     			                          path.substring(0, path.lastIndexOf('/') - 1) : path;
     	validationCollectionPath = dataManagementProxy.getAbsolutePath(validationCollectionPath);
     	validationCollectionPath = validationCollectionPath.substring(getBasePath().length(), 
-    			                                                      validationCollectionPath.length() - 1);
+    			                                                      validationCollectionPath.length());
     	
     	// Get the DOC.
     	String doc = getCollectionSystemGeneratedMetadata(validationCollectionPath).getRegistrarDOC();
