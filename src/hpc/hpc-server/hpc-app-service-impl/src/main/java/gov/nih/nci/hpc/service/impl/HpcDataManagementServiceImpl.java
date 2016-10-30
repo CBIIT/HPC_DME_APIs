@@ -1125,7 +1125,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	String validationCollectionPath = dataObjectRegistration ? 
     			                          path.substring(0, path.lastIndexOf('/') - 1) : path;
     	validationCollectionPath = dataManagementProxy.getAbsolutePath(validationCollectionPath);
-    	validationCollectionPath = validationCollectionPath.substring(getBasePath().length(), 
+    	validationCollectionPath = validationCollectionPath.substring(getBasePath().length() + 1, 
     			                                                      validationCollectionPath.length());
     	
     	// Get the DOC.
@@ -1133,10 +1133,18 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	
     	// Build the collection path types list.
     	List<String> collectionPathTypes = new ArrayList<>();
-    	String subCollectionPath = null;
+    	StringBuilder subCollectionPath = new StringBuilder();
 		for(String s : validationCollectionPath.split("/")) {
-			subCollectionPath += "/" + s;
-			collectionPathTypes.add(getCollectionType(subCollectionPath));
+			subCollectionPath.append("/" + s);
+			String collectionType = getCollectionType(subCollectionPath.toString());
+			if(collectionType == null) {
+			   if(!collectionPathTypes.isEmpty()) {
+				  throw new HpcException("Invalid collection path hierarchy: " + path,
+						                 HpcErrorType.INVALID_REQUEST_INPUT);
+			   }
+			} else {
+			        collectionPathTypes.add(collectionType);
+			}
 		}
 
 		// Perform the hierarchy validation.
@@ -1700,7 +1708,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
      *
      * @param path The collection path.
      * @return The collection type.
-     * @throws HpcException if it failed to determine the collection type.
+     * @throws HpcException
      * 
      */
     private String getCollectionType(String path) throws HpcException
@@ -1711,7 +1719,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		}
     	}
     	
-    	throw new HpcException("Could not determine collection type for: " + path,
-    			               HpcErrorType.INVALID_REQUEST_INPUT);
+    	return null;
     }
 }
