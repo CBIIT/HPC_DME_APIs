@@ -153,9 +153,13 @@
         		<entry key="queryDataObjects" value="${hpc.ws.rs.auth.query-data-objects}"/>
         		<entry key="setPermissions" value="${hpc.ws.rs.auth.set-permissions}"/>
         		<entry key="downloadDataObject" value="${hpc.ws.rs.auth.download-data-object}"/>
+        		<entry key="getDataManagementModel" value="${hpc.ws.rs.auth.get-data-management-model}"/>
+        		<entry key="saveQuery" value="${hpc.ws.rs.auth.save-query}"/>
+        		<entry key="deleteQuery" value="${hpc.ws.rs.auth.delete-query}"/>
+        		<entry key="getQueries" value="${hpc.ws.rs.auth.get-queries}"/>
+        		
         		<!--  Report Service Authorizations -->
         		<entry key="generateReport" value="${hpc.ws.rs.auth.generate-report}"/>
-        		<entry key="getDataManagementModel" value="${hpc.ws.rs.auth.get-data-management-model}"/>
       		</map>
    		</property>
 	</bean>
