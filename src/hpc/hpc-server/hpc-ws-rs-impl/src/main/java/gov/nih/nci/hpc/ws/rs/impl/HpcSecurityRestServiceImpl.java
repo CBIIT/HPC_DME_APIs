@@ -94,7 +94,7 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 		logger.info("Invoking RS: POST /user: " + updateUserRequestDTO);
 		
 		try {
-			securityBusService.updateUser(nciUserId, updateUserRequestDTO);
+			 securityBusService.updateUser(nciUserId, updateUserRequestDTO);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /user failed:", e);
