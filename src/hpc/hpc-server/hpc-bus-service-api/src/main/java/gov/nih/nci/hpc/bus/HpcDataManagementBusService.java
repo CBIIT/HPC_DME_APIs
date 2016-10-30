@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
@@ -178,6 +179,36 @@ public interface HpcDataManagementBusService
      * @throws HpcException
      */
 	public HpcDataManagementModelDTO getDataManagementModel(String doc) throws HpcException;
+	
+    /**
+     * Save a query for a user.
+     *
+     * @param nciUserId The user ID save the query for.
+     * @param queryName The query name.
+     * @param compoundMetadataQueryDTO The compound query DTO.
+     * @throws HpcException
+     */
+    public void saveQuery(String nciUserId, String queryName,
+    		              HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
+    		             throws HpcException;
+    
+    /**
+     * Delete a query for a user.
+     *
+     * @param nciUserId The user ID save the query for.
+     * @param queryName The query name.
+     * @throws HpcException
+     */
+    public void deleteQuery(String nciUserId, String queryName) throws HpcException;
+
+    /**
+     * Get all saved queries for a user.
+     *
+     * @param nciUserId The registered user ID.
+     * @return HpcCompoundMetadataQueryListDTO 
+     * @throws HpcException
+     */
+    public HpcCompoundMetadataQueryListDTO getQueries(String nciUserId) throws HpcException;
 }
 
  

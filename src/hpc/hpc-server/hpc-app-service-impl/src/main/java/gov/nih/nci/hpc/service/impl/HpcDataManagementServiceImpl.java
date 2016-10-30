@@ -1150,6 +1150,32 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		// Perform the hierarchy validation.
 		dataHierarchyValidator.validateHierarchy(doc, collectionPathTypes, dataObjectRegistration);
     }
+
+    @Override
+    public void saveQuery(String nciUserId, String queryName,
+    		              HpcCompoundMetadataQuery compoundMetadataQuery) 
+    		             throws HpcException
+    {
+    	
+    }
+    
+    @Override
+    public void deleteQuery(String nciUserId, String queryName) throws HpcException
+    {
+    	
+    }
+
+    @Override
+    public List<HpcCompoundMetadataQuery> getQueries(String nciUserId) throws HpcException
+    {
+    	return null;
+    }
+    
+    @Override
+    public HpcCompoundMetadataQuery getQuery(String nciUserId, String queryName) throws HpcException
+    {
+    	return null;
+    }
     
     //---------------------------------------------------------------------//
     // Helper Methods

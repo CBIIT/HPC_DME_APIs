@@ -586,6 +586,46 @@ public interface HpcDataManagementService
      * @throws HpcException If the hierarchy is invalid.
      */
     public void validateHierarchy(String path, boolean dataObjectRegistration) throws HpcException;
+    
+    /**
+     * Save a query for a user.
+     *
+     * @param nciUserId The user ID save the query for.
+     * @param queryName The query name.
+     * @param compoundMetadataQueryDTO The compound query.
+     * @throws HpcException
+     */
+    public void saveQuery(String nciUserId, String queryName,
+    		              HpcCompoundMetadataQuery compoundMetadataQuery) 
+    		             throws HpcException;
+    
+    /**
+     * Delete a query for a user.
+     *
+     * @param nciUserId The user ID save the query for.
+     * @param queryName The query name.
+     * @throws HpcException
+     */
+    public void deleteQuery(String nciUserId, String queryName) throws HpcException;
+
+    /**
+     * Get all saved queries for a user.
+     *
+     * @param nciUserId The registered user ID.
+     * @return List<HpcCompoundMetadataQuery>
+     * @throws HpcException
+     */
+    public List<HpcCompoundMetadataQuery> getQueries(String nciUserId) throws HpcException;
+    
+    /**
+     * Get a saved query by name for a user.
+     *
+     * @param nciUserId The registered user ID.
+     * @param queryName The query name.
+     * @return HpcCompoundMetadataQuery
+     * @throws HpcException
+     */
+    public HpcCompoundMetadataQuery getQuery(String nciUserId, String queryName) throws HpcException;
 }
 
  
