@@ -1,5 +1,5 @@
 --
--- hpc_user.sql
+-- hpc_user_query.sql
 --
 -- Copyright SVG, Inc.
 -- Copyright Leidos Biomedical Research, Inc
@@ -12,21 +12,16 @@
 -- @version $Id$
 --
 
-DROP TABLE IF EXISTS public."HPC_USER";
-CREATE TABLE public."HPC_USER"
+DROP TABLE IF EXISTS public."HPC_USER_QUERY";
+CREATE TABLE public."HPC_USER_QUERY"
 (
   "USER_ID" text NOT NULL,
-  "FIRST_NAME" text,
-  "LAST_NAME" text,
-  "DOC" text,
-  "IRODS_USERNAME" text,
-  "IRODS_PASSWORD" bytea,
-  "CREATED" date,
-  "LAST_UPDATED" text,
-  CONSTRAINT "HPC_USER_pkey" PRIMARY KEY ("USER_ID")
+  "QUERY_NAME" text NOT NULL,
+  "PAYLOAD" bytea,
+  CONSTRAINT "HPC_USER_QUERY_pkey" PRIMARY KEY ("USER_ID", "QUERY_NAME")
 )
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE public."HPC_USER"
+ALTER TABLE public."HPC_USER_QUERY"
   OWNER TO postgres;

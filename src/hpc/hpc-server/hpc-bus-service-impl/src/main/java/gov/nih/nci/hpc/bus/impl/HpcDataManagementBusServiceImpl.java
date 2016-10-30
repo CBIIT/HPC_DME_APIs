@@ -30,6 +30,7 @@ import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
@@ -490,6 +491,65 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	dataManagementModel.setDataHierarchy(dataManagementService.getDataHierarchy(doc));
     	
     	return dataManagementModel;
+    }
+    
+    @Override
+    public void saveQuery(String nciUserId, String queryName,
+    		              HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
+    		             throws HpcException
+    {
+    	logger.info("Invoking saveQuery(String, String, HpcCompoundMetadataQueryDTO)");
+    	
+    	// Input validation.
+    	if(nciUserId == null || nciUserId.isEmpty() || queryName == null || queryName.isEmpty() ||
+           compoundMetadataQueryDTO == null) {
+    	   throw new HpcException("Null or empty nciUserId / queryName / compoundMetadataQueryDTO", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Authorize calling this service w/ 'nciUserId'.
+    	securityService.authorizeUserService(nciUserId);
+    	
+    	// Save the query.
+    	dataManagementService.saveQuery(nciUserId, queryName, compoundMetadataQueryDTO.getQuery());
+    }
+    
+    @Override
+    public void deleteQuery(String nciUserId,String queryName) throws HpcException
+    {
+    	logger.info("Invoking deleteQuery(String, String)");
+    	
+    	// Input validation.
+    	if(nciUserId == null || nciUserId.isEmpty() || queryName == null || queryName.isEmpty())  {
+    	   throw new HpcException("Null or empty nciUserId / queryName", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Authorize calling this service w/ 'nciUserId'.
+    	securityService.authorizeUserService(nciUserId);
+    	
+    	// Delete the query.
+    	dataManagementService.deleteQuery(nciUserId, queryName);
+    }
+
+    @Override
+    public HpcCompoundMetadataQueryListDTO getQueries(String nciUserId) throws HpcException
+    {
+    	logger.info("Invoking getQueries(String)");
+    	
+    	// Input validation.
+    	if(nciUserId == null || nciUserId.isEmpty())  {
+    	   throw new HpcException("Null or empty nciUserId / queryName", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Authorize calling this service w/ 'nciUserId'.
+    	securityService.authorizeUserService(nciUserId);
+    	
+    	HpcCompoundMetadataQueryListDTO queriesList = new HpcCompoundMetadataQueryListDTO();
+    	queriesList.getQueries().addAll(dataManagementService.getQueries(nciUserId));
+    	
+    	return queriesList;
     }
     	
     //---------------------------------------------------------------------//
