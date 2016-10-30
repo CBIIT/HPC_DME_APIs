@@ -1123,7 +1123,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	// Calculate the collection path to validate.
     	String validationCollectionPath = dataObjectRegistration ? 
-    			                          path.substring(0, path.lastIndexOf('/') - 1) : path;
+    			                          path.substring(0, path.lastIndexOf('/')) : path;
     	validationCollectionPath = dataManagementProxy.getAbsolutePath(validationCollectionPath);
     	validationCollectionPath = validationCollectionPath.substring(getBasePath().length() + 1, 
     			                                                      validationCollectionPath.length());
