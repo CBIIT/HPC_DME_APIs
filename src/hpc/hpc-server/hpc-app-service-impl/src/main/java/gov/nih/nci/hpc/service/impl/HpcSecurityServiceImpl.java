@@ -51,7 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: HpcSecurityServiceImpl.java 1013 2016-03-26 23:06:30Z rosenbergea $
+ * @version $Id$
  */
 
 public class HpcSecurityServiceImpl implements HpcSecurityService
