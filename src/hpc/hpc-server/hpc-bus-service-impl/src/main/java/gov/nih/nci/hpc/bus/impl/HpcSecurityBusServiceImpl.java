@@ -225,12 +225,22 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     @Override
     public HpcUserDTO getUser(String nciUserId) throws HpcException
     {
-    	logger.info("Invoking getDataset(String nciUserId): " + nciUserId);
+    	logger.info("Invoking getUser(String nciUserId): " + nciUserId);
     	
     	// Input validation.
     	if(nciUserId == null) {
     	   throw new HpcException("Null NCI User ID",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// System admins allow to call this service for any user. Regular users allow to call this 
+    	// on their own user-id only.
+    	HpcRequestInvoker invoker = securityService.getRequestInvoker();
+    	if(invoker == null || 
+    	   (!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN) &&
+    	    !invoker.getNciAccount().getUserId().equals(nciUserId))) {
+     	   throw new HpcException("Unauthorized access request",
+	                  HpcErrorType.UNAUTHORIZED_REQUEST);
     	}
     	
     	// Get the managed data domain object.
