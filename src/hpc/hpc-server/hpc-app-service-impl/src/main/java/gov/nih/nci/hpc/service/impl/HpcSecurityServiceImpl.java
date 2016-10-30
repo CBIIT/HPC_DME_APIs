@@ -223,15 +223,6 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     @Override
     public HpcUser getUser(String nciUserId) throws HpcException
     {
-    	HpcRequestInvoker invoker = getRequestInvoker();
-    	if(invoker == null)
-     	   throw new HpcException("Unauthorized access request",
-	                  HpcErrorType.UNAUTHORIZED_REQUEST);
-    		
-    	if(!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN) && !invoker.getNciAccount().getUserId().equals(nciUserId))
-      	   throw new HpcException("Unauthorized access request",
-	                  HpcErrorType.UNAUTHORIZED_REQUEST);
-    	
     	// Input validation.
     	if(nciUserId == null) {
     	   throw new HpcException("Null NCI user ID",
