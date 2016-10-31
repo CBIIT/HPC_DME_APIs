@@ -30,6 +30,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_SIZE
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
+import gov.nih.nci.hpc.dao.HpcUserQueryDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
@@ -134,6 +135,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	// Metadata DAO.
 	@Autowired
 	private HpcMetadataDAO metadataDAO = null;
+	
+	// User Query DAO.
+	@Autowired
+	private HpcUserQueryDAO userQueryDAO = null;
 	
 	// Prepared query to get data objects that have their data transfer in-progress to archive.
 	private List<HpcMetadataQuery> dataTransferInProgressToArchiveQuery = new ArrayList<>();
@@ -1156,25 +1161,33 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		              HpcCompoundMetadataQuery compoundMetadataQuery) 
     		             throws HpcException
     {
-    	
+    	// Validate the compound query.
+       	if(!isValidCompoundMetadataQuery(compoundMetadataQuery)) {
+           throw new HpcException("Invalid compound metadata query", 
+         			              HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+       	
+       	compoundMetadataQuery.setName(queryName);
+       	userQueryDAO.upsertQuery(nciUserId, compoundMetadataQuery);
     }
     
     @Override
     public void deleteQuery(String nciUserId, String queryName) throws HpcException
     {
+    	userQueryDAO.deleteQuery(nciUserId, queryName);
     	
     }
 
     @Override
     public List<HpcCompoundMetadataQuery> getQueries(String nciUserId) throws HpcException
     {
-    	return null;
+    	return userQueryDAO.getQueries(nciUserId);
     }
     
     @Override
     public HpcCompoundMetadataQuery getQuery(String nciUserId, String queryName) throws HpcException
     {
-    	return null;
+    	return userQueryDAO.getQuery(nciUserId, queryName);
     }
     
     //---------------------------------------------------------------------//
