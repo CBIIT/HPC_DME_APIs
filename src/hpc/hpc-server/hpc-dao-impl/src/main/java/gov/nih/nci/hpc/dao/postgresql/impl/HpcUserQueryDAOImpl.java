@@ -114,7 +114,7 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
 		try {
 		     jdbcTemplate.update(UPSERT_USER_QUERY_SQL,
 		    		             nciUserId, compoundMetadataQuery.getName(),
-		    		             encryptor.encrypt(toJSON(compoundMetadataQuery)));
+		    		             encryptor.encrypt(toJSONString(compoundMetadataQuery)));
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a user query " + 
@@ -182,24 +182,36 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
 		@Override
 		public HpcCompoundMetadataQuery mapRow(ResultSet rs, int rowNum) throws SQLException 
 		{
-			return fromJSON(encryptor.decrypt(rs.getBytes("PAYLOAD")));
+			return fromJSON(encryptor.decrypt(rs.getBytes("QUERY")));
 		}
 	}
 	
     /** 
-     * Convert compound query into a JSON string
+     * Convert compound query into a JSON string.
+     * 
+     * @param payloadEntries List of payload entries.
+     * @return A JSON representation of the payload entries.
+     */
+	private String toJSONString(HpcCompoundMetadataQuery compoundMetadataQuery)
+	{
+		return toJSON(compoundMetadataQuery).toJSONString();
+	}
+	
+    /** 
+     * Convert compound query into a JSON object.
      * 
      * @param payloadEntries List of payload entries.
      * @return A JSON representation of the payload entries.
      */
 	@SuppressWarnings("unchecked")
-	private String toJSON(HpcCompoundMetadataQuery compoundMetadataQuery)
+	private JSONObject toJSON(HpcCompoundMetadataQuery compoundMetadataQuery)
 	{
+		JSONObject jsonCompoundMetadataQuery = new JSONObject();
+		
 		if(compoundMetadataQuery == null) {
-		   return "";
+		   return jsonCompoundMetadataQuery;
 		}
 		
-		JSONObject jsonCompoundMetadataQuery = new JSONObject();
 		// Map the compound operator
 		jsonCompoundMetadataQuery.put("operator", compoundMetadataQuery.getOperator().value());
 		jsonCompoundMetadataQuery.put("name", compoundMetadataQuery.getName());
@@ -228,7 +240,7 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
 		}
 		jsonCompoundMetadataQuery.put("compoundQueries", jsonCompoundQueries);
 		
-		return jsonCompoundMetadataQuery.toJSONString();
+		return jsonCompoundMetadataQuery;
 	}
 	  
     /** 
