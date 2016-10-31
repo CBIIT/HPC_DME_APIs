@@ -65,7 +65,9 @@
 	<osgi:reference id="hpcReportDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcReportsDAO" />
 	<osgi:reference id="hpcMetadataDAO" 
-	                interface="gov.nih.nci.hpc.dao.HpcMetadataDAO" />		                 
+	                interface="gov.nih.nci.hpc.dao.HpcMetadataDAO" />	
+	<osgi:reference id="hpcUserQueryDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcUserQueryDAO" />		                 
 	<osgi:reference id="hpcGlobusDataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
 		            bean-name="hpcGlobusDataTransferProxy"/>
