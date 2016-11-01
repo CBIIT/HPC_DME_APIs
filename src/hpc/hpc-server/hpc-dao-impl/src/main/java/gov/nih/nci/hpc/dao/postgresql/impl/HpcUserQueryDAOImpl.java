@@ -160,20 +160,18 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
     public HpcNamedCompoundMetadataQuery getQuery(String nciUserId, String queryName) 
     		                                    throws HpcException
     {
-    	{
-    		try {
-    		     return jdbcTemplate.queryForObject(GET_USER_QUERY_SQL, userQueryRowMapper, 
-    		    		                            nciUserId, queryName);
-    		     
-    		} catch(IncorrectResultSizeDataAccessException irse) {
-    			    logger.error("Multiple queries with the same name found", irse);
-    			    return null;
-    			    
-    		} catch(DataAccessException e) {
-    		        throw new HpcException("Failed to get a user query: " + e.getMessage(),
-    		    	    	               HpcErrorType.DATABASE_ERROR, e);
-    		}
-    	}
+		try {
+		     return jdbcTemplate.queryForObject(GET_USER_QUERY_SQL, userQueryRowMapper, 
+		    		                            nciUserId, queryName);
+		     
+		} catch(IncorrectResultSizeDataAccessException irse) {
+			    logger.error("Multiple queries with the same name found", irse);
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get a user query: " + e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}
     }
 	
     //---------------------------------------------------------------------//
