@@ -26,11 +26,11 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
@@ -41,6 +41,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -507,11 +508,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery = new HpcNamedCompoundMetadataQuery();
+    	namedCompoundMetadataQuery.setName(queryName);
+    	namedCompoundMetadataQuery.setCompoundQuery(compoundMetadataQueryDTO.getQuery());
+    	
     	// Authorize calling this service w/ 'nciUserId'.
     	securityService.authorizeUserService(nciUserId);
     	
     	// Save the query.
-    	dataManagementService.saveQuery(nciUserId, queryName, compoundMetadataQueryDTO.getQuery());
+    	dataManagementService.saveQuery(nciUserId, namedCompoundMetadataQuery);
     }
     
     @Override
@@ -533,7 +538,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     @Override
-    public HpcCompoundMetadataQueryListDTO getQueries(String nciUserId) throws HpcException
+    public HpcNamedCompoundMetadataQueryListDTO getQueries(String nciUserId) throws HpcException
     {
     	logger.info("Invoking getQueries(String)");
     	
@@ -546,7 +551,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Authorize calling this service w/ 'nciUserId'.
     	securityService.authorizeUserService(nciUserId);
     	
-    	HpcCompoundMetadataQueryListDTO queriesList = new HpcCompoundMetadataQueryListDTO();
+    	HpcNamedCompoundMetadataQueryListDTO queriesList = new HpcNamedCompoundMetadataQueryListDTO();
     	queriesList.getQueries().addAll(dataManagementService.getQueries(nciUserId));
     	
     	return queriesList;

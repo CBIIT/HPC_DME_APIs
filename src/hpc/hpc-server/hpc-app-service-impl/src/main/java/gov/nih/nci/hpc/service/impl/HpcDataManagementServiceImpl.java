@@ -50,6 +50,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
+import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
@@ -1157,18 +1158,17 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
 
     @Override
-    public void saveQuery(String nciUserId, String queryName,
-    		              HpcCompoundMetadataQuery compoundMetadataQuery) 
+    public void saveQuery(String nciUserId,
+    		              HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery) 
     		             throws HpcException
     {
     	// Validate the compound query.
-       	if(!isValidCompoundMetadataQuery(compoundMetadataQuery)) {
+       	if(!isValidCompoundMetadataQuery(namedCompoundMetadataQuery.getCompoundQuery())) {
            throw new HpcException("Invalid compound metadata query", 
          			              HpcErrorType.INVALID_REQUEST_INPUT);
         }
        	
-       	compoundMetadataQuery.setName(queryName);
-       	userQueryDAO.upsertQuery(nciUserId, compoundMetadataQuery);
+       	userQueryDAO.upsertQuery(nciUserId, namedCompoundMetadataQuery);
     }
     
     @Override
@@ -1179,13 +1179,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
 
     @Override
-    public List<HpcCompoundMetadataQuery> getQueries(String nciUserId) throws HpcException
+    public List<HpcNamedCompoundMetadataQuery> getQueries(String nciUserId) throws HpcException
     {
     	return userQueryDAO.getQueries(nciUserId);
     }
     
     @Override
-    public HpcCompoundMetadataQuery getQuery(String nciUserId, String queryName) throws HpcException
+    public HpcNamedCompoundMetadataQuery getQuery(String nciUserId, String queryName) throws HpcException
     {
     	return userQueryDAO.getQuery(nciUserId, queryName);
     }
