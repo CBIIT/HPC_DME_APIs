@@ -495,16 +495,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public void saveQuery(String nciUserId, String queryName,
+    public void saveQuery(String queryName,
     		              HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
     		             throws HpcException
     {
-    	logger.info("Invoking saveQuery(String, String, HpcCompoundMetadataQueryDTO)");
+    	logger.info("Invoking saveQuery(String, HpcCompoundMetadataQueryDTO)");
     	
     	// Input validation.
-    	if(nciUserId == null || nciUserId.isEmpty() || queryName == null || queryName.isEmpty() ||
+    	if(queryName == null || queryName.isEmpty() ||
            compoundMetadataQueryDTO == null) {
-    	   throw new HpcException("Null or empty nciUserId / queryName / compoundMetadataQueryDTO", 
+    	   throw new HpcException("Null or empty queryName / compoundMetadataQueryDTO", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
@@ -512,47 +512,35 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	namedCompoundMetadataQuery.setName(queryName);
     	namedCompoundMetadataQuery.setCompoundQuery(compoundMetadataQueryDTO.getQuery());
     	
-    	// Authorize calling this service w/ 'nciUserId'.
-    	securityService.authorizeUserService(nciUserId);
-    	
     	// Save the query.
-    	dataManagementService.saveQuery(nciUserId, namedCompoundMetadataQuery);
+    	dataManagementService.saveQuery(securityService.getRequestInvoker().getNciAccount().getUserId(), 
+    			                        namedCompoundMetadataQuery);
     }
     
     @Override
-    public void deleteQuery(String nciUserId,String queryName) throws HpcException
+    public void deleteQuery(String queryName) throws HpcException
     {
-    	logger.info("Invoking deleteQuery(String, String)");
+    	logger.info("Invoking deleteQuery(String)");
     	
     	// Input validation.
-    	if(nciUserId == null || nciUserId.isEmpty() || queryName == null || queryName.isEmpty())  {
+    	if(queryName == null || queryName.isEmpty())  {
     	   throw new HpcException("Null or empty nciUserId / queryName", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Authorize calling this service w/ 'nciUserId'.
-    	securityService.authorizeUserService(nciUserId);
-    	
     	// Delete the query.
-    	dataManagementService.deleteQuery(nciUserId, queryName);
+    	dataManagementService.deleteQuery(securityService.getRequestInvoker().getNciAccount().getUserId(), 
+    			                          queryName);
     }
 
     @Override
-    public HpcNamedCompoundMetadataQueryListDTO getQueries(String nciUserId) throws HpcException
+    public HpcNamedCompoundMetadataQueryListDTO getQueries() throws HpcException
     {
-    	logger.info("Invoking getQueries(String)");
-    	
-    	// Input validation.
-    	if(nciUserId == null || nciUserId.isEmpty())  {
-    	   throw new HpcException("Null or empty nciUserId / queryName", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
-    	
-    	// Authorize calling this service w/ 'nciUserId'.
-    	securityService.authorizeUserService(nciUserId);
+    	logger.info("Invoking getQueries()");
     	
     	HpcNamedCompoundMetadataQueryListDTO queriesList = new HpcNamedCompoundMetadataQueryListDTO();
-    	queriesList.getQueries().addAll(dataManagementService.getQueries(nciUserId));
+    	queriesList.getQueries().addAll(dataManagementService.getQueries(
+    			                        securityService.getRequestInvoker().getNciAccount().getUserId()));
     	
     	return queriesList;
     }
