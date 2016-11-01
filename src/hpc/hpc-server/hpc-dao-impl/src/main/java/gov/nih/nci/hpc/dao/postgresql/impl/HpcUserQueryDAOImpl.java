@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
@@ -107,14 +108,15 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void upsertQuery(String nciUserId,
-                            HpcCompoundMetadataQuery compoundMetadataQuery) 
+	public void upsertQuery(String nciUserId, 
+			                HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery) 
                            throws HpcException
 	{
 		try {
 		     jdbcTemplate.update(UPSERT_USER_QUERY_SQL,
-		    		             nciUserId, compoundMetadataQuery.getName(),
-		    		             encryptor.encrypt(toJSONString(compoundMetadataQuery)));
+		    		             nciUserId, namedCompoundMetadataQuery.getName(),
+		    		             encryptor.encrypt(toJSONString(
+		    		            		           namedCompoundMetadataQuery.getCompoundQuery())));
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a user query " + 
@@ -137,10 +139,12 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
 	}
 	
 	@Override
-	public List<HpcCompoundMetadataQuery> getQueries(String nciUserId) throws HpcException
+	public List<HpcNamedCompoundMetadataQuery> getQueries(String nciUserId) 
+			                                             throws HpcException
     {
 		try {
-		     return jdbcTemplate.query(GET_USER_QUERIES_SQL, userQueryRowMapper, nciUserId);
+		     return jdbcTemplate.query(GET_USER_QUERIES_SQL, userQueryRowMapper, 
+		    		                   nciUserId);
 		     
 		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
 			    return null;
@@ -153,8 +157,8 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
     }
     
     @Override
-    public HpcCompoundMetadataQuery getQuery(String nciUserId, String queryName) 
-    		                                throws HpcException
+    public HpcNamedCompoundMetadataQuery getQuery(String nciUserId, String queryName) 
+    		                                    throws HpcException
     {
     	{
     		try {
@@ -177,12 +181,15 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
     //---------------------------------------------------------------------//  
 
 	// HpcEvent Row to Object mapper.
-	private class HpcUserQueryRowMapper implements RowMapper<HpcCompoundMetadataQuery>
+	private class HpcUserQueryRowMapper implements RowMapper<HpcNamedCompoundMetadataQuery>
 	{
 		@Override
-		public HpcCompoundMetadataQuery mapRow(ResultSet rs, int rowNum) throws SQLException 
+		public HpcNamedCompoundMetadataQuery mapRow(ResultSet rs, int rowNum) throws SQLException 
 		{
-			return fromJSON(encryptor.decrypt(rs.getBytes("QUERY")));
+			HpcNamedCompoundMetadataQuery namedCompoundQuery = new HpcNamedCompoundMetadataQuery();
+			namedCompoundQuery.setCompoundQuery(fromJSON(encryptor.decrypt(rs.getBytes("QUERY"))));
+			namedCompoundQuery.setName(rs.getString("QUERY_NAME"));
+			return namedCompoundQuery;
 		}
 	}
 	
@@ -200,8 +207,8 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
     /** 
      * Convert compound query into a JSON object.
      * 
-     * @param payloadEntries List of payload entries.
-     * @return A JSON representation of the payload entries.
+     * @param compoundMetadataQuery The compound query.
+     * @return A JSON representation of the compound query.
      */
 	@SuppressWarnings("unchecked")
 	private JSONObject toJSON(HpcCompoundMetadataQuery compoundMetadataQuery)
@@ -214,7 +221,6 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
 		
 		// Map the compound operator
 		jsonCompoundMetadataQuery.put("operator", compoundMetadataQuery.getOperator().value());
-		jsonCompoundMetadataQuery.put("name", compoundMetadataQuery.getName());
 		
 		// Map the nested metadata queries.
 		JSONArray jsonQueries = new JSONArray();
@@ -226,7 +232,6 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
 			if(nestedQquery.getLevel() != null && nestedQquery.getLevelOperator() != null) {
 			   jsonQuery.put("level", nestedQquery.getLevel().toString());
 			   jsonQuery.put("levelOperator", nestedQquery.getLevelOperator().value());
-			   
 			}
 			
 			jsonQueries.add(jsonQuery);
@@ -280,7 +285,6 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
 		HpcCompoundMetadataQuery compoundMetadataQuery = new HpcCompoundMetadataQuery();
 		compoundMetadataQuery.setOperator(HpcCompoundMetadataQueryOperator.fromValue(
 				                          jsonCompoundMetadataQuery.get("operator").toString()));
-		compoundMetadataQuery.setName(jsonCompoundMetadataQuery.get("name").toString());
 		
 		// Map the nested metadata queries.
 	    JSONArray jsonQueries = (JSONArray) jsonCompoundMetadataQuery.get("queries");
