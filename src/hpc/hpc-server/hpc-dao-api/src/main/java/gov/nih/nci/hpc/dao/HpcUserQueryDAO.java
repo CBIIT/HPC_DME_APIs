@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.dao;
 
-import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -30,11 +30,11 @@ public interface HpcUserQueryDAO
      * Upsert a query for a user.
      *
      * @param nciUserId The user ID save the query for.
-     * @param compoundMetadataQueryDTO The compound query.
+     * @param compoundMetadataQueryDTO The named compound query.
      * @throws HpcException
      */
     public void upsertQuery(String nciUserId,
-    		                HpcCompoundMetadataQuery compoundMetadataQuery) 
+    		                HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery) 
     		               throws HpcException;
     
     /**
@@ -44,16 +44,18 @@ public interface HpcUserQueryDAO
      * @param queryName The query name.
      * @throws HpcException
      */
-    public void deleteQuery(String nciUserId, String queryName) throws HpcException;
+    public void deleteQuery(String nciUserId, String queryName) 
+    		               throws HpcException;
 
     /**
      * Get all saved queries for a user.
      *
      * @param nciUserId The registered user ID.
-     * @return List<HpcCompoundMetadataQuery>
+     * @return List<HpcNamedCompoundMetadataQuery>
      * @throws HpcException
      */
-    public List<HpcCompoundMetadataQuery> getQueries(String nciUserId) throws HpcException;
+    public List<HpcNamedCompoundMetadataQuery> getQueries(String nciUserId) 
+    		                                             throws HpcException;
     
     /**
      * Get a saved query by name for a user.
@@ -63,7 +65,8 @@ public interface HpcUserQueryDAO
      * @return HpcCompoundMetadataQuery
      * @throws HpcException
      */
-    public HpcCompoundMetadataQuery getQuery(String nciUserId, String queryName) throws HpcException;
+    public HpcNamedCompoundMetadataQuery getQuery(String nciUserId, String queryName) 
+    		                                     throws HpcException;
 }
 
  

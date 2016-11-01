@@ -24,6 +24,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
+import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
@@ -591,12 +592,11 @@ public interface HpcDataManagementService
      * Save a query for a user.
      *
      * @param nciUserId The user ID save the query for.
-     * @param queryName The query name.
-     * @param compoundMetadataQueryDTO The compound query.
+     * @param namedCompoundMetadataQuery The compound query.
      * @throws HpcException
      */
-    public void saveQuery(String nciUserId, String queryName,
-    		              HpcCompoundMetadataQuery compoundMetadataQuery) 
+    public void saveQuery(String nciUserId, 
+    		              HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery) 
     		             throws HpcException;
     
     /**
@@ -612,20 +612,20 @@ public interface HpcDataManagementService
      * Get all saved queries for a user.
      *
      * @param nciUserId The registered user ID.
-     * @return List<HpcCompoundMetadataQuery>
+     * @return List<HpcNamedCompoundMetadataQuery>
      * @throws HpcException
      */
-    public List<HpcCompoundMetadataQuery> getQueries(String nciUserId) throws HpcException;
+    public List<HpcNamedCompoundMetadataQuery> getQueries(String nciUserId) throws HpcException;
     
     /**
      * Get a saved query by name for a user.
      *
      * @param nciUserId The registered user ID.
      * @param queryName The query name.
-     * @return HpcCompoundMetadataQuery
+     * @return HpcNamedCompoundMetadataQuery
      * @throws HpcException
      */
-    public HpcCompoundMetadataQuery getQuery(String nciUserId, String queryName) throws HpcException;
+    public HpcNamedCompoundMetadataQuery getQuery(String nciUserId, String queryName) throws HpcException;
 }
 
  
