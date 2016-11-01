@@ -15,7 +15,6 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
@@ -24,6 +23,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.io.File;
@@ -205,10 +205,10 @@ public interface HpcDataManagementBusService
      * Get all saved queries for a user.
      *
      * @param nciUserId The registered user ID.
-     * @return HpcCompoundMetadataQueryListDTO 
+     * @return HpcNamedCompoundMetadataQueryListDTO 
      * @throws HpcException
      */
-    public HpcCompoundMetadataQueryListDTO getQueries(String nciUserId) throws HpcException;
+    public HpcNamedCompoundMetadataQueryListDTO getQueries(String nciUserId) throws HpcException;
 }
 
  
