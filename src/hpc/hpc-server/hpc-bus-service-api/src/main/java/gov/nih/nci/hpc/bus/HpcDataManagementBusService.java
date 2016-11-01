@@ -183,32 +183,29 @@ public interface HpcDataManagementBusService
     /**
      * Save a query for a user.
      *
-     * @param nciUserId The user ID save the query for.
      * @param queryName The query name.
      * @param compoundMetadataQueryDTO The compound query DTO.
      * @throws HpcException
      */
-    public void saveQuery(String nciUserId, String queryName,
+    public void saveQuery(String queryName,
     		              HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
     		             throws HpcException;
     
     /**
-     * Delete a query for a user.
+     * Delete a query.
      *
-     * @param nciUserId The user ID save the query for.
      * @param queryName The query name.
      * @throws HpcException
      */
-    public void deleteQuery(String nciUserId, String queryName) throws HpcException;
+    public void deleteQuery(String queryName) throws HpcException;
 
     /**
-     * Get all saved queries for a user.
+     * Get all saved queries.
      *
-     * @param nciUserId The registered user ID.
      * @return HpcNamedCompoundMetadataQueryListDTO 
      * @throws HpcException
      */
-    public HpcNamedCompoundMetadataQueryListDTO getQueries(String nciUserId) throws HpcException;
+    public HpcNamedCompoundMetadataQueryListDTO getQueries() throws HpcException;
 }
 
  

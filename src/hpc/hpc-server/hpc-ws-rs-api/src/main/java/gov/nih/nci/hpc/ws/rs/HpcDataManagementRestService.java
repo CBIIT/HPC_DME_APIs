@@ -225,41 +225,36 @@ public interface HpcDataManagementRestService
 	public Response getDataManagementModel(@PathParam("doc") String doc);
 	
     /**
-     * Save a query for a user.
+     * Save a query.
      *
-     * @param nciUserId The user ID save the query for.
      * @param queryName The query name.
      * @param updateUserRequestDTO The update request DTO.
      * @return Response The REST service response.
      */
     @POST
-    @Path("/query/{nciUserId}/{queryName}")
+    @Path("/query/{queryName}")
     @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-    public Response saveQuery(@PathParam("nciUserId") String nciUserId,
-    		                  @PathParam("queryName") String queryName,
+    public Response saveQuery(@PathParam("queryName") String queryName,
     		                  HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
     
     /**
-     * Delete a query for a user.
+     * Delete a query.
      *
-     * @param nciUserId The user ID save the query for.
      * @param queryName The query name.
      * @return Response The REST service response.
      */
     @DELETE
-    @Path("/query/{nciUserId}/{queryName}")
-    public Response deleteQuery(@PathParam("nciUserId") String nciUserId,
-    		                    @PathParam("queryName") String queryName);
+    @Path("/query/{queryName}")
+    public Response deleteQuery(@PathParam("queryName") String queryName);
 
     /**
      * Get all saved queries for a user.
      *
-     * @param nciUserId The registered user ID.
      * @return Response The REST service response.
      */
     @GET
-    @Path("/query/{nciUserId}")
+    @Path("/query")
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-    public Response getQueries(@PathParam("nciUserId") String nciUserId);
+    public Response getQueries();
 }
 

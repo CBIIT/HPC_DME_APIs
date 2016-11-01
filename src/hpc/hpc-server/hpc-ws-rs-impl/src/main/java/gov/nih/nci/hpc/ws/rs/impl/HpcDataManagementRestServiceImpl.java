@@ -432,16 +432,16 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
 
     @Override
-    public Response saveQuery(String nciUserId, String queryName,
+    public Response saveQuery(String queryName,
     		                  HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
     {
-    	logger.info("Invoking RS: POST /query/{nciUserId}/{queryName}: " + nciUserId + "," + queryName);
+    	logger.info("Invoking RS: POST /query/{queryName}: " + queryName);
     	long start = System.currentTimeMillis();
 		try {
-			 dataManagementBusService.saveQuery(nciUserId, queryName, compoundMetadataQueryDTO);
+			 dataManagementBusService.saveQuery(queryName, compoundMetadataQueryDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /query/{nciUserId}/{queryName}: " + nciUserId + "," + queryName +
+			    logger.error("RS: POST /query/{nciUserId}/{queryName}: " + "," + queryName +
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
@@ -452,15 +452,15 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response deleteQuery(String nciUserId, String queryName)
+    public Response deleteQuery(String queryName)
     {
-    	logger.info("Invoking RS: DELETE /query/{nciUserId}/{queryName}: " + nciUserId + "," + queryName);
+    	logger.info("Invoking RS: DELETE /query/{queryName}: " +  queryName);
     	long start = System.currentTimeMillis();
 		try {
-			 dataManagementBusService.deleteQuery(nciUserId, queryName);
+			 dataManagementBusService.deleteQuery(queryName);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /query/{nciUserId}/{queryName}: " + nciUserId + "," + queryName +
+			    logger.error("RS: POST /query/{nciUserId}/{queryName}: " + queryName +
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
@@ -471,17 +471,16 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
 
     @Override
-    public Response getQueries(String nciUserId)
+    public Response getQueries()
     {
-    	logger.info("Invoking RS: GET /query/{nciUserId}: " + nciUserId);
+    	logger.info("Invoking RS: GET /query");
     	long start = System.currentTimeMillis();
     	HpcNamedCompoundMetadataQueryListDTO queries = null;
 		try {
-			 queries = dataManagementBusService.getQueries(nciUserId);
+			 queries = dataManagementBusService.getQueries();
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /query/{nciUserId}: " + nciUserId +
-			    		     " failed:", e);
+			    logger.error("RS: GET /query/{nciUserId}: failed:", e);
 			    return errorResponse(e);
 		}
 		long stop = System.currentTimeMillis();

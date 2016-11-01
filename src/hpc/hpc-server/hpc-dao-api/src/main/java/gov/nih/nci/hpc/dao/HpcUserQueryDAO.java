@@ -62,7 +62,7 @@ public interface HpcUserQueryDAO
      *
      * @param nciUserId The registered user ID.
      * @param queryName The query name.
-     * @return HpcCompoundMetadataQuery
+     * @return HpcNamedCompoundMetadataQuery
      * @throws HpcException
      */
     public HpcNamedCompoundMetadataQuery getQuery(String nciUserId, String queryName) 
