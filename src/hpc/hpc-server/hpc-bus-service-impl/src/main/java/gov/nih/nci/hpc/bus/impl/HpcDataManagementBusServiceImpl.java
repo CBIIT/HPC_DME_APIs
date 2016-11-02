@@ -200,7 +200,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     public HpcCollectionListDTO getCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
                                               throws HpcException
     {
-    	logger.info("Invoking getCollections(HpcCompoundMetadataQueryDTO>): " + compoundMetadataQueryDTO);
+    	logger.info("Invoking getCollections(HpcCompoundMetadataQueryDTO): " + compoundMetadataQueryDTO);
     	
     	// Input validation.
     	if(compoundMetadataQueryDTO == null) {
@@ -218,16 +218,26 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     }
     
-    private String getRelativePath(String absolutePath, String basePath)
+    @Override
+    public HpcCollectionListDTO getCollections(String queryName, boolean detailedResponse) 
+                                              throws HpcException
     {
-    	if(absolutePath == null)
-    		return absolutePath;
+    	logger.info("Invoking getCollections(string,boolean): " + queryName);
     	
-    	if(absolutePath.startsWith(basePath))
-    		return absolutePath.substring(basePath.length());
-    	else
-    		return absolutePath;
+    	// Input validation.
+    	if(queryName == null || queryName.isEmpty()) {
+    	   throw new HpcException("Null or empty query name",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
     	
+    	// Get the user query and use it to get collections.
+    	HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO = new HpcCompoundMetadataQueryDTO();
+    	compoundMetadataQueryDTO.setQuery(dataManagementService.getQuery(
+    			                              securityService.getRequestInvoker().getNciAccount().getUserId(), 
+    			                              queryName).getCompoundQuery());
+    	compoundMetadataQueryDTO.setDetailedResponse(detailedResponse);
+
+    	return getCollections(compoundMetadataQueryDTO);
     }
     
     @Override
@@ -366,6 +376,28 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		    return toDataObjectListDTO(null, dataManagementService.getDataObjectPaths(
     		    		                                                  compoundMetadataQueryDTO.getQuery()));
     	}
+    }
+    
+    @Override
+    public HpcDataObjectListDTO getDataObjects(String queryName, boolean detailedResponse) 
+                                              throws HpcException
+    {
+    	logger.info("Invoking getDataObjects(string,boolean): " + queryName);
+    	
+    	// Input validation.
+    	if(queryName == null || queryName.isEmpty()) {
+    	   throw new HpcException("Null or empty query name",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Get the user query and use it to get data objects.
+    	HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO = new HpcCompoundMetadataQueryDTO();
+    	compoundMetadataQueryDTO.setQuery(dataManagementService.getQuery(
+    			                              securityService.getRequestInvoker().getNciAccount().getUserId(), 
+    			                              queryName).getCompoundQuery());
+    	compoundMetadataQueryDTO.setDetailedResponse(detailedResponse);
+
+    	return getDataObjects(compoundMetadataQueryDTO);
     }
     
     @Override
@@ -863,6 +895,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		
 		return dataObjectsDTO;
+    }
+    
+    private String getRelativePath(String absolutePath, String basePath)
+    {
+    	if(absolutePath == null)
+    		return absolutePath;
+    	
+    	if(absolutePath.startsWith(basePath))
+    		return absolutePath.substring(basePath.length());
+    	else
+    		return absolutePath;
+    	
     }
 }
 

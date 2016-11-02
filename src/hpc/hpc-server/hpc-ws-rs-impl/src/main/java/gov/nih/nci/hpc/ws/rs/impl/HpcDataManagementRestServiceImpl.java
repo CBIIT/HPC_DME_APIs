@@ -224,6 +224,30 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
+    public Response queryCollections(String queryName, Boolean detailedResponse)
+    {
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: GET /collection/query/compound/{queryName}" + queryName);
+    	
+    	HpcCollectionListDTO collections = null;
+		try {
+			 collections = dataManagementBusService.getCollections(queryName,
+					                                               detailedResponse != null ? 
+                                                                   detailedResponse : false);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /collection/query/compound/{queryName}" + queryName + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " getCollections: Total time - " + queryName);
+		
+		return okResponse(!collections.getCollections().isEmpty() ||
+				          !collections.getCollectionPaths().isEmpty() ? collections : null , true);
+    }
+    
+    @Override
     public Response registerDataObject(String path, 
     		                           HpcDataObjectRegistrationDTO dataObjectRegistration,
     		                           InputStream dataObjectInputStream)
@@ -351,6 +375,30 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " queryDataObjects" + compoundMetadataQueryDTO);
+		
+		return okResponse(!dataObjects.getDataObjects().isEmpty() ||
+				          !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects : null, true);
+    }
+    
+    @Override
+    public Response queryDataObjects(String queryName, Boolean detailedResponse)
+    {
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: GET /dataObject/query/compound{queryName}" + queryName);
+    	
+    	HpcDataObjectListDTO dataObjects = null;
+		try {
+			 dataObjects = dataManagementBusService.getDataObjects(queryName,
+					                                               detailedResponse != null ? 
+                                                                   detailedResponse : false);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /dataObject/query/compound{queryName}" + queryName + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " queryDataObjects" + queryName);
 		
 		return okResponse(!dataObjects.getDataObjects().isEmpty() ||
 				          !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects : null, true);
@@ -486,7 +534,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " getQueries: Total time");
 		
-    	return okResponse(queries, true);
+    	return okResponse(!queries.getQueries().isEmpty() ? queries : null, true);
     }
     
     //---------------------------------------------------------------------//
