@@ -224,20 +224,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     {
     	logger.info("Invoking getCollections(string,boolean): " + queryName);
     	
-    	// Input validation.
-    	if(queryName == null || queryName.isEmpty()) {
-    	   throw new HpcException("Null or empty query name",
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
-    	
-    	// Get the user query and use it to get collections.
-    	HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO = new HpcCompoundMetadataQueryDTO();
-    	compoundMetadataQueryDTO.setQuery(dataManagementService.getQuery(
-    			                              securityService.getRequestInvoker().getNciAccount().getUserId(), 
-    			                              queryName).getCompoundQuery());
-    	compoundMetadataQueryDTO.setDetailedResponse(detailedResponse);
-
-    	return getCollections(compoundMetadataQueryDTO);
+    	return getCollections(toCompoundMetadataQueryDTO(queryName, detailedResponse));
     }
     
     @Override
@@ -384,20 +371,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     {
     	logger.info("Invoking getDataObjects(string,boolean): " + queryName);
     	
-    	// Input validation.
-    	if(queryName == null || queryName.isEmpty()) {
-    	   throw new HpcException("Null or empty query name",
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
-    	
-    	// Get the user query and use it to get data objects.
-    	HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO = new HpcCompoundMetadataQueryDTO();
-    	compoundMetadataQueryDTO.setQuery(dataManagementService.getQuery(
-    			                              securityService.getRequestInvoker().getNciAccount().getUserId(), 
-    			                              queryName).getCompoundQuery());
-    	compoundMetadataQueryDTO.setDetailedResponse(detailedResponse);
-
-    	return getDataObjects(compoundMetadataQueryDTO);
+    	return getDataObjects(toCompoundMetadataQueryDTO(queryName, detailedResponse));
     }
     
     @Override
@@ -895,6 +869,43 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		
 		return dataObjectsDTO;
+    }
+    
+    /**
+     * Construct a HpcCompoundMetadataQueryDTO from a named query.
+     *
+     * @param queryName The user query.
+     * @param detailedResponse The detailed response indicator.
+     * @return HpcCompoundMetadataQueryDTO
+     * 
+     * @throws HpcException If the user query was not found
+     */
+    private HpcCompoundMetadataQueryDTO 
+               toCompoundMetadataQueryDTO(String queryName, boolean detailedResponse)
+                                         throws HpcException
+    {
+    	// Input validation.
+    	if(queryName == null || queryName.isEmpty()) {
+    	   throw new HpcException("Null or empty query name",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+		// Get the user query.
+		HpcNamedCompoundMetadataQuery namedCompoundQuery = 
+		   dataManagementService.getQuery(
+	                     securityService.getRequestInvoker().getNciAccount().getUserId(), 
+	                     queryName);
+		if(namedCompoundQuery == null || namedCompoundQuery.getCompoundQuery() == null) {
+		   throw new HpcException("User query not found: " + queryName,
+				                  HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		// Invoke the query.
+		HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO = new HpcCompoundMetadataQueryDTO();
+		compoundMetadataQueryDTO.setQuery(namedCompoundQuery.getCompoundQuery());
+		compoundMetadataQueryDTO.setDetailedResponse(detailedResponse);
+		
+		return compoundMetadataQueryDTO;
     }
     
     private String getRelativePath(String absolutePath, String basePath)
