@@ -114,6 +114,19 @@ public interface HpcDataManagementRestService
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
+	
+    /**
+     * GET Collections query.
+     *
+     * @param name A named query.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @return Response The REST service response.
+     */
+	@GET
+	@Path("/collection/query/compound/{queryName}")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response queryCollections(@PathParam("queryName") String queryName,
+			                         @QueryParam("detailedResponse") Boolean detailedResponse);
 
     /**
      * PUT Data object registration request.
@@ -184,6 +197,19 @@ public interface HpcDataManagementRestService
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
+	
+    /**
+     * GET Data objects query.
+     *
+     * @param name A named query
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @return Response The REST service response.
+     */
+	@GET
+	@Path("/dataObject/query/compound/{queryName}")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response queryDataObjects(@PathParam("queryName") String queryName,
+			                         @QueryParam("detailedResponse") Boolean detailedResponse);
 
     /**
      * POST Download Data Object.

@@ -89,6 +89,18 @@ public interface HpcDataManagementBusService
     		                                  throws HpcException;
     
     /**
+     * Get Collections by named query.
+     *
+     * @param queryName The query name.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @return A list of HpcCollectionDTO
+     * 
+     * @throws HpcException
+     */
+    public HpcCollectionListDTO getCollections(String queryName, boolean detailedResponse) 
+    		                                  throws HpcException;
+    
+    /**
      * Register a Data object.
      *
      * @param path The data object's path.
@@ -139,6 +151,19 @@ public interface HpcDataManagementBusService
      */
     public HpcDataObjectListDTO getDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
     		                                  throws HpcException;
+    
+    /**
+     * Get data objects by named query.
+     *
+     * @param queryName The query name.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @return A list of HpcDataObjectDTO.
+     * 
+     * @throws HpcException
+     */
+    public HpcDataObjectListDTO getDataObjects(String queryName, boolean detailedResponse) 
+    		                                  throws HpcException;
+    
     /**
      * Download Data Object.
      *
