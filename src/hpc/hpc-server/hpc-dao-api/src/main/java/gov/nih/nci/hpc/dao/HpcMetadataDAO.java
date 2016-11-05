@@ -101,6 +101,16 @@ public interface HpcMetadataDAO
     public List<HpcHierarchicalMetadataEntry> getDataObjectMetadata(String path) throws HpcException;
     
     /**
+     * Get metadata attribute names.
+     *
+     * @param path The data object's path
+     * @return List of HpcHierarchicalMetadataEntry.
+     * 
+     * @throws HpcException
+     */
+    public List<String> getMetadataAttributes(List<Integer> levels) throws HpcException;
+    
+    /**
      * Refresh all materialized views.
      *
      * @throws HpcException

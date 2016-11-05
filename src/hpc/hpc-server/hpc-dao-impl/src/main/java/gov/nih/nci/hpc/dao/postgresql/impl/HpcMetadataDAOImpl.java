@@ -298,6 +298,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		}	
     }
     
+    @Override
+    public List<String> getMetadataAttributes(List<Integer> levels) throws HpcException
+    {
+    	return null;
+    }
+    
 	@Override
 	public void refreshViews() throws HpcException
     {
