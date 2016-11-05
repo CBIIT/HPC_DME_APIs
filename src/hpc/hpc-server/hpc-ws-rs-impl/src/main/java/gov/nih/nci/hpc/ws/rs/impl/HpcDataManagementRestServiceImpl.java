@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -477,6 +478,25 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		logger.info((stop-start) + " getDataManagementModel: " + doc);
 		
 		return okResponse(dataModel, true);
+    }
+    
+    public Response getMetadataAttributes(String collectionType)
+    {
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: GET /metadataAttributes/" + collectionType);
+    	
+    	List<String> metadataAttributes = null;
+		//try {
+			 metadataAttributes = new ArrayList<String>(Arrays.asList("MD 1", "MD 2", "MD 3"));
+			 
+		//} catch(HpcException e) {
+			//    logger.error("RS: GET /metadataAttributes/" + collectionType + " failed:", e);
+			  //  return errorResponse(e);
+		//}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " getMetadataAttributes: " + collectionType);
+		
+		return okResponse(metadataAttributes, true);
     }
 
     @Override

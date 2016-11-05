@@ -251,6 +251,17 @@ public interface HpcDataManagementRestService
 	public Response getDataManagementModel(@PathParam("doc") String doc);
 	
     /**
+     * GET A list of metadata attributes currently registered.
+     *
+     * @param collectionType Filter the list by a specific collection type.
+     * @return Response The REST service response.
+     */
+	@GET
+	@Path("/metadataAttributes}")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getMetadataAttributes(@QueryParam("collectionType") String collectionType);
+	
+    /**
      * Save a query.
      *
      * @param queryName The query name.
