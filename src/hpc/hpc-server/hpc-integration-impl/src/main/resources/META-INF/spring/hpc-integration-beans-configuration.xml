@@ -122,7 +122,8 @@
         <property name="url" value="${hpc.integration.ldap.URL}" />
         <property name="userDn" value="CN=NCILDAP,OU=NCI,O=NIH" />
         <property name="password" value="ferd1234" />
-        <property name="dirObjectFactory" value="org.springframework.ldap.core.support.DefaultDirObjectFactory" />
+        <property name="dirObjectFactory"><null/></property>
+        
     </bean>
     <bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">
         <constructor-arg ref="ldapContextSource" />
