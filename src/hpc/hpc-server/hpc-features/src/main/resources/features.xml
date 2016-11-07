@@ -29,14 +29,6 @@
 		<bundle>mvn:org.springframework.batch/spring-batch-infrastructure/2.2.7.RELEASE</bundle>
 		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-ldap/1.3.1.RELEASE_3</bundle>
 		<bundle>mvn:org.springframework.security/spring-security-ldap/${spring-security.version}</bundle>
-	</feature>
-	
-	<!-- Spring LDAP -->
-	<feature name="hpc-spring-ldap" version="${spring-ldap.version}">
-		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-jdbc/3.2.11.RELEASE_2</bundle>
-		<bundle>mvn:org.springframework.data/spring-data-commons-core/1.4.1.RELEASE</bundle>
-		<bundle>mvn:org.springframework.batch/spring-batch-core/2.2.7.RELEASE</bundle>
-		<bundle>mvn:org.springframework.batch/spring-batch-infrastructure/2.2.7.RELEASE</bundle>
 		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-ldap/${spring-ldap.version}_3</bundle>
 	</feature>
 	
@@ -62,7 +54,6 @@
 		<!--  Dependent Features -->
 		<feature version="${postgresql.version}">hpc-postgresql-driver</feature>
 		<feature version="${spring-security.version}">hpc-spring-security-ldap</feature>
-		<feature version="${spring-ldap.version}">hpc-spring-ldap</feature>
 		<feature version="${amazon-aws.version}">hpc-amazon-aws-sdk</feature>
 		<feature version="${jargon.version}">hpc-jargon-sdk</feature>
 		
