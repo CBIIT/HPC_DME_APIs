@@ -3,12 +3,19 @@ package gov.nih.nci.hpc.integration.ldap.authentication;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import  org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.filter.AndFilter;
+import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.security.ldap.authentication.LdapAuthenticationProvider;
 
 public class HpcLdapAuthenticationProxyImpl implements gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy{
 	LdapAuthenticationProvider ldapProvider;
 	
+    // The LDAP Template.
+	@Autowired
+    private LdapTemplate ldapTemplate = null;
+    
     /**
      * Default Constructor.
      * 
@@ -34,11 +41,17 @@ public class HpcLdapAuthenticationProxyImpl implements gov.nih.nci.hpc.integrati
 	
 	public boolean authenticate(String userName, String password) throws HpcException
 	{
+		/*
 		UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userName, password);
 		org.springframework.security.core.Authentication authentication = ldapProvider.authenticate(token);
 		if(authentication == null)
 			return false;
 		else
 			return true;
+		 */
+		
+		AndFilter filter = new AndFilter();
+        filter.and(new EqualsFilter("uid", userName));
+        return ldapTemplate.authenticate("ou=NCI,o=NIH", filter.toString(), password);
 	}
 }

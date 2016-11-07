@@ -115,7 +115,17 @@
 	    
 	    <!-- role prefix to append to the group name. Default is "ROLE_". -->
 	    <property name="rolePrefix" value="" />
-	</bean>		
+	</bean>	
+	
+	<bean id="ldapContextSource"
+        class="org.springframework.ldap.core.support.LdapContextSource">
+        <property name="url" value="${hpc.integration.ldap.URL}" />
+        <property name="userDn" value="CN=NCILDAP,OU=NCI,O=NIH"/>
+        <property name="password" value="***REMOVED***"/>
+    </bean>
+    <bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">
+        <constructor-arg ref="ldapContextSource" />
+    </bean>	
 	
 	<!--  HPC iRODS Connection -->
 	<bean id="hpcIRODSConnection" 
