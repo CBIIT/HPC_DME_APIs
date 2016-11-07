@@ -117,14 +117,14 @@
 	    <property name="rolePrefix" value="" />
 	</bean>	
 	
-	<bean id="ldapContextSource"
-        class="org.springframework.ldap.core.support.LdapContextSource">
+	<bean id="dirContextSource"
+        class="org.springframework.ldap.core.support.DirContextSource">
         <property name="url" value="${hpc.integration.ldap.URL}" />
         <property name="userDn" value="CN=NCILDAP,OU=NCI,O=NIH"/>
         <property name="password" value="***REMOVED***"/>
     </bean>
     <bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">
-        <constructor-arg ref="ldapContextSource" />
+        <constructor-arg ref="dirContextSource" />
     </bean>	
 	
 	<!--  HPC iRODS Connection -->
