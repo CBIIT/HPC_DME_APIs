@@ -3,6 +3,8 @@ package gov.nih.nci.hpc.integration.ldap.authentication;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.AndFilter;
@@ -11,6 +13,8 @@ import org.springframework.security.ldap.authentication.LdapAuthenticationProvid
 
 public class HpcLdapAuthenticationProxyImpl implements gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy{
 	LdapAuthenticationProvider ldapProvider;
+	// The logger instance.
+		private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	
     // The LDAP Template.
 	@Autowired
@@ -52,6 +56,14 @@ public class HpcLdapAuthenticationProxyImpl implements gov.nih.nci.hpc.integrati
 		
 		AndFilter filter = new AndFilter();
         filter.and(new EqualsFilter("uid", userName));
-        return ldapTemplate.authenticate("ou=NCI,o=NIH", filter.toString(), password);
+        //return ldapTemplate.authenticate("ou=NCI,o=NIH", filter.toString(), password);
+        
+        Object obj = ldapTemplate.lookup("CN=rosenbergea,OU=NCI,O=NIH");
+        if(obj != null) {
+           logger.error("ERAN 1: " + obj.getClass().getName());
+           logger.error(obj.toString());
+        }
+        
+        return false;
 	}
 }
