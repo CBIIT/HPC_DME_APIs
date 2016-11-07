@@ -58,10 +58,10 @@ public class HpcLdapAuthenticationProxyImpl implements gov.nih.nci.hpc.integrati
         filter.and(new EqualsFilter("uid", userName));
         //return ldapTemplate.authenticate("ou=NCI,o=NIH", filter.toString(), password);
         
-        Object obj = ldapTemplate.lookup("CN=rosenbergea,OU=NCI,O=NIH");
+        Object obj = ldapTemplate.lookup("uid=rosenbergea,ou=NCI,o=NIH");
         if(obj != null) {
            logger.error("ERAN 1: " + obj.getClass().getName());
-           logger.error(obj.toString());
+           logger.error("ERAN 2: " + obj.toString());
         }
         
         return false;
