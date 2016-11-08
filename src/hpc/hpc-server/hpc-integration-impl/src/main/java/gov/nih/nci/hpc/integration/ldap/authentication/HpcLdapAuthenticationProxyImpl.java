@@ -3,12 +3,14 @@ package gov.nih.nci.hpc.integration.ldap.authentication;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import java.util.Hashtable;
+
+import javax.naming.Context;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
-import org.springframework.ldap.filter.AndFilter;
-import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.security.ldap.authentication.LdapAuthenticationProvider;
 
 public class HpcLdapAuthenticationProxyImpl implements gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy{
@@ -53,7 +55,7 @@ public class HpcLdapAuthenticationProxyImpl implements gov.nih.nci.hpc.integrati
 		else
 			return true;
 		 */
-		
+		/*
 		AndFilter filter = new AndFilter();
         filter.and(new EqualsFilter("uid", userName));
         //return ldapTemplate.authenticate("ou=NCI,o=NIH", filter.toString(), password);
@@ -62,8 +64,19 @@ public class HpcLdapAuthenticationProxyImpl implements gov.nih.nci.hpc.integrati
         if(obj != null) {
            logger.error("ERAN 1: " + obj.getClass().getName());
            logger.error("ERAN 2: " + obj.toString());
-        }
-        
-        return false;
+        }*/
+		
+		Hashtable env = new Hashtable();
+		env.put(Context.INITIAL_CONTEXT_FACTORY,
+		"com.sun.jndi.ldap.LdapCtxFactory");
+		env.put(Context.PROVIDER_URL, "ldaps://nci-ldap-prod.nci.nih.gov:636");
+		// env.put(Context.SECURITY_AUTHENTICATION, search.getSecurityAthentication());
+		env.put(Context.SECURITY_PRINCIPAL, "CN=NCILDAP,OU=NCI,O=NIH");
+		env.put(Context.SECURITY_CREDENTIALS, "ferd1234");
+		try {
+		     return LDAPHelper.authenticate(env, userName, password.toCharArray(), null);
+		} catch(Exception e) {
+              throw new HpcException("LDAP failed: ", e);
+		}
 	}
 }
