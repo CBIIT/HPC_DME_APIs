@@ -112,7 +112,6 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
-import javax.security.auth.Subject;
 
 import org.apache.log4j.Logger;
 
@@ -151,10 +150,10 @@ public class LDAPHelper {
 	 * @throws CSInternalLoginException 
 	 * @throws CSInternalInsufficientAttributesException 
 	 */
-	public static boolean authenticate(Hashtable connectionProperties, String userID, char[] password, Subject subject) throws Exception {
+	public static boolean authenticate(String userID, char[] password) throws Exception {
 		Hashtable environment = new Hashtable();
-		setLDAPEnvironment(environment, connectionProperties);
-		return ldapAuthenticateUser(environment, connectionProperties, userID, new String(password), subject);
+		setLDAPEnvironment(environment);
+		return ldapAuthenticateUser(environment, userID, new String(password));
 	}
 
 	/**
@@ -163,24 +162,17 @@ public class LDAPHelper {
 	 * @param environment This
 	 * @param connectionProperties
 	 */
-	private static void setLDAPEnvironment(Hashtable environment, Hashtable connectionProperties) {
+	private static void setLDAPEnvironment(Hashtable environment) {
 		//Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
 
 		environment.clear();
 		environment.put(Context.INITIAL_CONTEXT_FACTORY, Constants.INITIAL_CONTEXT);
-		environment.put(Context.PROVIDER_URL, connectionProperties.get(Constants.LDAP_HOST));
-		//environment.put(Context.SECURITY_AUTHENTICATION, "simple");
+		environment.put(Context.PROVIDER_URL, "ldaps://nci-ldap-prod.nci.nih.gov:636");
 		environment.put(Context.SECURITY_AUTHENTICATION, "simple");
-		//if (((String)connectionProperties.get(Constants.LDAP_HOST)).contains("ldaps")) // removed to make it JDK 1.4 compatible
-		if (((String)connectionProperties.get(Constants.LDAP_HOST)).regionMatches(true, 0, "ldaps", 0, "ldaps".length()))
-			environment.put(Context.SECURITY_PROTOCOL, "ssl");
-		if (connectionProperties.get(Constants.LDAP_ADMIN_USER_NAME)!= null && ((String)connectionProperties.get(Constants.LDAP_ADMIN_USER_NAME)).length() != 0)
-			environment.put(Context.SECURITY_PRINCIPAL, connectionProperties.get(Constants.LDAP_ADMIN_USER_NAME));
-		if (connectionProperties.get(Constants.LDAP_ADMIN_PASSWORD)!= null && ((String)connectionProperties.get(Constants.LDAP_ADMIN_PASSWORD)).length() != 0)
-			environment.put(Context.SECURITY_CREDENTIALS, connectionProperties.get(Constants.LDAP_ADMIN_PASSWORD));
+		environment.put(Context.SECURITY_PROTOCOL, "ssl");
+		environment.put(Context.SECURITY_PRINCIPAL, "CN=NCILDAP,OU=NCI,O=NIH");
+		environment.put(Context.SECURITY_CREDENTIALS, "ferd1234");
 		
-		if (log.isDebugEnabled())
-			log.debug("Authentication|||setLDAPEnvironment|Success| Set the LDAP Environment Properties |" + connectionProperties.get(Constants.LDAP_HOST));			
 	}
 
 	/**
@@ -196,9 +188,9 @@ public class LDAPHelper {
 	 * @throws CSInternalLoginException 
 	 * @throws CSInternalConfigurationException 
 	 */
-	private static String getFullyDistinguishedName(Hashtable environment, Hashtable connectionProperties, String userName) throws Exception {
-		String[] attributeIDs = { (String) connectionProperties.get(Constants.LDAP_USER_ID_LABEL) }; //{"dn"} ;
-		String searchFilter = "(" + (String) connectionProperties.get(Constants.LDAP_USER_ID_LABEL) + "=" + userName + ")";
+	private static String getFullyDistinguishedName(Hashtable environment, String userName) throws Exception {
+		String[] attributeIDs = { "uid" }; //{"dn"} ;
+		String searchFilter = "(" + "uid" + "=" + userName + ")";
 
 		DirContext dirContext = null;
 		try
@@ -220,7 +212,7 @@ public class LDAPHelper {
 		NamingEnumeration searchEnum = null;
 		try
 		{
-			searchEnum = dirContext.search((String) connectionProperties.get(Constants.LDAP_SEARCHABLE_BASE), searchFilter, searchControls);
+			searchEnum = dirContext.search("ou=NCI,o=NIH", searchFilter, searchControls);
 		}
 		catch (NamingException e)
 		{
@@ -242,7 +234,7 @@ public class LDAPHelper {
 		{
 			while (searchEnum.hasMore()) {
 				SearchResult searchResult = (SearchResult) searchEnum.next();
-				fullyDistinguishedName = searchResult.getName()	+ "," + (String) connectionProperties.get(Constants.LDAP_SEARCHABLE_BASE);
+				fullyDistinguishedName = searchResult.getName()	+ "," + "ou=NCI,o=NIH";
 				if (log.isDebugEnabled())
 					log.debug("Authentication||"+userName+"|getFullyDistinguishedName|Success| Obtained the Distinguished Name |" + fullyDistinguishedName);			
 				return fullyDistinguishedName;
@@ -269,12 +261,12 @@ public class LDAPHelper {
 	 * @throws CSInternalInsufficientAttributesException 
 	 * @throws CSInternalConfigurationException 
 	 */
-	private static boolean ldapAuthenticateUser(Hashtable environment, Hashtable connectionProperties, String userName, String password, Subject subject) throws Exception
+	private static boolean ldapAuthenticateUser(Hashtable environment, String userName, String password) throws Exception
 	{
 		if (password == null || password.isEmpty()) {
 			throw new Exception("Password cannot be blank");
 		}
-		String fullyDistinguishedName = getFullyDistinguishedName(environment, connectionProperties, userName);//connectionProperties.get(Constants.LDAP_USER_ID_LABEL) + "=" + userName + "," + connectionProperties.get(Constants.LDAP_SEARCHABLE_BASE);
+		String fullyDistinguishedName = getFullyDistinguishedName(environment, userName);//connectionProperties.get(Constants.LDAP_USER_ID_LABEL) + "=" + userName + "," + connectionProperties.get(Constants.LDAP_SEARCHABLE_BASE);
 		if (null == fullyDistinguishedName) {
 			if (log.isDebugEnabled())
 				log.debug("Authentication||"+userName+"|ldapAuthenticateUser|Failure| Error obtaining the Distinguished Name|");
@@ -287,47 +279,8 @@ public class LDAPHelper {
 
 
 			DirContext initialDircontext = new InitialDirContext(environment);			
-/*
-			if (   ((String)connectionProperties.get(Constants.USER_FIRST_NAME) != null && !((String)connectionProperties.get(Constants.USER_FIRST_NAME)).trim().equals(""))
-				&& ((String)connectionProperties.get(Constants.USER_LAST_NAME) != null 	&& !((String)connectionProperties.get(Constants.USER_LAST_NAME)).trim().equals(""))
-				&& ((String)connectionProperties.get(Constants.USER_EMAIL_ID) != null 	&& !((String)connectionProperties.get(Constants.USER_EMAIL_ID)).trim().equals("")))
-			{
-				Attributes attributes = initialDircontext.getAttributes(fullyDistinguishedName);
-				
-				Attribute firstName = attributes.get((String)connectionProperties.get(Constants.USER_FIRST_NAME));
-				if (null != firstName)
-					subject.getPrincipals().add(new FirstNamePrincipal((String)firstName.get()));
-				else
-					throw new CSInternalInsufficientAttributesException("User Attribute First Name not found");
-				
-				Attribute lastName = attributes.get((String)connectionProperties.get(Constants.USER_LAST_NAME));
-				if (null != lastName)
-					subject.getPrincipals().add(new LastNamePrincipal((String)lastName.get()));
-				else
-					throw new CSInternalInsufficientAttributesException("User Attribute Last Name not found");
-				
-				Attribute emailId = attributes.get((String)connectionProperties.get(Constants.USER_EMAIL_ID));
-				if (null != emailId)
-					subject.getPrincipals().add(new EmailIdPrincipal((String)emailId.get()));
-				else
-					throw new CSInternalInsufficientAttributesException("User Attribute Email Id not found");
-				
-				subject.getPrincipals().add(new LoginIdPrincipal(userName));
 
-			}
-			else if (  ((String)connectionProperties.get(Constants.USER_FIRST_NAME) == null || ((String)connectionProperties.get(Constants.USER_FIRST_NAME)).trim().equals(""))
-					&& ((String)connectionProperties.get(Constants.USER_LAST_NAME) == null 	|| ((String)connectionProperties.get(Constants.USER_LAST_NAME)).trim().equals(""))
-					&& ((String)connectionProperties.get(Constants.USER_EMAIL_ID) == null 	|| ((String)connectionProperties.get(Constants.USER_EMAIL_ID)).trim().equals("")))
-			{
-				// do nothing;
-			}
-			else
-			{
-				throw new CSInternalConfigurationException("Login Failed : Improper Configuration, Unable to Retrieve User Attributes");
-			}
-			*/
 			initialDircontext.close();
-			setLDAPEnvironment(environment, connectionProperties);
 			if (log.isDebugEnabled())
 				log.debug("Authentication||"+userName+"|ldapAuthenticateUser|Success| Login Successful for User " + userName + "|");
 			log.error("ERAN: USER AUTHENTICATED");
