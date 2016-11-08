@@ -66,15 +66,8 @@ public class HpcLdapAuthenticationProxyImpl implements gov.nih.nci.hpc.integrati
            logger.error("ERAN 2: " + obj.toString());
         }*/
 		
-		Hashtable env = new Hashtable();
-		env.put(Context.INITIAL_CONTEXT_FACTORY,
-		"com.sun.jndi.ldap.LdapCtxFactory");
-		env.put(Context.PROVIDER_URL, "ldaps://nci-ldap-prod.nci.nih.gov:636");
-		// env.put(Context.SECURITY_AUTHENTICATION, search.getSecurityAthentication());
-		env.put(Context.SECURITY_PRINCIPAL, "CN=NCILDAP,OU=NCI,O=NIH");
-		env.put(Context.SECURITY_CREDENTIALS, "***REMOVED***");
 		try {
-		     return LDAPHelper.authenticate(env, userName, password.toCharArray(), null);
+		     return LDAPHelper.authenticate(userName, password.toCharArray());
 		} catch(Exception e) {
               throw new HpcException("LDAP failed: ", e);
 		}
