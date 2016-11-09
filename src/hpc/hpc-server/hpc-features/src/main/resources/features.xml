@@ -41,7 +41,7 @@
 		<!--  Dependent Features -->
 		<!--  Current version (${spring.version}_1) did not work. Had to use an older version.
 		      When upgrading Servicemix - see if this can be matched to compiled spring-jdbc version -->
-		<feature version="3.2.14.RELEASE_1">spring-jdbc</feature>
+		<feature version="${spring.version}_1">spring-jdbc</feature>
 		<feature version="${postgresql.version}">hpc-postgresql-driver</feature>
 		<feature version="${amazon-aws.version}">hpc-amazon-aws-sdk</feature>
 		<feature version="${jargon.version}">hpc-jargon-sdk</feature>
