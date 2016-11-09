@@ -19,19 +19,6 @@
 		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-dbcp/1.4_3</bundle>
 	</feature>
 	
-	<!-- Spring Security LDAP -->
-	<feature name="hpc-spring-security-ldap" version="${spring-security.version}">
-		<feature version="${spring-security.version}">spring-security</feature>
-		<bundle>mvn:org.springframework.security/spring-security-config/${spring-security.version}</bundle>
-		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-jdbc/3.2.11.RELEASE_2</bundle>
-		<bundle>mvn:org.springframework.data/spring-data-commons-core/1.4.1.RELEASE</bundle>
-		<bundle>mvn:org.springframework.batch/spring-batch-core/2.2.7.RELEASE</bundle>
-		<bundle>mvn:org.springframework.batch/spring-batch-infrastructure/2.2.7.RELEASE</bundle>
-		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-ldap/1.3.1.RELEASE_3</bundle>
-		<bundle>mvn:org.springframework.security/spring-security-ldap/${spring-security.version}</bundle>
-		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-ldap/${spring-ldap.version}_3</bundle>
-	</feature>
-	
 	<!-- Amazon AWS SDK -->
 	<feature name="hpc-amazon-aws-sdk" version="${amazon-aws.version}">
 		<bundle>mvn:com.fasterxml.jackson.core/jackson-core/${jackson.version}</bundle>
@@ -52,14 +39,17 @@
 	<feature name="hpc-server-core" version="${project.version}">
 	
 		<!--  Dependent Features -->
+		<!--  Current version (${spring.version}_1) did not work. Had to use an older version.
+		      When upgrading Servicemix - see if this can be matched to compiled spring-jdbc version -->
+		<feature version="3.2.14.RELEASE_1">spring-jdbc</feature>
 		<feature version="${postgresql.version}">hpc-postgresql-driver</feature>
-		<feature version="${spring-security.version}">hpc-spring-security-ldap</feature>
 		<feature version="${amazon-aws.version}">hpc-amazon-aws-sdk</feature>
 		<feature version="${jargon.version}">hpc-jargon-sdk</feature>
 		
 		<!--  Dependent Bundles -->
 		<bundle>wrap:mvn:com.googlecode.json-simple/json-simple/${google-json-simple.version}</bundle>
 		<bundle>mvn:commons-io/commons-io/${commons-io.version}</bundle>
+		<bundle>wrap:mvn:org.springframework/spring-beans/${spring.version}</bundle>
 		
 		<!-- Current version of JJWT 0.6 has a defect in the bundle manifest which requires
 		     Android jar. This is being fixed in 0.7. Remove the Android bundle when upgrading 
