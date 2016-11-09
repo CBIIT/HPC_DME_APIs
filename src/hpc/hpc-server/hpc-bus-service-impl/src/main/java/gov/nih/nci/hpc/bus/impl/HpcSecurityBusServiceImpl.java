@@ -462,9 +462,10 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 			requestInvoker.setDataManagementAuthenticatedToken(dataManagementService.getProxyManagementAccount(dmAccount));
 		
 		authenticationResponse.setUserRole(
-				      user.getDataManagementAccount() != null ? 
+				      authenticationResponse.getAuthenticated() && user.getDataManagementAccount() != null ? 
 				      dataManagementService.getUserRole(user.getDataManagementAccount().getUsername()) : 
 				      HpcUserRole.NOT_REGISTERED);
+		
     	// Generate an authentication token.
         HpcAuthenticationTokenClaims authenticationTokenClaims = new HpcAuthenticationTokenClaims();
         authenticationTokenClaims.setUserName(userName);
