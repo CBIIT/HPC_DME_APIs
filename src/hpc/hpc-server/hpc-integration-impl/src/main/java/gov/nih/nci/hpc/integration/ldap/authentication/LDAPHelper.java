@@ -291,6 +291,9 @@ public class LDAPHelper {
 			//throw new CSInternalLoginException("Login Failed : User Credentials Incorrect");
 			log.error("ERAN: USER DENIED");
 			return false;
+		} catch(Exception ee) {
+			    log.error("ERAN: cath all: ", ee);
+			    return false;
 		}
 	}
 }

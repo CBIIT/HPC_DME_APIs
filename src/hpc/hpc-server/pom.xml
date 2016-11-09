@@ -30,7 +30,7 @@
 		<felix.version>3.0.1</felix.version>
 		<postgresql.version>9.3-1102-jdbc41</postgresql.version>
 		<slf4j.version>1.7.21</slf4j.version>
-		<spring.version>4.2.4.RELEASE</spring.version>
+		<spring.version>3.2.14.RELEASE</spring.version>
 		<amazon-aws.version>1.10.62</amazon-aws.version>
 		<jargon.version>4.0.2.4-RELEASE</jargon.version>
 		<jargon-conveyor.version>4.0.2.1-RELEASE</jargon-conveyor.version>
