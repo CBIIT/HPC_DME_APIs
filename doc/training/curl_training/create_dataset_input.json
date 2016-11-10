@@ -1,0 +1,89 @@
+{
+    "metadataEntries": [
+        {
+         "attribute": "name",
+         "value": "Sample Dataset1"
+        },
+        {
+         "attribute": "collection_type",
+         "value": "Dataset"
+        },
+        {
+         "attribute": "description",
+         "value": "Sample desc"
+        },
+        {
+         "attribute": "sample_id",
+         "value": "SHE245A1"
+        },
+        {
+         "attribute": "sample_name",
+         "value": "A1"
+        },
+        {
+         "attribute": "initial_sample_concentration",
+         "value": "20"
+        },
+        {
+         "attribute": "initial_sample_volume",
+         "value": "30"
+        },
+	{
+         "attribute": "sfqc_sample_concentration",
+         "value": "30"
+        },        
+        {
+         "attribute": "sfqc_sample_volume",
+         "value": "12"
+        }, 
+        {
+         "attribute": "sfqc_sample_size",
+         "value": "15"
+        },
+        {
+         "attribute": "library_id",
+         "value": "RS-122-2101"
+        },
+        {
+         "attribute": "library_name",
+         "value": "TruSeq Stranded mRNA LT"
+        },
+        {
+         "attribute": "library_type",
+         "value": "123"
+        },
+        {
+         "attribute": "library_protocol",
+         "value": "12345"
+        },
+        {
+         "attribute": "sfqc_library_concentration",
+         "value": "15"
+        },
+        {
+         "attribute": "sfqc_library_volume",
+         "value": "15"
+        },
+        {
+         "attribute": "sfqc_library_size",
+         "value": "15"
+        },
+        {
+         "attribute": "source_id",
+         "value": "151"
+        },
+        {
+         "attribute": "source_name",
+         "value": "source name"
+        },
+        {
+         "attribute": "source_organism",
+         "value": "source organism"
+        },
+        {
+         "attribute": "source_provider",
+         "value": "source provider"
+        },
+    ]
+}
+
