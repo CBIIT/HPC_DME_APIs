@@ -47,6 +47,9 @@
 		  <prop key="hpc.integration.cleversafe.archive.type">ARCHIVE</prop>
 	      
 	      <prop key="hpc.integration.ldap.URL">ldaps://nci-ldap-prod.nci.nih.gov:636</prop>
+	      <prop key="hpc.integration.ldap.username">CN=NCILDAP,OU=NCI,O=NIH</prop>
+	      <prop key="hpc.integration.ldap.password">ferd1234</prop>
+	      <prop key="hpc.integration.ldap.base">ou=NCI,o=NIH</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
