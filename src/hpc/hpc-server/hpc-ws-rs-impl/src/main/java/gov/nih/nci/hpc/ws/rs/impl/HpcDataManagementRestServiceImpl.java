@@ -486,20 +486,19 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	logger.info("Invoking RS: GET /metadataAttributes/" + collectionType);
     	
     	HpcMetadataAttributesListDTO metadataAttributes = null;
-		//try {
-			 metadataAttributes = new HpcMetadataAttributesListDTO();
-			 metadataAttributes.getMetadataAttributes().add("MD 1");
-			 metadataAttributes.getMetadataAttributes().add("MD 2");
-			 metadataAttributes.getMetadataAttributes().add("MD 3");
+		try {
+		     metadataAttributes = dataManagementBusService.getMetadataAttributes(collectionType);
 			 
-		//} catch(HpcException e) {
-			//    logger.error("RS: GET /metadataAttributes/" + collectionType + " failed:", e);
-			  //  return errorResponse(e);
-		//}
+		} catch(HpcException e) {
+		        logger.error("RS: GET /metadataAttributes/" + collectionType + " failed:", e);
+			    return errorResponse(e);
+		}
+		
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " getMetadataAttributes: " + collectionType);
 		
-		return okResponse(metadataAttributes, true);
+		return okResponse(!metadataAttributes.getMetadataAttributes().isEmpty() ? 
+				          metadataAttributes : null, true);
     }
 
     @Override

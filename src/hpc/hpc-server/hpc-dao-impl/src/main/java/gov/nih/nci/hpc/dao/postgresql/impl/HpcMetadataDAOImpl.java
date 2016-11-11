@@ -133,7 +133,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	        "from public.\"r_data_hierarchy_meta_main\" where object_path = ? ";
 	
 	private static final String REFRESH_VIEW_SQL = "refresh materialized view concurrently";
-			 
+	
+	private static final String GET_METADATA_ATTRIBUTES_SQL = 
+			"select distinct meta_attr_name from public.\"r_data_hierarchy_meta_main\" union " +
+			"select distinct meta_attr_name from public.\"r_coll_hierarchy_meta_main\"";
+			
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -144,6 +148,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	
 	// Row mappers.
 	private SingleColumnRowMapper<String> objectPathRowMapper = new SingleColumnRowMapper<>();
+	private SingleColumnRowMapper<String> metadataAttributeRowMapper = new SingleColumnRowMapper<>();
 	HpcHierarchicalMetadataEntryRowMapper hierarchicalMetadataEntryRowMapper = 
 			                              new HpcHierarchicalMetadataEntryRowMapper();
 	
@@ -299,9 +304,16 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     }
     
     @Override
-    public List<String> getMetadataAttributes(List<Integer> levels) throws HpcException
+    public List<String> getMetadataAttributes() throws HpcException
     {
-    	return null;
+		try {
+		     return jdbcTemplate.query(GET_METADATA_ATTRIBUTES_SQL, metadataAttributeRowMapper);
+		     
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get metadata attributes: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}	
     }
     
 	@Override
