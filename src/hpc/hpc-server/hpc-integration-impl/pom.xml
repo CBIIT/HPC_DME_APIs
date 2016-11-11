@@ -42,7 +42,6 @@
 						<Private-Package>
 							gov.nih.nci.hpc.integration.globus.impl,
 							gov.nih.nci.hpc.integration.s3.impl,
-							gov.nih.nci.hpc.integration.ldap.authentication,
 							gov.nih.nci.hpc.integration.ldap.impl,
 							gov.nih.nci.hpc.integration.irods.impl
 						</Private-Package>
