@@ -51,51 +51,51 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     
     // SQL Queries.
 	private static final String GET_COLLECTION_IDS_EQUAL_SQL = 
-		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection " +
 	        "where collection.meta_attr_name = ? and collection.meta_attr_value = ?";
 	
 	private static final String GET_COLLECTION_IDS_NOT_EQUAL_SQL = 
-		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection " +
 	        "where collection.meta_attr_name = ? and collection.meta_attr_value <> ?";
 	
 	private static final String GET_COLLECTION_IDS_LIKE_SQL = 
-			"select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+			"select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection " +
 		    "where collection.meta_attr_name = ? and collection.meta_attr_value like ?";
 	
 	private static final String GET_COLLECTION_IDS_NUM_LESS_THAN_SQL = 
-		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection " +
 	        "where collection.meta_attr_name = ? and num_less_than(collection.meta_attr_value, ?) = true";
 	
 	private static final String GET_COLLECTION_IDS_NUM_LESS_OR_EQUAL_SQL = 
-		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection " +
 	        "where collection.meta_attr_name = ? and num_less_or_equal(collection.meta_attr_value, ?) = true";
 	
 	private static final String GET_COLLECTION_IDS_NUM_GREATER_OR_EQUAL_SQL = 
-		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main_ovrd\" collection " +
+		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection " +
 	        "where collection.meta_attr_name = ? and num_greater_or_equal(collection.meta_attr_value, ?) = true";
 	
 	private static final String GET_DATA_OBJECT_IDS_EQUAL_SQL = 
-			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject " +
 		    "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value = ?";
 	
 	private static final String GET_DATA_OBJECT_IDS_NOT_EQUAL_SQL = 
-			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject " +
 		    "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value <> ?";
 	
 	private static final String GET_DATA_OBJECT_IDS_LIKE_SQL = 
-			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject " +
 		    "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value like ?";
 	
 	private static final String GET_DATA_OBJECT_IDS_NUM_LESS_THAN_SQL = 
-		    "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+		    "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject " +
 	        "where dataObject.meta_attr_name = ? and num_less_than(dataObject.meta_attr_value, ?) = true";
 	
 	private static final String GET_DATA_OBJECT_IDS_NUM_LESS_OR_EQUAL_SQL = 
-		    "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+		    "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject " +
 	        "where dataObject.meta_attr_name = ? and num_less_or_equal(dataObject.meta_attr_value, ?) = true";
 	
 	private static final String GET_DATA_OBJECT_IDS_NUM_GREATER_OR_EQUAL_SQL = 
-		    "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main_ovrd\" dataObject " +
+		    "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject " +
 	        "where dataObject.meta_attr_name = ? and num_greater_or_equal(dataObject.meta_attr_value, ?) = true";
 	
 	private static final String DATA_OBJECT_LEVEL_EQUAL_FILTER = " and dataObject.level = ?";
@@ -309,10 +309,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     {
 		try {
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_coll_hierarchy_metamap");
-		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_coll_hierarchy_meta_main_ovrd");
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_coll_hierarchy_meta_main");
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_data_hierarchy_metamap");
-		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_data_hierarchy_meta_main_ovrd");
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_data_hierarchy_meta_main");
 		     
 		} catch(DataAccessException e) {
@@ -422,17 +420,24 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			args.add(metadataQuery.getAttribute());
 			args.add(metadataQuery.getValue());
 			
-			// Optionally add a filter for level.
-			if(metadataQuery.getLevel() != null) {
-			   String levelFilter = levelFilters.get(metadataQuery.getLevelOperator());
-			   if(levelFilter == null) {
-				  throw new HpcException("Invalid level operator: " + metadataQuery.getLevelOperator(),
-			                             HpcErrorType.INVALID_REQUEST_INPUT); 
-			   }
-			   sqlQueryBuilder.append(levelFilter);
-			   args.add(metadataQuery.getLevel());
+			// Add a filter for level. 
+			Integer level = metadataQuery.getLevel();
+			HpcMetadataQueryOperator levelOperator = metadataQuery.getLevelOperator();
+			if(level == null || levelOperator == null) {
+			   // Default filter is 'EQUAL at level 1'.
+			   level = 1;
+			   levelOperator = HpcMetadataQueryOperator.EQUAL;
 			}
+			
+			String levelFilter = levelFilters.get(levelOperator);
+			if(levelFilter == null) {
+			   throw new HpcException("Invalid level operator: " + metadataQuery.getLevelOperator(),
+			                          HpcErrorType.INVALID_REQUEST_INPUT); 
+			}
+			sqlQueryBuilder.append(levelFilter);
+			args.add(level);
 		}
+		
 		sqlQueryBuilder.append(")");
 		
     	HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
