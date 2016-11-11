@@ -41,6 +41,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -498,6 +499,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	dataManagementModel.setDataHierarchy(dataManagementService.getDataHierarchy(doc));
     	
     	return dataManagementModel;
+    }
+    
+    @Override
+	public HpcMetadataAttributesListDTO getMetadataAttributes(String collectionType) 
+                                                             throws HpcException
+    {
+    	logger.info("Invoking getDataManagementMode(String): " + collectionType);
+    	
+    	HpcMetadataAttributesListDTO metadataAttributes = new HpcMetadataAttributesListDTO();
+    	metadataAttributes.getMetadataAttributes().addAll(
+    			dataManagementService.getMetadataAttributes(collectionType));
+    	
+    	return metadataAttributes;
     }
     
     @Override
