@@ -1,14 +1,5 @@
 package gov.nih.nci.hpc.integration.ldap.impl;
 
-/**
- * <p>
- * LDAP Authentication Proxy Implementation.
- * </p>
- *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
- */
-
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
@@ -25,6 +16,15 @@ import javax.naming.directory.SearchResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/**
+ * <p>
+ * LDAP Authentication Proxy Implementation.
+ * </p>
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ */
 
 public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProxy
 {
