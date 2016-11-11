@@ -61,6 +61,7 @@
 		<prop key="hpc.ws.rs.auth.register-system-account">SYSTEM_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.generate-report">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.get-data-management-model">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.get-metadata-attributes">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.save-query">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.delete-query">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.get-queries">SYSTEM_ADMIN GROUP_ADMIN USER</prop>

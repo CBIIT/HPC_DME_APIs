@@ -25,6 +25,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -35,11 +36,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -486,9 +485,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	long start = System.currentTimeMillis();
     	logger.info("Invoking RS: GET /metadataAttributes/" + collectionType);
     	
-    	List<String> metadataAttributes = null;
+    	HpcMetadataAttributesListDTO metadataAttributes = null;
 		//try {
-			 metadataAttributes = new ArrayList<String>(Arrays.asList("MD 1", "MD 2", "MD 3"));
+			 metadataAttributes = new HpcMetadataAttributesListDTO();
+			 metadataAttributes.getMetadataAttributes().add("MD 1");
+			 metadataAttributes.getMetadataAttributes().add("MD 2");
+			 metadataAttributes.getMetadataAttributes().add("MD 3");
 			 
 		//} catch(HpcException e) {
 			//    logger.error("RS: GET /metadataAttributes/" + collectionType + " failed:", e);
@@ -497,7 +499,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " getMetadataAttributes: " + collectionType);
 		
-		return okResponse(new GenericEntity<List<String>>(metadataAttributes){}, true);
+		return okResponse(metadataAttributes, true);
     }
 
     @Override
