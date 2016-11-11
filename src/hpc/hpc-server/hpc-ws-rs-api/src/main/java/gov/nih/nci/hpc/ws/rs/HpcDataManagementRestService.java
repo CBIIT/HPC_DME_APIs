@@ -257,7 +257,7 @@ public interface HpcDataManagementRestService
      * @return Response The REST service response.
      */
 	@GET
-	@Path("/metadataAttributes}")
+	@Path("/metadataAttributes")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getMetadataAttributes(@QueryParam("collectionType") String collectionType);
 	
