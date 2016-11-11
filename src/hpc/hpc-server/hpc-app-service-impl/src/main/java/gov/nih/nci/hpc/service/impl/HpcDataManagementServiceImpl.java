@@ -1124,6 +1124,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	return dataHierarchyValidator.getDataHierarchy(doc);
     }
     
+    public List<String> getMetadataAttributes(String collectionType) throws HpcException
+    {
+    	if(collectionType == null || collectionType.isEmpty()) {
+    	   return metadataDAO.getMetadataAttributes();
+    	   
+    	} else {
+    		    return new ArrayList<String>();
+    	}
+    }
+    
     @Override
     public void validateHierarchy(String path, boolean dataObjectRegistration) throws HpcException
     {

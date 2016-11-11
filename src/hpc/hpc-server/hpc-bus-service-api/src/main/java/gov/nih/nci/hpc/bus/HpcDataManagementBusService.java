@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -204,6 +205,15 @@ public interface HpcDataManagementBusService
      * @throws HpcException
      */
 	public HpcDataManagementModelDTO getDataManagementModel(String doc) throws HpcException;
+	
+    /**
+     * Get a list of metadata attributes currently registered.
+     *
+     * @param collectionType Filter the list by a specific collection type.
+     * @return A list of metadata attributes
+     */
+	public HpcMetadataAttributesListDTO getMetadataAttributes(String collectionType) 
+			                                                 throws HpcException;
 	
     /**
      * Save a query for a user.
