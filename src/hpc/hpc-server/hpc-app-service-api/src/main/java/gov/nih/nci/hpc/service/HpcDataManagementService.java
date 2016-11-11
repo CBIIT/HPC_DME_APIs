@@ -578,6 +578,14 @@ public interface HpcDataManagementService
     public HpcDataHierarchy getDataHierarchy(String doc) throws HpcException;
     
     /**
+     * Get a list of metadata attributes currently registered.
+     *
+     * @param collectionType Filter the list by a specific collection type.
+     * @return A list of metadata attributes
+     */
+	public List<String> getMetadataAttributes(String collectionType) throws HpcException;
+    
+    /**
      * Validate a path against a hierarchy definition.
      *
      * @param path The collection path.

@@ -103,12 +103,11 @@ public interface HpcMetadataDAO
     /**
      * Get metadata attribute names.
      *
-     * @param path The data object's path
-     * @return List of HpcHierarchicalMetadataEntry.
+     * @return List of metadata attributes currently registered.
      * 
      * @throws HpcException
      */
-    public List<String> getMetadataAttributes(List<Integer> levels) throws HpcException;
+    public List<String> getMetadataAttributes() throws HpcException;
     
     /**
      * Refresh all materialized views.
