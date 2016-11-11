@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -496,7 +497,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " getMetadataAttributes: " + collectionType);
 		
-		return okResponse(metadataAttributes, true);
+		return okResponse(new GenericEntity<List<String>>(metadataAttributes){}, true);
     }
 
     @Override
