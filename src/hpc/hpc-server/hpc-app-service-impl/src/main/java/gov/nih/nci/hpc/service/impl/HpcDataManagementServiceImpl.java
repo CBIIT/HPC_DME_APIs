@@ -1224,6 +1224,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	return userQueryDAO.getQuery(nciUserId, queryName);
     }
     
+    @Override
+    public int getSearchResultsPageSize()
+    {
+    	return searchResultsPageSize;
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  

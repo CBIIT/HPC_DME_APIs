@@ -28,8 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -163,9 +161,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	// Maps between metadata query operator to a level SQL filter ('where' condition)
 	private Map<HpcMetadataQueryOperator, String> dataObjectLevelFilters = new HashMap<>();
 	private Map<HpcMetadataQueryOperator, String> collectionLevelFilters = new HashMap<>();
-	
-    // The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -406,8 +401,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     	sqlQueryBuilder.append(LIMIT_OFFSET_SQL);
     	args.add(limit);
     	args.add(offset);
-    	logger.error("ERAN offset: " + offset);
-    	logger.error("ERAN limit: " + limit);
     	
     	HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
     	preparedQuery.sql = sqlQueryBuilder.toString();
