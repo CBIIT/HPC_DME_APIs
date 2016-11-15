@@ -178,7 +178,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     
     @Override
     public HpcCollectionListDTO getCollections(List<HpcMetadataQuery> metadataQueries,
-    		                                   boolean detailedResponse) 
+    		                                   boolean detailedResponse, int page) 
                                               throws HpcException
     {
     	logger.info("Invoking getCollections(List<HpcMetadataQuery>, boolean): " + 
@@ -191,9 +191,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	if(detailedResponse) {
-    	   return toCollectionListDTO(dataManagementService.getCollections(metadataQueries), null);
+    	   return toCollectionListDTO(
+    			    dataManagementService.getCollections(metadataQueries, page), null);
     	} else {
-       		    return toCollectionListDTO(null, dataManagementService.getCollectionPaths(metadataQueries));
+       		    return toCollectionListDTO(
+       		    		 null, dataManagementService.getCollectionPaths(metadataQueries, page));
     	}
     }
     
@@ -212,20 +214,25 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       	boolean detailedResponse = compoundMetadataQueryDTO.getDetailedResponse() != null && 
                                    compoundMetadataQueryDTO.getDetailedResponse();
     	if(detailedResponse) {
-    	   return toCollectionListDTO(dataManagementService.getCollections(compoundMetadataQueryDTO.getQuery()), null);
+    	   return toCollectionListDTO(
+    			    dataManagementService.getCollections(compoundMetadataQueryDTO.getQuery(),
+    			                                         compoundMetadataQueryDTO.getPage()), 
+    			    null);
     	} else {
-       		    return toCollectionListDTO(null, dataManagementService.getCollectionPaths(
-       		    		                                                  compoundMetadataQueryDTO.getQuery()));
+       		    return toCollectionListDTO(
+       		    		 null, 
+       		    		 dataManagementService.getCollectionPaths(compoundMetadataQueryDTO.getQuery(),
+       		    				                                  compoundMetadataQueryDTO.getPage()));
     	}
     }
     
     @Override
-    public HpcCollectionListDTO getCollections(String queryName, boolean detailedResponse) 
+    public HpcCollectionListDTO getCollections(String queryName, boolean detailedResponse, int page) 
                                               throws HpcException
     {
     	logger.info("Invoking getCollections(string,boolean): " + queryName);
     	
-    	return getCollections(toCompoundMetadataQueryDTO(queryName, detailedResponse));
+    	return getCollections(toCompoundMetadataQueryDTO(queryName, detailedResponse, page));
     }
     
     @Override
@@ -326,7 +333,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     
     @Override
     public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries, 
-    		                                   boolean detailedResponse) 
+    		                                   boolean detailedResponse, int page) 
                                               throws HpcException
     {
     	logger.info("Invoking getDataObjects(List<HpcMetadataQuery>, boolean): " + metadataQueries);
@@ -338,9 +345,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	if(detailedResponse) {
-    	   return toDataObjectListDTO(dataManagementService.getDataObjects(metadataQueries), null);
+    	   return toDataObjectListDTO(
+    			    dataManagementService.getDataObjects(metadataQueries, page), null);
     	} else {
-    		    return toDataObjectListDTO(null, dataManagementService.getDataObjectPaths(metadataQueries));
+    		    return toDataObjectListDTO(
+    		    		 null, dataManagementService.getDataObjectPaths(metadataQueries, page));
     	}
     }
     
@@ -359,20 +368,26 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	boolean detailedResponse = compoundMetadataQueryDTO.getDetailedResponse() != null && 
     			                   compoundMetadataQueryDTO.getDetailedResponse();
     	if(detailedResponse) {
-    	   return toDataObjectListDTO(dataManagementService.getDataObjects(compoundMetadataQueryDTO.getQuery()), null);
+    	   return toDataObjectListDTO(
+    			    dataManagementService.getDataObjects(compoundMetadataQueryDTO.getQuery(),
+    			    		                             compoundMetadataQueryDTO.getPage()), 
+    			    null);
     	} else {
-    		    return toDataObjectListDTO(null, dataManagementService.getDataObjectPaths(
-    		    		                                                  compoundMetadataQueryDTO.getQuery()));
+    		    return toDataObjectListDTO(
+    		    		 null, 
+    		    		 dataManagementService.getDataObjectPaths(compoundMetadataQueryDTO.getQuery(),
+    		    				                                  compoundMetadataQueryDTO.getPage()));
     	}
     }
     
     @Override
-    public HpcDataObjectListDTO getDataObjects(String queryName, boolean detailedResponse) 
+    public HpcDataObjectListDTO getDataObjects(String queryName, boolean detailedResponse, 
+    		                                   int page) 
                                               throws HpcException
     {
     	logger.info("Invoking getDataObjects(string,boolean): " + queryName);
     	
-    	return getDataObjects(toCompoundMetadataQueryDTO(queryName, detailedResponse));
+    	return getDataObjects(toCompoundMetadataQueryDTO(queryName, detailedResponse, page));
     }
     
     @Override
@@ -890,12 +905,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      *
      * @param queryName The user query.
      * @param detailedResponse The detailed response indicator.
+     * @param The requested results page
      * @return HpcCompoundMetadataQueryDTO
      * 
      * @throws HpcException If the user query was not found
      */
     private HpcCompoundMetadataQueryDTO 
-               toCompoundMetadataQueryDTO(String queryName, boolean detailedResponse)
+               toCompoundMetadataQueryDTO(String queryName, boolean detailedResponse, 
+            		                      int page)
                                          throws HpcException
     {
     	// Input validation.
@@ -918,6 +935,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO = new HpcCompoundMetadataQueryDTO();
 		compoundMetadataQueryDTO.setQuery(namedCompoundQuery.getCompoundQuery());
 		compoundMetadataQueryDTO.setDetailedResponse(detailedResponse);
+		compoundMetadataQueryDTO.setPage(page);
 		
 		return compoundMetadataQueryDTO;
     }
