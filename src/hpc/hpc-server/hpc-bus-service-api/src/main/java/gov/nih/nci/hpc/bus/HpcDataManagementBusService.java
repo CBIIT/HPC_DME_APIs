@@ -70,12 +70,13 @@ public interface HpcDataManagementBusService
      *
      * @param metadataQueries The metadata queries.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
      * @return A list of HpcCollectionDTO
      * 
      * @throws HpcException
      */
     public HpcCollectionListDTO getCollections(List<HpcMetadataQuery> metadataQueries,
-    		                                   boolean detailedResponse) 
+    		                                   boolean detailedResponse, int page) 
     		                                  throws HpcException;
     
     /**
@@ -94,11 +95,13 @@ public interface HpcDataManagementBusService
      *
      * @param queryName The query name.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
      * @return A list of HpcCollectionDTO
      * 
      * @throws HpcException
      */
-    public HpcCollectionListDTO getCollections(String queryName, boolean detailedResponse) 
+    public HpcCollectionListDTO getCollections(String queryName, boolean detailedResponse,
+    		                                   int page) 
     		                                  throws HpcException;
     
     /**
@@ -134,12 +137,13 @@ public interface HpcDataManagementBusService
      *
      * @param metadataQueries The metadata queries.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
      * @return A list of HpcDataObjectDTO.
      * 
      * @throws HpcException
      */
     public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries,
-    		                                   boolean detailedResponse) 
+    		                                   boolean detailedResponse, int page) 
     		                                  throws HpcException;
     
     /**
@@ -158,11 +162,13 @@ public interface HpcDataManagementBusService
      *
      * @param queryName The query name.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
      * @return A list of HpcDataObjectDTO.
      * 
      * @throws HpcException
      */
-    public HpcDataObjectListDTO getDataObjects(String queryName, boolean detailedResponse) 
+    public HpcDataObjectListDTO getDataObjects(String queryName, boolean detailedResponse,
+    		                                   int page) 
     		                                  throws HpcException;
     
     /**

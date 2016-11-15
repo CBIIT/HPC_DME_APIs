@@ -80,6 +80,7 @@ public interface HpcDataManagementRestService
      *
      * @param metadataQueries A list of metadata entries to query for.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
      * @return Response The REST service response.
      */
 	@GET
@@ -87,13 +88,15 @@ public interface HpcDataManagementRestService
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getCollections(
 			           @QueryParam("metadataQuery") List<HpcMetadataQueryParam> metadataQueries,
-			           @QueryParam("detailedResponse") Boolean detailedResponse);
+			           @QueryParam("detailedResponse") Boolean detailedResponse,
+			           @QueryParam("page") Integer page);
 	
     /**
      * POST Collections query.
      *
      * @param metadataQueries A list of metadata entries to query for. 
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
      * @return Response The REST service response.
      */
 	@POST
@@ -101,7 +104,8 @@ public interface HpcDataManagementRestService
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response queryCollections(List<HpcMetadataQuery> metadataQueries,
-			                         @QueryParam("detailedResponse") Boolean detailedResponse);
+			                         @QueryParam("detailedResponse") Boolean detailedResponse,
+			                         @QueryParam("page") Integer page);
 	
     /**
      * POST Collections query.
@@ -120,13 +124,15 @@ public interface HpcDataManagementRestService
      *
      * @param name A named query.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
      * @return Response The REST service response.
      */
 	@GET
 	@Path("/collection/query/compound/{queryName}")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response queryCollections(@PathParam("queryName") String queryName,
-			                         @QueryParam("detailedResponse") Boolean detailedResponse);
+			                         @QueryParam("detailedResponse") Boolean detailedResponse,
+			                         @QueryParam("page") Integer page);
 
     /**
      * PUT Data object registration request.
@@ -163,6 +169,7 @@ public interface HpcDataManagementRestService
      *
      * @param metadataQueries A list of metadata entries to query for.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
      * @return Response The REST service response.
      */
 	@GET
@@ -170,13 +177,15 @@ public interface HpcDataManagementRestService
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getDataObjects(
 			           @QueryParam("metadataQuery") List<HpcMetadataQueryParam> metadataQueries,
-			           @QueryParam("detailedResponse") Boolean detailedResponse);
+			           @QueryParam("detailedResponse") Boolean detailedResponse,
+			           @QueryParam("page") Integer page);
 	
     /**
      * POST Data objects query.
      *
      * @param metadataQueries A list of metadata entries to query for.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
      * @return Response The REST service response.
      */
 	@POST
@@ -184,7 +193,8 @@ public interface HpcDataManagementRestService
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries,
-			                         @QueryParam("detailedResponse") Boolean detailedResponse);
+			                         @QueryParam("detailedResponse") Boolean detailedResponse,
+			                         @QueryParam("page") Integer page);
 	
     /**
      * POST Data objects query.
@@ -203,13 +213,15 @@ public interface HpcDataManagementRestService
      *
      * @param name A named query
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
      * @return Response The REST service response.
      */
 	@GET
 	@Path("/dataObject/query/compound/{queryName}")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response queryDataObjects(@PathParam("queryName") String queryName,
-			                         @QueryParam("detailedResponse") Boolean detailedResponse);
+			                         @QueryParam("detailedResponse") Boolean detailedResponse,
+			                         @QueryParam("page") Integer page);
 
     /**
      * POST Download Data Object.
