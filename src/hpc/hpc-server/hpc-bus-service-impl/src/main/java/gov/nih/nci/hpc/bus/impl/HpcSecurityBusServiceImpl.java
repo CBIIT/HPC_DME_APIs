@@ -185,7 +185,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	{
     		if(updateUserRequestDTO.getFirstName() != null ||
        			 updateUserRequestDTO.getLastName() != null ||
-       			 updateUserRequestDTO.getDOC() != null ||
+       			 updateUserRequestDTO.getDoc() != null ||
        			 updateUserRequestDTO.getUserRole() != null)
        		{
        			throw new HpcException("Not authorizated to update frist name, last name, DOC, role. Please contact system administrator",
@@ -201,9 +201,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
         String updateLastName = updateUserRequestDTO.getLastName() != null ?
     	    			        updateUserRequestDTO.getLastName() :
     	    			        user.getNciAccount().getLastName();
-    	String updateDOC = updateUserRequestDTO.getDOC() != null ?
-    	    	           updateUserRequestDTO.getDOC() :
-    	    	    	   user.getNciAccount().getDOC();
+    	String updateDOC = updateUserRequestDTO.getDoc() != null ?
+    	    	           updateUserRequestDTO.getDoc() :
+    	    	    	   user.getNciAccount().getDoc();
     	HpcUserRole updateRole = updateUserRequestDTO.getUserRole() != null ?
     		                     roleFromString(updateUserRequestDTO.getUserRole()) : 
     		                     requestUserRole;

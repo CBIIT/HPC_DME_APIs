@@ -110,7 +110,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		                         user.getNciAccount().getUserId(),
 		                         user.getNciAccount().getFirstName(),
 		                         user.getNciAccount().getLastName(),
-		                         user.getNciAccount().getDOC(),
+		                         user.getNciAccount().getDoc(),
 		                         user.getDataManagementAccount().getUsername(),
 		                         encryptor.encrypt(user.getDataManagementAccount().getPassword()),
 		                         user.getCreated(),
@@ -152,7 +152,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 			nciAccount.setUserId(rs.getString("USER_ID"));
 			nciAccount.setFirstName(rs.getString("FIRST_NAME"));
 			nciAccount.setLastName(rs.getString("LAST_NAME"));
-			nciAccount.setDOC(rs.getString("DOC"));
+			nciAccount.setDoc(rs.getString("DOC"));
 			
 			HpcIntegratedSystemAccount dataManagementAccount = new HpcIntegratedSystemAccount();
 			dataManagementAccount.setIntegratedSystem(HpcIntegratedSystem.IRODS);
