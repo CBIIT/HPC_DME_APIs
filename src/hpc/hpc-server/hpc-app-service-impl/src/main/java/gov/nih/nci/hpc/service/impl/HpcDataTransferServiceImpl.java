@@ -416,6 +416,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	// No authenticated token found for this request. Create one.
         Object token = dataTransferProxies.get(dataTransferType).
         		           authenticate(systemAccountLocator.getSystemAccount(dataTransferType));
+        System.out.println("token: "+token);
+        System.out.println("dataTransferType: "+dataTransferType);
+        System.out.println("account: "+systemAccountLocator.getSystemAccount(dataTransferType));
     	if(token == null) {
     	   throw new HpcException("Invalid data transfer account credentials",
                                   HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);

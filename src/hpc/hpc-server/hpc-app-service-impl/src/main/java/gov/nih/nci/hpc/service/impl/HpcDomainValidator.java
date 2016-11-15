@@ -96,7 +96,7 @@ public class HpcDomainValidator
     	
     	if(nciAccount.getFirstName() == null || 
  	       nciAccount.getLastName() == null ||
- 	       nciAccount.getDOC() == null) {
+ 	       nciAccount.getDoc() == null) {
     	   return false;
     	}
     	

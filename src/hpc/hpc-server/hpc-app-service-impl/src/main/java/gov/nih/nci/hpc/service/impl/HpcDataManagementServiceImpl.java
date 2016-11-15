@@ -1312,7 +1312,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	// Create the registrar DOC.
        	addMetadataEntry(metadataEntries,
        			         toMetadataEntry(REGISTRAR_DOC_ATTRIBUTE, 
-       			                         invoker.getNciAccount().getDOC()));
+       			                         invoker.getNciAccount().getDoc()));
        	
        	return metadataEntries;
     }
@@ -1773,8 +1773,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	List<HpcMetadataValidationRule> docRules = new ArrayList<>();
     	for(HpcMetadataValidationRule rule : rules) {
-    		if(rule.getDOC() == null || rule.getDOC().isEmpty() ||
-    		   rule.getDOC().contains(doc)) {
+    		if(rule.getDoc() == null || rule.getDoc().isEmpty() ||
+    		   rule.getDoc().contains(doc)) {
     		   docRules.add(rule);
     		}
     	}
