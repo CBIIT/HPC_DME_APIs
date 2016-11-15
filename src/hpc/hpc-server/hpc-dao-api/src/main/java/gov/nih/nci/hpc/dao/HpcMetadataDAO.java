@@ -33,12 +33,15 @@ public interface HpcMetadataDAO
      *
      * @param metadataQueries The metadata entries to query for.
      * @param dataManagementUsername The Data Management user name. 
+     * @param offset Skip that many path in the returned results.
+     * @param limit No more than 'limit' paths will be returned.
      * @return List of collection Paths.
      * 
      * @throws HpcException
      */
     public List<String> getCollectionPaths(List<HpcMetadataQuery> metadataQueries,
-    		                               String dataManagementUsername) 
+    		                               String dataManagementUsername,
+    		                               int offset, int limit) 
     		                              throws HpcException;
     
     /**
@@ -46,12 +49,15 @@ public interface HpcMetadataDAO
      *
      * @param compoundMetadataQuery The compound metadata query.
      * @param dataManagementUsername The Data Management user name. 
+     * @param offset Skip that many path in the returned results.
+     * @param limit No more than 'limit' paths will be returned.
      * @return List of collection Paths.
      * 
      * @throws HpcException
      */
     public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
-    		                               String dataManagementUsername) 
+    		                               String dataManagementUsername,
+    		                               int offset, int limit) 
     		                              throws HpcException;
     
     /**
@@ -59,12 +65,15 @@ public interface HpcMetadataDAO
      *
      * @param metadataQueries The metadata entries to query for.
      * @param dataManagementUsername The Data Management user name. 
+     * @param offset Skip that many path in the returned results.
+     * @param limit No more than 'limit' paths will be returned.
      * @return List of data object Paths.
      * 
      * @throws HpcException
      */
     public List<String> getDataObjectPaths(List<HpcMetadataQuery> metadataQueries,
-    		                               String dataManagementUsername) 
+    		                               String dataManagementUsername,
+    		                               int offset, int limit) 
     		                              throws HpcException;
     
     /**
@@ -72,12 +81,15 @@ public interface HpcMetadataDAO
      *
      * @param compoundMetadataQuery The compound metadata query.
      * @param dataManagementUsername The Data Management user name. 
+     * @param offset Skip that many path in the returned results.
+     * @param limit No more than 'limit' paths will be returned.
      * @return List of data object Paths.
      * 
      * @throws HpcException
      */
     public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
-    		                               String dataManagementUsername) 
+    		                               String dataManagementUsername,
+    		                               int offset, int limit) 
     		                              throws HpcException;
     
     /**

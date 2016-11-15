@@ -155,6 +155,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	// 2. 'views' - Custom DB materialized views (on top of iRODS DB) are used to support hierarchical metadata search.
 	// 3. 'none' - Hierarchical metadata search not supported.
 	private String hierarchicalMetadataPolicy = null;
+	
+	// The max page size of search results.
+	private int searchResultsPageSize = 0;
 
     // The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -167,9 +170,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
      * Constructor for Spring Dependency Injection.
      * 
      * @param hierarchicalMetadataPolicy The desired hierarchical metadata policy.
+     * @param searchResultsPageSize The max page size of search results.
      * @throws HpcException
      */
-    private HpcDataManagementServiceImpl(String hierarchicalMetadataPolicy) throws HpcException
+    private HpcDataManagementServiceImpl(String hierarchicalMetadataPolicy,
+    		                             int searchResultsPageSize) 
+    		                            throws HpcException
     {
     	if(hierarchicalMetadataPolicy == null ||
     	   (!hierarchicalMetadataPolicy.equals(METADATA_REPLICATION_POLICY) &&
@@ -727,7 +733,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<HpcCollection> getCollections(List<HpcMetadataQuery> metadataQueries) 
+    public List<HpcCollection> getCollections(List<HpcMetadataQuery> metadataQueries, int page) 
     		                                 throws HpcException
     {
        	if(!isValidMetadataQueries(metadataQueries) || metadataQueries.isEmpty()) {
@@ -739,7 +745,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	   // Use the hierarchical metadata views to perform the search.
        	   String dataManagementUsername = 
        			  HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
-       	   return getCollectionsByPaths(metadataDAO.getCollectionPaths(metadataQueries, dataManagementUsername));
+       	   return getCollectionsByPaths(
+       			     metadataDAO.getCollectionPaths(metadataQueries, dataManagementUsername,
+       			    		                        getOffset(page), searchResultsPageSize));
        		
        	} else {
     	        return dataManagementProxy.getCollections(getAuthenticatedToken(),
@@ -748,7 +756,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<HpcCollection> getCollections(HpcCompoundMetadataQuery compoundMetadataQuery) 
+    public List<HpcCollection> getCollections(HpcCompoundMetadataQuery compoundMetadataQuery,
+    		                                  int page) 
     		                                 throws HpcException
     {
        	if(!isValidCompoundMetadataQuery(compoundMetadataQuery)) {
@@ -760,7 +769,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	   // Use the hierarchical metadata views to perform the search.
        	   String dataManagementUsername = 
        			  HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
-       	   return getCollectionsByPaths(metadataDAO.getCollectionPaths(compoundMetadataQuery, dataManagementUsername));
+       	   return getCollectionsByPaths(
+       			     metadataDAO.getCollectionPaths(compoundMetadataQuery, dataManagementUsername,
+       			    		                        getOffset(page), searchResultsPageSize));
        		
        	} else {
 	            throw new HpcException("Compound metadata search not supported for policy: " +
@@ -769,7 +780,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<String> getCollectionPaths(List<HpcMetadataQuery> metadataQueries) 
+    public List<String> getCollectionPaths(List<HpcMetadataQuery> metadataQueries, int page) 
     		                              throws HpcException
     {
        	if(!isValidMetadataQueries(metadataQueries) || metadataQueries.isEmpty()) {
@@ -781,7 +792,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	   // Use the hierarchical metadata views to perform the search.
        	   String dataManagementUsername = 
        			  HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
-       	   return metadataDAO.getCollectionPaths(metadataQueries, dataManagementUsername);
+       	   return metadataDAO.getCollectionPaths(metadataQueries, dataManagementUsername,
+       			                                 getOffset(page), searchResultsPageSize);
        		
        	} else {
     	        return toCollectionPaths(dataManagementProxy.getCollections(getAuthenticatedToken(),
@@ -790,7 +802,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery) 
+    public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
+    		                               int page) 
     		                              throws HpcException
     {
        	if(!isValidCompoundMetadataQuery(compoundMetadataQuery)) {
@@ -802,7 +815,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	   // Use the hierarchical metadata views to perform the search.
        	   String dataManagementUsername = 
        			  HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
-       	   return metadataDAO.getCollectionPaths(compoundMetadataQuery, dataManagementUsername);
+       	   return metadataDAO.getCollectionPaths(compoundMetadataQuery, dataManagementUsername,
+       			                                 getOffset(page), searchResultsPageSize);
        		
        	} else {
                 throw new HpcException("Compound metadata search not supported for policy: " +
@@ -834,7 +848,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<HpcDataObject> getDataObjects(List<HpcMetadataQuery> metadataQueries) 
+    public List<HpcDataObject> getDataObjects(List<HpcMetadataQuery> metadataQueries, 
+    		                                  int page) 
     		                                 throws HpcException
     {
        	if(!isValidMetadataQueries(metadataQueries) || metadataQueries.isEmpty()) {
@@ -846,7 +861,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
            // Use the hierarchical metadata views to perform the search.
        	   String dataManagementUsername = 
          	      HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
-           return getDataObjectsByPaths(metadataDAO.getDataObjectPaths(metadataQueries, dataManagementUsername));
+           return getDataObjectsByPaths(
+        		     metadataDAO.getDataObjectPaths(metadataQueries, dataManagementUsername,
+        		    		                        getOffset(page), searchResultsPageSize));
         		
         } else {
     	        return dataManagementProxy.getDataObjects(getAuthenticatedToken(),
@@ -855,7 +872,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<HpcDataObject> getDataObjects(HpcCompoundMetadataQuery compoundMetadataQuery) 
+    public List<HpcDataObject> getDataObjects(HpcCompoundMetadataQuery compoundMetadataQuery,
+    		                                  int page) 
     		                                 throws HpcException
     {
        	if(!isValidCompoundMetadataQuery(compoundMetadataQuery)) {
@@ -867,7 +885,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
            // Use the hierarchical metadata views to perform the search.
        	   String dataManagementUsername = 
          	      HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
-           return getDataObjectsByPaths(metadataDAO.getDataObjectPaths(compoundMetadataQuery, dataManagementUsername));
+           return getDataObjectsByPaths(
+        		     metadataDAO.getDataObjectPaths(compoundMetadataQuery, dataManagementUsername,
+        		    		                        getOffset(page), searchResultsPageSize));
         		
         } else {
     	        throw new HpcException("Compound metadata search not supported for policy: " +
@@ -876,7 +896,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<String> getDataObjectPaths(List<HpcMetadataQuery> metadataQueries) 
+    public List<String> getDataObjectPaths(List<HpcMetadataQuery> metadataQueries, int page) 
     		                              throws HpcException
     {
        	if(!isValidMetadataQueries(metadataQueries) || metadataQueries.isEmpty()) {
@@ -888,7 +908,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
            // Use the hierarchical metadata views to perform the search.
        	   String dataManagementUsername = 
          	      HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
-           return metadataDAO.getDataObjectPaths(metadataQueries, dataManagementUsername);
+           return metadataDAO.getDataObjectPaths(metadataQueries, dataManagementUsername,
+        		                                 getOffset(page), searchResultsPageSize);
         		
         } else {
     	        return toDataObjectPaths(dataManagementProxy.getDataObjects(getAuthenticatedToken(),
@@ -897,7 +918,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery) 
+    public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
+    		                               int page) 
     		                              throws HpcException
     {
        	if(!isValidCompoundMetadataQuery(compoundMetadataQuery)) {
@@ -909,7 +931,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
            // Use the hierarchical metadata views to perform the search.
        	   String dataManagementUsername = 
          	      HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
-           return metadataDAO.getDataObjectPaths(compoundMetadataQuery, dataManagementUsername);
+           return metadataDAO.getDataObjectPaths(compoundMetadataQuery, dataManagementUsername,
+        		                                 getOffset(page), searchResultsPageSize);
         		
         } else {
 	            throw new HpcException("Compound metadata search not supported for policy: " +
@@ -922,9 +945,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	List<HpcDataObject> objectsInProgress = new ArrayList<>();
     	objectsInProgress.addAll(
-    		   getDataObjects(dataTransferInProgressToArchiveQuery));
+    		   getDataObjects(dataTransferInProgressToArchiveQuery, 1));
     	objectsInProgress.addAll(
-    		   getDataObjects(dataTransferInProgressToTemporaryArchiveQuery));
+    		   getDataObjects(dataTransferInProgressToTemporaryArchiveQuery, 1));
     	
     	return objectsInProgress;
     }
@@ -932,7 +955,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     @Override
     public List<HpcDataObject> getDataObjectsInTemporaryArchive() throws HpcException
     {
-    	return getDataObjects(dataTransferInTemporaryArchiveQuery);
+    	return getDataObjects(dataTransferInTemporaryArchiveQuery, 1);
     }
     
     @Override
@@ -1753,7 +1776,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     /**
-     * Get a collection type of a path
+     * Get a collection type of a path.
      *
      * @param path The collection path.
      * @return The collection type.
@@ -1769,5 +1792,23 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	return null;
+    }
+    
+    /**
+     * Calculate search offset by requested pagr
+     *
+     * @param page The requested page.
+     * @return The calculated offset
+     * @throws HpcException if the page is invalid.
+     * 
+     */
+    private int getOffset(int page) throws HpcException
+    {
+    	if(page < 1) {
+    	   throw new HpcException("Invalid search results page: " + page,
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	return (page -1) * searchResultsPageSize;
     }
 }
