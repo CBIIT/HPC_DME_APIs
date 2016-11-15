@@ -240,7 +240,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
                                     		 HpcCompoundMetadataQueryOperator.ALL,
                                     		 collectionLevelFilters),
                                      COLLECTION_USER_ACCESS_SQL, 
-                                     dataManagementUsername));
+                                     dataManagementUsername, offset, limit));
     }
 	
 	@Override
@@ -253,7 +253,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
                                      toQuery(collectionSQLQueries, compoundMetadataQuery, 
                                     		 collectionLevelFilters),
                                      COLLECTION_USER_ACCESS_SQL, 
-                                     dataManagementUsername));
+                                     dataManagementUsername, offset, limit));
     }
 
 	@Override 
@@ -267,7 +267,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
                                     		 HpcCompoundMetadataQueryOperator.ALL,
                                     		 dataObjectLevelFilters),
                                      DATA_OBJECT_USER_ACCESS_SQL, 
-                                     dataManagementUsername));
+                                     dataManagementUsername, offset, limit));
     }
 	
 	@Override 
@@ -280,7 +280,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
                                      toQuery(dataObjectSQLQueries, compoundMetadataQuery,
                                     		 dataObjectLevelFilters),
                                      DATA_OBJECT_USER_ACCESS_SQL, 
-                                     dataManagementUsername));
+                                     dataManagementUsername, offset, limit));
     }
 	
     @Override
@@ -373,13 +373,16 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      * @param userQuery The calculated SQL query based on user input (represented by query domain objects).
      * @param userAccessQuery The user access query to append.
      * @param dataManagementUsername The data management user name.
+     * @param offset Skip that many path in the returned results.
+     * @param limit No more than 'limit' paths will be returned.
      * 
      * @throws HpcException
      */
     private HpcPreparedQuery prepareQuery(String getObjectPathsQuery,
     		                              HpcPreparedQuery userQuery,
     		                              String userAccessQuery,
-    		                              String dataManagementUsername) 
+    		                              String dataManagementUsername,
+    		                              int offset, int limit) 
     		                             throws HpcException
     {
     	StringBuilder sqlQueryBuilder = new StringBuilder();
@@ -396,8 +399,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     	args.add(dataManagementUsername);
     	
     	sqlQueryBuilder.append(LIMIT_OFFSET_SQL);
-    	args.add(10);
-    	args.add(1);
+    	args.add(limit);
+    	args.add(offset);
     	
     	HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
     	preparedQuery.sql = sqlQueryBuilder.toString();
