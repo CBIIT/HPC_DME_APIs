@@ -118,7 +118,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			"select access.object_id from public.\"r_objt_access\" access, " +
 			"public.\"r_user_main\" account where account.user_name = ? and access.user_id = account.user_id";
 	
-	private static final String LIMIT_OFFSET_SQL = " order by object_id limit ? offset ?";
+	private static final String LIMIT_OFFSET_SQL = " order by object_path limit ? offset ?";
 	
 	private static final String GET_COLLECTION_PATHS_SQL = 
 			"select distinct object_path from public.\"r_coll_hierarchy_meta_main\" where object_id in ";
