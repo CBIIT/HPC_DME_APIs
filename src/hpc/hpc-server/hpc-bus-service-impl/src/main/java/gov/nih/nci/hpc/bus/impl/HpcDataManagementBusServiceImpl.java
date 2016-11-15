@@ -192,10 +192,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	if(detailedResponse) {
     	   return toCollectionListDTO(
-    			    dataManagementService.getCollections(metadataQueries, page), null);
+    			    dataManagementService.getCollections(metadataQueries, page), null, page);
     	} else {
        		    return toCollectionListDTO(
-       		    		 null, dataManagementService.getCollectionPaths(metadataQueries, page));
+       		    		 null, dataManagementService.getCollectionPaths(metadataQueries, page), page);
     	}
     }
     
@@ -218,11 +218,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	if(detailedResponse) {
     	   return toCollectionListDTO(
     			    dataManagementService.getCollections(compoundMetadataQueryDTO.getQuery(), page), 
-    			    null);
+    			    null, page);
     	} else {
        		    return toCollectionListDTO(
        		    		 null, 
-       		    		 dataManagementService.getCollectionPaths(compoundMetadataQueryDTO.getQuery(), page));
+       		    		 dataManagementService.getCollectionPaths(compoundMetadataQueryDTO.getQuery(), 
+       		    		 page), page);
     	}
     }
     
@@ -833,9 +834,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      *
      * @param collections A list of collection domain objects.
      * @param collectionPaths A list of collection paths.
+     * @param page The requested results page.
      */
     private HpcCollectionListDTO toCollectionListDTO(List<HpcCollection> collections,
-    		                                         List<String> collectionPaths)
+    		                                         List<String> collectionPaths,
+    		                                         int page)
     {
 		HpcCollectionListDTO collectionsDTO = new HpcCollectionListDTO();
 		
@@ -860,6 +863,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		       collectionsDTO.getCollectionPaths().add(getRelativePath(collectionPath, basePath));
 		   }
 		}
+		
+		collectionsDTO.setPage(page);
+		collectionsDTO.setLimit(dataManagementService.getSearchResultsPageSize());
 		
 		return collectionsDTO;
     }

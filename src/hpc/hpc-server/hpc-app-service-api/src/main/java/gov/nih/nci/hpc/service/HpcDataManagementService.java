@@ -648,6 +648,13 @@ public interface HpcDataManagementService
      * @throws HpcException
      */
     public HpcNamedCompoundMetadataQuery getQuery(String nciUserId, String queryName) throws HpcException;
+    
+    /**
+     * Get the search results page size.
+     *
+     * @return The search results page size.
+     */
+    public int getSearchResultsPageSize();
 }
 
  
