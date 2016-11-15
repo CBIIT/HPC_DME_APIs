@@ -329,13 +329,13 @@ public class HpcMetadataValidator
 		   // In registration case, the DOC system generated metadata is assigned after user generated
 		   // metadata is validated, so we get it from the request invoker directly.
        	   HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
-       	   doc = invoker != null ? invoker.getNciAccount().getDOC() : null;
+       	   doc = invoker != null ? invoker.getNciAccount().getDoc() : null;
 		}
        	
 		if(doc != null &&
-		   metadataValidationRule.getDOC() != null &&
-		   !metadataValidationRule.getDOC().isEmpty() &&
-		   !metadataValidationRule.getDOC().contains(doc)) {
+		   metadataValidationRule.getDoc() != null &&
+		   !metadataValidationRule.getDoc().isEmpty() &&
+		   !metadataValidationRule.getDoc().contains(doc)) {
 		   return true;
 		}
 		
@@ -407,7 +407,7 @@ public class HpcMetadataValidator
 	    	  if(jsonDOC != null) {
 		    	 Iterator<String> docIterator = jsonDOC.iterator();
 		    	 while(docIterator.hasNext()) {
-		    	   	   metadataValidationRule.getDOC().add(docIterator.next());
+		    	   	   metadataValidationRule.getDoc().add(docIterator.next());
 		    	 }
 	    	  }
 	    	  

@@ -10,21 +10,21 @@
                "Folder"
             ],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"name",
             "mandatory":true,
             "collectionTypes":["Project"],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"description",
             "mandatory":true,
             "collectionTypes":["Project"],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"project_type",
@@ -38,7 +38,7 @@
                "Analysis"
             ],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          
          {  
@@ -46,32 +46,32 @@
             "mandatory":true,
             "collectionTypes":["Project"],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"source_lab_pi",
             "mandatory":true,
             "collectionTypes":["Project"],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"lab_branch",
             "mandatory":true,
             "collectionTypes":["Project"],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"pi_doc",
             "mandatory":true,
             "collectionTypes":["Project"],
             "validValues":[  
-               "FNLCR",
+               "FNLCR","DUMMY",
                "CCBR"
             ],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"original_date_created",
@@ -79,46 +79,46 @@
             "collectionTypes":["Project"],
             "defaultValue":"System-Date",
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"name",
             "mandatory":true,
             "collectionTypes":["Dataset"],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"description",
             "mandatory":true,
             "collectionTypes":["Dataset"],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
 	     "attribute":"source_lab_pi",
 	     "mandatory":true,
 	     "collectionTypes":["Project"],
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
 	  {  
 	     "attribute":"lab_branch",
 	     "mandatory":true,
 	     "collectionTypes":["Project"],
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
 	  {  
 	     "attribute":"pi_doc",
 	     "mandatory":true,
 	     "collectionTypes":["Project"],
 	     "validValues":[  
-		"FNLCR",
+		"FNLCR","DUMMY",
 		"CCBR"
 	     ],
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
 	  {  
 	     "attribute":"original_date_created",
@@ -126,7 +126,7 @@
 	     "collectionTypes":["Project"],
 	     "defaultValue":"System-Date",
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
       {  
 	        "attribute":"phi_content",
@@ -140,7 +140,7 @@
 	           "Not Specified"
 	        ],
 	        "ruleEnabled":true,
-	        "DOC":["DOC-NAME"]
+	        "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"pii_content",
@@ -154,7 +154,7 @@
                "Not Specified"
             ],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"data_encryption_status",
@@ -168,7 +168,7 @@
                "Not Specified"
             ],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"data_compression_status",
@@ -182,7 +182,7 @@
                "Not Specified"
             ],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"funding_organization",
@@ -190,28 +190,28 @@
             "collectionTypes":["Dataset"],
             "defaultValue":"Unspecified",
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"flow_cell_id",
             "mandatory":true,
             "collectionTypes":["Dataset"],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"run_id",
             "mandatory":true,
             "collectionTypes":["Dataset"],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"run_date",
             "mandatory":true,
             "collectionTypes":["Dataset"],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"sequencing_platform",
@@ -229,7 +229,7 @@
                "PacBio-PacBio RS"
             ],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"sequencing_application_type",
@@ -245,14 +245,14 @@
                "ChiP-Seq"
             ],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"library_id",
             "mandatory":true,
             "collectionTypes":["Dataset"],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"library_name",
@@ -265,7 +265,7 @@
                "Illumina TrueSeq"
             ],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"library_type",
@@ -278,7 +278,7 @@
                "Illumina TrueSeq"
             ],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"library_protocol",
@@ -291,7 +291,7 @@
                "Illumina TrueSeq"
             ],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          }
       ],
       "dataObjectMetadataValidationRules":[  
@@ -299,42 +299,42 @@
             "attribute":"name",
             "mandatory":true,
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"description",
             "mandatory":true,
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"source_lab_pi",
             "mandatory":true,
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"lab_branch",
             "mandatory":true,
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"pi_doc",
             "mandatory":true,
             "validValues":[  
-               "FNLCR",
+               "FNLCR","DUMMY",
                "CCBR"
             ],
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
             "attribute":"original_date_created",
             "mandatory":true,
             "defaultValue":"System-Date",
             "ruleEnabled":true,
-            "DOC":["DOC-NAME"]
+            "DOC":["FNLCR","DUMMY"]
          },
          {  
 	     "attribute":"phi_content",
@@ -348,7 +348,7 @@
 		"Not Specified"
 	     ],
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
 	  {  
 	     "attribute":"pii_content",
@@ -362,7 +362,7 @@
 		"Not Specified"
 	     ],
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
 	  {  
 	     "attribute":"data_encryption_status",
@@ -376,7 +376,7 @@
 		"Not Specified"
 	     ],
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
 	  {  
 	     "attribute":"data_compression_status",
@@ -390,7 +390,7 @@
 		"Not Specified"
 	     ],
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
 	  {  
 	     "attribute":"funding_organization",
@@ -398,28 +398,28 @@
 	     "collectionTypes":["Dataset"],
 	     "defaultValue":"Unspecified",
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
 	  {  
 	     "attribute":"flow_cell_id",
 	     "mandatory":true,
 	     "collectionTypes":["Dataset"],
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
 	  {  
 	     "attribute":"run_id",
 	     "mandatory":true,
 	     "collectionTypes":["Dataset"],
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
 	  {  
 	     "attribute":"run_date",
 	     "mandatory":true,
 	     "collectionTypes":["Dataset"],
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
 	  {  
 	     "attribute":"sequencing_platform",
@@ -437,7 +437,7 @@
 		"PacBio-PacBio RS"
 	     ],
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
 	  {  
 	     "attribute":"sequencing_application_type",
@@ -453,14 +453,14 @@
 		"ChiP-Seq"
 	     ],
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
 	  {  
 	     "attribute":"library_id",
 	     "mandatory":true,
 	     "collectionTypes":["Dataset"],
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
 	  {  
 	     "attribute":"library_name",
@@ -473,7 +473,7 @@
 		"Illumina TrueSeq"
 	     ],
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
 	  {  
 	     "attribute":"library_type",
@@ -486,7 +486,7 @@
 		"Illumina TrueSeq"
 	     ],
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
 	  },
 	  {  
 	     "attribute":"library_protocol",
@@ -499,7 +499,7 @@
 		"Illumina TrueSeq"
 	     ],
 	     "ruleEnabled":true,
-	     "DOC":["DOC-NAME"]
+	     "DOC":["FNLCR","DUMMY"]
          }
       ]
    }
