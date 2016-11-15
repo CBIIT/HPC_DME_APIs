@@ -49,7 +49,7 @@
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="firstName" type="xsd:string" />
 			<xsd:element name="lastName" type="xsd:string" />
-			<xsd:element name="DOC" type="xsd:string" />
+			<xsd:element name="doc" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 

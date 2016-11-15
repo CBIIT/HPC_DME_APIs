@@ -80,6 +80,12 @@
           <value>userPermissionResponses</value>
           <value>groupPermissionResponses</value>
           <value>entityPermissionResponses</value>
+          <value>collectionMetadataValidationRules</value>
+          <value>dataObjectMetadataValidationRules</value>
+          <value>validValues</value>
+          <value>collectionTypes</value>
+          <value>subCollectionsHierarchies</value>
+          <value>metadataAttributes</value>
     </util:list>
 
 	<!-- JSON Provider -->
