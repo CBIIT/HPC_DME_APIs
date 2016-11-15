@@ -1809,6 +1809,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
-    	return (page -1) * searchResultsPageSize;
+    	return (page - 1) * searchResultsPageSize;
     }
 }
