@@ -213,16 +213,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
       	boolean detailedResponse = compoundMetadataQueryDTO.getDetailedResponse() != null && 
                                    compoundMetadataQueryDTO.getDetailedResponse();
+      	int page = compoundMetadataQueryDTO.getPage() != null ? compoundMetadataQueryDTO.getPage() : 1;
+      	
     	if(detailedResponse) {
     	   return toCollectionListDTO(
-    			    dataManagementService.getCollections(compoundMetadataQueryDTO.getQuery(),
-    			                                         compoundMetadataQueryDTO.getPage()), 
+    			    dataManagementService.getCollections(compoundMetadataQueryDTO.getQuery(), page), 
     			    null);
     	} else {
        		    return toCollectionListDTO(
        		    		 null, 
-       		    		 dataManagementService.getCollectionPaths(compoundMetadataQueryDTO.getQuery(),
-       		    				                                  compoundMetadataQueryDTO.getPage()));
+       		    		 dataManagementService.getCollectionPaths(compoundMetadataQueryDTO.getQuery(), page));
     	}
     }
     
@@ -367,16 +367,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	boolean detailedResponse = compoundMetadataQueryDTO.getDetailedResponse() != null && 
     			                   compoundMetadataQueryDTO.getDetailedResponse();
+    	int page = compoundMetadataQueryDTO.getPage() != null ? compoundMetadataQueryDTO.getPage() : 1;
+    	
     	if(detailedResponse) {
     	   return toDataObjectListDTO(
-    			    dataManagementService.getDataObjects(compoundMetadataQueryDTO.getQuery(),
-    			    		                             compoundMetadataQueryDTO.getPage()), 
+    			    dataManagementService.getDataObjects(compoundMetadataQueryDTO.getQuery(), page), 
     			    null);
     	} else {
     		    return toDataObjectListDTO(
     		    		 null, 
-    		    		 dataManagementService.getDataObjectPaths(compoundMetadataQueryDTO.getQuery(),
-    		    				                                  compoundMetadataQueryDTO.getPage()));
+    		    		 dataManagementService.getDataObjectPaths(compoundMetadataQueryDTO.getQuery(), page));
     	}
     }
     
