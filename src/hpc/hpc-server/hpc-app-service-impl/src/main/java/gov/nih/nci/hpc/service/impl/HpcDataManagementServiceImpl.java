@@ -185,6 +185,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     			                  HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
     	this.hierarchicalMetadataPolicy = hierarchicalMetadataPolicy;
+    	this.searchResultsPageSize = searchResultsPageSize;
     	
     	// Prepare the query to get data objects in data transfer in-progress to archive.
         dataTransferInProgressToArchiveQuery.add(
