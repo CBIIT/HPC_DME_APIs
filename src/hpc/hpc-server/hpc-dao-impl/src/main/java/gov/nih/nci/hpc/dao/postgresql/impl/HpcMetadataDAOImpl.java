@@ -118,6 +118,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			"select access.object_id from public.\"r_objt_access\" access, " +
 			"public.\"r_user_main\" account where account.user_name = ? and access.user_id = account.user_id";
 	
+	private static final String LIMIT_OFFSET_SQL = " order by object_id limit ? offset ?";
+	
 	private static final String GET_COLLECTION_PATHS_SQL = 
 			"select distinct object_path from public.\"r_coll_hierarchy_meta_main\" where object_id in ";
 	
@@ -229,7 +231,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     
 	@Override
     public List<String> getCollectionPaths(List<HpcMetadataQuery> metadataQueries,
-    		                               String dataManagementUsername) 
+    		                               String dataManagementUsername,
+    		                               int offset, int limit) 
                                           throws HpcException
     {
 		return getPaths(prepareQuery(GET_COLLECTION_PATHS_SQL, 
@@ -242,7 +245,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	
 	@Override
     public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
-    		                               String dataManagementUsername) 
+    		                               String dataManagementUsername,
+    		                               int offset, int limit) 
                                           throws HpcException
     {
 		return getPaths(prepareQuery(GET_COLLECTION_PATHS_SQL, 
@@ -254,7 +258,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 
 	@Override 
 	public List<String> getDataObjectPaths(List<HpcMetadataQuery> metadataQueries,
-			                               String dataManagementUsername) 
+			                               String dataManagementUsername,
+			                               int offset, int limit) 
                                           throws HpcException
     {
 		return getPaths(prepareQuery(GET_DATA_OBJECT_PATHS_SQL, 
@@ -267,7 +272,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	
 	@Override 
 	public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
-			                               String dataManagementUsername) 
+			                               String dataManagementUsername,
+			                               int offset, int limit) 
                                           throws HpcException
     {
 		return getPaths(prepareQuery(GET_DATA_OBJECT_PATHS_SQL, 
@@ -388,6 +394,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     	sqlQueryBuilder.append(" intersect ");
     	sqlQueryBuilder.append(userAccessQuery + ")");
     	args.add(dataManagementUsername);
+    	
+    	sqlQueryBuilder.append(LIMIT_OFFSET_SQL);
+    	args.add(10);
+    	args.add(1);
     	
     	HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
     	preparedQuery.sql = sqlQueryBuilder.toString();

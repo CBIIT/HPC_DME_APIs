@@ -287,44 +287,51 @@ public interface HpcDataManagementService
      * Get collections by metadata query.
      *
      * @param metadataQueries The metadata queries.
+     * @param page The requested results page.
      * @return HpcCollection list.
      * 
      * @throws HpcException
      */
-    public List<HpcCollection> getCollections(List<HpcMetadataQuery> metadataQueries) 
+    public List<HpcCollection> getCollections(List<HpcMetadataQuery> metadataQueries,
+    		                                  int page) 
     		                                 throws HpcException;
     
     /**
      * Get collections by compound metadata query.
      *
      * @param compoundMetadataQuery The compound metadata query.
+     * @param page The requested results page.
      * @return HpcCollection list.
      * 
      * @throws HpcException
      */
-    public List<HpcCollection> getCollections(HpcCompoundMetadataQuery compoundMetadataQuery) 
+    public List<HpcCollection> getCollections(HpcCompoundMetadataQuery compoundMetadataQuery,
+                                              int page) 
     		                                 throws HpcException;
     
     /**
      * Get collection paths by metadata query.
      *
      * @param metadataQueries The metadata queries.
+     * @param page The requested results page.
      * @return Collection path list.
      * 
      * @throws HpcException
      */
-    public List<String> getCollectionPaths(List<HpcMetadataQuery> metadataQueries) 
+    public List<String> getCollectionPaths(List<HpcMetadataQuery> metadataQueries, int page) 
     		                              throws HpcException;
     
     /**
      * Get collection paths by compound metadata query.
      *
      * @param compoundMetadataQuery The compound metadata query.
+     * @param page The requested results page.
      * @return Collection path list.
      * 
      * @throws HpcException
      */
-    public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery) 
+    public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
+    		                               int page) 
     		                              throws HpcException;
     
     /**
@@ -351,44 +358,51 @@ public interface HpcDataManagementService
      * Get data objects by metadata query.
      *
      * @param metadataQueries The metadata queries.
+     * @param page The requested results page.
      * @return HpcDataObject list.
      * 
      * @throws HpcException
      */
-    public List<HpcDataObject> getDataObjects(List<HpcMetadataQuery> metadataQueries) 
+    public List<HpcDataObject> getDataObjects(List<HpcMetadataQuery> metadataQueries,
+    		                                  int page) 
     		                                 throws HpcException;
     
     /**
      * Get data objects by compound metadata query.
      *
      * @param compoundMetadataQuery The compound metadata query.
+     * @param page The requested results page.
      * @return HpcDataObject list.
      * 
      * @throws HpcException
      */
-    public List<HpcDataObject> getDataObjects(HpcCompoundMetadataQuery compoundMetadataQuery) 
+    public List<HpcDataObject> getDataObjects(HpcCompoundMetadataQuery compoundMetadataQuery,
+    		                                  int page) 
     		                                 throws HpcException;
     
     /**
      * Get data object paths by metadata query.
      *
      * @param metadataQueries The metadata queries.
+     * @param page The requested results page.
      * @return Data Object path list.
      * 
      * @throws HpcException
      */
-    public List<String> getDataObjectPaths(List<HpcMetadataQuery> metadataQueries) 
+    public List<String> getDataObjectPaths(List<HpcMetadataQuery> metadataQueries, int page) 
     		                              throws HpcException;
     
     /**
      * Get data object paths by compound metadata query.
      *
-     * @param compoundMetadataQuerys The compound metadata queries.
+     * @param compoundMetadataQuery The compound metadata query.
+     * @param page The requested results page.
      * @return Data Object path list.
      * 
      * @throws HpcException
      */
-    public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuerys) 
+    public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
+    		                               int page) 
     		                              throws HpcException;
     
     /**
