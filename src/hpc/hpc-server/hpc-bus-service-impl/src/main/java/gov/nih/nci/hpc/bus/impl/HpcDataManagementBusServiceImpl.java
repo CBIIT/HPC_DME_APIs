@@ -26,6 +26,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
@@ -518,14 +519,24 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-	public HpcMetadataAttributesListDTO getMetadataAttributes(String collectionType) 
-                                                             throws HpcException
+	public HpcMetadataAttributesListDTO 
+	          getMetadataAttributes(Integer level, HpcMetadataQueryOperator levelOperator) 
+                                   throws HpcException
     {
-    	logger.info("Invoking getDataManagementMode(String): " + collectionType);
+    	logger.info("Invoking getDataManagementMode(String)");
+    	
+    	// Input validation. 
+    	if((level == null && levelOperator != null) ||
+    	   (level != null && levelOperator == null)) {
+    	   throw new HpcException("Both level and level-operator need to be provided, or omitted ", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
     	
     	HpcMetadataAttributesListDTO metadataAttributes = new HpcMetadataAttributesListDTO();
-    	metadataAttributes.getMetadataAttributes().addAll(
-    			dataManagementService.getMetadataAttributes(collectionType));
+    	metadataAttributes.getCollectionMetadataAttributes().addAll(
+    			dataManagementService.getCollectionMetadataAttributes(level, levelOperator));
+    	metadataAttributes.getDataObjectMetadataAttributes().addAll(
+    			dataManagementService.getDataObjectMetadataAttributes(level, levelOperator));
     	
     	return metadataAttributes;
     }

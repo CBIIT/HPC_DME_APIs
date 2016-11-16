@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.dao;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcHierarchicalMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -113,13 +114,26 @@ public interface HpcMetadataDAO
     public List<HpcHierarchicalMetadataEntry> getDataObjectMetadata(String path) throws HpcException;
     
     /**
-     * Get metadata attribute names.
+     * Get a list of collection metadata attributes currently registered.
      *
-     * @return List of metadata attributes currently registered.
-     * 
-     * @throws HpcException
+     * @param level Filter the results by level. (Optional).
+     * @param levelOperator The operator to use in the level filter. (Optional).
+     * @return A list of metadata attributes.
      */
-    public List<String> getMetadataAttributes() throws HpcException;
+	public List<String> getCollectionMetadataAttributes(
+			               Integer level, HpcMetadataQueryOperator levelOperator) 
+			               throws HpcException;
+	
+    /**
+     * Get a list of data object metadata attributes currently registered.
+     *
+     * @param level Filter the results by level. (Optional).
+     * @param levelOperator The operator to use in the level filter. (Optional).
+     * @return A list of metadata attributes.
+     */
+	public List<String> getDataObjectMetadataAttributes(
+			               Integer level, HpcMetadataQueryOperator levelOperator) 
+			               throws HpcException;
     
     /**
      * Refresh all materialized views.
