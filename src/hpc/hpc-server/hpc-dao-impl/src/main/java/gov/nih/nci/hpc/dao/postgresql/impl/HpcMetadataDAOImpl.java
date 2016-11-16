@@ -592,7 +592,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     	}
     	
 		try {
-			 return jdbcTemplate.query(sqlQueryBuilder.toString(), metadataAttributeRowMapper, args);
+			 return jdbcTemplate.query(sqlQueryBuilder.toString(), 
+					                   metadataAttributeRowMapper, 
+					                   args.toArray());
 		
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get metadata attributes: " + 
