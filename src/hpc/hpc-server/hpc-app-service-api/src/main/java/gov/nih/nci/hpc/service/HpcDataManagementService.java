@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
@@ -592,12 +593,26 @@ public interface HpcDataManagementService
     public HpcDataHierarchy getDataHierarchy(String doc) throws HpcException;
     
     /**
-     * Get a list of metadata attributes currently registered.
+     * Get a list of collection metadata attributes currently registered.
      *
-     * @param collectionType Filter the list by a specific collection type.
-     * @return A list of metadata attributes
+     * @param level Filter the results by level. (Optional).
+     * @param levelOperator The operator to use in the level filter. (Optional).
+     * @return A list of metadata attributes.
      */
-	public List<String> getMetadataAttributes(String collectionType) throws HpcException;
+	public List<String> getCollectionMetadataAttributes(
+			               Integer level, HpcMetadataQueryOperator levelOperator) 
+			               throws HpcException;
+	
+    /**
+     * Get a list of data object metadata attributes currently registered.
+     *
+     * @param level Filter the results by level. (Optional).
+     * @param levelOperator The operator to use in the level filter. (Optional).
+     * @return A list of metadata attributes.
+     */
+	public List<String> getDataObjectMetadataAttributes(
+			               Integer level, HpcMetadataQueryOperator levelOperator) 
+			               throws HpcException;
     
     /**
      * Validate a path against a hierarchy definition.
