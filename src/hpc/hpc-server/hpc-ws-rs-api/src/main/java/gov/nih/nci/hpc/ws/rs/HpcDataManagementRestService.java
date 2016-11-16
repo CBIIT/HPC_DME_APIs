@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
@@ -265,13 +266,16 @@ public interface HpcDataManagementRestService
     /**
      * GET A list of metadata attributes currently registered.
      *
-     * @param collectionType Filter the list by a specific collection type.
+     * @param level Filter the results by level.
+     * @param levelOperator The operator to use in the level filter.
      * @return Response The REST service response.
      */
 	@GET
 	@Path("/metadataAttributes")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getMetadataAttributes(@QueryParam("collectionType") String collectionType);
+	public Response getMetadataAttributes(
+			           @QueryParam("level") Integer level,
+			           @QueryParam("levelOperator") HpcMetadataQueryOperator levelOperator);
 	
     /**
      * Save a query.

@@ -136,10 +136,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	
 	private static final String REFRESH_VIEW_SQL = "refresh materialized view concurrently";
 	
-	private static final String GET_METADATA_ATTRIBUTES_SQL = 
-			"select distinct meta_attr_name from public.\"r_data_hierarchy_meta_main\" union " +
-			"select distinct meta_attr_name from public.\"r_coll_hierarchy_meta_main\"";
-			
+	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = 
+			"select distinct collection.meta_attr_name from public.\"r_coll_hierarchy_meta_main\" collection ";
+	
+	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = 
+			"select distinct dataObject.meta_attr_name from public.\"r_data_hierarchy_meta_main\" dataObject ";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -310,16 +312,21 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     }
     
     @Override
-    public List<String> getMetadataAttributes() throws HpcException
+    public List<String> getCollectionMetadataAttributes(
+    		               Integer level, HpcMetadataQueryOperator levelOperator) 
+    		               throws HpcException
     {
-		try {
-		     return jdbcTemplate.query(GET_METADATA_ATTRIBUTES_SQL, metadataAttributeRowMapper);
-		     
-		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get metadata attributes: " + 
-		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
-		}	
+    	return getMetadataAttributes(GET_COLLECTION_METADATA_ATTRIBUTES_SQL, 
+    			                     level, levelOperator, collectionLevelFilters);
+    }
+    
+    @Override
+    public List<String> getDataObjectMetadataAttributes(
+    		               Integer level, HpcMetadataQueryOperator levelOperator) 
+    		               throws HpcException
+    {
+    	return getMetadataAttributes(GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL, 
+    			                     level, levelOperator, dataObjectLevelFilters);
     }
     
 	@Override
@@ -553,6 +560,46 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     {
     	return operator.equals(HpcCompoundMetadataQueryOperator.ALL) ? "intersect" : "union";  
     }
+    
+    /**
+     * Get a list of metadata attributes currently registered.
+     *
+     * @param query The query to invoke (for collection or data object metadata attributes).
+     * @param level Filter the results by level. (Optional).
+     * @param levelOperator The operator to use in the level filter. (Optional).
+     * @param levelFilters The map from query operator to level filter ('where' condition).
+     * @return A list of metadata attributes.
+     */
+    private List<String> getMetadataAttributes(String query, Integer level, 
+    		                                   HpcMetadataQueryOperator levelOperator,
+    		                                   Map<HpcMetadataQueryOperator, String> levelFilters) 
+                                              throws HpcException
+	{
+    	StringBuilder sqlQueryBuilder = new StringBuilder();
+    	List<Object> args = new ArrayList<>();
+    	
+    	sqlQueryBuilder.append(query);
+    	
+    	// Add level filter if provided.
+    	if(level != null && levelOperator != null) {
+		   String levelFilter = levelFilters.get(levelOperator);
+		   if(levelFilter == null) {
+			  throw new HpcException("Invalid level operator: " + levelOperator,
+			                         HpcErrorType.INVALID_REQUEST_INPUT); 
+		   }
+		   sqlQueryBuilder.append(levelFilter);
+		   args.add(level);
+    	}
+    	
+		try {
+			 return jdbcTemplate.query(sqlQueryBuilder.toString(), metadataAttributeRowMapper, args);
+		
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get metadata attributes: " + 
+		                               e.getMessage(),
+			    	                   HpcErrorType.DATABASE_ERROR, e);
+		}
+	}
 }
 
  

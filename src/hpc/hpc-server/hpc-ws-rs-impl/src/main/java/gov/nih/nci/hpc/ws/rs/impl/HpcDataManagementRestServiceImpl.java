@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
@@ -486,24 +487,28 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		return okResponse(dataModel, true);
     }
     
-    public Response getMetadataAttributes(String collectionType)
+    @Override
+    public Response getMetadataAttributes(Integer level, 
+    		                              HpcMetadataQueryOperator levelOperator)
     {
     	long start = System.currentTimeMillis();
-    	logger.info("Invoking RS: GET /metadataAttributes/" + collectionType);
+    	logger.info("Invoking RS: GET /metadataAttributes/");
     	
     	HpcMetadataAttributesListDTO metadataAttributes = null;
 		try {
-		     metadataAttributes = dataManagementBusService.getMetadataAttributes(collectionType);
+		     metadataAttributes = 
+		    		 dataManagementBusService.getMetadataAttributes(level, levelOperator);
 			 
 		} catch(HpcException e) {
-		        logger.error("RS: GET /metadataAttributes/" + collectionType + " failed:", e);
+		        logger.error("RS: GET /metadataAttributes/ failed:", e);
 			    return errorResponse(e);
 		}
 		
 		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " getMetadataAttributes: " + collectionType);
+		logger.info((stop-start) + " getMetadataAttributes: " );
 		
-		return okResponse(!metadataAttributes.getMetadataAttributes().isEmpty() ? 
+		return okResponse(!metadataAttributes.getCollectionMetadataAttributes().isEmpty() && 
+				          !metadataAttributes.getDataObjectMetadataAttributes().isEmpty() ? 
 				          metadataAttributes : null, true);
     }
 

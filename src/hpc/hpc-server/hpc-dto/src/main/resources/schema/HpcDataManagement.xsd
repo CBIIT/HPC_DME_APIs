@@ -206,7 +206,9 @@
 	<xsd:element name="HpcMetadataAttributesListDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="metadataAttributes" type="xsd:string"
+				<xsd:element name="collectionMetadataAttributes" type="xsd:string"
+					         minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="dataObjectMetadataAttributes" type="xsd:string"
 					         minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
