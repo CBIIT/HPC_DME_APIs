@@ -495,10 +495,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	
     	HpcMetadataAttributesListDTO metadataAttributes = null;
 		try {
-			 HpcMetadataQueryOperator levelOperator = 
-			    levelOperatorStr != null ? HpcMetadataQueryOperator.fromValue(levelOperatorStr) : null;
 		     metadataAttributes = 
-		    		 dataManagementBusService.getMetadataAttributes(level, levelOperator);
+		    		 dataManagementBusService.getMetadataAttributes(
+		    				                     level, 
+		    				                     toMetadataQueryOperator(levelOperatorStr));
 			 
 		} catch(HpcException e) {
 		        logger.error("RS: GET /metadataAttributes/ failed:", e);
@@ -600,9 +600,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     /**
-     * Copy input stream to File and close the input stream
+     * Copy input stream to File and close the input stream.
      * 
-     * @param dataObjectInputStream The input stream
+     * @param dataObjectInputStream The input stream.
      * @return File
      * 
      * @throws HpcException if copy of input stream failed.
@@ -623,6 +623,26 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	}
     	
     	return dataObjectFile;
+    }
+    
+    /**
+     * Convert a string to HpcMetadataQueryOperator
+     * 
+     * @param levelOperatorStr The level operator string.
+     * @return HpcMetadataQueryOperator
+     * 
+     * @throws HpcException if it's an invalid level operator.
+     */
+    private HpcMetadataQueryOperator toMetadataQueryOperator(String levelOperatorStr) 
+    		                                                throws HpcException
+    {
+    	try {
+    	     return levelOperatorStr != null ? HpcMetadataQueryOperator.fromValue(levelOperatorStr) : null; 
+    	     
+    	} catch(Exception e) {
+    		    throw new HpcException("Invalid level operator: " + levelOperatorStr, 
+    		    		               HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
     }
 }
 
