@@ -488,14 +488,15 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getMetadataAttributes(Integer level, 
-    		                              HpcMetadataQueryOperator levelOperator)
+    public Response getMetadataAttributes(Integer level, String levelOperatorStr)
     {
     	long start = System.currentTimeMillis();
     	logger.info("Invoking RS: GET /metadataAttributes/");
     	
     	HpcMetadataAttributesListDTO metadataAttributes = null;
 		try {
+			 HpcMetadataQueryOperator levelOperator = 
+			    levelOperatorStr != null ? HpcMetadataQueryOperator.fromValue(levelOperatorStr) : null;
 		     metadataAttributes = 
 		    		 dataManagementBusService.getMetadataAttributes(level, levelOperator);
 			 
