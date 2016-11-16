@@ -137,10 +137,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String REFRESH_VIEW_SQL = "refresh materialized view concurrently";
 	
 	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = 
-			"select distinct collection.meta_attr_name from public.\"r_coll_hierarchy_meta_main\" collection ";
+			"select distinct collection.meta_attr_name from public.\"r_coll_hierarchy_meta_main\" collection " +
+	        "where true ";
 	
 	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = 
-			"select distinct dataObject.meta_attr_name from public.\"r_data_hierarchy_meta_main\" dataObject ";
+			"select distinct dataObject.meta_attr_name from public.\"r_data_hierarchy_meta_main\" dataObject " +
+			"where true ";
 	
     //---------------------------------------------------------------------//
     // Instance members
