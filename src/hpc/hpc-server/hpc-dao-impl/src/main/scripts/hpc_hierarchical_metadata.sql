@@ -151,6 +151,20 @@ $$
 STRICT
 LANGUAGE plpgsql IMMUTABLE;
 
+CREATE OR REPLACE FUNCTION num_greater_than(text, text) RETURNS BOOLEAN AS $$
+DECLARE attr_value NUMERIC;
+DECLARE value NUMERIC;
+BEGIN
+    attr_value = $1::NUMERIC;
+    value = $2::NUMERIC;
+    RETURN attr_value > value;
+EXCEPTION WHEN others THEN
+    RETURN FALSE;
+END;
+$$
+STRICT
+LANGUAGE plpgsql IMMUTABLE;
+
 CREATE OR REPLACE FUNCTION num_greater_or_equal(text, text) RETURNS BOOLEAN AS $$
 DECLARE attr_value NUMERIC;
 DECLARE value NUMERIC;

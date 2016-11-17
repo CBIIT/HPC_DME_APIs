@@ -50,6 +50,7 @@
 			<xsd:enumeration value="NOT_EQUAL" />
 			<xsd:enumeration value="LIKE" />
 			<xsd:enumeration value="NUM_LESS_THAN" />
+			<xsd:enumeration value="NUM_GREATER_THAN" />
 			<xsd:enumeration value="NUM_LESS_OR_EQUAL" />
 			<xsd:enumeration value="NUM_GREATER_OR_EQUAL" />
 		</xsd:restriction>
