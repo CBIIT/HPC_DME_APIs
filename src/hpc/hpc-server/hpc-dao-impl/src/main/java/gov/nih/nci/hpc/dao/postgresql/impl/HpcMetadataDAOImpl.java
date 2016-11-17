@@ -70,6 +70,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection " +
 	        "where collection.meta_attr_name = ? and num_less_or_equal(collection.meta_attr_value, ?) = true";
 	
+	private static final String GET_COLLECTION_IDS_NUM_GREATER_THAN_SQL = 
+		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection " +
+	        "where collection.meta_attr_name = ? and num_greater_than(collection.meta_attr_value, ?) = true";
+	
 	private static final String GET_COLLECTION_IDS_NUM_GREATER_OR_EQUAL_SQL = 
 		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection " +
 	        "where collection.meta_attr_name = ? and num_greater_or_equal(collection.meta_attr_value, ?) = true";
@@ -94,6 +98,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		    "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject " +
 	        "where dataObject.meta_attr_name = ? and num_less_or_equal(dataObject.meta_attr_value, ?) = true";
 	
+	private static final String GET_DATA_OBJECT_IDS_NUM_GREATER_THAN_SQL = 
+		    "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject " +
+	        "where dataObject.meta_attr_name = ? and num_greater_than(dataObject.meta_attr_value, ?) = true";
+	
 	private static final String GET_DATA_OBJECT_IDS_NUM_GREATER_OR_EQUAL_SQL = 
 		    "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject " +
 	        "where dataObject.meta_attr_name = ? and num_greater_or_equal(dataObject.meta_attr_value, ?) = true";
@@ -102,12 +110,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String DATA_OBJECT_LEVEL_NOT_EQUAL_FILTER = " and dataObject.level <> ?";
 	private static final String DATA_OBJECT_LEVEL_NUM_LESS_THAN_FILTER = " and dataObject.level < ?";
 	private static final String DATA_OBJECT_LEVEL_NUM_LESS_OR_EQUAL_FILTER = " and dataObject.level <= ?";
+	private static final String DATA_OBJECT_LEVEL_NUM_GREATER_THAN_FILTER = " and dataObject.level > ?";
 	private static final String DATA_OBJECT_LEVEL_NUM_GREATER_OR_EQUAL_FILTER = " and dataObject.level >= ?";
 	
 	private static final String COLLECTION_LEVEL_EQUAL_FILTER = " and collection.level = ?";
 	private static final String COLLECTION_LEVEL_NOT_EQUAL_FILTER = " and collection.level <> ?";
 	private static final String COLLECTION_LEVEL_NUM_LESS_THAN_FILTER = " and collection.level < ?";
 	private static final String COLLECTION_LEVEL_NUM_LESS_OR_EQUAL_FILTER = " and collection.level <= ?";
+	private static final String COLLECTION_LEVEL_NUM_GREATER_THAN_FILTER = " and collection.level > ?";
 	private static final String COLLECTION_LEVEL_NUM_GREATER_OR_EQUAL_FILTER = " and collection.level >= ?";
 		   
 	private static final String COLLECTION_USER_ACCESS_SQL = 
@@ -186,6 +196,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     			                 GET_DATA_OBJECT_IDS_NUM_LESS_THAN_SQL);
     	dataObjectSQLQueries.put(HpcMetadataQueryOperator.NUM_LESS_OR_EQUAL, 
     			                 GET_DATA_OBJECT_IDS_NUM_LESS_OR_EQUAL_SQL);
+    	dataObjectSQLQueries.put(HpcMetadataQueryOperator.NUM_GREATER_THAN, 
+                                 GET_DATA_OBJECT_IDS_NUM_GREATER_THAN_SQL);
     	dataObjectSQLQueries.put(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL, 
     			                 GET_DATA_OBJECT_IDS_NUM_GREATER_OR_EQUAL_SQL);
     	
@@ -199,6 +211,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     			                 GET_COLLECTION_IDS_NUM_LESS_THAN_SQL);
     	collectionSQLQueries.put(HpcMetadataQueryOperator.NUM_LESS_OR_EQUAL, 
     			                 GET_COLLECTION_IDS_NUM_LESS_OR_EQUAL_SQL);
+    	collectionSQLQueries.put(HpcMetadataQueryOperator.NUM_GREATER_THAN, 
+                                 GET_COLLECTION_IDS_NUM_GREATER_THAN_SQL);
     	collectionSQLQueries.put(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL, 
     			                 GET_COLLECTION_IDS_NUM_GREATER_OR_EQUAL_SQL);
     	
@@ -210,6 +224,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
                                    DATA_OBJECT_LEVEL_NUM_LESS_THAN_FILTER);
     	dataObjectLevelFilters.put(HpcMetadataQueryOperator.NUM_LESS_OR_EQUAL, 
                                    DATA_OBJECT_LEVEL_NUM_LESS_OR_EQUAL_FILTER);
+    	dataObjectLevelFilters.put(HpcMetadataQueryOperator.NUM_GREATER_THAN, 
+                                   DATA_OBJECT_LEVEL_NUM_GREATER_THAN_FILTER);
     	dataObjectLevelFilters.put(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL, 
                                    DATA_OBJECT_LEVEL_NUM_GREATER_OR_EQUAL_FILTER);
     	
@@ -221,6 +237,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
                                    COLLECTION_LEVEL_NUM_LESS_THAN_FILTER);
     	collectionLevelFilters.put(HpcMetadataQueryOperator.NUM_LESS_OR_EQUAL, 
                                    COLLECTION_LEVEL_NUM_LESS_OR_EQUAL_FILTER);
+    	collectionLevelFilters.put(HpcMetadataQueryOperator.NUM_GREATER_THAN, 
+                                   COLLECTION_LEVEL_NUM_GREATER_THAN_FILTER);
     	collectionLevelFilters.put(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL, 
                                    COLLECTION_LEVEL_NUM_GREATER_OR_EQUAL_FILTER);
     }  
