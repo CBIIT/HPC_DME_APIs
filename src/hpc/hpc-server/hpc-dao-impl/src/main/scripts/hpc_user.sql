@@ -22,7 +22,7 @@ CREATE TABLE public."HPC_USER"
   "IRODS_USERNAME" text,
   "IRODS_PASSWORD" bytea,
   "CREATED" date,
-  "LAST_UPDATED" text,
+  "LAST_UPDATED" date,
   CONSTRAINT "HPC_USER_pkey" PRIMARY KEY ("USER_ID")
 )
 WITH (
