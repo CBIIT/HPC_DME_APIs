@@ -191,8 +191,12 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     public void updateUser(String nciUserId, String firstName, String lastName, String doc)
 	                      throws HpcException
     {
+    	if(nciUserId == null || nciUserId.isEmpty())
+     	   throw new HpcException("Invalid update UserId",
+	                  HpcErrorType.INVALID_REQUEST_INPUT);
+
     	// Input validation.
-    	if(nciUserId == null && firstName == null && lastName == null && doc == null) {
+    	if((firstName == null || firstName.isEmpty()) && (lastName == null || lastName.isEmpty()) && (doc == null || doc.isEmpty())) {
     	   throw new HpcException("Invalid update user input",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
