@@ -192,12 +192,12 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	                      throws HpcException
     {
     	// Input validation.
-    	if(nciUserId == null || firstName == null || lastName == null || doc == null) {
+    	if(nciUserId == null && firstName == null && lastName == null && doc == null) {
     	   throw new HpcException("Invalid update user input",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
-    	if(!docValues.contains(doc)) {
+    	if(doc != null && !docValues.contains(doc)) {
     	   throw new HpcException("Invalid DOC: " + doc +
     			                  ". Valid values: " + docValues,
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
@@ -211,9 +211,12 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	}
 
     	// Create the User domain object.
-    	user.getNciAccount().setFirstName(firstName);
-    	user.getNciAccount().setLastName(lastName);
-    	user.getNciAccount().setDoc(doc);
+    	if(firstName != null && !firstName.isEmpty())
+    		user.getNciAccount().setFirstName(firstName);
+    	if(lastName != null && !lastName.isEmpty())
+    		user.getNciAccount().setLastName(lastName);
+    	if(doc != null && !doc.isEmpty())
+    		user.getNciAccount().setDoc(doc);
     	user.setLastUpdated(Calendar.getInstance());
 
     	// Persist to the DB.

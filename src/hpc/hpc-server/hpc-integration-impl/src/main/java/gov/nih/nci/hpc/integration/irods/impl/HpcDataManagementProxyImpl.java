@@ -865,9 +865,13 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		    }
     		    operatorValues.replace(operatorValues.length() - 2, operatorValues.length(), "]");
     		    
+//    		    throw new HpcException("Invalid query operator: " + operator +
+//    		    		               ". Valid values: " + operatorValues,
+//                                       HpcErrorType.INVALID_REQUEST_INPUT , t);
     		    throw new HpcException("Invalid query operator: " + operator +
-    		    		               ". Valid values: " + operatorValues,
-                                       HpcErrorType.INVALID_REQUEST_INPUT , t);
+ 		               ". Valid values: EQUAL,NOT_EQUAL,LESS_THAN,GREATER_THAN,LESS_OR_EQUAL, LIKE",
+                        HpcErrorType.INVALID_REQUEST_INPUT , t);
+
     	}
     }
     
