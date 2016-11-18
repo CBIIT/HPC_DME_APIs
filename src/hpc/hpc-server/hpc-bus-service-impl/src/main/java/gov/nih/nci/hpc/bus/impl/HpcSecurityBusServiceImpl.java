@@ -165,6 +165,10 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	if((updateUserRequestDTO.getFirstName() == null || updateUserRequestDTO.getFirstName().isEmpty()) && (updateUserRequestDTO.getLastName() == null || updateUserRequestDTO.getLastName().isEmpty()) && (updateUserRequestDTO.getDoc() == null || updateUserRequestDTO.getDoc().isEmpty()))
+     	   throw new HpcException("Invalid update user input",
+     			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	
     	// Get the user.
     	HpcUser user = securityService.getUser(nciUserId);
     	if(user == null) {
@@ -195,16 +199,16 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	}
     	
     	// Determine update values.
-    	String updateFirstName = updateUserRequestDTO.getFirstName() != null ?
+    	String updateFirstName = (updateUserRequestDTO.getFirstName() != null && !updateUserRequestDTO.getFirstName().isEmpty()) ?
     			                 updateUserRequestDTO.getFirstName() :
     			                 user.getNciAccount().getFirstName();
-        String updateLastName = updateUserRequestDTO.getLastName() != null ?
+        String updateLastName = (updateUserRequestDTO.getLastName() != null && updateUserRequestDTO.getLastName().isEmpty()) ?
     	    			        updateUserRequestDTO.getLastName() :
     	    			        user.getNciAccount().getLastName();
-    	String updateDOC = updateUserRequestDTO.getDoc() != null ?
+    	String updateDOC = (updateUserRequestDTO.getDoc() != null && updateUserRequestDTO.getDoc().isEmpty()) ?
     	    	           updateUserRequestDTO.getDoc() :
     	    	    	   user.getNciAccount().getDoc();
-    	HpcUserRole updateRole = updateUserRequestDTO.getUserRole() != null ?
+    	HpcUserRole updateRole = (updateUserRequestDTO.getUserRole() != null && updateUserRequestDTO.getUserRole().isEmpty()) ?
     		                     roleFromString(updateUserRequestDTO.getUserRole()) : 
     		                     requestUserRole;
         // GROUP_ADMIN not supported by current Jargon API version. Respond with a workaround.
