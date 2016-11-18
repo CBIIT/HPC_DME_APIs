@@ -31,7 +31,7 @@ ARCH_STATUS=$(get_json_attribute_value "$RESPONSE_MSG" "data_transfer_status")
 
 if [ "$ARCH_STATUS" != "ARCHIVED" ]
 then
-    echo "dataObject not archived yet. So it can not be downloaded" 1>&2
+    echo "Can not verify the archive status to be ARCHIVED. The data object can not be downloaded" 1>&2
     echo "data_transfer_status=$ARCH_STATUS" 1>&2
     exit
 fi
