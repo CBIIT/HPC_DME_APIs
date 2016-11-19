@@ -15,6 +15,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocatio
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueryLevelFilter;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CALLER_OBJECT_ID_ATTRIBUTE;
@@ -48,6 +49,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
@@ -158,6 +160,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	
 	// The max page size of search results.
 	private int searchResultsPageSize = 0;
+	
+	// Default level filters for collection and data object search.
+	HpcMetadataQueryLevelFilter defaultCollectionLevelFilter = null;
+    HpcMetadataQueryLevelFilter defaultDataObjectLevelFilter = null;
 
     // The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -174,7 +180,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
      * @throws HpcException
      */
     private HpcDataManagementServiceImpl(String hierarchicalMetadataPolicy,
-    		                             int searchResultsPageSize) 
+    		                             int searchResultsPageSize,
+    		                             HpcMetadataQueryLevelFilter defaultCollectionLevelFilter,
+    		                             HpcMetadataQueryLevelFilter defaultDataObjectLevelFilter) 
     		                            throws HpcException
     {
     	if(hierarchicalMetadataPolicy == null ||
@@ -186,6 +194,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	this.hierarchicalMetadataPolicy = hierarchicalMetadataPolicy;
     	this.searchResultsPageSize = searchResultsPageSize;
+    	
+    	if(!isValidMetadataQueryLevelFilter(defaultCollectionLevelFilter) ||
+    	   !isValidMetadataQueryLevelFilter(defaultDataObjectLevelFilter)) {
+    	   throw new HpcException("Invalid default collection/data object level filter",
+	                              HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    	}
+    	this.defaultCollectionLevelFilter = defaultCollectionLevelFilter;
+    	this.defaultDataObjectLevelFilter = defaultDataObjectLevelFilter;
     	
     	// Prepare the query to get data objects in data transfer in-progress to archive.
         dataTransferInProgressToArchiveQuery.add(
@@ -748,7 +764,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        			  HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
        	   return getCollectionsByPaths(
        			     metadataDAO.getCollectionPaths(metadataQueries, dataManagementUsername,
-       			    		                        getOffset(page), searchResultsPageSize));
+       			    		                        getOffset(page), searchResultsPageSize,
+       			    		                        defaultCollectionLevelFilter));
        		
        	} else {
     	        return dataManagementProxy.getCollections(getAuthenticatedToken(),
@@ -772,7 +789,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        			  HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
        	   return getCollectionsByPaths(
        			     metadataDAO.getCollectionPaths(compoundMetadataQuery, dataManagementUsername,
-       			    		                        getOffset(page), searchResultsPageSize));
+       			    		                        getOffset(page), searchResultsPageSize,
+       			    		                        defaultCollectionLevelFilter));
        		
        	} else {
 	            throw new HpcException("Compound metadata search not supported for policy: " +
@@ -794,7 +812,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	   String dataManagementUsername = 
        			  HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
        	   return metadataDAO.getCollectionPaths(metadataQueries, dataManagementUsername,
-       			                                 getOffset(page), searchResultsPageSize);
+       			                                 getOffset(page), searchResultsPageSize,
+       			                                 defaultCollectionLevelFilter);
        		
        	} else {
     	        return toCollectionPaths(dataManagementProxy.getCollections(getAuthenticatedToken(),
@@ -817,7 +836,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	   String dataManagementUsername = 
        			  HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
        	   return metadataDAO.getCollectionPaths(compoundMetadataQuery, dataManagementUsername,
-       			                                 getOffset(page), searchResultsPageSize);
+       			                                 getOffset(page), searchResultsPageSize,
+       			                                 defaultCollectionLevelFilter);
        		
        	} else {
                 throw new HpcException("Compound metadata search not supported for policy: " +
@@ -864,7 +884,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
          	      HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
            return getDataObjectsByPaths(
         		     metadataDAO.getDataObjectPaths(metadataQueries, dataManagementUsername,
-        		    		                        getOffset(page), searchResultsPageSize));
+        		    		                        getOffset(page), searchResultsPageSize,
+        		    		                        defaultDataObjectLevelFilter));
         		
         } else {
     	        return dataManagementProxy.getDataObjects(getAuthenticatedToken(),
@@ -888,7 +909,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
          	      HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
            return getDataObjectsByPaths(
         		     metadataDAO.getDataObjectPaths(compoundMetadataQuery, dataManagementUsername,
-        		    		                        getOffset(page), searchResultsPageSize));
+        		    		                        getOffset(page), searchResultsPageSize,
+        		    		                        defaultDataObjectLevelFilter));
         		
         } else {
     	        throw new HpcException("Compound metadata search not supported for policy: " +
@@ -910,7 +932,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	   String dataManagementUsername = 
          	      HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
            return metadataDAO.getDataObjectPaths(metadataQueries, dataManagementUsername,
-        		                                 getOffset(page), searchResultsPageSize);
+        		                                 getOffset(page), searchResultsPageSize,
+        		                                 defaultDataObjectLevelFilter);
         		
         } else {
     	        return toDataObjectPaths(dataManagementProxy.getDataObjects(getAuthenticatedToken(),
@@ -933,7 +956,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
        	   String dataManagementUsername = 
          	      HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
            return metadataDAO.getDataObjectPaths(compoundMetadataQuery, dataManagementUsername,
-        		                                 getOffset(page), searchResultsPageSize);
+        		                                 getOffset(page), searchResultsPageSize,
+        		                                 defaultDataObjectLevelFilter);
         		
         } else {
 	            throw new HpcException("Compound metadata search not supported for policy: " +
