@@ -171,7 +171,7 @@
 	<xsd:element name="HpcCompoundMetadataQueryDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-			    <xsd:element name="query" type="hpc-domain-metadata:HpcCompoundMetadataQuery" />
+			    <xsd:element name="compoundQuery" type="hpc-domain-metadata:HpcCompoundMetadataQuery" />
 			    <xsd:element name="detailedResponse" type="xsd:boolean" minOccurs="0" />
 			    <xsd:element name="page" type="xsd:int" minOccurs="0" />
 			</xsd:sequence>

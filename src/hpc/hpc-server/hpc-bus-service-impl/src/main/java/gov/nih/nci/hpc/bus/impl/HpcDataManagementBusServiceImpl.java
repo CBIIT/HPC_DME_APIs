@@ -218,12 +218,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       	
     	if(detailedResponse) {
     	   return toCollectionListDTO(
-    			    dataManagementService.getCollections(compoundMetadataQueryDTO.getQuery(), page), 
+    			    dataManagementService.getCollections(
+    			    		      compoundMetadataQueryDTO.getCompoundQuery(), page), 
     			    null, page);
     	} else {
        		    return toCollectionListDTO(
        		    		 null, 
-       		    		 dataManagementService.getCollectionPaths(compoundMetadataQueryDTO.getQuery(), 
+       		    		 dataManagementService.getCollectionPaths(
+       		    				       compoundMetadataQueryDTO.getCompoundQuery(), 
        		    		 page), page);
     	}
     }
@@ -373,12 +375,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	if(detailedResponse) {
     	   return toDataObjectListDTO(
-    			    dataManagementService.getDataObjects(compoundMetadataQueryDTO.getQuery(), page), 
+    			    dataManagementService.getDataObjects(
+    			    		      compoundMetadataQueryDTO.getCompoundQuery(), page), 
     			    null);
     	} else {
     		    return toDataObjectListDTO(
     		    		 null, 
-    		    		 dataManagementService.getDataObjectPaths(compoundMetadataQueryDTO.getQuery(), page));
+    		    		 dataManagementService.getDataObjectPaths(
+    		    				       compoundMetadataQueryDTO.getCompoundQuery(), page));
     	}
     }
     
@@ -557,7 +561,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery = new HpcNamedCompoundMetadataQuery();
     	namedCompoundMetadataQuery.setName(queryName);
-    	namedCompoundMetadataQuery.setCompoundQuery(compoundMetadataQueryDTO.getQuery());
+    	namedCompoundMetadataQuery.setCompoundQuery(compoundMetadataQueryDTO.getCompoundQuery());
     	
     	// Save the query.
     	dataManagementService.saveQuery(securityService.getRequestInvoker().getNciAccount().getUserId(), 
@@ -950,7 +954,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		
 		// Invoke the query.
 		HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO = new HpcCompoundMetadataQueryDTO();
-		compoundMetadataQueryDTO.setQuery(namedCompoundQuery.getCompoundQuery());
+		compoundMetadataQueryDTO.setCompoundQuery(namedCompoundQuery.getCompoundQuery());
 		compoundMetadataQueryDTO.setDetailedResponse(detailedResponse);
 		compoundMetadataQueryDTO.setPage(page);
 		

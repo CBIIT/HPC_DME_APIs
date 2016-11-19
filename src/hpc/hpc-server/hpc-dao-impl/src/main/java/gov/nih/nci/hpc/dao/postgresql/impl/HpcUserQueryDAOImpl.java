@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -222,14 +223,14 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
 		
 		// Map the nested metadata queries.
 		JSONArray jsonQueries = new JSONArray();
-		for(HpcMetadataQuery nestedQquery : compoundMetadataQuery.getQueries()) {
+		for(HpcMetadataQuery nestedQuery : compoundMetadataQuery.getQueries()) {
 			JSONObject jsonQuery = new JSONObject();
-			jsonQuery.put("attribute", nestedQquery.getAttribute());
-			jsonQuery.put("operator", nestedQquery.getOperator().value());
-			jsonQuery.put("value", nestedQquery.getValue());
-			if(nestedQquery.getLevel() != null && nestedQquery.getLevelOperator() != null) {
-			   jsonQuery.put("level", nestedQquery.getLevel().toString());
-			   jsonQuery.put("levelOperator", nestedQquery.getLevelOperator().value());
+			jsonQuery.put("attribute", nestedQuery.getAttribute());
+			jsonQuery.put("operator", nestedQuery.getOperator().value());
+			jsonQuery.put("value", nestedQuery.getValue());
+			if(nestedQuery.getLevelFilter() != null) {
+			   jsonQuery.put("level", nestedQuery.getLevelFilter().getLevel());
+			   jsonQuery.put("levelOperator", nestedQuery.getLevelFilter().getOperator().value());
 			}
 			
 			jsonQueries.add(jsonQuery);
@@ -324,9 +325,11 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
     	Object level = jsonMetadataQuery.get("level");
     	Object levelOperator = jsonMetadataQuery.get("levelOperator");
     	if(level != null && levelOperator != null) {
-    	   metadataQuery.setLevel(Integer.valueOf(level.toString()));
-    	   metadataQuery.setLevelOperator(HpcMetadataQueryOperator.fromValue(
-    			                          jsonMetadataQuery.get("levelOperator").toString()));
+    	   HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
+    	   levelFilter.setLevel(Integer.valueOf(level.toString()));
+    	   levelFilter.setOperator(HpcMetadataQueryOperator.fromValue(
+    			                   jsonMetadataQuery.get("levelOperator").toString()));
+    	   metadataQuery.setLevelFilter(levelFilter);
     	}
     	
     	return metadataQuery;

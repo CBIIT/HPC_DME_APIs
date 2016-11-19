@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -167,6 +168,20 @@ public class HpcDomainValidator
     }
     
     /**
+     * Validate metadata query level filter.
+     *
+     * @param levelFilter The level filter to validate.
+     * @return true if valid, false otherwise.
+     */
+    public static boolean isValidMetadataQueryLevelFilter(HpcMetadataQueryLevelFilter levelFilter) 
+    {
+    	if(levelFilter == null || levelFilter.getLevel() <= 0 || levelFilter.getOperator() == null) {
+    	   return false;
+    	}
+    	return true;
+    }
+    
+    /**
      * Validate metadata query collection.
      *
      * @param metadataQueries Metadata query collection.
@@ -181,8 +196,8 @@ public class HpcDomainValidator
     		if(isEmpty(metadataQuery.getAttribute()) || 
     		   isEmpty(metadataQuery.getValue()) ||
     		   metadataQuery.getOperator() == null ||
-    		   (metadataQuery.getLevel() != null && metadataQuery.getLevelOperator() == null) ||
-    		   (metadataQuery.getLevel() == null && metadataQuery.getLevelOperator() != null)) {
+    		   (metadataQuery.getLevelFilter() != null && 
+    		    !isValidMetadataQueryLevelFilter(metadataQuery.getLevelFilter()))) {
     		   return false;
     		}
     	}
