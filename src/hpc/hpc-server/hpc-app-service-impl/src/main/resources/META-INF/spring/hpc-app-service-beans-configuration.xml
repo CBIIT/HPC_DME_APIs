@@ -63,6 +63,24 @@
 	<bean id="hpcMimeMessagePreparator" class="gov.nih.nci.hpc.service.impl.HpcMimeMessagePreparator" />
 	<bean id="hpcEmailNotificationSender" class="gov.nih.nci.hpc.service.impl.HpcEmailNotificationSenderImpl" />
 	
+	<!--  Default level filters for collection and data object search -->
+	<bean id="hpcDefaultCollectionLevelFilter" class="gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter" >
+		<property name="level" value="${hpc.service.dataManagement.defaultCollectionLevelFilter.level}" />
+		<property name="operator" >
+			<bean class="gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator" factory-method="fromValue" >
+				<constructor-arg value="${hpc.service.dataManagement.defaultCollectionLevelFilter.operator}" />
+			</bean>
+		</property>
+	</bean>
+	<bean id="hpcDefaultDataObjectLevelFilter" class="gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter" >
+		<property name="level" value="${hpc.service.dataManagement.defaultDataObjectLevelFilter.level}" />
+		<property name="operator" >
+			<bean class="gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator" factory-method="fromValue" >
+				<constructor-arg value="${hpc.service.dataManagement.defaultDataObjectLevelFilter.operator}" />
+			</bean>
+		</property>
+	</bean>
+	
 	<!--  Map of HPC Data Notification Senders -->
 	<util:map id="hpcNotificationSenders" 
 	          key-type="gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod"
@@ -83,6 +101,8 @@
 	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl">
 		<constructor-arg value="${hpc.service.dataManagement.hierarchicalMetadataPolicy}" index="0" />
 		<constructor-arg value="${hpc.service.dataManagement.searchResultsPageSize}" index="1" />
+		<constructor-arg ref="hpcDefaultCollectionLevelFilter" index="2" />
+		<constructor-arg ref="hpcDefaultDataObjectLevelFilter" index="3" />
 	</bean>
 	<bean id="hpcNotificationService" class="gov.nih.nci.hpc.service.impl.HpcNotificationServiceImpl">
 		<constructor-arg ref="hpcNotificationSenders" index="0" />
