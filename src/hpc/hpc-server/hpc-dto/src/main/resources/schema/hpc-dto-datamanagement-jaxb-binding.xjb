@@ -111,6 +111,9 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcMetadataEntries']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcMetadataQueryLevelFilter']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter"/>
+		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcMetadataQuery']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery"/>
 		</jxb:bindings>
