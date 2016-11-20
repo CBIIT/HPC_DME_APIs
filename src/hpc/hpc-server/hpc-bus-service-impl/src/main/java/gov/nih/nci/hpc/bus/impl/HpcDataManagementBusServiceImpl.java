@@ -350,10 +350,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	if(detailedResponse) {
     	   return toDataObjectListDTO(
-    			    dataManagementService.getDataObjects(metadataQueries, page), null);
+    			    dataManagementService.getDataObjects(metadataQueries, page), null, page);
     	} else {
     		    return toDataObjectListDTO(
-    		    		 null, dataManagementService.getDataObjectPaths(metadataQueries, page));
+    		    		 null, dataManagementService.getDataObjectPaths(metadataQueries, page), page);
     	}
     }
     
@@ -377,12 +377,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   return toDataObjectListDTO(
     			    dataManagementService.getDataObjects(
     			    		      compoundMetadataQueryDTO.getCompoundQuery(), page), 
-    			    null);
+    			    null, page);
     	} else {
     		    return toDataObjectListDTO(
     		    		 null, 
     		    		 dataManagementService.getDataObjectPaths(
-    		    				       compoundMetadataQueryDTO.getCompoundQuery(), page));
+    		    				       compoundMetadataQueryDTO.getCompoundQuery(), page), 
+    		    		 page);
     	}
     }
     
@@ -890,9 +891,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      *
      * @param dataObjects A list of data object domain objects.
      * @param dataObjectPaths A list of data object paths.
+     * @param page The requested results page.
      */
     private HpcDataObjectListDTO toDataObjectListDTO(List<HpcDataObject> dataObjects,
-    		                                         List<String> dataObjectPaths)
+    		                                         List<String> dataObjectPaths,
+    		                                         int page)
     {
 		// Construct the DTO.
 		HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
@@ -917,6 +920,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		       dataObjectsDTO.getDataObjectPaths().add(getRelativePath(dataObjectPath, basePath));
 		   }
 		}
+		
+		dataObjectsDTO.setPage(page);
+		dataObjectsDTO.setLimit(dataManagementService.getSearchResultsPageSize());
 		
 		return dataObjectsDTO;
     }
