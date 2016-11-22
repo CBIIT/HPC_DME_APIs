@@ -261,7 +261,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     {
 		return getPaths(prepareQuery(GET_COLLECTION_PATHS_SQL, 
                                      toQuery(collectionSQLQueries, metadataQueries, 
-                                    		 HpcCompoundMetadataQueryOperator.ALL,
+                                    		 HpcCompoundMetadataQueryOperator.AND,
                                     		 collectionSQLLevelFilters, defaultLevelFilter),
                                      COLLECTION_USER_ACCESS_SQL, 
                                      dataManagementUsername, offset, limit));
@@ -290,7 +290,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     {
 		return getPaths(prepareQuery(GET_DATA_OBJECT_PATHS_SQL, 
                                      toQuery(dataObjectSQLQueries, metadataQueries,
-                                    		 HpcCompoundMetadataQueryOperator.ALL,
+                                    		 HpcCompoundMetadataQueryOperator.AND,
                                     		 dataObjectSQLLevelFilters, defaultLevelFilter),
                                      DATA_OBJECT_USER_ACCESS_SQL, 
                                      dataManagementUsername, offset, limit));
@@ -585,7 +585,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      */
     private String toSQLOperator(HpcCompoundMetadataQueryOperator operator)
     {
-    	return operator.equals(HpcCompoundMetadataQueryOperator.ALL) ? "intersect" : "union";  
+    	return operator.equals(HpcCompoundMetadataQueryOperator.AND) ? "intersect" : "union";  
     }
     
     /**
