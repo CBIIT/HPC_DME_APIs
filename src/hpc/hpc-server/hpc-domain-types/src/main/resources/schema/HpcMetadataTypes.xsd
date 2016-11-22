@@ -74,8 +74,8 @@
 	
 	<xsd:simpleType name="HpcCompoundMetadataQueryOperator">
 		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="ANY" />
-			<xsd:enumeration value="ALL" />
+			<xsd:enumeration value="OR" />
+			<xsd:enumeration value="AND" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
