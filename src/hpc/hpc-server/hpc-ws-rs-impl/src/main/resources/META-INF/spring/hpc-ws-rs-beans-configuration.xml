@@ -82,6 +82,8 @@
           <value>entityPermissionResponses</value>
           <value>collectionMetadataValidationRules</value>
           <value>dataObjectMetadataValidationRules</value>
+          <value>collectionMetadataAttributes</value>
+          <value>dataObjectMetadataAttributes</value>
           <value>validValues</value>
           <value>collectionTypes</value>
           <value>subCollectionsHierarchies</value>
