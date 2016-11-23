@@ -32,12 +32,16 @@
 		<prop key="hpc.service.notification.formatsPath">${karaf.base}/etc/hpc-server/notificationFormats.json</prop>
 		<prop key="hpc.service.notification.mail.host">mailfwd.nih.gov</prop>
 		<prop key="hpc.service.notification.mail.port">25</prop>
+		<prop key="hpc.service.dataSearch.searchResultsPageSize">100</prop>
+		<prop key="hpc.service.dataSearch.defaultCollectionLevelFilter.level">1</prop>
+		<prop key="hpc.service.dataSearch.defaultCollectionLevelFilter.operator">NUM_GREATER_OR_EQUAL</prop>
+		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.level">1</prop>
+		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.operator">EQUAL</prop>
+		
+		<!-- TODO: REMOVE AFTER REFACTORING -->
 		<prop key="hpc.service.dataManagement.hierarchicalMetadataPolicy">none</prop>
-		<prop key="hpc.service.dataManagement.searchResultsPageSize">100</prop>
-		<prop key="hpc.service.dataManagement.defaultCollectionLevelFilter.level">1</prop>
-		<prop key="hpc.service.dataManagement.defaultCollectionLevelFilter.operator">NUM_GREATER_OR_EQUAL</prop>
-		<prop key="hpc.service.dataManagement.defaultDataObjectLevelFilter.level">1</prop>
-		<prop key="hpc.service.dataManagement.defaultDataObjectLevelFilter.operator">EQUAL</prop>
+		
+		
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
@@ -49,6 +53,12 @@
 		          interface="gov.nih.nci.hpc.service.HpcDataTransferService" />
 	<osgi:service ref="hpcDataManagementService"
 		          interface="gov.nih.nci.hpc.service.HpcDataManagementService" />	
+	<osgi:service ref="hpcDataManagementNewService"
+		          interface="gov.nih.nci.hpc.service.HpcDataManagementNewService" />	
+	<osgi:service ref="hpcDataSearchService"
+		          interface="gov.nih.nci.hpc.service.HpcDataSearchService" />	
+	<osgi:service ref="hpcMetadataService"
+		          interface="gov.nih.nci.hpc.service.HpcMetadataService" />	
 	<osgi:service ref="hpcNotificationService"
 		          interface="gov.nih.nci.hpc.service.HpcNotificationService" />	
 	<osgi:service ref="hpcEventService"
