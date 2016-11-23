@@ -112,6 +112,7 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<!-- TODO: REMOVE -->
 	<xsd:complexType name="HpcMetadataOrigin">
 		<xsd:sequence>
 			<xsd:element name="metadataAttributes" type="xsd:string" 
