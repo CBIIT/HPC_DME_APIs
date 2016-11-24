@@ -10,9 +10,14 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataSearchRestService;
 
@@ -71,6 +76,58 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//  
 	
     @Override
+    public Response getCollections(List<HpcMetadataQueryParam> metadataQueries, 
+    		                       Boolean detailedResponse, Integer page)
+    {
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: GET /collection/" + metadataQueries);
+    	
+    	HpcCollectionListDTO collections = null;
+		try {
+			 collections = dataSearchBusService.getCollections(
+					                    unmarshallQueryParams(metadataQueries), 
+					                    detailedResponse != null ? detailedResponse : false,
+					                    page != null ? page : 1);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /collection/" + metadataQueries + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " getCollections: Total time - " + metadataQueries);
+		
+		return okResponse(!collections.getCollections().isEmpty() ||
+				          !collections.getCollectionPaths().isEmpty() ? collections : null , true);
+    }
+    
+    @Override
+    public Response queryCollections(List<HpcMetadataQuery> metadataQueries,
+    		                         Boolean detailedResponse, Integer page)
+    {
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: POST /collection/query" + metadataQueries);
+    	
+    	HpcCollectionListDTO collections = null;
+		try {
+			 collections = dataSearchBusService.getCollections(
+					           metadataQueries,
+					           detailedResponse != null ? detailedResponse : false,
+					           page != null ? page : 1);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /collection/query" + metadataQueries + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " getCollections: Total time - " + metadataQueries);
+		
+		return okResponse(!collections.getCollections().isEmpty() ||
+				          !collections.getCollectionPaths().isEmpty() ? collections : null , true);
+    }
+    
+    @Override
     public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
     {
     	long start = System.currentTimeMillis();
@@ -96,6 +153,29 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     // Helper Methods
     //---------------------------------------------------------------------//
     
+    /**
+     * Unmarshall metadata query passed as JSON in a URL parameter.
+     * 
+     * @param metadataQueries The query params to unmarshall.
+     * @return List of HpcMetadataQuery.
+     * 
+     * @throws HpcException if the params unmarshalling failed.
+     */
+    private List<HpcMetadataQuery> unmarshallQueryParams(
+    		                                 List<HpcMetadataQueryParam> metadataQueries)
+    		                                 throws HpcException
+    {
+		 // Validate the metadata entries input (JSON) was parsed successfully.
+		 List<HpcMetadataQuery> queries = new ArrayList<HpcMetadataQuery>();
+		 for(HpcMetadataQueryParam queryParam : metadataQueries) {
+		     if(queryParam.getJSONParsingException() != null) {
+			    throw queryParam.getJSONParsingException();
+		     }
+		     queries.add(queryParam);
+		 }
+		 
+		 return queries;
+    }
 }
 
  
