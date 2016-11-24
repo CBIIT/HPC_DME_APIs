@@ -874,10 +874,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} 
 		
 		if(collectionPaths != null) {
-		   String basePath = dataManagementService.getBasePath();
-		   for(String collectionPath : collectionPaths) {
-		       collectionsDTO.getCollectionPaths().add(getRelativePath(collectionPath, basePath));
-		   }
+		   collectionsDTO.getCollectionPaths().addAll(collectionPaths);
 		}
 		
 		collectionsDTO.setPage(page);
@@ -915,10 +912,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		
 		if(dataObjectPaths != null) {
-		   String basePath = dataManagementService.getBasePath();
-		   for(String dataObjectPath : dataObjectPaths) {
-		       dataObjectsDTO.getDataObjectPaths().add(getRelativePath(dataObjectPath, basePath));
-		   }
+		   dataObjectsDTO.getDataObjectPaths().addAll(dataObjectPaths);
 		}
 		
 		dataObjectsDTO.setPage(page);
@@ -965,18 +959,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		compoundMetadataQueryDTO.setPage(page);
 		
 		return compoundMetadataQueryDTO;
-    }
-    
-    private String getRelativePath(String absolutePath, String basePath)
-    {
-    	if(absolutePath == null)
-    		return absolutePath;
-    	
-    	if(absolutePath.startsWith(basePath))
-    		return absolutePath.substring(basePath.length());
-    	else
-    		return absolutePath;
-    	
     }
 }
 

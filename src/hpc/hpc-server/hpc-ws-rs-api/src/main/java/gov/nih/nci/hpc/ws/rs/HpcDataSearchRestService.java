@@ -10,7 +10,14 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * <p>
@@ -56,17 +63,17 @@ public interface HpcDataSearchRestService
 //			                         @QueryParam("detailedResponse") Boolean detailedResponse,
 //			                         @QueryParam("page") Integer page);
 //	
-//    /**
-//     * POST Collections query.
-//     *
-//     * @param compoundMetadataQueryDTO A compund metadata query DTO.
-//     * @return Response The REST service response.
-//     */
-//	@POST
-//	@Path("/collection/query/compound")
-//	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-//	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-//	public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
+    /**
+     * POST Collections query.
+     *
+     * @param compoundMetadataQueryDTO A compund metadata query DTO.
+     * @return Response The REST service response.
+     */
+	@POST
+	@Path("/collection/query/compound")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
 //	
 //    /**
 //     * GET Collections by named query.
