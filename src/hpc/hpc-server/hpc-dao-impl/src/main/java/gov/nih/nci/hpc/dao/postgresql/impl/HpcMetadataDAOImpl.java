@@ -14,7 +14,6 @@ import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
-import gov.nih.nci.hpc.domain.metadata.HpcHierarchicalMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
@@ -166,8 +165,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	// Row mappers.
 	private SingleColumnRowMapper<String> objectPathRowMapper = new SingleColumnRowMapper<>();
 	private SingleColumnRowMapper<String> metadataAttributeRowMapper = new SingleColumnRowMapper<>();
-	HpcHierarchicalMetadataEntryRowMapper hierarchicalMetadataEntryRowMapper = 
-			                              new HpcHierarchicalMetadataEntryRowMapper();
+	HpcMetadataEntryRowMapper metadataEntryRowMapper = new HpcMetadataEntryRowMapper();
 	
 	// Maps between metadata query operator to its SQL query.
 	private Map<HpcMetadataQueryOperator, String> dataObjectSQLQueries = new HashMap<>();
@@ -311,11 +309,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     }
 	
     @Override
-    public List<HpcHierarchicalMetadataEntry> 
-           getCollectionMetadata(String path, int minLevel) throws HpcException
+    public List<HpcMetadataEntry> getCollectionMetadata(String path, int minLevel) throws HpcException
     {
 		try {
-		     return jdbcTemplate.query(GET_COLLECTION_METADATA_SQL, hierarchicalMetadataEntryRowMapper, 
+		     return jdbcTemplate.query(GET_COLLECTION_METADATA_SQL, metadataEntryRowMapper, 
 		    		                   path, minLevel);
 		     
 		} catch(DataAccessException e) {
@@ -326,11 +323,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     }
     
     @Override
-    public List<HpcHierarchicalMetadataEntry> 
-           getDataObjectMetadata(String path, int minLevel) throws HpcException
+    public List<HpcMetadataEntry> getDataObjectMetadata(String path, int minLevel) throws HpcException
     {
 		try {
-		     return jdbcTemplate.query(GET_DATA_OBJECT_METADATA_SQL, hierarchicalMetadataEntryRowMapper, 
+		     return jdbcTemplate.query(GET_DATA_OBJECT_METADATA_SQL, metadataEntryRowMapper, 
 		    		                   path, minLevel);
 		     
 		} catch(DataAccessException e) {
@@ -378,20 +374,18 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     //---------------------------------------------------------------------//  
 	
 	// Row Mapper
-	private class HpcHierarchicalMetadataEntryRowMapper implements RowMapper<HpcHierarchicalMetadataEntry>
+	private class HpcMetadataEntryRowMapper implements RowMapper<HpcMetadataEntry>
 	{
 		@Override
-		public HpcHierarchicalMetadataEntry mapRow(ResultSet rs, int rowNum) throws SQLException 
+		public HpcMetadataEntry mapRow(ResultSet rs, int rowNum) throws SQLException 
 		{
-			HpcHierarchicalMetadataEntry hierarchicalMetadataEntry = new HpcHierarchicalMetadataEntry();
-			Long level = rs.getLong("LEVEL");
-			hierarchicalMetadataEntry.setLevel(level != null ? level.intValue() : null);
 			HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
+			Long level = rs.getLong("LEVEL");
+			metadataEntry.setLevel(level != null ? level.intValue() : null);
 			metadataEntry.setAttribute(rs.getString("META_ATTR_NAME"));
 			metadataEntry.setValue(rs.getString("META_ATTR_VALUE"));
-			hierarchicalMetadataEntry.setMetadataEntry(metadataEntry);
 			
-			return hierarchicalMetadataEntry;
+			return metadataEntry;
 		}
 	}
 	
