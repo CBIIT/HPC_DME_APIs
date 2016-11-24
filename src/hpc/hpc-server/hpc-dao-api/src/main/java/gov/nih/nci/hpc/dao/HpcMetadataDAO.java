@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.dao;
 
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
-import gov.nih.nci.hpc.domain.metadata.HpcHierarchicalMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
@@ -108,12 +108,11 @@ public interface HpcMetadataDAO
      *
      * @param path The collection's path.
      * @param minLevel The minimum level in the hierarchy to return.
-     * @return List of HpcHierarchicalMetadataEntry.
+     * @return List of HpcMetadataEntry.
      * 
      * @throws HpcException
      */
-    public List<HpcHierarchicalMetadataEntry> 
-           getCollectionMetadata(String path, int minLevel) throws HpcException;
+    public List<HpcMetadataEntry> getCollectionMetadata(String path, int minLevel) throws HpcException;
     
     /**
      * Get data object hierarchical metadata entries.
@@ -124,8 +123,7 @@ public interface HpcMetadataDAO
      * 
      * @throws HpcException
      */
-    public List<HpcHierarchicalMetadataEntry> 
-           getDataObjectMetadata(String path, int minLevel) throws HpcException;
+    public List<HpcMetadataEntry> getDataObjectMetadata(String path, int minLevel) throws HpcException;
     
     /**
      * Get a list of collection metadata attributes currently registered.
