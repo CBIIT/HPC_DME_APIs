@@ -149,9 +149,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                             throws HpcException
     {
 		try {
-			 path = addPath(path);
 			 IRODSFile collectionFile = 
-			      irodsConnection.getIRODSFileFactory(authenticatedToken).instanceIRODSFile(path);
+			      irodsConnection.getIRODSFileFactory(authenticatedToken).instanceIRODSFile(getAbsolutePath(path));
 			 mkdirs(collectionFile);
 			 
 		} catch(JargonException e) {
@@ -167,10 +166,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                        throws HpcException
     {
 		try {
-			 path = addPath(path);
 			 IRODSFile dataObjectFile = 
 			      irodsConnection.getIRODSFileFactory(authenticatedToken).
-			                      instanceIRODSFile(path);
+			                      instanceIRODSFile(getAbsolutePath(path));
 			 dataObjectFile.createNewFile();
 			 
 		} catch(JargonException e) {
@@ -188,10 +186,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     public boolean delete(Object authenticatedToken, String path)
     {
 		try {
-			 path = addPath(path);
 			 IRODSFile dataObjectFile = 
 			      irodsConnection.getIRODSFileFactory(authenticatedToken).
-			                      instanceIRODSFile(path);
+			                      instanceIRODSFile(getAbsolutePath(path));
 			 return dataObjectFile.deleteWithForceOption();
 			 
 		} catch(Exception e) {
@@ -205,7 +202,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException
     {
-    	path = addPath(path);
 		List<AvuData> avuDatas = new ArrayList<AvuData>();
 
 		try {
@@ -216,7 +212,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		     }
 
 		     irodsConnection.getCollectionAO(authenticatedToken).
-		                     addBulkAVUMetadataToCollection(path, avuDatas);
+		                     addBulkAVUMetadataToCollection(getAbsolutePath(path), avuDatas);
 		     
 		} catch(JargonException e) {
 	            throw new HpcException("Failed to add metadata to a collection: " + 
@@ -232,19 +228,19 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                            throws HpcException
     {
 		try {
-			 path = addPath(path);
+			 String absolutePath = getAbsolutePath(path);
 			 CollectionAO collectionAO = irodsConnection.getCollectionAO(authenticatedToken);
 		     for(HpcMetadataEntry metadataEntry : metadataEntries) {
 			     AvuData avuData = AvuData.instance(metadataEntry.getAttribute(),
 			                                        metadataEntry.getValue(), 
 			                                        metadataEntry.getUnit());
 		         try {
-		        	  collectionAO.modifyAvuValueBasedOnGivenAttributeAndUnit(path, avuData);
+		        	  collectionAO.modifyAvuValueBasedOnGivenAttributeAndUnit(absolutePath, avuData);
 		        	  
 		         } catch(DataNotFoundException e) {
 		        	     // Metadata was not found to update. Add it.
 		        	     irodsConnection.getCollectionAO(authenticatedToken).
-		        	                     addAVUMetadata(path, avuData);
+		        	                     addAVUMetadata(absolutePath, avuData);
 		         }
 		     }
 		     
@@ -264,13 +260,13 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		List<AvuData> avuDatas = new ArrayList<AvuData>();
 
 		try {
-			 path = addPath(path);
 		     for(HpcMetadataEntry metadataEntry : metadataEntries) {
 			     avuDatas.add(AvuData.instance(metadataEntry.getAttribute(),
 			                                   metadataEntry.getValue(), 
 			                                   metadataEntry.getUnit()));
 		     }
-		     irodsConnection.getDataObjectAO(authenticatedToken).addBulkAVUMetadataToDataObject(path, avuDatas);
+		     irodsConnection.getDataObjectAO(authenticatedToken).
+		                     addBulkAVUMetadataToDataObject(getAbsolutePath(path), avuDatas);
 		     
 		} catch(DuplicateDataException dde) {
 			    throw new HpcException("Failed to add metadata to a data object: " + 
@@ -290,19 +286,19 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                            throws HpcException
     {
 		try {
-			 path = addPath(path);
+			 String absolutePath = getAbsolutePath(path);
 			 DataObjectAO dataObjectAO = irodsConnection.getDataObjectAO(authenticatedToken);
 		     for(HpcMetadataEntry metadataEntry : metadataEntries) {
 			     AvuData avuData = AvuData.instance(metadataEntry.getAttribute(),
 			                                        metadataEntry.getValue(), 
 			                                        metadataEntry.getUnit());
 		         try {
-		        	  dataObjectAO.modifyAvuValueBasedOnGivenAttributeAndUnit(path, avuData);
+		        	  dataObjectAO.modifyAvuValueBasedOnGivenAttributeAndUnit(absolutePath, avuData);
 		        	  
 		         } catch(DataNotFoundException e) {
 		        	     // Metadata was not found to update. Add it.
 		        	     irodsConnection.getDataObjectAO(authenticatedToken).
-		        	                     addAVUMetadata(path, avuData);
+		        	                     addAVUMetadata(absolutePath, avuData);
 		         }
 		     }
 		     
@@ -327,11 +323,11 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                              String path) 
     		                             throws HpcException
     {
-		 path = addPath(path);
-		 IRODSFile parentPath = getParentPath(authenticatedToken, path);
+		 String absolutePath = getAbsolutePath(path);
+		 IRODSFile parentPath = getParentPath(authenticatedToken, absolutePath);
 		 
 		 if(parentPath == null) {
-			throw new HpcException("Invalid parent path for: " + path, 
+			throw new HpcException("Invalid parent path for: " + absolutePath, 
                                    HpcErrorType.INVALID_REQUEST_INPUT);
 		 }
 		 
@@ -351,10 +347,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                                  throws HpcException
     {
 		try {
-			 path = addPath(path);
 			 IRODSFile file = 
 					   irodsConnection.getIRODSFileFactory(authenticatedToken).
-					                   instanceIRODSFile(path);
+					                   instanceIRODSFile(getAbsolutePath(path));
 			 HpcPathAttributes attributes = new HpcPathAttributes();
 			 attributes.setExists(file.exists());
 			 attributes.setIsDirectory(file.isDirectory());
@@ -379,9 +374,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                          throws HpcException
     {
     	try {
-    		 path = addPath(path);
              return toHpcCollection(irodsConnection.getCollectionAO(authenticatedToken).
-            		                                findByAbsolutePath(path));
+            		                                findByAbsolutePath(getAbsolutePath(path)));
              
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get Collection: " + 
@@ -427,9 +421,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
    		                                               throws HpcException
     {
 		try {
-			 path = addPath(path);
 			 return toHpcMetadata(irodsConnection.getCollectionAO(authenticatedToken).
-					              findMetadataValuesForCollection(path));
+					              findMetadataValuesForCollection(getAbsolutePath(path)));
 
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get metadata of a collection: " + 
@@ -443,9 +436,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	                              throws HpcException
     {
     	try {
-    		 path = addPath(path);
              return toHpcDataObject(irodsConnection.getDataObjectAO(authenticatedToken).
-            		                                findByAbsolutePath(path));
+            		                                findByAbsolutePath(getAbsolutePath(path)));
              
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get Data Object: " + 
@@ -505,9 +497,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
    		                                               throws HpcException
     {
 		try {
-			 path = addPath(path);
 			 return toHpcMetadata(irodsConnection.getDataObjectAO(authenticatedToken).
-					              findMetadataValuesForDataObject(path));
+					              findMetadataValuesForDataObject(getAbsolutePath(path)));
 	
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get metadata of a collection: " + 
@@ -521,8 +512,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                                         String path) 
                                                        throws HpcException
     {
-    	path = addPath(path);
-		IRODSFile parentPath = getParentPath(authenticatedToken, path);
+		IRODSFile parentPath = getParentPath(authenticatedToken, getAbsolutePath(path));
 		if(parentPath == null || !parentPath.isDirectory()) {
 		   return new ArrayList<>();
 		}
@@ -530,14 +520,14 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		return getCollectionMetadata(authenticatedToken, parentPath.getPath());
     }
     
+    // TODO: REMOVE
     @Override
     public List<Integer> getParentPathMetadataIds(Object authenticatedToken, 
                                                   String path) 
                                                  throws HpcException
     {
-    	path = addPath(path);
     	List<Integer> metadataIds = new ArrayList<>();
-		IRODSFile parentPath = getParentPath(authenticatedToken, path);
+		IRODSFile parentPath = getParentPath(authenticatedToken, getAbsolutePath(path));
 		if(parentPath == null || !parentPath.isDirectory()) {
 		   return metadataIds;
 		}
@@ -652,7 +642,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                    throws HpcException
     {
     	FilePermissionEnum permission = null;
-    	path = addPath(path);
     	try {
     		 permission = FilePermissionEnum.valueOf(permissionRequest.getPermission());
     		 
@@ -670,7 +659,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		
     	     irodsConnection.getCollectionAO(authenticatedToken).setAccessPermission(
     		     	                         irodsConnection.getZone(), 
-    		     	                         path,
+    		     	                         getAbsolutePath(path),
     			                             id,
     			                             true, permission);
     	     
@@ -688,7 +677,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                    HpcEntityPermission permissionRequest) 
                    throws HpcException
     {
-    	path = addPath(path);
     	FilePermissionEnum permission = null;
     	try {
     		 permission = FilePermissionEnum.valueOf(permissionRequest.getPermission());
@@ -707,7 +695,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		
     	     irodsConnection.getDataObjectAO(authenticatedToken).setAccessPermission(
     		     	                         irodsConnection.getZone(), 
-    		     	                         path,
+    		     	                         getAbsolutePath(path),
     			                             id,
     			                             permission);
     	     
@@ -809,8 +797,30 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	@Override
 	public String getAbsolutePath(String path)
 	{
-		return addPath(path);
+    	if(path == null) {
+     	   return irodsConnection.getBasePath();
+     	} 
+    	
+     	if(path.startsWith(irodsConnection.getBasePath())) {
+     	   return path;
+        } else { 
+     		    return irodsConnection.getBasePath() + (path.startsWith("/") ? "" : "/") + path;
+        }
 	}
+	
+    @Override
+    public String getRelativePath(String absolutePath)
+    {
+    	if(absolutePath == null) {
+    	   return null;
+    	}
+    	
+    	if(absolutePath.startsWith(irodsConnection.getBasePath())) {
+    	   return absolutePath.substring((irodsConnection.getBasePath()).length());
+    	} else {
+    		    return absolutePath;
+    	}
+    }
     
     //---------------------------------------------------------------------//
     // Helper Methods
@@ -947,9 +957,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	
 	    HpcCollection hpcCollection = new HpcCollection();
 	    hpcCollection.setCollectionId(irodsCollection.getCollectionId());
-	    hpcCollection.setCollectionName(removePath(irodsCollection.getCollectionName()));
-	    hpcCollection.setAbsolutePath(removePath(irodsCollection.getAbsolutePath()));
-	    hpcCollection.setCollectionParentName(removePath(irodsCollection.getCollectionParentName()));
+	    hpcCollection.setCollectionName(getRelativePath(irodsCollection.getCollectionName()));
+	    hpcCollection.setAbsolutePath(getRelativePath(irodsCollection.getAbsolutePath()));
+	    hpcCollection.setCollectionParentName(getRelativePath(irodsCollection.getCollectionParentName()));
 	    hpcCollection.setCollectionOwnerName(irodsCollection.getCollectionOwnerName());
 	    hpcCollection.setCollectionOwnerZone(irodsCollection.getCollectionOwnerZone());
 	    hpcCollection.setCollectionMapId(irodsCollection.getCollectionMapId());
@@ -985,8 +995,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	HpcDataObject hpcDataObject = new HpcDataObject();
 	    hpcDataObject.setId(irodsDataObject.getId());
 	    hpcDataObject.setCollectionId(irodsDataObject.getCollectionId());
-	    hpcDataObject.setCollectionName(removePath(irodsDataObject.getCollectionName()));
-	    hpcDataObject.setAbsolutePath(removePath(irodsDataObject.getAbsolutePath()));
+	    hpcDataObject.setCollectionName(getRelativePath(irodsDataObject.getCollectionName()));
+	    hpcDataObject.setAbsolutePath(getRelativePath(irodsDataObject.getAbsolutePath()));
 	    hpcDataObject.setDataReplicationNumber(irodsDataObject.getDataReplicationNumber());
 	    hpcDataObject.setDataVersion(irodsDataObject.getDataVersion());
 	    hpcDataObject.setDataSize(irodsDataObject.getDataSize());
@@ -1015,41 +1025,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	    hpcDataObject.setUpdatedAt(updatedAt);
 	    
 	    return hpcDataObject;
-    }
-
-    /**
-     * Append the base path to the user's provided path.
-     *
-     * @param path The user's path.
-     * @return An absolute iRODS path
-     */
-    private String addPath(String path)
-    {
-    	if(path == null) {
-    	   return irodsConnection.getBasePath();
-    	} 
-    	if(path.startsWith(irodsConnection.getBasePath())) {
-    	   return path;
-        } else { 
-    		    return irodsConnection.getBasePath() + (path.startsWith("/") ? "" : "/") + path;
-        }
-    }
-
-    /**
-     * Extract user's path from an absolute path.
-     *
-     * @param path The absolute path.
-     * @return The user's path
-     */
-    private String removePath(String path)
-    {
-    	if(path == null)
-    		return path;
-    	
-    	if(path.startsWith(irodsConnection.getBasePath()))
-    		return path.substring((irodsConnection.getBasePath()).length());
-    	else
-    		return path;
     }
 
     /**
@@ -1134,10 +1109,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	}
     	
 		try {
-			 path = addPath(path);
 			 IRODSFileFactory irodsFileFactory = 
 			                  irodsConnection.getIRODSFileFactory(authenticatedToken);
-			 IRODSFile file = irodsFileFactory.instanceIRODSFile(path);
+			 IRODSFile file = irodsFileFactory.instanceIRODSFile(getAbsolutePath(path));
 			 return irodsFileFactory.instanceIRODSFile(file.getParent());
 			 
 		} catch(InvalidInputParameterException ex) {
@@ -1150,11 +1124,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		        
 		}    
     }
-
-	@Override
-	public String getBasePath() {
-		return irodsConnection.getBasePath();
-	}
 }
 
  
