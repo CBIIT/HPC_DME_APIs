@@ -10,12 +10,18 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
+import java.util.List;
+
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -31,40 +37,40 @@ import javax.ws.rs.core.Response;
 @Path("/new")
 public interface HpcDataSearchRestService
 {
-//    /**
-//     * GET Collections by metadata query.
-//     *
-//     * @param metadataQueries A list of metadata entries to query for.
-//     * @param detailedResponse If set to true, return entity details (attributes + metadata).
-//     * @param page The requested results page.
-//     * @return Response The REST service response.
-//     */
-//	@GET
-//	@Path("/collection")
-//	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-//	public Response getCollections(
-//			           @QueryParam("metadataQuery") List<HpcMetadataQueryParam> metadataQueries,
-//			           @QueryParam("detailedResponse") Boolean detailedResponse,
-//			           @QueryParam("page") Integer page);
-//	
-//    /**
-//     * POST Collections query.
-//     *
-//     * @param metadataQueries A list of metadata entries to query for. 
-//     * @param detailedResponse If set to true, return entity details (attributes + metadata).
-//     * @param page The requested results page.
-//     * @return Response The REST service response.
-//     */
-//	@POST
-//	@Path("/collection/query/simple")
-//	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-//	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-//	public Response queryCollections(List<HpcMetadataQuery> metadataQueries,
-//			                         @QueryParam("detailedResponse") Boolean detailedResponse,
-//			                         @QueryParam("page") Integer page);
-//	
     /**
-     * POST Collections query.
+     * GET Collections by simple metadata query.
+     *
+     * @param metadataQueries A list of metadata entries to query for.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
+     * @return Response The REST service response.
+     */
+	@GET
+	@Path("/collection")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getCollections(
+			           @QueryParam("metadataQuery") List<HpcMetadataQueryParam> metadataQueries,
+			           @QueryParam("detailedResponse") Boolean detailedResponse,
+			           @QueryParam("page") Integer page);
+	
+    /**
+     * POST Collections simple query.
+     *
+     * @param metadataQueries A list of metadata entries to query for. 
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
+     * @return Response The REST service response.
+     */
+	@POST
+	@Path("/collection/query/simple")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response queryCollections(List<HpcMetadataQuery> metadataQueries,
+			                         @QueryParam("detailedResponse") Boolean detailedResponse,
+			                         @QueryParam("page") Integer page);
+	
+    /**
+     * POST Collections compound query.
      *
      * @param compoundMetadataQueryDTO A compund metadata query DTO.
      * @return Response The REST service response.
