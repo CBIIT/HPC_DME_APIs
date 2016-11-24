@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.service;
 
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -100,6 +101,16 @@ public interface HpcMetadataService
      * @throws HpcException
      */
     public Map<String, String> toMap(List<HpcMetadataEntry> metadataEntries);
+    
+    /**
+     * Get metadata of a collection.
+     *
+     * @param path The collection's path.
+     * @return HpcMetadataEntries The collection's metadata entries.
+     * 
+     * @throws HpcException
+     */
+    public HpcMetadataEntries getCollectionMetadataEntries(String path) throws HpcException;
 
 }
 

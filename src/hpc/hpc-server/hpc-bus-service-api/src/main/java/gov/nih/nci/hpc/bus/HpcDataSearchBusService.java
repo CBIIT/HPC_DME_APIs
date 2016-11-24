@@ -10,17 +10,6 @@
 
 package gov.nih.nci.hpc.bus;
 
-import java.util.List;
-
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
-import gov.nih.nci.hpc.exception.HpcException;
-
 /**
  * <p>
  * HPC Data Search Business Service Interface.

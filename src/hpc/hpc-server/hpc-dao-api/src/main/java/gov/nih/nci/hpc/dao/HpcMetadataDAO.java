@@ -106,22 +106,26 @@ public interface HpcMetadataDAO
     /**
      * Get collection hierarchical metadata entries.
      *
-     * @param path The collection's path
+     * @param path The collection's path.
+     * @param minLevel The minimum level in the hierarchy to return.
      * @return List of HpcHierarchicalMetadataEntry.
      * 
      * @throws HpcException
      */
-    public List<HpcHierarchicalMetadataEntry> getCollectionMetadata(String path) throws HpcException;
+    public List<HpcHierarchicalMetadataEntry> 
+           getCollectionMetadata(String path, int minLevel) throws HpcException;
     
     /**
      * Get data object hierarchical metadata entries.
      *
-     * @param path The data object's path
+     * @param path The data object's path.
+     * @param minLevel The minimum level in the hierarchy to return.
      * @return List of HpcHierarchicalMetadataEntry.
      * 
      * @throws HpcException
      */
-    public List<HpcHierarchicalMetadataEntry> getDataObjectMetadata(String path) throws HpcException;
+    public List<HpcHierarchicalMetadataEntry> 
+           getDataObjectMetadata(String path, int minLevel) throws HpcException;
     
     /**
      * Get a list of collection metadata attributes currently registered.

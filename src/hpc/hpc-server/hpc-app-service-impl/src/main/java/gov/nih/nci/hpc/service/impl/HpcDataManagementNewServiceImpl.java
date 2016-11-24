@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
@@ -228,6 +229,17 @@ public class HpcDataManagementNewServiceImpl implements HpcDataManagementNewServ
 
 		// Perform the hierarchy validation.
 		dataHierarchyValidator.validateHierarchy(doc, collectionPathTypes, dataObjectRegistration);
+    }
+    
+    @Override
+    public HpcCollection getCollection(String path) throws HpcException
+    {
+    	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
+    	if(dataManagementProxy.getPathAttributes(authenticatedToken, path).getIsDirectory()) {
+    	   return dataManagementProxy.getCollection(authenticatedToken, path);
+    	}
+    	
+    	return null;
     }
     
     //---------------------------------------------------------------------//
