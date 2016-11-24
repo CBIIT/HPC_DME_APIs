@@ -14,8 +14,8 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidCompoundMet
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueries;
-import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueryLevelFilter;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CALLER_OBJECT_ID_ATTRIBUTE;
@@ -44,7 +44,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
-import gov.nih.nci.hpc.domain.metadata.HpcHierarchicalMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataOrigin;
@@ -1773,17 +1772,18 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
      * @throws HpcException
      */
     private HpcMetadataEntries fromHierarchicalMetadataEntries(
-    		                       List<HpcHierarchicalMetadataEntry> hierarchicalMetadataEntriesList) 
+    		                       List<HpcMetadataEntry> hierarchicalMetadataEntriesList) 
                                    throws HpcException
     {
     	HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
     	
     	// Split the list to 'self' and 'parent' metadata.
-    	for(HpcHierarchicalMetadataEntry hierarchicalMetadataEntry : hierarchicalMetadataEntriesList) {
+    	for(HpcMetadataEntry hierarchicalMetadataEntry : hierarchicalMetadataEntriesList) {
     		if(hierarchicalMetadataEntry.getLevel() > 1) {
-    		   metadataEntries.getParentMetadataEntries().add(hierarchicalMetadataEntry.getMetadataEntry());	
+    		   metadataEntries.getParentMetadataEntries().add(hierarchicalMetadataEntry);	
     		} else {
-    			    metadataEntries.getSelfMetadataEntries().add(hierarchicalMetadataEntry.getMetadataEntry());	
+    			    hierarchicalMetadataEntry.setLevel(null);
+    			    metadataEntries.getSelfMetadataEntries().add(hierarchicalMetadataEntry);	
     		}
     	}
     	
