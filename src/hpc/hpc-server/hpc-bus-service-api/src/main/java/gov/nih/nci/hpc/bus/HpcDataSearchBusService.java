@@ -10,6 +10,9 @@
 
 package gov.nih.nci.hpc.bus;
 
+import java.util.List;
+
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -25,19 +28,19 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 public interface HpcDataSearchBusService 
 {  
-//    /**
-//     * Get Collections by metadata query.
-//     *
-//     * @param metadataQueries The metadata queries.
-//     * @param detailedResponse If set to true, return entity details (attributes + metadata).
-//     * @param page The requested results page.
-//     * @return A list of HpcCollectionDTO
-//     * 
-//     * @throws HpcException
-//     */
-//    public HpcCollectionListDTO getCollections(List<HpcMetadataQuery> metadataQueries,
-//    		                                   boolean detailedResponse, int page) 
-//    		                                  throws HpcException;
+    /**
+     * Get Collections by simple metadata query.
+     *
+     * @param metadataQueries The metadata queries.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
+     * @return A list of HpcCollectionDTO
+     * 
+     * @throws HpcException
+     */
+    public HpcCollectionListDTO getCollections(List<HpcMetadataQuery> metadataQueries,
+    		                                   boolean detailedResponse, int page) 
+    		                                  throws HpcException;
     /**
      * Get Collections by compound metadata query.
      *

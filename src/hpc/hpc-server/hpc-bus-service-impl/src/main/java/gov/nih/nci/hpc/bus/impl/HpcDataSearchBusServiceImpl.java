@@ -13,6 +13,9 @@ package gov.nih.nci.hpc.bus.impl;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -71,6 +74,33 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     // HpcDataSearchBusService Interface Implementation
     //---------------------------------------------------------------------//  
     	
+    @Override
+    public HpcCollectionListDTO getCollections(List<HpcMetadataQuery> metadataQueries,
+    		                                   boolean detailedResponse, int page) 
+                                              throws HpcException
+    {
+    	logger.info("Invoking getCollections(List<HpcMetadataQuery>, boolean): " + 
+    			    metadataQueries);
+    	
+    	// Input validation.
+    	if(metadataQueries == null) {
+    	   throw new HpcException("Null metadata queries",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Create a Compound query from the simple query.
+    	HpcCompoundMetadataQuery compoundMetadataQuery = new HpcCompoundMetadataQuery();
+    	compoundMetadataQuery.setOperator(HpcCompoundMetadataQueryOperator.AND);
+    	compoundMetadataQuery.getQueries().addAll(metadataQueries);
+    	
+    	HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO = new HpcCompoundMetadataQueryDTO();
+    	compoundMetadataQueryDTO.setCompoundQuery(compoundMetadataQuery);
+    	compoundMetadataQueryDTO.setPage(page);
+    	compoundMetadataQueryDTO.setDetailedResponse(detailedResponse);
+    	
+    	return getCollections(compoundMetadataQueryDTO);
+    }
+    
     @Override
     public HpcCollectionListDTO getCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
                                               throws HpcException
