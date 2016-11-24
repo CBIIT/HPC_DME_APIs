@@ -10,6 +10,10 @@
 
 package gov.nih.nci.hpc.bus;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.exception.HpcException;
+
 /**
  * <p>
  * HPC Data Search Business Service Interface.
@@ -34,16 +38,16 @@ public interface HpcDataSearchBusService
 //    public HpcCollectionListDTO getCollections(List<HpcMetadataQuery> metadataQueries,
 //    		                                   boolean detailedResponse, int page) 
 //    		                                  throws HpcException;
-//    /**
-//     * Get Collections by compound metadata query.
-//     *
-//     * @param compoundMetadataQueryDTO The compound metadata query DTO.
-//     * @return A list of HpcCollectionDTO
-//     * 
-//     * @throws HpcException
-//     */
-//    public HpcCollectionListDTO getCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
-//    		                                  throws HpcException;
+    /**
+     * Get Collections by compound metadata query.
+     *
+     * @param compoundMetadataQueryDTO The compound metadata query DTO.
+     * @return A list of HpcCollectionDTO
+     * 
+     * @throws HpcException
+     */
+    public HpcCollectionListDTO getCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
+    		                                  throws HpcException;
 //    
 //    /**
 //     * Get Collections by named query.

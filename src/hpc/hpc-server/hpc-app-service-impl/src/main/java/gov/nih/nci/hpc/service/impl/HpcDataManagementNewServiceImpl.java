@@ -207,9 +207,8 @@ public class HpcDataManagementNewServiceImpl implements HpcDataManagementNewServ
     	String validationCollectionPath = dataObjectRegistration ? 
     			                          path.substring(0, path.lastIndexOf('/')) : path;
     	validationCollectionPath = dataManagementProxy.getAbsolutePath(validationCollectionPath);
-    	validationCollectionPath = validationCollectionPath.substring(
-    			                                       dataManagementProxy.getBasePath().length() + 1, 
-    			                                       validationCollectionPath.length());
+    	validationCollectionPath = dataManagementProxy.getRelativePath(validationCollectionPath);
+    	validationCollectionPath = validationCollectionPath.substring(1, validationCollectionPath.length());
     	
     	// Build the collection path types list.
     	List<String> collectionPathTypes = new ArrayList<>();
