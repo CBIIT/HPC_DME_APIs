@@ -38,8 +38,12 @@
 				<xsd:element name="selfMetadataEntries" 
 			             type="hpc-domain-metadata:HpcMetadataEntry" 
 				         maxOccurs="unbounded" />
+				<!--  TODO: REMOVE -->
 				<xsd:element name="parentMetadataEntries" 
 			             type="hpc-domain-metadata:HpcMetadataEntry" 
+				         maxOccurs="unbounded" />
+				<xsd:element name="hierarchicalMetadataEntries" 
+			             type="hpc-domain-metadata:HpcHierarchicalMetadataEntry" 
 				         maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>

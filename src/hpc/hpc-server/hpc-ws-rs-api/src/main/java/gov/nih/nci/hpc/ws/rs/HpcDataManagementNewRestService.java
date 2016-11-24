@@ -11,26 +11,17 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 
-import java.io.InputStream;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
 /**
  * <p>
@@ -58,17 +49,17 @@ public interface HpcDataManagementNewRestService
 	public Response registerCollection(@PathParam("path") String path,
 			                           List<HpcMetadataEntry> metadataEntries);
 	
-//    /**
-//     * GET Collection.
-//     *
-//     * @param path The collection path.
-//     * @return Response The REST service response.
-//     */
-//	@GET
-//	@Path("/collection/{path:.*}")
-//	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-//	public Response getCollection(@PathParam("path") String path);
-//	
+    /**
+     * GET Collection.
+     *
+     * @param path The collection path.
+     * @return Response The REST service response.
+     */
+	@GET
+	@Path("/collection/{path:.*}")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getCollection(@PathParam("path") String path);
+	
 //    /**
 //     * PUT Data object registration request.
 //     *
