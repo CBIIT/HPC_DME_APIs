@@ -12,16 +12,8 @@ package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import java.io.File;
 import java.util.List;
 
 /**
@@ -49,15 +41,15 @@ public interface HpcDataManagementNewBusService
     		                          List<HpcMetadataEntry> metadataEntries) 
     		                         throws HpcException;
     
-//    /**
-//     * Get Collection.
-//     *
-//     * @param path The collection's path.
-//     * @return A HpcCollectionDTO
-//     * 
-//     * @throws HpcException
-//     */
-//    public HpcCollectionDTO getCollection(String path) throws HpcException;
+    /**
+     * Get Collection.
+     *
+     * @param path The collection's path.
+     * @return A HpcCollectionDTO
+     * 
+     * @throws HpcException
+     */
+    public HpcCollectionDTO getCollection(String path) throws HpcException;
 //    
 //    /**
 //     * Register a Data object.

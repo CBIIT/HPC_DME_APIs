@@ -10,10 +10,10 @@
 
 package gov.nih.nci.hpc.service;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.exception.HpcException;
-
 
 /**
  * <p>
@@ -81,6 +81,16 @@ public interface HpcDataManagementNewService
     public void validateHierarchy(String path, String doc,
     		                      boolean dataObjectRegistration) 
     		                     throws HpcException;
+    
+    /**
+     * Get collection by its path.
+     *
+     * @param path The collection's path.
+     * @return HpcCollection.
+     * 
+     * @throws HpcException
+     */
+    public HpcCollection getCollection(String path) throws HpcException;
 }
 
  
