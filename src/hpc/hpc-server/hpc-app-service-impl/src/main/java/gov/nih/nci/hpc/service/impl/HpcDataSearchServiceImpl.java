@@ -10,11 +10,20 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidCompoundMetadataQuery;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueryLevelFilter;
+import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataSearchService;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -35,6 +44,14 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     // Instance members
     //---------------------------------------------------------------------//
 
+	// Metadata DAO.
+	@Autowired
+	private HpcMetadataDAO metadataDAO = null;
+	
+    // The Data Management Proxy instance.
+	@Autowired
+    private HpcDataManagementProxy dataManagementProxy = null;
+	
 	// The max page size of search results.
 	private int searchResultsPageSize = 0;
 	
@@ -89,8 +106,67 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     // HpcDataSearchService Interface Implementation
     //---------------------------------------------------------------------//  
 
+    @Override
+    public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page) 
+    		                              throws HpcException
+    {
+       	if(!isValidCompoundMetadataQuery(compoundMetadataQuery)) {
+           throw new HpcException("Invalid or null metadata query", 
+        			              HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+       	
+    	// Use the hierarchical metadata views to perform the search.
+       	String dataManagementUsername = 
+       			   HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+       	return toRelativePaths(metadataDAO.getCollectionPaths(
+       			                              compoundMetadataQuery, dataManagementUsername,
+       	 	                                  getOffset(page), searchResultsPageSize,
+       			                              defaultCollectionLevelFilter));
+    }
+    
+    @Override
+    public int getSearchResultsPageSize()
+    {
+    	return searchResultsPageSize;
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
 	
+    /**
+     * Calculate search offset by requested page.
+     *
+     * @param page The requested page.
+     * @return The calculated offset
+     * @throws HpcException if the page is invalid.
+     * 
+     */
+    private int getOffset(int page) throws HpcException
+    {
+    	if(page < 1) {
+    	   throw new HpcException("Invalid search results page: " + page,
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	return (page - 1) * searchResultsPageSize;
+    }
+    
+    /**
+     * Convert a list of absolute paths, to relative paths.
+     *
+     * @param paths The list of absolute paths.
+     * @return List of relative paths.
+     * 
+     */
+    private List<String> toRelativePaths(List<String> paths) 
+    {
+    	List<String> relativePaths = new ArrayList<>();
+    	for(String path : paths) {
+    		relativePaths.add(dataManagementProxy.getRelativePath(path));
+    	}
+    	
+    	return relativePaths;
+    }
+    
 }
