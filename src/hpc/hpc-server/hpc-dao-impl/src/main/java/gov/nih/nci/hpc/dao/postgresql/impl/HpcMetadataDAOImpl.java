@@ -139,11 +139,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	
 	private static final String GET_COLLECTION_METADATA_SQL = 
 			"select meta_attr_name,  meta_attr_value, level " + 
-	        "from public.\"r_coll_hierarchy_meta_main\" where object_path = ? ";
+	        "from public.\"r_coll_hierarchy_meta_main\" where object_path = ? and level >= ? ";
 	
 	private static final String GET_DATA_OBJECT_METADATA_SQL = 
 			"select meta_attr_name, meta_attr_value, level " + 
-	        "from public.\"r_data_hierarchy_meta_main\" where object_path = ? ";
+	        "from public.\"r_data_hierarchy_meta_main\" where object_path = ? and level >= ? ";
 	
 	private static final String REFRESH_VIEW_SQL = "refresh materialized view concurrently";
 	
@@ -311,10 +311,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     }
 	
     @Override
-    public List<HpcHierarchicalMetadataEntry> getCollectionMetadata(String path) throws HpcException
+    public List<HpcHierarchicalMetadataEntry> 
+           getCollectionMetadata(String path, int minLevel) throws HpcException
     {
 		try {
-		     return jdbcTemplate.query(GET_COLLECTION_METADATA_SQL, hierarchicalMetadataEntryRowMapper, path);
+		     return jdbcTemplate.query(GET_COLLECTION_METADATA_SQL, hierarchicalMetadataEntryRowMapper, 
+		    		                   path, minLevel);
 		     
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get collection hierarchical metadata: " + 
@@ -324,10 +326,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     }
     
     @Override
-    public List<HpcHierarchicalMetadataEntry> getDataObjectMetadata(String path) throws HpcException
+    public List<HpcHierarchicalMetadataEntry> 
+           getDataObjectMetadata(String path, int minLevel) throws HpcException
     {
 		try {
-		     return jdbcTemplate.query(GET_DATA_OBJECT_METADATA_SQL, hierarchicalMetadataEntryRowMapper, path);
+		     return jdbcTemplate.query(GET_DATA_OBJECT_METADATA_SQL, hierarchicalMetadataEntryRowMapper, 
+		    		                   path, minLevel);
 		     
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get data object hierarchical metadata: " + 

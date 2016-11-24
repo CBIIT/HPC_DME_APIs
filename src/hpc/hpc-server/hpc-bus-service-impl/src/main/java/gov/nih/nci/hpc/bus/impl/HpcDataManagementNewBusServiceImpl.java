@@ -11,8 +11,11 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementNewBusService;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementNewService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
@@ -118,6 +121,33 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
     	}
     	
     	return created;
+    }
+    
+    @Override
+    public HpcCollectionDTO getCollection(String path) throws HpcException
+    {
+    	logger.info("Invoking getCollection(String): " + path);
+    	
+    	// Input validation.
+    	if(path == null) {
+    	   throw new HpcException("Null collection path",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	HpcCollection collection = dataManagementService.getCollection(path);
+    	if(collection == null) {
+      	   return null;
+      	}
+     	
+     	// Get the metadata.
+     	HpcMetadataEntries metadataEntries = 
+     	   metadataService.getCollectionMetadataEntries(collection.getAbsolutePath());
+ 		
+     	HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
+     	collectionDTO.setCollection(collection);
+        collectionDTO.setMetadataEntries(metadataEntries);
+     	
+     	return collectionDTO;
     }
     
     //---------------------------------------------------------------------//

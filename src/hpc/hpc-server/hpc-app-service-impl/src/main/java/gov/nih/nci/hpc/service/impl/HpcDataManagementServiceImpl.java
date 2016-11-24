@@ -851,7 +851,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	// Construct HpcMetadataEntries based on the hierarchichal metadata policy.
     	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
     	   return fromHierarchicalMetadataEntries(
-    			      metadataDAO.getCollectionMetadata(dataManagementProxy.getAbsolutePath(path)));
+    			      metadataDAO.getCollectionMetadata(dataManagementProxy.getAbsolutePath(path), 1));
     	} else {
                 return fromMetadataEntries(dataManagementProxy.getCollectionMetadata(getAuthenticatedToken(), path));
     	}        	    
@@ -989,7 +989,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	// Construct HpcMetadataEntries based on the hierarchichal metadata policy.
     	if(hierarchicalMetadataPolicy.equals(METADATA_VIEWS_POLICY)) {
     	   return fromHierarchicalMetadataEntries(
-    			      metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path)));
+    			      metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path), 1));
     	} else {
                 return fromMetadataEntries(dataManagementProxy.getDataObjectMetadata(getAuthenticatedToken(), path));
     	}        	    

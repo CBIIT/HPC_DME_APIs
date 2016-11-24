@@ -24,10 +24,12 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_NAME_A
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_SIZE_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
+import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
@@ -81,6 +83,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
 	// Key Generator.
 	@Autowired
 	private HpcKeyGenerator keyGenerator = null;
+	
+	// Metadata DAO.
+	@Autowired
+	private HpcMetadataDAO metadataDAO = null;
 	
     // The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -252,6 +258,23 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     	}
     	
     	return metadataMap;
+    }
+    
+    @Override
+    public HpcMetadataEntries getCollectionMetadataEntries(String path) throws HpcException
+    {
+    	HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
+    	
+    	// Get the metadata associated with the collection itself.
+    	metadataEntries.getSelfMetadataEntries().addAll(
+    			dataManagementProxy.getCollectionMetadata(
+    					               dataManagementAuthenticator.getAuthenticatedToken(), path));
+    	
+    	// Get the hierarchical metadata.
+    	metadataEntries.getHierarchicalMetadataEntries().addAll(
+    			metadataDAO.getCollectionMetadata(dataManagementProxy.getAbsolutePath(path), 2));
+    	
+    	return metadataEntries;
     }
     
     //---------------------------------------------------------------------//
