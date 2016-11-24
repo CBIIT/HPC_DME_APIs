@@ -271,7 +271,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     					               dataManagementAuthenticator.getAuthenticatedToken(), path));
     	
     	// Get the hierarchical metadata.
-    	metadataEntries.getHierarchicalMetadataEntries().addAll(
+    	metadataEntries.getParentMetadataEntries().addAll(
     			metadataDAO.getCollectionMetadata(dataManagementProxy.getAbsolutePath(path), 2));
     	
     	return metadataEntries;
