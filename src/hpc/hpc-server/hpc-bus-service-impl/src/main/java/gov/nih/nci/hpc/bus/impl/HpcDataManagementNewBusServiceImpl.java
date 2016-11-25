@@ -12,13 +12,17 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementNewBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementNewService;
@@ -244,6 +248,37 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
 	    return created;
     }
     
+    @Override
+    public HpcDataObjectDTO getDataObject(String path) throws HpcException
+    {
+    	logger.info("Invoking getDataObject(String): " + path);
+    	
+    	// Input validation.
+    	if(path == null) {
+    	   throw new HpcException("Null data object path",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Get the data object.
+    	HpcDataObject dataObject = dataManagementService.getDataObject(path);
+    	if(dataObject == null) {
+      	   return null;
+      	}
+    	
+    	// Get the metadata for this data object.
+    	HpcMetadataEntries metadataEntries = 
+    		               metadataService.getDataObjectMetadataEntries(dataObject.getAbsolutePath());
+    	String transferPercentCompletion = getDataTransferUploadPercentCompletion(
+		               metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries()));
+    		
+    	HpcDataObjectDTO dataObjectDTO = new HpcDataObjectDTO();
+    	dataObjectDTO.setDataObject(dataObject);
+    	dataObjectDTO.setMetadataEntries(metadataEntries);
+    	dataObjectDTO.setTransferPercentCompletion(transferPercentCompletion);
+    	
+    	return dataObjectDTO;
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
@@ -269,6 +304,47 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
 		}
 		
 		return null;
+	}
+	
+    /** 
+     * Calculate the data transfer % completion if transfer is in progress
+     * 
+     * @param dataObject The data object to check the timeout for.
+     * 
+     * @return The transfer % completion if transfer is in progress, or null otherwise.
+     *         e.g 86%.
+     */
+	private String getDataTransferUploadPercentCompletion(
+			          HpcSystemGeneratedMetadata systemGeneratedMetadata)
+	{
+		// Get the transfer status, transfer request id and data-object size from the metadata entries.
+		HpcDataTransferUploadStatus transferStatus = systemGeneratedMetadata.getDataTransferStatus();
+		if(transferStatus == null || 
+		   (!transferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE) &&
+			!transferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE))) {
+		   // data transfer not in progress.
+		   return null;
+		} 
+		
+		String dataTransferRequestId = systemGeneratedMetadata.getDataTransferRequestId();
+		Long sourceSize = systemGeneratedMetadata.getSourceSize();
+		
+		if(dataTransferRequestId == null || sourceSize == null || sourceSize <= 0) {
+		   return "Unknown";	
+		}
+		
+		// Get the size of the data transferred so far.
+		long transferSize = 0;
+		try {
+		     transferSize = dataTransferService.getDataTransferSize(
+		    		                    systemGeneratedMetadata.getDataTransferType(),
+		    		                    dataTransferRequestId);
+		} catch(HpcException e) {
+			    logger.error("Failed to get data transfer size: " + dataTransferRequestId);
+			    return "Unknown";
+		}
+		
+		return String.valueOf((transferSize * 100L) / sourceSize) + '%';
 	}
 }
 

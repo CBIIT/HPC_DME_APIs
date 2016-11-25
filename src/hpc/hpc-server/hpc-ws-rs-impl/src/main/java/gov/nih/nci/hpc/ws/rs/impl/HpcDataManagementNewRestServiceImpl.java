@@ -15,6 +15,8 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementNewRestService;
@@ -171,6 +173,30 @@ public class HpcDataManagementNewRestServiceImpl extends HpcRestServiceImpl
 				return okResponse(null, false);
 		}
 	}
+    
+    @Override
+    public Response getDataObject(String path)
+    {	
+    	long start = System.currentTimeMillis();
+    	path = toAbsolutePath(path);
+    	logger.info("Invoking RS: GET /dataObject/" + path);
+    	
+    	HpcDataObjectListDTO dataObjects = new HpcDataObjectListDTO();
+		try {
+			 HpcDataObjectDTO dataObject = dataManagementBusService.getDataObject(path);
+			 if(dataObject != null) {
+				dataObjects.getDataObjects().add(dataObject);
+			 }
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /dataObjects/" + path + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " getDataObject: Total time - " + path);
+		return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null, true);
+    }
     
     //---------------------------------------------------------------------//
     // Helper Methods
