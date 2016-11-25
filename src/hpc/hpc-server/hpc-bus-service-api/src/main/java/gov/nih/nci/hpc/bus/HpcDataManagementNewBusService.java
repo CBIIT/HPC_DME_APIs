@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -71,16 +72,16 @@ public interface HpcDataManagementNewBusService
     		                          File dataObjectFile) 
     		                         throws HpcException;
     
-//    /**
-//     * Get Data Object.
-//     *
-//     * @param path The data object's path.
-//     * @return A HpcDataObjectDTO
-//     * 
-//     * @throws HpcException
-//     */
-//    public HpcDataObjectDTO getDataObject(String path) throws HpcException;
-//    
+    /**
+     * Get Data Object.
+     *
+     * @param path The data object's path.
+     * @return A HpcDataObjectDTO
+     * 
+     * @throws HpcException
+     */
+    public HpcDataObjectDTO getDataObject(String path) throws HpcException;
+    
 //    /**
 //     * Download Data Object.
 //     *

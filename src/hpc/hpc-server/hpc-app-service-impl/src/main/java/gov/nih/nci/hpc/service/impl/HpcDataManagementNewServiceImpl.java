@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
@@ -265,6 +266,17 @@ public class HpcDataManagementNewServiceImpl implements HpcDataManagementNewServ
     	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
     	if(dataManagementProxy.getPathAttributes(authenticatedToken, path).getIsDirectory()) {
     	   return dataManagementProxy.getCollection(authenticatedToken, path);
+    	}
+    	
+    	return null;
+    }
+    
+    @Override
+    public HpcDataObject getDataObject(String path) throws HpcException
+    {
+    	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
+    	if(dataManagementProxy.getPathAttributes(authenticatedToken, path).getIsFile()) {
+    	   return dataManagementProxy.getDataObject(authenticatedToken, path);
     	}
     	
     	return null;

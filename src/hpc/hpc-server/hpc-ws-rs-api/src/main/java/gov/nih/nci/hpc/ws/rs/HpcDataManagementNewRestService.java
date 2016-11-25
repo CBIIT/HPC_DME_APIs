@@ -83,17 +83,17 @@ public interface HpcDataManagementNewRestService
 			        @Multipart(value = "dataObject", type = "application/octet-stream", required = false)
 			        InputStream dataObjectInputStream);
 
-//    /**
-//     * GET Data Object.
-//     *
-//     * @param path The data object path.
-//     * @return Response The REST service response.
-//     */
-//	@GET
-//	@Path("/dataObject/{path:.*}")
-//	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-//	public Response getDataObject(@PathParam("path") String path);
-//	
+    /**
+     * GET Data Object.
+     *
+     * @param path The data object path.
+     * @return Response The REST service response.
+     */
+	@GET
+	@Path("/dataObject/{path:.*}")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getDataObject(@PathParam("path") String path);
+	
 //    /**
 //     * POST Download Data Object.
 //     *
