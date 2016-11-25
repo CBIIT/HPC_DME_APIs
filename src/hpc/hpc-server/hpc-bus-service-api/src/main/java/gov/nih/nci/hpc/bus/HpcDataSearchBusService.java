@@ -15,6 +15,7 @@ import java.util.List;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -51,20 +52,20 @@ public interface HpcDataSearchBusService
      */
     public HpcCollectionListDTO getCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
     		                                  throws HpcException;
-//    
-//    /**
-//     * Get Collections by named query.
-//     *
-//     * @param queryName The query name.
-//     * @param detailedResponse If set to true, return entity details (attributes + metadata).
-//     * @param page The requested results page.
-//     * @return A list of HpcCollectionDTO
-//     * 
-//     * @throws HpcException
-//     */
-//    public HpcCollectionListDTO getCollections(String queryName, boolean detailedResponse,
-//    		                                   int page) 
-//    		                                  throws HpcException;
+    
+    /**
+     * Get Collections by named query.
+     *
+     * @param queryName The query name.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
+     * @return A list of HpcCollectionDTO
+     * 
+     * @throws HpcException
+     */
+    public HpcCollectionListDTO getCollections(String queryName, boolean detailedResponse,
+    		                                   int page) 
+    		                                  throws HpcException;
 //    
 //    /**
 //     * Get data objects by metadata query.
@@ -115,33 +116,32 @@ public interface HpcDataSearchBusService
 //	          getMetadataAttributes(Integer level, HpcMetadataQueryOperator levelOperator) 
 //			                       throws HpcException;
 //	
-//    /**
-//     * Save a query for a user.
-//     *
-//     * @param queryName The query name.
-//     * @param compoundMetadataQueryDTO The compound query DTO.
-//     * @throws HpcException
-//     */
-//    public void saveQuery(String queryName,
-//    		              HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
-//    		             throws HpcException;
-//    
-//    /**
-//     * Delete a query.
-//     *
-//     * @param queryName The query name.
-//     * @throws HpcException
-//     */
-//    public void deleteQuery(String queryName) throws HpcException;
-//
-//    /**
-//     * Get all saved queries.
-//     *
-//     * @return HpcNamedCompoundMetadataQueryListDTO 
-//     * @throws HpcException
-//     */
-//    public HpcNamedCompoundMetadataQueryListDTO getQueries() throws HpcException;
+    /**
+     * Save a query for a user.
+     *
+     * @param queryName The query name.
+     * @param compoundMetadataQueryDTO The compound query DTO.
+     * @throws HpcException
+     */
+    public void saveQuery(String queryName,
+    		              HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
+    		             throws HpcException;
+    
+    /**
+     * Delete a query.
+     *
+     * @param queryName The query name.
+     * @throws HpcException
+     */
+    public void deleteQuery(String queryName) throws HpcException;
 
+    /**
+     * Get all saved queries.
+     *
+     * @return HpcNamedCompoundMetadataQueryListDTO 
+     * @throws HpcException
+     */
+    public HpcNamedCompoundMetadataQueryListDTO getQueries() throws HpcException;
 }
 
  
