@@ -9,8 +9,6 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.dto.user.HpcUserDTO;
-
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +17,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 
 /**
  * <p>
@@ -33,19 +33,23 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @EnableAutoConfiguration
 @RequestMapping("/dashboard")
 public class HpcDashBoardController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.dataset}")
+	@Value("${gov.nih.nci.hpc.server.dataObject}")
 	private String serviceURL;
-	@Value("${gov.nih.nci.hpc.server.dataset}")
+	@Value("${gov.nih.nci.hpc.server.dataObject}")
 	private String datasetURL;
-	@Value("${gov.nih.nci.hpc.server.project.query.registrar}")
-	private String projectURL;
+	@Value("${gov.nih.nci.hpc.server.collection}")
+	private String collectionURL;
+	@Value("${gov.nih.nci.hpc.server.query}")
+	private String queryURL;
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(Model model, HttpSession session) {
-		model.addAttribute("datasetURL", datasetURL);
-		model.addAttribute("projectURL", projectURL);
-		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
-		if (user == null) {
+		System.out.println("queryURL "+queryURL);
+		model.addAttribute("queryURL", queryURL);
+		model.addAttribute("collectionURL", collectionURL);
+		String userToken = (String) session.getAttribute("hpcUserToken");
+		session.removeAttribute("hierarchy");
+		if (userToken == null) {
 			return "redirect:/";
 		}
 

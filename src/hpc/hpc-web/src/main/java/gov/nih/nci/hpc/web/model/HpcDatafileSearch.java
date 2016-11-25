@@ -1,6 +1,6 @@
 package gov.nih.nci.hpc.web.model;
 
-public class HpcDatasetSearch {
+public class HpcDatafileSearch {
 	private String id;
 	private String datasetName;
 	private String description;

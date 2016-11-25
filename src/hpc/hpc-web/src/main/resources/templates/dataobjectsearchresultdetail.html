@@ -15,7 +15,7 @@
        <link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css" type="text/css"/>
 <script th:inline="javascript">
 /*<![CDATA[*/
-    var results = "[[${datasetsearchresults}]]";
+    var results = "[[${searchresults}]]";
 /*]]>*/
 </script>
 
@@ -23,24 +23,18 @@
 var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.grouping', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns']);
 
 app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConstants', function ($scope, $http, $interval, uiGridGroupingConstants ) {
-  $scope.gridOptions1 = {
+
+	$scope.gridOptions1 = {
     enableSorting: true,
     enableFiltering: true,
     paginationPageSize: 25,
-    treeRowHeaderAlwaysVisible: false,
     columnDefs: [
-      { field: 'id', width:250, displayName: 'Dataset Id', grouping: { groupPriority: 0 }, cellTemplate: '<div><div ng-if="!col.grouping || col.grouping.groupPriority === undefined || col.grouping.groupPriority === null || ( row.groupHeader &amp;&amp; col.grouping.groupPriority === row.treeLevel )" class="ui-grid-cell-contents" title="TOOLTIP"><a href="../dataset?id={{grid.appScope.getId(grid, row)}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div></div>'  },
-      { field: 'datasetName', width:100, displayName : 'Dataset Name' },
-      { field: 'investigatorId', width:100, displayName : 'Investigator' },
-      { field: 'createdOn', width:100, displayName : 'Created On'},
-      { field: 'registarId', width:100, displayName : 'Registered By'},
-      { field: 'fundingOrganization', width:150, displayName : 'Funded By'},
-      { field: 'creatorName', width:150, displayName : 'Created By'},
-      { field: 'fileId', width:150, displayName : 'File Id'},
-      { field: 'fileType', width:100, displayName : 'File Type'},
-      { field: 'labBranch', width:100, displayName : 'Lab/Branch'}
-      
-    ],
+                 { field: 'path', width:300, displayName: 'Path', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="../collection?path={{COL_FIELD CUSTOM_FILTERS}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
+                 { field: 'uuid', width:200, displayName : 'UUID' },
+                 { field: 'registeredBy', width:200, displayName : 'Registered by' },
+                 { field: 'createdOn', width:200, displayName : 'Created On'}
+               ],
+    treeRowHeaderAlwaysVisible: false,
     onRegisterApi: function( gridApi ) {
       $scope.grid1Api = gridApi;
     }
@@ -79,7 +73,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 }
 	</style>        
       </head>
-      <body th:attr="ng-init='searchresults=\'' + ${datasetsearchresults} +'\''">
+      <body th:attr="ng-init='searchresults=\'' + ${searchresults} +'\''">
  <section id="container" class="">
   <div th:include="header :: header"></div>
       <!--main content start-->
@@ -90,7 +84,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 				<div class="col-lg-12">
 					<h3 class="page-header"><i class="fa fa-laptop"></i> Dashboard </h3>
 					<ol class="breadcrumb">
-						<li><i class="fa fa-home"></i><a th:href="@{/dashboard}">Dashboard </a> / <a th:href="@{/searchdataset}">Search</a></li>
+						<li><i class="fa fa-home"></i><a th:href="@{/dashboard}">Dashboard </a> / <a th:href="@{/search}">Search</a></li>
 					</ol>
 				</div>
 			 </div>
@@ -100,7 +94,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 				<div class="col-lg-12 col-md-12">
 					<div class="panel panel-default">
 						<div class="panel-heading">
-							<h2><i class="fa fa-list-alt red"></i><strong>Datasets</strong></h2>
+							<h2><i class="fa fa-list-alt red"></i><strong>Search Results</strong></h2>
 						</div>
 						<!--panel-body start-->
 						<div class="panel-body">

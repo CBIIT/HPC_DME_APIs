@@ -8,7 +8,7 @@
     <link rel="shortcut icon" href="img/favicon.png"/>
 
 
-    <title>HPC Data Management</title>
+    <title>HPC Data Management Environment</title>
 
     <link rel="stylesheet" type="text/css" href="css/ng-grid.css" />
     <link rel="stylesheet" type="text/css" href="css/style.css" />
@@ -33,14 +33,7 @@
       <script src="js/lte-ie7.js"></script>
     <![endif]-->
   
-	<script type="text/javascript">
-	function datasets($scope, $http) {
-	    $http.get('http://localhost:8080/dataset/1').
-	        success(function(data) {
-	            $scope.datasets = data;
-	        });
-	}
-	</script>
+	
 	<style>
 	/*style.css*/
 .gridStyle {
@@ -49,7 +42,7 @@
 }
 	</style>
 </head>
-  <body ng-controller="MyCtrl" th:attr="ng-init='userId=\'' + ${session.hpcUser.nciAccount.userId} + '\'; projectURL=\'' + ${projectURL} +'\'; datasetURL=\'' + ${datasetURL} +'\''">
+  <body ng-controller="MyCtrl" th:attr="ng-init='userId=\'' + ${session.hpcUser.nciAccount.userId} + '\'; queryURL=\'' + ${queryURL} +'\'; collectionURL=\'' + ${collectionURL} +'\''">
   
   <!-- container section start -->
   <section id="container" class="">
@@ -72,7 +65,7 @@
 				<div class="col-lg-9 col-md-12">
 					<div class="panel panel-default">
 						<div class="panel-heading">
-							<h2><i class="fa fa-list-alt red"></i><strong>My Projects</strong></h2>
+							<h2><i class="fa fa-list-alt red"></i><strong>My Searches</strong></h2>
 						</div>
 						<!--panel-body start-->
 						<div class="panel-body">
@@ -90,7 +83,7 @@
 				<div class="col-lg-9 col-md-12">
 					<div class="panel panel-default">
 						<div class="panel-heading">
-							<h2><i class="fa fa-list-alt red"></i><strong>My Datasets</strong></h2>
+							<h2><i class="fa fa-list-alt red"></i><strong>My Notifications</strong></h2>
 						</div>
 						<!--panel-body start-->
 						<div class="panel-body">
@@ -119,7 +112,6 @@
     <script src="../bower_components/angular-route/angular-route.js"></script>
     <script src="../bower_components/angular-sanitize/angular-sanitize.js"></script>
     <script src="../bower_components/angular-touch/angular-touch.js"></script>
-    <script src="../bower_components/fastclick/lib/fastclick.js"></script>
     <script src="../bower_components/ng-grid/ng-grid-2.0.14.debug.js"></script>
     <script type="text/javascript" src="js/hpcDashboard.js"></script>
     <!-- bootstrap -->

@@ -1,7 +1,5 @@
 package gov.nih.nci.hpc.web.util;
 
-import gov.nih.nci.hpc.domain.metadata.HpcProjectType;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

@@ -17,12 +17,6 @@ public class HpcWebUser {
 	
 	private String nciUserPasswd;
 	
-	@NotEmpty(message="Globus User Id is required")
-	private String globusUserId;
-	
-	@NotEmpty(message="Globus password is required")
-	private String globusPasswd;
-
 	public String getFirstName() {
 		return firstName;
 	}
@@ -60,21 +54,5 @@ public class HpcWebUser {
 
 	public void setNciUserId(String nciUserId) {
 		this.nciUserId = nciUserId;
-	}
-	
-	public String getGlobusUserId() {
-		return globusUserId;
-	}
-	
-	public void setGlobusUserId(String globusUserId) {
-		this.globusUserId = globusUserId;
-	}
-	
-	public String getGlobusPasswd() {
-		return globusPasswd;
-	}
-	
-	public void setGlobusPasswd(String globusPasswd) {
-		this.globusPasswd = globusPasswd;
 	}
 }
