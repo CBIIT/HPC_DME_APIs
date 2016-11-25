@@ -82,7 +82,7 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
     			    metadataEntries);
     	
     	// Input validation.
-    	if(path == null || path.isEmpty() || metadataEntries == null || metadataEntries.size() == 0) {
+    	if(path == null || path.isEmpty() || metadataEntries == null || metadataEntries.isEmpty()) {
     	   throw new HpcException("Null path or metadata entries",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
