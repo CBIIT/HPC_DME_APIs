@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEntries;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE;
@@ -277,6 +278,127 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     	return metadataEntries;
     }
     
+    @Override
+    public void addMetadataToDataObject(String path, 
+    		                            List<HpcMetadataEntry> metadataEntries) 
+    		                           throws HpcException
+    {
+       	// Input validation.
+       	if(path == null || !isValidMetadataEntries(metadataEntries)) {
+       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+       	// Validate Metadata.
+       	metadataValidator.validateDataObjectMetadata(null, metadataEntries);
+       	
+       	
+       	// Add Metadata to the DM system.
+       	dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(), 
+       			                                    path, metadataEntries);
+    }
+    
+    @Override
+    public void addSystemGeneratedMetadataToDataObject(String path, 
+                                                       HpcFileLocation archiveLocation,
+    		                                           HpcFileLocation sourceLocation,
+    		                                           String dataTransferRequestId,
+    		                                           HpcDataTransferUploadStatus dataTransferStatus,
+    		                                           HpcDataTransferType dataTransferType,
+    		                                           Long sourceSize, String callerObjectId) 
+                                                      throws HpcException
+    {
+       	// Input validation.
+       	if(path == null || dataTransferStatus == null || dataTransferType == null) {
+       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
+		                          HpcErrorType.INVALID_REQUEST_INPUT);	
+       	}
+       	if(!isValidFileLocation(archiveLocation) ||
+       	   (sourceLocation != null && !isValidFileLocation(sourceLocation))) {
+       	   throw new HpcException("Invalid source/archive location", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+       	List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+       	
+       	// Generate a data-object ID and add it as metadata.
+       	metadataEntries.add(generateIdMetadata());
+       	
+       	// Create and add the registrar ID, name and DOC metadata.
+       	metadataEntries.addAll(generateRegistrarMetadata());
+       	
+       	if(sourceLocation != null) {
+       	   // Create the source location file-container-id metadata.
+       	   addMetadataEntry(metadataEntries,
+       			            toMetadataEntry(SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE, 
+       			                            sourceLocation.getFileContainerId()));
+       	
+       	   // Create the source location file-id metadata.
+       	   addMetadataEntry(metadataEntries,
+       			            toMetadataEntry(SOURCE_LOCATION_FILE_ID_ATTRIBUTE, 
+       			                            sourceLocation.getFileId()));
+       	}
+       	
+       	// Create the archive location file-container-id metadata.
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE, 
+       			                         archiveLocation.getFileContainerId()));
+       	
+       	// Create the archive location file-id metadata.
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE, 
+       			                         archiveLocation.getFileId()));
+       	
+   	    // Create the Data Transfer Request ID metadata.
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(DATA_TRANSFER_REQUEST_ID_ATTRIBUTE, 
+       			                         dataTransferRequestId));
+       	
+       	// Create the Data Transfer Status metadata.
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, 
+       		                             dataTransferStatus.value()));
+       	
+       	// Create the Data Transfer Type metadata.
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(DATA_TRANSFER_TYPE_ATTRIBUTE, 
+       		                             dataTransferType.value()));
+       	
+       	// Create the Source File Size metadata.
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(SOURCE_FILE_SIZE_ATTRIBUTE, 
+       			                         sourceSize));
+       	
+        // Create the Caller Object ID metadata.
+        addMetadataEntry(metadataEntries,
+        		         toMetadataEntry(CALLER_OBJECT_ID_ATTRIBUTE, 
+        	                             callerObjectId));
+        
+       	// Add Metadata to the DM system.
+       	dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(), 
+       			                                    path, metadataEntries);    	
+    }
+    
+    @Override
+    public void updateDataObjectMetadata(String path, 
+    		                             List<HpcMetadataEntry> metadataEntries) 
+    		                            throws HpcException
+    {
+       	// Input validation.
+       	if(path == null || !isValidMetadataEntries(metadataEntries)) {
+       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+       	// Validate Metadata.
+       	metadataValidator.validateDataObjectMetadata(getDataObjectMetadata(path),
+       			                                     metadataEntries);
+       	
+       	// Update Metadata.
+       	dataManagementProxy.updateDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(),
+       			                                     path, metadataEntries);
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -376,5 +498,37 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
 	    entry.setValue(value);
 	    entry.setUnit("");
 	    return entry;
+    }
+    
+    /**
+     * Generate a metadata entry from attribute/value pair.
+     * 
+     * @param attribute The metadata entry attribute.
+     * @param value The metadata entry value.
+     * @return HpcMetadataEntry instance
+     */
+    private HpcMetadataEntry toMetadataEntry(String attribute, Long value)
+    {
+    	return toMetadataEntry(attribute, value != null ? String.valueOf(value) : null);
+    }
+    
+    /**
+     * Get metadata of a data object.
+     *
+     * @param path The data object's path.
+     * @return HpcMetadataEntries The data object's metadata entries.
+     * 
+     * @throws HpcException
+     */
+    private List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException
+    {
+       	// Input validation.
+       	if(path == null) {
+       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+    	return dataManagementProxy.getDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(),
+                                                         path);
     }
 }
