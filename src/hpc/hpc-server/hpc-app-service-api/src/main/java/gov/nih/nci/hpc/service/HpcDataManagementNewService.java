@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -101,6 +102,16 @@ public interface HpcDataManagementNewService
      * @throws HpcException
      */
     public HpcCollection getCollection(String path) throws HpcException;
+    
+    /**
+     * Get data object by its path.
+     *
+     * @param path The data object's path.
+     * @return HpcDataObject.
+     * 
+     * @throws HpcException
+     */
+    public HpcDataObject getDataObject(String path) throws HpcException;
 }
 
  

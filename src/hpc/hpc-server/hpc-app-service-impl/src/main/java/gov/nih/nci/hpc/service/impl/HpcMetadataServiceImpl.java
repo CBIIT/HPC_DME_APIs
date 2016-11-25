@@ -399,6 +399,23 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        			                                     path, metadataEntries);
     }
     
+    @Override
+    public HpcMetadataEntries getDataObjectMetadataEntries(String path) throws HpcException
+    {
+    	HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
+    	
+    	// Get the metadata associated with the data object itself.
+    	metadataEntries.getSelfMetadataEntries().addAll(
+    			dataManagementProxy.getDataObjectMetadata(
+    					               dataManagementAuthenticator.getAuthenticatedToken(), path));
+    	
+    	// Get the hierarchical metadata.
+    	metadataEntries.getParentMetadataEntries().addAll(
+    			metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path), 2));
+    	
+    	return metadataEntries;
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
