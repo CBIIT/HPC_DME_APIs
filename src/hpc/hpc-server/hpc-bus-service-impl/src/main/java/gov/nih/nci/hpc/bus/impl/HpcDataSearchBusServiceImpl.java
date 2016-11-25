@@ -16,10 +16,13 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataSearchService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.util.List;
 
@@ -45,6 +48,10 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
 	// Data Search Application Service instance.
 	@Autowired
     private HpcDataSearchService dataSearchService = null;
+	
+	// Security Application Service instance.
+	@Autowired
+    private HpcSecurityService securityService = null;
 	
 	// Data Management Bus Service instance.
 	@Autowired
@@ -123,6 +130,67 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
       			                       detailedResponse, page);
     }
     
+    @Override
+    public HpcCollectionListDTO getCollections(String queryName, boolean detailedResponse, int page) 
+                                              throws HpcException
+    {
+    	logger.info("Invoking getCollections(string,boolean): " + queryName);
+    	
+    	return getCollections(toCompoundMetadataQueryDTO(queryName, detailedResponse, page));
+    }
+    
+    @Override
+    public void saveQuery(String queryName,
+    		              HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
+    		             throws HpcException
+    {
+    	logger.info("Invoking saveQuery(String, HpcCompoundMetadataQueryDTO)");
+    	
+    	// Input validation.
+    	if(queryName == null || queryName.isEmpty() ||
+           compoundMetadataQueryDTO == null) {
+    	   throw new HpcException("Null or empty queryName / compoundMetadataQueryDTO", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery = new HpcNamedCompoundMetadataQuery();
+    	namedCompoundMetadataQuery.setName(queryName);
+    	namedCompoundMetadataQuery.setCompoundQuery(compoundMetadataQueryDTO.getCompoundQuery());
+    	
+    	// Save the query.
+    	dataSearchService.saveQuery(securityService.getRequestInvoker().getNciAccount().getUserId(), 
+    			                    namedCompoundMetadataQuery);
+    }
+    
+    @Override
+    public void deleteQuery(String queryName) throws HpcException
+    {
+    	logger.info("Invoking deleteQuery(String)");
+    	
+    	// Input validation.
+    	if(queryName == null || queryName.isEmpty())  {
+    	   throw new HpcException("Null or empty nciUserId / queryName", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Delete the query.
+    	dataSearchService.deleteQuery(securityService.getRequestInvoker().getNciAccount().getUserId(), 
+    			                      queryName);
+    }
+
+    @Override
+    public HpcNamedCompoundMetadataQueryListDTO getQueries() throws HpcException
+    {
+    	logger.info("Invoking getQueries()");
+    	
+    	HpcNamedCompoundMetadataQueryListDTO queriesList = new HpcNamedCompoundMetadataQueryListDTO();
+    	queriesList.getQueries().addAll(
+    			       dataSearchService.getQueries(
+    			           securityService.getRequestInvoker().getNciAccount().getUserId()));
+    	
+    	return queriesList;
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
@@ -152,6 +220,46 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
 		collectionsDTO.setLimit(dataSearchService.getSearchResultsPageSize());
 		
 		return collectionsDTO;
+    }
+    
+    /**
+     * Construct a HpcCompoundMetadataQueryDTO from a named query.
+     *
+     * @param queryName The user query.
+     * @param detailedResponse The detailed response indicator.
+     * @param The requested results page
+     * @return HpcCompoundMetadataQueryDTO
+     * 
+     * @throws HpcException If the user query was not found
+     */
+    private HpcCompoundMetadataQueryDTO 
+               toCompoundMetadataQueryDTO(String queryName, boolean detailedResponse, 
+            		                      int page)
+                                         throws HpcException
+    {
+    	// Input validation.
+    	if(queryName == null || queryName.isEmpty()) {
+    	   throw new HpcException("Null or empty query name",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+		// Get the user query.
+		HpcNamedCompoundMetadataQuery namedCompoundQuery = 
+		   dataSearchService.getQuery(
+	                            securityService.getRequestInvoker().getNciAccount().getUserId(), 
+	                            queryName);
+		if(namedCompoundQuery == null || namedCompoundQuery.getCompoundQuery() == null) {
+		   throw new HpcException("User query not found: " + queryName,
+				                  HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		// Construct the query DTO.
+		HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO = new HpcCompoundMetadataQueryDTO();
+		compoundMetadataQueryDTO.setCompoundQuery(namedCompoundQuery.getCompoundQuery());
+		compoundMetadataQueryDTO.setDetailedResponse(detailedResponse);
+		compoundMetadataQueryDTO.setPage(page);
+		
+		return compoundMetadataQueryDTO;
     }
 }
 
