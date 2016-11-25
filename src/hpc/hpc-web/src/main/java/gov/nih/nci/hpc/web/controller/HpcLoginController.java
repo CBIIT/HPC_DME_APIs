@@ -9,9 +9,14 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
-import gov.nih.nci.hpc.dto.user.HpcUserDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.model.HpcLogin;
+import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 
 import javax.servlet.http.HttpSession;
@@ -21,7 +26,9 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.DatatypeConverter;
 
+import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
@@ -34,14 +41,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+
 import test.gov.nih.nci.hpc.web.ClientResponseLoggingFilter;
+
 /**
  * <p>
  * HPC DM User Login controller
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcUserRegistrationController.java 
+ * @version $Id: HpcUserRegistrationController.java
  */
 
 @Controller
@@ -49,103 +65,92 @@ import test.gov.nih.nci.hpc.web.ClientResponseLoggingFilter;
 @RequestMapping("/login")
 public class HpcLoginController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.user}")
-    private String serviceUserURL;
-	@Value("${gov.nih.nci.hpc.server.dataset}")
-	private String datasetURL;
-	@Value("${gov.nih.nci.hpc.server.user.authenticate.hpc}")
-	private String authenticateHpcURL;
-	@Value("${gov.nih.nci.hpc.server.user.authenticate.ldap}")
-	private String authenticateLdapURL;
-	@Value("${gov.nih.nci.hpc.login.module}")
-	private String loginModule;
-	@Value("${gov.nih.nci.hpc.server.project.query.registrar}")
-	private String projectURL;
+	private String serviceUserURL;
+	@Value("${gov.nih.nci.hpc.server.user.authenticate}")
+	private String authenticateURL;
+	@Value("${gov.nih.nci.hpc.server.collection}")
+	private String collectionURL;
+	@Value("${gov.nih.nci.hpc.server.query}")
+	private String queryURL;
 
-  @RequestMapping(method = RequestMethod.GET)
-  public String home(Model model){
-	  HpcAuthenticationRequestDTO hpcLogin = new HpcAuthenticationRequestDTO();
-	  model.addAttribute("hpcLogin", hpcLogin);
-	  model.addAttribute("ldap", loginModule.equals("ldap")?"true":"false");
-      return "index";
-  }
-
-  @RequestMapping(method = RequestMethod.POST)
-  public String login(@Valid @ModelAttribute("hpcLogin") HpcAuthenticationRequestDTO hpcLogin, BindingResult bindingResult, Model model, HttpSession session) {
-      if (bindingResult.hasErrors()) {
-          return "index";
-      }
-//      RestTemplate restTemplate = new RestTemplate(RestClient.getSSLRequestFactory());
-      RestTemplate restTemplate = new RestTemplate();
-   	  HpcUserDTO userDTO = null;
-   	  try
-	  {
-
-		  Client client = ClientBuilder.newClient().register(ClientResponseLoggingFilter.class);
-    	  String authURL = authenticateHpcURL;
-    	  if(loginModule == null || !loginModule.equals("ldap"))
-    	  {
-    	   	  URI uri = new URI(serviceUserURL+"/"+hpcLogin.getUserName());
-    		  ResponseEntity<HpcUserDTO> userEntity = restTemplate.getForEntity(uri, HpcUserDTO.class);
-    		  
-    		  userDTO = userEntity.getBody();
-    		  if(userDTO == null){
-    			  model.addAttribute("loginStatus", false);
-    			  model.addAttribute("loginOutput", "Invalid login");
-    			  ObjectError error = new ObjectError("hpcLogin", "Invalid login!");
-    			  bindingResult.addError(error);
-    			  model.addAttribute("hpcLogin", hpcLogin);
-    			  model.addAttribute("ldap", loginModule.equals("ldap")?"true":"false");
-    			  return "index";
-    		  }
-
-    	  }
-    	  else
-    	  {
-    		  authURL = authenticateLdapURL;
-			  Response res = client
-  					.target(authURL)
-  					.request()
-  					.post(Entity.entity(hpcLogin, MediaType.APPLICATION_XML));
-  			if (res.getStatus() != 200) {
-  				throw new RuntimeException("Failed : HTTP error code : "
-  						+ res.getStatus());
-  			}
-    	  }
-	  }
-	  catch(Exception e)
-	  {
-		  model.addAttribute("loginStatus", false);
-		  model.addAttribute("loginOutput", "Invalid login"+e.getMessage());
-		  ObjectError error = new ObjectError("hpcLogin", "Invalid login!");
-		  bindingResult.addError(error);
-		  model.addAttribute("hpcLogin", hpcLogin);
-		  model.addAttribute("ldap", loginModule.equals("ldap")?"true":"false");
-		  return "index";
-	  }		
-      
-      try{
-    	  if(userDTO == null)
-    	  {
-	    	  URI uri = new URI(serviceUserURL+"/"+hpcLogin.getUserName());
-			  ResponseEntity<HpcUserDTO> userEntity = restTemplate.getForEntity(uri, HpcUserDTO.class);
+	@RequestMapping(method = RequestMethod.GET)
+	public String home(Model model) {
+		HpcLogin hpcLogin = new HpcLogin();
+		model.addAttribute("hpcLogin", hpcLogin);
+		model.addAttribute("queryURL", queryURL);
+		model.addAttribute("collectionURL", collectionURL);
 	
-			  userDTO = userEntity.getBody();
-    	  }
-		  model.addAttribute("loginStatus", true);
-		  session.setAttribute("hpcUser", userDTO);
-	  }
-	  catch(Exception e)
-	  {
-		  model.addAttribute("loginStatus", false);
-		  model.addAttribute("loginOutput", "Invalid login"+e.getMessage());
-		  ObjectError error = new ObjectError("hpcLogin", "UserId is not found!");
-		  bindingResult.addError(error);
-		  model.addAttribute("hpcLogin", hpcLogin);
-		  model.addAttribute("ldap", loginModule.equals("ldap")?"true":"false");
-		  return "index";
-	  }
-	  model.addAttribute("datasetURL", datasetURL);
-	  model.addAttribute("projectURL", projectURL);
-	  return "dashboard";
-  }
+		return "index";
+	}
+
+	@RequestMapping(method = RequestMethod.POST)
+	public String login(@Valid @ModelAttribute("hpcLogin") HpcLogin hpcLogin, BindingResult bindingResult, Model model,
+			HttpSession session) {
+		if (bindingResult.hasErrors()) {
+			return "index";
+		}
+		try {
+			RestTemplate restTemplate = HpcClientUtil.getRestTemplate(sslCertPath, sslCertPassword);
+			String authToken = HpcClientUtil.getAuthenticationToken(hpcLogin.getUserId(), hpcLogin.getPasswd(),
+					authenticateURL);
+			if (authToken != null){
+				session.setAttribute("hpcUserToken", authToken);
+				HpcUserDTO user = getUser(hpcLogin.getUserId(), authToken);
+				if(user == null)
+				{
+					model.addAttribute("loginStatus", false);
+					model.addAttribute("loginOutput", "Invalid login");
+					ObjectError error = new ObjectError("hpcLogin", "UserId is not found!");
+					bindingResult.addError(error);
+					model.addAttribute("hpcLogin", hpcLogin);
+					return "index";
+				}
+				session.setAttribute("hpcUser", user);
+				String token = DatatypeConverter.printBase64Binary((hpcLogin.getUserId() + ":" + hpcLogin.getPasswd()).getBytes());
+				session.setAttribute("userpasstoken", token);
+			}
+			else {
+				model.addAttribute("loginStatus", false);
+				model.addAttribute("loginOutput", "Invalid login");
+				ObjectError error = new ObjectError("hpcLogin", "UserId is not found!");
+				bindingResult.addError(error);
+				model.addAttribute("hpcLogin", hpcLogin);
+				return "index";
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			model.addAttribute("loginStatus", false);
+			model.addAttribute("loginOutput", "Invalid login" + e.getMessage());
+			ObjectError error = new ObjectError("hpcLogin", "UserId is not found!");
+			bindingResult.addError(error);
+			model.addAttribute("hpcLogin", hpcLogin);
+			return "index";
+		}
+		model.addAttribute("hpcLogin", hpcLogin);
+		model.addAttribute("queryURL", queryURL);
+		
+		return "dashboard";
+	}
+	
+	private HpcUserDTO getUser(String userId, String authToken) throws IOException
+	{
+		WebClient client = HpcClientUtil.getWebClient(serviceUserURL+"/"+userId, sslCertPath, sslCertPassword);
+		client.header("Authorization", "Bearer " + authToken);
+
+		Response restResponse = client.invoke("GET", null);
+		if(restResponse.getStatus() == 200)
+		{
+			ObjectMapper mapper = new ObjectMapper();
+			AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+			  new JaxbAnnotationIntrospector(),
+			  new JacksonAnnotationIntrospector()
+			);
+			mapper.setAnnotationIntrospector(intr);
+			MappingJsonFactory factory = new MappingJsonFactory(mapper);
+			JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+			HpcUserDTO user = parser.readValueAs(HpcUserDTO.class);
+			return user;
+		}
+		return null;
+	}
 }

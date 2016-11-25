@@ -9,8 +9,6 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.dto.user.HpcAuthenticationRequestDTO;
-
 import javax.servlet.http.HttpSession;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -18,6 +16,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import gov.nih.nci.hpc.web.model.HpcLogin;
 /**
  * <p>
  * HPC Web Login controller
@@ -34,10 +34,10 @@ public class HpcLogoutController extends AbstractHpcController {
 
   @RequestMapping(method = RequestMethod.GET)
   public String home(Model model, HttpSession session){
-	  HpcAuthenticationRequestDTO hpcLogin = new HpcAuthenticationRequestDTO();
-	  model.addAttribute("hpcLogin", hpcLogin);
 	  session.invalidate();
 	  session = null;
+	  HpcLogin hpcLogin = new HpcLogin();
+	  model.addAttribute("hpcLogin", hpcLogin);
 	  return "index";
   }
 }
