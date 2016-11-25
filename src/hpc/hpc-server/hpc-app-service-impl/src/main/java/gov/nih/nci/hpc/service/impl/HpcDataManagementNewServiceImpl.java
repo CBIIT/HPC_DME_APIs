@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
@@ -140,6 +141,36 @@ public class HpcDataManagementNewServiceImpl implements HpcDataManagementNewServ
     }
     
     @Override
+    public boolean createFile(String path) throws HpcException
+    {
+    	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
+    	
+    	// Validate the file path.
+    	HpcPathAttributes pathAttributes = 
+    	   dataManagementProxy.getPathAttributes(authenticatedToken, path);
+    	if(pathAttributes.getExists()) {
+    	   if(pathAttributes.getIsFile()) {
+    		  // File already exists.
+    		  return false;
+    	   }
+    	   if(pathAttributes.getIsDirectory()) {
+    		  throw new HpcException("Path already exists as a directory: " + path, 
+    				                 HpcErrorType.INVALID_REQUEST_INPUT); 
+    	   }
+    	}
+    	
+    	//  Validate the parent directory exists.
+    	if(!dataManagementProxy.isParentPathDirectory(authenticatedToken, path)) {
+    		throw new HpcException("Invalid data object path. Directory doesn't exist: " + path, 
+                                   HpcRequestRejectReason.INVALID_DATA_OBJECT_PATH);
+    	}
+    	
+    	// Create the data object file.
+    	dataManagementProxy.createDataObjectFile(authenticatedToken, path);
+    	return true;
+    }
+    
+    @Override
     public void delete(String path) throws HpcException
     {
     	// Delete the data object file.
@@ -204,9 +235,7 @@ public class HpcDataManagementNewServiceImpl implements HpcDataManagementNewServ
     		                     throws HpcException
     {
     	// Calculate the collection path to validate.
-    	String validationCollectionPath = dataObjectRegistration ? 
-    			                          path.substring(0, path.lastIndexOf('/')) : path;
-    	validationCollectionPath = dataManagementProxy.getAbsolutePath(validationCollectionPath);
+    	String validationCollectionPath = dataManagementProxy.getAbsolutePath(path);
     	validationCollectionPath = dataManagementProxy.getRelativePath(validationCollectionPath);
     	validationCollectionPath = validationCollectionPath.substring(1, validationCollectionPath.length());
     	

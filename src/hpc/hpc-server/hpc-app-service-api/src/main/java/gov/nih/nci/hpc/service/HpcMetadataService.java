@@ -10,6 +10,9 @@
 
 package gov.nih.nci.hpc.service;
 
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
@@ -111,7 +114,66 @@ public interface HpcMetadataService
      * @throws HpcException
      */
     public HpcMetadataEntries getCollectionMetadataEntries(String path) throws HpcException;
-
+    
+    /**
+     * Add metadata to a data object.
+     *
+     * @param path The data object path.
+     * @param metadataEntries The metadata entries to add.
+     * 
+     * @throws HpcException
+     */
+    public void addMetadataToDataObject(String path, 
+    		                            List<HpcMetadataEntry> metadataEntries) 
+    		                           throws HpcException; 
+    
+    /**
+     * Generate system metadata and attach to the data object.
+     * System generated metadata is:
+     *      1. UUID.
+     * 		2. Registrar user ID.
+     * 		3. Registrar name.
+     *      4. Registrar DOC.
+     * 		5. Source location (file-container-id and file-id). (Optional)
+     *      6. Archive location (file-container-id and file-id).
+     *      7. Data Transfer Request ID. (Optional)
+     *      8. Data Transfer Status.
+     *      9. Data Transfer Type.
+     *      10. Data Object File(s) size. (Optional)
+     *      11. Metadata Origin
+     *
+     * @param path The data object path.
+     * @param archiveLocation The physical file archive location.
+     * @param sourceLocation (Optional) The source location of the file.
+     * @param dataTransferRequestId (Optional) The data transfer request ID.
+     * @param dataTransferStatus The data transfer upload status.
+     * @param dataTransferType The data transfer type.
+     * @param sourceSize (Optional) The data source size in bytes.
+     * @param callerObjectId (Optional) The caller object ID.
+     * @param metadataOrigin The metadata origin.
+     * 
+     * @throws HpcException
+     */
+    public void addSystemGeneratedMetadataToDataObject(String path, 
+    		                                           HpcFileLocation archiveLocation,
+    		                                           HpcFileLocation sourceLocation,
+    		                                           String dataTransferRequestId,
+    		                                           HpcDataTransferUploadStatus dataTransferStatus,
+    		                                           HpcDataTransferType dataTransferType,
+    		                                           Long sourceSize, String callerObjectId) 
+    		                                          throws HpcException; 
+    
+    /**
+     * Update a data object's metadata.
+     *
+     * @param path The data object path.
+     * @param metadataEntries The metadata entries to update.
+     * 
+     * @throws HpcException
+     */
+    public void updateDataObjectMetadata(String path, 
+    		                             List<HpcMetadataEntry> metadataEntries) 
+    		                            throws HpcException; 
 }
 
  
