@@ -1,6 +1,6 @@
 package gov.nih.nci.hpc.web.model;
 
-public class HpcProjectRegistration {
+public class HpcCollectionRegistration {
 	private String id;
 	private String name;
 	private String projectType;

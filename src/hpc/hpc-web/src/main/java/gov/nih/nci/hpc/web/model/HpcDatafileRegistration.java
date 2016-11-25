@@ -3,7 +3,7 @@ package gov.nih.nci.hpc.web.model;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.web.multipart.MultipartFile;
 
-public class HpcDatasetRegistration {
+public class HpcDatafileRegistration {
 	private String id;
 	@NotEmpty(message="Dataset name is required")
 	private String datasetName;

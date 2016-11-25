@@ -10,59 +10,31 @@ app.controller('MyCtrl', function($scope, $http, $q, $attrs) {
 	$scope.$watch('userId', function () {
 	console.log('$scope.userId', $scope.userId);
 
-	$http.get($scope.datasetURL + '?nciUserId=' + $scope.userId).
-	//$http.get('/js/hpcDatasets.json').
+	$http.get($scope.queryURL).
 	  success(function(data, status, headers, config) {
-		        var collection = data["gov.nih.nci.hpc.dto.dataset.HpcDatasetCollectionDTO"];
-		    	console.log('dataset collection', collection);
-	        var datasets = collection["gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO"];
-	    	console.log('datasets', datasets);
-	        if(!datasets instanceof Array)
+		  console.log('success');
+	        var namedqueriesDTO = data["gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO"];
+	        console.log('namedqueriesDTO', namedqueriesDTO);
+	        var namedqueries = queries["gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery"];
+	        if(!namedqueries instanceof Array)
 	        {
 	        	console.log('not instance of array');
-	        	$scope.hpcDataset = new Array(datasets);
+	        	$scope.hpcQueries = new Array(namedqueries);
 	        }
 	        else
 	        {
-	        	if(datasets.length == undefined)
-	        		$scope.hpcDataset = new Array(datasets);
+	        	if(namedqueries.length == undefined)
+	        		$scope.hpcQueries = new Array(namedqueries);
 	        	else
-	        		$scope.hpcDataset = datasets;
-	        	console.log('instance of array', projects.length);
+	        		$scope.hpcQueries = namedqueries;
 	        }
-			deferred.resolve($scope.hpcData);
+			deferred.resolve($scope.hpcQueries);
 	  }).
 	  error(function(data, status, headers, config) {
 		console.log('Failure', status);
 	  });
 	
-	$http.get($scope.projectURL + '/' + $scope.userId).
-	//$http.get('/js/hpcDatasets.json').
-	  success(function(data, status, headers, config) {
-		        var collection = data["gov.nih.nci.hpc.dto.project.HpcProjectCollectionDTO"];
-		    	console.log('project collection', collection);
-	        var projects = collection["gov.nih.nci.hpc.dto.project.HpcProjectDTO"];
-	        if(!projects instanceof Array)
-	        {
-	        	console.log('not instance of array');
-	        	$scope.hpcProject = new Array(projects);
-	        }
-	        else
-	        {
-	        	if(projects.length == undefined)
-	        		$scope.hpcProject = new Array(projects);
-	        	else
-	        		$scope.hpcProject = projects;
-	        	console.log('instance of array', projects.length);
-	        }
-	        console.log('projects', $scope.hpcProject);
-				
-				deferred.resolve($scope.hpcData);
-	  }).
-	  error(function(data, status, headers, config) {
-		console.log('Failure', status);
-	  });	
-	});
+
 
 	$scope.pagingOptions = {
 		    pageSizes: [10, 20, 30, 500, 1000, 5000], //page Sizes
@@ -71,7 +43,7 @@ app.controller('MyCtrl', function($scope, $http, $q, $attrs) {
 		};
 	
 $scope.gridOptions1 = {
-        data: 'hpcDataset',
+        data: 'hpcNotifications',
         enableRowSelection: false,
         enableColumnResize: true,
         enableCellEditOnFocus: false,
@@ -84,25 +56,16 @@ $scope.gridOptions1 = {
             cellTemplate: linkDatasetCellTemplate
          }, {
              field: 'fileSet.name',
-             displayName: 'Dataset Name',
+             displayName: 'Type',
              enableCellEdit: false
-         }, {
-            field: 'fileSet.description',
-            displayName: 'Description',
-            enableCellEdit: false
          },{
              field: 'created',
              displayName: 'Created',
              enableCellEdit: false,
              cellFilter: 'date:\'yyyy-MM-dd\''
-          },{
-              field: 'lastUpdated',
-              displayName: 'Last Updated',
-              enableCellEdit: false,
-              cellFilter: 'date:\'yyyy-MM-dd\''
            }],
          sortInfo: {
-   	      fields: ['fileSet.name'],
+   	      fields: ['created'],
    	      directions: ['asc']
    	    }    
        };
@@ -111,53 +74,35 @@ $scope.gridOptions1.showFooter = true;
 $scope.gridOptions1.enablePaging = true;
 
 $scope.gridOptions2 = {
-        data: 'hpcProject',
         enableRowSelection: false,
+        data: 'hpcQueries',
         enableCellEditOnFocus: false,
         enableColumnResize: true,
         showSelectionCheckbox: false,
         selectedItems:$scope.selectedRows,
         columnDefs: [{
-            field: 'id',
-            displayName: 'Id',
-            enableCellEdit: false,
-            cellTemplate: linkProjectCellTemplate
-         }, {
-             field: 'metadata.name',
-             displayName: 'Project Name',
+        	 field: 'searchname',
+             displayName: 'Name',
              enableCellEdit: false
          }, {
-             field: 'metadata.internalProjectId',
-             displayName: 'Internal Project Id',
-             enableCellEdit: false
-         },{
-            field: 'metadata.principalInvestigatorNciUserId',
-            displayName: 'Investigator',
-            enableCellEdit: false
-         }, {
-             field: 'metadata.description',
+             field: 'description',
              displayName: 'Description',
              enableCellEdit: false
-          }, {
-              field: 'metadata.labBranch',
-              displayName: 'Lab/Branch',
-              enableCellEdit: false
            },{
-              field: 'metadata.created',
+              field: 'created',
               displayName: 'Created',
               enableCellEdit: false,
               cellFilter: 'date:\'yyyy-MM-dd\''
            }],
            sortInfo: {
-        	      fields: ['metadata.name'],
+        	      fields: ['searchname'],
         	      directions: ['asc']
         	    }           
        };
 
 $scope.gridOptions2.pagingOptions = $scope.pagingOptions;
-$scope.gridOptions2.showFooter = true;
-$scope.gridOptions2.enablePaging = true;
-
-});
+$scope.gridOptions2.showFooter = false;
+$scope.gridOptions2.enablePaging = false;
+})});
 
 

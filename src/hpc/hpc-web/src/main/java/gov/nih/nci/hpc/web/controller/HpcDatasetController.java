@@ -9,8 +9,8 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.domain.dataset.HpcFileSet;
-import gov.nih.nci.hpc.dto.dataset.HpcDatasetDTO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -40,9 +40,9 @@ import org.springframework.web.client.RestTemplate;
 
 @Controller
 @EnableAutoConfiguration
-@RequestMapping("/dataset")
+@RequestMapping("/datafie")
 public class HpcDatasetController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.dataset}")
+	@Value("${gov.nih.nci.hpc.server.dataObject}")
 	private String serviceURL;
 
 	@RequestMapping(method = RequestMethod.GET)
@@ -53,34 +53,34 @@ public class HpcDatasetController extends AbstractHpcController {
 			if(id == null)
 				return "dashboard";
 			URI uri = new URI(serviceURL + "/"+id);
-			ResponseEntity<HpcDatasetDTO> dataEntity = restTemplate
-					.getForEntity(uri, HpcDatasetDTO.class);
+			ResponseEntity<HpcDataObjectDTO> dataEntity = restTemplate
+					.getForEntity(uri, HpcDataObjectDTO.class);
 			if (dataEntity == null || !dataEntity.hasBody()) {
 				ObjectError error = new ObjectError("id",
 						"Dataset is not found!");
 				model.addAttribute("error", "Failed to get Dataset: "+ id);
 				//bindingResult.addError(error);
 			} else {
-				HpcDatasetDTO dataDTO = dataEntity.getBody();
+				HpcDataObjectDTO dataDTO = dataEntity.getBody();
 				if(dataDTO != null)
 				{
-					HpcFileSet dataset = dataDTO.getFileSet();
-					if(dataset != null)
-						model.addAttribute("dataset", dataDTO);
+					HpcDataObject dataObject = dataDTO.getDataObject();
+					if(dataObject != null)
+						model.addAttribute("dataObject", dataObject);
 					else
-						model.addAttribute("dataset", new HpcDatasetDTO());
+						model.addAttribute("dataObject", new HpcDataObject());
 				}
 				else
-					model.addAttribute("dataset", new HpcDatasetDTO());
+					model.addAttribute("dataObject", new HpcDataObject());
 				//Get file upload status
 			}
 		} catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
-			model.addAttribute("error", "Failed to get Dataset: "+e.getMessage());
+			model.addAttribute("error", "Failed to get Data Object: "+e.getMessage());
 			e.printStackTrace();
 	} catch (Exception e) {
 		// TODO Auto-generated catch block
-		model.addAttribute("error", "Failed to get Dataset: "+e.getMessage());
+		model.addAttribute("error", "Failed to get Data Object: "+e.getMessage());
 		e.printStackTrace();
 	}
 
