@@ -174,6 +174,16 @@ public interface HpcMetadataService
     public void updateDataObjectMetadata(String path, 
     		                             List<HpcMetadataEntry> metadataEntries) 
     		                            throws HpcException; 
+    
+    /**
+     * Get metadata of a data object.
+     *
+     * @param path The data object's path.
+     * @return HpcMetadataEntries The data object's metadata entries.
+     * 
+     * @throws HpcException
+     */
+    public HpcMetadataEntries getDataObjectMetadataEntries(String path) throws HpcException;
 }
 
  
