@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
  <head>
-   <title>HPC Data Management</title>
+   <title>HPC Data Management Environment</title>
 
     <!-- Bootstrap CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet"/>
@@ -69,13 +69,13 @@ function enroll() {
             </div>
 
             <!--logo start-->
-            <a th:href="@{/}" class="logo">HPC <span class="lite">Data Management</span></a>
+            <a th:href="@{/}" class="logo">HPC <span class="lite">Data Management Environment</span></a>
             <!--logo end-->
       </header>
     </div>
     <div class="container">
 
-	<form class="login-form" action="#" id="hpcLogin" role="form" th:action="@{/login}" th:object="${hpcLogin}" method="post">
+	<form class="login-form" action="#" id="login" role="form" th:action="@{/login}" th:object="${hpcLogin}" method="post">
 
         <div class="login-wrap">
             <p class="login-img"><i class="icon_lock_alt"></i></p>
@@ -84,15 +84,14 @@ function enroll() {
 </ul>
             <div class="input-group">
               <span class="input-group-addon"><i class="icon_profile"></i></span>
-			  <label th:if="${#fields.hasErrors('userName')}" th:errors="*{userId}">Login Error</label>
-		      <input type="text" class="form-control" th:field="*{userName}" placeholder="Enter NCI User Id"/>
+			  <label th:if="${#fields.hasErrors('userId')}" th:errors="*{userId}">Login Error</label>
+		      <input type="text" class="form-control" th:field="*{userId}" placeholder="Enter NCI User Id"/>
             </div>
-            <div class="input-group" th:if="${ldap} == 'true'">
+            <div class="input-group">
             <span class="input-group-addon"><i class="icon_lock"></i></span>
-		       <input type="password" class="form-control" th:field="*{password}" placeholder="Enter NCI User password"/>
+		       <input type="password" class="form-control" th:field="*{passwd}" placeholder="Enter NCI User password"/>
             </div>
             <button type="submit" class="btn btn-info btn-lg btn-block">Login</button>
-            <button type="submit" class="btn btn-info btn-lg btn-block" onClick="enroll()">Enroll</button>
         </div>
       </form>
 

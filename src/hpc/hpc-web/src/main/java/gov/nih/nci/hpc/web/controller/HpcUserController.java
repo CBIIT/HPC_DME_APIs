@@ -9,10 +9,8 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
-import gov.nih.nci.hpc.dto.user.HpcUserDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
 
 import java.net.URI;
@@ -48,8 +46,6 @@ public class HpcUserController extends AbstractHpcController {
     private String serverURL;
 	@Value("${gov.nih.nci.hpc.server.user}")
     private String serviceUserURL;
-	@Value("${gov.nih.nci.hpc.server.globuslogin.validate}")
-    private String serviceGlobusUserURL;
 	
   @RequestMapping(method = RequestMethod.GET)
   public String home(Model model){
@@ -85,11 +81,6 @@ public class HpcUserController extends AbstractHpcController {
 		  user.setUserId(hpcUser.getNciUserId());
 		  user.setFirstName(hpcUser.getFirstName());
 		  user.setLastName(hpcUser.getLastName());
-		  HpcIntegratedSystemAccount dtAccount = new HpcIntegratedSystemAccount();
-		  dtAccount.setUsername(hpcUser.getGlobusUserId());
-		  dtAccount.setPassword(hpcUser.getGlobusPasswd());
-		  dtAccount.setIntegratedSystem(HpcIntegratedSystem.GLOBUS);
-		  userDTO.setDataTransferAccount(dtAccount);
 		  userDTO.setNciAccount(user);
 /*
 		  Boolean validGlobusCredentials = restTemplate.postForObject(new URI(serviceGlobusUserURL),  userDTO, Boolean.class);

@@ -1,12 +1,22 @@
 package gov.nih.nci.hpc.web.model;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
 
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "", propOrder = {
+    "userId",
+    "passwd"
+})
 public class HpcLogin {
 
-	@NotEmpty(message="HPC User Id is required")
+    private final static long serialVersionUID = 1L;
+    @XmlElement(required = true)
 	String userId;
-	String passwd;
+    @XmlElement(required = true)
+    String passwd;
 
 	public String getUserId() {
 		return userId;
