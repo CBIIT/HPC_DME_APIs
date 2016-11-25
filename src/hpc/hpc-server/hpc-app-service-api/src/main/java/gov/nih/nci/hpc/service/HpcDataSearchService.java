@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -45,6 +46,45 @@ public interface HpcDataSearchService
      * @return The search results page size.
      */
     public int getSearchResultsPageSize();
+    
+    /**
+     * Save a query for a user.
+     *
+     * @param nciUserId The user ID save the query for.
+     * @param namedCompoundMetadataQuery The compound query.
+     * @throws HpcException
+     */
+    public void saveQuery(String nciUserId, 
+    		              HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery) 
+    		             throws HpcException;
+    
+    /**
+     * Delete a query for a user.
+     *
+     * @param nciUserId The user ID save the query for.
+     * @param queryName The query name.
+     * @throws HpcException
+     */
+    public void deleteQuery(String nciUserId, String queryName) throws HpcException;
+
+    /**
+     * Get all saved queries for a user.
+     *
+     * @param nciUserId The registered user ID.
+     * @return List<HpcNamedCompoundMetadataQuery>
+     * @throws HpcException
+     */
+    public List<HpcNamedCompoundMetadataQuery> getQueries(String nciUserId) throws HpcException;
+    
+    /**
+     * Get a saved query by name for a user.
+     *
+     * @param nciUserId The registered user ID.
+     * @param queryName The query name.
+     * @return HpcNamedCompoundMetadataQuery
+     * @throws HpcException
+     */
+    public HpcNamedCompoundMetadataQuery getQuery(String nciUserId, String queryName) throws HpcException;
 }
 
  

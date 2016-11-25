@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataSearchRestService;
@@ -147,6 +148,89 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 		
 		return okResponse(!collections.getCollections().isEmpty() ||
 				          !collections.getCollectionPaths().isEmpty() ? collections : null , true);
+    }
+    
+    @Override
+    public Response queryCollections(String queryName, Boolean detailedResponse, Integer page)
+    {
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: GET /collection/query/compound/{queryName}" + queryName);
+    	
+    	HpcCollectionListDTO collections = null;
+		try {
+			 collections = dataSearchBusService.getCollections(
+					           queryName,
+					           detailedResponse != null ? detailedResponse : false,
+					           page != null ? page : 1);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /collection/query/compound/{queryName}" + queryName + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " getCollections: Total time - " + queryName);
+		
+		return okResponse(!collections.getCollections().isEmpty() ||
+				          !collections.getCollectionPaths().isEmpty() ? collections : null , true);
+    }
+    
+    @Override
+    public Response saveQuery(String queryName,
+    		                  HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+    {
+    	logger.info("Invoking RS: POST /query/{queryName}: " + queryName);
+    	long start = System.currentTimeMillis();
+		try {
+			 dataSearchBusService.saveQuery(queryName, compoundMetadataQueryDTO);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /query/{nciUserId}/{queryName}: " + "," + queryName +
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " saveQuery: Total time");
+		
+    	return okResponse(null, false);
+    }
+    
+    @Override
+    public Response deleteQuery(String queryName)
+    {
+    	logger.info("Invoking RS: DELETE /query/{queryName}: " +  queryName);
+    	long start = System.currentTimeMillis();
+		try {
+			 dataSearchBusService.deleteQuery(queryName);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /query/{nciUserId}/{queryName}: " + queryName +
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " deleteQuery: Total time");
+		
+    	return okResponse(null, false);
+    }
+
+    @Override
+    public Response getQueries()
+    {
+    	logger.info("Invoking RS: GET /query");
+    	long start = System.currentTimeMillis();
+    	HpcNamedCompoundMetadataQueryListDTO queries = null;
+		try {
+			 queries = dataSearchBusService.getQueries();
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /query/{nciUserId}: failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " getQueries: Total time");
+		
+    	return okResponse(!queries.getQueries().isEmpty() ? queries : null, true);
     }
     
     //---------------------------------------------------------------------//
