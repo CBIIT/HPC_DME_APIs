@@ -12,14 +12,21 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementNewBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementNewService;
+import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
 
+import java.io.File;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -44,6 +51,14 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
 	// The Data Management Application Service Instance.
 	@Autowired
     private HpcDataManagementNewService dataManagementService = null;
+	
+	// The Data Transfer Application Service Instance.
+	@Autowired
+    private HpcDataTransferService dataTransferService = null;
+	
+	// Security Application Service Instance.
+	@Autowired
+    private HpcSecurityService securityService = null;
 	
 	// The Metadata Application Service Instance.
 	@Autowired
@@ -150,9 +165,111 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
      	return collectionDTO;
     }
     
+    @Override
+    public boolean registerDataObject(String path,
+    		                          HpcDataObjectRegistrationDTO dataObjectRegistrationDTO,
+    		                          File dataObjectFile)  
+    		                         throws HpcException
+    {
+    	logger.info("Invoking registerDataObject(HpcDataObjectRegistrationDTO): " + 
+    			    dataObjectRegistrationDTO);
+    	
+    	// Input validation.
+    	if(path == null || dataObjectRegistrationDTO == null) {
+    	   throw new HpcException("Null path or dataObjectRegistrationDTO",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Create a data object file (in the data management system).
+	    boolean created = dataManagementService.createFile(path);
+	    
+	    if(created) {
+    	   boolean registrationCompleted = false; 
+    	   try {
+      	        // Validate the new collection meets the hierarchy definition.
+    		    String collectionPath = path.substring(0, path.lastIndexOf('/'));
+    		    String doc = metadataService.getCollectionSystemGeneratedMetadata(collectionPath).getRegistrarDOC();
+      	        dataManagementService.validateHierarchy(collectionPath, doc, true);
+    		   
+    		    // Assign system account as an additional owner of the data-object.
+   		        dataManagementService.assignSystemAccountPermission(path);
+   		  
+		        // Attach the user provided metadata.
+		        metadataService.addMetadataToDataObject(
+		    	   		           path, 
+		    			           dataObjectRegistrationDTO.getMetadataEntries());
+		        
+		        // Extract the source location.
+		        HpcFileLocation source = dataObjectRegistrationDTO.getSource();
+				if(source != null && 
+				   (source.getFileContainerId() == null && source.getFileId() == null)) {
+				   source = null;
+				}
+				
+				// Transfer the data file.
+		        HpcDataObjectUploadResponse uploadResponse = 
+		           dataTransferService.uploadDataObject(
+		        	   source, dataObjectFile, path, 
+		        	   securityService.getRequestInvoker().getNciAccount().getUserId(),
+		        	   dataObjectRegistrationDTO.getCallerObjectId());
+		        
+			    // Generate system metadata and attach to the data object.
+			    metadataService.addSystemGeneratedMetadataToDataObject(
+			        		                   path, uploadResponse.getArchiveLocation(),
+			    			                   source, uploadResponse.getDataTransferRequestId(), 
+			    			                   uploadResponse.getDataTransferStatus(),
+			    			                   uploadResponse.getDataTransferType(),
+			    			                   getSourceSize(uploadResponse.getDataTransferRequestId(), source, uploadResponse.getDataTransferType(),
+				                                             dataObjectFile), 
+			    			                   dataObjectRegistrationDTO.getCallerObjectId()); 
+	
+			    registrationCompleted = true;
+			     
+	    	} finally {
+	    			   if(!registrationCompleted) {
+	    				  // Data object registration failed. Remove it from Data Management.
+	    				  dataManagementService.delete(path);
+	    			   }
+	    	}
+    	   
+	    } else {
+	    	    if(dataObjectFile != null) {
+	    		   throw new HpcException("Data object cannot be updated. Only updating metadata is allowed.",
+			                              HpcErrorType.REQUEST_REJECTED);
+	    	    }
+	    	
+	    	    metadataService.updateDataObjectMetadata(path, dataObjectRegistrationDTO.getMetadataEntries()); 
+	    }
+	    
+	    return created;
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
+    
+    /** 
+     * Get the data object source size. (Either source or dataObjectFile are not null)
+     * 
+     * @param source A data transfer source.
+     * @param dataTransferType The data transfer type.
+     * @param dataObjectFile The attached data file.
+     * 
+     * @return The source size in bytes.
+     */
+	private Long getSourceSize(String requestId, HpcFileLocation source, HpcDataTransferType dataTransferType,
+			                   File dataObjectFile) throws HpcException
+	{
+		if(source != null) {
+		   return dataTransferService.getDataTransferSize(dataTransferType, requestId);
+		}
+		
+		if(dataObjectFile != null) {
+           return dataObjectFile.length();
+		}
+		
+		return null;
+	}
 }
 
  

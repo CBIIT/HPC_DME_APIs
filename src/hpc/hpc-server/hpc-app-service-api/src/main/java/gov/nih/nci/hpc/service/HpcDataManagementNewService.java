@@ -37,6 +37,16 @@ public interface HpcDataManagementNewService
     public boolean createDirectory(String path) throws HpcException;
     
     /**
+     * Create a data object's file.
+     *
+     * @param path The data object path.
+     * @return true if the data object file was created, or false if it already exists.
+     * 
+     * @throws HpcException
+     */
+    public boolean createFile(String path) throws HpcException;
+    
+    /**
      * Delete a path (data object or directory).
      *
      * @param path The path to delete.
@@ -73,8 +83,8 @@ public interface HpcDataManagementNewService
      *
      * @param path The collection path.
      * @param doc Use validation rules of this DOC.
-     * @param dataObjectRegistration If true, the path is of a data object being registered, otherwise it's 
-     *                               a collection registration.
+     * @param dataObjectRegistration If true, the service validates if data object registration is allowed 
+     *                               in this collection
      * 
      * @throws HpcException If the hierarchy is invalid.
      */

@@ -11,7 +11,9 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 
+import java.io.InputStream;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -22,6 +24,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
 /**
  * <p>
@@ -60,25 +64,25 @@ public interface HpcDataManagementNewRestService
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getCollection(@PathParam("path") String path);
 	
-//    /**
-//     * PUT Data object registration request.
-//     *
-//     * @param path The data object path.
-//     * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
-//     * @param dataObjectInputStream The data object input stream.
-//     * @return Response The REST service response.
-//     */
-//	@PUT
-//	@Path("/dataObject/{path:.*}")
-//	@Consumes(MediaType.MULTIPART_FORM_DATA)
-//	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-//	public Response registerDataObject(
-//			        @PathParam("path") String path,
-//			        @Multipart(value = "dataObjectRegistration", type = "application/json")
-//			        HpcDataObjectRegistrationDTO dataObjectRegistration,
-//			        @Multipart(value = "dataObject", type = "application/octet-stream", required = false)
-//			        InputStream dataObjectInputStream);
-//
+    /**
+     * PUT Data object registration request.
+     *
+     * @param path The data object path.
+     * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
+     * @param dataObjectInputStream The data object input stream.
+     * @return Response The REST service response.
+     */
+	@PUT
+	@Path("/dataObject/{path:.*}")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response registerDataObject(
+			        @PathParam("path") String path,
+			        @Multipart(value = "dataObjectRegistration", type = "application/json")
+			        HpcDataObjectRegistrationDTO dataObjectRegistration,
+			        @Multipart(value = "dataObject", type = "application/octet-stream", required = false)
+			        InputStream dataObjectInputStream);
+
 //    /**
 //     * GET Data Object.
 //     *
