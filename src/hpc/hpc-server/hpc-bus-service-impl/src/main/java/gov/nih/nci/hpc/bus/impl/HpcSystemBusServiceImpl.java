@@ -126,7 +126,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	
     	// Iterate through the data objects that their data transfer is in-progress.
     	List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataObjectsInProgress();
-    	logger.info("Data Objects In Progress: " + dataObjectsInProgress);
+    	logger.info(dataObjectsInProgress.size() + " Data Objects In Progress: " + dataObjectsInProgress);
     	for(HpcDataObject dataObject : dataObjectsInProgress) {
     		String path = dataObject.getAbsolutePath();
     		logger.info("Update Data Transfer Status for: " + path);
@@ -180,8 +180,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	securityService.setSystemRequestInvoker();
     	
     	// Iterate through the data objects that their data is in temporary archive.
-    	for(HpcDataObject dataObject : dataManagementService.getDataObjectsInTemporaryArchive()) {
+    	List<HpcDataObject> dataObjectsInTemporaryArchive = dataManagementService.getDataObjectsInTemporaryArchive();
+    	logger.info(dataObjectsInTemporaryArchive.size() + " Data Objects In Temporary Archive: " + 
+    	            dataObjectsInTemporaryArchive);
+    	for(HpcDataObject dataObject : dataObjectsInTemporaryArchive) {
     		String path = dataObject.getAbsolutePath();
+    		logger.info("Process Temporary Archive for: " + path);
     		HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
     		try {
     		     // Get the data object system generated metadata.
