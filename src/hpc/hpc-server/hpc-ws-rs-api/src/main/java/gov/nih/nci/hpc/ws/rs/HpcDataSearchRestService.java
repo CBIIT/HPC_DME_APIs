@@ -97,80 +97,66 @@ public interface HpcDataSearchRestService
 	public Response queryCollections(@PathParam("queryName") String queryName,
 			                         @QueryParam("detailedResponse") Boolean detailedResponse,
 			                         @QueryParam("page") Integer page);
-//	
-//    /**
-//     * GET Data objects by metadata query.
-//     *
-//     * @param metadataQueries A list of metadata entries to query for.
-//     * @param detailedResponse If set to true, return entity details (attributes + metadata).
-//     * @param page The requested results page.
-//     * @return Response The REST service response.
-//     */
-//	@GET
-//	@Path("/dataObject")
-//	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-//	public Response getDataObjects(
-//			           @QueryParam("metadataQuery") List<HpcMetadataQueryParam> metadataQueries,
-//			           @QueryParam("detailedResponse") Boolean detailedResponse,
-//			           @QueryParam("page") Integer page);
-//	
-//    /**
-//     * POST Data objects query.
-//     *
-//     * @param metadataQueries A list of metadata entries to query for.
-//     * @param detailedResponse If set to true, return entity details (attributes + metadata).
-//     * @param page The requested results page.
-//     * @return Response The REST service response.
-//     */
-//	@POST
-//	@Path("/dataObject/query/simple")
-//	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-//	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-//	public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries,
-//			                         @QueryParam("detailedResponse") Boolean detailedResponse,
-//			                         @QueryParam("page") Integer page);
-//	
-//    /**
-//     * POST Data objects query.
-//     *
-//     * @param compoundMetadataQueryDTO A compund metadata query DTO.
-//     * @return Response The REST service response.
-//     */
-//	@POST
-//	@Path("/dataObject/query/compound")
-//	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-//	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-//	public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
-//	
-//    /**
-//     * GET Data objects by named query.
-//     *
-//     * @param name A named query
-//     * @param detailedResponse If set to true, return entity details (attributes + metadata).
-//     * @param page The requested results page.
-//     * @return Response The REST service response.
-//     */
-//	@GET
-//	@Path("/dataObject/query/compound/{queryName}")
-//	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-//	public Response queryDataObjects(@PathParam("queryName") String queryName,
-//			                         @QueryParam("detailedResponse") Boolean detailedResponse,
-//			                         @QueryParam("page") Integer page);
-//	
-//    /**
-//     * GET A list of metadata attributes currently registered.
-//     *
-//     * @param level Filter the results by level.
-//     * @param levelOperatorStr The operator to use in the level filter.
-//     * @return Response The REST service response.
-//     */
-//	@GET
-//	@Path("/metadataAttributes")
-//	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-//	public Response getMetadataAttributes(
-//			           @QueryParam("level") Integer level,
-//			           @QueryParam("levelOperator") String levelOperatorStr);
-//	
+	
+    /**
+     * GET Data objects by metadata query.
+     *
+     * @param metadataQueries A list of metadata entries to query for.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
+     * @return Response The REST service response.
+     */
+	@GET
+	@Path("/dataObject")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getDataObjects(
+			           @QueryParam("metadataQuery") List<HpcMetadataQueryParam> metadataQueries,
+			           @QueryParam("detailedResponse") Boolean detailedResponse,
+			           @QueryParam("page") Integer page);
+	
+    /**
+     * POST Data objects query.
+     *
+     * @param metadataQueries A list of metadata entries to query for.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
+     * @return Response The REST service response.
+     */
+	@POST
+	@Path("/dataObject/query/simple")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries,
+			                         @QueryParam("detailedResponse") Boolean detailedResponse,
+			                         @QueryParam("page") Integer page);
+	
+    /**
+     * POST Data objects compound query.
+     *
+     * @param compoundMetadataQueryDTO A compund metadata query DTO.
+     * @return Response The REST service response.
+     */
+	@POST
+	@Path("/dataObject/query/compound")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
+	
+    /**
+     * GET Data objects by named query.
+     *
+     * @param name A named query
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
+     * @return Response The REST service response.
+     */
+	@GET
+	@Path("/dataObject/query/compound/{queryName}")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response queryDataObjects(@PathParam("queryName") String queryName,
+			                         @QueryParam("detailedResponse") Boolean detailedResponse,
+			                         @QueryParam("page") Integer page);
+
     /**
      * Save a query.
      *
@@ -203,5 +189,21 @@ public interface HpcDataSearchRestService
     @Path("/query")
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response getQueries();
+    
+	
+  /**
+   * GET A list of metadata attributes currently registered.
+   *
+   * @param level Filter the results by level.
+   * @param levelOperatorStr The operator to use in the level filter.
+   * @return Response The REST service response.
+   */
+	@GET
+	@Path("/metadataAttributes")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getMetadataAttributes(
+			           @QueryParam("level") Integer level,
+			           @QueryParam("levelOperator") String levelOperatorStr);
+	
 }
 
