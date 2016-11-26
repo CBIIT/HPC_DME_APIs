@@ -24,9 +24,10 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcDataManagementNewService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
+import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
@@ -64,25 +65,33 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     // Instance members
     //---------------------------------------------------------------------//
 
-    // Application service instances.
-	
+	// Security Application Service Instance.
 	@Autowired
     private HpcSecurityService securityService = null;
 	
+	// Data Transer Application Service Instance.
 	@Autowired
     private HpcDataTransferService dataTransferService = null;
 	
+	// Data Management Application Service Instance.
 	@Autowired
-    private HpcDataManagementService dataManagementService = null;
+    private HpcDataManagementNewService dataManagementService = null;
 	
+	// Notification Application Service Instance.
 	@Autowired
     private HpcNotificationService notificationService = null;
 	
+	// Event Application Service Instance.
 	@Autowired
     private HpcEventService eventService = null;
 	
+	// Report Application Service Instance
 	@Autowired
     private HpcReportService reportService = null;
+	
+	// Metadata Application Service Instance
+	@Autowired
+    private HpcMetadataService metadataService = null;
 
 	// The logger instance.
 	private final Logger logger = 
@@ -116,13 +125,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	securityService.setSystemRequestInvoker();
     	
     	// Iterate through the data objects that their data transfer is in-progress.
-    	for(HpcDataObject dataObject : dataManagementService.getDataObjectsInProgress()) {
+    	List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataObjectsInProgress();
+    	logger.info("Data Objects In Progress: " + dataObjectsInProgress);
+    	for(HpcDataObject dataObject : dataObjectsInProgress) {
     		String path = dataObject.getAbsolutePath();
     		logger.info("Update Data Transfer Status for: " + path);
     		try {
     		     // Get current data transfer Request Info.
     			 HpcSystemGeneratedMetadata systemGeneratedMetadata = 
-    			    dataManagementService.getDataObjectSystemGeneratedMetadata(path);
+    			    metadataService.getDataObjectSystemGeneratedMetadata(path);
     			 
     			 // Get the data transfer upload request status.
     			 HpcDataTransferUploadStatus dataTransferStatus =
@@ -175,7 +186,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		try {
     		     // Get the data object system generated metadata.
     			 systemGeneratedMetadata = 
-    			       dataManagementService.getDataObjectSystemGeneratedMetadata(path);
+    			       metadataService.getDataObjectSystemGeneratedMetadata(path);
     			 
     			 // Get the file associated with the data object in the temporary archive.
     			 File file = dataTransferService.getArchiveFile(
@@ -195,12 +206,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  		         }
  		         
  			     // Update system metadata of the data object.
- 			     dataManagementService.updateDataObjectSystemGeneratedMetadata(
- 			           		                 path, uploadResponse.getArchiveLocation(),
- 			    			                 uploadResponse.getDataTransferRequestId(), 
- 			    			                 uploadResponse.getDataTransferStatus(),
- 			    			                 uploadResponse.getDataTransferType(),
- 			    			                 null); 
+ 			     metadataService.updateDataObjectSystemGeneratedMetadata(
+ 			           		               path, uploadResponse.getArchiveLocation(),
+ 			    			               uploadResponse.getDataTransferRequestId(), 
+ 			    			               uploadResponse.getDataTransferStatus(),
+ 			    			               uploadResponse.getDataTransferType()); 
  			     
  			     // Data transfer upload completed (successfully or failed). Add an event.
     			 addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
@@ -397,13 +407,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	}
     
     @Override
-    public void refreshViews() throws HpcException
+    public void refreshMetadataViews() throws HpcException
     {
     	// Use system account to perform this service.
         // TODO: Make this AOP. 
     	securityService.setSystemRequestInvoker();
     	
-    	dataManagementService.refreshViews();
+    	metadataService.refreshViews();
     }
     
     @Override
@@ -477,8 +487,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	private void setDataTransferUploadStatus(String path, HpcDataTransferUploadStatus dataTransferStatus)
 	                                        throws HpcException
 	{
-		dataManagementService.updateDataObjectSystemGeneratedMetadata(
-                                    path, null, null, dataTransferStatus, null, null);
+		metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, dataTransferStatus, null);
 	}
 	
     /** 
@@ -542,7 +551,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 			    logger.error("Failed to add a data transfer download event", e);
 		}
 	}
-
 }
 
  

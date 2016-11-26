@@ -10,7 +10,6 @@
 
 package gov.nih.nci.hpc.scheduler;
 
-import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -34,10 +33,6 @@ public class HpcScheduledTasks
     // Instance members
     //---------------------------------------------------------------------//
 
-    // The Data Management Business Service instance.
-	@Autowired
-    private HpcDataManagementBusService dataManagementBusService = null;
-	
     // The System Business Service instance.
 	@Autowired
     private HpcSystemBusService systemBusService = null;
@@ -78,7 +73,7 @@ public class HpcScheduledTasks
         	    logger.error("Update Data Transfer Upload Status task failed", e);
         	    
         } finally {
-        	       dataManagementBusService.closeConnection();
+        	       systemBusService.closeConnection();
         	       logger.info("Completed Update Data Transfer Upload Status Task...");	
         }
     }
@@ -100,7 +95,7 @@ public class HpcScheduledTasks
         	    logger.error("Process Temporary Archive task failed", e);
         	    
         } finally {
-        	       dataManagementBusService.closeConnection();
+        	       systemBusService.closeConnection();
         	       logger.info("Completed Process Temporary Archive Task...");	
         }
     }
@@ -122,7 +117,7 @@ public class HpcScheduledTasks
         	    
         } finally {
         	       // TODO - make this AOP.
-        	       dataManagementBusService.closeConnection();
+        	       systemBusService.closeConnection();
         	       logger.info("Completed Cleanup Data Transfer Download Task...");	
         }
     }
@@ -144,7 +139,7 @@ public class HpcScheduledTasks
         	    
         } finally {
         	       // TODO - make this AOP.
-        	       dataManagementBusService.closeConnection();
+        	       systemBusService.closeConnection();
         	       logger.info("Completed Process Events Task...");	
         }
     }
@@ -166,7 +161,7 @@ public class HpcScheduledTasks
         	    
         } finally {
         	       // TODO - make this AOP.
-        	       dataManagementBusService.closeConnection();
+        	       systemBusService.closeConnection();
         	       logger.info("Completed Process Events Task...");	
         }
     }
@@ -188,7 +183,7 @@ public class HpcScheduledTasks
         	    
         } finally {
         	       // TODO - make this AOP.
-        	       dataManagementBusService.closeConnection();
+        	       systemBusService.closeConnection();
         	       logger.info("Completed Process Events Task...");	
         }
     }
@@ -198,18 +193,18 @@ public class HpcScheduledTasks
      * 
      */    
     @Scheduled(fixedRate = 900000)
-    private void refreshViewsTask()
+    private void refreshMetadataViewsTask()
     {
-        logger.info("Starting Refreshing Materialized Views Task...");
+        logger.info("Starting Refreshing Metadata Materialized Views Task...");
 
         try { 
-		     systemBusService.refreshViews();
+		     systemBusService.refreshMetadataViews();
 		     
         } catch(HpcException e) {
         	    logger.error("Update Data Transfer Upload Status task failed", e);
         	    
         } finally {
-        	       dataManagementBusService.closeConnection();
+        	       systemBusService.closeConnection();
         	       logger.info("Completed Refreshing Materialized Views Task...");	
         }
     }

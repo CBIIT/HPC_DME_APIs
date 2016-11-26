@@ -32,6 +32,8 @@ import gov.nih.nci.hpc.service.HpcDataManagementNewService;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -80,6 +82,9 @@ public class HpcDataManagementNewServiceImpl implements HpcDataManagementNewServ
 	
 	// Prepared query to get data objects that have their data in temporary archive.
 	private List<HpcMetadataQuery> dataTransferInTemporaryArchiveQuery = new ArrayList<>();
+	
+    // The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
     //---------------------------------------------------------------------//
     // Constructors
@@ -287,6 +292,41 @@ public class HpcDataManagementNewServiceImpl implements HpcDataManagementNewServ
     public HpcDataHierarchy getDataHierarchy(String doc) throws HpcException
     {
     	return dataHierarchyValidator.getDataHierarchy(doc);
+    }
+    
+    @Override
+    public List<HpcDataObject> getDataObjectsInProgress() throws HpcException
+    {
+    	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
+    	List<HpcDataObject> objectsInProgress = new ArrayList<>();
+    	objectsInProgress.addAll(
+    		   dataManagementProxy.getDataObjects(authenticatedToken, 
+    			                                  dataTransferInProgressToArchiveQuery));
+    	objectsInProgress.addAll(
+    		   dataManagementProxy.getDataObjects(authenticatedToken, 
+    			                                  dataTransferInProgressToTemporaryArchiveQuery));
+    	
+    	return objectsInProgress;
+    }
+    
+    @Override
+    public List<HpcDataObject> getDataObjectsInTemporaryArchive() throws HpcException
+    {
+    	return dataManagementProxy.getDataObjects(
+    			             dataManagementAuthenticator.getAuthenticatedToken(),
+    			             dataTransferInTemporaryArchiveQuery);
+    }
+    
+    @Override
+    public void closeConnection()
+    {
+    	try {
+    	     dataManagementProxy.disconnect(dataManagementAuthenticator.getAuthenticatedToken());
+    	     
+    	} catch(HpcException e) {
+    		    // Ignore.
+    		    logger.error("Failed to close data management connection", e);
+    	}
     }
     
     //---------------------------------------------------------------------//

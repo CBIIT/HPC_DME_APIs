@@ -96,11 +96,11 @@ public interface HpcSystemBusService
 	public void generateWeeklyUserReportEvent() throws HpcException;
 	
     /**
-     * Refresh the materialized views.
+     * Refresh the metadata materialized views.
      *
      * @throws HpcException
      */
-	public void refreshViews() throws HpcException;
+	public void refreshMetadataViews() throws HpcException;
 	
 	/**
 	 * Close connection to Data Management system for the current service call.
