@@ -394,6 +394,62 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
 	}
     
     @Override
+    public void updateDataObjectSystemGeneratedMetadata(String path, 
+                                                        HpcFileLocation archiveLocation,
+                                                        String dataTransferRequestId,
+                                                        HpcDataTransferUploadStatus dataTransferStatus,
+                                                        HpcDataTransferType dataTransferType) 
+                                                        throws HpcException
+	{
+       	// Input validation.
+       	if(path == null || 
+       	   (archiveLocation != null && !isValidFileLocation(archiveLocation))) {
+       	   throw new HpcException("Invalid updated system generated metadata for data object", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+       	List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+       	
+       	if(archiveLocation != null) {
+       	   // Update the archive location file-container-id metadata.
+       	   addMetadataEntry(metadataEntries,
+       			            toMetadataEntry(ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE, 
+       		                                archiveLocation.getFileContainerId()));
+       	
+       	   // Update the archive location file-id metadata.
+       	   addMetadataEntry(metadataEntries,
+       		   	            toMetadataEntry(ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE, 
+       		   	                            archiveLocation.getFileId()));
+       	}
+       	
+       	if(dataTransferRequestId != null) {
+       	   // Update the Data Transfer Request ID metadata.
+       	   addMetadataEntry(metadataEntries,
+       		                toMetadataEntry(DATA_TRANSFER_REQUEST_ID_ATTRIBUTE, 
+       			                            dataTransferRequestId));
+       	}
+       	
+       	if(dataTransferStatus != null) {
+       	   // Update the Data Transfer Status metadata.
+       	   addMetadataEntry(metadataEntries,
+       			            toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, 
+       		   	                            dataTransferStatus.value()));
+       	}
+       	
+       	if(dataTransferType != null) {
+       	   // Update the Data Transfer Type metadata.
+       	   addMetadataEntry(metadataEntries,
+       		                toMetadataEntry(DATA_TRANSFER_TYPE_ATTRIBUTE, 
+       		  	                            dataTransferType.value()));
+       	}
+       	
+       	if(!metadataEntries.isEmpty()) {
+		   dataManagementProxy.updateDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(),
+		                                                path, metadataEntries);
+       	}
+	}
+    
+    @Override
     public void updateDataObjectMetadata(String path, 
     		                             List<HpcMetadataEntry> metadataEntries) 
     		                            throws HpcException
@@ -442,6 +498,12 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
            getDataObjectMetadataValidationRules(String doc) throws HpcException
     {
     	return rulesForDOC(metadataValidator.getDataObjectMetadataValidationRules(), doc);
+    }
+    
+    @Override
+    public void refreshViews() throws HpcException
+    {
+    	metadataDAO.refreshViews();
     }
     
     //---------------------------------------------------------------------//

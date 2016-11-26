@@ -10,15 +10,14 @@
 
 package gov.nih.nci.hpc.service;
 
-import java.util.List;
-
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.util.List;
 
 /**
  * <p>
@@ -126,6 +125,29 @@ public interface HpcDataManagementNewService
      * @throws HpcException
      */
     public HpcDataHierarchy getDataHierarchy(String doc) throws HpcException;
+    
+    /**
+     * Get data objects that have their data transfer in-progress.
+     *
+     * @return HpcDataObject list.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcDataObject> getDataObjectsInProgress() throws HpcException;
+    
+    /**
+     * Get data objects that have their data stored in temporary archive.
+     *
+     * @return HpcDataObject list.
+     * 
+     * @throws HpcException
+     */
+    public List<HpcDataObject> getDataObjectsInTemporaryArchive() throws HpcException;
+    
+    /**
+     * Close connection to Data Management system for the current service call.
+     */
+    public void closeConnection();
 }
 
  

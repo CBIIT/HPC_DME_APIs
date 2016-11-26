@@ -176,6 +176,24 @@ public interface HpcMetadataService
               getDataObjectSystemGeneratedMetadata(String path) throws HpcException; 
     
     /**
+     * Update system generated metadata of a data object.
+     *
+     * @param path The data object path.
+     * @param archiveLocation (Optional) The physical file archive location.
+     * @param dataTransferRequestId (Optional) The data transfer request ID.
+     * @param dataTransferStatus (Optional) The data transfer upload status.
+     * @param dataTransferType (Optional) The data transfer type.
+     * 
+     * @throws HpcException
+     */
+    public void updateDataObjectSystemGeneratedMetadata(String path, 
+    		                                            HpcFileLocation archiveLocation,
+    		                                            String dataTransferRequestId,
+    		                                            HpcDataTransferUploadStatus dataTransferStatus,
+    		                                            HpcDataTransferType dataTransferType) 
+    		                                          throws HpcException; 
+    
+    /**
      * Update a data object's metadata.
      *
      * @param path The data object path.
@@ -218,6 +236,13 @@ public interface HpcMetadataService
      */
     public List<HpcMetadataValidationRule> 
            getDataObjectMetadataValidationRules(String doc) throws HpcException;
+    
+    /**
+     * Refresh all metadata materialized views.
+     *
+     * @throws HpcException
+     */
+    public void refreshViews() throws HpcException;
 }
 
  
