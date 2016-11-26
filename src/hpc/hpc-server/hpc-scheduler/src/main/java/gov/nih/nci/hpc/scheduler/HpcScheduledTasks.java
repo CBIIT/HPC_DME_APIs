@@ -192,7 +192,7 @@ public class HpcScheduledTasks
      * Refresh Materialized Views.
      * 
      */    
-    @Scheduled(fixedRate = 900000)
+    @Scheduled(cron = "${hpc.scheduler.cron.refreshMaterializedViews.delay}")
     private void refreshMetadataViewsTask()
     {
         logger.info("Starting Refreshing Metadata Materialized Views Task...");
