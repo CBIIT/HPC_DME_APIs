@@ -13,8 +13,11 @@ package gov.nih.nci.hpc.bus;
 import java.util.List;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -66,56 +69,46 @@ public interface HpcDataSearchBusService
     public HpcCollectionListDTO getCollections(String queryName, boolean detailedResponse,
     		                                   int page) 
     		                                  throws HpcException;
-//    
-//    /**
-//     * Get data objects by metadata query.
-//     *
-//     * @param metadataQueries The metadata queries.
-//     * @param detailedResponse If set to true, return entity details (attributes + metadata).
-//     * @param page The requested results page.
-//     * @return A list of HpcDataObjectDTO.
-//     * 
-//     * @throws HpcException
-//     */
-//    public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries,
-//    		                                   boolean detailedResponse, int page) 
-//    		                                  throws HpcException;
-//    /**
-//     * Get data objects by compound metadata query.
-//     *
-//     * @param compoundMetadataQueryDTO The compound metadata query DTO.
-//     * @return A list of HpcDataObjectDTO.
-//     * 
-//     * @throws HpcException
-//     */
-//    public HpcDataObjectListDTO getDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
-//    		                                  throws HpcException;
-//    
-//    /**
-//     * Get data objects by named query.
-//     *
-//     * @param queryName The query name.
-//     * @param detailedResponse If set to true, return entity details (attributes + metadata).
-//     * @param page The requested results page.
-//     * @return A list of HpcDataObjectDTO.
-//     * 
-//     * @throws HpcException
-//     */
-//    public HpcDataObjectListDTO getDataObjects(String queryName, boolean detailedResponse,
-//    		                                   int page) 
-//    		                                  throws HpcException;
-//    
-//    /**
-//     * Get a list of metadata attributes currently registered.
-//     *
-//     * @param level Filter the results by level. (Optional).
-//     * @param levelOperator The operator to use in the level filter. (Optional).
-//     * @return A list of metadata attributes
-//     */
-//	public HpcMetadataAttributesListDTO 
-//	          getMetadataAttributes(Integer level, HpcMetadataQueryOperator levelOperator) 
-//			                       throws HpcException;
-//	
+    
+    /**
+     * Get data objects by metadata query.
+     *
+     * @param metadataQueries The metadata queries.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
+     * @return A list of HpcDataObjectDTO.
+     * 
+     * @throws HpcException
+     */
+    public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries,
+    		                                   boolean detailedResponse, int page) 
+    		                                  throws HpcException;
+    
+    /**
+     * Get data objects by compound metadata query.
+     *
+     * @param compoundMetadataQueryDTO The compound metadata query DTO.
+     * @return A list of HpcDataObjectDTO.
+     * 
+     * @throws HpcException
+     */
+    public HpcDataObjectListDTO getDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
+    		                                  throws HpcException;
+    
+    /**
+     * Get data objects by named query.
+     *
+     * @param queryName The query name.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
+     * @return A list of HpcDataObjectDTO.
+     * 
+     * @throws HpcException
+     */
+    public HpcDataObjectListDTO getDataObjects(String queryName, boolean detailedResponse,
+    		                                   int page) 
+    		                                  throws HpcException;
+
     /**
      * Save a query for a user.
      *
@@ -142,6 +135,17 @@ public interface HpcDataSearchBusService
      * @throws HpcException
      */
     public HpcNamedCompoundMetadataQueryListDTO getQueries() throws HpcException;
+    
+  /**
+  * Get a list of metadata attributes currently registered.
+  *
+  * @param level Filter the results by level. (Optional).
+  * @param levelOperator The operator to use in the level filter. (Optional).
+  * @return A list of metadata attributes
+  */
+	public HpcMetadataAttributesListDTO 
+	          getMetadataAttributes(Integer level, HpcMetadataQueryOperator levelOperator) 
+			                       throws HpcException;
 }
 
  

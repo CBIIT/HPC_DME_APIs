@@ -15,9 +15,14 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementNewRestService;
 import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
@@ -28,9 +33,11 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,14 +58,16 @@ public class HpcDataManagementNewRestServiceImpl extends HpcRestServiceImpl
     // Constants
     //---------------------------------------------------------------------//   
 	
-    // The Data Management Business Service instance.
-	@Autowired
-    private HpcDataManagementNewBusService dataManagementBusService = null;
+	public static String DATA_OBJECT_DOWNLOAD_FILE = "DataObjectDownloadFile";
 	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
+    // The Data Management Business Service instance.
+	@Autowired
+    private HpcDataManagementNewBusService dataManagementBusService = null;
+	
 	// The multipart provider.
 	@Autowired
 	private HpcMultipartProvider multipartProvider = null;
@@ -196,6 +205,81 @@ public class HpcDataManagementNewRestServiceImpl extends HpcRestServiceImpl
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " getDataObject: Total time - " + path);
 		return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null, true);
+    }
+    
+    @Override
+	public Response downloadDataObject(String path,
+                                       HpcDataObjectDownloadRequestDTO downloadRequest,
+                                       MessageContext messageContext)
+    {
+    	long start = System.currentTimeMillis();
+    	path = toAbsolutePath(path);
+    	logger.info("Invoking RS: POST /dataObject/" + path + "/download: " + downloadRequest);
+    	
+    	HpcDataObjectDownloadResponseDTO downloadResponse = null;
+		try {
+			 downloadResponse = dataManagementBusService.downloadDataObject(path, downloadRequest);
+
+		} catch(HpcException e) {
+			    logger.error("RS: POST /dataObject/" + path + "/download: " + downloadRequest + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " downloadDataObject: Total time - " + path);
+		
+		if(downloadResponse.getDestinationFile() != null) {
+		   // Put the download file on the message context, so the cleanup interceptor can
+		   // delete it after it was received by the caller.
+		   messageContext.put(DATA_OBJECT_DOWNLOAD_FILE, 
+				              downloadResponse.getDestinationFile());
+		   return okResponse(downloadResponse.getDestinationFile(), 
+				             MediaType.APPLICATION_OCTET_STREAM_TYPE);
+		} else {
+			    return okResponse(downloadResponse, false);
+		}
+    }
+    
+    @Override
+    public Response setPermissions(List<HpcEntityPermissionRequestDTO> entityPermissionRequests)
+    {
+    	logger.info("Invoking RS: POST /acl: " + entityPermissionRequests);
+    	long start = System.currentTimeMillis();
+    	HpcEntityPermissionResponseListDTO permissionResponseList = null;
+		try {
+			 permissionResponseList = dataManagementBusService.setPermissions(
+					                                              entityPermissionRequests);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /acl: " + entityPermissionRequests + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " setPermissions: Total time - "+entityPermissionRequests);
+		
+		return okResponse(permissionResponseList, false);
+    }
+    
+    @Override
+    public Response getDataManagementModel(String doc)
+    {
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: GET /model/" + doc);
+    	
+    	HpcDataManagementModelDTO dataModel = null;
+		try {
+			 dataModel = dataManagementBusService.getDataManagementModel(doc);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /model/" + doc + " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " getDataManagementModel: " + doc);
+		
+		return okResponse(dataModel, true);
     }
     
     //---------------------------------------------------------------------//

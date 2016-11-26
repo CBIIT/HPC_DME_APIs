@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -164,6 +165,17 @@ public interface HpcMetadataService
     		                                          throws HpcException; 
     
     /**
+     * Get the system generated metadata of a data object.
+     *
+     * @param path The data object path.
+     * @return HpcSystemGeneratedMetadata The system generated metadata
+     * 
+     * @throws HpcException
+     */
+    public HpcSystemGeneratedMetadata 
+              getDataObjectSystemGeneratedMetadata(String path) throws HpcException; 
+    
+    /**
      * Update a data object's metadata.
      *
      * @param path The data object path.
@@ -184,6 +196,28 @@ public interface HpcMetadataService
      * @throws HpcException
      */
     public HpcMetadataEntries getDataObjectMetadataEntries(String path) throws HpcException;
+    
+    /**
+     * Get collection metadata validation rules for a DOC.
+     * 
+     * @param doc The DOC.
+     * @return A list of HpcMetadataValidationRule
+     *
+     * @throws HpcException
+     */
+    public List<HpcMetadataValidationRule> 
+           getCollectionMetadataValidationRules(String doc) throws HpcException;
+    
+    /**
+     * Get data object metadata validation rules for a DOC.
+     * 
+     * @param doc The DOC.
+     * @return A list of HpcMetadataValidationRule
+     *
+     * @throws HpcException
+     */
+    public List<HpcMetadataValidationRule> 
+           getDataObjectMetadataValidationRules(String doc) throws HpcException;
 }
 
  

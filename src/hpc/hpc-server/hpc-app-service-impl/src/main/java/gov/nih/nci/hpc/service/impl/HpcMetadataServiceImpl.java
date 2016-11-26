@@ -32,6 +32,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -380,6 +381,19 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     }
     
     @Override
+    public HpcSystemGeneratedMetadata 
+              getDataObjectSystemGeneratedMetadata(String path) throws HpcException
+	{
+    	// Input validation.
+       	if(path == null) {
+           throw new HpcException(INVALID_PATH_METADATA_MSG, 
+        			                  HpcErrorType.INVALID_REQUEST_INPUT);
+        }	
+    	
+    	return toSystemGeneratedMetadata(getDataObjectMetadata(path));
+	}
+    
+    @Override
     public void updateDataObjectMetadata(String path, 
     		                             List<HpcMetadataEntry> metadataEntries) 
     		                            throws HpcException
@@ -414,6 +428,20 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     			metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path), 2));
     	
     	return metadataEntries;
+    }
+    
+    @Override
+    public List<HpcMetadataValidationRule> 
+           getCollectionMetadataValidationRules(String doc) throws HpcException
+    {
+    	return rulesForDOC(metadataValidator.getCollectionMetadataValidationRules(), doc);
+    }
+    
+    @Override
+    public List<HpcMetadataValidationRule> 
+           getDataObjectMetadataValidationRules(String doc) throws HpcException
+    {
+    	return rulesForDOC(metadataValidator.getDataObjectMetadataValidationRules(), doc);
     }
     
     //---------------------------------------------------------------------//
@@ -547,5 +575,27 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	
     	return dataManagementProxy.getDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(),
                                                          path);
+    }
+    
+    /**
+     * Filter a list of metadata validation rules by DOC.
+     *
+     * @param rules The list of rules to filter.
+     * @param doc The DOC to filter for.
+     * @return List of HpcMetadataValidationRule
+     * 
+     */
+    private List<HpcMetadataValidationRule> rulesForDOC(List<HpcMetadataValidationRule> rules,
+    		                                            String doc) 
+    {
+    	List<HpcMetadataValidationRule> docRules = new ArrayList<>();
+    	for(HpcMetadataValidationRule rule : rules) {
+    		if(rule.getDoc() == null || rule.getDoc().isEmpty() ||
+    		   rule.getDoc().contains(doc)) {
+    		   docRules.add(rule);
+    		}
+    	}
+    	
+    	return docRules;
     }
 }

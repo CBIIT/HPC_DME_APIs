@@ -16,9 +16,12 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataSearchService;
@@ -95,17 +98,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Create a Compound query from the simple query.
-    	HpcCompoundMetadataQuery compoundMetadataQuery = new HpcCompoundMetadataQuery();
-    	compoundMetadataQuery.setOperator(HpcCompoundMetadataQueryOperator.AND);
-    	compoundMetadataQuery.getQueries().addAll(metadataQueries);
-    	
-    	HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO = new HpcCompoundMetadataQueryDTO();
-    	compoundMetadataQueryDTO.setCompoundQuery(compoundMetadataQuery);
-    	compoundMetadataQueryDTO.setPage(page);
-    	compoundMetadataQueryDTO.setDetailedResponse(detailedResponse);
-    	
-    	return getCollections(compoundMetadataQueryDTO);
+    	return getCollections(toCompoundMetadataQueryDTO(metadataQueries, detailedResponse, page));
     }
     
     @Override
@@ -137,6 +130,54 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     	logger.info("Invoking getCollections(string,boolean): " + queryName);
     	
     	return getCollections(toCompoundMetadataQueryDTO(queryName, detailedResponse, page));
+    }
+    
+    @Override
+    public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries, 
+    		                                   boolean detailedResponse, int page) 
+                                              throws HpcException
+    {
+    	logger.info("Invoking getDataObjects(List<HpcMetadataQuery>, boolean): " + metadataQueries);
+    	
+    	// Input validation.
+    	if(metadataQueries == null) {
+    	   throw new HpcException("Null metadata queries",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	return getDataObjects(toCompoundMetadataQueryDTO(metadataQueries, detailedResponse, page));
+    }
+    
+    @Override
+    public HpcDataObjectListDTO getDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
+                                              throws HpcException
+    {
+    	logger.info("Invoking getDataObjects(HpcCompoundMetadataQueryDTO): " + compoundMetadataQueryDTO);
+    	
+    	// Input validation.
+    	if(compoundMetadataQueryDTO == null) {
+    	   throw new HpcException("Null compound metadata query",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+      	boolean detailedResponse = compoundMetadataQueryDTO.getDetailedResponse() != null && 
+                                   compoundMetadataQueryDTO.getDetailedResponse();
+      	int page = compoundMetadataQueryDTO.getPage() != null ? compoundMetadataQueryDTO.getPage() : 1;
+      	
+      	// Execute the query and package the results.
+      	return toDataObjectListDTO(dataSearchService.getDataObjectPaths(
+      			                       compoundMetadataQueryDTO.getCompoundQuery(), page), 
+      			                       detailedResponse, page);
+    }
+    
+    @Override
+    public HpcDataObjectListDTO getDataObjects(String queryName, boolean detailedResponse, 
+    		                                   int page) 
+                                              throws HpcException
+    {
+    	logger.info("Invoking getDataObjects(string,boolean): " + queryName);
+    	
+    	return getDataObjects(toCompoundMetadataQueryDTO(queryName, detailedResponse, page));
     }
     
     @Override
@@ -191,6 +232,29 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     	return queriesList;
     }
     
+    @Override
+	public HpcMetadataAttributesListDTO 
+	          getMetadataAttributes(Integer level, HpcMetadataQueryOperator levelOperator) 
+                                   throws HpcException
+    {
+    	logger.info("Invoking getDataManagementMode(String)");
+    	
+    	// Input validation. 
+    	if((level == null && levelOperator != null) ||
+    	   (level != null && levelOperator == null)) {
+    	   throw new HpcException("Both level and level-operator need to be provided, or omitted ", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	HpcMetadataAttributesListDTO metadataAttributes = new HpcMetadataAttributesListDTO();
+    	metadataAttributes.getCollectionMetadataAttributes().addAll(
+    			dataSearchService.getCollectionMetadataAttributes(level, levelOperator));
+    	metadataAttributes.getDataObjectMetadataAttributes().addAll(
+    			dataSearchService.getDataObjectMetadataAttributes(level, levelOperator));
+    	
+    	return metadataAttributes;
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
@@ -220,6 +284,33 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
 		collectionsDTO.setLimit(dataSearchService.getSearchResultsPageSize());
 		
 		return collectionsDTO;
+    }
+    
+    /**
+     * Construct a data object list DTO.
+     *
+     * @param dataObjectPaths A list of data object paths.
+     * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
+     */
+    private HpcDataObjectListDTO toDataObjectListDTO(List<String> dataObjectPaths,
+    		                                         boolean detailedResponse, int page)
+    		                                        throws HpcException
+    {
+		HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
+		
+		if(detailedResponse) {
+		   for(String dataObjectPath : dataObjectPaths) {
+			   dataObjectsDTO.getDataObjects().add(dataManagementBusService.getDataObject(dataObjectPath));
+    	   }
+		} else { 
+			    dataObjectsDTO.getDataObjectPaths().addAll(dataObjectPaths);
+		}
+		
+		dataObjectsDTO.setPage(page);
+		dataObjectsDTO.setLimit(dataSearchService.getSearchResultsPageSize());
+		
+		return dataObjectsDTO;
     }
     
     /**
@@ -258,6 +349,36 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
 		compoundMetadataQueryDTO.setCompoundQuery(namedCompoundQuery.getCompoundQuery());
 		compoundMetadataQueryDTO.setDetailedResponse(detailedResponse);
 		compoundMetadataQueryDTO.setPage(page);
+		
+		return compoundMetadataQueryDTO;
+    }
+    
+    /**
+     * Construct a HpcCompoundMetadataQueryDTO for a simple query - i.e. Apply and AND on a collection of queries.
+     *
+     * @param metadataQueries The list of metadata queries.
+     * @param detailedResponse The detailed response indicator.
+     * @param The requested results page
+     * @return HpcCompoundMetadataQueryDTO
+     * 
+     * @throws HpcException If the user query was not found
+     */
+    private HpcCompoundMetadataQueryDTO 
+               toCompoundMetadataQueryDTO(List<HpcMetadataQuery> metadataQueries, 
+            		                      boolean detailedResponse, 
+            		                      int page)
+                                         throws HpcException
+    {
+		// Create a Compound query from the simple queries.
+		HpcCompoundMetadataQuery compoundMetadataQuery = new HpcCompoundMetadataQuery();
+		compoundMetadataQuery.setOperator(HpcCompoundMetadataQueryOperator.AND);
+		compoundMetadataQuery.getQueries().addAll(metadataQueries);
+		
+		// Construct the DTO.
+		HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO = new HpcCompoundMetadataQueryDTO();
+		compoundMetadataQueryDTO.setCompoundQuery(compoundMetadataQuery);
+		compoundMetadataQueryDTO.setPage(page);
+		compoundMetadataQueryDTO.setDetailedResponse(detailedResponse);
 		
 		return compoundMetadataQueryDTO;
     }
