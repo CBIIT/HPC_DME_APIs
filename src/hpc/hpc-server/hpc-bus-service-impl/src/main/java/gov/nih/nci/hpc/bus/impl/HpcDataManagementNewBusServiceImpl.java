@@ -217,7 +217,7 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
 		    	   		           path, 
 		    			           dataObjectRegistrationDTO.getMetadataEntries());
 		        
-		        // Extract the source location.
+		        // Extract the source location and size.
 		        HpcFileLocation source = dataObjectRegistrationDTO.getSource();
 				if(source != null && 
 				   (source.getFileContainerId() == null && source.getFileId() == null)) {
@@ -237,7 +237,7 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
 			    			                   source, uploadResponse.getDataTransferRequestId(), 
 			    			                   uploadResponse.getDataTransferStatus(),
 			    			                   uploadResponse.getDataTransferType(),
-			    			                   getSourceSize(uploadResponse.getDataTransferRequestId(), source, uploadResponse.getDataTransferType(),
+			    			                   getSourceSize(source, uploadResponse.getDataTransferType(),
 				                                             dataObjectFile), 
 			    			                   dataObjectRegistrationDTO.getCallerObjectId()); 
 	
@@ -426,11 +426,11 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
      * 
      * @return The source size in bytes.
      */
-	private Long getSourceSize(String requestId, HpcFileLocation source, HpcDataTransferType dataTransferType,
+	private Long getSourceSize(HpcFileLocation source, HpcDataTransferType dataTransferType,
 			                   File dataObjectFile) throws HpcException
 	{
 		if(source != null) {
-		   return dataTransferService.getDataTransferSize(dataTransferType, requestId);
+		   return dataTransferService.getPathAttributes(dataTransferType, source, true).getSize();
 		}
 		
 		if(dataObjectFile != null) {
