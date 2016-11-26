@@ -118,6 +118,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	// Iterate through the data objects that their data transfer is in-progress.
     	for(HpcDataObject dataObject : dataManagementService.getDataObjectsInProgress()) {
     		String path = dataObject.getAbsolutePath();
+    		logger.info("Update Data Transfer Status for: " + path);
     		try {
     		     // Get current data transfer Request Info.
     			 HpcSystemGeneratedMetadata systemGeneratedMetadata = 
@@ -403,6 +404,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	securityService.setSystemRequestInvoker();
     	
     	dataManagementService.refreshViews();
+    }
+    
+    @Override
+    public void closeConnection()
+    {
+    	dataManagementService.closeConnection();
     }
 
     //---------------------------------------------------------------------//

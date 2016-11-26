@@ -12,8 +12,13 @@ package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.io.File;
@@ -82,47 +87,41 @@ public interface HpcDataManagementNewBusService
      */
     public HpcDataObjectDTO getDataObject(String path) throws HpcException;
     
-//    /**
-//     * Download Data Object.
-//     *
-//     * @param path The data object path.
-//     * @param downloadRequest The download request DTO.
-//     * @return HpcDataObjectDownloadResponseDTO 
-//     * 
-//     * @throws HpcException
-//     */
-//	public HpcDataObjectDownloadResponseDTO 
-//	          downloadDataObject(String path,
-//			                     HpcDataObjectDownloadRequestDTO downloadRequest)
-//			                    throws HpcException;
-//    
-//    /**
-//     * Close connection to Data Management system for the current service call.
-//     */
-//    public void closeConnection();
-//    
-//    /**
-//     * POST Set permissions.
-//     *
-//     * @param entityPermissionRequests Requests to set entities (Collections or Data Objects) permissions.
-//     * @return Responses with each request's result.
-//     * 
-//     * @throws HpcException
-//     */
-//	public HpcEntityPermissionResponseListDTO setPermissions(
-//			                  List<HpcEntityPermissionRequestDTO> entityPermissionRequests)
-//			                  throws HpcException;
-//	
-//    /**
-//     * Get the Data Management Model (Metadata validation rules and hierarchy definition) for a DOC.
-//     *
-//     * @param doc The DOC to get the model for.
-//     * @return HpcDataManagementModelDTO
-//     *      
-//     * @throws HpcException
-//     */
-//	public HpcDataManagementModelDTO getDataManagementModel(String doc) throws HpcException;
+    /**
+     * Download Data Object.
+     *
+     * @param path The data object path.
+     * @param downloadRequest The download request DTO.
+     * @return HpcDataObjectDownloadResponseDTO 
+     * 
+     * @throws HpcException
+     */
+	public HpcDataObjectDownloadResponseDTO 
+	          downloadDataObject(String path,
+			                     HpcDataObjectDownloadRequestDTO downloadRequest)
+			                    throws HpcException;
 
+    /**
+     * POST Set permissions.
+     *
+     * @param entityPermissionRequests Requests to set entities (Collections or Data Objects) permissions.
+     * @return Responses with each request's result.
+     * 
+     * @throws HpcException
+     */
+	public HpcEntityPermissionResponseListDTO setPermissions(
+			                  List<HpcEntityPermissionRequestDTO> entityPermissionRequests)
+			                  throws HpcException;
+	
+    /**
+     * Get the Data Management Model (Metadata validation rules and hierarchy definition) for a DOC.
+     *
+     * @param doc The DOC to get the model for.
+     * @return HpcDataManagementModelDTO
+     *      
+     * @throws HpcException
+     */
+	public HpcDataManagementModelDTO getDataManagementModel(String doc) throws HpcException;
 }
 
  

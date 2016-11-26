@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -38,6 +39,18 @@ public interface HpcDataSearchService
      * @throws HpcException
      */
     public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page) 
+    		                              throws HpcException;
+    
+    /**
+     * Get data object paths by compound metadata query.
+     *
+     * @param compoundMetadataQuery The compound metadata query.
+     * @param page The requested results page.
+     * @return Data Object path list.
+     * 
+     * @throws HpcException
+     */
+    public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page) 
     		                              throws HpcException;
     
     /**
@@ -85,6 +98,28 @@ public interface HpcDataSearchService
      * @throws HpcException
      */
     public HpcNamedCompoundMetadataQuery getQuery(String nciUserId, String queryName) throws HpcException;
+    
+    /**
+     * Get a list of collection metadata attributes currently registered.
+     *
+     * @param level Filter the results by level. (Optional).
+     * @param levelOperator The operator to use in the level filter. (Optional).
+     * @return A list of metadata attributes.
+     */
+	public List<String> getCollectionMetadataAttributes(
+			               Integer level, HpcMetadataQueryOperator levelOperator) 
+			               throws HpcException;
+	
+    /**
+     * Get a list of data object metadata attributes currently registered.
+     *
+     * @param level Filter the results by level. (Optional).
+     * @param levelOperator The operator to use in the level filter. (Optional).
+     * @return A list of metadata attributes.
+     */
+	public List<String> getDataObjectMetadataAttributes(
+			               Integer level, HpcMetadataQueryOperator levelOperator) 
+			               throws HpcException;
 }
 
  

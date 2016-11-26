@@ -10,10 +10,14 @@
 
 package gov.nih.nci.hpc.service;
 
+import java.util.List;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -112,6 +116,16 @@ public interface HpcDataManagementNewService
      * @throws HpcException
      */
     public HpcDataObject getDataObject(String path) throws HpcException;
+    
+    /**
+     * Get data hierarchy of a DOC.
+     * 
+     * @param doc The DOC.
+     * @return HpcDataHierarchy
+     *
+     * @throws HpcException
+     */
+    public HpcDataHierarchy getDataHierarchy(String doc) throws HpcException;
 }
 
  

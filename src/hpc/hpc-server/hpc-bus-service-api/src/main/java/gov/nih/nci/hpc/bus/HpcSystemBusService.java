@@ -101,6 +101,11 @@ public interface HpcSystemBusService
      * @throws HpcException
      */
 	public void refreshViews() throws HpcException;
+	
+	/**
+	 * Close connection to Data Management system for the current service call.
+	 */
+	public void closeConnection();
 }
 
  
