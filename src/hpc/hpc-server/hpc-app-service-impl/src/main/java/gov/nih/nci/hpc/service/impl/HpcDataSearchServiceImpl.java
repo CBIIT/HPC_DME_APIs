@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.dao.HpcUserQueryDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
@@ -131,6 +132,24 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     }
     
     @Override
+    public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
+    		                               int page) 
+    		                              throws HpcException
+    {
+       	if(!isValidCompoundMetadataQuery(compoundMetadataQuery)) {
+           throw new HpcException("Invalid or null compound metadata query", 
+        			              HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+       	
+       	// Use the hierarchical metadata views to perform the search.
+       	String dataManagementUsername = 
+                   HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+        return toRelativePaths(metadataDAO.getDataObjectPaths(compoundMetadataQuery, dataManagementUsername,
+        		                                              getOffset(page), searchResultsPageSize,
+        		                                              defaultDataObjectLevelFilter));
+    }
+    
+    @Override
     public int getSearchResultsPageSize()
     {
     	return searchResultsPageSize;
@@ -208,4 +227,19 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     	return relativePaths;
     }
     
+    @Override
+    public List<String> getCollectionMetadataAttributes(
+    		               Integer level, HpcMetadataQueryOperator levelOperator) 
+    		               throws HpcException
+    {
+    	return metadataDAO.getCollectionMetadataAttributes(level, levelOperator);
+    }
+    
+    @Override
+    public List<String> getDataObjectMetadataAttributes(
+    		               Integer level, HpcMetadataQueryOperator levelOperator) 
+    		               throws HpcException
+    {
+    	return metadataDAO.getDataObjectMetadataAttributes(level, levelOperator);
+    }
 }

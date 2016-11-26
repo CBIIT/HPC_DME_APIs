@@ -14,9 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -176,6 +180,105 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
+    public Response getDataObjects(List<HpcMetadataQueryParam> metadataQueries,
+    		                       Boolean detailedResponse, Integer page)
+    {
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: GET /dataObject/" + metadataQueries);
+    	
+    	HpcDataObjectListDTO dataObjects = null;
+		try {
+			 dataObjects = dataSearchBusService.getDataObjects(
+					           unmarshallQueryParams(metadataQueries),
+					           detailedResponse != null ? detailedResponse : false,
+					           page != null ? page : 1);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /dataObject/" + metadataQueries + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " getDataObjects" + metadataQueries);
+		
+		return okResponse(!dataObjects.getDataObjects().isEmpty() ||
+				          !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects : null, true);
+    }
+    
+    @Override
+    public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries,
+    		                         Boolean detailedResponse, Integer page)
+    {
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: POST /dataObject/query" + metadataQueries);
+    	
+    	HpcDataObjectListDTO dataObjects = null;
+		try {
+			 dataObjects = dataSearchBusService.getDataObjects(
+					           metadataQueries,
+					           detailedResponse != null ? detailedResponse : false,
+					           page != null ? page : 1);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /dataObject/query" + metadataQueries + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " queryDataObjects" + metadataQueries);
+		
+		return okResponse(!dataObjects.getDataObjects().isEmpty() ||
+				          !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects : null, true);
+    }
+    
+    @Override
+    public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+    {
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: POST /dataObject/query/compound" + compoundMetadataQueryDTO);
+    	
+    	HpcDataObjectListDTO dataObjects = null;
+		try {
+			 dataObjects = dataSearchBusService.getDataObjects(compoundMetadataQueryDTO);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /dataObject/query/compound" + compoundMetadataQueryDTO + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " queryDataObjects" + compoundMetadataQueryDTO);
+		
+		return okResponse(!dataObjects.getDataObjects().isEmpty() ||
+				          !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects : null, true);
+    }
+    
+    @Override
+    public Response queryDataObjects(String queryName, Boolean detailedResponse, Integer page)
+    {
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: GET /dataObject/query/compound{queryName}" + queryName);
+    	
+    	HpcDataObjectListDTO dataObjects = null;
+		try {
+			 dataObjects = dataSearchBusService.getDataObjects(
+					           queryName,
+					           detailedResponse != null ? detailedResponse : false,
+					           page != null ? page : 1);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /dataObject/query/compound{queryName}" + queryName + 
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " queryDataObjects" + queryName);
+		
+		return okResponse(!dataObjects.getDataObjects().isEmpty() ||
+				          !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects : null, true);
+    }
+    
+    @Override
     public Response saveQuery(String queryName,
     		                  HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
     {
@@ -233,6 +336,32 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     	return okResponse(!queries.getQueries().isEmpty() ? queries : null, true);
     }
     
+    @Override
+    public Response getMetadataAttributes(Integer level, String levelOperatorStr)
+    {
+    	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: GET /metadataAttributes/");
+    	
+    	HpcMetadataAttributesListDTO metadataAttributes = null;
+		try {
+		     metadataAttributes = 
+		    		 dataSearchBusService.getMetadataAttributes(
+		    				                 level, 
+		    				                 toMetadataQueryOperator(levelOperatorStr));
+			 
+		} catch(HpcException e) {
+		        logger.error("RS: GET /metadataAttributes/ failed:", e);
+			    return errorResponse(e);
+		}
+		
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " getMetadataAttributes: " );
+		
+		return okResponse(!metadataAttributes.getCollectionMetadataAttributes().isEmpty() && 
+				          !metadataAttributes.getDataObjectMetadataAttributes().isEmpty() ? 
+				          metadataAttributes : null, true);
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
@@ -259,6 +388,26 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 		 }
 		 
 		 return queries;
+    }
+    
+    /**
+     * Convert a string to HpcMetadataQueryOperator
+     * 
+     * @param levelOperatorStr The level operator string.
+     * @return HpcMetadataQueryOperator
+     * 
+     * @throws HpcException if it's an invalid level operator.
+     */
+    private HpcMetadataQueryOperator toMetadataQueryOperator(String levelOperatorStr) 
+    		                                                throws HpcException
+    {
+    	try {
+    	     return levelOperatorStr != null ? HpcMetadataQueryOperator.fromValue(levelOperatorStr) : null; 
+    	     
+    	} catch(Exception e) {
+    		    throw new HpcException("Invalid level operator: " + levelOperatorStr, 
+    		    		               HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
     }
 }
 

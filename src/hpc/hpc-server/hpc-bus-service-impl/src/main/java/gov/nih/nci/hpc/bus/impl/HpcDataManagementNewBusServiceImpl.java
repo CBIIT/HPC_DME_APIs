@@ -13,17 +13,29 @@ package gov.nih.nci.hpc.bus.impl;
 import gov.nih.nci.hpc.bus.HpcDataManagementNewBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementNewService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -31,7 +43,9 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -279,6 +293,126 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
     	return dataObjectDTO;
     }
     
+    @Override
+    public HpcDataObjectDownloadResponseDTO 
+              downloadDataObject(String path,
+                                 HpcDataObjectDownloadRequestDTO downloadRequestDTO)
+                                throws HpcException
+    {
+    	logger.info("Invoking downloadDataObject(path, downloadReqest, dataObjectFile): " + path + ", " + 
+                    downloadRequestDTO);
+    	
+    	// Input validation.
+    	if(path == null || downloadRequestDTO == null) {
+    	   throw new HpcException("Null path or download request",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Get the System generated metadata.
+    	HpcSystemGeneratedMetadata metadata = 
+    	   metadataService.getDataObjectSystemGeneratedMetadata(path);
+    	
+    	// Validate the file is archived.
+    	if(!metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+    	   throw new HpcException("Object is not in archived state yet. It is in " +
+    			                  metadata.getDataTransferStatus().value() + " state",
+    			                  HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+    	}
+    	
+    	// Download the data object.
+    	HpcDataObjectDownloadResponse downloadResponse = 
+    	   dataTransferService.downloadDataObject(metadata.getArchiveLocation(), 
+                                                  downloadRequestDTO.getDestination(),
+                                                  metadata.getDataTransferType());
+        
+        // Construct and return download response DTO.
+        HpcDataObjectDownloadResponseDTO downloadResponseDTO = new HpcDataObjectDownloadResponseDTO();
+        downloadResponseDTO.setDestinationLocation(downloadResponse.getDestinationLocation());
+        downloadResponseDTO.setRequestId(downloadResponse.getDataTransferRequestId());
+        downloadResponseDTO.setDestinationFile(downloadResponse.getDestinationFile());
+        return downloadResponseDTO;
+    }
+    
+    @Override
+	public HpcEntityPermissionResponseListDTO setPermissions(
+                    List<HpcEntityPermissionRequestDTO> entityPermissionRequests)
+                    throws HpcException
+    {
+    	// Input Validation.
+    	validatePermissionRequests(entityPermissionRequests);
+    	
+    	HpcEntityPermissionResponseListDTO responses = new HpcEntityPermissionResponseListDTO();
+    	
+    	// Iterate through and execute the entity permission requests.
+    	for(HpcEntityPermissionRequestDTO entityPermissionRequest : entityPermissionRequests) {
+    		HpcEntityPermissionResponseDTO entityPermissionResponse = new HpcEntityPermissionResponseDTO();
+    		entityPermissionResponse.setPath(entityPermissionRequest.getPath());
+    		// Execute all user permission requests for this entity (collection or data object).
+    		for(HpcUserPermission userPermissionRequest : entityPermissionRequest.getUserPermissions()) {
+    			HpcUserPermissionResponseDTO userPermissionResponse = new HpcUserPermissionResponseDTO();
+    			userPermissionResponse.setUserId(userPermissionRequest.getUserId());
+    			userPermissionResponse.setResult(true);
+    		    try {
+    		    	 // Set the data management permission.
+    		    	 dataManagementService.setPermission(entityPermissionRequest.getPath(), 
+    			                                         userPermissionRequest);
+    			     
+    		    } catch(HpcException e) {
+    		    	    // Request failed. Record the message and keep going.
+    		    		userPermissionResponse.setResult(false);
+    		    		userPermissionResponse.setMessage(e.getMessage());
+    		    }
+     		
+    		    // Add this user permission response to the list.
+    		    entityPermissionResponse.getUserPermissionResponses().add(userPermissionResponse);
+    		}
+    		
+       		for(HpcGroupPermission groupPermissionRequest : entityPermissionRequest.getGroupPermissions()) {
+    			HpcGroupPermissionResponseDTO groupPermissionResponse = new HpcGroupPermissionResponseDTO();
+    			groupPermissionResponse.setGroupId(groupPermissionRequest.getGroupId());
+    			groupPermissionResponse.setResult(true);
+    		    try {
+    		    	 // Set the data management permission.
+    		    	 //HpcPathAttributes pathAttributes =
+    		    		dataManagementService.setPermission(entityPermissionRequest.getPath(), 
+    		    				groupPermissionRequest);
+    		    } catch(HpcException e) {
+    		    	    // Request failed. Record the message and keep going.
+    		    		groupPermissionResponse.setResult(false);
+    		    		groupPermissionResponse.setMessage(e.getMessage());
+    		    }
+     		
+    		    // Add this user permission response to the list.
+    		    entityPermissionResponse.getGroupPermissionResponses().add(groupPermissionResponse);
+    		}    		
+    		
+    		// Add this entity permission response to the list
+    		responses.getEntityPermissionResponses().add(entityPermissionResponse);
+    	}
+    	
+    	return responses;
+    }
+    
+    @Override
+    public HpcDataManagementModelDTO getDataManagementModel(String doc) throws HpcException
+    {
+    	logger.info("Invoking getDataManagementMode(String): " + doc);
+    	
+    	// Input validation.
+    	if(doc == null || doc.isEmpty()) {
+    	   throw new HpcException("Null or empty DOC", HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	HpcDataManagementModelDTO dataManagementModel = new HpcDataManagementModelDTO();
+    	dataManagementModel.getCollectionMetadataValidationRules().addAll(
+    			               metadataService.getCollectionMetadataValidationRules(doc));
+    	dataManagementModel.getDataObjectMetadataValidationRules().addAll(
+	                           metadataService.getDataObjectMetadataValidationRules(doc));
+    	dataManagementModel.setDataHierarchy(dataManagementService.getDataHierarchy(doc));
+    	
+    	return dataManagementModel;
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
@@ -346,6 +480,85 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
 		
 		return String.valueOf((transferSize * 100L) / sourceSize) + '%';
 	}
+	
+    /** 
+     * Validate permissions requests list.
+     * 
+     * @param entityPermissionRequests The requests to validate.
+     *
+     * @throws HpcException if found an invalid request in the list.
+     */
+	private void validatePermissionRequests(
+                         List<HpcEntityPermissionRequestDTO> entityPermissionRequests)
+                         throws HpcException
+    {
+		if(entityPermissionRequests == null || entityPermissionRequests.isEmpty()) {
+		   throw new HpcException("Null or empty permission requests",
+	                              HpcErrorType.INVALID_REQUEST_INPUT);	
+		}
+		
+		Set<String> paths = new HashSet<String>(); 
+		for(HpcEntityPermissionRequestDTO entityPermissionRequest : entityPermissionRequests) {
+			// Validate the path is not empty and not a dup.
+			String path = entityPermissionRequest.getPath();
+			if(path == null || path.isEmpty()) {
+			   throw new HpcException("Null or empty path in a permission request",
+                                       HpcErrorType.INVALID_REQUEST_INPUT);					
+			}
+			if(!paths.add(path)) {
+			   throw new HpcException("Duplicate path in a permission request: " + path,
+                                      HpcErrorType.INVALID_REQUEST_INPUT);	
+			}
+			
+			// Validate the user permission requests for this path. 
+			List<HpcUserPermission> userPermissionRequests = entityPermissionRequest.getUserPermissions();
+			List<HpcGroupPermission> groupPermissionRequests = entityPermissionRequest.getGroupPermissions();
+			
+			if((userPermissionRequests == null || userPermissionRequests.isEmpty()) && (groupPermissionRequests == null || groupPermissionRequests.isEmpty())) {
+			   throw new HpcException("Null or empty user and group permission requests for path: " + path,
+                                      HpcErrorType.INVALID_REQUEST_INPUT);						
+			}
+			
+			Set<String> userIds = new HashSet<String>(); 
+			for(HpcUserPermission userPermissionRequest : userPermissionRequests) {
+				String userId = userPermissionRequest.getUserId();
+				String permission = userPermissionRequest.getPermission();
+				if(userId == null || userId.isEmpty()) { 
+				   throw new HpcException("Null or empty userId in a permission request for path: " + path,
+                                          HpcErrorType.INVALID_REQUEST_INPUT);	
+				}
+				if(!userIds.add(userId)) {
+				   throw new HpcException("Duplicate userId in a permission request for path: " + path +
+						                  ", userId: " + userId,
+                                          HpcErrorType.INVALID_REQUEST_INPUT);	 
+				}
+				if(permission == null || permission.isEmpty()) { 
+				   throw new HpcException("Null or empty permission in a permission request for path: " + path,
+	                                       HpcErrorType.INVALID_REQUEST_INPUT);	
+				}
+			}
+			
+			// Validate the group permission requests for this path. 
+			Set<String> groupIds = new HashSet<String>(); 
+			for(HpcGroupPermission groupPermissionRequest : groupPermissionRequests) {
+				String groupId = groupPermissionRequest.getGroupId();
+				String permission = groupPermissionRequest.getPermission();
+				if(groupId == null || groupId.isEmpty()) { 
+				   throw new HpcException("Null or empty groupId in a permission request for path: " + path,
+                                          HpcErrorType.INVALID_REQUEST_INPUT);	
+				}
+				if(!groupIds.add(groupId)) {
+				   throw new HpcException("Duplicate groupId in a permission request for path: " + path +
+						                  ", groupId: " + groupId,
+                                          HpcErrorType.INVALID_REQUEST_INPUT);	 
+				}
+				if(permission == null || permission.isEmpty()) { 
+				   throw new HpcException("Null or empty permission in a permission request for path: " + path,
+	                                       HpcErrorType.INVALID_REQUEST_INPUT);	
+				}
+			}
+		}
+    }
 }
 
  
