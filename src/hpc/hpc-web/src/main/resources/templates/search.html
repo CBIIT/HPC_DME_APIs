@@ -45,6 +45,8 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
     var attributes = [[${hierarchy.getAllAttributes()}]];
+    var collattributes = [[${hierarchy.getCollectionAttrs()}]];
+    var dataattributes = [[${hierarchy.getDataobjectAttrs()}]];
 /*]]>*/
 </script>
 
@@ -125,17 +127,15 @@
 									Wireframe</option>
 						        </select>
 								<select size="1" id="levelOperator1" name="levelOperator" class="form-control" th:required="required">
-								    <option value="-1">-Select-</option>
-								    <option value="1">=</option>
-								    <option value="2">!=</option>
-								    <option value="3">&lt;</option>
-								    <option value="4">&gt;</option>
+								    <option value="-1">----Select----</option>
+								    <option th:each="entry : ${leveloperators.entrySet()}" th:value="${entry.key}" th:text="${entry.value}">
+									Wireframe</option>
 						        </select>
 							</td>
 							<td style="white-space:nowrap">
 								<select size="1" id="attrName1" name="attrName" class="form-control" th:required="required">
 								    <option value="-1">----Select----</option>
-								    <option th:each="entry : ${hierarchy.getCollectionAttributes().entrySet()}" th:value="${entry.key}" th:text="${entry.value}">
+								    <option th:each="attrName : ${hierarchy.getCollectionAttrs()}" th:value="${attrName}" th:text="${attrName}">
 									Wireframe</option>
 						        </select>
 							</td>
@@ -165,6 +165,7 @@
 		<a id="addAttr" class="btn btn-default pull-left" onClick="addRow()">Add Criteria</a>
 	  </div>
 	</div>
+<!-- 
     <div class="form-group" id="advanced">
 	  <a id="addAttr" class="btn link pull-left col-sm-2" onClick="advancedSearch()">Advanced Search
 	  <span class="menu-arrow arrow_carrot-right" id="arrow"></span>
@@ -179,6 +180,7 @@
 		<textarea class="form-control" rows="5" id="advcritiria"></textarea>
 	  </div>
 	</div>
+-->
 	 <div class="form-group">
 		<div class="col-sm-offset-2 col-sm-10">
 		  <label><input type="checkbox" th:field="*{detailed}" id="detailed"/>&nbsp;&nbsp;Detailed results</label>
@@ -321,27 +323,49 @@ function populateLevelAttributes(level, id)
 	if(level == "datafile")
 		level = "1";
 
-	for(var i=0;i<attributes.length;i++)
+	if(level == "-1")
 	{
-		var attr = attributes[i];
-		var attrLevel = attr.substring(0, attr.indexOf(":"));
-
-		if(attrLevel != level)
+		if(type == "collection")
 		{
-			continue;
+			for(var i=0;i<collattributes.length;i++)
+			{
+				var attr = collattributes[i];
+				attrOptions = attrOptions + "<option value='"+attr+"'>"+attr+"</option>"
+			}
 		}
-
-		var attrType = attr.substring(attr.indexOf(":")+1, attr.lastIndexOf(":"));
-		if(attrType != type)
+		else
 		{
-			continue;
+			for(var i=0;i<dataattributes.length;i++)
+			{
+				var attr = dataattributes[i];
+				attrOptions = attrOptions + "<option value='"+attr+"'>"+attr+"</option>"
+			}
 		}
-
-		var attrName = attr.substring(attr.lastIndexOf(":")+1);
-		attrOptions = attrOptions + "<option value='"+attrName+"'>"+attrName+"</option>"
-
+		
 	}
-
+	else
+	{
+		for(var i=0;i<attributes.length;i++)
+		{
+			var attr = attributes[i];
+			var attrLevel = attr.substring(0, attr.indexOf(":"));
+	
+			if(attrLevel != level)
+			{
+				continue;
+			}
+	
+			var attrType = attr.substring(attr.indexOf(":")+1, attr.lastIndexOf(":"));
+			if(attrType != type)
+			{
+				continue;
+			}
+	
+			var attrName = attr.substring(attr.lastIndexOf(":")+1);
+			attrOptions = attrOptions + "<option value='"+attrName+"'>"+attrName+"</option>"
+	
+		}
+	}
     $('#attrName'+(row)).empty();
     $('#attrName'+(row)).append(attrOptions);
     $('#attrName'+(row)).val($('#attrName1').val());
@@ -356,12 +380,44 @@ function resetRows()
 {
     var table = document.getElementById("metaAttrTable");
     var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
-    //rows = rows - 1;
+	var searchTypes = document.getElementsByName('searchType');
+	var type;
+
+	for (var i = 0, length = searchTypes.length; i < length; i++) {
+	    if (searchTypes[i].checked) {
+	        type = searchTypes[i].value;
+	        break;
+	    }
+	}	
     for(var i=1;i<rows;i++)
     {
     	var namesEle = document.getElementById('attrName'+i);
     	if (namesEle != null)
+    	{
+    		if(type == "collection")
+    		{
+    			var attrOptions="<option value='-1'>----Select----</option>";
+    			for(var j=0;j<collattributes.length;j++)
+    			{
+    				var attr = collattributes[j];
+    				attrOptions = attrOptions + "<option value='"+attr+"'>"+attr+"</option>"
+    			}
+        	    $('#attrName'+(i)).empty();
+        	    $('#attrName'+(i)).append(attrOptions);
+    		}
+    		else
+    		{
+    			var attrOptions="<option value='-1'>----Select----</option>";
+    			for(var k=0;k<dataattributes.length;k++)
+    			{
+    				var attr = dataattributes[k];
+    				attrOptions = attrOptions + "<option value='"+attr+"'>"+attr+"</option>"
+    			}
+        	    $('#attrName'+(i)).empty();
+        	    $('#attrName'+(i)).append(attrOptions);
+    		}
     		namesEle.selectedIndex = 0;
+    	}
     	var levelEle = document.getElementById('level'+i);
     	if (levelEle != null)
     		levelEle.selectedIndex = 0;
@@ -464,6 +520,22 @@ function validateAndSubmit()
 					return false;
 				}
 			}
+		}
+		if(attrName.startsWith("level"))
+		{
+			var suffix = attrName.substring("level".length);
+//			alert("End " + suffix);
+			var attrNameValue = document.getElementsByName(attrName)[0].value;
+			if(attrNameValue != "-1")
+			{
+				var attrOperValue = document.getElementsByName("levelOperator"+suffix)[0].value;	
+				if(attrOperValue == "-1" || attrOperValue == null || attrOperValue.trim().length == 0)
+				{
+					alert("Invalid Valid criteria. Please enter level operator value");
+					return false;
+				}
+			}
+			
 		}
 	}
 	document.getElementById("simplesearchform").submit();

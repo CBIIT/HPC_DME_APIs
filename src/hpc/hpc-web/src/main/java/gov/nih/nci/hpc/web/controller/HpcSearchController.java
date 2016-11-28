@@ -118,6 +118,7 @@ public class HpcSearchController extends AbstractHpcController {
 		//populateHierarchy(model, userPasswdToken, user);
 		populateMetadata(model, userPasswdToken, user, "collection", session);
 		populateOperators(model);
+		populateLevelOperators(model);
 		return "search";
 	}
 
@@ -133,6 +134,7 @@ public class HpcSearchController extends AbstractHpcController {
 			//populateHierarchy(model, userPasswdToken, user);
 			populateMetadata(model, userPasswdToken, user, search.getSearchType(), session);
 			populateOperators(model);
+			populateLevelOperators(model);
 			return "search";
 		}
 
@@ -195,6 +197,7 @@ public class HpcSearchController extends AbstractHpcController {
 				//populateHierarchy(model, userPasswdToken, user);
 				populateMetadata(model, userPasswdToken, user, search.getSearchType(), session);
 				populateOperators(model);
+				populateLevelOperators(model);
 			}
 		}
 
@@ -311,6 +314,8 @@ public class HpcSearchController extends AbstractHpcController {
 				criteria.setOperator(HpcMetadataQueryOperator.fromValue(operator));
 				if (level != null && !level.equals("-1")) {
 					HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
+					if(level.equals("datafile"))
+						level = "1";
 					levelFilter.setLevel(new Integer(level));
 					levelFilter.setOperator(HpcMetadataQueryOperator.fromValue(levelOperator));
 					criteria.setLevelFilter(levelFilter);
@@ -420,7 +425,18 @@ public class HpcSearchController extends AbstractHpcController {
 		model.addAttribute("operators", entries);
 	}
 
+	private void populateLevelOperators(Model model) {
+		Map<String, String> entries = new HashMap<String, String>();
+		entries.put("EQUAL", "=");
+		entries.put("NOT_EQUAL", "!=");
+		entries.put("NUM_LESS_THAN", "<");
+		entries.put("NUM_LESS_OR_EQUAL", "<=");
+		entries.put("NUM_GREATER_OR_EQUAL", ">=");
+		model.addAttribute("leveloperators", entries);
+	}
+
 	private void populateMetadata(Model model, String authToken, HpcUserDTO user, String type, HttpSession session) {
+		model.addAttribute("doc", user.getNciAccount().getDoc());
 		if(session.getAttribute("hierarchy") != null)
 		{
 			model.addAttribute("hierarchy", session.getAttribute("hierarchy"));
@@ -437,12 +453,15 @@ public class HpcSearchController extends AbstractHpcController {
 		Iterator levels = hierarchy.keySet().iterator();
 		while(levels.hasNext())
 		{
+			
 			String level = (String)levels.next();
+			System.out.println("Level: "+level);
 			HpcMetadataAttributesListDTO dto = HpcClientUtil.getMetadataAttrNames(level, "EQUAL", authToken,
 					hpcMetadataAttrsURL, sslCertPath, sslCertPassword);
 			stop = System.currentTimeMillis();
 			System.out.println("time1: "+(start-stop)/1000);
 			if (dto != null && dto.getCollectionMetadataAttributes() != null) {
+				dataHierarchy.getCollectionAttrs().addAll(dto.getCollectionMetadataAttributes());
 				for(String name : dto.getCollectionMetadataAttributes())
 				{
 					dataHierarchy.addCollectionAttributes(name, name);
@@ -451,6 +470,7 @@ public class HpcSearchController extends AbstractHpcController {
 			}
 
 			if (dto != null && dto.getDataObjectMetadataAttributes() != null) {
+				dataHierarchy.getDataobjectAttrs().addAll(dto.getDataObjectMetadataAttributes());
 				for(String name : dto.getDataObjectMetadataAttributes())
 				{
 					dataHierarchy.addDataobjectAttributes(name, name);
@@ -464,7 +484,6 @@ public class HpcSearchController extends AbstractHpcController {
 		dataHierarchy.setLevels(hierarchy);
 		dataHierarchy.setAllAttributes(attrs);
 		model.addAttribute("hierarchy", dataHierarchy);
-		model.addAttribute("doc", user.getNciAccount().getDoc());
 		session.setAttribute("hierarchy", dataHierarchy);
 	}
 
