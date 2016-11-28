@@ -160,13 +160,13 @@
 								<div class="panel-heading">
 									<h2>
 										<i class="fa fa-list-alt red"></i>
-									    <a class="btn link" onClick="advancedSearch()">Parent Metadata
+									    <a class="btn link" onClick="showParentAttrs()">Parent Metadata
 	  									<span class="menu-arrow arrow_carrot-right" id="arrow"></span>
 	  									</a>
 										
 									</h2>
 								</div>
-								<div class="form-group">
+								<div class="form-group" id="parentAttrs" style="display: none">
 									<table class="table table-bordered  col-md-12">
 									    <thead>
 									      <tr>
@@ -269,6 +269,28 @@
 	  });
 	});
 
+	var toggle = true;
+	function showParentAttrs() {
+		var ele = document.getElementById("parentAttrs");
+		var arrow = document.getElementById("arrow");
+		if(toggle)
+		{
+			document.getElementById('arrow').setAttribute("class","menu-arrow arrow_carrot-down");
+			toggle = false;
+		}
+		else
+		{
+			document.getElementById('arrow').setAttribute("class","menu-arrow arrow_carrot-right");
+			toggle = true;
+		}
+			
+		if(ele.style.display == "block") {
+	    		ele.style.display = "none";
+	  	}
+		else {
+			ele.style.display = "block";
+		}
+	}
 
 
   </script>
