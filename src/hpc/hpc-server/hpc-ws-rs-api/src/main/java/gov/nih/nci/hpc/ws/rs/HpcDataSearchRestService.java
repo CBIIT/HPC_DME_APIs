@@ -36,7 +36,7 @@ import javax.ws.rs.core.Response;
  * @version $Id$
  */
 
-@Path("/new")
+@Path("/")
 public interface HpcDataSearchRestService
 {
     /**
