@@ -46,7 +46,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Multipart;
  * @version $Id$
  */
 
-@Path("/")
+@Path("/old")
 public interface HpcDataManagementRestService
 {
     /**
