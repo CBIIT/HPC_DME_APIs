@@ -46,8 +46,7 @@ public interface HpcDataManagementProxy
      *                          This determines the authentication scheme to use w/ Data Management. 
      * @return An authenticated token, to be used in subsequent calls to data management.
      *         It returns null if the account is not authenticated.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data management system failure.
      */
     public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount,
     		                   boolean ldapAuthenticated) 
@@ -55,18 +54,20 @@ public interface HpcDataManagementProxy
 
     /**
      * Create HPC data management account from proxy account object. 
-     * This is to cache proxy data management account for better performance
-     * @param proxyAccount
-     * @return HpcDataManagementAccount to tokenize 
-     * @throws HpcException
+     * This is to cache proxy data management account for better performance.
+     * 
+     * @param proxyAccount The tokenized account.
+     * @return A data management account
+     * @throws HpcException on data management system failure.
      */
     public HpcDataManagementAccount getHpcDataManagementAccount(Object proxyAccount) throws HpcException;
     
     /**
-     * Create Proxy data management account from cached HPC data management account 
-     * @param datamanagementAccount
-     * @return
-     * @throws HpcException
+     * Create Proxy data management account from cached HPC data management account.
+     * 
+     * @param datamanagementAccount Data Management Account.
+     * @return Tokenized account.
+     * @throws HpcException on data management system failure.
      */
     public Object getProxyManagementAccount(HpcDataManagementAccount datamanagementAccount) throws HpcException;
     
@@ -82,8 +83,7 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param path The collection path.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data management system failure.
      */
     public void createCollectionDirectory(Object authenticatedToken, String path) 
     		                             throws HpcException;
@@ -93,8 +93,7 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param path The data object path.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data management system failure.
      */
     public void createDataObjectFile(Object authenticatedToken, 
     		                         String path) 
@@ -105,7 +104,6 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param path The path to delete.
-     * 
      * @return true if the object file was successfully deleted.
      */
     public boolean delete(Object authenticatedToken, String path);
@@ -116,8 +114,7 @@ public interface HpcDataManagementProxy
      * @param authenticatedToken An authenticated token.
      * @param path The collection path.
      * @param metadataEntries The metadata entries to add.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data management system failure.
      */
     public void addMetadataToCollection(Object authenticatedToken, 
     		                            String path,
@@ -130,8 +127,7 @@ public interface HpcDataManagementProxy
      * @param authenticatedToken An authenticated token.
      * @param path The collection path.
      * @param metadataEntries The metadata entries to update.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data management system failure.
      */
     public void updateCollectionMetadata(Object authenticatedToken, 
     		                             String path,
@@ -144,8 +140,7 @@ public interface HpcDataManagementProxy
      * @param authenticatedToken An authenticated token.
      * @param path The data object path.
      * @param metadataEntries The metadata entries to add.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data management system failure.
      */
     public void addMetadataToDataObject(Object authenticatedToken, 
     		                            String path,
@@ -158,8 +153,7 @@ public interface HpcDataManagementProxy
      * @param authenticatedToken An authenticated token.
      * @param path The data object path.
      * @param metadataEntries The metadata entries to update.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data management system failure.
      */
     public void updateDataObjectMetadata(Object authenticatedToken, 
     		                             String path,
@@ -171,8 +165,8 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param path The path.
-     * 
-     * @throws HpcException
+     * @return true if the parent path is a directory, or false otherwise.
+     * @throws HpcException on data management system failure.
      */
     public boolean isParentPathDirectory(Object authenticatedToken, 
     		                             String path)
@@ -183,8 +177,7 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param path The data-object path.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data management system failure.
      */
     public void createParentPathDirectory(Object authenticatedToken, 
     		                              String path)
@@ -196,8 +189,7 @@ public interface HpcDataManagementProxy
      * @param authenticatedToken An authenticated token.
      * @param path The data-object/collection path.
      * @return The path attributes.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data management system failure.
      */
     public HpcPathAttributes getPathAttributes(Object authenticatedToken, 
     		                                   String path)
@@ -208,9 +200,8 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param path The collection's path.
-     * @return HpcCollection.
-     * 
-     * @throws HpcException
+     * @return The Collection.
+     * @throws HpcException on data management system failure.
      */
     public HpcCollection getCollection(Object authenticatedToken, String path) 
     		                          throws HpcException;
@@ -220,9 +211,8 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param metadataQueries The metadata entries to query for.
-     * @return HpcCollection list.
-     * 
-     * @throws HpcException
+     * @return List of collections.
+     * @throws HpcException on data management system failure.
      */
     public List<HpcCollection> getCollections(Object authenticatedToken,
     		                                  List<HpcMetadataQuery> metadataQueries) 
@@ -233,9 +223,8 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param path The collection path.
-     * @return HpcMetadataEntry list.
-     * 
-     * @throws HpcException
+     * @return List of metadata entries.
+     * @throws HpcException on data management system failure.
      */
     public List<HpcMetadataEntry> getCollectionMetadata(Object authenticatedToken, 
    		                                                String path) 
@@ -246,9 +235,8 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param path The data object's path.
-     * @return HpcDataObject.
-     * 
-     * @throws HpcException
+     * @return The Data Object.
+     * @throws HpcException on data management system failure.
      */
     public HpcDataObject getDataObject(Object authenticatedToken, String path) 
     		                          throws HpcException;
@@ -258,9 +246,8 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param id The data object's ID.
-     * @return HpcDataObject.
-     * 
-     * @throws HpcException
+     * @return The Data Object.
+     * @throws HpcException on data management system failure.
      */
     public HpcDataObject getDataObject(Object authenticatedToken, int id) 
     		                          throws HpcException;
@@ -270,9 +257,8 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param metadataQueries The metadata entries to query for.
-     * @return HpcDataObject list.
-     * 
-     * @throws HpcException
+     * @return List of data objects.
+     * @throws HpcException on data management system failure.
      */
     public List<HpcDataObject> getDataObjects(Object authenticatedToken,
     		                                  List<HpcMetadataQuery> metadataQueries) 
@@ -283,9 +269,8 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param path The data object path.
-     * @return HpcMetadataEntry list.
-     * 
-     * @throws HpcException
+     * @return List of metadata entries.
+     * @throws HpcException on data management system failure.
      */
     public List<HpcMetadataEntry> getDataObjectMetadata(Object authenticatedToken, 
    		                                                String path) 
@@ -296,9 +281,8 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param path The path.
-     * @return HpcMetadataEntry list.
-     * 
-     * @throws HpcException
+     * @return List of metadata entries.
+     * @throws HpcException on data management system failure.
      */
     public List<HpcMetadataEntry> getParentPathMetadata(Object authenticatedToken, 
    		                                                String path) 
@@ -310,8 +294,7 @@ public interface HpcDataManagementProxy
      * @param authenticatedToken An authenticated token.
      * @param path The path.
      * @return List of IDs.
-     * 
-     * @throws HpcException
+     * @throws HpcException  on data management system failure.
      */
     public List<Integer> getParentPathMetadataIds(Object authenticatedToken, String path) 
    		                                         throws HpcException;   
@@ -321,9 +304,8 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param username The user name of the account to get its type.
-     * @return HpcUserRole The user's type.
-     * 
-     * @throws HpcException
+     * @return The user's role.
+     * @throws HpcException on data management system failure.
      */
     public HpcUserRole getUserRole(Object authenticatedToken, String username) 
     		                      throws HpcException;   
@@ -334,7 +316,6 @@ public interface HpcDataManagementProxy
      * @param authenticatedToken An authenticated token.
      * @param nciAccount The NCI account of the user to be added to data management.
      * @param userRole The HPC user role to assign to the new user.
-     * 
      * @throws HpcException If it failed to add a user or user already exists.
      */
     public void addUser(Object authenticatedToken,
@@ -349,7 +330,6 @@ public interface HpcDataManagementProxy
      * @param firstName The user first name.
      * @param lastName The user last name. 
      * @param userRole The HPC user role to update for the user.
-     * 
      * @throws HpcException If it failed to update user, or the user doesn't exist.
      */
     public void updateUser(Object authenticatedToken,
@@ -362,7 +342,6 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param nciUserId The user name.
-     * 
      * @throws HpcException If it failed to delete the user.
      */
     public void deleteUser(Object authenticatedToken, String nciUserId)
@@ -374,8 +353,7 @@ public interface HpcDataManagementProxy
      * @param authenticatedToken An authenticated token.
      * @param path The collection's path.
      * @param permissionRequest The user permission request.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data management system failure.
      */
     public void setCollectionPermission(Object authenticatedToken,
     		                            String path,
@@ -388,23 +366,26 @@ public interface HpcDataManagementProxy
      * @param authenticatedToken An authenticated token.
      * @param path The data object's path.
      * @param permissionRequest The user permission request.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data management system failure.
      */
     public void setDataObjectPermission(Object authenticatedToken,
     		                            String path,
     		                            HpcEntityPermission permissionRequest) 
     		                           throws HpcException; 
     /**
-     * Create User group and assign/remove users to group
-     * @param group group name
-     * @param addUserId List of userIds to add to the group
-     * @param removeUserId List of userIds to remove from the group
-     * @throws HpcException
+     * Create User group and assign/remove users to group.
+     * 
+     * @param authenticatedToken An authenticated token.
+     * @param hpcGroup The group
+     * @param addUserIds List of userIds to add to the group.
+     * @param removeUserIds List of userIds to remove from the group.
+     * @return Group response.
+     * @throws HpcException on data management system failure.
      */
     public HpcGroupResponse addGroup(Object authenticatedToken,
-            HpcGroup hpcGroup, List<String> addUserIds, List<String> removeUserIds) 
-           throws HpcException;
+                                     HpcGroup hpcGroup, List<String> addUserIds, 
+                                     List<String> removeUserIds) 
+                                    throws HpcException;
     
     /**
      * Get absolute path (append the iRODs base path, to the user provided path).

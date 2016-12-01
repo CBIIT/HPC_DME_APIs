@@ -216,7 +216,7 @@ public class HpcEventDAOImpl implements HpcEventDAO
      * Convert JSON string to payload entries.
      * 
      * @param jsonPayloadStr The Payload Entries JSON String.
-     * @return List<HpcNotificationPayloadEntry>
+     * @return A list of event payload entries.
      */
 	private List<HpcEventPayloadEntry> fromJSON(String jsonPayloadStr)
 	{
@@ -248,8 +248,8 @@ public class HpcEventDAOImpl implements HpcEventDAO
     /** 
      * Map an array of user IDs to a single string.
      * 
-     * @param jsonPayloadStr The Payload Entries JSON String.
-     * @return List<HpcNotificationPayloadEntry>
+     * @param userIds A list of user ids.
+     * @return A comma separated user-ids string.
      */
 	 // Map the userIds to a single string.
 	private String toString(List<String> userIds)

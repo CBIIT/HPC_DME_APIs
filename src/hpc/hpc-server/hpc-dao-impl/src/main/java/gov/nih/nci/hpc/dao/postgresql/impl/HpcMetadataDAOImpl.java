@@ -405,15 +405,13 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      * @param dataManagementUsername The data management user name.
      * @param offset Skip that many path in the returned results.
      * @param limit No more than 'limit' paths will be returned.
-     * 
-     * @throws HpcException
+     * @return A prepared query.
      */
     private HpcPreparedQuery prepareQuery(String getObjectPathsQuery,
     		                              HpcPreparedQuery userQuery,
     		                              String userAccessQuery,
     		                              String dataManagementUsername,
     		                              int offset, int limit) 
-    		                             throws HpcException
     {
     	StringBuilder sqlQueryBuilder = new StringBuilder();
     	List<Object> args = new ArrayList<>();
@@ -439,15 +437,15 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     }
     
     /**
-     * Create a SQL statement from List<HpcMetadataQuery>
+     * Create a SQL statement from List&lt;HpcMetadataQuery&gt;. 
      *
      * @param sqlQueries The map from metadata query operator to SQL queries.
      * @param metadataQueries The metadata queries.
      * @param operator The compound metadata query operator to use.
      * @param sqlLevelFilters The map from query operator to SQL level filter ('where' condition).
      * @param defaultLevelFilter A default level filter to use if not provided in the query.
-     * 
-     * @throws HpcException
+     * @return A prepared query.
+     * @throws HpcException If invalid metadata query operator provided.
      */
     private HpcPreparedQuery toQuery(Map<HpcMetadataQueryOperator, String> sqlQueries, 
     		                         List<HpcMetadataQuery> metadataQueries,
@@ -500,14 +498,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     }
     
     /**
-     * Create a SQL statement from HpcCompoundMetadataQuery
+     * Create a SQL statement from HpcCompoundMetadataQuery.
      *
      * @param sqlQueries The map from metadata query operator to SQL queries.
-     * @param metadataQueries The metadata queries.
+     * @param compoundMetadataQuery The compound query to create SQL from.
      * @param sqlLevelFilters The map from query operator to level filter ('where' condition).
      * @param defaultLevelFilter A default level filter to use if not provided in the query.
-     * 
-     * @throws HpcException
+     * @return A prepared query.
+     * @throws HpcException on service failure.
      */
     private HpcPreparedQuery toQuery(Map<HpcMetadataQueryOperator, String> sqlQueries, 
     		                         HpcCompoundMetadataQuery compoundMetadataQuery,
@@ -559,8 +557,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      * Execute a SQL query to get collection or data object paths
      *
      * @param prepareQuery The prepared query to execute.
-     * 
-     * @throws HpcException
+     * @return A list of paths.
+     * @throws HpcException on database error.
      */
     private List<String> getPaths(HpcPreparedQuery prepareQuery) throws HpcException
     {
@@ -575,11 +573,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     }
     
     /**
-     * Coverts a query operator enum to SQL
+     * Converts a query operator enum to SQL
      *
      * @param operator The operator to convert.
-     * 
-     * @throws HpcException
+     * @return A SQL operator string.
      */
     private String toSQLOperator(HpcCompoundMetadataQueryOperator operator)
     {
@@ -594,6 +591,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      * @param levelOperator The operator to use in the level filter. (Optional).
      * @param sqlLevelFilters The map from query operator to level filter ('where' condition).
      * @return A list of metadata attributes.
+     * @throws HpcException on database error or invalid level operator.
      */
     private List<String> getMetadataAttributes(String query, Integer level, 
     		                                   HpcMetadataQueryOperator levelOperator,
