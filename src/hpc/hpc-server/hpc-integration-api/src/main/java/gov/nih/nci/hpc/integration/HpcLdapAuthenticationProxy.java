@@ -22,5 +22,13 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 public interface HpcLdapAuthenticationProxy 
 {
+    /** 
+     * Authenticate user. 
+     * 
+     * @param userName The user name.
+     * @param password The password
+     * @return True if the user was successfully authenticated, or false otherwise.
+     * @throws HpcException on LDAP failure.
+     */
 	public boolean authenticate(String userName, String password) throws HpcException;
 }

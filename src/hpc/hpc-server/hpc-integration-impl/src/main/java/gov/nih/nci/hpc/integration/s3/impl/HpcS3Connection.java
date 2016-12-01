@@ -23,7 +23,7 @@ import com.amazonaws.services.s3.transfer.TransferManager;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id:$
+ * @version $Id$
  */
 
 public class HpcS3Connection 
@@ -43,8 +43,6 @@ public class HpcS3Connection
      * Constructor for Spring Dependency Injection.
      * 
      * @param s3URL The S3 Endpoint URL.
-     * 
-     * @throws HpcException.
      */
     private HpcS3Connection(String s3URL)
     {
@@ -89,8 +87,7 @@ public class HpcS3Connection
      * 
      * @param authenticatedToken An authenticated token.
      * @return A transfer manager object.
-     * 
-     * @throws HpcException
+     * @throws HpcException on invalid authentication token.
      */
     public TransferManager getTransferManager(Object authenticatedToken) throws HpcException
     {

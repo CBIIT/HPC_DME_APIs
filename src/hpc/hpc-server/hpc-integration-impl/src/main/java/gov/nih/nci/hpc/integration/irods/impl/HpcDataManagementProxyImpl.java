@@ -831,8 +831,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
      * path is invalid, so we catch it and convert to HpcException
      *
      * @param irodsFile The iRODS file.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data management system failure.
      */
     private void mkdirs(IRODSFile irodsFile) throws HpcException
     {
@@ -859,8 +858,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
      *
      * @param operator The string
      * @return The enum value
-     * 
-     * @throws HpcException
+     * @throws HpcException on invalid enum value.
      */
     private AVUQueryOperatorEnum valueOf(String operator) throws HpcException
     {
@@ -890,8 +888,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
      *
      * @param metadataQueries The HPC metadata queries.
      * @return The iRODS query.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data management system failure.
      */
     private List<AVUQueryElement> toIRODSQuery(List<HpcMetadataQuery> metadataQueries)
                                               throws HpcException
@@ -924,7 +921,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
      * Convert iRODS metadata results to HPC metadata domain objects.
      *
      * @param metadataValues The iRODS metadata values
-     * @return HpcMetadataEntry list.
+     * @return A list of metadata entries.
      */
     private List<HpcMetadataEntry> toHpcMetadata(List<MetaDataAndDomainData> metadataValues)
     {
@@ -947,7 +944,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
      * Convert iRODS collection to HPC collection domain object.
      *
      * @param irodsCollection The iRODS collection.
-     * @return HpcCollection.
+     * @return A collection.
      */
     private HpcCollection toHpcCollection(Collection irodsCollection)
     {
@@ -984,7 +981,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
      * Convert iRODS data object to HPC data object domain-object.
      *
      * @param irodsDataObject The iRODS data object.
-     * @return HpcDataObject.
+     * @return A data object.
      */
     private HpcDataObject toHpcDataObject(DataObject irodsDataObject)
     {
@@ -1030,8 +1027,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     /**
      * Convert an iRODS user type to HPC user role.
      *
-     * @param userType The absolute path.
-     * @return The user's path
+     * @param irodsUserType The iRODS user type.
+     * @return The HPC user role.
      */
     private HpcUserRole toHpcUserRole(UserTypeEnum irodsUserType)
     {
@@ -1051,8 +1048,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     /**
      * Convert an HPC user role to iRODS user type.
      *
-     * @param userType The absolute path.
-     * @return The user's path
+     * @param userRole The user role
+     * @return The iRODS user type.
      */
     private UserTypeEnum toIRODSUserType(HpcUserRole userRole)
     {
@@ -1072,10 +1069,10 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     /**
      * Get an iRODS user by account name
      *
+     * @param authenticatedToken An authenticated token.
      * @param username The iRODS account name.
      * @return User or null if not found.
-     * 
-     * @throws HpcException
+     * @throws HpcException on iRODS failure.
      */
     private User getUser(Object authenticatedToken, String username) 
                         throws HpcException
@@ -1098,8 +1095,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param path The path.
-     * 
-     * @throws HpcException
+     * @return The parent file.
+     * @throws HpcException on data management system failure.
      */
     private IRODSFile getParentPath(Object authenticatedToken, String path) 
     		                       throws HpcException

@@ -70,7 +70,6 @@ public class HpcIRODSConnection
      * @param irodsZone The iRODS zone.
      * @param irodsResource The iRODS resource to use.
      * @param basePath The iRODS base path.
-     * 
      * @throws HpcException If it failed to instantiate the iRODS file system.
      */
     private HpcIRODSConnection(String irodsHost, Integer irodsPort, 
@@ -105,7 +104,7 @@ public class HpcIRODSConnection
     /**
      * Default Constructor disabled.
      * 
-     * @throws HpcException.
+     * @throws HpcException Default constructor disabled.
      */
     private HpcIRODSConnection() throws HpcException
     {
@@ -121,8 +120,8 @@ public class HpcIRODSConnection
      * Get iRODS file factory instance.
      * 
      * @param authenticatedToken An authenticated token.
-     *
-     * @throws HpcException
+     * @return The iRODS file factory.
+     * @throws HpcException on iRODS failure.
      */
     public IRODSFileFactory getIRODSFileFactory(Object authenticatedToken) 
     		                                   throws HpcException
@@ -143,8 +142,8 @@ public class HpcIRODSConnection
      * Get iRODS Collection AO instance.
      *
      * @param authenticatedToken An authenticated token.
-     *  
-     * @throws HpcException
+     * @return A collection AO.
+     * @throws HpcException on iRODS failure.
      */
     public CollectionAO getCollectionAO(Object authenticatedToken) 
     		                           throws HpcException
@@ -165,8 +164,8 @@ public class HpcIRODSConnection
      * Get iRODS Data Object AO instance.
      *
      * @param authenticatedToken An authenticated token.
-     * 
-     * @throws HpcException
+     * @return A data object AO.
+     * @throws HpcException on iRODS failure.
      */
     public DataObjectAO getDataObjectAO(Object authenticatedToken) 
     		                           throws HpcException
@@ -187,8 +186,8 @@ public class HpcIRODSConnection
      * Get iRODS User AO instance.
      *
      * @param authenticatedToken An authenticated Data Management account
-     * 
-     * @throws HpcException
+     * @return A user AO.
+     * @throws HpcException on iRODS failure.
      */
     public UserAO getUserAO(Object authenticatedToken) throws HpcException
     {
@@ -208,8 +207,8 @@ public class HpcIRODSConnection
      * Get iRODS User AO instance.
      *
      * @param authenticatedToken An authenticated Data Management account
-     * 
-     * @throws HpcException
+     * @return A user group AO.
+     * @throws HpcException on iRODS failure.
      */
     public UserGroupAO getUserGroupAO(Object authenticatedToken) throws HpcException
     {
@@ -223,7 +222,8 @@ public class HpcIRODSConnection
 	                         e.getMessage(),
                              HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		}	
-    }    
+    }  
+    
     /**
      * Authenticate an account.
      *
@@ -231,6 +231,7 @@ public class HpcIRODSConnection
      * @param ldapAuthenticated An indicator if the user was authenticated via LDAP. 
      *                          This determines the authentication scheme to use w/ Data Management. 
      * @return An authenticated IRODSAccount object, or null if authentication failed.
+     * @throws HpcException on iRODS failure.
      */
     public IRODSAccount authenticate(HpcIntegratedSystemAccount dataManagementAccount,
     		                         boolean ldapAuthenticated)
@@ -329,8 +330,8 @@ public class HpcIRODSConnection
      * 
      * @param dataManagementAccount The Data Management account.
      * @param authScheme The iRODS authentication scheme (PAM or STANDARD).
-     *
-     * @throws HpcException
+     * @return An iRODS account.
+     * @throws HpcException on iRODS failure.
      */
     private IRODSAccount toIrodsAccount(HpcIntegratedSystemAccount dataManagementAccount,
     		                            AuthScheme authScheme) 
@@ -357,7 +358,7 @@ public class HpcIRODSConnection
      * 
      * @param authenticatedToken An authenticated token.
      * @return An authenticated iRODS account object.
-     * @throws HpcException
+     * @throws HpcException on iRODS failure.
      */
     private IRODSAccount getIrodsAccount(Object authenticatedToken) 
     		                            throws HpcException
