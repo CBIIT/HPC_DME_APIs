@@ -76,6 +76,7 @@ public class HpcGlobusConnection
      *
      * @param dataTransferAccount A data transfer account to authenticate.
      * @return An authenticated JSONTransferAPIClient object, or null if authentication failed.
+     * @throws HpcException if authentication failed..
      */
     public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount)
 			                  throws HpcException
@@ -108,8 +109,10 @@ public class HpcGlobusConnection
     /**
      * Authenticate a token.
      *
-     * @param username The Globus username
+     * @param username The Globus username.
+     * @param accessToken The Globus username.
      * @return An authenticated JSONTransferAPIClient object, or null if authentication failed.
+     * @throws HpcException If authentication failed.
      */
     public Object authenticate(String username, String accessToken)
 			                  throws HpcException
@@ -141,8 +144,7 @@ public class HpcGlobusConnection
      * 
      * @param authenticatedToken An authenticated token.
      * @return A transfer client object.
-     * 
-     * @throws HpcException
+     * @throws HpcException @throws HpcException on data transfer system failure.
      */
     public JSONTransferAPIClient getTransferClient(Object authenticatedToken) 
     		                                      throws HpcException

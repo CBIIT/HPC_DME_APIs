@@ -63,7 +63,6 @@ public class HpcEncryptor
      * Constructor for Spring Dependency Injection.
      * 
      * @param key The encryption key.
-     * 
      * @throws HpcException If an encryption key was not provided.
      */
     private HpcEncryptor(String key) throws HpcException
@@ -91,6 +90,12 @@ public class HpcEncryptor
     // Methods
     //---------------------------------------------------------------------//
     
+    /**
+     * Encrypt text.
+     * 
+     * @param text The text to encrypt.
+     * @return The encrypted text.
+     */
 	public byte[] encrypt(String text)
 	{
 		try {
@@ -103,6 +108,12 @@ public class HpcEncryptor
 		return null;    
 	}
  
+    /**
+     * Decrypt text.
+     * 
+     * @param binary The binary to decrypt.
+     * @return The decrypted text.
+     */
 	public String decrypt(byte[] binary) 
 	{
 		try {

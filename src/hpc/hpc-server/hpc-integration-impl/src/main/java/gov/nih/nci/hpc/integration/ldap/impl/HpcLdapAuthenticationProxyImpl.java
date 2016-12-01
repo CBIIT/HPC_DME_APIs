@@ -61,7 +61,7 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
      * @param url The LDAP provider URL.
      * @param username The account to access the LDAP server.
      * @param password The password to access the LDAP server.
-     * 
+     * @param base The LDAP search base.
      */
 	private HpcLdapAuthenticationProxyImpl(String url, String username, String password,
 			                               String base) 
@@ -139,7 +139,7 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 	 * @param userName The user name which is to be authenticated.
 	 * @return The Fully Distinguished User Name obtained from the LDAP for the passed user name.
 	 *         Null is returned if the user doesn't exist.
-	 * @throws HpcException
+	 * @throws HpcException on LDAP failure.
 	 */
 	private String getFullyDistinguishedName(String userName) throws HpcException 
 	{
