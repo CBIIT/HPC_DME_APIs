@@ -56,7 +56,7 @@ public class HpcMimeMessagePreparator
      *
      * @param userId The recipient user ID
      * @param eventType The event type to generate the message for.
-     * @param payloadEntries The payload entries to use for the message text & subject arguments.
+     * @param payloadEntries The payload entries to use for the message text and subject arguments.
      * @return MimeMessagePreparator
      */    
     public MimeMessagePreparator getPreparator(String userId, HpcEventType eventType, 

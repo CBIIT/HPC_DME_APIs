@@ -39,8 +39,7 @@ public interface HpcMetadataService
      *
      * @param path The collection path.
      * @param metadataEntries The metadata entries to add.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void addMetadataToCollection(String path, 
     		                            List<HpcMetadataEntry> metadataEntries) 
@@ -51,8 +50,7 @@ public interface HpcMetadataService
      *
      * @param path The collection path.
      * @param metadataEntries The metadata entries to update.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void updateCollectionMetadata(String path, 
     		                             List<HpcMetadataEntry> metadataEntries) 
@@ -67,8 +65,7 @@ public interface HpcMetadataService
      *      4. Registrar DOC.
      *
      * @param path The collection path.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void addSystemGeneratedMetadataToCollection(String path) 
     		                                          throws HpcException; 
@@ -78,8 +75,7 @@ public interface HpcMetadataService
      *
      * @param path The collection path.
      * @return HpcSystemGeneratedMetadata The system generated metadata.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public HpcSystemGeneratedMetadata 
               getCollectionSystemGeneratedMetadata(String path) throws HpcException; 
@@ -88,21 +84,18 @@ public interface HpcMetadataService
      * Get the system generated metadata object from a list of entries.
      *
      * @param systemGeneratedMetadataEntries The system generated metadata entries.
-     * @return HpcSystemGeneratedMetadata The system generated metadata.
-     * 
-     * @throws HpcException
+     * @return The system generated metadata.
+     * @throws HpcException on service failure.
      */
     public HpcSystemGeneratedMetadata 
               toSystemGeneratedMetadata(List<HpcMetadataEntry> systemGeneratedMetadataEntries) 
             	                       throws HpcException; 
     
     /**
-     * convert a list of metadata entries to Map<attribute, value>
+     * convert a list of metadata entries to Map&lt;attribute, value&gt;
      *
      * @param metadataEntries The list of metadata entries
-     * @return Map<String, String>
-     * 
-     * @throws HpcException
+     * @return A metadata attribute to value map.
      */
     public Map<String, String> toMap(List<HpcMetadataEntry> metadataEntries);
     
@@ -110,9 +103,8 @@ public interface HpcMetadataService
      * Get metadata of a collection.
      *
      * @param path The collection's path.
-     * @return HpcMetadataEntries The collection's metadata entries.
-     * 
-     * @throws HpcException
+     * @return The collection's metadata entries.
+     * @throws HpcException on service failure.
      */
     public HpcMetadataEntries getCollectionMetadataEntries(String path) throws HpcException;
     
@@ -121,9 +113,8 @@ public interface HpcMetadataService
      *
      * @param path The data object path.
      * @param metadataEntries The metadata entries to add.
-     * 
-     * @throws HpcException
-     */
+     * @throws HpcException on service failure.
+     */ 
     public void addMetadataToDataObject(String path, 
     		                            List<HpcMetadataEntry> metadataEntries) 
     		                           throws HpcException; 
@@ -151,9 +142,7 @@ public interface HpcMetadataService
      * @param dataTransferType The data transfer type.
      * @param sourceSize (Optional) The data source size in bytes.
      * @param callerObjectId (Optional) The caller object ID.
-     * @param metadataOrigin The metadata origin.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void addSystemGeneratedMetadataToDataObject(String path, 
     		                                           HpcFileLocation archiveLocation,
@@ -168,9 +157,8 @@ public interface HpcMetadataService
      * Get the system generated metadata of a data object.
      *
      * @param path The data object path.
-     * @return HpcSystemGeneratedMetadata The system generated metadata
-     * 
-     * @throws HpcException
+     * @return The system generated metadata.
+     * @throws HpcException on service failure.
      */
     public HpcSystemGeneratedMetadata 
               getDataObjectSystemGeneratedMetadata(String path) throws HpcException; 
@@ -183,8 +171,7 @@ public interface HpcMetadataService
      * @param dataTransferRequestId (Optional) The data transfer request ID.
      * @param dataTransferStatus (Optional) The data transfer upload status.
      * @param dataTransferType (Optional) The data transfer type.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void updateDataObjectSystemGeneratedMetadata(String path, 
     		                                            HpcFileLocation archiveLocation,
@@ -198,8 +185,7 @@ public interface HpcMetadataService
      *
      * @param path The data object path.
      * @param metadataEntries The metadata entries to update.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void updateDataObjectMetadata(String path, 
     		                             List<HpcMetadataEntry> metadataEntries) 
@@ -210,8 +196,7 @@ public interface HpcMetadataService
      *
      * @param path The data object's path.
      * @return HpcMetadataEntries The data object's metadata entries.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public HpcMetadataEntries getDataObjectMetadataEntries(String path) throws HpcException;
     
@@ -219,9 +204,8 @@ public interface HpcMetadataService
      * Get collection metadata validation rules for a DOC.
      * 
      * @param doc The DOC.
-     * @return A list of HpcMetadataValidationRule
-     *
-     * @throws HpcException
+     * @return A list of HpcMetadataValidationRule.
+     * @throws HpcException on service failure.
      */
     public List<HpcMetadataValidationRule> 
            getCollectionMetadataValidationRules(String doc) throws HpcException;
@@ -231,8 +215,7 @@ public interface HpcMetadataService
      * 
      * @param doc The DOC.
      * @return A list of HpcMetadataValidationRule
-     *
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public List<HpcMetadataValidationRule> 
            getDataObjectMetadataValidationRules(String doc) throws HpcException;
@@ -240,7 +223,7 @@ public interface HpcMetadataService
     /**
      * Refresh all metadata materialized views.
      *
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void refreshViews() throws HpcException;
 }

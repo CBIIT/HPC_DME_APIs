@@ -34,9 +34,8 @@ public interface HpcDataSearchService
      *
      * @param compoundMetadataQuery The compound metadata query.
      * @param page The requested results page.
-     * @return Collection path list.
-     * 
-     * @throws HpcException
+     * @return A list of collection paths.
+     * @throws HpcException on service failure.
      */
     public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page) 
     		                              throws HpcException;
@@ -46,9 +45,8 @@ public interface HpcDataSearchService
      *
      * @param compoundMetadataQuery The compound metadata query.
      * @param page The requested results page.
-     * @return Data Object path list.
-     * 
-     * @throws HpcException
+     * @return A list of Data Object paths.
+     * @throws HpcException on service failure.
      */
     public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page) 
     		                              throws HpcException;
@@ -65,7 +63,7 @@ public interface HpcDataSearchService
      *
      * @param nciUserId The user ID save the query for.
      * @param namedCompoundMetadataQuery The compound query.
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void saveQuery(String nciUserId, 
     		              HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery) 
@@ -76,7 +74,7 @@ public interface HpcDataSearchService
      *
      * @param nciUserId The user ID save the query for.
      * @param queryName The query name.
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void deleteQuery(String nciUserId, String queryName) throws HpcException;
 
@@ -84,8 +82,8 @@ public interface HpcDataSearchService
      * Get all saved queries for a user.
      *
      * @param nciUserId The registered user ID.
-     * @return List<HpcNamedCompoundMetadataQuery>
-     * @throws HpcException
+     * @return A list of named compound metadata queries.
+     * @throws HpcException on service failure.
      */
     public List<HpcNamedCompoundMetadataQuery> getQueries(String nciUserId) throws HpcException;
     
@@ -94,8 +92,8 @@ public interface HpcDataSearchService
      *
      * @param nciUserId The registered user ID.
      * @param queryName The query name.
-     * @return HpcNamedCompoundMetadataQuery
-     * @throws HpcException
+     * @return A named compound metadata query.
+     * @throws HpcException on service failure.
      */
     public HpcNamedCompoundMetadataQuery getQuery(String nciUserId, String queryName) throws HpcException;
     
@@ -105,6 +103,7 @@ public interface HpcDataSearchService
      * @param level Filter the results by level. (Optional).
      * @param levelOperator The operator to use in the level filter. (Optional).
      * @return A list of metadata attributes.
+     * @throws HpcException on service failure.
      */
 	public List<String> getCollectionMetadataAttributes(
 			               Integer level, HpcMetadataQueryOperator levelOperator) 
@@ -116,6 +115,7 @@ public interface HpcDataSearchService
      * @param level Filter the results by level. (Optional).
      * @param levelOperator The operator to use in the level filter. (Optional).
      * @return A list of metadata attributes.
+     * @throws HpcException on service failure.
      */
 	public List<String> getDataObjectMetadataAttributes(
 			               Integer level, HpcMetadataQueryOperator levelOperator) 

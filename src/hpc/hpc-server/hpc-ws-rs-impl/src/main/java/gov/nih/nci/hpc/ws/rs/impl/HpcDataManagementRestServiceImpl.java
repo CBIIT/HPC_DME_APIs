@@ -91,7 +91,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
      * Constructor for Spring Dependency Injection.
      * 
      */
-    private HpcDataManagementRestServiceImpl() 
+    public HpcDataManagementRestServiceImpl() 
     {
     }  
     

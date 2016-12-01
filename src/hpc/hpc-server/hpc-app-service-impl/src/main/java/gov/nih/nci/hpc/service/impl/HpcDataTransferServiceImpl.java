@@ -93,7 +93,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * Constructor for Spring Dependency Injection.
      * 
      * @param dataTransferProxies The data transfer proxies.
-     * @throws HpcException
+     * @param downloadDirectory The download directory.
+     * @throws HpcException on spring configuration error. 
      */
     public HpcDataTransferServiceImpl(
     		  Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies,
@@ -394,7 +395,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * If it's not in the context, get a token by authenticating.
      * 
      * @param dataTransferType The data transfer type.
-     *
+     * @return A data transfer authenticated token.
      * @throws HpcException If it failed to obtain an authentication token.
      */
     private Object getAuthenticatedToken(HpcDataTransferType dataTransferType) throws HpcException
@@ -439,8 +440,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * 
      * @param destinationLocation The caller's destination.
      * @param dataTransferType The data transfer type to create the request
-     * @param The data object logical path.
-     *
+     * @param path The data object logical path.
+     * @return Data object download request.
      * @throws HpcException If it failed to obtain an authentication token.
      */
     private HpcDataObjectDownloadRequest toDownloadRequest(HpcFileLocation destinationLocation,
@@ -466,9 +467,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * Calculate data transfer destination
      * 
      * @param downloadRequest The download request.
-     * @param dataTransferType The data transfer type to create the request
-     *
-     * @throws HpcException 
+     * @param dataTransferType The data transfer type to create the request.
+     * @return The file location.
+     * @throws HpcException on service failure.
      */    
     private HpcFileLocation calculateDestination(HpcDataObjectDownloadRequest downloadRequest,
     		                                     HpcDataTransferType dataTransferType) 
@@ -496,7 +497,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * 
      * @param path The data object logical path.
      * @param userId The user-id uploaded the data.
-     * 
      * @return a List of the 2 metadata.
      */
     private List<HpcMetadataEntry> generateMetadata(String path, String userId) 
@@ -522,7 +522,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * Create an empty file.
      * 
      * @param filePath The file's path
-     * @return File
+     * @return The created file.
+     * @throws HpcException on service failure.
      */
     private File createFile(String filePath) throws HpcException
     {
@@ -578,7 +579,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * @param fileLocation The file location to validate. If null, no validation is performed.
      * @param validateExists If true, validate the file exists.
      * @param validateAccessible If true, validate file accessible.
-     * 
      * @throws HpcException if validation failed.
      */
     private void validateFileLocation(HpcDataTransferType dataTransferType,

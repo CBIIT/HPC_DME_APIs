@@ -23,11 +23,8 @@ import gov.nih.nci.hpc.service.HpcReportService;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -36,21 +33,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:prasad.konka@nih.gov">Prasad Konka</a>
- * @version $Id:$
+ * @version $Id$
  */
 
-public class HpcReportBusServiceImpl implements HpcReportBusService {
+public class HpcReportBusServiceImpl implements HpcReportBusService 
+{
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
 
-	// Application service instances.
-
+	// The Report Application service instance.
 	@Autowired
 	private HpcReportService reportService = null;
-
-	// The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -60,7 +54,8 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
 	 * Constructor for Spring Dependency Injection.
 	 * 
 	 */
-	private HpcReportBusServiceImpl() {
+	private HpcReportBusServiceImpl() 
+	{
 	}
 
 	// ---------------------------------------------------------------------//
@@ -68,7 +63,7 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
 	// ---------------------------------------------------------------------//
 
 	// ---------------------------------------------------------------------//
-	// HpcNotificationBusService Interface Implementation
+	// HpcReportBusService Interface Implementation
 	// ---------------------------------------------------------------------//
 
 	@Override
@@ -179,10 +174,8 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
 		sdf.setLenient(false);
 
 		try {
-			Date date = sdf.parse(dateToValidate);
+			 sdf.parse(dateToValidate);
 		} catch (ParseException e) {
-
-			e.printStackTrace();
 			return false;
 		}
 

@@ -43,7 +43,6 @@ public class HpcDataManagementAuthenticator
     /**
      * Default Constructor.
      * 
-     * @throws HpcException Constructor is disabled.
      */
 	private HpcDataManagementAuthenticator()
     {
@@ -57,6 +56,7 @@ public class HpcDataManagementAuthenticator
      * Get the data management authenticated token from the request context.
      * If it's not in the context, get a token by authenticating.
      *
+     * @return A data management authenticated token.
      * @throws HpcException If it failed to obtain an authentication token.
      */
     public Object getAuthenticatedToken() throws HpcException

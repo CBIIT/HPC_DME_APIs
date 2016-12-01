@@ -44,9 +44,8 @@ public interface HpcDataTransferService
      * @param path The registration path.
      * @param userId The user-id who requested the data upload.
      * @param callerObjectId The caller's provided data object ID.
-     * @return HpcDataObjectUploadResponse
-     * 
-     * @throws HpcException
+     * @return A data object upload response.
+     * @throws HpcException on service failure.
      */
 	public HpcDataObjectUploadResponse uploadDataObject(HpcFileLocation sourceLocation, 
                                                         File sourceFile, 
@@ -56,10 +55,9 @@ public interface HpcDataTransferService
     /**
      * Upload a data object file.
      *
-     * @param dataUploadRequest The data upload request
-     * @return HpcDataObjectUploadResponse A data object upload response.
-     * 
-     * @throws HpcException
+     * @param uploadRequest The data upload request.
+     * @return A data object upload response.
+     * @throws HpcException on service failure.
      */
     public HpcDataObjectUploadResponse uploadDataObject(HpcDataObjectUploadRequest uploadRequest) 
     		                                           throws HpcException;
@@ -70,9 +68,8 @@ public interface HpcDataTransferService
      * @param archiveLocation The archive file location.
      * @param destinationLocation The user requested file destination.
      * @param dataTransferType The data transfer type.
-     * @return HpcDataObjectDownloadResponse A data object download response.
-     * 
-     * @throws HpcException
+     * @return A data object download response.
+     * @throws HpcException on service failure.
      */
 	public HpcDataObjectDownloadResponse downloadDataObject(
 			                                     HpcFileLocation archiveLocation, 
@@ -83,10 +80,9 @@ public interface HpcDataTransferService
     /**
      * Download a data object file.
      *
-     * @param dataDownloadRequest The data object download request.
-     * @return HpcDataObjectDownloadResponse A data object download response.
-     * 
-     * @throws HpcException
+     * @param downloadRequest The data object download request.
+     * @return A data object download response.
+     * @throws HpcException on service failure.
      */
     public HpcDataObjectDownloadResponse downloadDataObject(HpcDataObjectDownloadRequest downloadRequest) 
     		                                               throws HpcException;
@@ -96,10 +92,8 @@ public interface HpcDataTransferService
      *
      * @param dataTransferType The data transfer type.
      * @param dataTransferRequestId The data transfer request ID.
-     * 
-     * @return HpcDataTransferUploadStatus the data transfer upload request status.
-     * 
-     * @throws HpcException
+     * @return The data transfer upload request status.
+     * @throws HpcException on service failure.
      */
     public HpcDataTransferUploadStatus getDataTransferUploadStatus(HpcDataTransferType dataTransferType,
     		                                                       String dataTransferRequestId) 
@@ -110,10 +104,8 @@ public interface HpcDataTransferService
      *
      * @param dataTransferType The data transfer type.
      * @param dataTransferRequestId The data transfer request ID.
-     * 
-     * @return HpcDataTransferDownloadStatus the data transfer download request status.
-     * 
-     * @throws HpcException
+     * @return The data transfer download request status.
+     * @throws HpcException on service failure.
      */
     public HpcDataTransferDownloadStatus getDataTransferDownloadStatus(HpcDataTransferType dataTransferType,
     		                                                           String dataTransferRequestId) 
@@ -124,10 +116,8 @@ public interface HpcDataTransferService
      *
      * @param dataTransferType The data transfer type.
      * @param dataTransferRequestId The data transfer request ID.
-     * 
      * @return The size of the data transferred in bytes.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public long getDataTransferSize(HpcDataTransferType dataTransferType,
     		                        String dataTransferRequestId) 
@@ -139,9 +129,8 @@ public interface HpcDataTransferService
      * @param dataTransferType The data transfer type.
      * @param fileLocation The endpoint/path to get attributes for.
      * @param getSize If set to true, the file/directory size will be returned. 
-     * @return HpcPathAttributes 
-     * 
-     * @throws HpcException
+     * @return The path attributes.
+     * @throws HpcException on service failure.
      */
     public HpcPathAttributes getPathAttributes(HpcDataTransferType dataTransferType,
     		                                   HpcFileLocation fileLocation,
@@ -153,8 +142,8 @@ public interface HpcDataTransferService
      *
      * @param dataTransferType The data transfer type.
      * @param fileId The file ID.
-     * 
-     * @throws HpcException
+     * @return The requested file from the archive.
+     * @throws HpcException on service failure.
      */
     public File getArchiveFile(HpcDataTransferType dataTransferType,
     		                   String fileId)  
@@ -163,9 +152,8 @@ public interface HpcDataTransferService
     /**
      * Get all data object download cleanup entries. 
      *
-     * @return List<HpcDataObjectDownloadCleanup>
-     * 
-     * @throws HpcException
+     * @return A list of data object download cleanup objects.
+     * @throws HpcException on service failure.
      */
     public List<HpcDataObjectDownloadCleanup> getDataObjectDownloadCleanups() throws HpcException;
     
@@ -173,8 +161,7 @@ public interface HpcDataTransferService
      * Cleanup data object download file. 
      *
      * @param dataObjectDownloadCleanup The info about the file to cleanup.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void cleanupDataObjectDownloadFile(
     		           HpcDataObjectDownloadCleanup dataObjectDownloadCleanup) throws HpcException;

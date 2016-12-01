@@ -158,7 +158,7 @@ public class HpcEventServiceImpl implements HpcEventService
     /**
      * Add an event.
      * 
-     * @param notificationEvent The event to add.
+     * @param event The event to add.
      * 
      * @throws HpcException if validation failed.
      */
@@ -183,6 +183,7 @@ public class HpcEventServiceImpl implements HpcEventService
      * 
      * @param attribute The payload entry attribute.
      * @param value The payload entry value.
+     * @return The event payload entry.
      */
     private HpcEventPayloadEntry toPayloadEntry(String attribute, String value)
     {
@@ -201,6 +202,7 @@ public class HpcEventServiceImpl implements HpcEventService
      * @param eventType The event type.
      * @param dataTransferRequestId (Optional) The data transfer request ID.
      * @param path (Optional) The data object path.
+     * @throws HpcException on service failure.
      */
     private void addDataTransferEvent(String userId, HpcEventType eventType, 
     		                          String dataTransferRequestId, String path) throws HpcException

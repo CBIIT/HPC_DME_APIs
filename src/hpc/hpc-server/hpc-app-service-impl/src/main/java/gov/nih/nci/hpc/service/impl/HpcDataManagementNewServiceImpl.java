@@ -92,9 +92,8 @@ public class HpcDataManagementNewServiceImpl implements HpcDataManagementNewServ
 	
     /**
      * Constructor for Spring Dependency Injection.
-     * 
      */
-    private HpcDataManagementNewServiceImpl() throws HpcException
+    private HpcDataManagementNewServiceImpl()
     {
     	// Prepare the query to get data objects in data transfer in-progress to archive.
         dataTransferInProgressToArchiveQuery.add(
@@ -357,8 +356,7 @@ public class HpcDataManagementNewServiceImpl implements HpcDataManagementNewServ
      *
      * @param path The collection path.
      * @return The collection type.
-     * @throws HpcException
-     * 
+     * @throws HpcException on service failure.
      */
     private String getCollectionType(String path) throws HpcException
     {

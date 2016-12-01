@@ -30,9 +30,8 @@ public interface HpcEventService
     /**
      * Get all (active) events.
      *
-     * @return List<HpcEvent>
-     * 
-     * @throws HpcException
+     * @return A list of events.
+     * @throws HpcException on service failure.
      */
     public List<HpcEvent> getEvents() throws HpcException;
     
@@ -48,8 +47,7 @@ public interface HpcEventService
      *
      * @param userId The user ID.
      * @param dataTransferRequestId The data transfer request ID.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void addDataTransferDownloadCompletedEvent(String userId, String dataTransferRequestId) 
     		                                         throws HpcException;
@@ -59,8 +57,7 @@ public interface HpcEventService
      *
      * @param userId The user ID.
      * @param dataTransferRequestId The data transfer request ID.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void addDataTransferDownloadFailedEvent(String userId, String dataTransferRequestId) 
     		                                      throws HpcException;
@@ -70,8 +67,7 @@ public interface HpcEventService
      *
      * @param userId The user ID.
      * @param path The data object path.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void addDataTransferUploadInTemporaryArchiveEvent(String userId, String path) 
                                                             throws HpcException;
@@ -81,8 +77,7 @@ public interface HpcEventService
      *
      * @param userId The user ID.
      * @param path The data object path.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void addDataTransferUploadArchivedEvent(String userId, String path) 
                                                   throws HpcException;
@@ -92,8 +87,7 @@ public interface HpcEventService
      *
      * @param userId The user ID.
      * @param path The data object path.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void addDataTransferUploadFailedEvent(String userId, String path) 
                                                 throws HpcException;
@@ -101,9 +95,13 @@ public interface HpcEventService
     /**
      * Generate reports event.
      *
-     * @throws HpcException
+     * @param userIds The list of user ids to generate the events for.
+     * @param criteria The report criteria.
+     * @throws HpcException on service failure.
      */
-    public void generateReportsEvents(List<String> userIds, HpcReportCriteria criteria) throws HpcException;
+    public void generateReportsEvents(List<String> userIds, 
+    		                          HpcReportCriteria criteria) 
+    		                         throws HpcException;
 }
 
  

@@ -34,8 +34,7 @@ public interface HpcNotificationService
      *
      * @param userId The user ID.
      * @param notificationSubscription The notification subscription to add/update.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void addUpdateNotificationSubscription(String userId,
     		                                      HpcNotificationSubscription notificationSubscription)
@@ -46,8 +45,7 @@ public interface HpcNotificationService
      *
      * @param userId The user ID.
      * @param eventType The event type to delete.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void deleteNotificationSubscription(String userId,
     		                                   HpcEventType eventType)
@@ -57,9 +55,8 @@ public interface HpcNotificationService
      * Get notification subscriptions of a user.
      *
      * @param userId The user ID.
-     * @return List<HpcNotificationSubscription>
-     * 
-     * @throws HpcException
+     * @return A list of notification subscriptions.
+     * @throws HpcException on service failure.
      */
     public List<HpcNotificationSubscription> getNotificationSubscriptions(String userId) 
     		                                                             throws HpcException;
@@ -69,9 +66,8 @@ public interface HpcNotificationService
      *
      * @param userId The user ID.
      * @param eventType The event type.
-     * @return HpcNotificationSubscription or null if not found.
-     * 
-     * @throws HpcException
+     * @return A notification subscription or null if not found.
+     * @throws HpcException on service failure.
      */
     public HpcNotificationSubscription getNotificationSubscription(String userId,
     		                                                       HpcEventType eventType) 
@@ -81,9 +77,8 @@ public interface HpcNotificationService
      * Get notification subscribed users.
      *
      * @param eventType The event type.
-     * @return userId List of subscribed user IDs.
-     * 
-     * @throws HpcException
+     * @return List of subscribed user IDs.
+     * @throws HpcException on service failure.
      */
     public List<String> getNotificationSubscribedUsers(HpcEventType eventType) 
     		                                                      throws HpcException;
