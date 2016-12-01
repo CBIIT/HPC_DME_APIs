@@ -178,7 +178,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
     /**
      * Verify connection to DB. (Invoked by spring init-method).
      * 
-     * Throws HpcException If it failed to connect to the database.
+     * @throws HpcException If it failed to connect to the database.
      */
 	@SuppressWarnings("unused")
 	private void dbConnect() throws HpcException

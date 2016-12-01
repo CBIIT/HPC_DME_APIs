@@ -36,7 +36,7 @@ import org.springframework.jdbc.core.RowMapper;
  * </p>
  *
  * @author <a href="mailto:prasad.konka@nih.gov">Prasad Konka</a>
- * @version $Id $
+ * @version $Id$
  */
 
 public class HpcReportsDAOImpl implements HpcReportsDAO
@@ -254,7 +254,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcEventDAO Interface Implementation
+    // HpcReportsDAO Interface Implementation
     //---------------------------------------------------------------------//  
     
 	private String getUsersSize(HpcReportCriteria criteria, Date[] dates, Object[] docArg, Object[] docDateArgs)

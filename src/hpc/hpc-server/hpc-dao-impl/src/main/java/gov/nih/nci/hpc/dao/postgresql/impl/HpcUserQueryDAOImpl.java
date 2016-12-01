@@ -105,7 +105,7 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcEventDAO Interface Implementation
+    // HpcUserQueryDAO Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
@@ -195,8 +195,8 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
     /** 
      * Convert compound query into a JSON string.
      * 
-     * @param payloadEntries List of payload entries.
-     * @return A JSON representation of the payload entries.
+     * @param compoundMetadataQuery The compound metadata query to convert.
+     * @return A JSON representation of the compound query.
      */
 	private String toJSONString(HpcCompoundMetadataQuery compoundMetadataQuery)
 	{
@@ -251,7 +251,7 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
      * Convert JSON string to HpcCompoundMetadataQuery domain object.
      * 
      * @param jsonCompoundMetadataQueryStr The compound query JSON string.
-     * @return HpcCompoundMetadataQuery
+     * @return A Compound Metadata Query.
      */
 	private HpcCompoundMetadataQuery fromJSON(String jsonCompoundMetadataQueryStr)
 	{
@@ -275,8 +275,8 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
     /** 
      * Convert JSON string to HpcCompoundMetadataQuery domain object.
      * 
-     * @param jsonCompoundMetadataQueryStr The compound query JSON.
-     * @return HpcCompoundMetadataQuery
+     * @param jsonCompoundMetadataQuery The compound query JSON.
+     * @return A Compound Metadata Query.
      */
 	@SuppressWarnings("unchecked")
 	private HpcCompoundMetadataQuery fromJSON(JSONObject jsonCompoundMetadataQuery)
@@ -310,9 +310,7 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
      * Instantiate a HpcMetadataQuery from JSON.
      *
      * @param jsonMetadataQuery The metadata query JSON object. 
-     * @return HpcMetadataQuery
-     * 
-     * @throws HpcException If failed to parse the JSON.
+     * @return A Metadata Query.
      */
 	private HpcMetadataQuery metadataQueryFromJSON(JSONObject jsonMetadataQuery) 
     {
@@ -334,8 +332,6 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
     	
     	return metadataQuery;
     }
-	
-	
 }
 
  

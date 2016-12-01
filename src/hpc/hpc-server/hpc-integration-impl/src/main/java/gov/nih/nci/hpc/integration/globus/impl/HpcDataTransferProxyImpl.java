@@ -259,10 +259,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
      * @param client Client API instance.
      * @param source The source endpoint.
      * @param destination The destination endpoint.
-     * 
      * @return The data transfer request ID.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data transfer system failure.
      */
     private String transferData(JSONTransferAPIClient client,
                                 HpcFileLocation source, HpcFileLocation destination)
@@ -349,14 +347,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param dataTransferRequestId The data transfer request ID.
-     * 
-     * @return HpcGlobusDataTransferReport the data transfer report for the request.
-     * 
-     * @throws HpcException
+     * @return The data transfer report for the request.
+     * @throws HpcException on data transfer system failure.
      */
     private HpcGlobusDataTransferReport getDataTransferReport(Object authenticatedToken,
                                                               String dataTransferRequestId) 
-           throws HpcException
+                                                             throws HpcException
     {
 		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 		HpcGlobusDataTransferReport hpcDataTransferReport = new HpcGlobusDataTransferReport();
@@ -418,9 +414,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
      * @param fileLocation The endpoint/path to check.
      * @param client Globus client API instance.
      * @param getSize If set to true, the file/directory size will be returned. 
-     * @return HpcDataTransferPathAttributes The path attributes.
-     * 
-     * @throws HpcException
+     * @return The path attributes.
+     * @throws HpcException on data transfer system failure.
      */
     private HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation,
                                                 JSONTransferAPIClient client,
@@ -563,6 +558,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
      * @param dirLocation The directory endpoint/path.
      * @param client Globus client API instance.
      * @return The file size in bytes.
+     * @throws APIError on Globus failure.
+     * @throws HpcException on service failure.
      */
     private Result listDirectoryContent(HpcFileLocation dirLocation, 
     		                            JSONTransferAPIClient client)

@@ -44,8 +44,7 @@ public interface HpcDataTransferProxy
      * @param dataTransferAccount The Data Transfer account to authenticate.
      * @return An authenticated token, to be used in subsequent calls to data transfer.
      *         It returns null if the account is not authenticated.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data transfer system failure.
      */
     public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount) 
     		                  throws HpcException;
@@ -54,11 +53,10 @@ public interface HpcDataTransferProxy
      * Upload a data object file.
      *
      * @param authenticatedToken An authenticated token.
-     * @param dataUploadRequest The data upload request
+     * @param uploadRequest The data upload request
      * @param metadataEntries (Optional) a list of metadata to attach to the physical file storage.
-     * @return HpcDataObjectUploadResponse A data object upload response.
-     * 
-     * @throws HpcException
+     * @return A data object upload response.
+     * @throws HpcException on data transfer system failure.
      */
     public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
     		                                            HpcDataObjectUploadRequest uploadRequest,
@@ -69,10 +67,9 @@ public interface HpcDataTransferProxy
      * Download a data object file.
      *
      * @param authenticatedToken An authenticated token.
-     * @param dataDownloadRequest The data object download request.
-     * @return HpcDataObjectDownloadResponse A data object download response.
-     * 
-     * @throws HpcException
+     * @param downloadRequest The data object download request.
+     * @return A data object download response.
+     * @throws HpcException on data transfer system failure.
      */
     public HpcDataObjectDownloadResponse downloadDataObject(Object authenticatedToken,
     		                                                HpcDataObjectDownloadRequest downloadRequest) 
@@ -83,10 +80,8 @@ public interface HpcDataTransferProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param dataTransferRequestId The data transfer request ID.
-     * 
-     * @return HpcDataTransferUploadStatus the data transfer request status.
-     * 
-     * @throws HpcException
+     * @return The data transfer request status.
+     * @throws HpcException on data transfer system failure.
      */
     default HpcDataTransferUploadStatus getDataTransferUploadStatus(Object authenticatedToken,
     		                                                        String dataTransferRequestId) 
@@ -101,10 +96,8 @@ public interface HpcDataTransferProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param dataTransferRequestId The data transfer request ID.
-     * 
-     * @return HpcDataTransferDownloadStatus the data transfer request status.
-     * 
-     * @throws HpcException
+     * @return The data transfer request status.
+     * @throws HpcException on data transfer system failure.
      */
     default HpcDataTransferDownloadStatus getDataTransferDownloadStatus(Object authenticatedToken,
     		                                                            String dataTransferRequestId) 
@@ -119,10 +112,8 @@ public interface HpcDataTransferProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param dataTransferRequestId The data transfer request ID.
-     * 
      * @return The size of the data transferred in bytes.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data transfer system failure.
      */
     default long getDataTransferSize(Object authenticatedToken,
     		                         String dataTransferRequestId) 
@@ -138,9 +129,8 @@ public interface HpcDataTransferProxy
      * @param authenticatedToken An authenticated token.
      * @param fileLocation The endpoint/path to check.
      * @param getSize If set to true, the file/directory size will be returned. 
-     * @return HpcDataTransferPathAttributes The path attributes.
-     * 
-     * @throws HpcException
+     * @return The path attributes.
+     * @throws HpcException on data transfer system failure.
      */
     default HpcPathAttributes getPathAttributes(Object authenticatedToken, 
     		                                    HpcFileLocation fileLocation,
@@ -157,8 +147,7 @@ public interface HpcDataTransferProxy
      * @param fileId The file ID.
      * @param archive If true, the archive path is returned, otherwise the download/share path is returned.
      * @return a file path.
-     * 
-     * @throws HpcException
+     * @throws HpcException on data transfer system failure.
      */
     default String getFilePath(String fileId, boolean archive) throws HpcException
     {
@@ -170,8 +159,8 @@ public interface HpcDataTransferProxy
      * Get download source location.
      *
      * @param path The data object logical path.
-     * 
-     * @throws HpcException
+     * @return The download source location.
+     * @throws HpcException on data transfer system failure.
      */
     default HpcFileLocation getDownloadSourceLocation(String path) throws HpcException
     {
@@ -180,14 +169,13 @@ public interface HpcDataTransferProxy
     }
     
     /** 
-     * Calculate data transfer destination to deposit a data object
+     * Calculate data transfer destination to deposit a data object.
      * 
      * @param baseArchiveDestination The base (archive specific) destination.
      * @param path The data object (logical) path.
      * @param callerObjectId The caller's objectId.
      * @param archiveType The type of the archive.
-     * 
-     * @return HpcFileLocation The calculated data transfer deposit destination.
+     * @return The calculated data transfer deposit destination.
      */
 	public static HpcFileLocation getArchiveDestinationLocation(
 			                         HpcFileLocation baseArchiveDestination,
