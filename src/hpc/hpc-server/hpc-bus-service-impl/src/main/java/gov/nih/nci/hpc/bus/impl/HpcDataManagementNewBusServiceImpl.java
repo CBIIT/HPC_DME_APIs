@@ -423,8 +423,8 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
      * @param source A data transfer source.
      * @param dataTransferType The data transfer type.
      * @param dataObjectFile The attached data file.
-     * 
      * @return The source size in bytes.
+     * @throws HpcException on service failure.
      */
 	private Long getSourceSize(HpcFileLocation source, HpcDataTransferType dataTransferType,
 			                   File dataObjectFile) throws HpcException
@@ -444,7 +444,6 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
      * Calculate the data transfer % completion if transfer is in progress
      * 
      * @param dataObject The data object to check the timeout for.
-     * 
      * @return The transfer % completion if transfer is in progress, or null otherwise.
      *         e.g 86%.
      */
@@ -485,7 +484,6 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
      * Validate permissions requests list.
      * 
      * @param entityPermissionRequests The requests to validate.
-     *
      * @throws HpcException if found an invalid request in the list.
      */
 	private void validatePermissionRequests(

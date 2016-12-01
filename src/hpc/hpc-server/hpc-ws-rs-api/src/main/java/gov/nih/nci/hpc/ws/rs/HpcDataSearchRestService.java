@@ -204,6 +204,5 @@ public interface HpcDataSearchRestService
 	public Response getMetadataAttributes(
 			           @QueryParam("level") Integer level,
 			           @QueryParam("levelOperator") String levelOperatorStr);
-	
 }
 

@@ -30,17 +30,15 @@ public interface HpcEventDAO
      * Store a new notification event to the repository.
      *
      * @param event The event to be added.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public void insertEvent(HpcEvent event) throws HpcException;
     
     /**
      * Get all (active) events.
      *
-     * @return List<HpcEvent>
-     * 
-     * @throws HpcException
+     * @return <code>List&lt;HpcEvent&gt;</code>
+     * @throws HpcException on database error.
      */
     public List<HpcEvent> getEvents() throws HpcException;
     
@@ -48,8 +46,7 @@ public interface HpcEventDAO
      * Delete an event
      *
      * @param eventId The eventId to delete.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public void deleteEvent(int eventId) throws HpcException;
     
@@ -57,8 +54,7 @@ public interface HpcEventDAO
      * Store an event to the event history table.
      *
      * @param event The event to be added.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public void insertEventHistory(HpcEvent event) throws HpcException;
 }

@@ -416,8 +416,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
      * Persist user to the DB.
      *
      * @param user The user to be persisted.
-     *
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     private void upsert(HpcUser user) throws HpcException
     {
@@ -429,6 +428,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
      * Get the data management authenticated token from the request context.
      * If it's not in the context, get a token by authenticating.
      *
+     * @return A data management authenticated token.
      * @throws HpcException If it failed to obtain an authentication token.
      */
     private Object getAuthenticatedToken() throws HpcException

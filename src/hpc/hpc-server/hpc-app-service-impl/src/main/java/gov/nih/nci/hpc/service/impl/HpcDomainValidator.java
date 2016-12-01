@@ -107,7 +107,7 @@ public class HpcDomainValidator
     /**
      * Validate Integrated System Account object.
      *
-     * @param dataTransferAccount the object to be validated.
+     * @param integratedSystemAccount the object to be validated.
      * @return true if valid, false otherwise.
      */
     public static boolean isValidIntegratedSystemAccount(

@@ -38,9 +38,8 @@ public interface HpcDataSearchBusService
      * @param metadataQueries The metadata queries.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @param page The requested results page.
-     * @return A list of HpcCollectionDTO
-     * 
-     * @throws HpcException
+     * @return A list of Collection DTO.
+     * @throws HpcException on service failure.
      */
     public HpcCollectionListDTO getCollections(List<HpcMetadataQuery> metadataQueries,
     		                                   boolean detailedResponse, int page) 
@@ -49,9 +48,8 @@ public interface HpcDataSearchBusService
      * Get Collections by compound metadata query.
      *
      * @param compoundMetadataQueryDTO The compound metadata query DTO.
-     * @return A list of HpcCollectionDTO
-     * 
-     * @throws HpcException
+     * @return A list of Collection DTO.
+     * @throws HpcException on service failure.
      */
     public HpcCollectionListDTO getCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
     		                                  throws HpcException;
@@ -62,9 +60,8 @@ public interface HpcDataSearchBusService
      * @param queryName The query name.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @param page The requested results page.
-     * @return A list of HpcCollectionDTO
-     * 
-     * @throws HpcException
+     * @return A list of Collection DTO.
+     * @throws HpcException on service failure.
      */
     public HpcCollectionListDTO getCollections(String queryName, boolean detailedResponse,
     		                                   int page) 
@@ -76,9 +73,8 @@ public interface HpcDataSearchBusService
      * @param metadataQueries The metadata queries.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @param page The requested results page.
-     * @return A list of HpcDataObjectDTO.
-     * 
-     * @throws HpcException
+     * @return A list of Data Object DTO.
+     * @throws HpcException on service failure.
      */
     public HpcDataObjectListDTO getDataObjects(List<HpcMetadataQuery> metadataQueries,
     		                                   boolean detailedResponse, int page) 
@@ -88,9 +84,8 @@ public interface HpcDataSearchBusService
      * Get data objects by compound metadata query.
      *
      * @param compoundMetadataQueryDTO The compound metadata query DTO.
-     * @return A list of HpcDataObjectDTO.
-     * 
-     * @throws HpcException
+     * @return A list of Data Object DTO.
+     * @throws HpcException on service failure.
      */
     public HpcDataObjectListDTO getDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
     		                                  throws HpcException;
@@ -101,9 +96,8 @@ public interface HpcDataSearchBusService
      * @param queryName The query name.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @param page The requested results page.
-     * @return A list of HpcDataObjectDTO.
-     * 
-     * @throws HpcException
+     * @return A list of Data Object DTO.
+     * @throws HpcException on service failure.
      */
     public HpcDataObjectListDTO getDataObjects(String queryName, boolean detailedResponse,
     		                                   int page) 
@@ -114,7 +108,7 @@ public interface HpcDataSearchBusService
      *
      * @param queryName The query name.
      * @param compoundMetadataQueryDTO The compound query DTO.
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void saveQuery(String queryName,
     		              HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
@@ -124,7 +118,7 @@ public interface HpcDataSearchBusService
      * Delete a query.
      *
      * @param queryName The query name.
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void deleteQuery(String queryName) throws HpcException;
 
@@ -132,7 +126,7 @@ public interface HpcDataSearchBusService
      * Get all saved queries.
      *
      * @return HpcNamedCompoundMetadataQueryListDTO 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public HpcNamedCompoundMetadataQueryListDTO getQueries() throws HpcException;
     
@@ -142,6 +136,7 @@ public interface HpcDataSearchBusService
   * @param level Filter the results by level. (Optional).
   * @param levelOperator The operator to use in the level filter. (Optional).
   * @return A list of metadata attributes
+  * @throws HpcException on service failure.
   */
 	public HpcMetadataAttributesListDTO 
 	          getMetadataAttributes(Integer level, HpcMetadataQueryOperator levelOperator) 

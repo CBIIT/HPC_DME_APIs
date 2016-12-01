@@ -30,12 +30,11 @@ public interface HpcReportsDAO
     /**
      * Generate report based on given criteria
      *
-     * @param criteria The report criteria
-     * 
-     * @throws HpcException
+     * @param criteria The report criteria.
+     * @return <code>List&lt;HpcReport&gt;</code>
+     * @throws HpcException on database error.
      */
     public List<HpcReport> generatReport(HpcReportCriteria criteria) throws HpcException;
-    
 }
 
  

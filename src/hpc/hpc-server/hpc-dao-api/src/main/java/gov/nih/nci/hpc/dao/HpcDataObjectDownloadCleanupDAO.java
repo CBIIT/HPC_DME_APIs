@@ -27,11 +27,10 @@ import java.util.List;
 public interface HpcDataObjectDownloadCleanupDAO 
 {    
     /**
-     * Store a new data object download cleanup it if it exists, or update one if it exists.
+     * Store a new data object download cleanup, or update one if it already exists.
      *
      * @param dataObjectDownloadCleanup The data object download cleanup object to persist.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public void upsert(HpcDataObjectDownloadCleanup dataObjectDownloadCleanup) 
     		          throws HpcException;
@@ -40,17 +39,15 @@ public interface HpcDataObjectDownloadCleanupDAO
      * Delete a data object download cleanup.
      *
      * @param dataTransferRequestId The data transfer request ID.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public void delete(String dataTransferRequestId) throws HpcException;
     
     /**
      * Get all data object download cleanup entries. 
      *
-     * @return List<HpcDataObjectDownloadCleanup>
-     * 
-     * @throws HpcException
+     * @return <code>List&lt;HpcDataObjectDownloadCleanup&gt;</code>
+     * @throws HpcException on database error.
      */
     public List<HpcDataObjectDownloadCleanup> getAll() throws HpcException;
 }
