@@ -31,8 +31,7 @@ public interface HpcSystemAccountDAO
      *
      * @param account The system account to be added/updated.
      * @param dataTransferType The data transfer type to associate with the system account.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public void upsert(HpcIntegratedSystemAccount account, 
     		           HpcDataTransferType dataTransferType) 
@@ -43,8 +42,7 @@ public interface HpcSystemAccountDAO
      *
      * @param system The system to get the account for
      * @return The system account if found, or null otherwise.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) 
     		                                          throws HpcException;
@@ -54,8 +52,7 @@ public interface HpcSystemAccountDAO
      *
      * @param dataTransferType The data transfer type associated with the requested system account.
      * @return The system account if found, or null otherwise.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public HpcIntegratedSystemAccount getSystemAccount(HpcDataTransferType dataTransferType) 
     		                                          throws HpcException;

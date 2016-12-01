@@ -106,7 +106,7 @@ public class HpcMetadataValidator
      * 
      * @param metadataValidationRulesPath The path to the validation rules JSON.
      * 
-     * @throws HpcException
+     * @throws HpcException on Spring configuration error.
      */
     public HpcMetadataValidator(String metadataValidationRulesPath) throws HpcException
     {
@@ -372,9 +372,8 @@ public class HpcMetadataValidator
      * Instantiate list metadata validation rules from JSON.
      *
      * @param jsonMetadataValidationRules The validation rules JSON array. 
-     * @return List<HpcMetadataValidationRule> A collection of metadata validation rules.
-     * 
-     * @throws HpcException If failed to parse the JSON
+     * @return A collection of metadata validation rules.
+     * @throws HpcException If failed to parse the JSON.
      */
     @SuppressWarnings("unchecked")
 	private List<HpcMetadataValidationRule> rulesFromJSON(JSONArray jsonMetadataValidationRules) 
@@ -439,7 +438,7 @@ public class HpcMetadataValidator
      * 
      * @param metadataValidationRulesPath The path to the validation rules JSON.
      * @return a JSON object with the validation rules
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
 	private JSONObject getMetadataValidationRulesJSON(String metadataValidationRulesPath) 
 			                                         throws HpcException

@@ -118,8 +118,7 @@ public class HpcException extends Exception implements java.io.Serializable
      * a Throwable cause
      *
      * @param message The message for the exception.
-     * @param errorType The type of the error, often the subsystem that is 
-     *        the source of the error.
+     * @param requestRejectReason The reason for rejecting the request.
      * @param cause The root cause Throwable.
      */
     public HpcException(String message, 

@@ -28,8 +28,7 @@ public interface HpcUserDAO
      * Store a new user to the repository or update it if it exists.
      *
      * @param user The user to be added/updated.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public void upsert(HpcUser user) throws HpcException;
     
@@ -38,8 +37,7 @@ public interface HpcUserDAO
      *
      * @param nciUserId the user NCI ID.
      * @return The user if found, or null otherwise.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public HpcUser getUser(String nciUserId) throws HpcException;
 }

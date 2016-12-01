@@ -514,9 +514,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
      * Get metadata of a collection.
      *
      * @param path The collection's path.
-     * @return HpcMetadataEntries The collection's metadata entries.
-     * 
-     * @throws HpcException
+     * @return The collection's metadata entries.
+     * @throws HpcException on service failure.
      */
     private List<HpcMetadataEntry> getCollectionMetadata(String path) throws HpcException
     {
@@ -596,7 +595,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
      * 
      * @param attribute The metadata entry attribute.
      * @param value The metadata entry value.
-     * @return HpcMetadataEntry instance
+     * @return The metadata entry.
      */
     private HpcMetadataEntry toMetadataEntry(String attribute, String value)
     {
@@ -624,8 +623,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
      *
      * @param path The data object's path.
      * @return HpcMetadataEntries The data object's metadata entries.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     private List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException
     {
@@ -645,7 +643,6 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
      * @param rules The list of rules to filter.
      * @param doc The DOC to filter for.
      * @return List of HpcMetadataValidationRule
-     * 
      */
     private List<HpcMetadataValidationRule> rulesForDOC(List<HpcMetadataValidationRule> rules,
     		                                            String doc) 

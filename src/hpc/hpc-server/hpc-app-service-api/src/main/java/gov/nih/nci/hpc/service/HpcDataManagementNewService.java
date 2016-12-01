@@ -35,8 +35,7 @@ public interface HpcDataManagementNewService
      *
      * @param path The collection path.
      * @return true if the directory was created, or false if it already exists.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public boolean createDirectory(String path) throws HpcException;
     
@@ -45,8 +44,7 @@ public interface HpcDataManagementNewService
      *
      * @param path The data object path.
      * @return true if the data object file was created, or false if it already exists.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public boolean createFile(String path) throws HpcException;
     
@@ -54,7 +52,7 @@ public interface HpcDataManagementNewService
      * Delete a path (data object or directory).
      *
      * @param path The path to delete.
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void delete(String path) throws HpcException;
     
@@ -63,9 +61,8 @@ public interface HpcDataManagementNewService
      *
      * @param path The entity path.
      * @param permissionRequest The permission request (NCI user ID and permission).
-     * @return HpcPathAttributes of the path.
-     * 
-     * @throws HpcException If it failed to set the entity permission.
+     * @return The path attributes.
+     * @throws HpcException on service failure.
      */
     public HpcPathAttributes setPermission(String path,
     		                               HpcEntityPermission permissionRequest) 
@@ -75,9 +72,8 @@ public interface HpcDataManagementNewService
      * Assign system account as an additional owner of an entity.
      *
      * @param path The entity path.
-     * @return HpcPathAttributes of the path.
-     * 
-     * @throws HpcException If it failed to set the entity permission.
+     * @return The path attributes.
+     * @throws HpcException on service failure.
      */
     public HpcPathAttributes assignSystemAccountPermission(String path) 
     		                                              throws HpcException;
@@ -89,7 +85,6 @@ public interface HpcDataManagementNewService
      * @param doc Use validation rules of this DOC.
      * @param dataObjectRegistration If true, the service validates if data object registration is allowed 
      *                               in this collection
-     * 
      * @throws HpcException If the hierarchy is invalid.
      */
     public void validateHierarchy(String path, String doc,
@@ -100,9 +95,8 @@ public interface HpcDataManagementNewService
      * Get collection by its path.
      *
      * @param path The collection's path.
-     * @return HpcCollection.
-     * 
-     * @throws HpcException
+     * @return A collection.
+     * @throws HpcException on service failure.
      */
     public HpcCollection getCollection(String path) throws HpcException;
     
@@ -110,9 +104,8 @@ public interface HpcDataManagementNewService
      * Get data object by its path.
      *
      * @param path The data object's path.
-     * @return HpcDataObject.
-     * 
-     * @throws HpcException
+     * @return A data object.
+     * @throws HpcException on service failure.
      */
     public HpcDataObject getDataObject(String path) throws HpcException;
     
@@ -120,27 +113,24 @@ public interface HpcDataManagementNewService
      * Get data hierarchy of a DOC.
      * 
      * @param doc The DOC.
-     * @return HpcDataHierarchy
-     *
-     * @throws HpcException
+     * @return The DOC's data hierarchy.
+     * @throws HpcException on service failure.
      */
     public HpcDataHierarchy getDataHierarchy(String doc) throws HpcException;
     
     /**
      * Get data objects that have their data transfer in-progress.
      *
-     * @return HpcDataObject list.
-     * 
-     * @throws HpcException
+     * @return A list of data objects.
+     * @throws HpcException on service failure.
      */
     public List<HpcDataObject> getDataObjectsInProgress() throws HpcException;
     
     /**
      * Get data objects that have their data stored in temporary archive.
      *
-     * @return HpcDataObject list.
-     * 
-     * @throws HpcException
+     * @return A list of data objects.
+     * @throws HpcException on service failure.
      */
     public List<HpcDataObject> getDataObjectsInTemporaryArchive() throws HpcException;
     

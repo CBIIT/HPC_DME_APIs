@@ -26,16 +26,13 @@ import gov.nih.nci.hpc.exception.HpcException;
 public interface HpcReportBusService 
 {         
 	/**
-	 * Generate HPC report
+	 * Generate HPC report.
 	 *
-	 * @param criteria
-	 *            to generate the report
-	 * @return HpcReport
-	 * 
-	 * @throws HpcException
+	 * @param criteria to generate the report
+	 * @return Reports DTO
+	 * @throws HpcException on service failure.
 	 */
 	public HpcReportsDTO generateReport(HpcReportRequestDTO criteria) throws HpcException;
-    
 }
 
  

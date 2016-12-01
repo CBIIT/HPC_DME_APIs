@@ -76,7 +76,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
      * @param searchResultsPageSize The max page size of search results.
      * @param defaultCollectionLevelFilter The default collection search level filter.
      * @param defaultDataObjectLevelFilter The default data-object search level filter.
-     * @throws HpcException
+     * @throws HpcException on Spring configuration error.
      */
     private HpcDataSearchServiceImpl(int searchResultsPageSize,
     		                         HpcMetadataQueryLevelFilter defaultCollectionLevelFilter,

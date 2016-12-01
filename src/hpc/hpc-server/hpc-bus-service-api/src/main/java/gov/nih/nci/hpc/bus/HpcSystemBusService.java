@@ -26,7 +26,7 @@ public interface HpcSystemBusService
     /**
      * Update the data transfer upload status of all data objects that the transfer is 'in progress'.
      *
-     * @throws HpcException.
+     * @throws HpcException on service failure..
      */
 	public void updateDataTransferUploadStatus() throws HpcException;
 	
@@ -34,7 +34,7 @@ public interface HpcSystemBusService
      * Transfer data objects currently in temporary archive to the (permanent) archive, 
      * and complete the registration process.
      *
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
 	public void processTemporaryArchive() throws HpcException;
 	
@@ -42,63 +42,63 @@ public interface HpcSystemBusService
      * Detect all the completed (aync) 2nd hop download requests and delete the files 
      * in the download space.
      *
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
 	public void cleanupDataTransferDownloadFiles() throws HpcException;
 	
     /**
      * Process all (active) events.
      *
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
 	public void processEvents() throws HpcException;
 
 	/**
      * Generate summary report event.
      *
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
 	public void generateSummaryReportEvent() throws HpcException;
 
 	/**
      * Generate weekly summary report event.
      *
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
 	public void generateWeeklySummaryReportEvent() throws HpcException;
 
 	/**
      * Generate summary by DOC report event.
      *
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
 	public void generateDocReportEvent() throws HpcException;
 
 	/**
      * Generate summary by weekly DOC reports events.
      *
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
 	public void generateWeeklyDocReportEvent() throws HpcException;
 
 	/**
      * Generate user summary report event.
      *
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
 	public void generateUserReportEvent() throws HpcException;
 
 	/**
      * Generate weekly user summary report event.
      *
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
 	public void generateWeeklyUserReportEvent() throws HpcException;
 	
     /**
      * Refresh the metadata materialized views.
      *
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
 	public void refreshMetadataViews() throws HpcException;
 	

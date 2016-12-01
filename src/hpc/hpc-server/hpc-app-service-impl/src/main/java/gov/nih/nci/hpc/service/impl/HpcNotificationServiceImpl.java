@@ -62,6 +62,8 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
 
     /**
      * Default constructor disabled.
+     * 
+     * @throws HpcException Constructor disabled.
      *
      */
     private HpcNotificationServiceImpl() throws HpcException
@@ -77,7 +79,6 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
      */
     private HpcNotificationServiceImpl(
     		   Map<HpcNotificationDeliveryMethod, HpcNotificationSender> notificationSenders) 
-    		   throws HpcException
     {
     	this.notificationSenders.putAll(notificationSenders);
     }
@@ -138,7 +139,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     @Override
     public List<String> getNotificationSubscribedUsers(HpcEventType eventType) throws HpcException
     {
-    	return notificationDAO.getSubscriptedUsers(eventType);
+    	return notificationDAO.getSubscribedUsers(eventType);
     }
     
     @Override
