@@ -63,8 +63,7 @@ public class HpcDataHierarchyValidator
      * Constructor for Spring Dependency Injection.
      * 
      * @param dataHierarchyDefinitionsPath The path to the data hierarchy definitions JSON.
-     * 
-     * @throws HpcException
+     * @throws HpcException If the data hierarchy definition is invalid.
      */
     @SuppressWarnings("unchecked")
     public HpcDataHierarchyValidator(String dataHierarchyDefinitionsPath) throws HpcException
@@ -206,7 +205,7 @@ public class HpcDataHierarchyValidator
      * 
      * @param dataHierarchyDefinitionsPath The path to the data hierarchy definitions JSON.
      * @return a JSON object with the data hierarchy definitions
-     * @throws HpcException
+     * @throws HpcException If failed to open or parse JSON.
      */
 	private JSONArray getDataHierarchyDefinitionsJSON(String dataHierarchyDefinitionsPath) 
 			                                         throws HpcException

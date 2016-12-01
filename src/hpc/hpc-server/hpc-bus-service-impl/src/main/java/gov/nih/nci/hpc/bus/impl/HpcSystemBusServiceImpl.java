@@ -434,7 +434,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * Determine if data transfer status check timed out.
      * 
      * @param dataObject The data object to check the timeout for.
-     * 
      * @return true if status check timeout occurred. 
      */
 	private boolean isDataTransferStatusCheckTimedOut(HpcDataObject dataObject) 
@@ -459,9 +458,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * @param dataObject The data object
      * @param checkTimeout If 'true', this method checks for transfer status timeout occurred 
      *                     before setting the status. 
-     * @return HpcDataObjectUploadResponse
-     * 
-     * @throws HpcException
      */
 	private void setTransferUploadStatusToUnknown(HpcDataObject dataObject, 
 			                                      boolean checkTimeout)
@@ -485,8 +481,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * 
      * @param path The data object path.
      * @param dataTransferStatus The data transfer status.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
 	private void setDataTransferUploadStatus(String path, HpcDataTransferUploadStatus dataTransferStatus)
 	                                        throws HpcException

@@ -39,8 +39,7 @@ public interface HpcMetadataDAO
      * @param limit No more than 'limit' paths will be returned.
      * @param defaultLevelFilter A default level filter to use if not provided in the query.
      * @return List of collection Paths.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public List<String> getCollectionPaths(List<HpcMetadataQuery> metadataQueries,
     		                               String dataManagementUsername,
@@ -56,10 +55,8 @@ public interface HpcMetadataDAO
      * @param offset Skip that many path in the returned results.
      * @param limit No more than 'limit' paths will be returned.
      * @param defaultLevelFilter A default level filter to use if not provided in the query.
-     * 
      * @return List of collection Paths.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
     		                               String dataManagementUsername,
@@ -76,8 +73,7 @@ public interface HpcMetadataDAO
      * @param limit No more than 'limit' paths will be returned.
      * @param defaultLevelFilter A default level filter to use if not provided in the query.
      * @return List of data object Paths.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public List<String> getDataObjectPaths(List<HpcMetadataQuery> metadataQueries,
     		                               String dataManagementUsername,
@@ -94,8 +90,7 @@ public interface HpcMetadataDAO
      * @param limit No more than 'limit' paths will be returned.
      * @param defaultLevelFilter A default level filter to use if not provided in the query.
      * @return List of data object Paths.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
     		                               String dataManagementUsername,
@@ -109,8 +104,7 @@ public interface HpcMetadataDAO
      * @param path The collection's path.
      * @param minLevel The minimum level in the hierarchy to return.
      * @return List of HpcMetadataEntry.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public List<HpcMetadataEntry> getCollectionMetadata(String path, int minLevel) throws HpcException;
     
@@ -120,8 +114,7 @@ public interface HpcMetadataDAO
      * @param path The data object's path.
      * @param minLevel The minimum level in the hierarchy to return.
      * @return List of HpcHierarchicalMetadataEntry.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public List<HpcMetadataEntry> getDataObjectMetadata(String path, int minLevel) throws HpcException;
     
@@ -131,6 +124,7 @@ public interface HpcMetadataDAO
      * @param level Filter the results by level. (Optional).
      * @param levelOperator The operator to use in the level filter. (Optional).
      * @return A list of metadata attributes.
+     * @throws HpcException on database error.
      */
 	public List<String> getCollectionMetadataAttributes(
 			               Integer level, HpcMetadataQueryOperator levelOperator) 
@@ -142,6 +136,7 @@ public interface HpcMetadataDAO
      * @param level Filter the results by level. (Optional).
      * @param levelOperator The operator to use in the level filter. (Optional).
      * @return A list of metadata attributes.
+     * @throws HpcException on database error.
      */
 	public List<String> getDataObjectMetadataAttributes(
 			               Integer level, HpcMetadataQueryOperator levelOperator) 
@@ -149,8 +144,7 @@ public interface HpcMetadataDAO
     
     /**
      * Refresh all materialized views.
-     *
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public void refreshViews() throws HpcException;
 }

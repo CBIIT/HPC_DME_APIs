@@ -10,11 +10,11 @@
 
 package gov.nih.nci.hpc.service;
 
-import java.util.List;
-
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.util.List;
 
 /**
  * <p>
@@ -25,16 +25,14 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @version $Id$
  */
 
-public interface HpcReportService {
+public interface HpcReportService 
+{
 	/**
-	 * Generate HPC report
+	 * Generate HPC report.
 	 *
-	 * @param criteria
-	 *            to generate the report
-	 * @return HpcReport
-	 * 
-	 * @throws HpcException
+	 * @param criteria A criteria to generate the report.
+	 * @return A list reports. 
+	 * @throws HpcException on service failure.
 	 */
 	public List<HpcReport> generateReport(HpcReportCriteria criteria) throws HpcException;
-
 }

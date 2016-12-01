@@ -35,8 +35,7 @@ public interface HpcSecurityService
      *
      * @param nciAccount The user's NCI account.
      * @param dataTransferAccount The user's data management account.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void addUser(HpcNciAccount nciAccount, 
     		            HpcIntegratedSystemAccount dataTransferAccount) 
@@ -49,8 +48,7 @@ public interface HpcSecurityService
      * @param firstName The user first name.
      * @param lastName The user last name. 
      * @param doc The user DOC.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void updateUser(String nciUserId, String firstName, String lastName, String doc) 
     		              throws HpcException;
@@ -60,8 +58,7 @@ public interface HpcSecurityService
      *
      * @param nciUserId The registered user NCI ID.
      * @return The registered user.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public HpcUser getUser(String nciUserId) throws HpcException;
     
@@ -70,15 +67,14 @@ public interface HpcSecurityService
      *
      * @param nciUserId The registered user NCI ID.
      * @return user role.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public HpcUserRole getUserRole(String nciUserId) throws HpcException;
 
     /**
      * Get the request invoker (user).
      *
-     * @return HpcRequestInvoker
+     * @return The request invoker.
      */
     public HpcRequestInvoker getRequestInvoker();
     
@@ -93,7 +89,7 @@ public interface HpcSecurityService
     /**
      * Set the service call invoker in the request context using system account.
      * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void setSystemRequestInvoker() throws HpcException;
     
@@ -103,8 +99,7 @@ public interface HpcSecurityService
      * @param userName The user's name.
      * @param password The password.
      * @return true if the user was successfully authenticated, or false otherwise.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public boolean authenticate(String userName, String password) throws HpcException;
     
@@ -113,8 +108,7 @@ public interface HpcSecurityService
      *
      * @param account The system account to be added/updated.
      * @param dataTransferType The data transfer type to associate with the system account.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void addSystemAccount(HpcIntegratedSystemAccount account, 
 	                             HpcDataTransferType dataTransferType) 
@@ -125,8 +119,7 @@ public interface HpcSecurityService
      *
      * @param authenticationTokenClaims The token's claims to put in the token.
      * @return An Authentication token.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public String createAuthenticationToken(HpcAuthenticationTokenClaims authenticationTokenClaims)
     		                               throws HpcException;
@@ -136,8 +129,7 @@ public interface HpcSecurityService
      *
      * @param authenticationToken The token to parse
      * @return The token claims if was able to parse, or null otherwise.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public HpcAuthenticationTokenClaims parseAuthenticationToken(String authenticationToken)
     		                                                    throws HpcException;
@@ -148,7 +140,6 @@ public interface HpcSecurityService
      * authorized to invoke with their own user-id.
      *
      * @param nciUserId The user-id to authorize.
-     * 
      * @throws HpcException If the call is not authorized.
      */
     public void authorizeUserService(String nciUserId) throws HpcException;

@@ -74,7 +74,7 @@ public class HpcNotificationFormatter
      * 
      * @param notificationFormatPath The path to the notification formats JSON file.
      * 
-     * @throws HpcException
+     * @throws HpcException on spring configuration error.
      */
     public HpcNotificationFormatter(String notificationFormatPath) throws HpcException
     {
@@ -91,7 +91,7 @@ public class HpcNotificationFormatter
      * @param eventType The event type to generate the text for.
      * @param payloadEntries The payload entries to use for the format arguments.
      * @return A notification text message.
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public String formatText(HpcEventType eventType, List<HpcEventPayloadEntry> payloadEntries) 
     		                throws HpcException
@@ -112,7 +112,7 @@ public class HpcNotificationFormatter
      * @param eventType The event type to generate the subject for.
      * @param payloadEntries The payload entries to use for the format arguments.
      * @return A notification text message.
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public String formatSubject(HpcEventType eventType, List<HpcEventPayloadEntry> payloadEntries) 
     		                   throws HpcException
@@ -138,7 +138,7 @@ public class HpcNotificationFormatter
      * @param formatArguments The arguments.
      * @param eventPayloadEntries The event payload entries.
      * @return A formatted string.
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     private String format(String format, List<HpcNotificationFormatArgument> formatArguments,
     		              List<HpcEventPayloadEntry> eventPayloadEntries) 
@@ -161,7 +161,6 @@ public class HpcNotificationFormatter
      *
      * @param jsonNotificationFormatArgument The notification format argument JSON
      * @return HpcNotificationFormatArgument A notification format argument object.
-     * 
      * @throws HpcException If failed to parse the JSON
      */
 	private HpcNotificationFormatArgument notificationFormatArgumentFromJSON(
@@ -187,19 +186,18 @@ public class HpcNotificationFormatter
      * Instantiate a list of notification format argument objects from JSON.
      *
      * @param jsonNotificationFormatArguments The notification format arguments JSON array.
-     * @return List<HpcNotificationFormatArgument>  A list of notification format argument objects.
-     * 
-     * @throws HpcException If failed to parse the JSON
+     * @return A list of notification format argument objects.
+     * @throws HpcException If failed to parse the JSON.
      */
 	private List<HpcNotificationFormatArgument> 
-	        notificationFormatArgumentsFromJSON(JSONArray jsonNotificationFormaArguments) 
+	        notificationFormatArgumentsFromJSON(JSONArray jsonNotificationFormatArguments) 
 	        		                           throws HpcException
 	{	
 		List<HpcNotificationFormatArgument> arguments = new ArrayList<>();
-	    if(jsonNotificationFormaArguments != null && 
-	       jsonNotificationFormaArguments.size() > 0) {
+	    if(jsonNotificationFormatArguments != null && 
+	       jsonNotificationFormatArguments.size() > 0) {
 		   @SuppressWarnings("unchecked")
-		   Iterator<JSONObject> jsonArgumentIterator = jsonNotificationFormaArguments.iterator();
+		   Iterator<JSONObject> jsonArgumentIterator = jsonNotificationFormatArguments.iterator();
 		   while(jsonArgumentIterator.hasNext()) {
 			     arguments.add(notificationFormatArgumentFromJSON(jsonArgumentIterator.next()));
 		   }
@@ -212,7 +210,7 @@ public class HpcNotificationFormatter
 			   }
 		   }
 		   if(maxIndex + 1 != arguments.size()) {
-			  throw new HpcException("Invalid arguments index: " + jsonNotificationFormaArguments,
+			  throw new HpcException("Invalid arguments index: " + jsonNotificationFormatArguments,
 					                 HpcErrorType.SPRING_CONFIGURATION_ERROR);
 		   }
 	    }
@@ -225,8 +223,7 @@ public class HpcNotificationFormatter
      *
      * @param jsonNotificationFormat The notification format JSON
      * @return HpcNotificationFormat A notification format object.
-     * 
-     * @throws HpcException If failed to parse the JSON
+     * @throws HpcException If failed to parse the JSON.
      */
 	private HpcNotificationFormat notificationFormatFromJSON(JSONObject jsonNotificationFormat) 
     		                                                throws HpcException
@@ -258,7 +255,7 @@ public class HpcNotificationFormatter
      * Open and parse the notification formats JSON file.
      * 
      * @param notificationFormatPath The path to the notification formats JSON.
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
 	private void initNotificationFormats(String notificationFormatPath) throws HpcException
     {

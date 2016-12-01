@@ -393,7 +393,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
      * 
      * @param roleStr The role string.
      * @return The enum value.
-     * @throws HpcException If the enum value is invalid
+     * @throws HpcException If the enum value is invalid.
      */
     private HpcUserRole roleFromString(String roleStr) throws HpcException
     {
@@ -410,12 +410,13 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     /**
      * Set the Request invoker and return an authentication request DTO
      * 
-     * @param authenticationRequest The authentication request.
+     * @param userName The user name.
+     * @param password The password.
      * @param userAuthenticated User authenticated indicator.
      * @param ldapAuthentication LDAP authenticated user indicator.
-     * @param authenticationToken The authentication token.
-     * @return The HpcAuthenticationResponseDTO.
-     * @throws HpcException 
+     * @param dmAccount The data management account.
+     * @return The Authentication Response DTO.
+     * @throws HpcException on service failure.
      */
     private HpcAuthenticationResponseDTO setRequestInvoker(
     		   String userName, String password,

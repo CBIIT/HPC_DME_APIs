@@ -65,7 +65,7 @@ public class HpcSystemAccountLocator
     /**
      * Reload the system accounts from DB.
      * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public void reload() throws HpcException
     {
@@ -93,6 +93,7 @@ public class HpcSystemAccountLocator
      *
      * @param system The system to get the account for
      * @return The system account if found, or null otherwise.
+     * @throws HpcException on service failure.
      */
     public HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) 
     		                                          throws HpcException
@@ -105,15 +106,12 @@ public class HpcSystemAccountLocator
      *
      * @param dataTransferType The data transfer type associated with the requested system account.
      * @return The system account if found, or null otherwise.
-     * 
-     * @throws HpcException
+     * @throws HpcException on service failure.
      */
     public HpcIntegratedSystemAccount getSystemAccount(HpcDataTransferType dataTransferType) 
     		                                          throws HpcException
     {
     	return dataTransferAccounts.get(dataTransferType);
     }
-    
-
 }
  

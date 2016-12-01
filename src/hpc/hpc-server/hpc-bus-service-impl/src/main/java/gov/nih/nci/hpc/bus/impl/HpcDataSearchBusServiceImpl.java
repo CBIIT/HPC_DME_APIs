@@ -265,6 +265,8 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
      * @param collectionPaths A list of collection paths.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @param page The requested results page.
+     * @return A collection list DTO.
+     * @throws HpcException on service failure.
      */
     private HpcCollectionListDTO toCollectionListDTO(List<String> collectionPaths,
     		                                         boolean detailedResponse, int page)
@@ -292,6 +294,8 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
      * @param dataObjectPaths A list of data object paths.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @param page The requested results page.
+     * @return A data object list DTO.
+     * @throws HpcException on service failure.
      */
     private HpcDataObjectListDTO toDataObjectListDTO(List<String> dataObjectPaths,
     		                                         boolean detailedResponse, int page)
@@ -318,10 +322,9 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
      *
      * @param queryName The user query.
      * @param detailedResponse The detailed response indicator.
-     * @param The requested results page
-     * @return HpcCompoundMetadataQueryDTO
-     * 
-     * @throws HpcException If the user query was not found
+     * @param page The requested results page
+     * @return A compound metadata query DTO.
+     * @throws HpcException If the user query was not found.
      */
     private HpcCompoundMetadataQueryDTO 
                toCompoundMetadataQueryDTO(String queryName, boolean detailedResponse, 
@@ -358,10 +361,9 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
      *
      * @param metadataQueries The list of metadata queries.
      * @param detailedResponse The detailed response indicator.
-     * @param The requested results page
+     * @param page The requested results page.
      * @return HpcCompoundMetadataQueryDTO
-     * 
-     * @throws HpcException If the user query was not found
+     * @throws HpcException If the user query was not found.
      */
     private HpcCompoundMetadataQueryDTO 
                toCompoundMetadataQueryDTO(List<HpcMetadataQuery> metadataQueries, 

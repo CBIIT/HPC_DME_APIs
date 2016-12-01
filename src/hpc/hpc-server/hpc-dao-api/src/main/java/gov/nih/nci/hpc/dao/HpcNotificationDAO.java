@@ -33,8 +33,7 @@ public interface HpcNotificationDAO
      *
      * @param userId The user ID.
      * @param notificationSubscription The notification subscription to be added/updated.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public void upsertSubscription(
     		          String userId,
@@ -45,8 +44,7 @@ public interface HpcNotificationDAO
      *
      * @param userId The user ID.
      * @param eventType The event type.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public void deleteSubscription(String userId, HpcEventType eventType) 
     		                      throws HpcException;
@@ -55,23 +53,21 @@ public interface HpcNotificationDAO
      * Get notification subscriptions of a user.
      *
      * @param userId The user ID.
-     * @return List<HpcNotificationSubscription>
-     * 
-     * @throws HpcException
+     * @return <code>List&lt;HpcNotificationSubscription&gt;</code>
+     * @throws HpcException on database error.
      */
     public List<HpcNotificationSubscription> 
            getSubscriptions(String userId) throws HpcException;
 
     /**
-     * Get event subscribed users.
+     * Get users subscribed to an event.
      *
-     * @param userId The user ID.
-     * @return List<String> list of userIds
-     * 
-     * @throws HpcException
+     * @param eventType The event type.
+     * @return <code>List&lt;String&gt;</code> list of userIds
+     * @throws HpcException on database error.
      */
     public List<String> 
-           getSubscriptedUsers(HpcEventType eventType) throws HpcException;
+           getSubscribedUsers(HpcEventType eventType) throws HpcException;
     
     /**
      * Get notification subscription
@@ -79,8 +75,7 @@ public interface HpcNotificationDAO
      * @param userId The user ID.
      * @param eventType The event type.
      * @return HpcNotificationSubscription
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public HpcNotificationSubscription getSubscription(String userId, 
     		                                           HpcEventType eventType) 
@@ -90,8 +85,7 @@ public interface HpcNotificationDAO
      * Store a new notification delivery receipt to the repository or update it if it exists.
      *
      * @param deliveryReceipt The notification delivery receipt to be added/updated.
-     * 
-     * @throws HpcException
+     * @throws HpcException on database error.
      */
     public void upsertDeliveryReceipt(HpcNotificationDeliveryReceipt deliveryReceipt) 
     		                         throws HpcException;
