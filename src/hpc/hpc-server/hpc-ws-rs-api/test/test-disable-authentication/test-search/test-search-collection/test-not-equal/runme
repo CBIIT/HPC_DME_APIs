@@ -33,4 +33,7 @@ then
 elif [ "$HTTP_CODE" -ne "204" ]
 then 
         echo "ERROR: Got HTTP_CODE:$HTTP_CODE"  1>&2
+else
+then
+    echo "ERROR: Got unexpected HTTP_CODE:$HTTP_CODE"  1>&2
 fi
