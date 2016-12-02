@@ -38,7 +38,7 @@ public interface HpcNotificationRestService
      *
      * @param nciUserId The NCI user ID.
      * @param notificationSubscriptions The notification subscriptions request.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@POST
     @Path("/notification/{nciUserId}")
@@ -51,7 +51,7 @@ public interface HpcNotificationRestService
      * Get Notification Subscriptions.
      *
      * @param nciUserId The NCI user ID.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@GET
     @Path("/notification/{nciUserId}")

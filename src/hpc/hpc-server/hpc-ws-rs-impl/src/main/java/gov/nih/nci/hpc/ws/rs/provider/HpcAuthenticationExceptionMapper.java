@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.exception.HpcAuthenticationException;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
+
 /**
  * <p>
  * Mapping HPC Exceptions to REST response.

@@ -69,6 +69,7 @@ public class HpcAuthenticationInterceptor
     /**
      * Default Constructor disabled.
      * 
+     * @throws HpcException Constructor disabled.
      */
     private HpcAuthenticationInterceptor() throws HpcException
     {
@@ -134,8 +135,7 @@ public class HpcAuthenticationInterceptor
      * 
      * @param message The RS message.
      * @return HpcAuthenticationResponseDTO.
-     * 
-     * @throws HpcException
+     * @throws HpcException on unsupported authorization type request.
      */
     private HpcAuthenticationResponseDTO authenticate(Message message) throws HpcException
     {
@@ -154,11 +154,11 @@ public class HpcAuthenticationInterceptor
     }
     
     /**
-     * Perform a basic authentication w/ user-name & password.
+     * Perform a basic authentication w/ user-name and password.
      * 
-     * @param message The RS message.
-     *
+     * @param policy The policy holding user name anf password.
      * @return HpcAuthenticationResponseDTO.
+     * @throws HpcException on service failure.
      */
     private HpcAuthenticationResponseDTO authenticate(AuthorizationPolicy policy) 
     		                                         throws HpcException
@@ -176,8 +176,8 @@ public class HpcAuthenticationInterceptor
      * Perform a token authentication (JWT).
      * 
      * @param token The JWT token.
-     *
      * @return HpcAuthenticationResponseDTO.
+     * @throws HpcException on service failure.
      */
     private HpcAuthenticationResponseDTO authenticate(String token) throws HpcException
     {
@@ -188,8 +188,8 @@ public class HpcAuthenticationInterceptor
      * Get Authorization array from a message.
      * 
      * @param message The RS message.
-     *
      * @return The authorzation type of the message.
+     * @throws HpcAuthenticationException on invalid authorization header.
      */
     private String[] getAuthorization(Message message) throws HpcAuthenticationException
     {

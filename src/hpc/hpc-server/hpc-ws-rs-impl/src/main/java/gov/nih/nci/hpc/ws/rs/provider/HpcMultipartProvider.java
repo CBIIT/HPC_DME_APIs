@@ -10,8 +10,6 @@
 
 package gov.nih.nci.hpc.ws.rs.provider;
 
-import gov.nih.nci.hpc.exception.HpcException;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -24,7 +22,7 @@ import org.apache.cxf.jaxrs.provider.MultipartProvider;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id:$
+ * @version $Id$
  */
 
 public class HpcMultipartProvider extends MultipartProvider
@@ -41,17 +39,18 @@ public class HpcMultipartProvider extends MultipartProvider
     //---------------------------------------------------------------------//
     
     /**
-     * Copy input stream to File and close the input stream
+     * Get the temporary directory.
      * 
-     * @param dataObjectInputStream The input stream
-     * @return File
-     * 
-     * @throws HpcException if copy of input stream failed.
+     * @return The temporary directory.
      */
 	public String getTempDirectory()
 	{
 		return tempDirectory;
 	}
+	
+    //---------------------------------------------------------------------//
+    // MultipartProvider Interface Implementation
+    //---------------------------------------------------------------------//  
 	
     @Override
     public void setAttachmentDirectory(String directory)
