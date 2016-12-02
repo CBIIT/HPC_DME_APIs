@@ -52,8 +52,6 @@
 	<osgi:service ref="hpcDataTransferService"
 		          interface="gov.nih.nci.hpc.service.HpcDataTransferService" />
 	<osgi:service ref="hpcDataManagementService"
-		          interface="gov.nih.nci.hpc.service.HpcDataManagementService" />	
-	<osgi:service ref="hpcDataManagementNewService"
 		          interface="gov.nih.nci.hpc.service.HpcDataManagementNewService" />	
 	<osgi:service ref="hpcDataSearchService"
 		          interface="gov.nih.nci.hpc.service.HpcDataSearchService" />	
