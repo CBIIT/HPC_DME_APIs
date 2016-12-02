@@ -37,7 +37,6 @@ ID=`get_json_value " $PROJECT_GROUPS" value`
 
 PROJECT_FOUND="FALSE"
 for id in $ID; do
-    echo $id
     if [[ "$id" == "$VALUE"  ]]
     then
         PROJECT_FOUND="TRUE"
