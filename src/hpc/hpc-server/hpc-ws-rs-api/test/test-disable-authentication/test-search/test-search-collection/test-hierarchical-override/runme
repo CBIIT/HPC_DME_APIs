@@ -22,6 +22,11 @@ search_by_metadata collection input.json dice_user_sys_admin
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 
+if [ ! "$HTTP_CODE" -eq "200" ]  && [ ! "$HTTP_CODE" -eq "204" ]
+then
+    echo "ERROR: Got unexpected HTTP_CODE:$HTTP_CODE" >&2
+fi
+
 ATTRIBUTE="\"name\""
 
 #Check that the two object files are returned
