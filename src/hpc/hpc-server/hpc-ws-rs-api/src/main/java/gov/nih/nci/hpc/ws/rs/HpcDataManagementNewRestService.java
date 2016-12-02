@@ -49,7 +49,7 @@ public interface HpcDataManagementNewRestService
      *
      * @param path The collection path.
      * @param metadataEntries A list of metadata entries to attach to the collection.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@PUT
 	@Path("/collection/{path:.*}")
@@ -62,7 +62,7 @@ public interface HpcDataManagementNewRestService
      * GET Collection.
      *
      * @param path The collection path.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@GET
 	@Path("/collection/{path:.*}")
@@ -75,7 +75,7 @@ public interface HpcDataManagementNewRestService
      * @param path The data object path.
      * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
      * @param dataObjectInputStream The data object input stream.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@PUT
 	@Path("/dataObject/{path:.*}")
@@ -92,7 +92,7 @@ public interface HpcDataManagementNewRestService
      * GET Data Object.
      *
      * @param path The data object path.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@GET
 	@Path("/dataObject/{path:.*}")
@@ -104,7 +104,7 @@ public interface HpcDataManagementNewRestService
      *
      * @param path The data object path.
      * @param downloadRequest The download request.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@POST
 	@Path("/dataObject/{path:.*}/download")
@@ -119,7 +119,7 @@ public interface HpcDataManagementNewRestService
      * POST Set permissions.
      *
      * @param entityPermissionRequests Requests to set entities (Collections or Data Objects) permissions.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@POST
 	@Path("/acl")
@@ -131,7 +131,7 @@ public interface HpcDataManagementNewRestService
      * GET Data Management Model (Metadata validation rules and hierarchy definition).
      *
      * @param doc The DOC to get the model for.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@GET
 	@Path("/model/{doc}")

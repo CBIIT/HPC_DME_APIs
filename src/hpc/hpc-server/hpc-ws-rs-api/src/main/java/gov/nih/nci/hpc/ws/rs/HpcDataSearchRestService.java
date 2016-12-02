@@ -45,7 +45,7 @@ public interface HpcDataSearchRestService
      * @param metadataQueries A list of metadata entries to query for.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @param page The requested results page.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@GET
 	@Path("/collection")
@@ -61,7 +61,7 @@ public interface HpcDataSearchRestService
      * @param metadataQueries A list of metadata entries to query for. 
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @param page The requested results page.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@POST
 	@Path("/collection/query/simple")
@@ -75,7 +75,7 @@ public interface HpcDataSearchRestService
      * POST Collections compound query.
      *
      * @param compoundMetadataQueryDTO A compund metadata query DTO.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@POST
 	@Path("/collection/query/compound")
@@ -86,10 +86,10 @@ public interface HpcDataSearchRestService
     /**
      * GET Collections by named query.
      *
-     * @param name A named query.
+     * @param queryName A named query.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @param page The requested results page.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@GET
 	@Path("/collection/query/compound/{queryName}")
@@ -104,7 +104,7 @@ public interface HpcDataSearchRestService
      * @param metadataQueries A list of metadata entries to query for.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @param page The requested results page.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@GET
 	@Path("/dataObject")
@@ -120,7 +120,7 @@ public interface HpcDataSearchRestService
      * @param metadataQueries A list of metadata entries to query for.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @param page The requested results page.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@POST
 	@Path("/dataObject/query/simple")
@@ -134,7 +134,7 @@ public interface HpcDataSearchRestService
      * POST Data objects compound query.
      *
      * @param compoundMetadataQueryDTO A compund metadata query DTO.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@POST
 	@Path("/dataObject/query/compound")
@@ -145,10 +145,10 @@ public interface HpcDataSearchRestService
     /**
      * GET Data objects by named query.
      *
-     * @param name A named query
+     * @param queryName A named query.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @param page The requested results page.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@GET
 	@Path("/dataObject/query/compound/{queryName}")
@@ -161,8 +161,8 @@ public interface HpcDataSearchRestService
      * Save a query.
      *
      * @param queryName The query name.
-     * @param updateUserRequestDTO The update request DTO.
-     * @return Response The REST service response.
+     * @param compoundMetadataQueryDTO The compound metadata query DTO..
+     * @return The REST service response.
      */
     @POST
     @Path("/query/{queryName}")
@@ -174,7 +174,7 @@ public interface HpcDataSearchRestService
      * Delete a query.
      *
      * @param queryName The query name.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
     @DELETE
     @Path("/query/{queryName}")
@@ -183,7 +183,7 @@ public interface HpcDataSearchRestService
     /**
      * Get all saved queries for a user.
      *
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
     @GET
     @Path("/query")
@@ -196,7 +196,7 @@ public interface HpcDataSearchRestService
    *
    * @param level Filter the results by level.
    * @param levelOperatorStr The operator to use in the level filter.
-   * @return Response The REST service response.
+   * @return The REST service response.
    */
 	@GET
 	@Path("/metadataAttributes")

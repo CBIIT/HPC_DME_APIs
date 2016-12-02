@@ -47,6 +47,7 @@ public class HpcExceptionMapper
     /**
      * Default Constructor disabled.
      * 
+     * @throws HpcException Constructor disabled.
      */
 	protected HpcExceptionMapper() throws HpcException
     {
