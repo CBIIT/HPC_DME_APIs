@@ -443,7 +443,7 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
     /** 
      * Calculate the data transfer % completion if transfer is in progress
      * 
-     * @param dataObject The data object to check the timeout for.
+     * @param systemGeneratedMetadata The system generated metadata of the data object.
      * @return The transfer % completion if transfer is in progress, or null otherwise.
      *         e.g 86%.
      */
