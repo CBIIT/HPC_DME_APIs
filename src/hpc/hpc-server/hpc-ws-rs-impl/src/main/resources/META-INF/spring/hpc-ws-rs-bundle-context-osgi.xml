@@ -80,4 +80,6 @@
 	                interface="gov.nih.nci.hpc.bus.HpcNotificationBusService" />
 	<osgi:reference id="hpcReportBusService"
 	                interface="gov.nih.nci.hpc.bus.HpcReportBusService" />
+	<osgi:reference id="hpcSystemBusService"
+		            interface="gov.nih.nci.hpc.bus.HpcSecurityBusService" />
 </beans>
