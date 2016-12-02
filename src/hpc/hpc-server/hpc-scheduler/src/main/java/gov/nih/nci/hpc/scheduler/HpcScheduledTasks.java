@@ -208,7 +208,6 @@ public class HpcScheduledTasks
         	       logger.info("Completed Refreshing Materialized Views Task...");	
         }
     }
-    
 }
 
  

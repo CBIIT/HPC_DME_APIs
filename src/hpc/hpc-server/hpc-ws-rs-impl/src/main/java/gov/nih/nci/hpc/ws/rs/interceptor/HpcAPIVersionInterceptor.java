@@ -54,6 +54,7 @@ public class HpcAPIVersionInterceptor
     /**
      * Default Constructor disabled.
      * 
+     * @throws HpcException Constructor disabled.
      */
     public HpcAPIVersionInterceptor() throws HpcException
     {

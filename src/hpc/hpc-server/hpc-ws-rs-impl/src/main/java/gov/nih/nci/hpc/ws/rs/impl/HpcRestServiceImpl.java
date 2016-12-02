@@ -96,7 +96,7 @@ public abstract class HpcRestServiceImpl
      * Build an 'ok' (HTTP 200) REST response instance.
      *
      * @param entity The entity to attach to the response.
-     * @param mimeType The response's mime type.
+     * @param mediaType The response's media type.
      * @return The REST response object.
      */
     protected Response okResponse(Object entity, MediaType mediaType)
