@@ -28,6 +28,5 @@
 	
 	<!--  HPC Scheduled task -->
 	<bean id="hpcScheduledTasks" class="gov.nih.nci.hpc.scheduler.HpcScheduledTasks" />
-	
 </beans>
 
