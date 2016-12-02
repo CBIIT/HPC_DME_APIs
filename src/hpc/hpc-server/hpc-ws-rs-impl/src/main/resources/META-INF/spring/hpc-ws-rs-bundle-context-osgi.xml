@@ -72,9 +72,7 @@
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcSecurityBusService"
 		            interface="gov.nih.nci.hpc.bus.HpcSecurityBusService" />
-	<osgi:reference id="hpcDataManagementBusService"
-		            interface="gov.nih.nci.hpc.bus.HpcDataManagementBusService" />
-	<osgi:reference id="hpcDataManagementnNewBusService"
+	<osgi:reference id="hpcDataManagementnBusService"
 		            interface="gov.nih.nci.hpc.bus.HpcDataManagementNewBusService" />
 	<osgi:reference id="hpcDataSearchBusService"
 		            interface="gov.nih.nci.hpc.bus.HpcDataSearchBusService" />

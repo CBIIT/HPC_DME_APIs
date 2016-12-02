@@ -23,8 +23,6 @@ import gov.nih.nci.hpc.service.HpcReportService;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -36,14 +34,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @version $Id$
  */
 
-public class HpcReportServiceImpl implements HpcReportService {
+public class HpcReportServiceImpl implements HpcReportService 
+{
 	// ---------------------------------------------------------------------//
 	// Constants
 	// ---------------------------------------------------------------------//
-
-	// Event payload entries attributes.
-	private static final String DATA_TRANSFER_REQUEST_ID_ATTRIBUTE = "DATA_TRANSFER_REQUEST_ID";
-	private static final String DATA_OBJECT_PATH_ATTRIBUTE = "DATA_OBJECT_PATH";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -52,9 +47,6 @@ public class HpcReportServiceImpl implements HpcReportService {
 	// The Event DAO instance.
 	@Autowired
 	private HpcReportsDAO reportsDAO = null;
-
-	// The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors

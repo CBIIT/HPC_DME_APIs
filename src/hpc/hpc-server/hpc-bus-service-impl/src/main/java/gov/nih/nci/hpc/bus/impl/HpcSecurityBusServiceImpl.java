@@ -32,7 +32,7 @@ import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserGroupResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
@@ -65,7 +65,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     private HpcSecurityService securityService = null;
 	
 	@Autowired
-    private HpcDataManagementService dataManagementService = null;
+    private HpcDataManagementSecurityService dataManagementSecurityService = null;
 	
     // The Data Transfer Service instance.
 	@Autowired
@@ -124,7 +124,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	   }
     			           
     	   // Create the data management account.
-    	   dataManagementService.addUser(
+    	   dataManagementSecurityService.addUser(
     			         userRegistrationDTO.getNciAccount(), role);
     	   
     	   // Add the new account to the DTO.
@@ -146,7 +146,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	} finally {
     		       if(!registrationCompleted) {
     		    	  // Registration failed. Remove the data management account.
-    		    	  dataManagementService.deleteUser(
+    		    	  dataManagementSecurityService.deleteUser(
     		    		  userRegistrationDTO.getNciAccount().getUserId());
     		       }
     	}
@@ -176,7 +176,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     			                  HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
     	}
     	
-    	HpcUserRole requestUserRole = dataManagementService.getUserRole(nciUserId);
+    	HpcUserRole requestUserRole = dataManagementSecurityService.getUserRole(nciUserId);
     	
     	if(requestUserRole.equals(HpcUserRole.SYSTEM_ADMIN))
     	{
@@ -218,8 +218,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
   				                  HpcRequestRejectReason.API_NOT_SUPPORTED);
   	    }
     		                     
-     	dataManagementService.updateUser(nciUserId, updateFirstName,
-     			                         updateLastName, updateRole);
+  	    dataManagementSecurityService.updateUser(nciUserId, updateFirstName,
+     			                                 updateLastName, updateRole);
     	
 	     // Update User.
 	     securityService.updateUser(nciUserId, updateFirstName, 
@@ -260,7 +260,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	HpcUserDTO userDTO = new HpcUserDTO();
     	userDTO.setNciAccount(user.getNciAccount());
     	userDTO.setDataManagementAccount(user.getDataManagementAccount());
-    	userDTO.setUserRole(dataManagementService.getUserRole(nciUserId).value());
+    	userDTO.setUserRole(dataManagementSecurityService.getUserRole(nciUserId).value());
     	
     	// Mask passwords.
     	maskPasswords(userDTO);
@@ -348,7 +348,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		HpcGroupResponseDTO dto = new HpcGroupResponseDTO();
 
 		try {
-			HpcGroupResponse response = dataManagementService.setGroup(hpcGroup, groupRequest.getAddUserIds(),
+			HpcGroupResponse response = dataManagementSecurityService.setGroup(hpcGroup, groupRequest.getAddUserIds(),
 					groupRequest.getDeleteUserIds());
 			dto.setGroup(groupRequest.getGroup());
 			dto.setResult(response.getResult());
@@ -464,11 +464,11 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 
 		HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
 		if(requestInvoker.getDataManagementAuthenticatedToken() == null && dmAccount != null)
-			requestInvoker.setDataManagementAuthenticatedToken(dataManagementService.getProxyManagementAccount(dmAccount));
+			requestInvoker.setDataManagementAuthenticatedToken(dataManagementSecurityService.getProxyManagementAccount(dmAccount));
 		
 		authenticationResponse.setUserRole(
 				      authenticationResponse.getAuthenticated() && user.getDataManagementAccount() != null ? 
-				      dataManagementService.getUserRole(user.getDataManagementAccount().getUsername()) : 
+				    		  dataManagementSecurityService.getUserRole(user.getDataManagementAccount().getUsername()) : 
 				      HpcUserRole.NOT_REGISTERED);
 		
     	// Generate an authentication token.
@@ -478,7 +478,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
         authenticationTokenClaims.setUserAuthenticated(userAuthenticated);
         authenticationTokenClaims.setLdapAuthentication(ldapAuthentication);
         if(dmAccount == null)
-        	dmAccount = dataManagementService.getHpcDataManagementAccount(requestInvoker.getDataManagementAuthenticatedToken());
+        	dmAccount = dataManagementSecurityService.getHpcDataManagementAccount(requestInvoker.getDataManagementAuthenticatedToken());
         authenticationTokenClaims.setDataManagementAccount(dmAccount);
         String authenticationToken = securityService.createAuthenticationToken(authenticationTokenClaims);
 
@@ -489,7 +489,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		requestInvoker.setAuthenticationToken(authenticationToken);
 		requestInvoker.setUserRole(authenticationResponse.getUserRole());
 		if(requestInvoker.getDataManagementAuthenticatedToken() == null)
-			requestInvoker.setDataManagementAuthenticatedToken(dataManagementService.getProxyManagementAccount(dmAccount));
+			requestInvoker.setDataManagementAuthenticatedToken(dataManagementSecurityService.getProxyManagementAccount(dmAccount));
 		
 		return authenticationResponse;
     }    
