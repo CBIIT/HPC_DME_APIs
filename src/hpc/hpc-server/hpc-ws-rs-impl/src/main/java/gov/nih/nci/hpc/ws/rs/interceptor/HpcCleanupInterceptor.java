@@ -10,8 +10,8 @@
 
 package gov.nih.nci.hpc.ws.rs.interceptor;
 
-import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
-import gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl;
+import gov.nih.nci.hpc.bus.HpcSystemBusService;
+import gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementNewRestServiceImpl;
 
 import java.io.File;
 
@@ -39,9 +39,9 @@ public class HpcCleanupInterceptor
     // Instance members
     //---------------------------------------------------------------------//
 
-    // The Data Management Business Service instance.
+    // The System Business Service instance.
 	@Autowired
-    private HpcDataManagementBusService dataManagementBusService = null;
+    private HpcSystemBusService systemBusService = null;
 	
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -71,10 +71,10 @@ public class HpcCleanupInterceptor
     public void handleMessage(Message message) 
     {
     	// Close the connection to Data Management.
-    	dataManagementBusService.closeConnection();
+    	systemBusService.closeConnection();
     	
     	// Clean up files returned by the data object download service.
-    	Object fileObj = message.getContextualProperty(HpcDataManagementRestServiceImpl.DATA_OBJECT_DOWNLOAD_FILE);
+    	Object fileObj = message.getContextualProperty(HpcDataManagementNewRestServiceImpl.DATA_OBJECT_DOWNLOAD_FILE);
     	if(fileObj != null && fileObj instanceof File) {
     	   File file = (File) fileObj;
     	   if(!FileUtils.deleteQuietly(file)) {
