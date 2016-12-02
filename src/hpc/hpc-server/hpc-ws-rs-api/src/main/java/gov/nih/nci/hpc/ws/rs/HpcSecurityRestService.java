@@ -41,7 +41,7 @@ public interface HpcSecurityRestService
      * Register user.
      *
      * @param userRegistrationDTO The user DTO to register.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
     @PUT
     @Path("/user")
@@ -53,7 +53,7 @@ public interface HpcSecurityRestService
      *
      * @param nciUserId The user ID to update.
      * @param updateUserRequestDTO The update request DTO.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
     @POST
     @Path("/user/{nciUserId}")
@@ -66,7 +66,7 @@ public interface HpcSecurityRestService
      *
      * @param nciUserId The registered user ID.
      * @return gov.nih.nci.hpc.dto.security.HpcUserDTO entity.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
     @GET
     @Path("/user/{nciUserId}")
@@ -87,7 +87,7 @@ public interface HpcSecurityRestService
      * POST Set (create or update) a group and assign/remove users.
      *
      * @param groupRequest The request DTO to create/update a group.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
 	@POST
 	@Path("/group")
@@ -99,7 +99,7 @@ public interface HpcSecurityRestService
      * Register system account.
      *
      * @param systemAccountRegistrationDTO The system account DTO to register.
-     * @return Response The REST service response.
+     * @return The REST service response.
      */
     @PUT
     @Path("/systemAccount")

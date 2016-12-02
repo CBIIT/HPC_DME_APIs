@@ -29,15 +29,13 @@ import gov.nih.nci.hpc.dto.report.HpcReportRequestDTO;
  */
 
 @Path("/")
-public interface HpcReportRestService {
+public interface HpcReportRestService 
+{
 	/**
 	 * Generate report.
 	 *
-	 * @param nciUserId
-	 *            The NCI user ID.
-	 * @param notificationSubscriptions
-	 *            The notification subscriptions request.
-	 * @return Response The REST service response.
+	 * @param reportDTO The report DTO. 
+	 * @return The REST service response.
 	 */
 	@POST
 	@Path("/report")
