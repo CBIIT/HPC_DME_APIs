@@ -60,7 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @version $Id$
  */
 
-public class HpcDataManagementNewServiceImpl implements HpcDataManagementBusService
+public class HpcDataManagementServiceImpl implements HpcDataManagementBusService
 {  
     //---------------------------------------------------------------------//
     // Instance members
@@ -94,7 +94,7 @@ public class HpcDataManagementNewServiceImpl implements HpcDataManagementBusServ
      * Constructor for Spring Dependency Injection.
      * 
      */
-    private HpcDataManagementNewServiceImpl()
+    private HpcDataManagementServiceImpl()
     {
     }   
     

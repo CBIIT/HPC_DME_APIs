@@ -73,7 +73,7 @@
 	<osgi:reference id="hpcSecurityBusService"
 		            interface="gov.nih.nci.hpc.bus.HpcSecurityBusService" />
 	<osgi:reference id="hpcDataManagementnBusService"
-		            interface="gov.nih.nci.hpc.bus.HpcDataManagementNewBusService" />
+		            interface="gov.nih.nci.hpc.bus.HpcDataManagementBusService" />
 	<osgi:reference id="hpcDataSearchBusService"
 		            interface="gov.nih.nci.hpc.bus.HpcDataSearchBusService" />
 	<osgi:reference id="hpcNotificationBusService"
