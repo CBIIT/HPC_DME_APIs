@@ -33,7 +33,7 @@ import java.util.List;
  * @version $Id$
  */
 
-public interface HpcDataManagementNewBusService 
+public interface HpcDataManagementBusService 
 {  
     /**
      * Register a Collection.

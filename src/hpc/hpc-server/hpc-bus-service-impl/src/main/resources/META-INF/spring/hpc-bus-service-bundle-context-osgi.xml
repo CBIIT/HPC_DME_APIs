@@ -31,7 +31,7 @@
 	<osgi:service ref="hpcSecurityBusService" 
 	              interface="gov.nih.nci.hpc.bus.HpcSecurityBusService" />
 	<osgi:service ref="hpcDataManagementBusService"
-		          interface="gov.nih.nci.hpc.bus.HpcDataManagementNewBusService" />
+		          interface="gov.nih.nci.hpc.bus.HpcDataManagementBusService" />
 	<osgi:service ref="hpcDataSearchBusService"
 		          interface="gov.nih.nci.hpc.bus.HpcDataSearchBusService" />
 	<osgi:service ref="hpcSystemBusService"
@@ -47,7 +47,7 @@
 	<osgi:reference id="hpcDataTransferService"
 		            interface="gov.nih.nci.hpc.service.HpcDataTransferService" />
 	<osgi:reference id="hpcDataManagementService"
-		            interface="gov.nih.nci.hpc.service.HpcDataManagementNewService" />
+		            interface="gov.nih.nci.hpc.service.HpcDataManagementService" />
 	<osgi:reference id="hpcDataManagementSecurityService"
 		            interface="gov.nih.nci.hpc.service.HpcDataManagementSecurityService" />
 	<osgi:reference id="hpcDataManagementSecurityService"

@@ -28,7 +28,7 @@ import java.util.List;
  * @version $Id$
  */
 
-public interface HpcDataManagementNewService 
+public interface HpcDataManagementService 
 {   
     /**
      * Create a collection's directory.
