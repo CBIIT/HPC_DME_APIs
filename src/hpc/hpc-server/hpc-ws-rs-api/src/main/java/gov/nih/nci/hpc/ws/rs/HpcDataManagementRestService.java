@@ -42,7 +42,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Multipart;
  */
 
 @Path("/")
-public interface HpcDataManagementNewRestService
+public interface HpcDataManagementRestService
 {
     /**
      * PUT Collection registration request.
