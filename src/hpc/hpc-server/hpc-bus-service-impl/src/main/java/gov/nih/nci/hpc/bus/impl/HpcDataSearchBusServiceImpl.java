@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
-import gov.nih.nci.hpc.bus.HpcDataManagementNewBusService;
+import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
@@ -58,7 +58,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
 	
 	// Data Management Bus Service instance.
 	@Autowired
-    private HpcDataManagementNewBusService dataManagementBusService = null;
+    private HpcDataManagementBusService dataManagementBusService = null;
 	
     // The logger instance.
 	private final Logger logger = 

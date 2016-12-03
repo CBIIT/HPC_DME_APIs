@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
-import gov.nih.nci.hpc.bus.HpcDataManagementNewBusService;
+import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
@@ -37,7 +37,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.service.HpcDataManagementNewService;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
@@ -60,7 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @version $Id$
  */
 
-public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewBusService
+public class HpcDataManagementNewServiceImpl implements HpcDataManagementBusService
 {  
     //---------------------------------------------------------------------//
     // Instance members
@@ -68,7 +68,7 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
 
 	// The Data Management Application Service Instance.
 	@Autowired
-    private HpcDataManagementNewService dataManagementService = null;
+    private HpcDataManagementService dataManagementService = null;
 	
 	// The Data Transfer Application Service Instance.
 	@Autowired
@@ -94,7 +94,7 @@ public class HpcDataManagementNewBusServiceImpl implements HpcDataManagementNewB
      * Constructor for Spring Dependency Injection.
      * 
      */
-    private HpcDataManagementNewBusServiceImpl()
+    private HpcDataManagementNewServiceImpl()
     {
     }   
     
