@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.ws.rs.interceptor;
 
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
-import gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementNewRestServiceImpl;
+import gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl;
 
 import java.io.File;
 
@@ -74,7 +74,7 @@ public class HpcCleanupInterceptor
     	systemBusService.closeConnection();
     	
     	// Clean up files returned by the data object download service.
-    	Object fileObj = message.getContextualProperty(HpcDataManagementNewRestServiceImpl.DATA_OBJECT_DOWNLOAD_FILE);
+    	Object fileObj = message.getContextualProperty(HpcDataManagementRestServiceImpl.DATA_OBJECT_DOWNLOAD_FILE);
     	if(fileObj != null && fileObj instanceof File) {
     	   File file = (File) fileObj;
     	   if(!FileUtils.deleteQuietly(file)) {

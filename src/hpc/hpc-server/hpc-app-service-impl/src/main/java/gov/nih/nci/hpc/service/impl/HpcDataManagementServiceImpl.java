@@ -27,7 +27,7 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
-import gov.nih.nci.hpc.service.HpcDataManagementNewService;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @version $Id$
  */
 
-public class HpcDataManagementNewServiceImpl implements HpcDataManagementNewService
+public class HpcDataManagementServiceImpl implements HpcDataManagementService
 {   
     //---------------------------------------------------------------------//
     // Constants
@@ -93,7 +93,7 @@ public class HpcDataManagementNewServiceImpl implements HpcDataManagementNewServ
     /**
      * Constructor for Spring Dependency Injection.
      */
-    private HpcDataManagementNewServiceImpl()
+    private HpcDataManagementServiceImpl()
     {
     	// Prepare the query to get data objects in data transfer in-progress to archive.
         dataTransferInProgressToArchiveQuery.add(

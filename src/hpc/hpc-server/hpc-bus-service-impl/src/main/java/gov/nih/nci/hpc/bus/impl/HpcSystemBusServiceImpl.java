@@ -24,7 +24,7 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.service.HpcDataManagementNewService;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
@@ -75,7 +75,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	
 	// Data Management Application Service Instance.
 	@Autowired
-    private HpcDataManagementNewService dataManagementService = null;
+    private HpcDataManagementService dataManagementService = null;
 	
 	// Notification Application Service Instance.
 	@Autowired

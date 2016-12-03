@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
-import gov.nih.nci.hpc.bus.HpcDataManagementNewBusService;
+import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
@@ -24,7 +24,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.ws.rs.HpcDataManagementNewRestService;
+import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
 
 import java.io.File;
@@ -51,8 +51,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @version $Id$
  */
 
-public class HpcDataManagementNewRestServiceImpl extends HpcRestServiceImpl
-             implements HpcDataManagementNewRestService
+public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
+             implements HpcDataManagementRestService
 {   
     //---------------------------------------------------------------------//
     // Constants
@@ -66,7 +66,7 @@ public class HpcDataManagementNewRestServiceImpl extends HpcRestServiceImpl
 
     // The Data Management Business Service instance.
 	@Autowired
-    private HpcDataManagementNewBusService dataManagementBusService = null;
+    private HpcDataManagementBusService dataManagementBusService = null;
 	
 	// The multipart provider.
 	@Autowired
@@ -84,7 +84,7 @@ public class HpcDataManagementNewRestServiceImpl extends HpcRestServiceImpl
      * Constructor for Spring Dependency Injection.
      * 
      */
-    private HpcDataManagementNewRestServiceImpl() 
+    private HpcDataManagementRestServiceImpl() 
     {
     }  
     
