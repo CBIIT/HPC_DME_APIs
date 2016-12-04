@@ -12,9 +12,7 @@ package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadCleanup;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -52,15 +50,6 @@ public interface HpcDataTransferService
                                                         String path, String userId,
                                                         String callerObjectId)
                                                        throws HpcException;
-    /**
-     * Upload a data object file.
-     *
-     * @param uploadRequest The data upload request.
-     * @return A data object upload response.
-     * @throws HpcException on service failure.
-     */
-    public HpcDataObjectUploadResponse uploadDataObject(HpcDataObjectUploadRequest uploadRequest) 
-    		                                           throws HpcException;
     
     /** 
      * Download a data object file.
@@ -76,16 +65,6 @@ public interface HpcDataTransferService
 			                                     HpcFileLocation destinationLocation,
 			                                     HpcDataTransferType dataTransferType) 
 			                                     throws HpcException;
-    
-    /**
-     * Download a data object file.
-     *
-     * @param downloadRequest The data object download request.
-     * @return A data object download response.
-     * @throws HpcException on service failure.
-     */
-    public HpcDataObjectDownloadResponse downloadDataObject(HpcDataObjectDownloadRequest downloadRequest) 
-    		                                               throws HpcException;
     
     /**
      * Get a data transfer upload request status.

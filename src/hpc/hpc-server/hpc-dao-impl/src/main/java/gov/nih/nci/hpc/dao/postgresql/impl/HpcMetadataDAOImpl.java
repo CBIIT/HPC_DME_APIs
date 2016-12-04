@@ -251,21 +251,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     //---------------------------------------------------------------------//  
     
 	@Override
-    public List<String> getCollectionPaths(List<HpcMetadataQuery> metadataQueries,
-    		                               String dataManagementUsername,
-    		                               int offset, int limit,
-    		                               HpcMetadataQueryLevelFilter defaultLevelFilter) 
-                                          throws HpcException
-    {
-		return getPaths(prepareQuery(GET_COLLECTION_PATHS_SQL, 
-                                     toQuery(collectionSQLQueries, metadataQueries, 
-                                    		 HpcCompoundMetadataQueryOperator.AND,
-                                    		 collectionSQLLevelFilters, defaultLevelFilter),
-                                     COLLECTION_USER_ACCESS_SQL, 
-                                     dataManagementUsername, offset, limit));
-    }
-	
-	@Override
     public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
     		                               String dataManagementUsername,
     		                               int offset, int limit,
@@ -279,21 +264,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
                                      dataManagementUsername, offset, limit));
     }
 
-	@Override 
-	public List<String> getDataObjectPaths(List<HpcMetadataQuery> metadataQueries,
-			                               String dataManagementUsername,
-			                               int offset, int limit,
-			                               HpcMetadataQueryLevelFilter defaultLevelFilter) 
-                                          throws HpcException
-    {
-		return getPaths(prepareQuery(GET_DATA_OBJECT_PATHS_SQL, 
-                                     toQuery(dataObjectSQLQueries, metadataQueries,
-                                    		 HpcCompoundMetadataQueryOperator.AND,
-                                    		 dataObjectSQLLevelFilters, defaultLevelFilter),
-                                     DATA_OBJECT_USER_ACCESS_SQL, 
-                                     dataManagementUsername, offset, limit));
-    }
-	
 	@Override 
 	public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
 			                               String dataManagementUsername,
