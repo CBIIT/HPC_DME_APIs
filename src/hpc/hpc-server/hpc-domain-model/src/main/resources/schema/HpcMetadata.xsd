@@ -37,7 +37,6 @@
 				<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 				<xsd:element name="sourceSize" type="xsd:long" minOccurs="0" maxOccurs="1"/>
 				<xsd:element name="callerObjectId" type="xsd:string" />
-				<xsd:element name="metadataOrigin" type="hpc-domain-metadata:HpcMetadataOrigin" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

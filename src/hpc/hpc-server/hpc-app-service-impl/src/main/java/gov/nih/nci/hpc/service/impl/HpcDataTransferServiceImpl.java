@@ -159,42 +159,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		// Upload the data object file.
 	    return uploadDataObject(uploadRequest);	
 	}
-	
-    @Override
-    public HpcDataObjectUploadResponse uploadDataObject(HpcDataObjectUploadRequest uploadRequest) 
-                                                       throws HpcException
-    {
-    	// Input validation.
-    	if(uploadRequest.getPath() == null || uploadRequest.getUserId() == null) {
-    	   throw new HpcException("Null data object path or user-id", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-        	
-    	// Determine the data transfer type.
-    	HpcDataTransferType dataTransferType;
-    	if(uploadRequest.getSourceLocation() != null) {
-    	   dataTransferType = HpcDataTransferType.GLOBUS;
-    	   
-    	} else if(uploadRequest.getSourceFile() != null) {
-    		      dataTransferType = HpcDataTransferType.S_3;
-    		      
-    	} else {
-    		    // Could not determine data transfer type.
-    		    throw new HpcException("Could not determine data transfer type",
-    		    		               HpcErrorType.UNEXPECTED_ERROR);
-    	}
-    	
-    	// Validate source location exists and accessible.
-    	validateFileLocation(dataTransferType, uploadRequest.getSourceLocation(), 
-    			             true, true);
-    	
-    	// Upload the data object using the appropriate data transfer proxy.
-  	    return dataTransferProxies.get(dataTransferType).
-  	    		   uploadDataObject(getAuthenticatedToken(dataTransferType), 
-  	    		                    uploadRequest, 
-  	    		                    generateMetadata(uploadRequest.getPath(),
-  	    		                    		         uploadRequest.getUserId()));
-    }
     
     @Override
 	public HpcDataObjectDownloadResponse downloadDataObject(
@@ -215,67 +179,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
 
     	return downloadDataObject(downloadRequest);
-    }
-    
-    @Override
-    public HpcDataObjectDownloadResponse 
-              downloadDataObject(HpcDataObjectDownloadRequest downloadRequest) 
-                                throws HpcException
-    {
-    	// Input Validation.
-    	HpcDataTransferType dataTransferType = downloadRequest.getDataTransferType();
-    	HpcFileLocation destinationLocation = downloadRequest.getDestinationLocation();
-    	if(dataTransferType == null || 
-    	   !isValidFileLocation(downloadRequest.getArchiveLocation())) {
-  	       throw new HpcException("Invalid data transfer request", 
-  	    	                      HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-    	
-    	// if data is in an archive with S3 data-transfer, and the requested
-    	// destination is a GLOBUS endpoint, then we need to perform a 2nd hop. i.e. store 
-    	// the data to a local GLOBUS endpoint, and submit a transfer request to the caller's 
-    	// destination.
-    	HpcDataObjectDownloadRequest secondHopDownloadRequest = null;
-    	if(dataTransferType.equals(HpcDataTransferType.S_3) && destinationLocation != null) {
-    	   // 2nd Hop needed. Create a request.
-    	   secondHopDownloadRequest =
-    			 toDownloadRequest(calculateDestination(downloadRequest, 
-    			  	            		                HpcDataTransferType.GLOBUS),
-    			        		   HpcDataTransferType.GLOBUS,
-    			                   downloadRequest.getArchiveLocation().getFileId());
-    	   
-    	   // Set the first hop file destination to be the source file of the second hop.
-    	   downloadRequest.setDestinationFile(
-    			   createFile(
-    			         dataTransferProxies.get(HpcDataTransferType.GLOBUS).
-	                         getFilePath(secondHopDownloadRequest.getArchiveLocation().getFileId(), 
-	                        		     false)));
-    	   
-    	   // Validate the destination location.
-    	   validateFileLocation(HpcDataTransferType.GLOBUS, destinationLocation, false, true);
-    	}
-    	
-    	// Download the data object using the appropriate data transfer proxy.
-    	HpcDataObjectDownloadResponse downloadResponse =  
-    	   dataTransferProxies.get(dataTransferType).
-  	    		   downloadDataObject(getAuthenticatedToken(dataTransferType), 
-  	                                  downloadRequest);	
-    	
-    	if(secondHopDownloadRequest != null) {
-    		// Perform 2nd hop download.
-    		HpcDataObjectDownloadResponse secondHopDownloadResponse = 
-    				                      downloadDataObject(secondHopDownloadRequest);
-    		
-    		// Create an entry to cleanup the file after the async download completes.
-    		saveDataObjectDownloadCleanup(secondHopDownloadResponse.getDataTransferRequestId(), 
-    		 	                          secondHopDownloadRequest.getDataTransferType(),
-    				                      downloadRequest.getDestinationFile().getAbsolutePath());
-    		
-    		return secondHopDownloadResponse;
-    		
-    	} else {
-    		    return downloadResponse;
-    	}
     }
     
 	@Override   
@@ -610,6 +513,115 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	 			                  fileLocation.getFileId(), 
 	 	                          HpcErrorType.INVALID_REQUEST_INPUT);	
 	 	}
+    }
+   
+    /**
+     * Upload a data object file.
+     *
+     * @param uploadRequest The data upload request.
+     * @return A data object upload response.
+     * @throws HpcException on service failure.
+     */
+    private HpcDataObjectUploadResponse uploadDataObject(HpcDataObjectUploadRequest uploadRequest) 
+                                                        throws HpcException
+    {
+    	// Input validation.
+    	if(uploadRequest.getPath() == null || uploadRequest.getUserId() == null) {
+    	   throw new HpcException("Null data object path or user-id", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+        	
+    	// Determine the data transfer type.
+    	HpcDataTransferType dataTransferType;
+    	if(uploadRequest.getSourceLocation() != null) {
+    	   dataTransferType = HpcDataTransferType.GLOBUS;
+    	   
+    	} else if(uploadRequest.getSourceFile() != null) {
+    		      dataTransferType = HpcDataTransferType.S_3;
+    		      
+    	} else {
+    		    // Could not determine data transfer type.
+    		    throw new HpcException("Could not determine data transfer type",
+    		    		               HpcErrorType.UNEXPECTED_ERROR);
+    	}
+    	
+    	// Validate source location exists and accessible.
+    	validateFileLocation(dataTransferType, uploadRequest.getSourceLocation(), 
+    			             true, true);
+    	
+    	// Upload the data object using the appropriate data transfer proxy.
+  	    return dataTransferProxies.get(dataTransferType).
+  	    		   uploadDataObject(getAuthenticatedToken(dataTransferType), 
+  	    		                    uploadRequest, 
+  	    		                    generateMetadata(uploadRequest.getPath(),
+  	    		                    		         uploadRequest.getUserId()));
+    }
+    
+    /**
+     * Download a data object file.
+     *
+     * @param downloadRequest The data object download request.
+     * @return A data object download response.
+     * @throws HpcException on service failure.
+     */
+    private HpcDataObjectDownloadResponse 
+               downloadDataObject(HpcDataObjectDownloadRequest downloadRequest) 
+                                 throws HpcException
+    {
+    	// Input Validation.
+    	HpcDataTransferType dataTransferType = downloadRequest.getDataTransferType();
+    	HpcFileLocation destinationLocation = downloadRequest.getDestinationLocation();
+    	if(dataTransferType == null || 
+    	   !isValidFileLocation(downloadRequest.getArchiveLocation())) {
+  	       throw new HpcException("Invalid data transfer request", 
+  	    	                      HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	// if data is in an archive with S3 data-transfer, and the requested
+    	// destination is a GLOBUS endpoint, then we need to perform a 2nd hop. i.e. store 
+    	// the data to a local GLOBUS endpoint, and submit a transfer request to the caller's 
+    	// destination.
+    	HpcDataObjectDownloadRequest secondHopDownloadRequest = null;
+    	if(dataTransferType.equals(HpcDataTransferType.S_3) && destinationLocation != null) {
+    	   // 2nd Hop needed. Create a request.
+    	   secondHopDownloadRequest =
+    			 toDownloadRequest(calculateDestination(downloadRequest, 
+    			  	            		                HpcDataTransferType.GLOBUS),
+    			        		   HpcDataTransferType.GLOBUS,
+    			                   downloadRequest.getArchiveLocation().getFileId());
+    	   
+    	   // Set the first hop file destination to be the source file of the second hop.
+    	   downloadRequest.setDestinationFile(
+    			   createFile(
+    			         dataTransferProxies.get(HpcDataTransferType.GLOBUS).
+	                         getFilePath(secondHopDownloadRequest.getArchiveLocation().getFileId(), 
+	                        		     false)));
+    	   
+    	   // Validate the destination location.
+    	   validateFileLocation(HpcDataTransferType.GLOBUS, destinationLocation, false, true);
+    	}
+    	
+    	// Download the data object using the appropriate data transfer proxy.
+    	HpcDataObjectDownloadResponse downloadResponse =  
+    	   dataTransferProxies.get(dataTransferType).
+  	    		   downloadDataObject(getAuthenticatedToken(dataTransferType), 
+  	                                  downloadRequest);	
+    	
+    	if(secondHopDownloadRequest != null) {
+    		// Perform 2nd hop download.
+    		HpcDataObjectDownloadResponse secondHopDownloadResponse = 
+    				                      downloadDataObject(secondHopDownloadRequest);
+    		
+    		// Create an entry to cleanup the file after the async download completes.
+    		saveDataObjectDownloadCleanup(secondHopDownloadResponse.getDataTransferRequestId(), 
+    		 	                          secondHopDownloadRequest.getDataTransferType(),
+    				                      downloadRequest.getDestinationFile().getAbsolutePath());
+    		
+    		return secondHopDownloadResponse;
+    		
+    	} else {
+    		    return downloadResponse;
+    	}
     }
 }
  

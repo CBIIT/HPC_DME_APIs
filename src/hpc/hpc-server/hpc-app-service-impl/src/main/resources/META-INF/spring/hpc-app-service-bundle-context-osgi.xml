@@ -37,11 +37,6 @@
 		<prop key="hpc.service.dataSearch.defaultCollectionLevelFilter.operator">NUM_GREATER_OR_EQUAL</prop>
 		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.level">1</prop>
 		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.operator">EQUAL</prop>
-		
-		<!-- TODO: REMOVE AFTER REFACTORING -->
-		<prop key="hpc.service.dataManagement.hierarchicalMetadataPolicy">none</prop>
-		
-		
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
