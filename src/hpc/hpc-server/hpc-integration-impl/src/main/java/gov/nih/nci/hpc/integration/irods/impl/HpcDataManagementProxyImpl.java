@@ -319,29 +319,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override    
-    public void createParentPathDirectory(Object authenticatedToken, 
-    		                              String path) 
-    		                             throws HpcException
-    {
-		 String absolutePath = getAbsolutePath(path);
-		 IRODSFile parentPath = getParentPath(authenticatedToken, absolutePath);
-		 
-		 if(parentPath == null) {
-			throw new HpcException("Invalid parent path for: " + absolutePath, 
-                                   HpcErrorType.INVALID_REQUEST_INPUT);
-		 }
-		 
-		 if(parentPath.isFile()) {
-			throw new HpcException("Path exists as a file: " + parentPath.getPath(), 
-                                   HpcErrorType.INVALID_REQUEST_INPUT);
-		 }
-		 
-		 if(!parentPath.isDirectory()) {
-			mkdirs(parentPath); 
-		 }
-    }
-    
-    @Override    
     public HpcPathAttributes getPathAttributes(Object authenticatedToken, 
     		                                   String path) 
     		                                  throws HpcException
@@ -385,37 +362,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public List<HpcCollection> getCollections(Object authenticatedToken,
-    		                                  List<HpcMetadataQuery> metadataQueries) 
-    		                                 throws HpcException
-    {
-    	try {
-    		 // Execute the query w/ Case insensitive query.
-             List<Collection> irodsCollections = 
-             irodsConnection.getCollectionAO(authenticatedToken).
-                             findDomainByMetadataQuery(toIRODSQuery(metadataQueries), 0, true);
-             
-             // Map the query results to a Domain POJO.
-             List<HpcCollection> hpcCollections = new ArrayList<HpcCollection>();
-             if(irodsCollections != null) {
-                for(Collection irodsCollection : irodsCollections) {
-            	    hpcCollections.add(toHpcCollection(irodsCollection));
-                }
-             }
-             
-             return hpcCollections;
-             
-    	} catch(HpcException ex) {
-    		    throw ex;
-    		    
-		} catch(Exception e) {
-	            throw new HpcException("Failed to get Collections: " + 
-                                        e.getMessage(),
-                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} 
-    }
-    
-    @Override
     public List<HpcMetadataEntry> getCollectionMetadata(Object authenticatedToken, 
    		                                                String path) 
    		                                               throws HpcException
@@ -438,20 +384,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	try {
              return toHpcDataObject(irodsConnection.getDataObjectAO(authenticatedToken).
             		                                findByAbsolutePath(getAbsolutePath(path)));
-             
-		} catch(Exception e) {
-	            throw new HpcException("Failed to get Data Object: " + 
-                                        e.getMessage(),
-                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} 
-    }
-    
-    @Override
-    public HpcDataObject getDataObject(Object authenticatedToken, int id) 
-    	                              throws HpcException
-    {
-    	try {
-             return toHpcDataObject(irodsConnection.getDataObjectAO(authenticatedToken).findById(id));
              
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get Data Object: " + 
@@ -506,50 +438,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	                                   HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} 
 	}
-    
-    @Override
-    public List<HpcMetadataEntry> getParentPathMetadata(Object authenticatedToken, 
-                                                        String path) 
-                                                       throws HpcException
-    {
-		IRODSFile parentPath = getParentPath(authenticatedToken, getAbsolutePath(path));
-		if(parentPath == null || !parentPath.isDirectory()) {
-		   return new ArrayList<>();
-		}
-		
-		return getCollectionMetadata(authenticatedToken, parentPath.getPath());
-    }
-    
-    // TODO: REMOVE
-    @Override
-    public List<Integer> getParentPathMetadataIds(Object authenticatedToken, 
-                                                  String path) 
-                                                 throws HpcException
-    {
-    	List<Integer> metadataIds = new ArrayList<>();
-		IRODSFile parentPath = getParentPath(authenticatedToken, getAbsolutePath(path));
-		if(parentPath == null || !parentPath.isDirectory()) {
-		   return metadataIds;
-		}
-		
-		try {
-			 List<MetaDataAndDomainData> metadataValues = 
-			      irodsConnection.getCollectionAO(authenticatedToken).
-		                                          findMetadataValuesForCollection(parentPath.getPath());
-			 if(metadataValues != null) {
-			    for(MetaDataAndDomainData metadataValue : metadataValues) {
-			        metadataIds.add(metadataValue.getAvuId());
-			    }
-			 }
-			    
-			 return metadataIds;
-
-		} catch(Exception e) {
-	            throw new HpcException("Failed to get metadata of a collection: " + 
-                                     e.getMessage(),
-                                     HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} 
-    }
     
     @Override
     public HpcUserRole getUserRole(Object authenticatedToken, String username) 

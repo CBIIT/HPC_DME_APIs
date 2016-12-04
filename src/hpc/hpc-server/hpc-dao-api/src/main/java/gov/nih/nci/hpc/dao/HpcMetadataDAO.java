@@ -12,7 +12,6 @@ package gov.nih.nci.hpc.dao;
 
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -31,24 +30,8 @@ import java.util.List;
 public interface HpcMetadataDAO 
 {    
     /**
-     * Get collection Paths by metadata query. Only collection Paths accessible to the user are returned. 
-     *
-     * @param metadataQueries The metadata entries to query for.
-     * @param dataManagementUsername The Data Management user name. 
-     * @param offset Skip that many path in the returned results.
-     * @param limit No more than 'limit' paths will be returned.
-     * @param defaultLevelFilter A default level filter to use if not provided in the query.
-     * @return List of collection Paths.
-     * @throws HpcException on database error.
-     */
-    public List<String> getCollectionPaths(List<HpcMetadataQuery> metadataQueries,
-    		                               String dataManagementUsername,
-    		                               int offset, int limit,
-    		                               HpcMetadataQueryLevelFilter defaultLevelFilter) 
-    		                              throws HpcException;
-    
-    /**
-     * Get collection Paths by compound metadata query. Only collection Paths accessible to the user are returned. 
+     * Get collection Paths by compound metadata query. 
+     * Only collection Paths accessible to the user are returned. 
      *
      * @param compoundMetadataQuery The compound metadata query.
      * @param dataManagementUsername The Data Management user name. 
@@ -59,23 +42,6 @@ public interface HpcMetadataDAO
      * @throws HpcException on database error.
      */
     public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
-    		                               String dataManagementUsername,
-    		                               int offset, int limit,
-    		                               HpcMetadataQueryLevelFilter defaultLevelFilter) 
-    		                              throws HpcException;
-    
-    /**
-     * Get data object Paths by metadata query. Only data object Paths accessible to the user are returned. 
-     *
-     * @param metadataQueries The metadata entries to query for.
-     * @param dataManagementUsername The Data Management user name. 
-     * @param offset Skip that many path in the returned results.
-     * @param limit No more than 'limit' paths will be returned.
-     * @param defaultLevelFilter A default level filter to use if not provided in the query.
-     * @return List of data object Paths.
-     * @throws HpcException on database error.
-     */
-    public List<String> getDataObjectPaths(List<HpcMetadataQuery> metadataQueries,
     		                               String dataManagementUsername,
     		                               int offset, int limit,
     		                               HpcMetadataQueryLevelFilter defaultLevelFilter) 

@@ -173,17 +173,6 @@ public interface HpcDataManagementProxy
     		                            throws HpcException;   
     
     /**
-     * Create a parent directory (if it doesn't exist already).
-     *
-     * @param authenticatedToken An authenticated token.
-     * @param path The data-object path.
-     * @throws HpcException on data management system failure.
-     */
-    public void createParentPathDirectory(Object authenticatedToken, 
-    		                              String path)
-    		                             throws HpcException;   
-    
-    /**
      * Get path attributes (exists, isDirectory, isFile)
      *
      * @param authenticatedToken An authenticated token.
@@ -205,18 +194,6 @@ public interface HpcDataManagementProxy
      */
     public HpcCollection getCollection(Object authenticatedToken, String path) 
     		                          throws HpcException;
-    
-    /**
-     * Get collections by metadata query.
-     *
-     * @param authenticatedToken An authenticated token.
-     * @param metadataQueries The metadata entries to query for.
-     * @return List of collections.
-     * @throws HpcException on data management system failure.
-     */
-    public List<HpcCollection> getCollections(Object authenticatedToken,
-    		                                  List<HpcMetadataQuery> metadataQueries) 
-    		                                 throws HpcException;
     
     /**
      * Get metadata of a collection.
@@ -242,17 +219,6 @@ public interface HpcDataManagementProxy
     		                          throws HpcException;
     
     /**
-     * Get data object by its id.
-     *
-     * @param authenticatedToken An authenticated token.
-     * @param id The data object's ID.
-     * @return The Data Object.
-     * @throws HpcException on data management system failure.
-     */
-    public HpcDataObject getDataObject(Object authenticatedToken, int id) 
-    		                          throws HpcException;
-    
-    /**
      * Get data objects by metadata query.
      *
      * @param authenticatedToken An authenticated token.
@@ -275,29 +241,6 @@ public interface HpcDataManagementProxy
     public List<HpcMetadataEntry> getDataObjectMetadata(Object authenticatedToken, 
    		                                                String path) 
    		                                               throws HpcException;   
-    
-    /**
-     * Get metadata of a the parent path.
-     *
-     * @param authenticatedToken An authenticated token.
-     * @param path The path.
-     * @return List of metadata entries.
-     * @throws HpcException on data management system failure.
-     */
-    public List<HpcMetadataEntry> getParentPathMetadata(Object authenticatedToken, 
-   		                                                String path) 
-   		                                               throws HpcException;   
-    
-    /**
-     * Get metadata IDs of a the parent path.
-     *
-     * @param authenticatedToken An authenticated token.
-     * @param path The path.
-     * @return List of IDs.
-     * @throws HpcException  on data management system failure.
-     */
-    public List<Integer> getParentPathMetadataIds(Object authenticatedToken, String path) 
-   		                                         throws HpcException;   
     
     /**
      * Get the user's role.
