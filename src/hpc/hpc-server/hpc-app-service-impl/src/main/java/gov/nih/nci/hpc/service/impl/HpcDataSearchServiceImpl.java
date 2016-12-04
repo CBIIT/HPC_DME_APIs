@@ -188,6 +188,26 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     	return userQueryDAO.getQuery(nciUserId, queryName);
     }
     
+    @Override
+    public List<String> getCollectionMetadataAttributes(
+    		               Integer level, HpcMetadataQueryOperator levelOperator) 
+    		               throws HpcException
+    {
+    	String dataManagementUsername = 
+               HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+    	return metadataDAO.getCollectionMetadataAttributes(level, levelOperator, dataManagementUsername);
+    }
+    
+    @Override
+    public List<String> getDataObjectMetadataAttributes(
+    		               Integer level, HpcMetadataQueryOperator levelOperator) 
+    		               throws HpcException
+    {
+    	String dataManagementUsername = 
+               HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+    	return metadataDAO.getDataObjectMetadataAttributes(level, levelOperator, dataManagementUsername);
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -225,21 +245,5 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     	}
     	
     	return relativePaths;
-    }
-    
-    @Override
-    public List<String> getCollectionMetadataAttributes(
-    		               Integer level, HpcMetadataQueryOperator levelOperator) 
-    		               throws HpcException
-    {
-    	return metadataDAO.getCollectionMetadataAttributes(level, levelOperator);
-    }
-    
-    @Override
-    public List<String> getDataObjectMetadataAttributes(
-    		               Integer level, HpcMetadataQueryOperator levelOperator) 
-    		               throws HpcException
-    {
-    	return metadataDAO.getDataObjectMetadataAttributes(level, levelOperator);
     }
 }

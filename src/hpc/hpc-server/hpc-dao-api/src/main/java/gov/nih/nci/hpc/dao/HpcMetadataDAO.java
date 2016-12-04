@@ -89,11 +89,13 @@ public interface HpcMetadataDAO
      *
      * @param level Filter the results by level. (Optional).
      * @param levelOperator The operator to use in the level filter. (Optional).
+     * @param dataManagementUsername The Data Management user name. 
      * @return A list of metadata attributes.
      * @throws HpcException on database error.
      */
 	public List<String> getCollectionMetadataAttributes(
-			               Integer level, HpcMetadataQueryOperator levelOperator) 
+			               Integer level, HpcMetadataQueryOperator levelOperator,
+			               String dataManagementUsername) 
 			               throws HpcException;
 	
     /**
@@ -101,11 +103,13 @@ public interface HpcMetadataDAO
      *
      * @param level Filter the results by level. (Optional).
      * @param levelOperator The operator to use in the level filter. (Optional).
+     * @param dataManagementUsername The Data Management user name. 
      * @return A list of metadata attributes.
      * @throws HpcException on database error.
      */
 	public List<String> getDataObjectMetadataAttributes(
-			               Integer level, HpcMetadataQueryOperator levelOperator) 
+			               Integer level, HpcMetadataQueryOperator levelOperator,
+			               String dataManagementUsername) 
 			               throws HpcException;
     
     /**
