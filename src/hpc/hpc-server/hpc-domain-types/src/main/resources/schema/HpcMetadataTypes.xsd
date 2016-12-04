@@ -106,14 +106,4 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
-	<!-- TODO: REMOVE -->
-	<xsd:complexType name="HpcMetadataOrigin">
-		<xsd:sequence>
-			<xsd:element name="metadataAttributes" type="xsd:string" 
-			             minOccurs="0" maxOccurs="unbounded"/>
-			<xsd:element name="parentMetadataAttributes" type="xsd:string" 
-			             minOccurs="0" maxOccurs="unbounded"/>
-		</xsd:sequence>
-	</xsd:complexType>
-	
 </xsd:schema>
