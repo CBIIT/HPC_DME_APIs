@@ -299,23 +299,31 @@ function curl_register {
     USERID=`get_username $HPC_DM_TEST/utils/config`
     SERVER=`cat $HPC_DM_TEST/utils/server`
 
-    RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
-    RESPONSE_HEADER=${TYPE}-registration-response-header.tmp
+    if [ -z "$RESPONSE_MSG" ]
+    then 
+        RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
+    fi
 
-    CURL_FLAGS="-X PUT ${SERVER}/hpc-server/${TYPE}/${DESTINATION_PATH}  --config $HPC_DM_TEST/utils/config  -H \"Accept: application/json\" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status"
+    if [ -z "$RESPONSE_HEADER" ]
+    then
+        RESPONSE_HEADER=${TYPE}-registration-response-header.tmp
+    fi
+
+    CURL_FLAGS="-X PUT ${SERVER}/hpc-server/${TYPE}/${DESTINATION_PATH}  --config $HPC_DM_TEST/utils/config  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s"
+    #CURL_FLAGS="-X PUT ${SERVER}/hpc-server/${TYPE}/${DESTINATION_PATH}  --config $HPC_DM_TEST/utils/config  -H \"Accept: application/json\" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s"
    
     if [ "$TYPE" == "dataObject" ]
     then
         if [ -z "$DATAOBJECT_FILE" ]
         then
-            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" $CURL_FLAGS 
+            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" $CURL_FLAGS -H "Accept: application/json"  2> curl-status
             #curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" $CURL_FLAGS 
         else
-            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" -F dataObject=@"$DATAOBJECT_FILE" $CURL_FLAGS
+            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" -F dataObject=@"$DATAOBJECT_FILE" $CURL_FLAGS  -H "Accept: application/json"  2> curl-status 
         fi
     elif [ "$TYPE" == "collection" ]
     then
-           curl -H "Content-Type: application/json" -d @$DESCRIPTION $CURL_FLAGS
+           curl -H "Content-Type: application/json" -d @$DESCRIPTION $CURL_FLAGS  -H "Accept: application/json" 2>curl-status
     else
         echo "ERROR: Unsupported registration type:$TYPE"
         exit
@@ -890,7 +898,7 @@ function query_by_metadata {
     SERVER=`cat $HPC_DM_TEST/utils/server`
     #CONFIG=$HPC_DM_TEST/utils/config 
 
-    echo curl -H "Content-Type: application/json" -d @"$QUERY" -X POST $SERVER/hpc-server/$TYPE/query/compound $CONFIG  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -H "Content-Type: application/json" -d @"$QUERY" -X POST $SERVER/hpc-server/$TYPE/query/compound $CONFIG  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 
     check_connection $RESPONSE_HEADER
 }
