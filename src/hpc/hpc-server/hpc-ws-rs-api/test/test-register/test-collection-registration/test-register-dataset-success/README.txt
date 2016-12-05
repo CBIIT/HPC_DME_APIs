@@ -16,3 +16,6 @@
 Register a Dataset with valid inputs. 
 At the time this test is checked, the input.json file follows the policies file.  The returned HTTP code should equal 201.
 
+The dataset should follow the hierarchy /project/datatset/dataObject
+
+Therefore, a project should be registered first in readme, then a dataset in runme.  
