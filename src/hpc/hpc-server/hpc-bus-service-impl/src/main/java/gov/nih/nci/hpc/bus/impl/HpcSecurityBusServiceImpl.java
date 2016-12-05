@@ -203,7 +203,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     			                  HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
     	}
     	
-    	HpcUserRole requestUserRole = dataManagementService.getUserRole(nciUserId);
+    	HpcUserRole requestUserRole = dataManagementSecurityService.getUserRole(nciUserId);
     	
     	// Determine update values.
     	String updateFirstName = (updateUserRequestDTO.getFirstName() != null && !updateUserRequestDTO.getFirstName().isEmpty()) ?
@@ -225,7 +225,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
   				                  HpcRequestRejectReason.API_NOT_SUPPORTED);
   	    }
     		                     
-     	dataManagementService.updateUser(nciUserId, updateFirstName,
+  	  dataManagementSecurityService.updateUser(nciUserId, updateFirstName,
      			                         updateLastName, updateRole);
     	
 	     // Update User.
