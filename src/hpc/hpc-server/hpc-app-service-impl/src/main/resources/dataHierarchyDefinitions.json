@@ -33,7 +33,7 @@
       "isDataObjectContainer": false,
       "subCollections": [
         {
-          "collectionType": "Dateset",
+          "collectionType": "Dataset",
           "isDataObjectContainer": true
         },
         {

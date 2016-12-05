@@ -206,7 +206,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   try {
       	        // Validate the new collection meets the hierarchy definition.
     		    String collectionPath = path.substring(0, path.lastIndexOf('/'));
-    		    String doc = metadataService.getCollectionSystemGeneratedMetadata(collectionPath).getRegistrarDOC();
+    		    //String doc = metadataService.getCollectionSystemGeneratedMetadata(collectionPath).getRegistrarDOC();
+    		    String doc = securityService.getRequestInvoker().getNciAccount().getDoc();
       	        dataManagementService.validateHierarchy(collectionPath, doc, true);
     		   
     		    // Assign system account as an additional owner of the data-object.
