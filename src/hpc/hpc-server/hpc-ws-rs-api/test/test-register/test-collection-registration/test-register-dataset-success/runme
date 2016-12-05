@@ -11,6 +11,11 @@
 # Usage: runme [no arguments]
 #import common functions
 source ../../../utils/functions
+
+#Check the project registraiton went through
+
+verify_registration project-registration-response-header.tmp 
+
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username ../../../utils/config`
 ../../utils/registration-runtest collection ${USERID}/dice-unit-test/test-${NAME} 
