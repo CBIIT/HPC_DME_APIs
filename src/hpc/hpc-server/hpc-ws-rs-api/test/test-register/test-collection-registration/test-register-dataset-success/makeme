@@ -12,15 +12,19 @@
 # Script to make this test
 # Usage: makeme [no arguments]
 
-
-
-
-# Script to build the executable for this test
-# Usage: makeme [no arguments]
-
 ../../../utils/maketest
+
+source $HPC_DM_TEST/utils/functions
 
 #Clean previous parsed policies file
 ../../utils/cleantest
 ../../utils/maketest collectionMetadataValidationRules Dataset 
+
+#First register a project to respect the hierarchy:
+
+
+RESPONSE_MSG='project-registration-response-msg.tmp'
+RESPONSE_HEADER='project-registration-response-header.tmp'
+USERID=`get_username ../../../utils/config`
+register_collection_from_template  ${USERID}/dice-unit-test 
 
