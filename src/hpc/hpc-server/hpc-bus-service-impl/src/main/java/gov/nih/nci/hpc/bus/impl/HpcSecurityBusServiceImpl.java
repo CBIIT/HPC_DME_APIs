@@ -158,7 +158,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
                           throws HpcException
     {
     	logger.info("Invoking updateUser(HpcUserDTO): " + updateUserRequestDTO);
-    	
     	// Input validation.
     	if(updateUserRequestDTO == null) {
     	   throw new HpcException("Null HpcUpdateUserRequestDTO",
@@ -169,18 +168,17 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
      	   throw new HpcException("Invalid update user input",
      			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	
-    	// Get the user.
-    	HpcUser user = securityService.getUser(nciUserId);
-    	if(user == null) {
-    	   throw new HpcException("User not found: " + nciUserId, 
-    			                  HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
+    	
+    	HpcRequestInvoker invoker = securityService.getRequestInvoker();
+    	if(invoker == null || 
+    	   (!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))) {
+   			throw new HpcException("Not authorizated to update frist name, last name, DOC, role. Please contact system administrator",
+ 	                  HpcRequestRejectReason.NOT_AUTHORIZED);
     	}
     	
-    	HpcUserRole requestUserRole = dataManagementSecurityService.getUserRole(nciUserId);
-    	
-    	if(requestUserRole.equals(HpcUserRole.SYSTEM_ADMIN))
+    	if(invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))
     	{
-    		if(updateUserRequestDTO.getUserRole() != null && !updateUserRequestDTO.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN.value()))
+    		if(nciUserId != null && nciUserId.equals(invoker.getNciAccount().getUserId()) && updateUserRequestDTO.getUserRole() != null && !updateUserRequestDTO.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN.value()))
            			throw new HpcException("Not authorizated to downgrade self role. Please contact system administrator",
          	                  HpcRequestRejectReason.NOT_AUTHORIZED);
     				
@@ -197,6 +195,15 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
        		}
 
     	}
+    	
+    	// Get the user.
+    	HpcUser user = securityService.getUser(nciUserId);
+    	if(user == null) {
+    	   throw new HpcException("User not found: " + nciUserId, 
+    			                  HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
+    	}
+    	
+    	HpcUserRole requestUserRole = dataManagementService.getUserRole(nciUserId);
     	
     	// Determine update values.
     	String updateFirstName = (updateUserRequestDTO.getFirstName() != null && !updateUserRequestDTO.getFirstName().isEmpty()) ?
@@ -218,13 +225,14 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
   				                  HpcRequestRejectReason.API_NOT_SUPPORTED);
   	    }
     		                     
-  	    dataManagementSecurityService.updateUser(nciUserId, updateFirstName,
-     			                                 updateLastName, updateRole);
+     	dataManagementService.updateUser(nciUserId, updateFirstName,
+     			                         updateLastName, updateRole);
     	
 	     // Update User.
 	     securityService.updateUser(nciUserId, updateFirstName, 
 	    		                updateLastName, updateDOC);
     }
+
     
     @Override
     public HpcUserDTO getUser(String nciUserId) throws HpcException
