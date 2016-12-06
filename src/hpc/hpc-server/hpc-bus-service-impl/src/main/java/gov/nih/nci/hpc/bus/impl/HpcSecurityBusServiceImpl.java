@@ -164,15 +164,18 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	if((updateUserRequestDTO.getFirstName() == null || updateUserRequestDTO.getFirstName().isEmpty()) && (updateUserRequestDTO.getLastName() == null || updateUserRequestDTO.getLastName().isEmpty()) && (updateUserRequestDTO.getDoc() == null || updateUserRequestDTO.getDoc().isEmpty()))
-     	   throw new HpcException("Invalid update user input",
+		if ((updateUserRequestDTO.getUserRole() == null || updateUserRequestDTO.getUserRole().isEmpty())
+				&& (updateUserRequestDTO.getFirstName() == null || updateUserRequestDTO.getFirstName().isEmpty())
+				&& (updateUserRequestDTO.getLastName() == null || updateUserRequestDTO.getLastName().isEmpty())
+				&& (updateUserRequestDTO.getDoc() == null || updateUserRequestDTO.getDoc().isEmpty()))
+	     	   throw new HpcException("Invalid update user input. Please provide firstName, lastName, doc or userRole to update.",
      			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	
     	
     	HpcRequestInvoker invoker = securityService.getRequestInvoker();
     	if(invoker == null || 
     	   (!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))) {
-   			throw new HpcException("Not authorizated to update frist name, last name, DOC, role. Please contact system administrator",
+   			throw new HpcException("Not authorizated to update frist name, last name, doc, role. Please contact system administrator",
  	                  HpcRequestRejectReason.NOT_AUTHORIZED);
     	}
     	
