@@ -171,7 +171,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 	     	   throw new HpcException("Invalid update user input. Please provide firstName, lastName, doc or userRole to update.",
      			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	
-    	
+		if(updateUserRequestDTO.getUserRole() != null && !updateUserRequestDTO.getUserRole().isEmpty())
+			roleFromString(updateUserRequestDTO.getUserRole());
+		
     	HpcRequestInvoker invoker = securityService.getRequestInvoker();
     	if(invoker == null || 
     	   (!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))) {
