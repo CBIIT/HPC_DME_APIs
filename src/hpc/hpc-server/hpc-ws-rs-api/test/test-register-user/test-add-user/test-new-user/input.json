@@ -5,9 +5,6 @@
             "lastName": "testlast",
             "doc":"FNLCR"
     },
-    "dataTransferAccount":    {
-     "username": "testhpcdm",
-      "password": "HpCTest2016!@",
-      "integratedSystem": "GLOBUS"
-   }
+    "userRole" :"USER"
+   
 }
