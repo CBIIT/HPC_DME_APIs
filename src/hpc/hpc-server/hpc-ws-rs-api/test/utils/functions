@@ -299,15 +299,15 @@ function curl_register {
     USERID=`get_username $HPC_DM_TEST/utils/config`
     SERVER=`cat $HPC_DM_TEST/utils/server`
 
-    if [ -z "$RESPONSE_MSG" ]
-    then 
+    #if [ -z "$RESPONSE_MSG" ]
+    #then 
         RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
-    fi
+    #fi
 
-    if [ -z "$RESPONSE_HEADER" ]
-    then
+    #if [ -z "$RESPONSE_HEADER" ]
+    #then
         RESPONSE_HEADER=${TYPE}-registration-response-header.tmp
-    fi
+    #fi
 
     CURL_FLAGS="-X PUT ${SERVER}/hpc-server/${TYPE}/${DESTINATION_PATH}  --config $HPC_DM_TEST/utils/config  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s"
     #CURL_FLAGS="-X PUT ${SERVER}/hpc-server/${TYPE}/${DESTINATION_PATH}  --config $HPC_DM_TEST/utils/config  -H \"Accept: application/json\" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s"
@@ -612,19 +612,31 @@ function register_dataobject_async_from_template {
 
 
 #Register a new dataObject synchronously using a template 
-#Input: collection-path "The parent collection for the dataObject"
+#Input: <collection-path> "The parent collection for the dataObject"
+#Input: [object-name] "The name of the dataObject"
 function register_dataobject_sync_from_template {
+
+    USAGE="USAGE: register_dataobject_sync_from_template  <collection-path> [object-name]"
 
     if [ -z "$1" ] 
     then
-        echo "ERROR: using register_dataobject_async_from_template"
-        echo "USAGE: register_dataobject_async_from_template  <collection-path>"
+        echo "ERROR: using register_dataobject_sync_from_template"
+        echo "$USAGE"
         exit
     fi
 
+    if [ ! -z "$2" ] 
+    then
+        OBJECT_NAME="$2" 
+    else 
+        SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+        OBJECT_NAME="object-${SUFFIX}.txt"
+    fi
+
+
     COLLECTION_PATH="$1"
     SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
-    DATAOBJECT_PATH="${COLLECTION_PATH}/object-${SUFFIX}.txt"
+    DATAOBJECT_PATH="${COLLECTION_PATH}/${OBJECT_NAME}"
     echo "$DATAOBJECT_PATH" > registered-data-object-path.tmp
 
     TEMPLATE=$HPC_DM_TEST/utils/templates/upload-input-template.json
