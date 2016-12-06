@@ -13,5 +13,5 @@
 @ddblock_end copyright
 ******************************/
 
-Register a dataObject twice. 
+Register a dataObject asynchronously twice. 
 Should retrun error code 400 with a REQUEST_REJECTED errorType.
