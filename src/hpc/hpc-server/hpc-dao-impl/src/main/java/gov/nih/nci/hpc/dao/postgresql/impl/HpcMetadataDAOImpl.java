@@ -381,8 +381,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			Long level = rs.getLong("LEVEL");
 			metadataLevelAttributes.setLevel(level != null ? level.intValue() : null);
 			logger.error("ERAN: level=" + level);
-			logger.error("ERAN: class=" + rs.getArray("ATTRIBUTES").getClass().getName());
-			logger.error("ERAN: values=" + rs.getArray("ATTRIBUTES").toString());
+			logger.error("ERAN: class=" + rs.getObject("ATTRIBUTES").getClass().getName());
+			logger.error("ERAN: values=" + rs.getObject("ATTRIBUTES").toString());
 			//metadataLevelAttributes.getMetadataAttributes().addAll(
 				//	Arrays.asList((String[]) rs.getArray("ATTRIBUTES").getArray()));
 			metadataLevelAttributes.getMetadataAttributes().add("test:" + level);
