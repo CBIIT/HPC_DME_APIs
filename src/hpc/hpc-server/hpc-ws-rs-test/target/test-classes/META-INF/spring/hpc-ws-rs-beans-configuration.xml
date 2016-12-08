@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * hpc-ws-rs-beans-configuration.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id: hpc-ws-rs-beans-configuration.xml 1730 2016-12-03 13:07:35Z rosenbergea $
+ -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:util="http://www.springframework.org/schema/util" 
+	   xmlns:cxf="http://cxf.apache.org/core"
+	   xmlns:wsa="http://cxf.apache.org/ws/addressing" 
+	   xmlns:jaxws="http://cxf.apache.org/jaxws"
+	   xmlns:jaxrs="http://cxf.apache.org/jaxrs" 
+	   xmlns:sec="http://cxf.apache.org/configuration/security"
+	   xmlns:http="http://cxf.apache.org/transports/http/configuration"
+	   xmlns:httpj="http://cxf.apache.org/transports/http-jetty/configuration"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+                           http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+	                       http://cxf.apache.org/configuration/security http://cxf.apache.org/schemas/configuration/security.xsd
+	                       http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd
+	                       http://cxf.apache.org/transports/http-jetty/configuration http://cxf.apache.org/schemas/configuration/http-jetty.xsd
+                           http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+                           http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	<context:annotation-config />
+	
+	<bean id="hpcExceptionMapper" 
+	      class="gov.nih.nci.hpc.ws.rs.provider.HpcExceptionMapper">
+		<constructor-arg value="true" />
+	</bean>
+	
+	<!-- API Version Interceptor -->
+	<bean id="hpcAPIVersionInterceptor" 
+	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAPIVersionInterceptor">
+		<constructor-arg value="1.0.0.TEST" />
+	</bean>
+	
+	<!-- JAX-RS Service Beans -->
+	<bean id="hpcDataManagementRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl" />
+	
+</beans>
+

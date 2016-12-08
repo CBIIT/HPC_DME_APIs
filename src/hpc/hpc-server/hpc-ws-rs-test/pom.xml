@@ -1,0 +1,53 @@
+<!--  
+ * pom.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id: pom.xml 1213 2016-05-30 01:48:21Z rosenbergea $
+ -->
+ 
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<name>HPC REST Services Test</name>
+	<parent>
+		<groupId>gov.nih.nci.hpc</groupId>
+		<artifactId>hpc-server</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>hpc-ws-rs-test</artifactId>
+
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>hpc-ws-rs-impl</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+    		<groupId>junit</groupId>
+    		<artifactId>junit</artifactId>
+		</dependency>
+		<dependency>
+   			<groupId>org.apache.cxf</groupId>
+   			<artifactId>cxf-rt-transports-local</artifactId>
+		</dependency>
+		<dependency>
+  			<groupId>org.apache.cxf</groupId>
+  			<artifactId>cxf-rt-rs-client</artifactId>
+		</dependency>
+		<dependency>
+    		<groupId>org.springframework</groupId>
+    		<artifactId>spring-test</artifactId>
+		</dependency>
+					<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+			</dependency>
+	</dependencies>
+</project>
