@@ -156,7 +156,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			"where object_id in (" +  DATA_OBJECT_USER_ACCESS_SQL +") ";
 	
 	private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL = 
-			" group by level, order by level";
+			" group by level order by level";
 	
     //---------------------------------------------------------------------//
     // Instance members
