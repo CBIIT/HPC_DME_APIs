@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.dao.HpcUserQueryDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
@@ -195,7 +196,15 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     {
     	String dataManagementUsername = 
                HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
-    	return metadataDAO.getCollectionMetadataAttributes(level, levelOperator, dataManagementUsername);
+    	
+    	// TODO : impl
+    	//return metadataDAO.getCollectionMetadataAttributes(level, levelOperator, dataManagementUsername);
+    	List<String> l = new ArrayList<>();
+    	for(HpcMetadataLevelAttributes attr : 
+    		metadataDAO.getCollectionMetadataAttributes(level, levelOperator, dataManagementUsername)) {
+    		l.addAll(attr.getMetadataAttributes());
+    	}
+    	return l;
     }
     
     @Override
@@ -205,7 +214,14 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     {
     	String dataManagementUsername = 
                HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
-    	return metadataDAO.getDataObjectMetadataAttributes(level, levelOperator, dataManagementUsername);
+    	// TODO: Impl
+    	//return metadataDAO.getDataObjectMetadataAttributes(level, levelOperator, dataManagementUsername);
+    	List<String> l = new ArrayList<>();
+    	for(HpcMetadataLevelAttributes attr : 
+    		metadataDAO.getDataObjectMetadataAttributes(level, levelOperator, dataManagementUsername)) {
+    		l.addAll(attr.getMetadataAttributes());
+    	}
+    	return l;
     }
     
     //---------------------------------------------------------------------//

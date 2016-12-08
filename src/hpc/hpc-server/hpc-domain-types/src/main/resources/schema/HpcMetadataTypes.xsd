@@ -106,4 +106,12 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:complexType name="HpcMetadataLevelAttributes">
+		<xsd:sequence>
+			<xsd:element name="level" type="xsd:int" minOccurs="0" />
+			<xsd:element name="metadataAttributes" type="xsd:string"
+			             minOccurs="0"  maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
 </xsd:schema>
