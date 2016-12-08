@@ -377,6 +377,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		@Override
 		public HpcMetadataLevelAttributes mapRow(ResultSet rs, int rowNum) throws SQLException 
 		{
+			logger.error("ERAN: Mapper");
 			HpcMetadataLevelAttributes metadataLevelAttributes = new HpcMetadataLevelAttributes();
 			Long level = rs.getLong("LEVEL");
 			metadataLevelAttributes.setLevel(level != null ? level.intValue() : null);
