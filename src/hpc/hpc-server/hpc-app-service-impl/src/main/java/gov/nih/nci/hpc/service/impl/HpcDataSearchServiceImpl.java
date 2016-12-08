@@ -27,8 +27,6 @@ import gov.nih.nci.hpc.service.HpcDataSearchService;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -69,9 +67,6 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
 	HpcMetadataQueryLevelFilter defaultCollectionLevelFilter = null;
     HpcMetadataQueryLevelFilter defaultDataObjectLevelFilter = null;
 
-    // The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -195,42 +190,25 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     }
     
     @Override
-    public List<String> getCollectionMetadataAttributes(
-    		               Integer level, HpcMetadataQueryOperator levelOperator) 
+    public List<HpcMetadataLevelAttributes> 
+           getCollectionMetadataAttributes(Integer level, HpcMetadataQueryOperator levelOperator) 
+    		                              throws HpcException
+    {
+    	String dataManagementUsername = 
+               HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+    	
+    	return metadataDAO.getCollectionMetadataAttributes(level, levelOperator, dataManagementUsername);
+    }
+    
+    @Override
+    public List<HpcMetadataLevelAttributes> 
+           getDataObjectMetadataAttributes(Integer level, HpcMetadataQueryOperator levelOperator) 
     		               throws HpcException
     {
     	String dataManagementUsername = 
                HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
     	
-    	// TODO : impl
-    	//return metadataDAO.getCollectionMetadataAttributes(level, levelOperator, dataManagementUsername);
-    	logger.error("ERAN: BEFORE COL SQL");
-    	List<HpcMetadataLevelAttributes> mla = metadataDAO.getCollectionMetadataAttributes(level, levelOperator, dataManagementUsername);
-    	logger.error("ERAN: AFTER COL SQL");
-    	List<String> l = new ArrayList<>();
-    	//l.addAll(mla.iterator().next().getMetadataAttributes());
-    	l.add("test - col");
-    	return l;
-    }
-    
-    @Override
-    public List<String> getDataObjectMetadataAttributes(
-    		               Integer level, HpcMetadataQueryOperator levelOperator) 
-    		               throws HpcException
-    {
-    	String dataManagementUsername = 
-               HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
-    	// TODO: Impl
-    	//return metadataDAO.getDataObjectMetadataAttributes(level, levelOperator, dataManagementUsername);
-    	logger.error("ERAN: BEFORE DO SQL");
-    	List<HpcMetadataLevelAttributes> mla = metadataDAO.getDataObjectMetadataAttributes(level, levelOperator, dataManagementUsername);
-    	logger.error("ERAN: AFTER DO SQL");
-    	List<String> l = new ArrayList<>();
-    	//l.addAll(mla.iterator().next().getMetadataAttributes());
-    	HpcMetadataLevelAttributes m = mla.iterator().next();
-    	l.add(m.getLevel().toString());
-    	l.addAll(m.getMetadataAttributes());
-    	return l;
+    	return metadataDAO.getDataObjectMetadataAttributes(level, levelOperator, dataManagementUsername);
     }
     
     //---------------------------------------------------------------------//
