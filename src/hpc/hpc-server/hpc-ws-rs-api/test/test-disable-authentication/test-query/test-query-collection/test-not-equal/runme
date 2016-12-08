@@ -22,15 +22,11 @@ query_by_metadata collection input.json dice_user
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 
 ATTRIBUTE="name"
+
+
 VALUE="prasad project2 sub2"
+RES=$(check_existance  "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" "TRUE" )
 
-#Make sure if there is a responce that the required project is not part of the results
-if [ "$HTTP_CODE" -eq "200" ]
-then
-    #Make sure the response does not include the project named "$VALUE".
-    RES=$(check_existance "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" "FALSE")
+VALUE="prasad project1 sub1"
+RES=$(check_existance  "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" "FALSE" )
 
-elif [ "$HTTP_CODE" -ne "204" ]
-then 
-        echo "ERROR: Got HTTP_CODE:$HTTP_CODE"  1>&2
-fi
