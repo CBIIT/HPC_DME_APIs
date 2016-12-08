@@ -1,0 +1,31 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"original_date_created",
+                "value":"System-Date",
+                "operator":"EQUAL"
+            }
+        ],
+        "compoundQueries":{
+            "operator":"OR",
+            "queries":[
+                {
+                    "attribute":"name",
+                    "value":"prasad project1 sub1",
+                    "operator":"EQUAL"
+                },
+                {
+                    "attribute":"name",
+                    "value":"prasad project2 sub2",
+                    "operator":"EQUAL"
+                }
+
+
+            ]
+
+        }
+    },
+    "detailedResponse":true
+}
