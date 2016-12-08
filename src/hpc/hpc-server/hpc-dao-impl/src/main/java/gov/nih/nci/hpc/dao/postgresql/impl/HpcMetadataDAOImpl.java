@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -157,6 +159,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	
 	private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL = 
 			" group by level order by level";
+	
+    // The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -375,9 +380,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			HpcMetadataLevelAttributes metadataLevelAttributes = new HpcMetadataLevelAttributes();
 			Long level = rs.getLong("LEVEL");
 			metadataLevelAttributes.setLevel(level != null ? level.intValue() : null);
-			metadataLevelAttributes.getMetadataAttributes().addAll(
-					Arrays.asList((String[]) rs.getArray("ATTRIBUTES").getArray()));
-
+			logger.error("ERAN: level=" + level);
+			logger.error("ERAN: class=" + rs.getArray("ATTRIBUTES").getClass().getName());
+			logger.error("ERAN: values=" + rs.getArray("ATTRIBUTES").toString());
+			//metadataLevelAttributes.getMetadataAttributes().addAll(
+				//	Arrays.asList((String[]) rs.getArray("ATTRIBUTES").getArray()));
+			metadataLevelAttributes.getMetadataAttributes().add("test:" + level);
 			return metadataLevelAttributes;
 		}
 	}
