@@ -150,11 +150,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String REFRESH_VIEW_SQL = "refresh materialized view concurrently";
 	
 	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = 
-			"select level, array_to_string(array_agg(meta_attr_name), ',') as attributes from public.\"r_coll_hierarchy_meta_main\" " +
+			"select level, array_to_string(array_agg(distinct meta_attr_name), ',') as attributes from public.\"r_coll_hierarchy_meta_main\" " +
 	        "where object_id in (" + COLLECTION_USER_ACCESS_SQL +") ";
 	
 	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = 
-			"select level, array_to_string(array_agg(meta_attr_name), ',') as attributes from public.\"r_data_hierarchy_meta_main\" " +
+			"select level, array_to_string(array_agg(distinct meta_attr_name), ',') as attributes from public.\"r_data_hierarchy_meta_main\" " +
 			"where object_id in (" +  DATA_OBJECT_USER_ACCESS_SQL +") ";
 	
 	private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL = 
