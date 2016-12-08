@@ -13,9 +13,10 @@
 @ddblock_end copyright
 ******************************/
 
-The dataObject is already registered as part of the server setup.
-ObjectPath:/FNL_SF_Archive/dice_project_1/dice_object_1
+The two projects that should return are already registered under the path:
+/FNL_SF_Archive/dice_project_1
+/FNL_SF_Archive/dice_project_2
 
-Search for a dataObject using the "EQUAL" comparator for an attribute form the dice_project_1. 
+Search for a project using the "LIKE" comparator. Should return the HTTP code 200
 
-Should return the HTTP code 200
+This test should run when LDAP authentication is turned off

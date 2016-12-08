@@ -13,9 +13,11 @@
 @ddblock_end copyright
 ******************************/
 
-The dataObject is already registered as part of the server setup.
-ObjectPath:/FNL_SF_Archive/dice_project_1/dice_object_1
+The collections are  already registered as part of the server setup.
+Collection path:/FNL_SF_Archive/dice_project_1/sub1
 
-Search for a dataObject using the "EQUAL" comparator for an attribute form the dice_project_1. 
+Search for the collection using the "EQUAL" comparator for two attributes.
+
+Should retrun sub1 but not sub2
 
 Should return the HTTP code 200

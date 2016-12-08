@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+source $HPC_DM_TEST/test-search/utils/search-functions
+
+RESPONSE_HEADER=response-header
+RESPONSE_MSG=response-message.json
+
+query_by_metadata collection input.json dice_user
+
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+
+ATTRIBUTE="name"
+VALUE="prasad project2 sub2"
+
+#Make sure if there is a responce that the required project is not part of the results
+if [ "$HTTP_CODE" -eq "200" ]
+then
+    #Make sure the response does not include the project named "$VALUE".
+    RES=$(check_existance "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" "FALSE")
+
+elif [ "$HTTP_CODE" -ne "204" ]
+then 
+        echo "ERROR: Got HTTP_CODE:$HTTP_CODE"  1>&2
+fi

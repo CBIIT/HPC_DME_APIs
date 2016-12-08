@@ -1,0 +1,13 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"name",
+                "value":"dice test project %",
+                "operator":"LIKE"
+            }
+        ]
+    },
+    "detailedResponse":true
+}
