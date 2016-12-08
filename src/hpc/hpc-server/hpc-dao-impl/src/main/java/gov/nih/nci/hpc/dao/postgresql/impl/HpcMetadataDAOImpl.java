@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
@@ -147,12 +148,15 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String REFRESH_VIEW_SQL = "refresh materialized view concurrently";
 	
 	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = 
-			"select distinct collection.meta_attr_name from public.\"r_coll_hierarchy_meta_main\" collection " +
-	        "where collection.object_id in (" + COLLECTION_USER_ACCESS_SQL +") ";
+			"select level, array_agg(meta_attr_name) as attributes from public.\"r_coll_hierarchy_meta_main\" " +
+	        "where object_id in (" + COLLECTION_USER_ACCESS_SQL +") ";
 	
 	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = 
-			"select distinct dataObject.meta_attr_name from public.\"r_data_hierarchy_meta_main\" dataObject " +
-			"where dataObject.object_id in (" +  DATA_OBJECT_USER_ACCESS_SQL +") ";
+			"select level, array_agg(meta_attr_name) as attributes from public.\"r_data_hierarchy_meta_main\" " +
+			"where object_id in (" +  DATA_OBJECT_USER_ACCESS_SQL +") ";
+	
+	private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL = 
+			" group by level, order by level";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -164,7 +168,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	
 	// Row mappers.
 	private SingleColumnRowMapper<String> objectPathRowMapper = new SingleColumnRowMapper<>();
-	private SingleColumnRowMapper<String> metadataAttributeRowMapper = new SingleColumnRowMapper<>();
+	private HpcMetadataLevelAttributesRowMapper metadataLevelAttributeRowMapper = new HpcMetadataLevelAttributesRowMapper();
 	HpcMetadataEntryRowMapper metadataEntryRowMapper = new HpcMetadataEntryRowMapper();
 	
 	// Maps between metadata query operator to its SQL query.
@@ -307,10 +311,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     }
     
     @Override
-    public List<String> getCollectionMetadataAttributes(
-    		               Integer level, HpcMetadataQueryOperator levelOperator,
-    		               String dataManagementUsername) 
-    		               throws HpcException
+    public List<HpcMetadataLevelAttributes> getCollectionMetadataAttributes(
+    		                                   Integer level, HpcMetadataQueryOperator levelOperator,
+    		                                   String dataManagementUsername) 
+    		                                   throws HpcException
     {
     	return getMetadataAttributes(GET_COLLECTION_METADATA_ATTRIBUTES_SQL, 
     			                     level, levelOperator, dataManagementUsername,
@@ -318,10 +322,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     }
     
     @Override
-    public List<String> getDataObjectMetadataAttributes(
-    		               Integer level, HpcMetadataQueryOperator levelOperator,
-    		               String dataManagementUsername) 
-    		               throws HpcException
+    public List<HpcMetadataLevelAttributes> getDataObjectMetadataAttributes(
+    		                                   Integer level, HpcMetadataQueryOperator levelOperator,
+    		                                   String dataManagementUsername) 
+    		                                   throws HpcException
     {
     	return getMetadataAttributes(GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL, 
     			                     level, levelOperator, dataManagementUsername, 
@@ -360,6 +364,21 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			metadataEntry.setValue(rs.getString("META_ATTR_VALUE"));
 			
 			return metadataEntry;
+		}
+	}
+	
+	private class HpcMetadataLevelAttributesRowMapper implements RowMapper<HpcMetadataLevelAttributes>
+	{
+		@Override
+		public HpcMetadataLevelAttributes mapRow(ResultSet rs, int rowNum) throws SQLException 
+		{
+			HpcMetadataLevelAttributes metadataLevelAttributes = new HpcMetadataLevelAttributes();
+			Long level = rs.getLong("LEVEL");
+			metadataLevelAttributes.setLevel(level != null ? level.intValue() : null);
+			metadataLevelAttributes.getMetadataAttributes().addAll(
+					Arrays.asList((String[]) rs.getArray("ATTRIBUTES").getArray()));
+
+			return metadataLevelAttributes;
 		}
 	}
 	
@@ -565,14 +584,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      * @param levelOperator The operator to use in the level filter. (Optional).
      * @param dataManagementUsername The Data Management user name. 
      * @param sqlLevelFilters The map from query operator to level filter ('where' condition).
-     * @return A list of metadata attributes.
+     * @return A list of metadata attributes for each level.
      * @throws HpcException on database error or invalid level operator.
      */
-    private List<String> getMetadataAttributes(String query, Integer level, 
-    		                                   HpcMetadataQueryOperator levelOperator,
-    		                                   String dataManagementUsername,
-    		                                   Map<HpcMetadataQueryOperator, String> sqlLevelFilters) 
-                                              throws HpcException
+    private List<HpcMetadataLevelAttributes> getMetadataAttributes(String query, Integer level, 
+    		                                    HpcMetadataQueryOperator levelOperator,
+    		                                    String dataManagementUsername,
+    		                                    Map<HpcMetadataQueryOperator, String> sqlLevelFilters) 
+                                                throws HpcException
 	{
     	StringBuilder sqlQueryBuilder = new StringBuilder();
     	List<Object> args = new ArrayList<>();
@@ -591,9 +610,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		   args.add(level);
     	}
     	
+    	// Add the grouping and order SQL.
+    	sqlQueryBuilder.append(GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL);
+    	
 		try {
 			 return jdbcTemplate.query(sqlQueryBuilder.toString(), 
-					                   metadataAttributeRowMapper, 
+					                   metadataLevelAttributeRowMapper, 
 					                   args.toArray());
 		
 		} catch(DataAccessException e) {
