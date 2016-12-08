@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -105,9 +106,10 @@ public interface HpcDataSearchService
      * @return A list of metadata attributes.
      * @throws HpcException on service failure.
      */
-	public List<String> getCollectionMetadataAttributes(
-			               Integer level, HpcMetadataQueryOperator levelOperator) 
-			               throws HpcException;
+	public List<HpcMetadataLevelAttributes> 
+	       getCollectionMetadataAttributes(Integer level, 
+	    		                           HpcMetadataQueryOperator levelOperator) 
+			                              throws HpcException;
 	
     /**
      * Get a list of data object metadata attributes currently registered.
@@ -117,9 +119,10 @@ public interface HpcDataSearchService
      * @return A list of metadata attributes.
      * @throws HpcException on service failure.
      */
-	public List<String> getDataObjectMetadataAttributes(
-			               Integer level, HpcMetadataQueryOperator levelOperator) 
-			               throws HpcException;
+	public List<HpcMetadataLevelAttributes> 
+	       getDataObjectMetadataAttributes(Integer level, 
+	    		                           HpcMetadataQueryOperator levelOperator) 
+			                              throws HpcException;
 }
 
  
