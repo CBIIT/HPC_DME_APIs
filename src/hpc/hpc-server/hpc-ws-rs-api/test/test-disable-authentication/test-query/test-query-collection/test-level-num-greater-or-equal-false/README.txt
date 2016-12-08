@@ -13,9 +13,8 @@
 @ddblock_end copyright
 ******************************/
 
-The dataObject is already registered as part of the server setup.
-ObjectPath:/FNL_SF_Archive/dice_project_1/dice_object_1
+The collection is already registered as part of the server setup.
 
-Search for a dataObject using the "EQUAL" comparator for an attribute form the dice_project_1. 
+Search for the project collection using the "NUM_GREATER_OR_EQUAL" comparator.
 
-Should return the HTTP code 200
+No project should be returned

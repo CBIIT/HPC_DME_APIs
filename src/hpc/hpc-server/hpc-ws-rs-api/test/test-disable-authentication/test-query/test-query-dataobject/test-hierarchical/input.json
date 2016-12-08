@@ -1,0 +1,17 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"project_id_CSAS",
+                "value":"project_id_CSAS",
+                "operator":"EQUAL",
+                "levelFilter": {
+                    "level":1,
+                    "operator": "NUM_GREATER_OR_EQUAL"
+                }
+            }
+        ]
+    },
+    "detailedResponse":true
+}

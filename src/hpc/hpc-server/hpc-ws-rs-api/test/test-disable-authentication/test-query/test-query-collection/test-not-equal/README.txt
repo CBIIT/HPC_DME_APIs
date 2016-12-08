@@ -13,9 +13,9 @@
 @ddblock_end copyright
 ******************************/
 
-The dataObject is already registered as part of the server setup.
-ObjectPath:/FNL_SF_Archive/dice_project_1/dice_object_1
 
-Search for a dataObject using the "EQUAL" comparator for an attribute form the dice_project_1. 
+The project is already registered and the user "dice_user" has read access
 
-Should return the HTTP code 200
+Search for a project using the "NOT_EQUAL" comparator. Should return the HTTP
+code 200, and the "prasad project2 sub2" project should not be part of the
+result.
