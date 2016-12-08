@@ -227,7 +227,9 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     	logger.error("ERAN: AFTER DO SQL");
     	List<String> l = new ArrayList<>();
     	//l.addAll(mla.iterator().next().getMetadataAttributes());
-    	l.add("test - do");
+    	HpcMetadataLevelAttributes m = mla.iterator().next();
+    	l.add(m.getLevel().toString());
+    	l.addAll(m.getMetadataAttributes());
     	return l;
     }
     
