@@ -43,6 +43,10 @@
                               {
                                "attribute": "file_attr4",
                 "value": "file_attr4_value"
+                              },
+                              {
+                               "attribute": "numerical_attr",
+                "value": "100"
                               }
                ]
 }

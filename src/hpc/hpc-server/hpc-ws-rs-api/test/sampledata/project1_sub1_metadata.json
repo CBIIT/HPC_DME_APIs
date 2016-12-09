@@ -51,8 +51,9 @@
         {
          "attribute": "library_id",
          "value": "library_id_sub1"
+        },
+        {   "attribute":"project1_file_num_attr_1",
+            "value":100
         }
-
-
  ]
  }
