@@ -21,5 +21,8 @@ RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
 
 query_by_metadata collection input.json dice_user_sys_admin
+
+ATTRIBUTE="name"
+VALUE="dice test project 1"
 RES=$(check_non_existance "$RESPONSE_HEADER" "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE")  
 

@@ -29,3 +29,7 @@ ATTRIBUTE="\"name\""
 
 VALUE="prasad project1 sub1"
 RES=$(check_existance "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" "TRUE")
+
+
+VALUE="prasad project2 sub2"
+RES=$(check_existance "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" "FALSE")
