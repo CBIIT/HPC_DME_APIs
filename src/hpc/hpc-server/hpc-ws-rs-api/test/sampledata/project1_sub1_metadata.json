@@ -27,6 +27,32 @@
         },{
          "attribute": "pi_doc",
          "value": "FNLCR"
+        },
+        {
+         "attribute": "sub1_attribute",
+         "value": "sub1_attribute_value"
+        },
+        {
+         "attribute": "collection_type",
+         "value": "Dataset"
+        },
+        {
+         "attribute": "flow_cell_id",
+         "value": "flow_cell_id_sub1"
+        },
+        {
+         "attribute": "run_id",
+         "value": "run_id_sub1"
+        },
+        {
+         "attribute": "run_date",
+         "value": "run_date_sub1"
+        },
+        {
+         "attribute": "library_id",
+         "value": "library_id_sub1"
         }
+
+
  ]
  }
