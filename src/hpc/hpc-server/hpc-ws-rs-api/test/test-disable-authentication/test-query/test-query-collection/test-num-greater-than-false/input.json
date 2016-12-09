@@ -4,10 +4,10 @@
         "queries":[
             {
                 "attribute":"project1_file_num_attr_1",
-                "value":"101",
+                "value":"100",
                 "operator":"NUM_GREATER_THAN"
             }
         ]
     },
-    "detailedResponse":true
+    "detailedResponse":false
 }

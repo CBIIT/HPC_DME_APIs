@@ -25,4 +25,4 @@ ATTRIBUTE="\"name\""
 #Check that the collection is not returned 
 
 VALUE="prasad project1 sub1"
-RES=$(check_non_existance "$RESPONSE_HEADER" "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" "TRUE")
+RES=$(check_non_existance "$RESPONSE_HEADER" "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE")

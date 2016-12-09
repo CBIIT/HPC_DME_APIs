@@ -16,6 +16,6 @@
 The collection is already registered as part of the server setup.
 Collection path:/FNL_SF_Archive/dice_project_1/sub1
 
-Search for the sub collection using the "EQUAL" comparator at level 2 (the project level). 
+Search for the collection using the "EQUAL" comparator at level 1 (the project level). 
 
 Should return the HTTP code 200
