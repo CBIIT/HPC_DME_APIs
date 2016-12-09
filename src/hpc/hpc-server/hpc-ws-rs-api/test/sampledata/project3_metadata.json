@@ -2,7 +2,7 @@
 	"metadataEntries": [
       	{
       	 "attribute": "name",
-      	 "value": "dice test project 1"
+      	 "value": "dice test project 3"
    		},
       	{
       	 "attribute": "collection_type",
@@ -10,11 +10,11 @@
    		},
    		{
       	 "attribute": "description",
-      	 "value": "dice test project 1 desc"
+      	 "value": "dice test project 3 desc"
    		},
    		{
    		 "attribute": "internal_project_id",
-      	 "value": "dice internal project 1"
+      	 "value": "dice internal project 3"
    		},
    		{
    		 "attribute": "source_lab_pi",
