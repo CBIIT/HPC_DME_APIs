@@ -77,6 +77,54 @@ function get_json_array_value {
 }
 
 
+
+#Check the non existance of an attribute/value metadata in from the response header or message.
+#Inputs: <RESPONSE_MSG>: The file that contains the response messge
+#        <RESPONSE_HDR>: The file that contains the response header 
+#        <ATTRIBE>: The attribute
+#        <VALUE>: The value to be checked
+#
+#Returns: echo "TRUE" or "FALSE" 
+function check_non_existance {
+
+
+    if [ ! -e "$1" ]
+    then
+        echo "ERROR: The response header  file \"$1\" does not exists" >&2
+        exit
+    fi 
+
+
+    RESPONSE_HEADER="$1"
+    HTTP_CODE=$(verify_get $RESPONSE_HEADER)
+
+    #If I got a response message, check that it does not include the attribute/value pair
+    if [ "$HTTP_CODE"  -eq "200"  ]
+    then
+
+        if [ ! -e "$2" ]
+        then
+            echo "ERROR: The response message file \"$2\" does not exists" >&2
+            exit
+        fi 
+
+        if [ -z "$3" ] || [ -z "$4" ] 
+        then
+            echo "ERROR: missing input arguments" >&2
+            echo "USAGE: check_non_existance <response-msg> <response_header> <attribute> <value>" >&2
+            exit
+        fi 
+    
+        RESPONSE_MSG="$2"
+        ATTRIBUTE="$3"
+        VALUE="$4"
+        RES=$(check_existance "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" "FALSE")  
+    fi
+}
+
+
+
+
 #Check the existance of an attribute/value metadata in a response message
 #Inputs: <RESPONSE_MSG>: The file that contains the response messge
 #        <ATTRIBE>: The attribute
@@ -214,7 +262,7 @@ function get_username {
     N_CHAR=${#USER_NAME_LINE}
     if [ "$N_CHAR" -lt "40" ]
     then
-        USER_NAME=$(echo "$USER_NAME_LINE" | sed "s/.*\-u[   ]*\([a-zA-Z]*\).*/\1/")
+        USER_NAME=$(echo "$USER_NAME_LINE" | sed "s/.*\-u[   ]*\([a-zA-Z_]*\).*/\1/")
     fi
 
     #If the username is not in the $CURL_CONFIG_FILE look in the general configuration
@@ -271,6 +319,31 @@ function verify_registration {
     fi
 }
 
+
+#Verify that a get command returned either 200 or 204 
+#Input  response-header
+#Returns: HTTP_CODE
+function verify_get {
+
+    if [ -z "$1" ]
+    then
+        echo "ERROR: using verify_get"
+        echo "USAGE: verify_get <response-header-file>"
+        exit
+    fi
+
+    RESPONSE_HEADER="$1"
+    HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+    if [ "$HTTP_CODE" != "200" ]  && [ "$HTTP_CODE" != "204" ]
+    then
+        echo "FAILED TO GET, HTTP_CODE = $HTTP_CODE" 1>&2
+        exit
+    fi
+
+    echo "$HTTP_CODE"
+}
+
+
 #Register a collection or a dataObject 
 #Inputs: description.json destinaton-path type  [data-object-file]
 function curl_register {
@@ -299,6 +372,7 @@ function curl_register {
     USERID=`get_username $HPC_DM_TEST/utils/config`
     SERVER=`cat $HPC_DM_TEST/utils/server`
 
+
     #if [ -z "$RESPONSE_MSG" ]
     #then 
         RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
@@ -323,6 +397,7 @@ function curl_register {
         fi
     elif [ "$TYPE" == "collection" ]
     then
+
            curl -H "Content-Type: application/json" -d @$DESCRIPTION $CURL_FLAGS  -H "Accept: application/json" 2>curl-status
     else
         echo "ERROR: Unsupported registration type:$TYPE"
