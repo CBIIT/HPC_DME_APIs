@@ -1,0 +1,13 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"description",
+                "value":"dice test data file 1 description",
+                "operator":"EQUAL"
+            }
+        ]
+    },
+    "detailedResponse":true
+}
