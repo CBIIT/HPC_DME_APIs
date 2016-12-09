@@ -43,6 +43,11 @@
    		{
    		 "attribute": "attr2",
       	 "value": "attr2"
-   		}
+   		},
+        { 
+         "attribute":"original_date_created",
+         "value":"System-Date-project2"
+        }
+
 	]
 }
