@@ -1,0 +1,18 @@
+{
+    "compoundQuery": {
+        "operator": "OR",
+        "queries":[
+            {
+                "attribute":"name",
+                "value":"dice test data file 1",
+                "operator":"EQUAL"
+            },
+            {
+                "attribute":"name",
+                "value":"dice test data file 2",
+                "operator":"EQUAL"
+            }
+        ]
+    },
+    "detailedResponse":true
+}
