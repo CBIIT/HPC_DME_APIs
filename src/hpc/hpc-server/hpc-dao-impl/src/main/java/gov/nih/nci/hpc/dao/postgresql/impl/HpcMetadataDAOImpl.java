@@ -123,11 +123,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String COLLECTION_LEVEL_NUM_GREATER_THAN_FILTER = " and collection.level > ?";
 	private static final String COLLECTION_LEVEL_NUM_GREATER_OR_EQUAL_FILTER = " and collection.level >= ?";
 		   
-	private static final String COLLECTION_USER_ACCESS_SQL = 
-			"select access.object_id from public.\"r_objt_access\" access, " +
-			"public.\"r_user_main\" account where account.user_name = ? and access.user_id = account.user_id";
-	
-	private static final String DATA_OBJECT_USER_ACCESS_SQL = 
+	private static final String USER_ACCESS_SQL = 
 			"select access.object_id from public.\"r_objt_access\" access, " +
 			"public.\"r_user_main\" account where account.user_name = ? and access.user_id = account.user_id";
 	
@@ -150,12 +146,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String REFRESH_VIEW_SQL = "refresh materialized view concurrently";
 	
 	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = 
-			"select level, array_agg(distinct meta_attr_name) as attributes from public.\"r_coll_hierarchy_meta_main\" " +
-	        "where object_id in (" + COLLECTION_USER_ACCESS_SQL +") ";
+			"select collection.level, array_agg(distinct collection.meta_attr_name) as attributes " +
+	        "from public.\"r_coll_hierarchy_meta_main\" collection" +
+	        "where collection.object_id in (" + USER_ACCESS_SQL +") ";
 	
 	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = 
-			"select level, array_agg(distinct meta_attr_name) as attributes from public.\"r_data_hierarchy_meta_main\" " +
-			"where object_id in (" +  DATA_OBJECT_USER_ACCESS_SQL +") ";
+			"select dataObject.level, array_agg(distinct dataObject.meta_attr_name) as attributes " +
+			"from public.\"r_data_hierarchy_meta_main\" dataObject" +
+			"where dataObject.object_id in (" +  USER_ACCESS_SQL +") ";
 	
 	private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL = 
 			" group by level order by level";
@@ -269,7 +267,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		return getPaths(prepareQuery(GET_COLLECTION_PATHS_SQL, 
                                      toQuery(collectionSQLQueries, compoundMetadataQuery, 
                                     		 collectionSQLLevelFilters, defaultLevelFilter),
-                                     COLLECTION_USER_ACCESS_SQL, 
                                      dataManagementUsername, offset, limit));
     }
 
@@ -283,7 +280,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		return getPaths(prepareQuery(GET_DATA_OBJECT_PATHS_SQL, 
                                      toQuery(dataObjectSQLQueries, compoundMetadataQuery,
                                     		 dataObjectSQLLevelFilters, defaultLevelFilter),
-                                     DATA_OBJECT_USER_ACCESS_SQL, 
                                      dataManagementUsername, offset, limit));
     }
 	
@@ -399,7 +395,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      *
      * @param getObjectPathsQuery The query to get object paths based on object IDs.
      * @param userQuery The calculated SQL query based on user input (represented by query domain objects).
-     * @param userAccessQuery The user access query to append.
      * @param dataManagementUsername The data management user name.
      * @param offset Skip that many path in the returned results.
      * @param limit No more than 'limit' paths will be returned.
@@ -407,7 +402,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      */
     private HpcPreparedQuery prepareQuery(String getObjectPathsQuery,
     		                              HpcPreparedQuery userQuery,
-    		                              String userAccessQuery,
     		                              String dataManagementUsername,
     		                              int offset, int limit) 
     {
@@ -421,7 +415,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     	
     	// Add a query to only include entities the user can access.
     	sqlQueryBuilder.append(" intersect ");
-    	sqlQueryBuilder.append(userAccessQuery + ")");
+    	sqlQueryBuilder.append(USER_ACCESS_SQL + ")");
     	args.add(dataManagementUsername);
     	
     	sqlQueryBuilder.append(LIMIT_OFFSET_SQL);
