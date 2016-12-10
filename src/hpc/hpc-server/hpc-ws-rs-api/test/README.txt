@@ -49,6 +49,7 @@ http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
 
   V- To run test-hpc-client units tests, please follow the setup steps shown in ./test-hpc-client/README.txt 
 
+  VI- The user who will run the test should be part of a dummy DOC with the hierarchy specified in the appendix.
 
 -Execution:
   Every leaf directory includes two scripts: makeme and runme.
@@ -60,3 +61,25 @@ http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
     This will give a summary for the test resutls.
 
 For more information about the ITS, check the DICE documentation.
+
+
+Appendix:
+Dummy DOC policies:
+{
+      "DOC": [
+        "DUMMY"
+      ],
+      "collectionType": "Project",
+      "isDataObjectContainer": false,
+      "subCollections": [
+        {
+          "collectionType": "Dataset",
+          "isDataObjectContainer": true
+        },
+        {
+          "collectionType": "Folder",
+          "isDataObjectContainer": true
+        }
+ 
+      ]
+}
