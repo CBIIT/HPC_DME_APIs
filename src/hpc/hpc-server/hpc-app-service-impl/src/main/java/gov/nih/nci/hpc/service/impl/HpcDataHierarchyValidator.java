@@ -25,6 +25,9 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * <p>
  * Validates various metadata provided by the user.
@@ -42,6 +45,8 @@ public class HpcDataHierarchyValidator
 
 	// Data Hierarchy .definitions per DOC.
 	Map<String, HpcDataHierarchy> dataHierarchyDefinitions = new HashMap<>();
+
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -117,12 +122,14 @@ public class HpcDataHierarchyValidator
     		                     throws HpcException
     {
     	HpcDataHierarchy dataHierarchy = getDataHierarchy(doc);
-    	if(dataHierarchy == null) {
+logger.error("dataHierarchy: "+dataHierarchy);  
+  	if(dataHierarchy == null) {
     	   // No hierarchy definition found for the DOC, so validation is not needed.
     	   return;
     	}
     	
     	List<HpcDataHierarchy> subCollectionsHierarchies = Arrays.asList(dataHierarchy);
+logger.error("subCollectionsHierarchies: "+subCollectionsHierarchies);  
     	boolean isDataObjectContainer = false;
     	
     	// Iterate through the collection path types, and validate against the hierarchy definition.
@@ -143,6 +150,8 @@ public class HpcDataHierarchyValidator
     		}
     	}   
     	
+logger.error("dataObjectRegistration: "+dataObjectRegistration);  
+logger.error("sDataObjectContainer: "+isDataObjectContainer);  
     	// Validate if data object registration is allowed to this path.
     	if(dataObjectRegistration && !isDataObjectContainer) {
     	   throw new HpcException("Data object is not allowed in this collection", 
