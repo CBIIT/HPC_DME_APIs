@@ -13,8 +13,11 @@
 
 source $HPC_DM_TEST/utils/functions
 USERID=`get_username $HPC_DM_TEST/utils/config`
-PROJECT_DESTINATION_PATH="/FNL_SF_Archive/project-add-dataobject"
-FOLDER_DESTINATION_PATH="/FNL_SF_Archive/project-add-dataobject/folder-collection"
+#PROJECT_DESTINATION_PATH="/FNL_SF_Archive/project-add-dataobject"
+#FOLDER_DESTINATION_PATH="/FNL_SF_Archive/project-add-dataobject/folder-collection"
+
+PROJECT_DESTINATION_PATH="/TEST_Archive/project-add-dataobject"
+FOLDER_DESTINATION_PATH="/TEST_Archive/project-add-dataobject/folder-collection"
 #DESTINATION_PATH="/FNL_SF_Archive/${USERID}/dice-unit-test/project-add-dataobject"
 curl_register $HPC_DM_TEST/utils/templates/register-project-template.json "$PROJECT_DESTINATION_PATH" collection
 mv collection-registration-response-header.tmp project-registration-response-header.tmp
