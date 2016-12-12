@@ -35,7 +35,7 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 	private static final String INITIAL_CONTEXT = "com.sun.jndi.ldap.LdapCtxFactory";
 	private static final String SECURITY_AUTHENTICATION = "simple";
 	private static final String SECURITY_PROTOCOL = "ssl";
-	private static final String USER_ID_FILTER = "uid";
+	private static final String USER_ID_FILTER = "cn";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -164,7 +164,7 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 			 return searchEnum.hasMore() ? searchEnum.next().getName() + "," + base : null;
 
 		} catch(NamingException ne) {
-			    logger.info("User name not found: " + userName, ne);
+			    logger.error("User name not found: " + userName, ne);
 			    return null;
 			    
 		} finally {
