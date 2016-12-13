@@ -50,6 +50,7 @@
 	      <prop key="hpc.integration.ldap.username">CN=NCILDAP,OU=NCI,O=NIH</prop>
 	      <prop key="hpc.integration.ldap.password">***REMOVED***</prop>
 	      <prop key="hpc.integration.ldap.base">ou=NCI,o=NIH</prop>
+	      <prop key="hpc.integration.ldap.userIdFilter">cn</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

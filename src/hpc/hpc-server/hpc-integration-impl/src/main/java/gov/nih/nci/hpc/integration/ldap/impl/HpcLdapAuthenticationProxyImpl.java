@@ -35,7 +35,6 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 	private static final String INITIAL_CONTEXT = "com.sun.jndi.ldap.LdapCtxFactory";
 	private static final String SECURITY_AUTHENTICATION = "simple";
 	private static final String SECURITY_PROTOCOL = "ssl";
-	private static final String USER_ID_FILTER = "cn";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -46,6 +45,9 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 	
 	// Search base.
 	String base = null;
+	
+	// User ID filter.
+	String userIdFilter = null;
 	
     // The logger instance.
 	private final Logger logger = 
@@ -62,9 +64,10 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
      * @param username The account to access the LDAP server.
      * @param password The password to access the LDAP server.
      * @param base The LDAP search base.
+     * @param userIdFilter The user ID filter.
      */
 	private HpcLdapAuthenticationProxyImpl(String url, String username, String password,
-			                               String base) 
+			                               String base, String userIdFilter) 
     {
 		environment.put(Context.INITIAL_CONTEXT_FACTORY, INITIAL_CONTEXT);
 		environment.put(Context.PROVIDER_URL, url);
@@ -74,6 +77,7 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 		environment.put(Context.SECURITY_CREDENTIALS, password);
 		
 		this.base = base;
+		this.userIdFilter = userIdFilter;
     }
 	
     /**
@@ -143,8 +147,8 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 	 */
 	private String getFullyDistinguishedName(String userName) throws HpcException 
 	{
-		String[] attributeIDs = { USER_ID_FILTER }; 
-		String searchFilter = "(" + USER_ID_FILTER + "=" + userName + ")";
+		String[] attributeIDs = { userIdFilter }; 
+		String searchFilter = "(" + userIdFilter + "=" + userName + ")";
 
 		DirContext dirContext = null;
 		try	{

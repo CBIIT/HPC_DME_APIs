@@ -11,15 +11,19 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -173,44 +177,38 @@ public class HpcDomainValidator
      * @param levelFilter The level filter to validate.
      * @return true if valid, false otherwise.
      */
-    public static boolean isValidMetadataQueryLevelFilter(HpcMetadataQueryLevelFilter levelFilter) 
+    public static HpcDomainValidationResult 
+                  isValidMetadataQueryLevelFilter(HpcMetadataQueryLevelFilter levelFilter) 
     {
-    	if(levelFilter == null || levelFilter.getLevel() <= 0 || levelFilter.getOperator() == null) {
-    	   return false;
+    	HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
+    	validationResult.setValid(false);
+
+    	if(levelFilter == null) {
+    	   validationResult.setMessage("Null level filter");
+    	   return validationResult;
     	}
-    	return true;
-    }
-    
-    /**
-     * Validate metadata query collection.
-     *
-     * @param metadataQueries Metadata query collection.
-     * @return true if valid, false otherwise.
-     */
-    public static boolean isValidMetadataQueries(List<HpcMetadataQuery> metadataQueries) 
-    {
-    	if(metadataQueries == null) {
-    	   return false;
-     	}
-    	for(HpcMetadataQuery metadataQuery : metadataQueries) {
-    		if(isEmpty(metadataQuery.getAttribute()) || 
-    		   isEmpty(metadataQuery.getValue()) ||
-    		   metadataQuery.getOperator() == null ||
-    		   (metadataQuery.getLevelFilter() != null && 
-    		    !isValidMetadataQueryLevelFilter(metadataQuery.getLevelFilter()))) {
-    		   return false;
-    		}
+    	if(levelFilter.getLevel() <= 0) { 
+    	   validationResult.setMessage("Invalid level filter's level: " + levelFilter.getLevel());
+     	   return validationResult;
     	}
-     	return true;
+    	if(levelFilter.getOperator() == null) {
+    	   validationResult.setMessage("Null level filter operator. Valid values are [" +
+    			                       HpcMetadataQueryOperator.values() + "]");
+      	   return validationResult;
+    	}
+    	
+    	validationResult.setValid(true);
+    	return validationResult;
     }
     
     /**
      * Validate compound metadata query.
      *
      * @param compoundMetadataQuery Compound Metadata query.
-     * @return true if valid, false otherwise.
+     * @return Domain validation result
      */
-    public static boolean isValidCompoundMetadataQuery(HpcCompoundMetadataQuery compoundMetadataQuery) 
+    public static HpcDomainValidationResult 
+                  isValidCompoundMetadataQuery(HpcCompoundMetadataQuery compoundMetadataQuery) 
     {
     	return isValidCompoundMetadataQuery(compoundMetadataQuery, 1); 
     }
@@ -229,8 +227,7 @@ public class HpcDomainValidator
     {
     	if(notificationSubscription == null || 
     	   notificationSubscription.getEventType() == null ||
-    	   notificationSubscription.getNotificationDeliveryMethods() == null ||
-    	   notificationSubscription.getNotificationDeliveryMethods().isEmpty() ||
+    	   isEmpty(notificationSubscription.getNotificationDeliveryMethods()) ||
     	   notificationSubscription.getNotificationDeliveryMethods().contains(null)) {
      	   return false;
     	}
@@ -254,41 +251,112 @@ public class HpcDomainValidator
     }
     
     /**
+     * Check is a collection is empty.
+     *
+     * @param value The string to check
+     * @return true if not null and not empty, false otherwise.
+     */
+    private static boolean isEmpty(@SuppressWarnings("rawtypes") Collection collection) 
+    {
+    	return collection == null ? false : collection.isEmpty();
+    }
+    
+    /**
      * Validate compound metadata query.
      *
      * @param compoundMetadataQuery Compound Metadata query.
      * @param queryDepth The recursion depth of this method on the stack. (used to enforce a limit)
-     * @return true if valid, false otherwise.
+     * @return Domain validation result.
      */
-    private static boolean isValidCompoundMetadataQuery(HpcCompoundMetadataQuery compoundMetadataQuery, 
-    		                                            int queryDepth) 
+    private static HpcDomainValidationResult 
+                   isValidCompoundMetadataQuery(HpcCompoundMetadataQuery compoundMetadataQuery, 
+    		                                    int queryDepth) 
     {
+    	HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
+    	validationResult.setValid(false);
+    	
     	if(queryDepth > MAX_COMPOUND_METADATA_QUERY_DEPTH) {
-    	   return false;
+    	   validationResult.setMessage("Compound query depth over the allowed linit of " + 
+    	                               MAX_COMPOUND_METADATA_QUERY_DEPTH); 
+    	   return validationResult;
     	}
     	
-    	if(compoundMetadataQuery == null || compoundMetadataQuery.getOperator() == null ||
-    	   ((compoundMetadataQuery.getQueries() == null ||  
-    	     compoundMetadataQuery.getQueries().isEmpty()) && 
-    	    (compoundMetadataQuery.getCompoundQueries() == null || 
-    	     compoundMetadataQuery.getCompoundQueries().isEmpty()))) {
-    	   return false;
+    	if(compoundMetadataQuery == null) {
+    	   validationResult.setMessage("Null compound query");
+    	   return validationResult;
+    	}
+    	
+    	if(compoundMetadataQuery.getOperator() == null) {
+    	   validationResult.setMessage("Null compound query operator. Valid values are [" +
+    			                       HpcCompoundMetadataQueryOperator.values() + "]");
+     	   return validationResult;
+    	}
+    	
+    	if(isEmpty(compoundMetadataQuery.getQueries()) && 
+    	   isEmpty(compoundMetadataQuery.getCompoundQueries())) {
+    	   validationResult.setMessage("Compound query contains no sub queries (simple or compound)");
+    	   return validationResult;
      	}
     	
-    	if(compoundMetadataQuery.getQueries() != null &&
-    	   !isValidMetadataQueries(compoundMetadataQuery.getQueries())) {
-    	   return false;
+    	// Validate the sub simple queries.
+    	if(compoundMetadataQuery.getQueries() != null) {
+    	   for(HpcMetadataQuery metadataQuery : compoundMetadataQuery.getQueries()) {
+    		   HpcDomainValidationResult subQueryValidationResult =
+                                         isValidMetadataQuery(metadataQuery);
+               if(!subQueryValidationResult.getValid()) {
+                  return subQueryValidationResult;
+               }
+    	   }
     	}
     	
+    	// Validate the sub compound queries.
     	if(compoundMetadataQuery.getCompoundQueries() != null) {
     	   for(HpcCompoundMetadataQuery subQuery : compoundMetadataQuery.getCompoundQueries()) {
-    		   if(!isValidCompoundMetadataQuery(subQuery, queryDepth + 1)) {
-    			  return false;
+    		   HpcDomainValidationResult subCompoundQueryValidationResult =
+    		                             isValidCompoundMetadataQuery(subQuery, queryDepth + 1);
+    		   if(!subCompoundQueryValidationResult.getValid()) {
+    			  return subCompoundQueryValidationResult;
     		   }
     	   }
     	}
     	
-     	return true;
+    	validationResult.setValid(true);
+    	return validationResult;
+    }
+    
+    /**
+     * Validate a metadata (simple) query.
+     *
+     * @param metadataQuery The metadata query to validate.
+     * @return Domain validation result.
+     */
+    private static HpcDomainValidationResult isValidMetadataQuery(HpcMetadataQuery metadataQuery) 
+    {
+    	HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
+    	validationResult.setValid(false);
+    	
+	    if(isEmpty(metadataQuery.getAttribute())) {
+		   validationResult.setMessage("Null metadata attribute in query [" + metadataQuery + "]");
+		   return validationResult;
+	    }
+	    if(isEmpty(metadataQuery.getValue())) {
+		   validationResult.setMessage("Null metadata value in query [" + metadataQuery + "]");
+		   return validationResult;        		   
+	    }
+	    if(metadataQuery.getOperator() == null) {
+		   validationResult.setMessage("Null operator in query [" + metadataQuery + "]");
+		   return validationResult;             		   
+	    }
+	    if(metadataQuery.getLevelFilter() != null) {
+		   HpcDomainValidationResult levelFilterValidationResult = 
+		                             isValidMetadataQueryLevelFilter(metadataQuery.getLevelFilter());
+		   if(!levelFilterValidationResult.getValid()) {
+			  return levelFilterValidationResult;
+		   }
+	    }
+	 	   
+	    validationResult.setValid(true);
+    	return validationResult;
     }
 }
 
