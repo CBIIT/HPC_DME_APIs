@@ -59,5 +59,12 @@
 			<xsd:enumeration value="NOT_AUTHORIZED" />
 		</xsd:restriction>
 	</xsd:simpleType>
+	
+	<xsd:complexType name="HpcDomainValidationResult">
+		<xsd:sequence>
+			<xsd:element name="valid" type="xsd:boolean" />
+			<xsd:element name="message" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
 
 </xsd:schema>
