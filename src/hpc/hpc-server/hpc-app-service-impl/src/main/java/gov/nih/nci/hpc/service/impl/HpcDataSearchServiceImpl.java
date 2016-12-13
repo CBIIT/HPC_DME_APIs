@@ -14,6 +14,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidCompoundMet
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.dao.HpcUserQueryDAO;
+import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
@@ -85,8 +86,8 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     		                         throws HpcException
     {
     	// Input Validation.
-    	if(!isValidMetadataQueryLevelFilter(defaultCollectionLevelFilter) ||
-    	   !isValidMetadataQueryLevelFilter(defaultDataObjectLevelFilter)) {
+    	if(!isValidMetadataQueryLevelFilter(defaultCollectionLevelFilter).getValid() ||
+    	   !isValidMetadataQueryLevelFilter(defaultDataObjectLevelFilter).getValid()) {
     	   throw new HpcException("Invalid default collection/data object level filter",
 	                              HpcErrorType.SPRING_CONFIGURATION_ERROR);
     	}
@@ -118,8 +119,10 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page) 
     		                              throws HpcException
     {
-       	if(!isValidCompoundMetadataQuery(compoundMetadataQuery)) {
-           throw new HpcException("Invalid or null metadata query", 
+    	// Input validation.
+    	HpcDomainValidationResult validationResult = isValidCompoundMetadataQuery(compoundMetadataQuery);
+       	if(!validationResult.getValid()) {
+           throw new HpcException("Invalid compound metadata query: " + validationResult.getMessage(), 
         			              HpcErrorType.INVALID_REQUEST_INPUT);
         }
        	
@@ -137,8 +140,10 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     		                               int page) 
     		                              throws HpcException
     {
-       	if(!isValidCompoundMetadataQuery(compoundMetadataQuery)) {
-           throw new HpcException("Invalid or null compound metadata query", 
+    	// Input Validation.
+    	HpcDomainValidationResult validationResult = isValidCompoundMetadataQuery(compoundMetadataQuery);
+       	if(!validationResult.getValid()) {
+           throw new HpcException("Invalid compound metadata query: " + validationResult.getMessage(), 
         			              HpcErrorType.INVALID_REQUEST_INPUT);
         }
        	
@@ -162,8 +167,10 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     		             throws HpcException
     {
     	// Validate the compound query.
-       	if(!isValidCompoundMetadataQuery(namedCompoundMetadataQuery.getCompoundQuery())) {
-           throw new HpcException("Invalid compound metadata query", 
+    	HpcDomainValidationResult validationResult = 
+    			 isValidCompoundMetadataQuery(namedCompoundMetadataQuery.getCompoundQuery());
+       	if(!validationResult.getValid()) {
+           throw new HpcException("Invalid compound metadata query: " + validationResult.getMessage(), 
          			              HpcErrorType.INVALID_REQUEST_INPUT);
         }
        	
