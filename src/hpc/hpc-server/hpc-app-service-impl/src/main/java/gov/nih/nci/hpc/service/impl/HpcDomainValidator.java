@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -193,7 +194,7 @@ public class HpcDomainValidator
     	}
     	if(levelFilter.getOperator() == null) {
     	   validationResult.setMessage("Null level filter operator. Valid values are [" +
-    			                       HpcMetadataQueryOperator.values() + "]");
+    			                       Arrays.asList(HpcMetadataQueryOperator.values()) + "]");
       	   return validationResult;
     	}
     	
@@ -288,7 +289,7 @@ public class HpcDomainValidator
     	
     	if(compoundMetadataQuery.getOperator() == null) {
     	   validationResult.setMessage("Null compound query operator. Valid values are [" +
-    			                       HpcCompoundMetadataQueryOperator.values() + "]");
+    			                       Arrays.asList(HpcCompoundMetadataQueryOperator.values()) + "]");
      	   return validationResult;
     	}
     	
