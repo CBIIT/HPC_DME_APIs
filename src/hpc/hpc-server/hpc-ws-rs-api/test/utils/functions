@@ -409,16 +409,14 @@ function curl_register {
     #fi
 
     CURL_FLAGS="-X PUT ${SERVER}/hpc-server/${TYPE}/${DESTINATION_PATH}  --config $HPC_DM_TEST/utils/config  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s"
-    #CURL_FLAGS="-X PUT ${SERVER}/hpc-server/${TYPE}/${DESTINATION_PATH}  --config $HPC_DM_TEST/utils/config  -H \"Accept: application/json\" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s"
    
     if [ "$TYPE" == "dataObject" ]
     then
         if [ -z "$DATAOBJECT_FILE" ]
         then
             curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" $CURL_FLAGS -H "Accept: application/json"  2> curl-status
-            #curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" $CURL_FLAGS 
         else
-            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" -F dataObject=@"$DATAOBJECT_FILE" $CURL_FLAGS  -H "Accept: application/json"  2> curl-status 
+            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" -F "dataObject=@$DATAOBJECT_FILE;type=application/octet-stream" $CURL_FLAGS  -H "Accept: application/json"  2> curl-status 
         fi
     elif [ "$TYPE" == "collection" ]
     then
@@ -981,8 +979,15 @@ function query_by_metadata {
         CONFIG="--config $HPC_DM_TEST/utils/config"
     else
         USER=$3
-        #TODO: note -k is not required, this is a random password
-        CONFIG="-k -u ${USER}:password"
+        #if the passed user is the same as the user in config, use config, otherwise, use a different user  
+        CONFIG_USER=$(get_username)
+        if [ "$USER"  = "$CONFIG_USER" ]
+        then
+            CONFIG="--config $HPC_DM_TEST/utils/config"
+        else
+            #TODO: note -k is not required, this is a random password
+            CONFIG="-k -u ${USER}:password"
+        fi
     fi
 
     if [ "$TYPE" != "collection" ] && [ "$TYPE" != "dataObject" ]
@@ -1060,3 +1065,95 @@ function get_item {
     curl -G -X GET "$SERVER/$TOTAL_PATH"  --config $HPC_DM_TEST/utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     check_connection $RESPONSE_HEADER
 }
+
+#Update the premission using an input json file
+#Inputs: <premission-file> The file that describes the premission
+#        [response-header] The file where the response header will be written
+#        [response-message] The file where the response message will be witten
+
+function update_permission {
+
+    USAGE="USAGE: update_permission <permission-file> [response-header-file] [response-message-file]"
+
+    if [ -z "$1" ]
+    then
+        echo "ERROR: using update_permission"
+        echo "$USAGE" >&2
+        exit
+    fi
+
+
+    if [ -z "$2" ]
+    then
+        RESPONSE_HEADER="permission-response-header.tmp"
+    else
+        RESPONSE_HEADER="$2"
+    fi
+
+    if [ -z "$3" ]
+    then
+        RESPONSE_MSG="permission-response-message.json.tmp"
+    else    
+        RESPONSE_MSG="$3"
+    fi
+ 
+    PERMISSION_FILE="$1"
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+    curl -H "Content-Type: application/json" -d @$PERMISSION_FILE -X POST ${SERVER}/hpc-server/acl  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    check_connection $RESPONSE_HEADER
+}
+
+
+#Update the permission of a single path using a template
+#Inputs: <path>         The path for the collection or the dataObject where the permission should be updated 
+#        <user_id>      The user to be granted the new permission
+#        <permission>   The new permission that should be given  
+
+
+function update_single_permission {
+
+     
+    USAGE="ERROR: using update_permission.\nUSAGE: update_single_permission <path> <user_id> <permission>"
+
+    if [ -z "$1" ]
+    then    
+        echo "Missing path" >&2
+        echo "$USAGE"  1>&2
+        exit
+
+    fi
+
+    if [ -z "$2" ]
+    then
+
+        echo "Missing user_id" >&2
+        echo "$USAGE" >&2
+        exit
+
+    fi
+
+    if [ -z "$3" ]
+    then
+
+        echo "Missing permission" >&2
+        echo "$USAGE" >&2
+        exit
+
+    fi
+
+   
+    PERMISSION_PATH="$1"
+    USER_ID="$2"
+    NEW_PERMISSION="$3"
+       
+    UPDATED_PATH=$(cat $HPC_DM_TEST/utils/templates/permission-update-template.json | sed "s#dxcollectionpath#$PERMISSION_PATH#")
+    UPDATED_USER=$(echo "$UPDATED_PATH" | sed "s#dxnewuserid#$USER_ID#")
+    UPDATED_PERMISSION=$(echo "$UPDATED_USER" | sed "s#dxnewpermission#$NEW_PERMISSION#")
+    echo "$UPDATED_PERMISSION" > permission.json.tmp
+    
+    #Submit the request to change permission
+    update_permission "permission.json.tmp" 
+    
+}
+
+
