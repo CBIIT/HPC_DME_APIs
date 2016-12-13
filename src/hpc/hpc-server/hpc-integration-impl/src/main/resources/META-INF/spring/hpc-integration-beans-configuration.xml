@@ -78,6 +78,7 @@
 		  <constructor-arg value="${hpc.integration.ldap.username}" index="1" />
 		  <constructor-arg value="${hpc.integration.ldap.password}" index="2" />
 		  <constructor-arg value="${hpc.integration.ldap.base}" index="3" />
+		  <constructor-arg value="${hpc.integration.ldap.userIdFilter}" index="4" />
 	</bean>
 		
 	<!--  HPC iRODS Connection -->
