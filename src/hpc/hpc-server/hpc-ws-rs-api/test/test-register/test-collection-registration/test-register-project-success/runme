@@ -11,7 +11,9 @@
 # Usage: runme [no arguments]
 #import common functions
 source ../../../utils/functions
+sleep 1
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username ../../../utils/config`
 #../../utils/registration-runtest collection $(get_basefolder)/test-${NAME} 
-../../utils/registration-runtest collection $(get_basefolder)/${USERID}/dice-unit-test/test-${NAME} 
+#../../utils/registration-runtest collection $(get_basefolder)/${USERID}/dice-unit-test/test-${NAME} 
+../../utils/registration-runtest collection $(get_basefolder)/test-${NAME} 

@@ -23,15 +23,15 @@
 #Register a collection
 source ../../../utils/functions
 USERID=`get_username ../../../utils/config`
-COLLECTION_PATH="/FNL_SF_Archive/${USERID}/dice-unit-test/project-add-dataobject"
-echo "$COLLECTION_PATH" >> registered-project-path.tmp
+PROJECT_PATH="$(get_basefolder)/project-add-dataobject"
+echo "$PROJECT_PATH" >> registered-project-path.tmp
 
-register_collection_from_template "$COLLECTION_PATH"
+register_collection_from_template "$PROJECT_PATH"
 #curl_register project-description.json "$COLLECTION_PATH" collection
 
 verify_registration collection-registration-response-header.tmp
 mv collection-registration-response-header.tmp original-collection-registration-response-header.tmp
 
 #Register a dataOjbect
-register_dataobject_sync_from_template  "$COLLECTION_PATH"
+register_dataobject_sync_from_template  "$PROJECT_PATH"
 
