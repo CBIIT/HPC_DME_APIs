@@ -16,6 +16,9 @@ source ../../../utils/functions
 
 verify_registration project-registration-response-header.tmp 
 
+REGISTERED_PROJECT=$(cat registered-project.tmp)
+
+sleep 1
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username ../../../utils/config`
-../../utils/registration-runtest collection ${USERID}/dice-unit-test/test-${NAME} 
+../../utils/registration-runtest collection ${REGISTERED_PROJECT}/test-${NAME} 

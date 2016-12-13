@@ -13,4 +13,5 @@
 source ../../../utils/functions
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username ../../../utils/config`
-../../utils/registration-runtest collection ${USERID}/dice-unit-test/test-${NAME} DATA_MANAGEMENT_ERROR 
+../../utils/registration-runtest collection $(get_basefolder)/test-${NAME} DATA_MANAGEMENT_ERROR 
+
