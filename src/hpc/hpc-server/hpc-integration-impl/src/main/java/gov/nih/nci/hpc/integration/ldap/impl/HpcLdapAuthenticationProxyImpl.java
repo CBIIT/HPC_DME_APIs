@@ -35,6 +35,7 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 	private static final String INITIAL_CONTEXT = "com.sun.jndi.ldap.LdapCtxFactory";
 	private static final String SECURITY_AUTHENTICATION = "simple";
 	private static final String SECURITY_PROTOCOL = "ssl";
+	private static final String USER_ID_DOMAIN_NAME = "nih.gov";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -48,6 +49,9 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 	
 	// User ID filter.
 	String userIdFilter = null;
+	
+	//User domain name
+	String userDomainName = null;
 	
     // The logger instance.
 	private final Logger logger = 
@@ -67,7 +71,7 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
      * @param userIdFilter The user ID filter.
      */
 	private HpcLdapAuthenticationProxyImpl(String url, String username, String password,
-			                               String base, String userIdFilter) 
+			                               String base, String userIdFilter, String userDomainName) 
     {
 		environment.put(Context.INITIAL_CONTEXT_FACTORY, INITIAL_CONTEXT);
 		environment.put(Context.PROVIDER_URL, url);
@@ -78,6 +82,7 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 		
 		this.base = base;
 		this.userIdFilter = userIdFilter;
+		this.userDomainName = userDomainName;
     }
 	
     /**
@@ -112,7 +117,7 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 		try {
 			 Hashtable<String, String> authEnv = new Hashtable<>();
 			 authEnv.putAll(environment);
-			 authEnv.put(Context.SECURITY_PRINCIPAL, fullyDistinguishedName);
+			 authEnv.put(Context.SECURITY_PRINCIPAL, userName+"@"+userDomainName);
 			 authEnv.put(Context.SECURITY_CREDENTIALS, password);
 			 dirContext = new InitialDirContext(authEnv);			
 			 return true;
