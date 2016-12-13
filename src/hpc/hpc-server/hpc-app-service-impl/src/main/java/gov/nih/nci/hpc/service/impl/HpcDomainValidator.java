@@ -241,14 +241,14 @@ public class HpcDomainValidator
     //---------------------------------------------------------------------//
     
     /**
-     * Check is a string is empty.
+     * Check if a string is empty.
      *
      * @param value The string to check
-     * @return true if not null and not empty, false otherwise.
+     * @return true null or empty, false otherwise.
      */
     private static boolean isEmpty(String value) 
     {
-    	return value == null ? false : value.isEmpty();
+    	return value == null ? true : value.isEmpty();
     }
     
     /**
@@ -283,19 +283,21 @@ public class HpcDomainValidator
     	}
     	
     	if(compoundMetadataQuery == null) {
-    	   validationResult.setMessage("Null compound query");
+    	   validationResult.setMessage("Null compound query: [" + compoundMetadataQuery + "]");
     	   return validationResult;
     	}
     	
     	if(compoundMetadataQuery.getOperator() == null) {
-    	   validationResult.setMessage("Null compound query operator. Valid values are [" +
+    	   validationResult.setMessage("Null compound query operator in query [" + compoundMetadataQuery + "]. " + 
+    	                               "Valid values are [" +
     			                       Arrays.asList(HpcCompoundMetadataQueryOperator.values()) + "]");
      	   return validationResult;
     	}
     	
     	if(isEmpty(compoundMetadataQuery.getQueries()) && 
     	   isEmpty(compoundMetadataQuery.getCompoundQueries())) {
-    	   validationResult.setMessage("Compound query contains no sub queries (simple or compound)");
+    	   validationResult.setMessage("Compound query [" + compoundMetadataQuery + "]. " +
+    	                               "contains no sub queries (simple or compound)");
     	   return validationResult;
      	}
     	
@@ -345,7 +347,9 @@ public class HpcDomainValidator
 		   return validationResult;        		   
 	    }
 	    if(metadataQuery.getOperator() == null) {
-		   validationResult.setMessage("Null operator in query [" + metadataQuery + "]");
+		   validationResult.setMessage("Null operator in query [" + metadataQuery + "]. " + 
+				                       "Valid values are [" +
+  			                           Arrays.asList(HpcMetadataQueryOperator.values()) + "]");
 		   return validationResult;             		   
 	    }
 	    if(metadataQuery.getLevelFilter() != null) {
