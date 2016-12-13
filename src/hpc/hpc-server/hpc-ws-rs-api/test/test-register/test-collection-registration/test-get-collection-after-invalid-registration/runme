@@ -15,7 +15,7 @@ source $HPC_DM_TEST/utils/functions
 
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username "$HPC_DM_TEST/utils/config"`
-COLLECTION_PATH="${USERID}/dice-unit-test/test-${NAME}"
+COLLECTION_PATH="$(get_basefolder)/test-${NAME}"
 
 #Register the collection 
 curl_register input.json  "$COLLECTION_PATH" collection
