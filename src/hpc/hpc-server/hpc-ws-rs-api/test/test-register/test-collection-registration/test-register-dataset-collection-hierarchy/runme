@@ -12,9 +12,25 @@
 #import common functions
 source ../../../utils/functions
 
-#Check the project registraiton went through
-
 
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username ../../../utils/config`
-../../utils/registration-runtest collection ${USERID}/dice-unit-test-new/test-${NAME} "INVALID_REQUEST_INPUT" 
+
+DATASET_PATH=$(get_basefolder)/test-${NAME}/dice-unit-test-new
+
+
+
+curl_register input.json $DATASET_PATH collection
+RESPONSE_HEADER=collection-registration-response-header.tmp
+RESPONSE_MSG=collection-registration-response-message.json.tmp
+
+
+HTTP_CODE=$(get_http_code $RESPONSE_HEADER)
+echo $HTTP_CODE >&2
+
+
+if [ $HTTP_CODE -eq "400" ]
+then
+   get_json_value $RESPONSE_MSG "errorType" >&2
+   get_json_value $RESPONSE_MSG "message" >&2
+fi

@@ -18,10 +18,7 @@ source $HPC_DM_TEST/utils/functions
 
 #Clean previous parsed policies file
 ../../utils/cleantest
-../../utils/maketest collectionMetadataValidationRules Dataset 
-
-#First register a project to respect the hierarchy:
-
+#../../utils/maketest collectionMetadataValidationRules Dataset 
 
 RESPONSE_MSG='project-registration-response-msg.tmp'
 RESPONSE_HEADER='project-registration-response-header.tmp'

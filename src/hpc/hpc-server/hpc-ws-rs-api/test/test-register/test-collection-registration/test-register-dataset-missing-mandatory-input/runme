@@ -13,4 +13,12 @@
 source ../../../utils/functions
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username ../../../utils/config`
-../../utils/registration-runtest collection ${USERID}/dice-unit-test/test-${NAME} INVALID_REQUEST_INPUT 
+#Check the project registraiton went through
+
+verify_registration project-registration-response-header.tmp 
+
+REGISTERED_PROJECT=$(cat registered-project.tmp)
+
+
+
+../../utils/registration-runtest collection ${REGISTERED_PROJECT}/test-${NAME} INVALID_REQUEST_INPUT 
