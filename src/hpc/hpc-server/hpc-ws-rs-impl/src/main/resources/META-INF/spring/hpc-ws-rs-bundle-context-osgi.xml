@@ -63,6 +63,7 @@
 		<prop key="hpc.ws.rs.auth.save-query">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.delete-query">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.get-queries">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.refresh-metadata-views">SYSTEM_ADMIN</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

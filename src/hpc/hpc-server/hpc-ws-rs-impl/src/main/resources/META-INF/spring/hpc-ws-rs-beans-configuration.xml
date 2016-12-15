@@ -166,6 +166,7 @@
         		<entry key="saveQuery" value="${hpc.ws.rs.auth.save-query}"/>
         		<entry key="deleteQuery" value="${hpc.ws.rs.auth.delete-query}"/>
         		<entry key="getQueries" value="${hpc.ws.rs.auth.get-queries}"/>
+        		<entry key="refreshMetadataViews" value="${hpc.ws.rs.auth.refresh-metadata-views}"/>
         		
         		<!--  Report Service Authorizations -->
         		<entry key="generateReport" value="${hpc.ws.rs.auth.generate-report}"/>
