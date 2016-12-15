@@ -1042,9 +1042,10 @@ function unsubscribe_to_template_notifications {
 
 
 #Get an item (collection or dataObject) from the archive
-#Inputs: item-path (should have a prefix of "dataObject" or "collection:)
-#      : response-header-filename
-#      : response-message-filename
+#Inputs: <item-path> (should have a prefix of "dataObject" or "collection:)
+#      : <response-header-filename>
+#      : <response-message-filename>
+#      : [user]  The user who should get the item
 function get_item {
 
     if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
@@ -1054,6 +1055,23 @@ function get_item {
         exit
     fi
 
+    if [ -z "$4" ]
+    then
+        CONFIG="--config $HPC_DM_TEST/utils/config"
+    else
+        USER="$4"
+        #if the passed user is the same as the user in config, use config, otherwise, use a different user  
+        CONFIG_USER=$(get_username)
+        if [ "$USER"  = "$CONFIG_USER" ]
+        then
+            CONFIG="--config $HPC_DM_TEST/utils/config"
+        else
+            #TODO: note -k is not required, this is a random password
+            CONFIG="-k -u ${USER}:password"
+        fi
+    fi
+
+
     ITEM_PATH="$1"
     RESPONSE_HEADER="$2"
     RESPONSE_MSG="$3"
@@ -1062,7 +1080,8 @@ function get_item {
     TOTAL_PATH="hpc-server/$ITEM_PATH"
     TOTAL_PATH=$(echo "$TOTAL_PATH" | sed "s#\/\/*#\/#g")
    
-    curl -G -X GET "$SERVER/$TOTAL_PATH"  --config $HPC_DM_TEST/utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    echo curl -G -X GET "$SERVER/$TOTAL_PATH"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -G -X GET "$SERVER/$TOTAL_PATH"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     check_connection $RESPONSE_HEADER
 }
 
@@ -1157,3 +1176,14 @@ function update_single_permission {
 }
 
 
+#Refresh the query metadata view 
+#Inputs: None 
+
+function refresh_views {
+
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+    RESPONSE_HEADER=refresh-views-response-header.tmp
+    RESPONSE_MSG=refresh-views-response-message.json.tmp
+    curl -X POST ${SERVER}/hpc-server/refreshMetadataViews  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    check_connection $RESPONSE_HEADER
+}
