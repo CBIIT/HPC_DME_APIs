@@ -1,8 +1,4 @@
 { 
-"source": {
-               "fileContainerId": "c546fe96-1dd1-11e6-bfc3-22000b1701d1",
-               "fileId": "test2.fastq"
-          },
      	"metadataEntries": [
                {
                 "attribute": "name",
