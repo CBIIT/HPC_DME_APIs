@@ -19,6 +19,10 @@ DROP MATERIALIZED VIEW IF EXISTS r_coll_hierarchy_metamap;
 DROP MATERIALIZED VIEW IF EXISTS r_data_hierarchy_meta_main;
 DROP MATERIALIZED VIEW IF EXISTS r_data_hierarchy_metamap;
 
+DROP MATERIALIZED VIEW IF EXISTS r_coll_hierarchy_meta_attr_name;
+DROP MATERIALIZED VIEW IF EXISTS r_data_hierarchy_meta_attr_name;
+
+
 -- Create all materialized views
 
 -- Hierarchy data metamap.
@@ -126,6 +130,18 @@ COMMENT ON COLUMN r_coll_hierarchy_meta_main.meta_attr_name IS
 COMMENT ON COLUMN r_coll_hierarchy_meta_main.meta_attr_value IS 
                   'Metadata value: r_meta_main.meta_attr_value';
                   
+-- Hierarchy data meta_attr_name
+CREATE MATERIALIZED VIEW r_data_hierarchy_meta_attr AS
+SELECT level, meta_attr_name, array_agg(object_id) as object_ids 
+FROM r_data_hierarchy_meta_main 
+GROUP BY level, meta_attr_name;
+
+-- Hierarchy collection meta_attr_name
+CREATE MATERIALIZED VIEW r_coll_hierarchy_meta_attr AS
+SELECT level, meta_attr_name, array_agg(object_id) as object_ids 
+FROM r_coll_hierarchy_meta_main 
+GROUP BY level, meta_attr_name;
+                  
 -- Numerical comparison functions based on string input
 CREATE OR REPLACE FUNCTION num_less_than(text, text) RETURNS BOOLEAN AS $$
 DECLARE attr_value NUMERIC;
@@ -189,6 +205,8 @@ LANGUAGE plpgsql IMMUTABLE;
 -- REFRESH MATERIALIZED VIEW CONCURRENTLY r_coll_hierarchy_meta_main;
 -- REFRESH MATERIALIZED VIEW CONCURRENTLY r_data_hierarchy_metamap;
 -- REFRESH MATERIALIZED VIEW CONCURRENTLY r_data_hierarchy_meta_main;
+-- REFRESH MATERIALIZED VIEW CONCURRENTLY r_data_hierarchy_meta_attr_name;
+-- REFRESH MATERIALIZED VIEW CONCURRENTLY r_coll_hierarchy_meta_attr_name;
 
 
 
