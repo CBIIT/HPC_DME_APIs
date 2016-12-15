@@ -20,7 +20,7 @@ source $HPC_DM_TEST/utils/functions
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
 
-query_by_metadata collection input.json dice_user_sys_admin
+query_by_metadata collection input.json 
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 echo $HTTP_CODE

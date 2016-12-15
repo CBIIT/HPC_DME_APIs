@@ -17,7 +17,7 @@ source $HPC_DM_TEST/test-search/utils/search-functions
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
 
-query_by_metadata collection input.json dice_user
+query_by_metadata collection input.json 
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 
