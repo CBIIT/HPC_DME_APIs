@@ -42,7 +42,7 @@ public interface HpcDataSearchRestService
      * @return The REST service response.
      */
 	@POST
-	@Path("/collection/query/compound")
+	@Path("/collection/query")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
@@ -56,7 +56,7 @@ public interface HpcDataSearchRestService
      * @return The REST service response.
      */
 	@GET
-	@Path("/collection/query/compound/{queryName}")
+	@Path("/collection/query/{queryName}")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response queryCollections(@PathParam("queryName") String queryName,
 			                         @QueryParam("detailedResponse") Boolean detailedResponse,
@@ -69,7 +69,7 @@ public interface HpcDataSearchRestService
      * @return The REST service response.
      */
 	@POST
-	@Path("/dataObject/query/compound")
+	@Path("/dataObject/query")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
@@ -83,7 +83,7 @@ public interface HpcDataSearchRestService
      * @return The REST service response.
      */
 	@GET
-	@Path("/dataObject/query/compound/{queryName}")
+	@Path("/dataObject/query/{queryName}")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response queryDataObjects(@PathParam("queryName") String queryName,
 			                         @QueryParam("detailedResponse") Boolean detailedResponse,
