@@ -277,7 +277,7 @@ public class HpcDomainValidator
     	validationResult.setValid(false);
     	
     	if(queryDepth > MAX_COMPOUND_METADATA_QUERY_DEPTH) {
-    	   validationResult.setMessage("Compound query depth over the allowed linit of " + 
+    	   validationResult.setMessage("Compound query depth over the allowed limit of " + 
     	                               MAX_COMPOUND_METADATA_QUERY_DEPTH); 
     	   return validationResult;
     	}
