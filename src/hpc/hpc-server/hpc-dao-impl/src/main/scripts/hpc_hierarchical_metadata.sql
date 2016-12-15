@@ -131,14 +131,14 @@ COMMENT ON COLUMN r_coll_hierarchy_meta_main.meta_attr_value IS
                   'Metadata value: r_meta_main.meta_attr_value';
                   
 -- Hierarchy data meta_attr_name
-CREATE MATERIALIZED VIEW r_data_hierarchy_meta_attr AS
-SELECT level, meta_attr_name, array_agg(object_id) as object_ids 
+CREATE MATERIALIZED VIEW r_data_hierarchy_meta_attr_name AS
+SELECT level, meta_attr_name, array_agg(distinct object_id) as object_ids 
 FROM r_data_hierarchy_meta_main 
 GROUP BY level, meta_attr_name;
 
 -- Hierarchy collection meta_attr_name
-CREATE MATERIALIZED VIEW r_coll_hierarchy_meta_attr AS
-SELECT level, meta_attr_name, array_agg(object_id) as object_ids 
+CREATE MATERIALIZED VIEW r_coll_hierarchy_meta_attr_name AS
+SELECT level, meta_attr_name, array_agg(distinct object_id) as object_ids 
 FROM r_coll_hierarchy_meta_main 
 GROUP BY level, meta_attr_name;
                   
