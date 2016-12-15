@@ -10,19 +10,15 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
+import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
-import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataSearchRestService;
 
@@ -56,6 +52,9 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 	@Autowired
     private HpcDataSearchBusService dataSearchBusService = null;
 	
+	@Autowired
+    private HpcSystemBusService systemBusService = null;
+	
 	// The Logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -80,58 +79,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     // HpcDataSearchRestService Interface Implementation
     //---------------------------------------------------------------------//  
 	
-    @Override
-    public Response getCollections(List<HpcMetadataQueryParam> metadataQueries, 
-    		                       Boolean detailedResponse, Integer page)
-    {
-    	long start = System.currentTimeMillis();
-    	logger.info("Invoking RS: GET /collection/" + metadataQueries);
-    	
-    	HpcCollectionListDTO collections = null;
-		try {
-			 collections = dataSearchBusService.getCollections(
-					                    unmarshallQueryParams(metadataQueries), 
-					                    detailedResponse != null ? detailedResponse : false,
-					                    page != null ? page : 1);
-			 
-		} catch(HpcException e) {
-			    logger.error("RS: GET /collection/" + metadataQueries + 
-			    		     " failed:", e);
-			    return errorResponse(e);
-		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " getCollections: Total time - " + metadataQueries);
-		
-		return okResponse(!collections.getCollections().isEmpty() ||
-				          !collections.getCollectionPaths().isEmpty() ? collections : null , true);
-    }
-    
-    @Override
-    public Response queryCollections(List<HpcMetadataQuery> metadataQueries,
-    		                         Boolean detailedResponse, Integer page)
-    {
-    	long start = System.currentTimeMillis();
-    	logger.info("Invoking RS: POST /collection/query" + metadataQueries);
-    	
-    	HpcCollectionListDTO collections = null;
-		try {
-			 collections = dataSearchBusService.getCollections(
-					           metadataQueries,
-					           detailedResponse != null ? detailedResponse : false,
-					           page != null ? page : 1);
-			 
-		} catch(HpcException e) {
-			    logger.error("RS: POST /collection/query" + metadataQueries + 
-			    		     " failed:", e);
-			    return errorResponse(e);
-		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " getCollections: Total time - " + metadataQueries);
-		
-		return okResponse(!collections.getCollections().isEmpty() ||
-				          !collections.getCollectionPaths().isEmpty() ? collections : null , true);
-    }
-    
     @Override
     public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
     {
@@ -177,58 +124,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 		
 		return okResponse(!collections.getCollections().isEmpty() ||
 				          !collections.getCollectionPaths().isEmpty() ? collections : null , true);
-    }
-    
-    @Override
-    public Response getDataObjects(List<HpcMetadataQueryParam> metadataQueries,
-    		                       Boolean detailedResponse, Integer page)
-    {
-    	long start = System.currentTimeMillis();
-    	logger.info("Invoking RS: GET /dataObject/" + metadataQueries);
-    	
-    	HpcDataObjectListDTO dataObjects = null;
-		try {
-			 dataObjects = dataSearchBusService.getDataObjects(
-					           unmarshallQueryParams(metadataQueries),
-					           detailedResponse != null ? detailedResponse : false,
-					           page != null ? page : 1);
-			 
-		} catch(HpcException e) {
-			    logger.error("RS: GET /dataObject/" + metadataQueries + 
-			    		     " failed:", e);
-			    return errorResponse(e);
-		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " getDataObjects" + metadataQueries);
-		
-		return okResponse(!dataObjects.getDataObjects().isEmpty() ||
-				          !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects : null, true);
-    }
-    
-    @Override
-    public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries,
-    		                         Boolean detailedResponse, Integer page)
-    {
-    	long start = System.currentTimeMillis();
-    	logger.info("Invoking RS: POST /dataObject/query" + metadataQueries);
-    	
-    	HpcDataObjectListDTO dataObjects = null;
-		try {
-			 dataObjects = dataSearchBusService.getDataObjects(
-					           metadataQueries,
-					           detailedResponse != null ? detailedResponse : false,
-					           page != null ? page : 1);
-			 
-		} catch(HpcException e) {
-			    logger.error("RS: POST /dataObject/query" + metadataQueries + 
-			    		     " failed:", e);
-			    return errorResponse(e);
-		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " queryDataObjects" + metadataQueries);
-		
-		return okResponse(!dataObjects.getDataObjects().isEmpty() ||
-				          !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects : null, true);
     }
     
     @Override
@@ -362,33 +257,29 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 				          metadataAttributes : null, true);
     }
     
+    @Override
+    public Response refreshMetadataViews()
+    {
+       	long start = System.currentTimeMillis();
+    	logger.info("Invoking RS: POST /refreshMetadataViews");
+    	
+		try {
+		     systemBusService.refreshMetadataViews();
+			 
+		} catch(HpcException e) {
+		        logger.error("RS: POST /refreshMetadataViews failed:", e);
+			    return errorResponse(e);
+		}
+		
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " refreshMetadataView: " );
+		
+		return okResponse(null, false);
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
-    
-    /**
-     * Unmarshall metadata query passed as JSON in a URL parameter.
-     * 
-     * @param metadataQueries The query params to unmarshall.
-     * @return List of HpcMetadataQuery.
-     * 
-     * @throws HpcException if the params unmarshalling failed.
-     */
-    private List<HpcMetadataQuery> unmarshallQueryParams(
-    		                                 List<HpcMetadataQueryParam> metadataQueries)
-    		                                 throws HpcException
-    {
-		 // Validate the metadata entries input (JSON) was parsed successfully.
-		 List<HpcMetadataQuery> queries = new ArrayList<HpcMetadataQuery>();
-		 for(HpcMetadataQueryParam queryParam : metadataQueries) {
-		     if(queryParam.getJSONParsingException() != null) {
-			    throw queryParam.getJSONParsingException();
-		     }
-		     queries.add(queryParam);
-		 }
-		 
-		 return queries;
-    }
     
     /**
      * Convert a string to HpcMetadataQueryOperator
@@ -406,7 +297,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     	     
     	} catch(Exception e) {
     		    throw new HpcException("Invalid level operator: " + levelOperatorStr, 
-    		    		               HpcErrorType.INVALID_REQUEST_INPUT);
+    		    		               HpcErrorType.INVALID_REQUEST_INPUT, e);
     	}
     }
 }

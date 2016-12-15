@@ -10,11 +10,7 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
-import java.util.List;
-
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
-import gov.nih.nci.hpc.dto.metadata.HpcMetadataQueryParam;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -40,39 +36,7 @@ import javax.ws.rs.core.Response;
 public interface HpcDataSearchRestService
 {
     /**
-     * GET Collections by simple metadata query.
-     *
-     * @param metadataQueries A list of metadata entries to query for.
-     * @param detailedResponse If set to true, return entity details (attributes + metadata).
-     * @param page The requested results page.
-     * @return The REST service response.
-     */
-	@GET
-	@Path("/collection")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getCollections(
-			           @QueryParam("metadataQuery") List<HpcMetadataQueryParam> metadataQueries,
-			           @QueryParam("detailedResponse") Boolean detailedResponse,
-			           @QueryParam("page") Integer page);
-	
-    /**
-     * POST Collections simple query.
-     *
-     * @param metadataQueries A list of metadata entries to query for. 
-     * @param detailedResponse If set to true, return entity details (attributes + metadata).
-     * @param page The requested results page.
-     * @return The REST service response.
-     */
-	@POST
-	@Path("/collection/query/simple")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response queryCollections(List<HpcMetadataQuery> metadataQueries,
-			                         @QueryParam("detailedResponse") Boolean detailedResponse,
-			                         @QueryParam("page") Integer page);
-	
-    /**
-     * POST Collections compound query.
+     * POST Collections query.
      *
      * @param compoundMetadataQueryDTO A compund metadata query DTO.
      * @return The REST service response.
@@ -99,39 +63,7 @@ public interface HpcDataSearchRestService
 			                         @QueryParam("page") Integer page);
 	
     /**
-     * GET Data objects by metadata query.
-     *
-     * @param metadataQueries A list of metadata entries to query for.
-     * @param detailedResponse If set to true, return entity details (attributes + metadata).
-     * @param page The requested results page.
-     * @return The REST service response.
-     */
-	@GET
-	@Path("/dataObject")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getDataObjects(
-			           @QueryParam("metadataQuery") List<HpcMetadataQueryParam> metadataQueries,
-			           @QueryParam("detailedResponse") Boolean detailedResponse,
-			           @QueryParam("page") Integer page);
-	
-    /**
      * POST Data objects query.
-     *
-     * @param metadataQueries A list of metadata entries to query for.
-     * @param detailedResponse If set to true, return entity details (attributes + metadata).
-     * @param page The requested results page.
-     * @return The REST service response.
-     */
-	@POST
-	@Path("/dataObject/query/simple")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response queryDataObjects(List<HpcMetadataQuery> metadataQueries,
-			                         @QueryParam("detailedResponse") Boolean detailedResponse,
-			                         @QueryParam("page") Integer page);
-	
-    /**
-     * POST Data objects compound query.
      *
      * @param compoundMetadataQueryDTO A compund metadata query DTO.
      * @return The REST service response.
@@ -204,5 +136,14 @@ public interface HpcDataSearchRestService
 	public Response getMetadataAttributes(
 			           @QueryParam("level") Integer level,
 			           @QueryParam("levelOperator") String levelOperatorStr);
+	
+    /**
+     * Refresh the metadata views.
+     *
+     * @return The REST service response.
+     */
+    @POST
+    @Path("/refreshMetadataViews")
+    public Response refreshMetadataViews();
 }
 
