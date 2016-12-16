@@ -1,5 +1,5 @@
 /**
- * HpcMetadataValidator.java
+ * HpcDataHierarchyValidator.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -30,11 +30,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * Validates various metadata provided by the user.
+ * Validates data registration path against defined hierarchy for DOC.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: HpcMetadataValidator.java 1522 2016-10-13 14:56:28Z rosenbergea $
+ * @version $Id$
  */
 
 public class HpcDataHierarchyValidator
@@ -102,7 +102,7 @@ public class HpcDataHierarchyValidator
 	    	  }
 	    }
 	    
-	    logger.info("Successfully loaded Data Hierarchy Definitions: " + dataHierarchyDefinitions);
+	    logger.info("Data Hierarchy Definitions: " + dataHierarchyDefinitions);
     }	
     
     //---------------------------------------------------------------------//
@@ -146,8 +146,8 @@ public class HpcDataHierarchyValidator
     		
     		if(!collectionTypeValidated) {
     		   throw new HpcException("Invalid collection hierarchy for DOC: " + doc +
-    				                  ". collection hirarchy: " + collectionPathTypes.toArray() +
-    				                  ". valid hierarchy: " + dataHierarchy, 
+    				                  ". collection hirarchy: " + toString(collectionPathTypes) +
+    				                  ". hierarchy definition: " + dataHierarchy, 
     				                  HpcErrorType.INVALID_REQUEST_INPUT);
     		}
     	}   
@@ -228,6 +228,22 @@ public class HpcDataHierarchyValidator
                                        HpcErrorType.SPRING_CONFIGURATION_ERROR, e);
 		}
     }
+	
+    /**
+     * Return a string from path types.
+     * 
+     * @param collectionPathTypes The path types.
+     * @return a pretty string. 
+     */
+	private String toString(List<String> collectionPathTypes) 
+	{
+		StringBuilder collectionPathTypesStr = new StringBuilder();
+		for(String pathType : collectionPathTypes) {
+			collectionPathTypesStr.append("/" + pathType);
+		}
+		
+		return collectionPathTypesStr.toString();
+	}
 }
 
  
