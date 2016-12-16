@@ -127,6 +127,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			"select access.object_id from public.\"r_objt_access\" access, " +
 			"public.\"r_user_main\" account where account.user_name = ? and access.user_id = account.user_id";
 	
+	private static final String USER_ACCESS_ARRAY_SQL = 
+			"select array_agg(access.object_id) from public.\"r_objt_access\" access, " +
+			"public.\"r_user_main\" account where account.user_name = ? and access.user_id = account.user_id";
+	
 	private static final String LIMIT_OFFSET_SQL = " order by object_path limit ? offset ?";
 	
 	private static final String GET_COLLECTION_PATHS_SQL = 
@@ -146,14 +150,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String REFRESH_VIEW_SQL = "refresh materialized view concurrently";
 	
 	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = 
-			"select collection.level, array_agg(distinct collection.meta_attr_name) as attributes " +
-	        "from public.\"r_coll_hierarchy_meta_main\" collection " +
-	        "where collection.object_id in (" + USER_ACCESS_SQL +") ";
+			"select collectionAttributes.level, array_agg(collectionAttributes.meta_attr_name) as attributes " +
+	        "from public.\"r_coll_hierarchy_meta_attr_name\" collectionAttributes " +
+	        "where collectionAttributes.object_id = any (" + USER_ACCESS_ARRAY_SQL +") ";
 	
 	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = 
-			"select dataObject.level, array_agg(distinct dataObject.meta_attr_name) as attributes " +
-			"from public.\"r_data_hierarchy_meta_main\" dataObject " +
-			"where dataObject.object_id in (" +  USER_ACCESS_SQL +") ";
+			"select dataObjectAttributes.level, array_agg(dataObjectAttributes.meta_attr_name) as attributes " +
+			"from public.\"r_data_hierarchy_meta_attr_name\" dataObjectAttributes " +
+			"where dataObjectAttributes.object_id = any (" +  USER_ACCESS_ARRAY_SQL +") ";
 	
 	private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL = 
 			" group by level order by level";
@@ -339,8 +343,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		try {
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_coll_hierarchy_metamap");
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_coll_hierarchy_meta_main");
+		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_coll_hierarchy_meta_attr_name");
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_data_hierarchy_metamap");
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_data_hierarchy_meta_main");
+		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_data_hierarchy_meta_attr_name");
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to refresh materialized views: " + e.getMessage(),

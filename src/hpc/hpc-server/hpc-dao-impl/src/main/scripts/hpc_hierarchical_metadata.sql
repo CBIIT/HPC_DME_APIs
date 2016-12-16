@@ -18,7 +18,6 @@ DROP MATERIALIZED VIEW IF EXISTS r_coll_hierarchy_meta_main;
 DROP MATERIALIZED VIEW IF EXISTS r_coll_hierarchy_metamap;
 DROP MATERIALIZED VIEW IF EXISTS r_data_hierarchy_meta_main;
 DROP MATERIALIZED VIEW IF EXISTS r_data_hierarchy_metamap;
-
 DROP MATERIALIZED VIEW IF EXISTS r_coll_hierarchy_meta_attr_name;
 DROP MATERIALIZED VIEW IF EXISTS r_data_hierarchy_meta_attr_name;
 
