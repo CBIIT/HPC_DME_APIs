@@ -152,12 +152,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = 
 			"select collectionAttributes.level, array_agg(collectionAttributes.meta_attr_name) as attributes " +
 	        "from public.\"r_coll_hierarchy_meta_attr_name\" collectionAttributes " +
-	        "where collectionAttributes.object_id = any (" + USER_ACCESS_ARRAY_SQL +") ";
+	        "where collectionAttributes.object_ids && (" + USER_ACCESS_ARRAY_SQL +") ";
 	
 	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = 
 			"select dataObjectAttributes.level, array_agg(dataObjectAttributes.meta_attr_name) as attributes " +
 			"from public.\"r_data_hierarchy_meta_attr_name\" dataObjectAttributes " +
-			"where dataObjectAttributes.object_id = any (" +  USER_ACCESS_ARRAY_SQL +") ";
+			"where dataObjectAttributes.object_ids && (" +  USER_ACCESS_ARRAY_SQL +") ";
 	
 	private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL = 
 			" group by level order by level";
