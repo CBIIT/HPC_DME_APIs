@@ -1,0 +1,3 @@
+500
+DATA_TRANSFER_ERROR
+Failed to activate endpoint

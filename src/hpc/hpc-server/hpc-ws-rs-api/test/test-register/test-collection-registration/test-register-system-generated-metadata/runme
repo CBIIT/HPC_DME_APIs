@@ -11,6 +11,13 @@
 # Usage: runme [no arguments]
 #import common functions
 source ../../../utils/functions
+sleep 1
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username ../../../utils/config`
-../../utils/registration-runtest collection $(get_basefolder)/test-${NAME} INVALID_REQUEST_INPUT 
+
+DESTINATION_PATH=$(get_basefolder)/test-${NAME}
+curl_register input.json $DESTINATION_PATH collection
+
+get_http_code $RESPONSE_HEADER >&2
+get_json_value $RESPONSE_MSG errorType >&2
+get_json_value $RESPONSE_MSG message >&2

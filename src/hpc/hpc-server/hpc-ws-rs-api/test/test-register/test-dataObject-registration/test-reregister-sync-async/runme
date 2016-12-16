@@ -34,4 +34,8 @@ then
 fi
 
 OBJECT_PATH=$(cat registered-data-object-path.tmp)
-../../utils/registration-runtest dataObject $OBJECT_PATH  REQUEST_REJECTED
+
+curl_register input.json $OBJECT_PATH  dataObject
+get_http_code $RESPONSE_HEADER  >&2
+get_json_value $RESPONSE_MSG errorType  >&2
+get_json_value $RESPONSE_MSG message  >&2
