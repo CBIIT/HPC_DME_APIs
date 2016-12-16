@@ -37,5 +37,5 @@ get_system_added_metadata "$POLICIES_FILE" "$METADATA_TYPE"
 
 
 #Create policies file
-../../utils/maketest dataObjectMetadataValidationRules
+#../../utils/maketest dataObjectMetadataValidationRules
 

@@ -24,13 +24,11 @@ USERID=`get_username $HPC_DM_TEST/utils/config`
 PROJECT_PATH=`cat registered-project-path.tmp`
 DATAOBJECT_PATH=$(cat registered-dataobject-path.tmp)
 
-#Allow time for the transfer to complete
-sleep 15
 
 #Get the registered dataObject by path
 RESPONSE_HEADER=get-response-header.tmp
 RESPONSE_MSG=get-response-message.json.tmp
-get_item "/dataObject/$DATAOBJECT_PATH" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+get_item "dataObject/$DATAOBJECT_PATH" "$RESPONSE_HEADER" "$RESPONSE_MSG"
 
 
 TRANSFER=$(get_json_value "$RESPONSE_MSG" transferPercentCompletion)

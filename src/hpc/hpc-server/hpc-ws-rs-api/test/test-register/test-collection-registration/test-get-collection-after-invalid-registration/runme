@@ -39,7 +39,7 @@ RESPONSE_MSG=response-message.json
 
 
 #Try to get the registered collection by path
-get_item "/collection/${COLLECTION_PATH}" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+get_item "collection/${COLLECTION_PATH}" "$RESPONSE_HEADER" "$RESPONSE_MSG"
 
 
 RETURN_CODE=`get_http_code $RESPONSE_HEADER`

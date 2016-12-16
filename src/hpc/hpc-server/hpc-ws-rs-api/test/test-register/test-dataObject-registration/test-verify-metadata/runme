@@ -45,7 +45,7 @@ echo $REG_HTTP_CODE
 #Get the registered dataObject by path
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
-get_item "/dataObject/${DATAOBJECT_PATH}" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+get_item "dataObject/${DATAOBJECT_PATH}" "$RESPONSE_HEADER" "$RESPONSE_MSG"
 
 GET_HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 if [ "$GET_HTTP_CODE" != "200" ]  

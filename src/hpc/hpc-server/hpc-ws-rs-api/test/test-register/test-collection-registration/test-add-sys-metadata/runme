@@ -14,6 +14,7 @@
 source $HPC_DM_TEST/utils/functions
 source ../../utils/registration-functions
 
+sleep 1
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username "$HPC_DM_TEST/utils/config"`
 COLLECTION_PATH="$(get_basefolder)/test-${NAME}"
@@ -36,7 +37,7 @@ RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
 
 #Get the registered collection by path
-get_item "/collection/${COLLECTION_PATH}" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+get_item "collection/${COLLECTION_PATH}" "$RESPONSE_HEADER" "$RESPONSE_MSG"
 
 GET_HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 if [ "$GET_HTTP_CODE" != "200" ]  
@@ -47,7 +48,6 @@ fi
 
 ATTRIBUTE="\"uuid\""
 check_attribute "$RESPONSE_MSG" "$ATTRIBUTE"
-
 
 ATTRIBUTE="\"registered_by_name\""
 check_attribute "$RESPONSE_MSG" "$ATTRIBUTE"
