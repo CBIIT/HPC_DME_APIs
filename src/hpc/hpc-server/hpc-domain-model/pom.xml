@@ -106,7 +106,7 @@
 									<packagename>gov.nih.nci.hpc.domain.model</packagename>
 									<bindingFile>xjc-build/schema/hpc-domain-user-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
-										<arg>-Xts:style:multiline</arg>
+										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
@@ -115,7 +115,7 @@
 									<packagename>gov.nih.nci.hpc.domain.model</packagename>
 									<bindingFile>xjc-build/schema/hpc-domain-metadata-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
-										<arg>-Xts:style:multiline</arg>
+										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>

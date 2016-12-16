@@ -101,6 +101,8 @@ public class HpcDataHierarchyValidator
                                              HpcErrorType.SPRING_CONFIGURATION_ERROR);
 	    	  }
 	    }
+	    
+	    logger.info("Successfully loaded Data Hierarchy Definitions: " + dataHierarchyDefinitions);
     }	
     
     //---------------------------------------------------------------------//
@@ -122,14 +124,12 @@ public class HpcDataHierarchyValidator
     		                     throws HpcException
     {
     	HpcDataHierarchy dataHierarchy = getDataHierarchy(doc);
-logger.error("dataHierarchy: "+dataHierarchy);  
-  	if(dataHierarchy == null) {
+  		if(dataHierarchy == null) {
     	   // No hierarchy definition found for the DOC, so validation is not needed.
     	   return;
     	}
     	
     	List<HpcDataHierarchy> subCollectionsHierarchies = Arrays.asList(dataHierarchy);
-logger.error("subCollectionsHierarchies: "+subCollectionsHierarchies);  
     	boolean isDataObjectContainer = false;
     	
     	// Iterate through the collection path types, and validate against the hierarchy definition.
@@ -145,13 +145,13 @@ logger.error("subCollectionsHierarchies: "+subCollectionsHierarchies);
     		}
     		
     		if(!collectionTypeValidated) {
-    		   throw new HpcException("Invalid collection hierarchy", 
+    		   throw new HpcException("Invalid collection hierarchy for DOC: " + doc +
+    				                  ". collection hirarchy: " + collectionPathTypes.toArray() +
+    				                  ". valid hierarchy: " + dataHierarchy, 
     				                  HpcErrorType.INVALID_REQUEST_INPUT);
     		}
     	}   
     	
-logger.error("dataObjectRegistration: "+dataObjectRegistration);  
-logger.error("sDataObjectContainer: "+isDataObjectContainer);  
     	// Validate if data object registration is allowed to this path.
     	if(dataObjectRegistration && !isDataObjectContainer) {
     	   throw new HpcException("Data object is not allowed in this collection", 
