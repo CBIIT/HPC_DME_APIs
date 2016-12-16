@@ -52,7 +52,7 @@ RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
 
 #Get the registered collection by path
-get_item "/collection/${COLLECTION_PATH}" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+get_item "collection/${COLLECTION_PATH}" "$RESPONSE_HEADER" "$RESPONSE_MSG"
 
 GET_HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 if [ "$GET_HTTP_CODE" != "200" ]  

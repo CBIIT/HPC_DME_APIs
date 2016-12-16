@@ -11,6 +11,7 @@
 # Usage: runme [no arguments]
 #import common functions
 source ../../../utils/functions
+sleep 1
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username ../../../utils/config`
 #Check the project registraiton went through
@@ -19,6 +20,10 @@ verify_registration project-registration-response-header.tmp
 
 REGISTERED_PROJECT=$(cat registered-project.tmp)
 
+DESTINATION_PATH=${REGISTERED_PROJECT}/test-${NAME}
 
+curl_register input.json $DESTINATION_PATH collection 
 
-../../utils/registration-runtest collection ${REGISTERED_PROJECT}/test-${NAME} INVALID_REQUEST_INPUT 
+get_http_code $RESPONSE_HEADER  >&2
+get_json_value $RESPONSE_MSG  errorType >&2
+get_json_value $RESPONSE_MSG  message >&2  

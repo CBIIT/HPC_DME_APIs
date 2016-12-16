@@ -21,4 +21,9 @@ REGISTERED_PROJECT=$(cat registered-project.tmp)
 sleep 1
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username ../../../utils/config`
-../../utils/registration-runtest collection ${REGISTERED_PROJECT}/test-${NAME} 
+
+DESTINATION_PATH=${REGISTERED_PROJECT}/test-${NAME} 
+curl_register input.json "$DESTINATION_PATH" collection
+
+get_http_code "$RESPONSE_HEADER"
+#../../utils/registration-runtest collection ${REGISTERED_PROJECT}/test-${NAME} 

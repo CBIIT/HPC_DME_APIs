@@ -28,3 +28,6 @@ echo $REG_HTTP_CODE 1>&2
 
 ERROR_TYPE=$(get_json_value collection-registration-response-message.json.tmp errorType)
 echo $ERROR_TYPE 1>&2
+
+EXPECTED_MESSAGE="Path already exists as a file"
+get_json_value  $RESPONSE_MSG message | sed "s/^$EXPECTED_MESSAGE.*/$EXPECTED_MESSAGE/" >&2

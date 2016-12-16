@@ -48,4 +48,11 @@ NEW_ATTRIBUTE=$(head -n1 $METADATA_FILE)
 UPDATED_INPUT=$(cat input-template.json | sed "s/dx_system_attribute/$NEW_ATTRIBUTE/")
 echo "$UPDATED_INPUT"  > input.json
 
-../../utils/registration-runtest dataObject $PROJECT_PATH/object-${NAME}.txt  INVALID_REQUEST_INPUT 
+
+EXPECTED_MESSAGE="System generated metadata can't be set/changed"
+curl_register input.json $PROJECT_PATH/object-${NAME}.txt dataObject
+get_http_code $RESPONSE_HEADER  >&2
+get_json_value $RESPONSE_MSG errorType  >&2
+get_json_value $RESPONSE_MSG message  | sed "s#$EXPECTED_MESSAGE.*#$EXPECTED_MESSAGE#" >&2
+
+#../../utils/registration-runtest dataObject  INVALID_REQUEST_INPUT 
