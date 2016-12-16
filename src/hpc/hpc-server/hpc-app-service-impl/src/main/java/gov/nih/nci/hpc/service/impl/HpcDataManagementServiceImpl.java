@@ -240,19 +240,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		                      boolean dataObjectRegistration) 
     		                     throws HpcException
     {
-logger.error("path: "+path);
-logger.error("doc: "+doc);
     	// Calculate the collection path to validate.
     	String validationCollectionPath = dataManagementProxy.getAbsolutePath(path);
-logger.error("validationCollectionPath: "+validationCollectionPath);
     	validationCollectionPath = dataManagementProxy.getRelativePath(validationCollectionPath);
-logger.error("validationCollectionPath: "+validationCollectionPath);
     	validationCollectionPath = validationCollectionPath.substring(1, validationCollectionPath.length());
-logger.error("validationCollectionPath: "+validationCollectionPath);
     	
     	// Build the collection path types list.
     	List<String> collectionPathTypes = new ArrayList<>();
-logger.error("collectionPathTypes: "+collectionPathTypes);
     	StringBuilder subCollectionPath = new StringBuilder();
 		for(String s : validationCollectionPath.split("/")) {
 			subCollectionPath.append("/" + s);
@@ -268,7 +262,6 @@ logger.error("collectionPathTypes: "+collectionPathTypes);
 		}
 
 		// Perform the hierarchy validation.
-logger.error("collectionPathTypes11: "+collectionPathTypes);
 		dataHierarchyValidator.validateHierarchy(doc, collectionPathTypes, dataObjectRegistration);
     }
     
