@@ -49,7 +49,7 @@
 	      <prop key="hpc.integration.ldap.URL">ldaps://nci-ldap-prod.nci.nih.gov:636</prop>
 	      <prop key="hpc.integration.ldap.username">CN=NCILDAP,OU=NCI,O=NIH</prop>
 	      <prop key="hpc.integration.ldap.password">***REMOVED***</prop>
-	      <prop key="hpc.integration.ldap.base">ou=NCI,o=NIH</prop>
+	      <prop key="hpc.integration.ldap.base">ou=Users,ou=NCI,o=NIH</prop>
 	      <prop key="hpc.integration.ldap.userIdFilter">cn</prop>
 	      <prop key="hpc.integration.ldap.userIdDomainName">nih.gov</prop>
 	</osgix:cm-properties>
