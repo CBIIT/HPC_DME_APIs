@@ -106,7 +106,7 @@
 									<packagename>gov.nih.nci.hpc.dto.error</packagename>
 									<bindingFile>xjc-build/schema/hpc-dto-error-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
-										<arg>-Xts:style:multiline</arg>
+										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
@@ -115,7 +115,7 @@
 									<packagename>gov.nih.nci.hpc.dto.security</packagename>
 									<bindingFile>xjc-build/schema/hpc-dto-security-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
-										<arg>-Xts:style:multiline</arg>
+										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
@@ -124,7 +124,7 @@
 									<packagename>gov.nih.nci.hpc.dto.datamanagement</packagename>
 									<bindingFile>xjc-build/schema/hpc-dto-datamanagement-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
-										<arg>-Xts:style:multiline</arg>
+										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
@@ -133,7 +133,7 @@
 									<packagename>gov.nih.nci.hpc.dto.notification</packagename>
 									<bindingFile>xjc-build/schema/hpc-dto-notification-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
-										<arg>-Xts:style:multiline</arg>
+										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
@@ -142,7 +142,7 @@
 									<packagename>gov.nih.nci.hpc.dto.report</packagename>
 									<bindingFile>xjc-build/schema/hpc-dto-report-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
-										<arg>-Xts:style:multiline</arg>
+										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
