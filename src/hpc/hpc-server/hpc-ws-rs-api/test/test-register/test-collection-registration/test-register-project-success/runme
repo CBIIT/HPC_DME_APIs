@@ -14,6 +14,8 @@ source ../../../utils/functions
 sleep 1
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username ../../../utils/config`
-#../../utils/registration-runtest collection $(get_basefolder)/test-${NAME} 
-#../../utils/registration-runtest collection $(get_basefolder)/${USERID}/dice-unit-test/test-${NAME} 
-../../utils/registration-runtest collection $(get_basefolder)/test-${NAME} 
+
+PROJECT_PATH=$(get_basefolder)/test-${NAME} 
+register_collection_from_template  $PROJECT_PATH
+get_http_code $RESPONSE_HEADER
+

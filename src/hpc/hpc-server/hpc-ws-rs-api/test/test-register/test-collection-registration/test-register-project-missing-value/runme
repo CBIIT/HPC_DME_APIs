@@ -11,7 +11,13 @@
 # Usage: runme [no arguments]
 #import common functions
 source ../../../utils/functions
+sleep 1
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username ../../../utils/config`
-../../utils/registration-runtest collection $(get_basefolder)/test-${NAME} DATA_MANAGEMENT_ERROR 
 
+DESTINATION=$(get_basefolder)/test-${NAME}
+curl_register input.json "$DESTINATION" collection
+
+get_http_code $RESPONSE_HEADER >&2
+get_json_value $RESPONSE_MSG errorType >&2
+get_json_value $RESPONSE_MSG message >&2

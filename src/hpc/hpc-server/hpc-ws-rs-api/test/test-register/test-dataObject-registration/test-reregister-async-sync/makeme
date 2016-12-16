@@ -18,6 +18,6 @@
 
 ../../../utils/maketest
 #Create policies file
-../../utils/maketest dataObjectMetadataValidationRules
+#../../utils/maketest dataObjectMetadataValidationRules
 #Register a project to add dataObjects to it
 ../utils/maketest
