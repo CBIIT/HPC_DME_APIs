@@ -23,7 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
- * HPC Data Transfer Service Implementation.
+ * HPC System Account Locator.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
