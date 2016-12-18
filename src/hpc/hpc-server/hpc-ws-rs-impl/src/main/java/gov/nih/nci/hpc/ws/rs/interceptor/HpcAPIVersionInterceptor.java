@@ -102,8 +102,8 @@ public class HpcAPIVersionInterceptor
 		MultivaluedMap<String, Object> headers = 
 		           (MetadataMap<String, Object>) message.get(Message.PROTOCOL_HEADERS);
 
-        if (headers == null) {
-            headers = new MetadataMap<String, Object>();
+        if(headers == null) {
+           headers = new MetadataMap<String, Object>();
         }             
 
         headers.add(API_VERSION_HEADER, version);

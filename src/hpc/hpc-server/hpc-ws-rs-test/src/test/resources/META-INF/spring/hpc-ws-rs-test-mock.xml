@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * hpc-ws-rs-test-mock.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id: hpc-ws-rs-beans-configuration.xml 1730 2016-12-03 13:07:35Z rosenbergea $
+ -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	<context:annotation-config />
+	
+	<!--  Integration and DAO layer beans are intended to be mocked in JUnit tests.
+	      These beans are defined here, so autowiring can complete successfully before
+	      Mockito mocks are injected in the test code. -->
+	      
+	<!--  HPC Integration Beans -->
+	<bean id="hpcDataManagementProxy" 
+	      class="gov.nih.nci.hpc.integration.irods.impl.HpcDataManagementProxyImpl" />
+	<bean id="hpcIRODSConnection" 
+	      class="gov.nih.nci.hpc.integration.irods.impl.HpcIRODSConnection" >
+	      <constructor-arg value="N/A" index="0" />
+	      <constructor-arg value="0" index="1" />
+	      <constructor-arg value="N/A" index="2" />
+	      <constructor-arg value="N/A" index="3" />
+	      <constructor-arg value="N/A" index="4" />
+	</bean>
+	<bean id="hpcGlobusArchiveDestinationLocation" class="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation" >
+		<property name="fileContainerId" value="N/A" />
+		<property name="fileId" value="N/A" />
+	</bean>
+	<bean id="hpcGlobusArchiveDestination" class="gov.nih.nci.hpc.domain.datatransfer.HpcArchive" >
+		<property name="fileLocation" ref="hpcGlobusArchiveDestinationLocation" />
+		<property name="type" value="TEMPORARY_ARCHIVE" />
+		<property name="directory" value="N/A" />
+	</bean>
+	<bean id="hpcGlobusDownloadSourceLocation" class="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation" >
+		<property name="fileContainerId" value="N/A" />
+		<property name="fileId" value="N/A" />
+	</bean>
+	<bean id="hpcGlobusDownloadSource" class="gov.nih.nci.hpc.domain.datatransfer.HpcArchive" >
+		<property name="fileLocation" ref="hpcGlobusDownloadSourceLocation" />
+		<property name="directory" value="N/A" />
+	</bean>
+	<bean id="hpcGlobusConnection" class="gov.nih.nci.hpc.integration.globus.impl.HpcGlobusConnection">
+		<constructor-arg value="N/A" index="0" />
+		<constructor-arg value="N/A" index="1" />
+	</bean>
+	<bean id="hpcGlobusDataTransferProxy" 
+	      class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl" />
+	<bean id="hpcS3ArchiveDestinationLocation" class="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation" >
+		<property name="fileContainerId" value="N/A" />
+		<property name="fileId" value="N/A" />
+	</bean>
+	<bean id="hpcS3ArchiveDestination" class="gov.nih.nci.hpc.domain.datatransfer.HpcArchive" >
+		<property name="fileLocation" ref="hpcS3ArchiveDestinationLocation" />
+		<property name="type" value="ARCHIVE" />
+	</bean>
+	<bean id="hpcS3Connection" class="gov.nih.nci.hpc.integration.s3.impl.HpcS3Connection">
+		<constructor-arg value="N/A" index="0" />
+	</bean>
+	<bean id="hpcS3DataTransferProxy" 
+	      class="gov.nih.nci.hpc.integration.s3.impl.HpcDataTransferProxyImpl" />
+	<bean id="hpcLdapAuthenticationProxy"
+		  class="gov.nih.nci.hpc.integration.ldap.impl.HpcLdapAuthenticationProxyImpl" >
+		  <constructor-arg value="N/A" index="0" />
+		  <constructor-arg value="N/A" index="1" />
+		  <constructor-arg value="N/A}" index="2" />
+		  <constructor-arg value="N/A" index="3" />
+		  <constructor-arg value="N/A" index="4" />
+		  <constructor-arg value="N/A" index="5" />
+	</bean>
+	
+	<!--  HPC DAO Beans -->
+	<bean id="hpcDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" />
+	<bean id="hpcJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<constructor-arg ref="hpcDataSource" />
+	</bean>
+	<bean id="hpcPostgreSQLEncryptor" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcEncryptor">
+		<constructor-arg value="***128-bit-key**" />
+	</bean>
+	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserDAOImpl" />
+	<bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcSystemAccountDAOImpl" />
+	<bean id="hpcDataObjectDownloadCleanupDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataObjectDownloadCleanupDAOImpl" />
+	<bean id="hpcNotificationDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcNotificationDAOImpl" />
+	<bean id="hpcEventDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcEventDAOImpl" />
+	<bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcReportsDAOImpl" />
+	<bean id="hpcMetadataDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcMetadataDAOImpl" />
+	<bean id="hpcUserQueryDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserQueryDAOImpl" />
+	
+</beans>
+
