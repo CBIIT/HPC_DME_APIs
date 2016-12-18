@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * hpc-ws-rs-test-configuration.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	   xmlns:util="http://www.springframework.org/schema/util" 
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   					   http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	<context:annotation-config />
+	
+	<!--  HPC Application Services Beans -->
+	<bean id="hpcDataHierarchyValidator" class="gov.nih.nci.hpc.service.impl.HpcDataHierarchyValidator">
+		<constructor-arg value="src/test/resources/dataHierarchyDefinitions.json" />
+	</bean>
+	<bean id="hpcDataManagementAuthenticator" class="gov.nih.nci.hpc.service.impl.HpcDataManagementAuthenticator" />
+	<bean id="hpcSystemAccountLocator" class="gov.nih.nci.hpc.service.impl.HpcSystemAccountLocator" />
+	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl" />
+	
+	<!--  HPC Business Services Beans -->
+	<bean id="hpcDataManagementBusService" class="gov.nih.nci.hpc.bus.impl.HpcDataManagementBusServiceImpl" />
+	<util:map id="hpcDataTransferProxies" 
+	          key-type="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType"
+	          value-type="gov.nih.nci.hpc.integration.HpcDataTransferProxy">
+  		<entry key="GLOBUS" value-ref="hpcGlobusDataTransferProxy" />
+  		<entry key="S_3" value-ref="hpcS3DataTransferProxy" />
+	</util:map>
+	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl">
+		<constructor-arg ref="hpcDataTransferProxies" index="0" />
+		<constructor-arg value="${hpc.service.dataTransfer.downloadDirectory}" index="1" />
+	</bean>
+	<bean id="hpcSecurityService" class="gov.nih.nci.hpc.service.impl.HpcSecurityServiceImpl">
+		<constructor-arg value="FNLCR" index="0" />
+		<constructor-arg value="N/A" index="1" />
+		<constructor-arg value="120" index="2" />
+	</bean>
+	<bean id="hpcMetadataValidator" class="gov.nih.nci.hpc.service.impl.HpcMetadataValidator">
+		<constructor-arg value="src/test/resources/metadataValidationRules.json" />
+	</bean>
+	<bean id="hpcKeyGenerator" class="gov.nih.nci.hpc.service.impl.HpcUUIDKeyGeneratorImpl" />
+	<bean id="hpcMetadataService" class="gov.nih.nci.hpc.service.impl.HpcMetadataServiceImpl" />
+	
+	<!-- JAX-RS Services Beans -->
+	<bean id="hpcDataManagementRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl" />
+	
+	<!--  JAX-RS Provides / Interceptors -->
+	<bean id="hpcExceptionMapper" 
+	      class="gov.nih.nci.hpc.ws.rs.provider.HpcExceptionMapper">
+		<constructor-arg value="true" />
+	</bean>
+	<bean id="hpcAPIVersionInterceptor" 
+	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAPIVersionInterceptor">
+		<constructor-arg value="1.0.0.TEST" />
+	</bean>
+	<bean id="hpcMultipartProvider" class="gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider">
+		<property name="attachmentDirectory" value="/tmp" />
+		<property name="attachmentThreshold" value="104857600" />
+	</bean>
+</beans>
+

@@ -9,6 +9,14 @@
     <project>hpc-common</project>
     <project>hpc-domain-types</project>
     <project>hpc-bus-service-api</project>
+    <project>hpc-bus-service-impl</project>
+    <project>hpc-app-service-api</project>
+    <project>hpc-domain-model</project>
+    <project>hpc-app-service-impl</project>
+    <project>hpc-dao-api</project>
+    <project>hpc-integration-api</project>
+    <project>hpc-integration-impl</project>
+    <project>hpc-dao-impl</project>
   </projects>
   <buildSpec>
     <buildCommand>
