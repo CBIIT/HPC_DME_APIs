@@ -2,6 +2,8 @@ package gov.nih.nci.hpc.cli;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,12 +29,14 @@ import org.springframework.web.client.RestClientException;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.google.gson.Gson;
 
 import gov.nih.nci.hpc.cli.domain.HPCDataFileRecord;
 import gov.nih.nci.hpc.cli.util.CsvFileWriter;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcCmdException;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 
@@ -101,15 +105,28 @@ public class HPCCmdDatafile extends HPCCmdClient {
 				return false;
 			}
 
-			String criteriaClause = buildCriteria(criteria);
+			HpcCompoundMetadataQueryDTO criteriaClause = null;
+			try
+			{
+				criteriaClause = buildCriteria(criteria);
+			}
+			catch(Exception e)
+			{
+				createErrorLog();
+				success = false;
+				String message = "Failed to parse criteria input file: " + criteria + " Error: " + e.getMessage();
+				addErrorToLog(message, cmd);
+				StringWriter sw = new StringWriter();
+				e.printStackTrace(new PrintWriter(sw));
+				String exceptionAsString = sw.toString();
+				addErrorToLog(exceptionAsString, cmd);
+				return false;
+			}
+
 			if (cmd.equals("getDatafile"))
 				serviceURL = serviceURL + criteria;
 			else if (cmd.equals("getDatafiles")) {
-				// serviceURL = serviceURL + "?metadataQuery=" +
-				// URLEncoder.encode(criteria, "UTF-8");
-				serviceURL = serviceURL + "?" + criteriaClause;
-				if (detail == null || detail.isEmpty() || !detail.equalsIgnoreCase("no"))
-					serviceURL = serviceURL + "&detailedResponse=true";
+				serviceURL = serviceURL + "/query";
 			}
 
 			System.out.println("Executing: " + serviceURL);
@@ -119,7 +136,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 				WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
 				client.header("Authorization", "Bearer " + authToken);
 
-				Response restResponse = client.invoke("GET", null);
+				Response restResponse = client.post(criteriaClause);
 				if (restResponse.getStatus() != 204) {
 					MappingJsonFactory factory = new MappingJsonFactory();
 					createRecordsLog(outputFile, format);
@@ -136,7 +153,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 
 					} else if (format != null && format.equalsIgnoreCase("csv")) {
 						if (detail != null && detail.equalsIgnoreCase("no")) {
-							JsonParser parser = factory.createJsonParser((InputStream) restResponse.getEntity());
+							JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 							try {
 								HpcDataObjectListDTO dataobjects = parser.readValueAs(HpcDataObjectListDTO.class);
 								String[] header = { "dataObjectPaths" };
@@ -156,7 +173,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 							}
 
 						} else {
-							JsonParser parser = factory.createJsonParser((InputStream) restResponse.getEntity());
+							JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 							try {
 								HpcDataObjectListDTO datafiles = parser.readValueAs(HpcDataObjectListDTO.class);
 								CsvFileWriter.writeDatafilesCsvFile(logRecordsFile,
@@ -230,21 +247,14 @@ public class HPCCmdDatafile extends HPCCmdClient {
 		return success;
 	}
 
-	private String buildCriteria(String criteria) throws UnsupportedEncodingException {
-		int index = criteria.indexOf("&&");
-		if (index == -1)
-			return "metadataQuery=" + URLEncoder.encode(criteria, "UTF-8");
-
-		StringTokenizer tokens = new StringTokenizer(criteria, "&&");
-		StringBuffer buffer = new StringBuffer();
-		while (tokens.hasMoreTokens()) {
-			buffer.append("metadataQuery=" + URLEncoder.encode(tokens.nextToken(), "UTF-8"));
-			if (tokens.hasMoreTokens())
-				buffer.append("&");
-		}
-		return buffer.toString();
+	private HpcCompoundMetadataQueryDTO buildCriteria(String fileName) throws UnsupportedEncodingException, FileNotFoundException {
+		
+		BufferedReader reader = new BufferedReader(new FileReader(fileName));
+		Gson gson = new Gson();
+		HpcCompoundMetadataQueryDTO dto = gson.fromJson(reader, HpcCompoundMetadataQueryDTO.class);
+		return dto;
 	}
-
+	
 	private String[] getHeader(List<HpcDataObjectDTO> dtoObjects) {
 		List<String> header = new ArrayList<String>();
 		header.add("dataFileId");
