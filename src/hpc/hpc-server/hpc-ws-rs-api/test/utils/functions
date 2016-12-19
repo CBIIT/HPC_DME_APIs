@@ -370,7 +370,8 @@ function verify_get {
 
 
 #Register a collection or a dataObject 
-#Inputs: description.json destinaton-path type  [data-object-file]
+#Inputs: <description.json> <destinaton-path> <type>  [data-object-file]
+# If the nvironment varialbe ACTING_USER  is set, it will use it a username
 function curl_register {
 
     if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
@@ -397,7 +398,8 @@ function curl_register {
     USERID=`get_username $HPC_DM_TEST/utils/config`
     SERVER=`cat $HPC_DM_TEST/utils/server`
 
-
+    CONFIG=$(get_curl_config)
+    
     #if [ -z "$RESPONSE_MSG" ]
     #then 
         RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
@@ -408,7 +410,7 @@ function curl_register {
         RESPONSE_HEADER=${TYPE}-registration-response-header.tmp
     #fi
 
-    CURL_FLAGS="-X PUT ${SERVER}/hpc-server/${TYPE}/${DESTINATION_PATH}  --config $HPC_DM_TEST/utils/config  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s"
+    CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/${DESTINATION_PATH}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s"
    
     if [ "$TYPE" == "dataObject" ]
     then
@@ -537,7 +539,7 @@ function create_new_user {
     RESPONSE_MSG=user-registration-response-message.json.tmp
     SERVER=`cat $HPC_DM_TEST/utils/server`
     
-    curl -H "Content-Type: application/json" -d @register-user.json.tmp -X PUT ${SERVER}/hpc-server/user  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
+    curl -H "Content-Type: application/json" -d @register-user.json.tmp -X PUT ${SERVER}/user  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
     check_connection $RESPONSE_HEADER
     RESPONSE_CODE=`get_http_code $RESPONSE_HEADER`
     echo $RESPONSE_CODE
@@ -574,7 +576,7 @@ function register_group {
     RESPONSE_MSG="$3"
 
     SERVER=`cat $HPC_DM_TEST/utils/server`
-    curl -H "Content-Type: application/json" -d @"$INPUT_FILE" -X POST ${SERVER}/hpc-server/group  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
+    curl -H "Content-Type: application/json" -d @"$INPUT_FILE" -X POST ${SERVER}/group  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
     check_connection $RESPONSE_HEADER
 
 }
@@ -771,7 +773,7 @@ function download_dataobject_sync {
     OBJECT_PATH="$1"
     SERVER=`cat $HPC_DM_TEST/utils/server`
     TEMPLATE="$HPC_DM_TEST/utils/templates/download-sync-template.json"
-    curl -H "Content-Type: application/json" -d @$TEMPLATE -X POST ${SERVER}/hpc-server/dataObject/$OBJECT_PATH/download  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -H "Content-Type: application/json" -d @$TEMPLATE -X POST ${SERVER}/dataObject/$OBJECT_PATH/download  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     check_connection $RESPONSE_HEADER
 
 }
@@ -823,7 +825,7 @@ function download_dataobject_async {
     echo "$INPUT_JSON" > input.json.tmp
 
 
-    curl -H "Content-Type: application/json" -d @input.json.tmp -X POST ${SERVER}/hpc-server/dataObject/$OBJECT_PATH/download  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -H "Content-Type: application/json" -d @input.json.tmp -X POST ${SERVER}/dataObject/$OBJECT_PATH/download  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     check_connection $RESPONSE_HEADER
 
 }
@@ -872,7 +874,7 @@ function subscribe_to_notifications {
 
     SERVER=`cat $HPC_DM_TEST/utils/server`
 
-    curl -H "Content-Type: application/json" -d @$NOTIFICATION_INPUT -X POST ${SERVER}/hpc-server/notification/$USERID  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -H "Content-Type: application/json" -d @$NOTIFICATION_INPUT -X POST ${SERVER}/notification/$USERID  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 
     check_connection $RESPONSE_HEADER
 }
@@ -894,7 +896,7 @@ function get_notifications {
     SERVER=`cat $HPC_DM_TEST/utils/server`
 
 
-    curl -G -X GET $SERVER/hpc-server/notification/$USERID --config $HPC_DM_TEST/utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -G -X GET $SERVER/notification/$USERID --config $HPC_DM_TEST/utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 
     check_connection $RESPONSE_HEADER
 }
@@ -952,7 +954,7 @@ function search_by_metadata {
     SERVER=`cat $HPC_DM_TEST/utils/server`
     #CONFIG=$HPC_DM_TEST/utils/config 
 
-    curl -G -X GET $SERVER/hpc-server/$TYPE?detailedResponse=true --data-urlencode metadataQuery@$QUERY $CONFIG   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -G -X GET $SERVER/$TYPE?detailedResponse=true --data-urlencode metadataQuery@$QUERY $CONFIG   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 
     check_connection $RESPONSE_HEADER
 }
@@ -1015,7 +1017,7 @@ function query_by_metadata {
     SERVER=`cat $HPC_DM_TEST/utils/server`
     #CONFIG=$HPC_DM_TEST/utils/config 
 
-    curl -H "Content-Type: application/json" -d @"$QUERY" -X POST $SERVER/hpc-server/$TYPE/query/compound $CONFIG  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -H "Content-Type: application/json" -d @"$QUERY" -X POST $SERVER/$TYPE/query/compound $CONFIG  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 
     check_connection $RESPONSE_HEADER
 }
@@ -1077,10 +1079,10 @@ function get_item {
     RESPONSE_MSG="$3"
     SERVER=`cat $HPC_DM_TEST/utils/server`
 
-    TOTAL_PATH="hpc-server/$ITEM_PATH"
+    TOTAL_PATH="$ITEM_PATH"
     TOTAL_PATH=$(echo "$TOTAL_PATH" | sed "s#\/\/*#\/#g")
    
-    echo curl -G -X GET "$SERVER/$TOTAL_PATH"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    #echo curl -G -X GET "$SERVER/$TOTAL_PATH"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     curl -G -X GET "$SERVER/$TOTAL_PATH"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     check_connection $RESPONSE_HEADER
 }
@@ -1089,6 +1091,7 @@ function get_item {
 #Inputs: <premission-file> The file that describes the premission
 #        [response-header] The file where the response header will be written
 #        [response-message] The file where the response message will be witten
+# If the variable ACTING_USER is set, this will be used as the acting user 
 
 function update_permission {
 
@@ -1115,10 +1118,11 @@ function update_permission {
     else    
         RESPONSE_MSG="$3"
     fi
- 
+        
+    CONFIG=$(get_curl_config) 
     PERMISSION_FILE="$1"
     SERVER=`cat $HPC_DM_TEST/utils/server`
-    curl -H "Content-Type: application/json" -d @$PERMISSION_FILE -X POST ${SERVER}/hpc-server/acl  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -H "Content-Type: application/json" -d @$PERMISSION_FILE -X POST ${SERVER}/acl  $CONFIG  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     check_connection $RESPONSE_HEADER
 }
 
@@ -1127,6 +1131,7 @@ function update_permission {
 #Inputs: <path>         The path for the collection or the dataObject where the permission should be updated 
 #        <user_id>      The user to be granted the new permission
 #        <permission>   The new permission that should be given  
+# If the variable ACTING_USER is set, this will be used as the acting user 
 
 
 function update_single_permission {
@@ -1184,6 +1189,21 @@ function refresh_views {
     SERVER=`cat $HPC_DM_TEST/utils/server`
     RESPONSE_HEADER=refresh-views-response-header.tmp
     RESPONSE_MSG=refresh-views-response-message.json.tmp
-    curl -X POST ${SERVER}/hpc-server/refreshMetadataViews  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -X POST ${SERVER}/refreshMetadataViews  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     check_connection $RESPONSE_HEADER
+}
+
+#Returns the configuration argument for the curl command
+
+function get_curl_config {
+
+
+    if [ -z "$ACTING_USER" ]
+    then
+        CONFIG="--config $HPC_DM_TEST/utils/config" 
+    else
+        CONFIG="-k -u ${ACTING_USER}:password"
+    fi 
+    
+    echo "$CONFIG"
 }
