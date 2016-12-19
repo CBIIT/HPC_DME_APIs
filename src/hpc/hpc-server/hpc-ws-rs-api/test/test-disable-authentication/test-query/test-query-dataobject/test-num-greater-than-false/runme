@@ -23,6 +23,6 @@ RESPONSE_MSG=response-message.json
 ATTRIBUTE="name"
 VALUE="dice test data file 1"
 
-query_by_metadata dataObject input.json dice_user_sys_admin
+query_by_metadata dataObject input.json 
 RES=$(check_non_existance "$RESPONSE_HEADER" "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE")  
 
