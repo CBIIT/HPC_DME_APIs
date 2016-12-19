@@ -72,16 +72,20 @@ Dummy DOC policies:
         "DUMMY"
       ],
       "collectionType": "Project",
-      "isDataObjectContainer": false,
+      "isDataObjectContainer": true,
       "subCollections": [
         {
           "collectionType": "Dataset",
           "isDataObjectContainer": true
         },
         {
+          "collectionType": "Run",
+          "isDataObjectContainer": false
+        },
+        {
           "collectionType": "Folder",
           "isDataObjectContainer": true
         }
- 
+       
       ]
 }
