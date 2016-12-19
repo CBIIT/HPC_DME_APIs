@@ -12,7 +12,6 @@
 
 #import common functions
 source $HPC_DM_TEST/utils/functions
-source $HPC_DM_TEST/test-search/utils/search-functions
 
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json

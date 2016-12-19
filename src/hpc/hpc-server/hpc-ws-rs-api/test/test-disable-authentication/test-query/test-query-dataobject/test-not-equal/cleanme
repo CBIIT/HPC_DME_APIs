@@ -13,4 +13,3 @@
 # Usage: cleanme [no arguments]
 
 $HPC_DM_TEST/utils/cleantest
-$HPC_DM_TEST/test-search/utils/cleantest
