@@ -1017,7 +1017,7 @@ function query_by_metadata {
     SERVER=`cat $HPC_DM_TEST/utils/server`
     #CONFIG=$HPC_DM_TEST/utils/config 
 
-    curl -H "Content-Type: application/json" -d @"$QUERY" -X POST $SERVER/$TYPE/query/compound $CONFIG  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -H "Content-Type: application/json" -d @"$QUERY" -X POST $SERVER/$TYPE/query $CONFIG  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 
     check_connection $RESPONSE_HEADER
 }
