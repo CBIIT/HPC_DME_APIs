@@ -18,6 +18,7 @@ USERID=`get_username ../../../utils/config`
 DESTINATION=$(get_basefolder)/test-${NAME}
 curl_register input.json "$DESTINATION" collection
 
+EXPECTED_MSG="Invalid Metadata Value: collection_type = Projectxxx"
 get_http_code $RESPONSE_HEADER >&2
 get_json_value $RESPONSE_MSG errorType >&2
-get_json_value $RESPONSE_MSG message >&2
+get_json_value $RESPONSE_MSG message | sed "s/^$EXPECTED_MSG.*/$EXPECTED_MSG/" >&2
