@@ -26,5 +26,15 @@ source $HPC_DM_TEST/utils/functions
 
 PROJECT_DESTINATION_PATH="$(get_basefolder)/project-add-dataobject"
 curl_register $HPC_DM_TEST/utils/templates/register-project-template.json "$PROJECT_DESTINATION_PATH" collection
+mv $RESPONSE_HEADER project-response-header.tmp  
+mv $RESPONSE_MSG project-response-message.json.tmp 2>/dev/null
+
+
+RUN_PATH=$PROJECT_DESTINATION_PATH/test-run
+curl_register input-run.json "$RUN_PATH" collection
+mv $RESPONSE_HEADER run-response-header.tmp  
+mv $RESPONSE_MSG run-response-message.json.tmp 2>/dev/null
 
 echo "$PROJECT_DESTINATION_PATH" >> registered-project-path.tmp
+echo "$RUN_PATH" >> registered-run-path.tmp
+
