@@ -144,6 +144,14 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
+       	// Collection type is not allowed to be updated.
+    	for(HpcMetadataEntry metadataEntry : metadataEntries) {
+    		if(metadataEntry.getAttribute().equals(HpcMetadataValidator.COLLECTION_TYPE_ATTRIBUTE)) {
+    		   throw new HpcException("Collection type is not allowed to be updated", 
+			                          HpcErrorType.INVALID_REQUEST_INPUT);
+    		}
+    	}
+       	
        	// Validate Metadata.
        	metadataValidator.validateCollectionMetadata(getCollectionMetadata(path),
        			                                     metadataEntries);

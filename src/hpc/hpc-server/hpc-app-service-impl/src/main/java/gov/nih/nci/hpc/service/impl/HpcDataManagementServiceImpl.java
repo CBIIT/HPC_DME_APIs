@@ -141,6 +141,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	   }
     	}
     	
+    	String relativePath = dataManagementProxy.getRelativePath(path);
+    	if(relativePath.isEmpty() || relativePath.equals("/")) {
+    	   throw new HpcException("Invalid path: " + path, 
+	                              HpcErrorType.INVALID_REQUEST_INPUT); 
+    	}
+    	
     	// Create the directory.
     	dataManagementProxy.createCollectionDirectory(authenticatedToken, path);
     	return true;
