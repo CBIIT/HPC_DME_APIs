@@ -35,4 +35,4 @@ fi
 
 
 SERVER=`cat $HPC_DM_TEST/utils/server`
-curl -X POST ${SERVER}/hpc-server/dataObject/download  --config $CONFIG_PATH
+curl -X POST ${SERVER}/hpc-server/dataObject/download  --config $CONFIG_PATH -s 
