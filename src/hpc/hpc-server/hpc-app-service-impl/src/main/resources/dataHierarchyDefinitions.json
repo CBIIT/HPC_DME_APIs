@@ -12,7 +12,7 @@
           "isDataObjectContainer": false,
           "subCollections": [
             {
-              "collectionType": "Run",
+              "collectionType": "Flowcell",
               "isDataObjectContainer": false,
               "subCollections": [
                 {
@@ -30,11 +30,15 @@
         "DUMMY"
       ],
       "collectionType": "Project",
-      "isDataObjectContainer": false,
+      "isDataObjectContainer": true,
       "subCollections": [
         {
           "collectionType": "Dataset",
           "isDataObjectContainer": true
+        },
+        {
+          "collectionType": "Run",
+          "isDataObjectContainer": false
         },
         {
           "collectionType": "Folder",
@@ -43,5 +47,5 @@
         
       ]
     }
-  ]
+ ]
 }
