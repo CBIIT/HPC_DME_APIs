@@ -527,6 +527,7 @@ function create_new_user {
         exit
     fi  
 
+    sleep 1
     SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
     NEW_USER_ID=testid-$SUFFIX
     UPDATED_FIRST=`cat $REGISTRATION_TEMPLATE | sed "s/testfirst/testfirst-$SUFFIX/"`

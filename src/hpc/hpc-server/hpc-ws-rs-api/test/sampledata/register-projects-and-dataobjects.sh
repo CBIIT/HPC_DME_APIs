@@ -64,4 +64,5 @@ register_verify $BASE_FOLDER/project2_sub2_object1_metadata.json "$(get_basefold
 register_verify $BASE_FOLDER/project2_sub2_object2_metadata.json "$(get_basefolder)/dice_project2/sub2/object2" dataObject dummy-file.txt
 
 
-
+#Update the views 
+refresh_views 
