@@ -21,6 +21,7 @@
             "validValues":[  
                "Project",
                "Dataset",
+               "Run",
                "Folder"
             ],
             "ruleEnabled":true,
