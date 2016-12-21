@@ -35,12 +35,9 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,10 +97,11 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	// System Accounts locator.
 	@Autowired
 	private HpcSystemAccountLocator systemAccountLocator = null;
-
-	// The valid DOC values.
-	private Set<String> docValues = new HashSet<>();
 	
+	// DOC base paths.
+	@Autowired
+	private HpcDocBasePath docBasePath = null;
+
 	// The authentication token signature key.
 	private String authenticationTokenSignatureKey = null;
 	
@@ -120,15 +118,12 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     /**
      * Constructor for Spring Dependency Injection.
      *
-     * @param docValues A whitespace separated list of valid DOC values.
      * @param authenticationTokenSignatureKey The authentication token signature key.
      * @param authenticationTokenExpirationPeriod The authentication token expiration period in minutes.
      */
-    private HpcSecurityServiceImpl(String docValues, 
-    		                       String authenticationTokenSignatureKey,
+    private HpcSecurityServiceImpl(String authenticationTokenSignatureKey,
     		                       int authenticationTokenExpirationPeriod)
     {
-    	this.docValues.addAll(Arrays.asList(docValues.split("\\s+")));
     	this.authenticationTokenSignatureKey = authenticationTokenSignatureKey;
     	this.authenticationTokenExpirationPeriod = authenticationTokenExpirationPeriod;
     }
@@ -163,9 +158,9 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	   throw new HpcException("Invalid add user input",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
-    	if(!docValues.contains(nciAccount.getDoc())) {
+    	if(!docBasePath.containsKey(nciAccount.getDoc())) {
     	   throw new HpcException("Invalid DOC: " + nciAccount.getDoc() +
-    			                  ". Valid values: " + docValues,
+    			                  ". Valid values: " + docBasePath.keySet(),
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
@@ -201,9 +196,9 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
-    	if(doc != null && !docValues.contains(doc)) {
+    	if(doc != null && !docBasePath.containsKey(doc)) {
     	   throw new HpcException("Invalid DOC: " + doc +
-    			                  ". Valid values: " + docValues,
+    			                  ". Valid values: " + docBasePath.keySet(),
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
