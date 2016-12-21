@@ -134,6 +134,7 @@ CREATE MATERIALIZED VIEW r_data_hierarchy_meta_attr_name AS
 SELECT level, meta_attr_name, array_agg(distinct object_id) as object_ids 
 FROM r_data_hierarchy_meta_main 
 GROUP BY level, meta_attr_name;
+CREATE UNIQUE INDEX r_data_hierarchy_meta_attr_name_unique ON r_data_hierarchy_meta_attr_name (level, meta_attr_name);   
 
 -- Hierarchy collection meta_attr_name
 CREATE MATERIALIZED VIEW r_coll_hierarchy_meta_attr_name AS
