@@ -35,6 +35,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 /**
  * <p>
@@ -132,7 +133,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
     	
     	// Validate the path is not a DOC base path.
-    	if(docBasePath.containsValue(dataManagementProxy.getAbsolutePath(path))) {
+    	if(docBasePath.containsValue(StringUtils.trimTrailingCharacter(
+    			                                     dataManagementProxy.getAbsolutePath(path), '/'))) {
     	   throw new HpcException("Invalid collection path: " + path, 
 	                              HpcErrorType.INVALID_REQUEST_INPUT); 
     	}
