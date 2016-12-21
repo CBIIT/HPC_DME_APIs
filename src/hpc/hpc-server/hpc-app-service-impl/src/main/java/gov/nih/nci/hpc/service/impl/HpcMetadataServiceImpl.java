@@ -144,16 +144,12 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
-       	// Collection type is not allowed to be updated.
-    	for(HpcMetadataEntry metadataEntry : metadataEntries) {
-    		if(metadataEntry.getAttribute().equals(HpcMetadataValidator.COLLECTION_TYPE_ATTRIBUTE)) {
-    		   throw new HpcException("Collection type can't updated", 
-			                          HpcErrorType.INVALID_REQUEST_INPUT);
-    		}
-    	}
+       	// Validate collection type is not in the update request.
+       	List<HpcMetadataEntry> existingMetadataEntries = getCollectionMetadata(path);
+       	validateCollectionTypeUpdate(existingMetadataEntries, metadataEntries);
        	
        	// Validate Metadata.
-       	metadataValidator.validateCollectionMetadata(getCollectionMetadata(path),
+       	metadataValidator.validateCollectionMetadata(existingMetadataEntries,
        			                                     metadataEntries);
        	
        	// Add Metadata to the DM system.
@@ -664,5 +660,41 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     	}
     	
     	return docRules;
+    }
+    
+    /**
+     * Validate that collection type is not updated
+     *
+     * @param existingMetadataEntries Existing collection metadata entries.
+     * @param existingMetadataEntries Updated collection metadata entries.
+     * @throws HpcException If the user tries to update the collection type metadata.
+     */
+    private void validateCollectionTypeUpdate(List<HpcMetadataEntry> existingMetadataEntries,
+    		                                  List<HpcMetadataEntry> metadataEntries) 
+    		                                 throws HpcException
+    {
+    	// Get the current collection type.
+	   	String collectionType = null;
+	   	for(HpcMetadataEntry metadataEntry : existingMetadataEntries) {
+			if(metadataEntry.getAttribute().equals(HpcMetadataValidator.COLLECTION_TYPE_ATTRIBUTE)) {
+			   collectionType = metadataEntry.getValue();
+			   break;
+	 		}
+	   	}
+	   	
+	   	// Validate it's not getting updated.
+	   	if(collectionType == null) {
+	   	   return;
+	   	}
+	   	
+	   for(HpcMetadataEntry metadataEntry : metadataEntries) {
+		   if(metadataEntry.getAttribute().equals(HpcMetadataValidator.COLLECTION_TYPE_ATTRIBUTE)) {
+		      if(!metadataEntry.getValue().equals(collectionType)) {
+			     throw new HpcException("Collection type can't updated", 
+		                                HpcErrorType.INVALID_REQUEST_INPUT);
+		      }
+			      break;
+		   }
+	   }
     }
 }
