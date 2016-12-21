@@ -74,6 +74,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	@Autowired
 	private HpcDataHierarchyValidator dataHierarchyValidator = null;
 	
+	// DOC base paths.
+	@Autowired
+	private HpcDocBasePath docBasePath = null;
+	
 	// Prepared query to get data objects that have their data transfer in-progress to archive.
 	private List<HpcMetadataQuery> dataTransferInProgressToArchiveQuery = new ArrayList<>();
 	
@@ -126,6 +130,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public boolean createDirectory(String path) throws HpcException
     {
     	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
+    	
+    	// Validate the path is not a DOC base path.
+    	if(docBasePath.containsValue(dataManagementProxy.getAbsolutePath(path))) {
+    	   throw new HpcException("Invalid collection path: " + path, 
+	                              HpcErrorType.INVALID_REQUEST_INPUT); 
+    	}
     	
     	// Validate the directory path.
     	HpcPathAttributes pathAttributes = 
