@@ -333,9 +333,9 @@ public class HpcMetadataValidator
 		}
        	
 		if(doc != null &&
-		   metadataValidationRule.getDoc() != null &&
-		   !metadataValidationRule.getDoc().isEmpty() &&
-		   !metadataValidationRule.getDoc().contains(doc)) {
+		   metadataValidationRule.getDocs() != null &&
+		   !metadataValidationRule.getDocs().isEmpty() &&
+		   !metadataValidationRule.getDocs().contains(doc)) {
 		   return true;
 		}
 		
@@ -389,7 +389,7 @@ public class HpcMetadataValidator
 	    	  if(!jsonMetadataValidationRule.containsKey("attribute") ||
 	    		 !jsonMetadataValidationRule.containsKey("mandatory") ||
 	    		 !jsonMetadataValidationRule.containsKey("ruleEnabled") ||
-	    		 !jsonMetadataValidationRule.containsKey("DOC")) {
+	    		 !jsonMetadataValidationRule.containsKey("docs")) {
 	    		 throw new HpcException("Invalid rule JSON object: " + jsonMetadataValidationRule,
 	    		                        HpcErrorType.SPRING_CONFIGURATION_ERROR);	
 	    	  }
@@ -402,11 +402,11 @@ public class HpcMetadataValidator
 	    	  metadataValidationRule.setDefaultValue((String) jsonMetadataValidationRule.get("defaultValue"));
 	    	  metadataValidationRule.setDefaultUnit((String) jsonMetadataValidationRule.get("defaultUnit"));
 	    	  
-	    	  JSONArray jsonDOC = (JSONArray) jsonMetadataValidationRule.get("DOC");
+	    	  JSONArray jsonDOC = (JSONArray) jsonMetadataValidationRule.get("docs");
 	    	  if(jsonDOC != null) {
 		    	 Iterator<String> docIterator = jsonDOC.iterator();
 		    	 while(docIterator.hasNext()) {
-		    	   	   metadataValidationRule.getDoc().add(docIterator.next());
+		    	   	   metadataValidationRule.getDocs().add(docIterator.next());
 		    	 }
 	    	  }
 	    	  
