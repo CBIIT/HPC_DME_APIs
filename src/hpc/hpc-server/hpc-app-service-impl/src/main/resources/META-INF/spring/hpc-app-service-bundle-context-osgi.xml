@@ -26,7 +26,7 @@
 		<prop key="hpc.service.metadataValidationRulesPath">${karaf.base}/etc/hpc-server/metadataValidationRules.json</prop>
 		<prop key="hpc.service.dataHierarchyDefinitionsPath">${karaf.base}/etc/hpc-server/dataHierarchyDefinitions.json</prop>
 		<prop key="hpc.service.dataTransfer.downloadDirectory">${karaf.base}/data/tmp/S3</prop>
-		<prop key="hpc.service.security.DOC">FNLCR CCBR</prop>
+		<prop key="hpc.service.docBasePath">FNLCR=/FNL_SF_ARCHIVE CCBR=/CCBR_SF_ARCHIVE</prop>
 		<prop key="hpc.service.security.authenticationTokenSignatureKey">hpc-token-signature-key</prop>
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriod">120</prop>
 		<prop key="hpc.service.notification.formatsPath">${karaf.base}/etc/hpc-server/notificationFormats.json</prop>
