@@ -88,6 +88,7 @@
           <value>collectionTypes</value>
           <value>subCollectionsHierarchies</value>
           <value>metadataAttributes</value>
+          <value>docs</value>
     </util:list>
 
 	<!-- JSON Provider -->
