@@ -17,6 +17,8 @@ import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -40,6 +42,8 @@ public class HpcDocBasePath extends HashMap<String, String>
 	@Autowired
     private HpcDataManagementProxy dataManagementProxy = null;
 	
+	private String docBasePaths = null;
+	
 	//---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -48,20 +52,12 @@ public class HpcDocBasePath extends HashMap<String, String>
      * Constructor for Spring Dependency Injection.
      *
      * @param docBasePaths A whitespace separated list of valid DOC values and their base path.
-     * @throws HpcException On configuration error
+     * @throws HpcException On configuration error.
      */
     private HpcDocBasePath(String docBasePaths) throws HpcException
     {
     	super();
-    	for(String docBasePath : Arrays.asList(docBasePaths.split("\\s+"))) {
-    		String[] splitDocBasePath= docBasePath.split("=");
-    		if(splitDocBasePath.length != 2) {
-    		   throw new HpcException("Invalid DOC base path configuration: " + docBasePaths,
-			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
-    		}
-    		
-    		put(splitDocBasePath[0], dataManagementProxy.getAbsolutePath(splitDocBasePath[1]));
-    	}
+    	this.docBasePaths = docBasePaths;
     }
     
     /**
@@ -73,6 +69,29 @@ public class HpcDocBasePath extends HashMap<String, String>
     {
     	throw new HpcException("Constructor disabled",
     			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    }
+    
+	//---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//
+
+	/**
+     * Init the map. Need this to be post constructor to let the dependencies be set.
+     *
+     * @throws HpcException On configuration error.
+     */
+    @PostConstruct
+    private void init() throws HpcException
+    {
+    	for(String docBasePath : Arrays.asList(docBasePaths.split("\\s+"))) {
+    		String[] splitDocBasePath= docBasePath.split("=");
+    		if(splitDocBasePath.length != 2) {
+    		   throw new HpcException("Invalid DOC base path configuration: " + docBasePaths,
+			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    		}
+    		
+    		put(splitDocBasePath[0], dataManagementProxy.getAbsolutePath(splitDocBasePath[1]));
+    	}
     }
 }
 
