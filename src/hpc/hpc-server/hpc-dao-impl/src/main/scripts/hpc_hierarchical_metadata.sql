@@ -141,7 +141,8 @@ CREATE MATERIALIZED VIEW r_coll_hierarchy_meta_attr_name AS
 SELECT level, meta_attr_name, array_agg(distinct object_id) as object_ids 
 FROM r_coll_hierarchy_meta_main 
 GROUP BY level, meta_attr_name;
-                  
+CREATE UNIQUE INDEX r_coll_hierarchy_meta_attr_name_unique ON r_coll_hierarchy_meta_attr_name (level, meta_attr_name);
+
 -- Numerical comparison functions based on string input
 CREATE OR REPLACE FUNCTION num_less_than(text, text) RETURNS BOOLEAN AS $$
 DECLARE attr_value NUMERIC;
