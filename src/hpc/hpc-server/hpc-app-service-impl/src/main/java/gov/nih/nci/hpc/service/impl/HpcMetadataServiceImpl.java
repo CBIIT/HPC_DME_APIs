@@ -653,8 +653,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     {
     	List<HpcMetadataValidationRule> docRules = new ArrayList<>();
     	for(HpcMetadataValidationRule rule : rules) {
-    		if(rule.getDoc() == null || rule.getDoc().isEmpty() ||
-    		   rule.getDoc().contains(doc)) {
+    		if(rule.getDocs() == null || rule.getDocs().isEmpty() ||
+    		   rule.getDocs().contains(doc)) {
     		   docRules.add(rule);
     		}
     	}
