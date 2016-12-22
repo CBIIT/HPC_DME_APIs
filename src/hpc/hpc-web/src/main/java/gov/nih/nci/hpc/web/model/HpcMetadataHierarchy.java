@@ -4,15 +4,37 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 public class HpcMetadataHierarchy {
 	private Map<String, String> levels;
-	private Map<String, String> collectionAttributes;
-	private Map<String, String> dataobjectAttributes;
 	private List<String> allAttributes;
 	private List<String> collectionAttrs;
 	private List<String> dataobjectAttrs;
+	private TreeSet<String> collectionAttrsSet;
+	private TreeSet<String> dataobjectAttrsSet;
 	
+	
+	public TreeSet<String> getCollectionAttrsSet() { 
+		if(collectionAttrsSet == null)
+			collectionAttrsSet = new TreeSet<String>();
+		return collectionAttrsSet;
+	}
+
+	public void setCollectionAttrsSet(TreeSet<String> collectionAttrsSet) {
+		this.collectionAttrsSet = collectionAttrsSet;
+	}
+
+	public TreeSet<String> getDataobjectAttrsSet() {
+		if(dataobjectAttrsSet == null)
+			dataobjectAttrsSet = new TreeSet<String>();
+		return dataobjectAttrsSet;
+	}
+
+	public void setDataobjectAttrsSet(TreeSet<String> dataobjectAttrsSet) {
+		this.dataobjectAttrsSet = dataobjectAttrsSet;
+	}
+
 	public List<String> getCollectionAttrs() {
 		if(collectionAttrs == null)
 			collectionAttrs = new ArrayList<String>();
@@ -41,10 +63,6 @@ public class HpcMetadataHierarchy {
 		this.allAttributes = allAttributes;
 	}
 
-	public Map<String, String> getDataobjectAttributes() {
-		return dataobjectAttributes;
-	}
-
 	public Map<String, String> getLevels() {
 		return levels;
 	}
@@ -58,31 +76,6 @@ public class HpcMetadataHierarchy {
 		if(levels == null)
 			levels = new HashMap<String, String>();
 		levels.put(level, name);
-	}
-	
-	public Map<String, String> getCollectionAttributes() {
-		return collectionAttributes;
-	}
-	public void setCollectionAttributes(Map<String, String> collectionAttributes) {
-		this.collectionAttributes = collectionAttributes;
-	}
-	
-	public void addCollectionAttributes(String name, String value)
-	{
-		if(collectionAttributes == null)
-			collectionAttributes = new HashMap<String, String>();
-		collectionAttributes.put(name, value);
-	}
-	
-	public void setDataobjectAttributes(Map<String, String> dataobjectAttributes) {
-		this.dataobjectAttributes = dataobjectAttributes;
-	}
-	
-	public void addDataobjectAttributes(String name, String value)
-	{
-		if(dataobjectAttributes == null)
-			dataobjectAttributes = new HashMap<String, String>();
-		dataobjectAttributes.put(name, value);
 	}
 	
 }
