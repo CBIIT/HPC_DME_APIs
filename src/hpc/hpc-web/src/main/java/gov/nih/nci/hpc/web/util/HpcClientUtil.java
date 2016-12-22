@@ -118,13 +118,10 @@ public class HpcClientUtil {
 		WebClient client = HpcClientUtil.getWebClient(hpcModelURL+"/"+doc , hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Basic " + token);
 		
-		System.out.println("hpcModelURL "+hpcModelURL);
 		Response restResponse = client.get();
 		
 		if(restResponse == null)
         	return null;
-		System.out.println("restResponse "+restResponse.getStatus());
-		System.out.println("doc "+doc);
 		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser;
 		try {
@@ -147,12 +144,12 @@ public class HpcClientUtil {
 		}
 	}
 	
-	public static HpcMetadataAttributesListDTO getMetadataAttrNames(String level, String operator, String token, String hpcMetadataAttrsURL, String hpcCertPath, String hpcCertPassword)
+	public static HpcMetadataAttributesListDTO getMetadataAttrNames(String token, String hpcMetadataAttrsURL, String hpcCertPath, String hpcCertPassword)
 	{
 		
 		String url = hpcMetadataAttrsURL;
-		if(level != null && !level.isEmpty() && operator != null && !operator.isEmpty())
-			url = url + "?level="+URLEncoder.encode(level)+"&levelOperator="+URLEncoder.encode(operator);
+		//if(level != null && !level.isEmpty() && operator != null && !operator.isEmpty())
+		//	url = url + "?level="+URLEncoder.encode(level)+"&levelOperator="+URLEncoder.encode(operator);
 		
 		WebClient client = HpcClientUtil.getWebClient(url , hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Basic " + token);
@@ -210,8 +207,6 @@ public class HpcClientUtil {
 				requestFactory.setHttpClient(httpClient);
 				restTemplate = new RestTemplate(requestFactory);
 			} else {
-
-				System.out.println("not secure connection....");
 				@SuppressWarnings("deprecation")
 				SSLContextBuilder builder = new SSLContextBuilder();
 				builder.loadTrustMaterial(null, new TrustStrategy() {
