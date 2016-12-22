@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+#Check if the collection and the dataObject registration functions called in makeme were successful.
+
+RESPONSE_HEADER=project-response-header.tmp
+verify_registration  $RESPONSE_HEADER
+
+PROJECT_PATH=$(cat registered-project-path.tmp)
+
+#Try to get the project, should be successful
+RESPONSE_HEADER=get-project-response-header.tmp
+RESPONSE_MSG=get-project-response-message.json.tmp
+get_item collection/$PROJECT_PATH $RESPONSE_HEADER $RESPONSE_MSG  dice_user
+
+get_http_code $RESPONSE_HEADER
+
+#Try to edit the project should be successful
+
+PROJECT_DESCRIPTION=project-metadata.json
+ACTING_USER=dice_user
+curl_register "$PROJECT_DESCRIPTION"  "$PROJECT_PATH" collection
+
+get_http_code "$RESPONSE_HEADER"  
