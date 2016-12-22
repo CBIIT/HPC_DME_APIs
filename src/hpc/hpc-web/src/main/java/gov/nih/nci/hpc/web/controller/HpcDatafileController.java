@@ -59,7 +59,6 @@ public class HpcDatafileController extends AbstractHpcController {
 	public String home(String path, Model model, 
 			HttpSession session) {
 
-		System.out.println("Path:" +serviceURL + path);
 		try {
 			if (path == null)
 				return "dashboard";
@@ -69,7 +68,6 @@ public class HpcDatafileController extends AbstractHpcController {
 			client.header("Authorization", "Bearer " + authToken);
 
 			Response restResponse = client.invoke("GET", null);
-			System.out.println("restResponse.getStatus():" +restResponse.getStatus());
 			if (restResponse.getStatus() == 200) {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
