@@ -44,7 +44,6 @@ public class HpcDashBoardController extends AbstractHpcController {
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(Model model, HttpSession session) {
-		System.out.println("queryURL "+queryURL);
 		model.addAttribute("queryURL", queryURL);
 		model.addAttribute("collectionURL", collectionURL);
 		String userToken = (String) session.getAttribute("hpcUserToken");

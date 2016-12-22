@@ -45,8 +45,8 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
     var attributes = [[${hierarchy.getAllAttributes()}]];
-    var collattributes = [[${hierarchy.getCollectionAttrs()}]];
-    var dataattributes = [[${hierarchy.getDataobjectAttrs()}]];
+    var collattributes = [[${hierarchy.getCollectionAttrsSet()}]];
+    var dataattributes = [[${hierarchy.getDataobjectAttrsSet()}]];
 /*]]>*/
 </script>
 
@@ -126,16 +126,11 @@
 								    <option th:each="entry : ${hierarchy.getLevels().entrySet()}" th:value="${entry.key}" th:text="${entry.value}">
 									Wireframe</option>
 						        </select>
-								<select size="1" id="levelOperator1" name="levelOperator" class="form-control" th:required="required">
-								    <option value="-1">----Select----</option>
-								    <option th:each="entry : ${leveloperators.entrySet()}" th:value="${entry.key}" th:text="${entry.value}">
-									Wireframe</option>
-						        </select>
 							</td>
 							<td style="white-space:nowrap">
 								<select size="1" id="attrName1" name="attrName" class="form-control" th:required="required">
 								    <option value="-1">----Select----</option>
-								    <option th:each="attrName : ${hierarchy.getCollectionAttrs()}" th:value="${attrName}" th:text="${attrName}">
+								    <option th:each="attrName : ${hierarchy.getCollectionAttrsSet()}" th:value="${attrName}" th:text="${attrName}">
 									Wireframe</option>
 						        </select>
 							</td>
@@ -447,7 +442,7 @@ function addRow() {
     var cell4 = row.insertCell(4);
     var cell5 = row.insertCell(5);
     cell0.innerHTML = '<label id="rowId'+ (rowId) +'">A'+ (rowId) + '</label>';
-    cell1.innerHTML = '<select id="level'+(rows+1)+'" name="level" class="form-control" th:required="required" onChange="populateLevelAttributes(this.value, this.id)"></select><select id="levelOperator' +(rows+1)+ '" name="levelOperator" class="form-control" th:required="required"><option value="-1">-Select-</option><option value="1">=</option><option value="2">!=</option><option value="3">&lt;</option><option value="4">&gt;</option></select>';
+    cell1.innerHTML = '<select id="level'+(rows+1)+'" name="level" class="form-control" th:required="required" onChange="populateLevelAttributes(this.value, this.id)"></select>';
     cell2.innerHTML = '<select id="attrName'+(rows+1)+'" name="attrName" class="form-control" th:required="required"> <option value="-1">----Select----</option></select>';
     cell3.innerHTML = '<select id="operator'+(rows+1)+'" name="operator" class="form-control" th:required="required"> <option value="-1">----Select----</option> <option value="1">=</option><option value="2">!=</option><option value="3">&lt;</option><option value="4">&gt;</option></select>';
     cell4.innerHTML = '<input type="text" id="attrValue'+(rows+1)+'" name="attrValue" placeholder="Value" class="form-control"/>';
@@ -520,22 +515,6 @@ function validateAndSubmit()
 					return false;
 				}
 			}
-		}
-		if(attrName.startsWith("level"))
-		{
-			var suffix = attrName.substring("level".length);
-//			alert("End " + suffix);
-			var attrNameValue = document.getElementsByName(attrName)[0].value;
-			if(attrNameValue != "-1")
-			{
-				var attrOperValue = document.getElementsByName("levelOperator"+suffix)[0].value;	
-				if(attrOperValue == "-1" || attrOperValue == null || attrOperValue.trim().length == 0)
-				{
-					alert("Invalid Valid criteria. Please enter level operator value");
-					return false;
-				}
-			}
-			
 		}
 	}
 	document.getElementById("simplesearchform").submit();

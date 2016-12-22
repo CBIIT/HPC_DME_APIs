@@ -49,6 +49,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
@@ -229,7 +230,6 @@ public class HpcSearchController extends AbstractHpcController {
 				returnResults.add(returnResult);
 
 			}
-			System.out.println("returnResults " + returnResults);
 			model.addAttribute("searchresults", returnResults);
 		} else {
 			List<HpcCollectionDTO> searchResults = collections.getCollections();
@@ -245,7 +245,6 @@ public class HpcSearchController extends AbstractHpcController {
 
 			}
 			model.addAttribute("searchresults", returnResults);
-			System.out.println("searchresults " + returnResults);
 			model.addAttribute("detailed", "yes");
 		}
 	}
@@ -264,7 +263,6 @@ public class HpcSearchController extends AbstractHpcController {
 				returnResults.add(returnResult);
 
 			}
-			System.out.println("returnResults " + returnResults);
 			model.addAttribute("searchresults", returnResults);
 		} else {
 			List<HpcDataObjectDTO> searchResults = dataObjects.getDataObjects();
@@ -279,7 +277,6 @@ public class HpcSearchController extends AbstractHpcController {
 
 			}
 			model.addAttribute("searchresults", returnResults);
-			System.out.println("searchresults " + returnResults);
 			model.addAttribute("detailed", "yes");
 		}
 	}
@@ -306,7 +303,6 @@ public class HpcSearchController extends AbstractHpcController {
 			String attrValue = search.getAttrValue()[i];
 			String operator = search.getOperator()[i];
 			String level = search.getLevel()[i];
-			String levelOperator = search.getLevelOperator()[i];
 			if (!attrName.isEmpty() && !attrValue.isEmpty() && !operator.isEmpty()) {
 				HpcMetadataQuery criteria = new HpcMetadataQuery();
 				criteria.setAttribute(attrName);
@@ -317,7 +313,7 @@ public class HpcSearchController extends AbstractHpcController {
 					if(level.equals("datafile"))
 						level = "1";
 					levelFilter.setLevel(new Integer(level));
-					levelFilter.setOperator(HpcMetadataQueryOperator.fromValue(levelOperator));
+					levelFilter.setOperator(HpcMetadataQueryOperator.EQUAL);
 					criteria.setLevelFilter(levelFilter);
 				}
 				queries.add(criteria);
@@ -450,36 +446,28 @@ public class HpcSearchController extends AbstractHpcController {
 		List<String> attrs = new ArrayList<String>();
 		System.out.println("time: "+(start-stop)/1000);
 		
-		Iterator levels = hierarchy.keySet().iterator();
-		while(levels.hasNext())
-		{
-			
-			String level = (String)levels.next();
-			System.out.println("Level: "+level);
-			HpcMetadataAttributesListDTO dto = HpcClientUtil.getMetadataAttrNames(level, "EQUAL", authToken,
+			HpcMetadataAttributesListDTO dto = HpcClientUtil.getMetadataAttrNames(authToken,
 					hpcMetadataAttrsURL, sslCertPath, sslCertPassword);
 			stop = System.currentTimeMillis();
 			System.out.println("time1: "+(start-stop)/1000);
 			if (dto != null && dto.getCollectionMetadataAttributes() != null) {
-				dataHierarchy.getCollectionAttrs().addAll(dto.getCollectionMetadataAttributes());
-				for(String name : dto.getCollectionMetadataAttributes())
+				for(HpcMetadataLevelAttributes levelAttrs : dto.getCollectionMetadataAttributes()) 
 				{
-					dataHierarchy.addCollectionAttributes(name, name);
-					attrs.add(level+":collection:"+name);
+					dataHierarchy.getCollectionAttrsSet().addAll(levelAttrs.getMetadataAttributes());
+					for(String name : levelAttrs.getMetadataAttributes())
+						attrs.add(levelAttrs.getLevel()+":collection:"+name);
 				}
 			}
 
 			if (dto != null && dto.getDataObjectMetadataAttributes() != null) {
-				dataHierarchy.getDataobjectAttrs().addAll(dto.getDataObjectMetadataAttributes());
-				for(String name : dto.getDataObjectMetadataAttributes())
+				for(HpcMetadataLevelAttributes levelAttrs : dto.getDataObjectMetadataAttributes()) 
 				{
-					dataHierarchy.addDataobjectAttributes(name, name);
-					attrs.add(level+":datafile:"+name);
+					dataHierarchy.getDataobjectAttrsSet().addAll(levelAttrs.getMetadataAttributes());
+					for(String name : levelAttrs.getMetadataAttributes())
+						attrs.add(levelAttrs.getLevel()+":datafile:"+name);
 				}
 			}
 
-		}
-		
 		hierarchy.put(("datafile"), "Data file");
 		dataHierarchy.setLevels(hierarchy);
 		dataHierarchy.setAllAttributes(attrs);
