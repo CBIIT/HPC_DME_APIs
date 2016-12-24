@@ -10,7 +10,6 @@
 
 	<groupId>gov.nih.nci.hpc.cli</groupId>
 	<artifactId>hpc-cli</artifactId>
-	<version>1.0</version>
 	<packaging>jar</packaging>
 
 	<name>HPC Command Line Interface (CLI)</name>
