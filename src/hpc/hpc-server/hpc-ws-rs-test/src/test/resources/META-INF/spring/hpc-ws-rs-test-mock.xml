@@ -9,7 +9,7 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: hpc-ws-rs-beans-configuration.xml 1730 2016-12-03 13:07:35Z rosenbergea $
+ * @version $Id$
  -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
