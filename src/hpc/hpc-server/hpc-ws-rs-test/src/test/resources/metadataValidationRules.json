@@ -2,30 +2,15 @@
    "HpcMetadataValidationRules":{  
       "collectionMetadataValidationRules":[  
          {  
-            "attribute":"collection_type",
-            "mandatory":true,
-            "validValues":[  
-               "Project",
-               "PI_Lab",
-               "Flowcell",
-               "Sample"
+            "attribute": "collection_type",
+            "mandatory": true,
+            "validValues": [  
+               "ParentColllection",
+               "SubColllection"
             ],
-            "ruleEnabled":true,
-            "DOC":[  
-               "FNLCR"
-            ]
-         },
-         {  
-            "attribute":"collection_type",
-            "mandatory":true,
-            "validValues":[  
-               "Project",
-               "Dataset",
-               "Folder"
-            ],
-            "ruleEnabled":true,
-            "DOC":[  
-               "DUMMY"
+            "ruleEnabled": true,
+            "docs":[  
+               "UNIT_TEST"
             ]
          },
          {  
@@ -35,7 +20,7 @@
                "Project"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -46,7 +31,7 @@
                "Project"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -64,7 +49,7 @@
                "Analysis"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -75,7 +60,7 @@
                "Project"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -86,7 +71,7 @@
                "Project"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -97,7 +82,7 @@
                "Project"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -113,7 +98,7 @@
                "CCBR"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -125,7 +110,7 @@
             ],
             "defaultValue":"System-Date",
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -136,7 +121,7 @@
                "Dataset"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -147,7 +132,7 @@
                "Dataset"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -158,7 +143,7 @@
                "Project"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -169,7 +154,7 @@
                "Project"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -185,7 +170,7 @@
                "CCBR"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -197,7 +182,7 @@
             ],
             "defaultValue":"System-Date",
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -215,7 +200,7 @@
                "Not Specified"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -233,7 +218,7 @@
                "Not Specified"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -251,7 +236,7 @@
                "Not Specified"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -269,7 +254,7 @@
                "Not Specified"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -281,7 +266,7 @@
             ],
             "defaultValue":"Unspecified",
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -292,7 +277,7 @@
                "Dataset"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -303,7 +288,7 @@
                "Dataset"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -314,7 +299,7 @@
                "Dataset"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -336,7 +321,7 @@
                "PacBio-PacBio RS"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -356,7 +341,7 @@
                "ChiP-Seq"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -367,7 +352,7 @@
                "Dataset"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -384,7 +369,7 @@
                "Illumina TrueSeq"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -401,7 +386,7 @@
                "Illumina TrueSeq"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -418,7 +403,7 @@
                "Illumina TrueSeq"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -429,7 +414,7 @@
                "PI_Lab"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -440,7 +425,7 @@
                "Project"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -451,7 +436,7 @@
                "Project"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -462,7 +447,7 @@
                "Project"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -473,7 +458,7 @@
                "Project"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -485,7 +470,7 @@
                "Project"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -496,7 +481,7 @@
                "Project"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -504,10 +489,10 @@
             "attribute":"flowcell_id",
             "mandatory":true,
             "collectionTypes":[  
-               "Flowcell"
+               "Run"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -515,10 +500,10 @@
             "attribute":"run_name",
             "mandatory":true,
             "collectionTypes":[  
-               "Flowcell"
+               "Run"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -526,10 +511,10 @@
             "attribute":"run_date",
             "mandatory":true,
             "collectionTypes":[  
-               "Flowcell"
+               "Run"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -537,10 +522,10 @@
             "attribute":"sequencing_platform",
             "mandatory":true,
             "collectionTypes":[  
-               "Flowcell"
+               "Run"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -548,10 +533,10 @@
             "attribute":"sequencing_application_type",
             "mandatory":true,
             "collectionTypes":[  
-               "Flowcell"
+               "Run"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -559,10 +544,10 @@
             "attribute":"read_length",
             "mandatory":true,
             "collectionTypes":[  
-               "Flowcell"
+               "Run"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -570,10 +555,10 @@
             "attribute":"pooling",
             "mandatory":true,
             "collectionTypes":[  
-               "Flowcell"
+               "Run"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -584,7 +569,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -595,7 +580,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -606,7 +591,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -617,7 +602,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -628,7 +613,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -639,7 +624,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -650,7 +635,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -661,7 +646,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -672,7 +657,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -683,7 +668,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -694,7 +679,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -705,7 +690,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -716,7 +701,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -727,7 +712,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -738,7 +723,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -749,7 +734,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -760,7 +745,7 @@
                "Sample"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          }
@@ -770,7 +755,7 @@
             "attribute":"name",
             "mandatory":true,
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -778,7 +763,7 @@
             "attribute":"description",
             "mandatory":true,
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -786,7 +771,7 @@
             "attribute":"source_lab_pi",
             "mandatory":true,
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -794,7 +779,7 @@
             "attribute":"lab_branch",
             "mandatory":true,
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -807,7 +792,7 @@
                "CCBR"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -816,7 +801,7 @@
             "mandatory":true,
             "defaultValue":"System-Date",
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -834,7 +819,7 @@
                "Not Specified"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -852,7 +837,7 @@
                "Not Specified"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -870,7 +855,7 @@
                "Not Specified"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -888,7 +873,7 @@
                "Not Specified"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -900,7 +885,7 @@
             ],
             "defaultValue":"Unspecified",
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -911,7 +896,7 @@
                "Dataset"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -922,7 +907,7 @@
                "Dataset"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -933,7 +918,7 @@
                "Dataset"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -955,7 +940,7 @@
                "PacBio-PacBio RS"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -975,7 +960,7 @@
                "ChiP-Seq"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -986,7 +971,7 @@
                "Dataset"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -1003,7 +988,7 @@
                "Illumina TrueSeq"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -1020,7 +1005,7 @@
                "Illumina TrueSeq"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -1037,7 +1022,7 @@
                "Illumina TrueSeq"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "DUMMY"
             ]
          },
@@ -1045,7 +1030,7 @@
             "attribute":"object_name",
             "mandatory":true,
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -1053,7 +1038,7 @@
             "attribute":"file_type",
             "mandatory":false,
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -1061,7 +1046,7 @@
             "attribute":"reference_genome",
             "mandatory":false,
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -1069,7 +1054,7 @@
             "attribute":"reference_annotation",
             "mandatory":false,
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -1077,7 +1062,7 @@
             "attribute":"software_tool",
             "mandatory":false,
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -1085,7 +1070,7 @@
             "attribute":"md5_checksum",
             "mandatory":false,
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -1100,7 +1085,7 @@
                "Not Specified"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -1115,7 +1100,7 @@
                "Not Specified"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -1130,7 +1115,7 @@
                "Not Specified"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          },
@@ -1145,7 +1130,7 @@
                "Not Specified"
             ],
             "ruleEnabled":true,
-            "DOC":[  
+            "docs":[  
                "FNLCR"
             ]
          }
