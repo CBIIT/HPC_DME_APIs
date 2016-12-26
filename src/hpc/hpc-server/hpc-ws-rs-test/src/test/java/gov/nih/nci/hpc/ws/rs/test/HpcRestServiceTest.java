@@ -10,7 +10,10 @@
 
 package gov.nih.nci.hpc.ws.rs.test;
 
+import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.impl.HpcDataManagementAuthenticator;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 import gov.nih.nci.hpc.ws.rs.interceptor.HpcAPIVersionInterceptor;
 import gov.nih.nci.hpc.ws.rs.provider.HpcExceptionMapper;
@@ -31,6 +34,9 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+
+import static org.mockito.Mockito.*;
+
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -77,14 +83,25 @@ public abstract class HpcRestServiceTest extends Assert
 	@Autowired
 	private HpcAPIVersionInterceptor apiVersionInterceptor = null;
 	
-	// Services under test.
+	@Autowired
+	private HpcAuthenticationTestInterceptor authenticationInterceptor = null;
+	
+	// JAX-RS services.
 	@Autowired 
-	@InjectMocks
 	private HpcDataManagementRestService dataManagementRestService = null;
+	
+	// Beans with injected mocks.
+	@Autowired
+	@InjectMocks
+    private HpcDataManagementAuthenticator dataManagementAuthenticator = null;
+	
+	@Autowired
+	@InjectMocks
+    private HpcDataManagementService dataManagementService = null;
 	
 	// Mock Integration & DAO 
 	@Mock
-	private HpcDataManagementProxy dataManagementProxyMock = null;
+	protected HpcDataManagementProxy dataManagementProxyMock = null;
 	
     //---------------------------------------------------------------------//
     // Methods
@@ -107,18 +124,18 @@ public abstract class HpcRestServiceTest extends Assert
     
     /**
      * Initialize the JAX-RS server.
-     *
+     * @throws HpcException 
      */
 	@Before
-    public void initialize() throws Exception 
+    public void initialize() throws HpcException 
     {
+		// Initialize Mockito and the mock objects.
+		initMockito();
+		
 		// Initialize the server once.
 		if(server != null && server.isStarted()) {
 		   return;
 		}
-		
-		// Initialize the mock objects.
-		MockitoAnnotations.initMocks(this);
 		
 		// Initialize the JAX-RS server.
         JAXRSServerFactoryBean serverFactory = new JAXRSServerFactoryBean();
@@ -130,7 +147,12 @@ public abstract class HpcRestServiceTest extends Assert
         providers.add(multipartProvider);
         serverFactory.setProviders(providers);
         
-        // Attach interceptors.
+        // Attach in interceptors.
+        List<Interceptor<? extends Message>> inInterceptors = new ArrayList<>();
+        inInterceptors.add(authenticationInterceptor);
+        serverFactory.setInInterceptors(inInterceptors);
+        
+        // Attach out interceptors.
         List<Interceptor<? extends Message>> outInterceptors = new ArrayList<>();
         outInterceptors.add(apiVersionInterceptor);
         serverFactory.setOutInterceptors(outInterceptors);
@@ -145,13 +167,24 @@ public abstract class HpcRestServiceTest extends Assert
     
     /**
      * Destroy the JAX-RS server.
-     *
      */
     @AfterClass
     public static void destroy() throws Exception 
     {
        server.stop();
        server.destroy();
+    }
+    
+    /**
+     * Initialize Mockito and common mocked methods.
+     * @throws HpcException 
+     */
+    private void initMockito() throws HpcException 
+    {
+    	MockitoAnnotations.initMocks(this);
+    	
+    	// Mock the IRODS authentication method.
+    	when(dataManagementProxyMock.authenticate(anyObject(), anyBoolean())).thenReturn(new String("Authenticated"));
     }
 }
 
