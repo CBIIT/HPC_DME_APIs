@@ -2,45 +2,15 @@
   "HpcDataHierarchyDefinitions": [
     {
       "DOC": [
-        "FNLCR"
+        "UNIT_TEST"
       ],
-      "collectionType": "PI_Lab",
+      "collectionType": "ParentColllection",
       "isDataObjectContainer": false,
       "subCollections": [
         {
-          "collectionType": "Project",
-          "isDataObjectContainer": false,
-          "subCollections": [
-            {
-              "collectionType": "Run",
-              "isDataObjectContainer": false,
-              "subCollections": [
-                {
-                  "collectionType": "Sample",
-                  "isDataObjectContainer": true
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "DOC": [
-        "DUMMY"
-      ],
-      "collectionType": "Project",
-      "isDataObjectContainer": false,
-      "subCollections": [
-        {
-          "collectionType": "Dataset",
-          "isDataObjectContainer": true
-        },
-        {
-          "collectionType": "Folder",
+          "collectionType": "SubCollection",
           "isDataObjectContainer": true
         }
-        
       ]
     }
   ]
