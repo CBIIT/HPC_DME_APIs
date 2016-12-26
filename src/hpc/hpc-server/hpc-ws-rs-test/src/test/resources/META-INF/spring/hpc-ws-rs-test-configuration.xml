@@ -25,6 +25,9 @@
 	<bean id="hpcDataHierarchyValidator" class="gov.nih.nci.hpc.service.impl.HpcDataHierarchyValidator">
 		<constructor-arg value="src/test/resources/dataHierarchyDefinitions.json" />
 	</bean>
+	<bean id="hpcDocBasePath" class="gov.nih.nci.hpc.service.impl.HpcDocBasePath">
+		<constructor-arg value="UNIT_TEST=/UnitTest" index="0" />
+	</bean>
 	<bean id="hpcDataManagementAuthenticator" class="gov.nih.nci.hpc.service.impl.HpcDataManagementAuthenticator" />
 	<bean id="hpcSystemAccountLocator" class="gov.nih.nci.hpc.service.impl.HpcSystemAccountLocator" />
 	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl" />
@@ -42,9 +45,8 @@
 		<constructor-arg value="${hpc.service.dataTransfer.downloadDirectory}" index="1" />
 	</bean>
 	<bean id="hpcSecurityService" class="gov.nih.nci.hpc.service.impl.HpcSecurityServiceImpl">
-		<constructor-arg value="FNLCR" index="0" />
-		<constructor-arg value="N/A" index="1" />
-		<constructor-arg value="120" index="2" />
+		<constructor-arg value="N/A" index="0" />
+		<constructor-arg value="120" index="1" />
 	</bean>
 	<bean id="hpcMetadataValidator" class="gov.nih.nci.hpc.service.impl.HpcMetadataValidator">
 		<constructor-arg value="src/test/resources/metadataValidationRules.json" />
@@ -64,6 +66,8 @@
 	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAPIVersionInterceptor">
 		<constructor-arg value="1.0.0.TEST" />
 	</bean>
+	<bean id="hpcAuthenticationInterceptor" 
+	      class="gov.nih.nci.hpc.ws.rs.test.HpcAuthenticationTestInterceptor" />
 	<bean id="hpcMultipartProvider" class="gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider">
 		<property name="attachmentDirectory" value="/tmp" />
 		<property name="attachmentThreshold" value="104857600" />
