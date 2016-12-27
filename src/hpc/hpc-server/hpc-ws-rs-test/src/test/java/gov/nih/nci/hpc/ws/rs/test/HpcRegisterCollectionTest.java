@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.ws.rs.test;
 
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -35,12 +36,13 @@ public class HpcRegisterCollectionTest extends HpcRestServiceTest
     //---------------------------------------------------------------------//
     
     @Test
-    public void testNullPath() throws HpcException 
+    public void testEmptyCollectionPath() throws HpcException 
     {
-    	Response response = getDataManagementClient().registerCollection("", Arrays.asList());	
-    	assertEquals(response.getStatus(), 200);
-    	HpcExceptionDTO exceptionDTO = (HpcExceptionDTO) response.getEntity();
-    	logger.info(exceptionDTO.toString());
+    	Response response = dataManagementClient.registerCollection("", Arrays.asList());	
+    	assertEquals(400, response.getStatus());
+    	HpcExceptionDTO exceptionDTO = response.readEntity(HpcExceptionDTO.class);
+    	assertEquals(HpcErrorType.INVALID_REQUEST_INPUT, exceptionDTO.getErrorType());
+    	assertEquals("Null path or metadata entries", exceptionDTO.getMessage());
     }
     
     /*
