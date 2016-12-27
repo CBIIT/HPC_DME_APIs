@@ -72,5 +72,61 @@
 		<property name="attachmentDirectory" value="/tmp" />
 		<property name="attachmentThreshold" value="104857600" />
 	</bean>
+	
+		<!-- JAXB Provider -->
+	<bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JAXBElementProvider">
+		<property name="marshallerProperties" ref="jaxbProviderMarshallerProperties" />
+	</bean>
+	<util:map id="jaxbProviderMarshallerProperties">
+		<entry key="jaxb.formatted.output">
+			<value type="java.lang.Boolean">true</value>
+		</entry>
+	</util:map>
+
+    <!-- http://cxf.apache.org/docs/jax-rs-data-bindings.html#JAX-RSDataBindings-WrappingandUnwrappingJSONsequences -->
+	<!-- Dealing with Jettison array serialization issues -->
+    <util:list id="jsonKeys">
+          <value>collections</value>
+          <value>collectionPaths</value>
+          <value>dataObjects</value>
+          <value>dataObjectPaths</value>
+          <value>parentMetadataEntries</value>
+          <value>selfMetadataEntries</value>
+          <value>userPermissionResponses</value>
+          <value>groupPermissionResponses</value>
+          <value>entityPermissionResponses</value>
+          <value>collectionMetadataValidationRules</value>
+          <value>dataObjectMetadataValidationRules</value>
+          <value>collectionMetadataAttributes</value>
+          <value>dataObjectMetadataAttributes</value>
+          <value>validValues</value>
+          <value>collectionTypes</value>
+          <value>subCollectionsHierarchies</value>
+          <value>metadataAttributes</value>
+          <value>docs</value>
+    </util:list>
+
+	<!-- JSON Provider -->
+	<bean id="jsonProvider" class="org.apache.cxf.jaxrs.provider.json.JSONProvider">
+		<property name="namespaceMap" ref="jsonProviderNamespaceMap" />
+		<property name="dropRootElement" value="true" />
+		<property name="dropCollectionWrapperElement" value="true" />
+		<property name="serializeAsArray" value="true" />
+		<property name="supportUnwrapped" value="true" />
+		<property name="arrayKeys" ref="jsonKeys"/>
+	</bean>
+	<util:map id="jsonProviderNamespaceMap" map-class="java.util.Hashtable">
+		<entry key="http://hpc.nci.nih.gov/dto/error" value="gov.nih.nci.hpc.dto.error" />
+		<entry key="http://hpc.nci.nih.gov/dto/security" value="gov.nih.nci.hpc.dto.security" />
+		<entry key="http://hpc.nci.nih.gov/dto/datamanagement" value="gov.nih.nci.hpc.dto.datamanagement" />
+		<entry key="http://hpc.nci.nih.gov/dto/notification" value="gov.nih.nci.hpc.dto.notification" />
+		<entry key="http://hpc.nci.nih.gov/dto/report" value="gov.nih.nci.hpc.dto.report" />
+		<entry key="http://hpc.nci.nih.gov/domain/error" value="gov.nih.nci.hpc.domain.error" />
+		<entry key="http://hpc.nci.nih.gov/domain/metadata" value="gov.nih.nci.hpc.domain.metadata" />
+		<entry key="http://hpc.nci.nih.gov/domain/user" value="gov.nih.nci.hpc.domain.user" />
+		<entry key="http://hpc.nci.nih.gov/domain/datatransfer" value="gov.nih.nci.hpc.domain.datatransfer" />
+		<entry key="http://hpc.nci.nih.gov/domain/notification" value="gov.nih.nci.hpc.domain.notification" />
+		<entry key="http://hpc.nci.nih.gov/domain/report" value="gov.nih.nci.hpc.domain.report" />
+	</util:map>
 </beans>
 

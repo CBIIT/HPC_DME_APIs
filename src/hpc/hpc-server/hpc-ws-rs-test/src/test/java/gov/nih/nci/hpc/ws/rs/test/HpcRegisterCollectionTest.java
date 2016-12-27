@@ -10,23 +10,14 @@
 
 package gov.nih.nci.hpc.ws.rs.test;
 
-import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
-import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
+
+import java.util.Arrays;
 
 import javax.ws.rs.core.Response;
 
 import org.junit.Test;
-
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Mockito.*;
-
-import org.mockito.MockitoAnnotations;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -37,19 +28,22 @@ import org.slf4j.LoggerFactory;
  * @version $Id$
  */
 
-public class HpcDataManagementRestServiceTest extends HpcRestServiceTest
+public class HpcRegisterCollectionTest extends HpcRestServiceTest
 {   
-    //---------------------------------------------------------------------//
-    // Instance members
-    //---------------------------------------------------------------------//
-
-    // The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-	
     //---------------------------------------------------------------------//
     // Unit Tests
     //---------------------------------------------------------------------//
     
+    @Test
+    public void testNullPath() throws HpcException 
+    {
+    	Response response = getDataManagementClient().registerCollection("", Arrays.asList());	
+    	assertEquals(response.getStatus(), 200);
+    	HpcExceptionDTO exceptionDTO = (HpcExceptionDTO) response.getEntity();
+    	logger.info(exceptionDTO.toString());
+    }
+    
+    /*
     @Test
     public void testRegistration() throws HpcException 
     {
@@ -78,7 +72,7 @@ public class HpcDataManagementRestServiceTest extends HpcRestServiceTest
     public void testRegistration1() 
     {
     	logger.info("*** ERAN test 2 ***");
-    }
+    }*/
 }
 
  
