@@ -87,10 +87,14 @@ public class HpcExceptionMapper
      */
     public MediaType getAcceptedMediaType()
     {
-    	return headers != null && headers.getAcceptableMediaTypes() != null &&
-  			   !headers.getAcceptableMediaTypes().isEmpty() &&
-  			   headers.getAcceptableMediaTypes().get(0).equals(MediaType.APPLICATION_XML_TYPE) ?
-  			   MediaType.APPLICATION_XML_TYPE : MediaType.APPLICATION_JSON_TYPE;
+    	try {
+    		 return headers != null && headers.getAcceptableMediaTypes() != null &&
+  			        !headers.getAcceptableMediaTypes().isEmpty() &&
+  			        headers.getAcceptableMediaTypes().get(0).equals(MediaType.APPLICATION_XML_TYPE) ?
+  			        MediaType.APPLICATION_XML_TYPE : MediaType.APPLICATION_JSON_TYPE;
+    	} catch(Exception e) {
+    		    return MediaType.APPLICATION_JSON_TYPE;
+    	}
     }
     
     /**
