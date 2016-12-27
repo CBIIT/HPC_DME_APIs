@@ -29,10 +29,12 @@ import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
+import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.lifecycle.SingletonResourceProvider;
 import org.apache.cxf.jaxrs.provider.JAXBElementProvider;
 import org.apache.cxf.jaxrs.provider.json.JSONProvider;
 import org.apache.cxf.message.Message;
+import org.apache.cxf.transport.local.LocalConduit;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -109,31 +111,15 @@ public abstract class HpcRestServiceTest extends Assert
 	@InjectMocks
     private HpcDataManagementService dataManagementService = null;
 	
-	// Mock Integration & DAO 
+	// Mock Integration & DAO.
 	@Mock
 	protected HpcDataManagementProxy dataManagementProxyMock = null;
 	
+	// Rest Services client proxies.
+	protected static HpcDataManagementRestService dataManagementClient = null;
+	
     // The logger instance.
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-	
-    //---------------------------------------------------------------------//
-    // Methods
-    //---------------------------------------------------------------------//
-	
-    /**
-     * Get a JAX-RS client of the data management service.
-     * 
-     * @return a client reference to the data management service.
-     *
-     */
-	protected HpcDataManagementRestService getDataManagementClient()
-	{
-		List<Object> providers = new ArrayList<>();
-        providers.add(jaxbProvider);
-        providers.add(jsonProvider);
-        
-		return JAXRSClientFactory.create(ENDPOINT_ADDRESS, HpcDataManagementRestService.class, providers);
-	}
 	
     //---------------------------------------------------------------------//
     // Helper Methods
@@ -149,6 +135,49 @@ public abstract class HpcRestServiceTest extends Assert
 		// Initialize Mockito and the mock objects.
 		initMockito();
 		
+		// Initialize the test server and clients.
+		initServer();
+		initClients();
+    }
+    
+    /**
+     * Destroy the JAX-RS server.
+     */
+    @AfterClass
+    public static void destroy() throws Exception 
+    {
+       server.stop();
+       server.destroy();
+    }
+    
+    /**
+     * Initialize the RS client proxies.
+     */
+	private void initClients()
+	{
+    	// Initialize the clients once.
+    	if(dataManagementClient != null) {
+    	   return;
+    	}
+    	
+    	logger.info("Initializing JAX-RS Services client proxies");
+    	
+		List<Object> providers = new ArrayList<>();
+        providers.add(jaxbProvider);
+        providers.add(jsonProvider);
+
+        // Data Management Client.
+        dataManagementClient = 
+        	JAXRSClientFactory.create(ENDPOINT_ADDRESS, HpcDataManagementRestService.class, providers);
+        WebClient.getConfig(dataManagementClient).getRequestContext().put(LocalConduit.DIRECT_DISPATCH, 
+        		                                                          Boolean.TRUE);
+	}
+    
+    /**
+     * Initialize the JAX-RS server.
+     */
+    private void initServer()
+    {
 		// Initialize the server once.
 		if(server != null && server.isStarted()) {
 		   return;
@@ -186,16 +215,6 @@ public abstract class HpcRestServiceTest extends Assert
         server = serverFactory.create();
         
         logger.info("JAX-RS Test Server started");
-    }
-    
-    /**
-     * Destroy the JAX-RS server.
-     */
-    @AfterClass
-    public static void destroy() throws Exception 
-    {
-       server.stop();
-       server.destroy();
     }
     
     /**
