@@ -10,6 +10,9 @@
 
 package gov.nih.nci.hpc.ws.rs.test;
 
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.when;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -27,6 +30,8 @@ import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
 import org.apache.cxf.jaxrs.lifecycle.SingletonResourceProvider;
+import org.apache.cxf.jaxrs.provider.JAXBElementProvider;
+import org.apache.cxf.jaxrs.provider.json.JSONProvider;
 import org.apache.cxf.message.Message;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -34,10 +39,9 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
-import static org.mockito.Mockito.*;
-
 import org.mockito.MockitoAnnotations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
@@ -86,6 +90,12 @@ public abstract class HpcRestServiceTest extends Assert
 	@Autowired
 	private HpcAuthenticationTestInterceptor authenticationInterceptor = null;
 	
+	@Autowired
+	private JAXBElementProvider<?> jaxbProvider = null;
+	
+	@Autowired
+	private JSONProvider<?> jsonProvider = null;
+	
 	// JAX-RS services.
 	@Autowired 
 	private HpcDataManagementRestService dataManagementRestService = null;
@@ -103,6 +113,9 @@ public abstract class HpcRestServiceTest extends Assert
 	@Mock
 	protected HpcDataManagementProxy dataManagementProxyMock = null;
 	
+    // The logger instance.
+	protected final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	
     //---------------------------------------------------------------------//
     // Methods
     //---------------------------------------------------------------------//
@@ -115,7 +128,11 @@ public abstract class HpcRestServiceTest extends Assert
      */
 	protected HpcDataManagementRestService getDataManagementClient()
 	{
-		return JAXRSClientFactory.create(ENDPOINT_ADDRESS, HpcDataManagementRestService.class);
+		List<Object> providers = new ArrayList<>();
+        providers.add(jaxbProvider);
+        providers.add(jsonProvider);
+        
+		return JAXRSClientFactory.create(ENDPOINT_ADDRESS, HpcDataManagementRestService.class, providers);
 	}
 	
     //---------------------------------------------------------------------//
@@ -137,12 +154,16 @@ public abstract class HpcRestServiceTest extends Assert
 		   return;
 		}
 		
+		logger.info("Starting JAX-RS Test Server");
+		
 		// Initialize the JAX-RS server.
         JAXRSServerFactoryBean serverFactory = new JAXRSServerFactoryBean();
         serverFactory.setAddress(ENDPOINT_ADDRESS);
         
         // Attach providers
         List<Object> providers = new ArrayList<>();
+        providers.add(jaxbProvider);
+        providers.add(jsonProvider);
         providers.add(exceptionMapper);
         providers.add(multipartProvider);
         serverFactory.setProviders(providers);
@@ -163,6 +184,8 @@ public abstract class HpcRestServiceTest extends Assert
                                           new SingletonResourceProvider(dataManagementRestService, true));
         
         server = serverFactory.create();
+        
+        logger.info("JAX-RS Test Server started");
     }
     
     /**
