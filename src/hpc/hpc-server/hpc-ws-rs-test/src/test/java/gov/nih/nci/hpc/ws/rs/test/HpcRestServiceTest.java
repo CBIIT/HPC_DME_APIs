@@ -72,6 +72,10 @@ public abstract class HpcRestServiceTest extends Assert
 	
 	private final static String ENDPOINT_ADDRESS = "local://hpc-server";
 	
+	// Error messages.
+	protected final static String HTTP_STATUS_CODE_MSG = "HTTP status code";
+	protected final static String EXCEPTION_MSG = "Exception message";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
