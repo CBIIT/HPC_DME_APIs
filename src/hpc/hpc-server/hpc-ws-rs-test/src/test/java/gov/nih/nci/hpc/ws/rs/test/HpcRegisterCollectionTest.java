@@ -11,10 +11,12 @@
 package gov.nih.nci.hpc.ws.rs.test;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
-import gov.nih.nci.hpc.exception.HpcException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.ws.rs.core.Response;
 
@@ -35,14 +37,52 @@ public class HpcRegisterCollectionTest extends HpcRestServiceTest
     // Unit Tests
     //---------------------------------------------------------------------//
     
+    /**
+     * Test: Empty collection path in registration request.
+     * Expected: [400] Null path or metadata entries. 
+     */
     @Test
-    public void testEmptyCollectionPath() throws HpcException 
+    public void testEmptyCollectionPath()  
     {
     	Response response = dataManagementClient.registerCollection("", Arrays.asList());	
-    	assertEquals(400, response.getStatus());
+    	assertEquals(HTTP_STATUS_CODE_MSG, 400, response.getStatus());
     	HpcExceptionDTO exceptionDTO = response.readEntity(HpcExceptionDTO.class);
     	assertEquals(HpcErrorType.INVALID_REQUEST_INPUT, exceptionDTO.getErrorType());
-    	assertEquals("Null path or metadata entries", exceptionDTO.getMessage());
+    	assertEquals(EXCEPTION_MSG, "Null path or metadata entries", exceptionDTO.getMessage());
+    }
+    
+    /**
+     * Test: Empty metadata entries in registration request.
+     * Expected: [400] Null path or metadata entries. 
+     */
+    @Test
+    public void testEmptyMetadataEntries()  
+    {
+    	Response response = dataManagementClient.registerCollection("/UnitTest/Collection", Arrays.asList());	
+    	assertEquals(HTTP_STATUS_CODE_MSG, 400, response.getStatus());
+    	HpcExceptionDTO exceptionDTO = response.readEntity(HpcExceptionDTO.class);
+    	assertEquals(HpcErrorType.INVALID_REQUEST_INPUT, exceptionDTO.getErrorType());
+    	assertEquals(EXCEPTION_MSG, "Null path or metadata entries", exceptionDTO.getMessage());
+    }
+    
+    /**
+     * Test: Invalid metadata entry in registration request.
+     * Expected: [400] . 
+     */
+    @Test
+    public void testInvalidMandatoryMetadataEntry()  
+    {
+    	HpcMetadataEntry entry = new HpcMetadataEntry();
+    	entry.setAttribute("attribute");
+    	
+    	List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+    	metadataEntries.add(entry);
+    	
+    	Response response = dataManagementClient.registerCollection("/UnitTest/Collection", metadataEntries);	
+    	assertEquals(HTTP_STATUS_CODE_MSG, 400, response.getStatus());
+    	HpcExceptionDTO exceptionDTO = response.readEntity(HpcExceptionDTO.class);
+    	assertEquals(HpcErrorType.INVALID_REQUEST_INPUT, exceptionDTO.getErrorType());
+    	assertEquals(EXCEPTION_MSG, "Invalid metadata entries", exceptionDTO.getMessage());
     }
     
     /*
@@ -69,12 +109,8 @@ public class HpcRegisterCollectionTest extends HpcRestServiceTest
     	assertEquals(response.getStatus(), 200);
     	
     }
-    
-    @Test
-    public void testRegistration1() 
-    {
-    	logger.info("*** ERAN test 2 ***");
-    }*/
+    */
+
 }
 
  
