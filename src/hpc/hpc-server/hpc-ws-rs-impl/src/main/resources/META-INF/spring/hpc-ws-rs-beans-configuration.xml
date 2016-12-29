@@ -36,27 +36,30 @@
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 
 	<!--  HTTP-JETTY SSL Configuration -->
-	<bean id="sslContextFactory" class="org.eclipse.jetty.http.ssl.SslContextFactory">
-		<property name="keyStore" value="${hpc.ws.rs.ssl.keystore.path}" />
-		<property name="keyStoreType" value="${hpc.ws.rs.ssl.keystore.type}" />
-		<property name="keyStorePassword" value="${hpc.ws.rs.ssl.keystore.password}" />
-		<property name="trustStore" value="${hpc.ws.rs.ssl.keystore.path}" />
-		<property name="trustStoreType" value="${hpc.ws.rs.ssl.keystore.type}" />
-		<property name="trustStorePassword" value="${hpc.ws.rs.ssl.keystore.password}" />
-		<property name="wantClientAuth" value="${hpc.ws.rs.ssl.wantClientAuth}" />
-		<property name="needClientAuth" value="${hpc.ws.rs.ssl.needClientAuth}" />
-	</bean>
-    <httpj:engine-factory bus="cxf">
+	<httpj:engine-factory bus="cxf">
+    	<httpj:identifiedTLSServerParameters id="hpcTLSServerParameters">
+      		<httpj:tlsServerParameters>
+        		<sec:keyManagers keyPassword="${hpc.ws.rs.ssl.keystore.password}">
+         			<sec:keyStore type="${hpc.ws.rs.ssl.keystore.type}" 
+         	                      password="${hpc.ws.rs.ssl.keystore.password}" 
+         	                      file="${hpc.ws.rs.ssl.keystore.path}" />
+        		</sec:keyManagers>
+        		<sec:trustManagers>
+        			<sec:keyStore type="${hpc.ws.rs.ssl.keystore.type}" 
+        			              password="${hpc.ws.rs.ssl.keystore.password}" 
+        			              file="${hpc.ws.rs.ssl.keystore.path}" />
+    			</sec:trustManagers>
+    			<sec:clientAuthentication want="${hpc.ws.rs.ssl.wantClientAuth}" 
+    			                          required="${hpc.ws.rs.ssl.needClientAuth}" />
+      		</httpj:tlsServerParameters>
+    	</httpj:identifiedTLSServerParameters>
+ 
     	<httpj:engine port="${hpc.ws.rs.secured-port}">
-    		<httpj:tlsServerParameters/>
-            <httpj:connector>
-            	<bean class="org.eclipse.jetty.server.ssl.SslSocketConnector">
-            		<constructor-arg ref="sslContextFactory"/>
-                    <property name="port" value="${hpc.ws.rs.secured-port}" />
-                </bean>
-           	</httpj:connector>
-        </httpj:engine>
-	</httpj:engine-factory>
+      		<httpj:tlsServerParametersRef id="hpcTLSServerParameters" />
+      		<httpj:threadingParameters minThreads="${hpc.ws.rs.jetty-engine.minThreads}"
+                                       maxThreads="${hpc.ws.rs.jetty-engine.maxThreads}" />
+    	</httpj:engine>
+  	</httpj:engine-factory>
         
 	<!-- JAXB Provider -->
 	<bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JAXBElementProvider">

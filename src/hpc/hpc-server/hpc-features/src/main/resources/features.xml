@@ -39,8 +39,6 @@
 	<feature name="hpc-server-core" version="${project.version}">
 	
 		<!--  Dependent Features -->
-		<!--  Current version (${spring.version}_1) did not work. Had to use an older version.
-		      When upgrading Servicemix - see if this can be matched to compiled spring-jdbc version -->
 		<feature version="${spring.version}_1">spring-jdbc</feature>
 		<feature version="${postgresql.version}">hpc-postgresql-driver</feature>
 		<feature version="${amazon-aws.version}">hpc-amazon-aws-sdk</feature>
@@ -49,7 +47,6 @@
 		<!--  Dependent Bundles -->
 		<bundle>wrap:mvn:com.googlecode.json-simple/json-simple/${google-json-simple.version}</bundle>
 		<bundle>mvn:commons-io/commons-io/${commons-io.version}</bundle>
-		<bundle>wrap:mvn:org.springframework/spring-beans/${spring.version}</bundle>
 		
 		<!-- Current version of JJWT 0.6 has a defect in the bundle manifest which requires
 		     Android jar. This is being fixed in 0.7. Remove the Android bundle when upgrading 
