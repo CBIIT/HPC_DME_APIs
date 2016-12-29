@@ -44,6 +44,9 @@
 		<prop key="hpc.ws.rs.ssl.wantClientAuth">false</prop>
 		<prop key="hpc.ws.rs.ssl.needClientAuth">false</prop>
 		
+		<prop key="hpc.ws.rs.jetty-engine.minThreads">5</prop>
+		<prop key="hpc.ws.rs.jetty-engine.maxThreads">15</prop>
+		
 		<prop key="hpc.ws.rs.auth.register-user">SYSTEM_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.get-user">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.update-user">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
