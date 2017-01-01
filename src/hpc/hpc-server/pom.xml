@@ -28,16 +28,15 @@
 		<cxf.version>3.1.5</cxf.version>
 		<cxf-xjc.version>3.0.5</cxf-xjc.version>
 		<postgresql.version>9.3-1102-jdbc41</postgresql.version>
-		<slf4j.version>1.7.21</slf4j.version>
+		<slf4j.version>1.7.22</slf4j.version>
 		<spring.version>3.2.17.RELEASE</spring.version>
 		<amazon-aws.version>1.10.62</amazon-aws.version>
 		<jargon.version>4.0.2.6-RELEASE</jargon.version>
 		<jargon-conveyor.version>4.0.2.1-RELEASE</jargon-conveyor.version>
 		<jackson.version>2.7.3</jackson.version>
 		<google-json-simple.version>1.1</google-json-simple.version>
-		<commons-io.version>2.5</commons-io.version>
 		<jjwt.version>0.6.0</jjwt.version>
-		<java-mail.version>1.4.7</java-mail.version>
+		<commons-io.version>2.5</commons-io.version>
 	</properties>
 
 	<modules>
@@ -72,16 +71,17 @@
 				<plugin>
 					<groupId>org.apache.felix</groupId>
 					<artifactId>maven-bundle-plugin</artifactId>
+					<version>3.2.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.ops4j.pax.exam</groupId>
 					<artifactId>maven-paxexam-plugin</artifactId>
-					<version>1.2.4</version>
+					<version>2.4.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>build-helper-maven-plugin</artifactId>
-					<version>1.9.1</version>
+					<version>1.12</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -96,12 +96,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
-					<version>2.7</version>
+					<version>3.0.2</version>
 				</plugin>
 				<plugin>
         			<groupId>org.apache.maven.plugins</groupId>
         			<artifactId>maven-compiler-plugin</artifactId>
-        			<version>3.5.1</version>
+        			<version>3.6.0</version>
         			<configuration>
           				<source>1.8</source>
           				<target>1.8</target>
@@ -120,6 +120,7 @@
 				<plugin>
         			<groupId>org.apache.maven.plugins</groupId>
         			<artifactId>maven-javadoc-plugin</artifactId>
+        			<version>2.10.4</version>
         			<configuration>
           				<show>private</show>
           				<nohelp>true</nohelp>
@@ -129,6 +130,7 @@
       			<plugin>
         			<groupId>org.apache.maven.plugins</groupId>
         			<artifactId>maven-surefire-plugin</artifactId>
+        			<version>2.19.1</version>
         			<configuration>
           				<skipTests>true</skipTests>
           				<parallel>classes</parallel>
@@ -184,7 +186,7 @@
 			<dependency>
     			<groupId>org.codehaus.jettison</groupId>
     			<artifactId>jettison</artifactId>
-    			<version>1.3.7</version>
+    			<version>1.3.8</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.cxf.xjc-utils</groupId>
@@ -284,7 +286,7 @@
 			<dependency>
     			<groupId>javax.mail</groupId>
     			<artifactId>javax.mail-api</artifactId>
-    			<version>${java-mail.version}</version>
+    			<version>1.4.7</version>
 			</dependency>
 			<dependency>
     			<groupId>junit</groupId>
@@ -296,6 +298,7 @@
     			<groupId>org.mockito</groupId>
     			<artifactId>mockito-all</artifactId>
     			<version>1.10.19</version>
+    			<scope>test</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -314,4 +317,19 @@
  			</snapshots>
  		</repository>
 	</repositories>
+	<pluginRepositories>
+ 		<pluginRepository>
+ 			<id>duraspace.repository</id>
+ 			<name>duraspace.repository</name>
+ 			<url>http://m2.duraspace.org/content/repositories/releases</url>
+ 			<releases>
+ 				<enabled>true</enabled>
+ 			</releases>
+ 			<snapshots>
+ 				<enabled>false</enabled>
+ 				<updatePolicy>always</updatePolicy>
+ 				<checksumPolicy>warn</checksumPolicy>
+ 			</snapshots>
+ 		</pluginRepository>
+	</pluginRepositories>
 </project>
