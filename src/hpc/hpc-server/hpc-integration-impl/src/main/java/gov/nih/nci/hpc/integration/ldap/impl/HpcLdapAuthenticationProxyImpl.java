@@ -35,7 +35,6 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 	private static final String INITIAL_CONTEXT = "com.sun.jndi.ldap.LdapCtxFactory";
 	private static final String SECURITY_AUTHENTICATION = "simple";
 	private static final String SECURITY_PROTOCOL = "ssl";
-	private static final String USER_ID_DOMAIN_NAME = "nih.gov";
 	
     //---------------------------------------------------------------------//
     // Instance members

@@ -115,6 +115,7 @@
 		<entry key="http://hpc.nci.nih.gov/domain/datatransfer" value="gov.nih.nci.hpc.domain.datatransfer" />
 		<entry key="http://hpc.nci.nih.gov/domain/notification" value="gov.nih.nci.hpc.domain.notification" />
 		<entry key="http://hpc.nci.nih.gov/domain/report" value="gov.nih.nci.hpc.domain.report" />
+		<entry key="http://hpc.nci.nih.gov/domain/datamanagement" value="gov.nih.nci.hpc.domain.datamanagement" />
 	</util:map>
 
 	<!--  Multipart Provider -->
