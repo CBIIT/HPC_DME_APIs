@@ -145,11 +145,11 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     }
     
     @Override
-    public void saveQuery(String queryName,
-    		              HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
-    		             throws HpcException
+    public void addQuery(String queryName,
+    		             HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
+    		            throws HpcException
     {
-    	logger.info("Invoking saveQuery(String, HpcCompoundMetadataQueryDTO)");
+    	logger.info("Invoking addQuery(String, HpcCompoundMetadataQueryDTO)");
     	
     	// Input validation.
     	if(queryName == null || queryName.isEmpty() ||
@@ -158,13 +158,49 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	// Get the user-id of this request invoker.
+    	String nciUserId = securityService.getRequestInvoker().getNciAccount().getUserId();
+    	
+    	if(dataSearchService.getQuery(nciUserId, queryName) != null) {
+    	   throw new HpcException("Query name already exists: " + queryName, 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
     	HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery = new HpcNamedCompoundMetadataQuery();
     	namedCompoundMetadataQuery.setName(queryName);
     	namedCompoundMetadataQuery.setCompoundQuery(compoundMetadataQueryDTO.getCompoundQuery());
     	
     	// Save the query.
-    	dataSearchService.saveQuery(securityService.getRequestInvoker().getNciAccount().getUserId(), 
-    			                    namedCompoundMetadataQuery);
+    	dataSearchService.saveQuery(nciUserId, namedCompoundMetadataQuery);
+    }
+    
+    @Override
+    public void updateQuery(String queryName,
+    		                HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
+    		               throws HpcException
+    {
+    	logger.info("Invoking updateQuery(String, HpcCompoundMetadataQueryDTO)");
+    	
+    	// Input validation.
+    	if(queryName == null || queryName.isEmpty() ||
+           compoundMetadataQueryDTO == null) {
+    	   throw new HpcException("Null or empty queryName / compoundMetadataQueryDTO", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Get the user-id of this request invoker.
+    	String nciUserId = securityService.getRequestInvoker().getNciAccount().getUserId();
+    	HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery = 
+    			                      dataSearchService.getQuery(nciUserId, queryName);
+    	if(namedCompoundMetadataQuery == null) {
+    	   throw new HpcException("Query name doesn't exist: " + queryName, 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	namedCompoundMetadataQuery.setCompoundQuery(compoundMetadataQueryDTO.getCompoundQuery());
+    	
+    	// Save the query.
+    	dataSearchService.saveQuery(nciUserId, namedCompoundMetadataQuery);
     }
     
     @Override
@@ -183,6 +219,22 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     			                      queryName);
     }
 
+    @Override
+    public HpcCompoundMetadataQueryDTO getQuery(String queryName) throws HpcException
+    {
+    	logger.info("Invoking getQuery(queryName)");
+    	
+    	HpcCompoundMetadataQueryDTO queryDTO = new HpcCompoundMetadataQueryDTO();
+    	
+    	HpcNamedCompoundMetadataQuery query = 
+    			       dataSearchService.getQuery(
+    			           securityService.getRequestInvoker().getNciAccount().getUserId(), queryName);
+    	if(query != null) {
+    		queryDTO.setCompoundQuery(query.getCompoundQuery());
+    	}
+    	return queryDTO;
+    }
+    
     @Override
     public HpcNamedCompoundMetadataQueryListDTO getQueries() throws HpcException
     {

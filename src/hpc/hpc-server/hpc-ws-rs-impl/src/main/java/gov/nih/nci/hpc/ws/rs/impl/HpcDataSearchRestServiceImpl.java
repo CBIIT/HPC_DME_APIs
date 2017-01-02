@@ -174,21 +174,41 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response saveQuery(String queryName,
-    		                  HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+    public Response addQuery(String queryName,
+    		                 HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
     {
-    	logger.info("Invoking RS: POST /query/{queryName}: " + queryName);
+    	logger.info("Invoking RS: PUT /query/{queryName}: " + queryName);
     	long start = System.currentTimeMillis();
 		try {
-			 dataSearchBusService.saveQuery(queryName, compoundMetadataQueryDTO);
+			 dataSearchBusService.addQuery(queryName, compoundMetadataQueryDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /query/{nciUserId}/{queryName}: " + "," + queryName +
+			    logger.error("RS: PUT /query/{queryName}: " + "," + queryName +
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " saveQuery: Total time");
+		
+    	return okResponse(null, false);
+    }
+    
+    @Override
+    public Response updateQuery(String queryName,
+    		                    HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+    {
+    	logger.info("Invoking RS: POST /query/{queryName}: " + queryName);
+    	long start = System.currentTimeMillis();
+		try {
+			 dataSearchBusService.updateQuery(queryName, compoundMetadataQueryDTO);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: POST /query/{queryName}: " + "," + queryName +
+			    		     " failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " updateQuery: Total time");
 		
     	return okResponse(null, false);
     }
@@ -202,7 +222,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			 dataSearchBusService.deleteQuery(queryName);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /query/{nciUserId}/{queryName}: " + queryName +
+			    logger.error("RS: POST /query/{queryName}: " + queryName +
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
@@ -211,6 +231,25 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 		
     	return okResponse(null, false);
     }
+    
+    @Override
+    public Response getQuery(String queryName)
+    {
+    	logger.info("Invoking RS: GET /query/{queryName}");
+    	long start = System.currentTimeMillis();
+    	HpcCompoundMetadataQueryDTO query = null;
+		try {
+			 query = dataSearchBusService.getQuery(queryName);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /query/{queryName}: failed:", e);
+			    return errorResponse(e);
+		}
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " getQuery: Total time");
+		
+    	return okResponse(query.getCompoundQuery() != null ? query : null, true);
+    }    
 
     @Override
     public Response getQueries()
@@ -222,7 +261,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			 queries = dataSearchBusService.getQueries();
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /query/{nciUserId}: failed:", e);
+			    logger.error("RS: GET /query: failed:", e);
 			    return errorResponse(e);
 		}
 		long stop = System.currentTimeMillis();

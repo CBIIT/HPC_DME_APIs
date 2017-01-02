@@ -16,6 +16,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -90,20 +91,33 @@ public interface HpcDataSearchRestService
 			                         @QueryParam("page") Integer page);
 
     /**
-     * Save a query.
+     * Add a new named query.
      *
      * @param queryName The query name.
-     * @param compoundMetadataQueryDTO The compound metadata query DTO..
+     * @param compoundMetadataQueryDTO The compound metadata query DTO.
+     * @return The REST service response.
+     */
+    @PUT
+    @Path("/query/{queryName}")
+    @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    public Response addQuery(@PathParam("queryName") String queryName,
+    		                 HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
+    
+    /**
+     * Update a named query.
+     *
+     * @param queryName The query name.
+     * @param compoundMetadataQueryDTO The compound metadata query DTO.
      * @return The REST service response.
      */
     @POST
     @Path("/query/{queryName}")
     @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-    public Response saveQuery(@PathParam("queryName") String queryName,
-    		                  HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
+    public Response updateQuery(@PathParam("queryName") String queryName,
+    		                    HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
     
     /**
-     * Delete a query.
+     * Delete a named query.
      *
      * @param queryName The query name.
      * @return The REST service response.
@@ -112,6 +126,17 @@ public interface HpcDataSearchRestService
     @Path("/query/{queryName}")
     public Response deleteQuery(@PathParam("queryName") String queryName);
 
+    /**
+     * Get a named query.
+     *
+     * @param queryName The query name.
+     * @return The REST service response.
+     */
+    @GET
+    @Path("/query/{queryName}")
+    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    public Response getQuery(@PathParam("queryName") String queryName);
+    
     /**
      * Get all saved queries for a user.
      *
