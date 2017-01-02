@@ -76,15 +76,26 @@ public interface HpcDataSearchBusService
     		                                  throws HpcException;
 
     /**
-     * Save a query for a user.
+     * Add a named query for a user.
      *
      * @param queryName The query name.
      * @param compoundMetadataQueryDTO The compound query DTO.
      * @throws HpcException on service failure.
      */
-    public void saveQuery(String queryName,
+    public void addQuery(String queryName,
     		              HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
     		             throws HpcException;
+    
+    /**
+     * Update a named query for a user.
+     *
+     * @param queryName The query name.
+     * @param compoundMetadataQueryDTO The compound query DTO.
+     * @throws HpcException on service failure.
+     */
+    public void updateQuery(String queryName,
+    		                HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
+    		               throws HpcException;
     
     /**
      * Delete a query.
@@ -94,6 +105,15 @@ public interface HpcDataSearchBusService
      */
     public void deleteQuery(String queryName) throws HpcException;
 
+    /**
+     * Get a named query by name.
+     *
+     * @param queryName The query name.
+     * @return The query DTO.
+     * @throws HpcException on service failure.
+     */
+    public HpcCompoundMetadataQueryDTO getQuery(String queryName) throws HpcException;
+    
     /**
      * Get all saved queries.
      *
