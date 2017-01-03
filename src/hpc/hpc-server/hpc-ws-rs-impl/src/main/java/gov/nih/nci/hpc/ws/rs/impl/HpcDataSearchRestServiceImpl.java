@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataSearchRestService;
@@ -237,7 +238,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     {
     	logger.info("Invoking RS: GET /query/{queryName}");
     	long start = System.currentTimeMillis();
-    	HpcCompoundMetadataQueryDTO query = null;
+    	HpcNamedCompoundMetadataQueryDTO query = null;
 		try {
 			 query = dataSearchBusService.getQuery(queryName);
 			 
@@ -248,7 +249,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " getQuery: Total time");
 		
-    	return okResponse(query.getCompoundQuery() != null ? query : null, true);
+    	return okResponse(query, true);
     }    
 
     @Override
@@ -267,7 +268,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " getQueries: Total time");
 		
-    	return okResponse(!queries.getQueries().isEmpty() ? queries : null, true);
+    	return okResponse(!queries.getNamedCompoundQueries().isEmpty() ? queries : null, true);
     }
     
     @Override
