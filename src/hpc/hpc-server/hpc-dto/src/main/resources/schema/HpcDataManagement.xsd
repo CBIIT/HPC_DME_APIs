@@ -178,10 +178,19 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
+	<xsd:element name="HpcNamedCompoundMetadataQueryDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="namedCompoundQuery" 
+				             type="hpc-domain-metadata:HpcNamedCompoundMetadataQuery" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
 	<xsd:element name="HpcNamedCompoundMetadataQueryListDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="queries"
+				<xsd:element name="namedCompoundQueries"
 				             type="hpc-domain-metadata:HpcNamedCompoundMetadataQuery"
 					         minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>

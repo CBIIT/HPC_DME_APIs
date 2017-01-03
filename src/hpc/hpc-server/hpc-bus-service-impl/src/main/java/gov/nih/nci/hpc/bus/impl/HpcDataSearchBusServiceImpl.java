@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataSearchService;
@@ -220,18 +221,16 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     }
 
     @Override
-    public HpcCompoundMetadataQueryDTO getQuery(String queryName) throws HpcException
+    public HpcNamedCompoundMetadataQueryDTO getQuery(String queryName) throws HpcException
     {
     	logger.info("Invoking getQuery(queryName)");
     	
-    	HpcCompoundMetadataQueryDTO queryDTO = new HpcCompoundMetadataQueryDTO();
-    	
-    	HpcNamedCompoundMetadataQuery query = 
-    			       dataSearchService.getQuery(
-    			           securityService.getRequestInvoker().getNciAccount().getUserId(), queryName);
-    	if(query != null) {
-    		queryDTO.setCompoundQuery(query.getCompoundQuery());
-    	}
+    	HpcNamedCompoundMetadataQueryDTO queryDTO = new HpcNamedCompoundMetadataQueryDTO();
+    	queryDTO.setNamedCompoundQuery(
+    			    dataSearchService.getQuery(
+    			        securityService.getRequestInvoker().getNciAccount().getUserId(), 
+    			        queryName));
+
     	return queryDTO;
     }
     
@@ -241,7 +240,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     	logger.info("Invoking getQueries()");
     	
     	HpcNamedCompoundMetadataQueryListDTO queriesList = new HpcNamedCompoundMetadataQueryListDTO();
-    	queriesList.getQueries().addAll(
+    	queriesList.getNamedCompoundQueries().addAll(
     			       dataSearchService.getQueries(
     			           securityService.getRequestInvoker().getNciAccount().getUserId()));
     	
