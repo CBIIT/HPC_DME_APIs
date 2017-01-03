@@ -190,7 +190,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " saveQuery: Total time");
 		
-    	return okResponse(null, false);
+    	return createdResponse(queryName);
     }
     
     @Override
