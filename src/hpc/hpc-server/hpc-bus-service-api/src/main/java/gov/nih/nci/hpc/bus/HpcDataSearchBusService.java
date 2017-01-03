@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -109,15 +110,15 @@ public interface HpcDataSearchBusService
      * Get a named query by name.
      *
      * @param queryName The query name.
-     * @return The query DTO.
+     * @return The compound query DTO.
      * @throws HpcException on service failure.
      */
-    public HpcCompoundMetadataQueryDTO getQuery(String queryName) throws HpcException;
+    public HpcNamedCompoundMetadataQueryDTO getQuery(String queryName) throws HpcException;
     
     /**
      * Get all saved queries.
      *
-     * @return HpcNamedCompoundMetadataQueryListDTO 
+     * @return A list of compound queries DTO.
      * @throws HpcException on service failure.
      */
     public HpcNamedCompoundMetadataQueryListDTO getQueries() throws HpcException;
