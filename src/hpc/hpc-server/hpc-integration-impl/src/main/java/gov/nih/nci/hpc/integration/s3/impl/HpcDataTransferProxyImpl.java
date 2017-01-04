@@ -143,15 +143,22 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		    uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE);
     	}
     	
+    	// Experimental code to calculate checksum
     	try {
     	     String md5 = DigestUtils.md5Hex(new FileInputStream(uploadRequest.getSourceFile()));
-    	     logger.error("ERAN: Calculated Md5: " + md5);
-    	     logger.error("ERAN: S3 Md5: " + uploadResult.getETag());
-    	     logger.error("ERAN: Metadata Md5: " + objectMetadata.getContentMD5());
+    	     logger.error("CHECKSUM: " + archiveDestinationLocation.getFileId());
+    	     logger.error("CHECKSUM: Self Calculated: " + md5);
+    	     logger.error("CHECKSUM: AWS  Calculated: " + uploadResult.getETag());
+    	     if(md5.equals(uploadResult.getETag())) {
+    	    	logger.error("CHECKSUM: Self and AWS calculated MD5 are identical");
+    	     } else {
+    	    	     logger.error("CHECKSUM: Self and AWS calculated MD5 are different");
+    	     }
         
-    	}catch(Exception e) {
-    		   logger.error("ERAN: " + e);
+    	} catch(Exception e) {
+    		    logger.error("CHECKSUM: " + e);
     	}
+    	// End: Experimental code to calculate checksum
     	
         return uploadResponse;
    }
