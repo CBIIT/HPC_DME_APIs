@@ -10,8 +10,8 @@
 
 package gov.nih.nci.hpc.bus;
 
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
@@ -39,13 +39,13 @@ public interface HpcDataManagementBusService
      * Register a Collection.
      *
      * @param path The collection's path.
-     * @param metadataEntries A list of metadata entries to attach to the collection.
+     * @param collectionRegistration A DTO containing a list of metadata entries to attach to the collection.
      * @return true if a new collection was registered, false if the collection already exists
      *         and its metadata got updated.
      * @throws HpcException on service failure.
      */
     public boolean registerCollection(String path,
-    		                          List<HpcMetadataEntry> metadataEntries) 
+    		                          HpcCollectionRegistrationDTO collectionRegistration) 
     		                         throws HpcException;
     
     /**
@@ -61,7 +61,7 @@ public interface HpcDataManagementBusService
      * Register a Data object.
      *
      * @param path The data object's path.
-     * @param dataObjectRegistrationDTO A DTO contains the metadata and data transfer locations.
+     * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
      * @param dataObjectFile (Optional) The data object file. 2 options are available to upload the data -
      *                         Specify a source in 'dataObjectRegistrationDTO' or provide this file. The caller
      *                         is expected to provide one and only one option.
@@ -70,7 +70,7 @@ public interface HpcDataManagementBusService
      * @throws HpcException on service failure.
      */
     public boolean registerDataObject(String path,
-    		                          HpcDataObjectRegistrationDTO dataObjectRegistrationDTO,
+    		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
     		                          File dataObjectFile) 
     		                         throws HpcException;
     

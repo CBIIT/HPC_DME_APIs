@@ -103,6 +103,7 @@
           <value>collectionTypes</value>
           <value>subCollectionsHierarchies</value>
           <value>metadataAttributes</value>
+          <value>metadataEntries</value>
           <value>docs</value>
     </util:list>
 
