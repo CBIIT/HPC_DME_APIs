@@ -113,6 +113,7 @@
 	<xsd:complexType name="HpcDataObjectUploadResponse">
 		<xsd:sequence>
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
+			<xsd:element name="checksum" type="xsd:string" />
 			<xsd:element name="archiveLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="dataTransferStatus" type="hpc-domain-datatransfer:HpcDataTransferUploadStatus" />
 			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />

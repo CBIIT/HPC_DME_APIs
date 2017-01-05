@@ -213,6 +213,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  			     metadataService.updateDataObjectSystemGeneratedMetadata(
  			           		               path, uploadResponse.getArchiveLocation(),
  			    			               uploadResponse.getDataTransferRequestId(), 
+ 			    			               uploadResponse.getChecksum(), 
  			    			               uploadResponse.getDataTransferStatus(),
  			    			               uploadResponse.getDataTransferType()); 
  			     
@@ -486,7 +487,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	private void setDataTransferUploadStatus(String path, HpcDataTransferUploadStatus dataTransferStatus)
 	                                        throws HpcException
 	{
-		metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, dataTransferStatus, null);
+		metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, dataTransferStatus, null);
 	}
 	
     /** 
