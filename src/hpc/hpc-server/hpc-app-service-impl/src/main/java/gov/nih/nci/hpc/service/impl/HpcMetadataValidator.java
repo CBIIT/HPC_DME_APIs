@@ -71,8 +71,8 @@ public class HpcMetadataValidator
                                "source_file_size";
 	public static final String CALLER_OBJECT_ID_ATTRIBUTE = 
                                "archive_caller_object_id";
-	public static final String METADATA_ORIGIN_ATTRIBUTE = 
-                               "metadata_origin";
+	public static final String CHECKSUM_ATTRIBUTE =
+                               "checksum";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -125,7 +125,7 @@ public class HpcMetadataValidator
 	            		        ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE, DATA_TRANSFER_REQUEST_ID_ATTRIBUTE,
 	            		        DATA_TRANSFER_STATUS_ATTRIBUTE, DATA_TRANSFER_TYPE_ATTRIBUTE,
 	            		        SOURCE_FILE_SIZE_ATTRIBUTE, CALLER_OBJECT_ID_ATTRIBUTE, 
-	            		        METADATA_ORIGIN_ATTRIBUTE);
+	            		        CHECKSUM_ATTRIBUTE);
 	         
 	         systemGeneratedMetadataAttributes.addAll(attributes);
 	         

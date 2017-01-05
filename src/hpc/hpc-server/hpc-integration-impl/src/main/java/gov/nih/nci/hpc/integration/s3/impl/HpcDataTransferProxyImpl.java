@@ -16,12 +16,8 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 
-import java.io.FileInputStream;
 import java.util.List;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -56,10 +52,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	@Autowired
 	@Qualifier("hpcS3ArchiveDestination")
 	HpcArchive baseArchiveDestination = null;
-	
-    // The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -118,11 +110,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	
     	// Upload the data.
     	Upload s3Upload = null;
-    	UploadResult uploadResult = null;
+    	UploadResult s3UploadResult = null;
     	try {
     	     s3Upload = s3Connection.getTransferManager(authenticatedToken).upload(request);
-    	     //s3Upload.waitForCompletion();
-    	     uploadResult = s3Upload.waitForUploadResult();
+    	     s3UploadResult = s3Upload.waitForUploadResult();
         	
         } catch(AmazonClientException ace) {
         	    throw new HpcException("Failed to upload file via S3", 
@@ -137,28 +128,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	uploadResponse.setArchiveLocation(archiveDestinationLocation);
     	uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
     	uploadResponse.setDataTransferRequestId(String.valueOf(s3Upload.hashCode()));
+    	uploadResponse.setChecksum(s3UploadResult != null ? s3UploadResult.getETag() : "Unknown");
     	if(baseArchiveDestination.getType().equals(HpcArchiveType.ARCHIVE)) {
     	   uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED);
     	} else {
     		    uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE);
     	}
-    	
-    	// Experimental code to calculate checksum
-    	try {
-    	     String md5 = DigestUtils.md5Hex(new FileInputStream(uploadRequest.getSourceFile()));
-    	     logger.error("CHECKSUM: " + archiveDestinationLocation.getFileId());
-    	     logger.error("CHECKSUM: Self Calculated: " + md5);
-    	     logger.error("CHECKSUM: AWS  Calculated: " + uploadResult.getETag());
-    	     if(md5.equals(uploadResult.getETag())) {
-    	    	logger.error("CHECKSUM: Self and AWS calculated MD5 are identical");
-    	     } else {
-    	    	     logger.error("CHECKSUM: Self and AWS calculated MD5 are different");
-    	     }
-        
-    	} catch(Exception e) {
-    		    logger.error("CHECKSUM: " + e);
-    	}
-    	// End: Experimental code to calculate checksum
     	
         return uploadResponse;
    }
