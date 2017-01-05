@@ -23,9 +23,9 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
@@ -108,14 +108,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
     @Override
     public boolean registerCollection(String path,
-    				                  List<HpcMetadataEntry> metadataEntries)  
+    		                          HpcCollectionRegistrationDTO collectionRegistration)  
     		                         throws HpcException
     {
-    	logger.info("Invoking registerCollection(List<HpcMetadataEntry>): " + 
-    			    metadataEntries);
+    	logger.info("Invoking registerCollection(HpcCollectionRegistrationDTO): " + 
+    			    collectionRegistration);
     	
     	// Input validation.
-    	if(path == null || path.isEmpty() || metadataEntries == null || metadataEntries.isEmpty()) {
+    	if(path == null || path.isEmpty() || collectionRegistration == null || 
+    	   collectionRegistration.getMetadataEntries().isEmpty()) {
     	   throw new HpcException("Null path or metadata entries",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
@@ -131,7 +132,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		    dataManagementService.assignSystemAccountPermission(path);
     		    
     		    // Add user provided metadata.
-    	        metadataService.addMetadataToCollection(path, metadataEntries);
+    	        metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries());
     	        
     	        // Generate system metadata and attach to the collection.
        	        metadataService.addSystemGeneratedMetadataToCollection(path);
@@ -150,7 +151,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	       }
        	   
     	} else {
-    		    metadataService.updateCollectionMetadata(path, metadataEntries);
+    		    metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries());
     	}
     	
     	return created;
@@ -185,15 +186,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     
     @Override
     public boolean registerDataObject(String path,
-    		                          HpcDataObjectRegistrationDTO dataObjectRegistrationDTO,
+    		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
     		                          File dataObjectFile)  
     		                         throws HpcException
     {
     	logger.info("Invoking registerDataObject(HpcDataObjectRegistrationDTO): " + 
-    			    dataObjectRegistrationDTO);
+    			    dataObjectRegistration);
     	
     	// Input validation.
-    	if(path == null || dataObjectRegistrationDTO == null) {
+    	if(path == null || dataObjectRegistration == null) {
     	   throw new HpcException("Null path or dataObjectRegistrationDTO",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
@@ -216,10 +217,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		        // Attach the user provided metadata.
 		        metadataService.addMetadataToDataObject(
 		    	   		           path, 
-		    			           dataObjectRegistrationDTO.getMetadataEntries());
+		    			           dataObjectRegistration.getMetadataEntries());
 		        
 		        // Extract the source location and size.
-		        HpcFileLocation source = dataObjectRegistrationDTO.getSource();
+		        HpcFileLocation source = dataObjectRegistration.getSource();
 				if(source != null && 
 				   (source.getFileContainerId() == null && source.getFileId() == null)) {
 				   source = null;
@@ -230,7 +231,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		           dataTransferService.uploadDataObject(
 		        	   source, dataObjectFile, path, 
 		        	   securityService.getRequestInvoker().getNciAccount().getUserId(),
-		        	   dataObjectRegistrationDTO.getCallerObjectId());
+		        	   dataObjectRegistration.getCallerObjectId());
 		        
 			    // Generate system metadata and attach to the data object.
 			    metadataService.addSystemGeneratedMetadataToDataObject(
@@ -240,7 +241,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			    			                   uploadResponse.getDataTransferType(),
 			    			                   getSourceSize(source, uploadResponse.getDataTransferType(),
 				                                             dataObjectFile), 
-			    			                   dataObjectRegistrationDTO.getCallerObjectId()); 
+			    			                   dataObjectRegistration.getCallerObjectId()); 
 	
 			    registrationCompleted = true;
 			     
@@ -252,12 +253,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    	}
     	   
 	    } else {
-	    	    if(dataObjectFile != null || dataObjectRegistrationDTO.getSource() != null) {
+	    	    if(dataObjectFile != null || dataObjectRegistration.getSource() != null) {
 	    		   throw new HpcException("Data object cannot be updated. Only updating metadata is allowed.",
 			                              HpcErrorType.REQUEST_REJECTED);
 	    	    }
 	    	
-	    	    metadataService.updateDataObjectMetadata(path, dataObjectRegistrationDTO.getMetadataEntries()); 
+	    	    metadataService.updateDataObjectMetadata(path, dataObjectRegistration.getMetadataEntries()); 
 	    }
 	    
 	    return created;

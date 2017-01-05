@@ -10,13 +10,15 @@
 
 package gov.nih.nci.hpc.ws.rs.test;
 
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.when;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import gov.nih.nci.hpc.exception.HpcException;
 
 import javax.ws.rs.core.Response;
 
@@ -44,7 +46,10 @@ public class HpcRegisterCollectionTest extends HpcRestServiceTest
     @Test
     public void testEmptyCollectionPath()  
     {
-    	Response response = dataManagementClient.registerCollection("", Arrays.asList());	
+    	// Invoke the service.
+    	Response response = dataManagementClient.registerCollection("", new HpcCollectionRegistrationDTO());	
+    	
+    	// Assert expected result.
     	assertEquals(HTTP_STATUS_CODE_MSG, 400, response.getStatus());
     	HpcExceptionDTO exceptionDTO = response.readEntity(HpcExceptionDTO.class);
     	assertEquals(HpcErrorType.INVALID_REQUEST_INPUT, exceptionDTO.getErrorType());
@@ -58,7 +63,11 @@ public class HpcRegisterCollectionTest extends HpcRestServiceTest
     @Test
     public void testEmptyMetadataEntries()  
     {
-    	Response response = dataManagementClient.registerCollection("/UnitTest/Collection", Arrays.asList());	
+    	// Invoke the service.
+    	Response response = dataManagementClient.registerCollection("/UnitTest/Collection", 
+    			                                                    new HpcCollectionRegistrationDTO());	
+    	
+    	// Assert expected result.
     	assertEquals(HTTP_STATUS_CODE_MSG, 400, response.getStatus());
     	HpcExceptionDTO exceptionDTO = response.readEntity(HpcExceptionDTO.class);
     	assertEquals(HpcErrorType.INVALID_REQUEST_INPUT, exceptionDTO.getErrorType());
@@ -70,47 +79,32 @@ public class HpcRegisterCollectionTest extends HpcRestServiceTest
      * Expected: [400] . 
      */
     @Test
-    public void testInvalidMandatoryMetadataEntry()  
+    public void testInvalidMetadataEntry() throws HpcException 
     {
-    	HpcMetadataEntry entry = new HpcMetadataEntry();
-    	entry.setAttribute("attribute");
-    	
-    	List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
-    	metadataEntries.add(entry);
-    	
-    	Response response = dataManagementClient.registerCollection("/UnitTest/Collection", metadataEntries);	
-    	assertEquals(HTTP_STATUS_CODE_MSG, 400, response.getStatus());
-    	HpcExceptionDTO exceptionDTO = response.readEntity(HpcExceptionDTO.class);
-    	assertEquals(HpcErrorType.INVALID_REQUEST_INPUT, exceptionDTO.getErrorType());
-    	assertEquals(EXCEPTION_MSG, "Invalid metadata entries", exceptionDTO.getMessage());
-    }
-    
-    /*
-    @Test
-    public void testRegistration() throws HpcException 
-    {
-    	logger.info("*** ERAN test 1 ***");
-    	
+    	// Mock Integration / DAO services.
     	HpcPathAttributes pathAttributes = new HpcPathAttributes();
     	pathAttributes.setExists(true);
     	pathAttributes.setIsAccessible(true);
     	pathAttributes.setIsDirectory(true);
     	pathAttributes.setIsFile(false);
-    	when(dataManagementProxyMock.getPathAttributes(anyObject(), anyString())).thenReturn(pathAttributes);
+    	when(dataManagementProxyMock.getPathAttributes(anyObject(), eq("/UnitTest/Collection"))).thenReturn(pathAttributes);
     	
-    	HpcCollection collection = new HpcCollection();
-    	collection.setCollectionId(12345);
-    	collection.setAbsolutePath("/eran");
-    	when(dataManagementProxyMock.getCollection(anyObject(), anyString())).thenReturn(collection);
+    	// Prepare Test Input.
+    	HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
+    	HpcMetadataEntry entry = new HpcMetadataEntry();
+    	entry.setAttribute("attribute");
+    	collectionRegistration.getMetadataEntries().add(entry);
     	
-    	HpcDataManagementRestService dataManagementClient = getDataManagementClient();
-    	Response response = dataManagementClient.getCollection("/eran");
-    	logger.error("ERAN: " + response);
-    	assertEquals(response.getStatus(), 200);
-    	
-    }
-    */
+    	// Invoke the service.
+    	Response response = dataManagementClient.registerCollection("/UnitTest/Collection", 
+    			                                                    collectionRegistration);
 
+    	// Assert expected result.
+    	assertEquals(HTTP_STATUS_CODE_MSG, 400, response.getStatus());
+    	HpcExceptionDTO exceptionDTO = response.readEntity(HpcExceptionDTO.class);
+    	assertEquals(HpcErrorType.INVALID_REQUEST_INPUT, exceptionDTO.getErrorType());
+    	assertEquals(EXCEPTION_MSG, "Invalid path or metadata entry", exceptionDTO.getMessage());
+    }
 }
 
  
