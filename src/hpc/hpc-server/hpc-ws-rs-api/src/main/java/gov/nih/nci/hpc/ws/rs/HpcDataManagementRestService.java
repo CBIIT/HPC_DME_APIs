@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
@@ -48,7 +48,7 @@ public interface HpcDataManagementRestService
      * PUT Collection registration request.
      *
      * @param path The collection path.
-     * @param metadataEntries A list of metadata entries to attach to the collection.
+     * @param collectionRegistration A DTO contains the list of metadata entries to attach to the collection.
      * @return The REST service response.
      */
 	@PUT
@@ -56,7 +56,7 @@ public interface HpcDataManagementRestService
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response registerCollection(@PathParam("path") String path,
-			                           List<HpcMetadataEntry> metadataEntries);
+			                           HpcCollectionRegistrationDTO collectionRegistration);
 	
     /**
      * GET Collection.
