@@ -138,6 +138,7 @@ public interface HpcMetadataService
      * @param archiveLocation The physical file archive location.
      * @param sourceLocation (Optional) The source location of the file.
      * @param dataTransferRequestId (Optional) The data transfer request ID.
+     * @param checksum (Optional) The data checksum.
      * @param dataTransferStatus The data transfer upload status.
      * @param dataTransferType The data transfer type.
      * @param sourceSize (Optional) The data source size in bytes.
@@ -148,6 +149,7 @@ public interface HpcMetadataService
     		                                           HpcFileLocation archiveLocation,
     		                                           HpcFileLocation sourceLocation,
     		                                           String dataTransferRequestId,
+    		                                           String checksum,
     		                                           HpcDataTransferUploadStatus dataTransferStatus,
     		                                           HpcDataTransferType dataTransferType,
     		                                           Long sourceSize, String callerObjectId) 
@@ -169,6 +171,7 @@ public interface HpcMetadataService
      * @param path The data object path.
      * @param archiveLocation (Optional) The physical file archive location.
      * @param dataTransferRequestId (Optional) The data transfer request ID.
+     * @param checksum (Optional) The data checksum.
      * @param dataTransferStatus (Optional) The data transfer upload status.
      * @param dataTransferType (Optional) The data transfer type.
      * @throws HpcException on service failure.
@@ -176,6 +179,7 @@ public interface HpcMetadataService
     public void updateDataObjectSystemGeneratedMetadata(String path, 
     		                                            HpcFileLocation archiveLocation,
     		                                            String dataTransferRequestId,
+    		                                            String checksum,
     		                                            HpcDataTransferUploadStatus dataTransferStatus,
     		                                            HpcDataTransferType dataTransferType) 
     		                                          throws HpcException; 

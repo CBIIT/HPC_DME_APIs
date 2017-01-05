@@ -15,6 +15,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataEnt
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CALLER_OBJECT_ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CHECKSUM_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_REQUEST_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_TYPE_ATTRIBUTE;
@@ -251,6 +252,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     		  Long.valueOf(metadataMap.get(SOURCE_FILE_SIZE_ATTRIBUTE)) : null);
     	systemGeneratedMetadata.setCallerObjectId(
       		  metadataMap.get(CALLER_OBJECT_ID_ATTRIBUTE));
+    	systemGeneratedMetadata.setChecksum(metadataMap.get(CHECKSUM_ATTRIBUTE));
     		  
 		return systemGeneratedMetadata;
 	}
@@ -308,6 +310,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
                                                        HpcFileLocation archiveLocation,
     		                                           HpcFileLocation sourceLocation,
     		                                           String dataTransferRequestId,
+    		                                           String checksum,
     		                                           HpcDataTransferUploadStatus dataTransferStatus,
     		                                           HpcDataTransferType dataTransferType,
     		                                           Long sourceSize, String callerObjectId) 
@@ -359,6 +362,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        			         toMetadataEntry(DATA_TRANSFER_REQUEST_ID_ATTRIBUTE, 
        			                         dataTransferRequestId));
        	
+   	    // Create the Data Transfer Request ID metadata.
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(CHECKSUM_ATTRIBUTE, checksum));
+       	
        	// Create the Data Transfer Status metadata.
        	addMetadataEntry(metadataEntries,
        			         toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, 
@@ -401,6 +408,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     public void updateDataObjectSystemGeneratedMetadata(String path, 
                                                         HpcFileLocation archiveLocation,
                                                         String dataTransferRequestId,
+                                                        String checksum,
                                                         HpcDataTransferUploadStatus dataTransferStatus,
                                                         HpcDataTransferType dataTransferType) 
                                                         throws HpcException
@@ -431,6 +439,12 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	   addMetadataEntry(metadataEntries,
        		                toMetadataEntry(DATA_TRANSFER_REQUEST_ID_ATTRIBUTE, 
        			                            dataTransferRequestId));
+       	}
+       	
+       	if(checksum != null) {
+           // Update the Checksum metadata.
+           addMetadataEntry(metadataEntries,
+        	                toMetadataEntry(CHECKSUM_ATTRIBUTE, checksum));
        	}
        	
        	if(dataTransferStatus != null) {
