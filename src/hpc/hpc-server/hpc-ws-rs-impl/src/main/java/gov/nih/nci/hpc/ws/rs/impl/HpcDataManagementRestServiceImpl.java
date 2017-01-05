@@ -12,9 +12,9 @@ package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
@@ -98,14 +98,14 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 	
     @Override
     public Response registerCollection(String path, 
-    		                           List<HpcMetadataEntry> metadataEntries)
+    		                           HpcCollectionRegistrationDTO collectionRegistration)
     {	
     	path = toAbsolutePath(path);
 		logger.info("Invoking RS: PUT /collection" + path);
 		long start = System.currentTimeMillis();
 		boolean created = true;
 		try {
-			 created = dataManagementBusService.registerCollection(path, metadataEntries);
+			 created = dataManagementBusService.registerCollection(path, collectionRegistration);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: PUT /collection" + path + " failed:", e);
