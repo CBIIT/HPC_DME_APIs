@@ -81,7 +81,7 @@
 			   <label for="${error}" th:text="${error}"></label>
 		</div>  
 	</div>
-	<form class="form-horizontal" id="simplesearchform" action="#" role="form" th:action="@{/search}" th:object="${hpcSearch}" method="post" enctype="multipart/form-data">
+	<form class="form-horizontal" id="simplesearchform" action="#" role="form" th:action="@{/criteria}" th:object="${hpcSearch}" method="post" enctype="multipart/form-data">
     <div class="form-group">
 	  <label class="control-label col-sm-2" for="level">Search type:</label>
 	  <div class="col-sm-10">
@@ -239,7 +239,6 @@
 	<script src="js/sparklines.js"></script>
 	<script src="js/charts.js"></script>
 	<script src="js/jquery.slimscroll.min.js"></script>
-	<script src="js/dynamicfields.json"></script>
 	<script src="js/bootstrap-datepicker.js"></script>
 	
  <script>
