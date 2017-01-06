@@ -9,16 +9,28 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
+import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.model.HpcLogin;
+import gov.nih.nci.hpc.web.model.HpcSearchResult;
+import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
@@ -43,15 +55,56 @@ public class HpcDashBoardController extends AbstractHpcController {
 	private String queryURL;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(Model model, HttpSession session) {
+	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
+			HttpSession session, HttpServletRequest request) {
 		model.addAttribute("queryURL", queryURL);
 		model.addAttribute("collectionURL", collectionURL);
-		String userToken = (String) session.getAttribute("hpcUserToken");
+		session.removeAttribute("compoundQuery");
 		session.removeAttribute("hierarchy");
-		if (userToken == null) {
+
+		String userPasswdToken = (String) session.getAttribute("userpasstoken");
+		if (userPasswdToken == null) {
 			return "redirect:/";
 		}
-
+		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		if (user == null) {
+			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
+			bindingResult.addError(error);
+			HpcLogin hpcLogin = new HpcLogin();
+			model.addAttribute("hpcLogin", hpcLogin);
+			return "redirect:/";
+		}
+		
+		//populateSavedSearches(model, user, userPasswdToken);
+		//populateNotifications(model, user, userPasswdToken);
 		return "dashboard";
+	}
+	
+	private void populateSavedSearches(Model model, HpcUserDTO user, String userPasswdToken)
+	{
+		List<HpcSearchResult> names = new ArrayList<HpcSearchResult>();
+		HpcNamedCompoundMetadataQueryListDTO queries = 
+				HpcClientUtil.getSavedSearches(userPasswdToken, queryURL, sslCertPath, sslCertPassword);
+		if(queries == null || queries.getNamedCompoundQueries() == null || queries.getNamedCompoundQueries().size() == 0)
+		{
+			HpcSearchResult result = new HpcSearchResult();
+			result.setPath("No Saved Searches");
+			names.add(result);
+		}
+		else
+		{
+			for(HpcNamedCompoundMetadataQuery query : queries.getNamedCompoundQueries())
+			{
+				HpcSearchResult result = new HpcSearchResult();
+				result.setPath(query.getName());
+				names.add(result);
+			}
+		}
+		model.addAttribute("queries", names);
+	}
+
+	private void populateNotifications(Model model, HpcUserDTO user, String userPasswdToken)
+	{
+		
 	}
 }
