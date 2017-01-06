@@ -53,6 +53,7 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.web.HpcWebException;
@@ -141,6 +142,38 @@ public class HpcClientUtil {
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to get DOC Model for: "+ doc + " due to: "+e.getMessage());
+		}
+	}
+
+	public static HpcNamedCompoundMetadataQueryListDTO getSavedSearches(String token, String hpcQueryURL, String hpcCertPath, String hpcCertPassword)
+	{
+		
+		WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
+		client.header("Authorization", "Basic " + token);
+		
+		Response restResponse = client.get();
+		
+		if(restResponse == null)
+        	return null;
+		MappingJsonFactory factory = new MappingJsonFactory();
+		JsonParser parser;
+		try {
+			parser = factory.createParser((InputStream) restResponse.getEntity());
+		} catch (IllegalStateException | IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get saved queries due to: "+e.getMessage());
+		}
+		try {
+			return parser.readValueAs(HpcNamedCompoundMetadataQueryListDTO.class);
+		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get saved queries due to: "+e.getMessage());
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get saved queries due to: "+e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get saved queries due to: "+e.getMessage());
 		}
 	}
 	
