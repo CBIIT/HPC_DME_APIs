@@ -29,8 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -137,13 +135,13 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			"select distinct object_path from public.\"r_coll_hierarchy_meta_main\" where object_id in ";
 	
 	private static final String GET_COLLECTION_COUNT_SQL = 
-			"select count(distinct object_path) from public.\"r_coll_hierarchy_meta_main\" where object_id in ";
+			"select count(distinct object_id) from public.\"r_coll_hierarchy_meta_main\" where object_id in ";
 	
 	private static final String GET_DATA_OBJECT_PATHS_SQL = 
 			"select distinct object_path from public.\"r_data_hierarchy_meta_main\" where object_id in ";
 	
 	private static final String GET_DATA_OBJECT_COUNT_SQL = 
-			"select count(distinct object_path) from public.\"r_data_hierarchy_meta_main\" where object_id in ";
+			"select count(distinct object_id) from public.\"r_data_hierarchy_meta_main\" where object_id in ";
 	
 	private static final String GET_COLLECTION_METADATA_SQL = 
 			"select meta_attr_name,  meta_attr_value, level " + 
@@ -167,9 +165,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	
 	private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL = 
 			" group by level order by level";
-	
-    // The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -409,7 +404,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		@Override
 		public HpcMetadataLevelAttributes mapRow(ResultSet rs, int rowNum) throws SQLException 
 		{
-			logger.error("ERAN: Mapper");
 			HpcMetadataLevelAttributes metadataLevelAttributes = new HpcMetadataLevelAttributes();
 			Long level = rs.getLong("LEVEL");
 			metadataLevelAttributes.setLevel(level != null ? level.intValue() : null);
@@ -611,12 +605,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      */
     private int getCount(HpcPreparedQuery preparedQuery) throws HpcException
     {
-    	logger.error("ERAN query: " + preparedQuery.sql);
-    	logger.error("ERAN argd: " + preparedQuery.args);
 		try {
-		     int i = jdbcTemplate.queryForObject(preparedQuery.sql, Integer.class, preparedQuery.args);
-		     logger.error("ERAN: Query done");
-		     return i;
+		     return jdbcTemplate.queryForObject(preparedQuery.sql, Integer.class, preparedQuery.args);
 		     
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to count collection/data-object: " + 
