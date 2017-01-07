@@ -611,7 +611,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      */
     private int getCount(HpcPreparedQuery preparedQuery) throws HpcException
     {
-    	logger.error("ERAN: " + preparedQuery);
+    	logger.error("ERAN query: " + preparedQuery.sql);
+    	logger.error("ERAN argd: " + preparedQuery.args);
 		try {
 		     int i = jdbcTemplate.queryForObject(preparedQuery.sql, Integer.class, preparedQuery.args);
 		     logger.error("ERAN: Query done");
