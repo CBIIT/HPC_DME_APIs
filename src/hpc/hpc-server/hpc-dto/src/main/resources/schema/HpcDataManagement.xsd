@@ -56,8 +56,9 @@
 					<xsd:element name="collectionPaths" type="xsd:string"
 						         minOccurs="0" maxOccurs="unbounded" />
 				</xsd:choice>
-				<xsd:element name="page" type="xsd:int" minOccurs="0" />
-				<xsd:element name="limit" type="xsd:int" minOccurs="0" />
+				<xsd:element name="page" type="xsd:int" />
+				<xsd:element name="limit" type="xsd:int" />
+				<xsd:element name="totalCount" type="xsd:int" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
@@ -96,8 +97,9 @@
 					<xsd:element name="dataObjectPaths" type="xsd:string"
 					             minOccurs="0" maxOccurs="unbounded" />
 				</xsd:choice>
-				<xsd:element name="page" type="xsd:int" minOccurs="0" />
-				<xsd:element name="limit" type="xsd:int" minOccurs="0" />
+				<xsd:element name="page" type="xsd:int" />
+				<xsd:element name="limit" type="xsd:int" />
+				<xsd:element name="totalCount" type="xsd:int" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
@@ -184,6 +186,7 @@
 			    <xsd:element name="compoundQuery" type="hpc-domain-metadata:HpcCompoundMetadataQuery" />
 			    <xsd:element name="detailedResponse" type="xsd:boolean" minOccurs="0" />
 			    <xsd:element name="page" type="xsd:int" minOccurs="0" />
+			    <xsd:element name="totalCount" type="xsd:boolean" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
