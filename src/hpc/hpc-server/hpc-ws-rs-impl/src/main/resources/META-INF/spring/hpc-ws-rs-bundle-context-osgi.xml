@@ -47,28 +47,35 @@
 		<prop key="hpc.ws.rs.jetty-engine.minThreads">5</prop>
 		<prop key="hpc.ws.rs.jetty-engine.maxThreads">15</prop>
 		
-		<prop key="hpc.ws.rs.auth.register-user">SYSTEM_ADMIN</prop>
-		<prop key="hpc.ws.rs.auth.get-user">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.update-user">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.group">SYSTEM_ADMIN GROUP_ADMIN</prop>
-		<prop key="hpc.ws.rs.auth.authenticate-user">SYSTEM_ADMIN</prop>
-		<prop key="hpc.ws.rs.auth.register-collection">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.get-collection">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.get-collections">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.query-collections">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.register-data-object">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.get-data-objects">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.query-data-objects">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.set-permissions">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.download-data-object">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.register-system-account">SYSTEM_ADMIN</prop>
-		<prop key="hpc.ws.rs.auth.generate-report">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.get-data-management-model">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.get-metadata-attributes">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.save-query">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.delete-query">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.get-queries">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
-		<prop key="hpc.ws.rs.auth.refresh-metadata-views">SYSTEM_ADMIN</prop>
+		<prop key="hpc.ws.rs.auth.security.register-user">SYSTEM_ADMIN</prop>
+		<prop key="hpc.ws.rs.auth.security.update-user">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.security.get-user">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.security.set-group">SYSTEM_ADMIN GROUP_ADMIN</prop>
+		<prop key="hpc.ws.rs.auth.security.authenticate-user">SYSTEM_ADMIN</prop>
+		<prop key="hpc.ws.rs.auth.security.register-system-account">SYSTEM_ADMIN</prop>
+		
+		<prop key="hpc.ws.rs.auth.data-management.register-collection">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-management.get-collection">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-management.register-data-object">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-management.get-data-object">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-management.download-data-object">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-management.set-permissions">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-management.get-data-management-model">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		
+		<prop key="hpc.ws.rs.auth.data-search.query-collections">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-search.query-data-objects">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-search.add-query">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-search.update-query">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-search.delete-query">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-search.get-query">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-search.get-queries">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-search.get-metadata-attributes">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-search.refresh-metadata-views">SYSTEM_ADMIN</prop>
+		
+		<prop key="hpc.ws.rs.auth.notification.subscribe-notifications">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.notification.get-notification-subscriptions">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		
+		<prop key="hpc.ws.rs.auth.report.generate-report">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

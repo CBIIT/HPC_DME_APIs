@@ -53,6 +53,8 @@ public interface HpcDataSearchRestService
      *
      * @param queryName A named query.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param totalCount If set to true, return the total count of collections matching the query
+     *                   regardless of the limit on returned entities.
      * @param page The requested results page.
      * @return The REST service response.
      */
@@ -61,7 +63,8 @@ public interface HpcDataSearchRestService
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response queryCollections(@PathParam("queryName") String queryName,
 			                         @QueryParam("detailedResponse") Boolean detailedResponse,
-			                         @QueryParam("page") Integer page);
+			                         @QueryParam("page") Integer page,
+			                         @QueryParam("totalCount") Boolean totalCount);
 	
     /**
      * POST Data objects query.
@@ -81,6 +84,8 @@ public interface HpcDataSearchRestService
      * @param queryName A named query.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
      * @param page The requested results page.
+     * @param totalCount If set to true, return the total count of collections matching the query
+     *                   regardless of the limit on returned entities.
      * @return The REST service response.
      */
 	@GET
@@ -88,7 +93,8 @@ public interface HpcDataSearchRestService
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response queryDataObjects(@PathParam("queryName") String queryName,
 			                         @QueryParam("detailedResponse") Boolean detailedResponse,
-			                         @QueryParam("page") Integer page);
+			                         @QueryParam("page") Integer page,
+			                         @QueryParam("totalCount") Boolean totalCount);
 
     /**
      * Add a new named query.

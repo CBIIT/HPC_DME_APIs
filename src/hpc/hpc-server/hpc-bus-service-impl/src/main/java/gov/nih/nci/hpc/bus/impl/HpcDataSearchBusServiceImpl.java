@@ -97,20 +97,37 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
       	boolean detailedResponse = compoundMetadataQueryDTO.getDetailedResponse() != null && 
                                    compoundMetadataQueryDTO.getDetailedResponse();
       	int page = compoundMetadataQueryDTO.getPage() != null ? compoundMetadataQueryDTO.getPage() : 1;
+      	boolean totalCount = compoundMetadataQueryDTO.getTotalCount() != null && 
+                             compoundMetadataQueryDTO.getTotalCount();
       	
-      	// Execute the query and package the results.
-      	return toCollectionListDTO(dataSearchService.getCollectionPaths(
-      			                       compoundMetadataQueryDTO.getCompoundQuery(), page), 
-      			                       detailedResponse, page);
+      	// Execute the query and package the results in a DTO.
+      	List<String> collectionPaths = dataSearchService.getCollectionPaths(
+                                           compoundMetadataQueryDTO.getCompoundQuery(), page);
+      	HpcCollectionListDTO collectionsDTO = toCollectionListDTO(collectionPaths, detailedResponse);
+      	
+      	// Set page, limit and total count.
+		collectionsDTO.setPage(page);
+		int limit = dataSearchService.getSearchResultsPageSize();
+		collectionsDTO.setLimit(limit);
+		
+		if(totalCount) {
+		   int count = collectionPaths.size();
+		   collectionsDTO.setTotalCount(count < limit ? count : 
+			                            dataSearchService.getCollectionCount(
+			                            		             compoundMetadataQueryDTO.getCompoundQuery()));
+		}
+		
+		return collectionsDTO;
     }
     
     @Override
-    public HpcCollectionListDTO getCollections(String queryName, boolean detailedResponse, int page) 
+    public HpcCollectionListDTO getCollections(String queryName, boolean detailedResponse, int page,
+    		                                   boolean totalCount) 
                                               throws HpcException
     {
     	logger.info("Invoking getCollections(string,boolean): " + queryName);
     	
-    	return getCollections(toCompoundMetadataQueryDTO(queryName, detailedResponse, page));
+    	return getCollections(toCompoundMetadataQueryDTO(queryName, detailedResponse, page, totalCount));
     }
     
     @Override
@@ -128,21 +145,37 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
       	boolean detailedResponse = compoundMetadataQueryDTO.getDetailedResponse() != null && 
                                    compoundMetadataQueryDTO.getDetailedResponse();
       	int page = compoundMetadataQueryDTO.getPage() != null ? compoundMetadataQueryDTO.getPage() : 1;
+      	boolean totalCount = compoundMetadataQueryDTO.getTotalCount() != null && 
+                             compoundMetadataQueryDTO.getTotalCount();
       	
-      	// Execute the query and package the results.
-      	return toDataObjectListDTO(dataSearchService.getDataObjectPaths(
-      			                       compoundMetadataQueryDTO.getCompoundQuery(), page), 
-      			                       detailedResponse, page);
+      	// Execute the query and package the results into a DTO.
+      	List<String> dataObjectPaths = dataSearchService.getDataObjectPaths(
+                                           compoundMetadataQueryDTO.getCompoundQuery(), page);
+      	HpcDataObjectListDTO dataObjectsDTO = toDataObjectListDTO(dataObjectPaths, detailedResponse, page);
+      	
+      	// Set page, limit and total count.
+      	dataObjectsDTO.setPage(page);
+      	int limit = dataSearchService.getSearchResultsPageSize();
+		dataObjectsDTO.setLimit(limit);
+      	
+		if(totalCount) {
+			   int count = dataObjectPaths.size();
+			   dataObjectsDTO.setTotalCount(count < limit ? count : 
+				                            dataSearchService.getDataObjectCount(
+				                            		             compoundMetadataQueryDTO.getCompoundQuery()));
+		}
+		
+		return dataObjectsDTO;
     }
     
     @Override
     public HpcDataObjectListDTO getDataObjects(String queryName, boolean detailedResponse, 
-    		                                   int page) 
+    		                                   int page, boolean totalCount) 
                                               throws HpcException
     {
     	logger.info("Invoking getDataObjects(string,boolean): " + queryName);
     	
-    	return getDataObjects(toCompoundMetadataQueryDTO(queryName, detailedResponse, page));
+    	return getDataObjects(toCompoundMetadataQueryDTO(queryName, detailedResponse, page, totalCount));
     }
     
     @Override
@@ -279,12 +312,11 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
      *
      * @param collectionPaths A list of collection paths.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
-     * @param page The requested results page.
      * @return A collection list DTO.
      * @throws HpcException on service failure.
      */
     private HpcCollectionListDTO toCollectionListDTO(List<String> collectionPaths,
-    		                                         boolean detailedResponse, int page)
+    		                                         boolean detailedResponse)
     		                                        throws HpcException
     {
 		HpcCollectionListDTO collectionsDTO = new HpcCollectionListDTO();
@@ -296,9 +328,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
 		} else { 
 			    collectionsDTO.getCollectionPaths().addAll(collectionPaths);
 		}
-		
-		collectionsDTO.setPage(page);
-		collectionsDTO.setLimit(dataSearchService.getSearchResultsPageSize());
 		
 		return collectionsDTO;
     }
@@ -326,8 +355,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
 			    dataObjectsDTO.getDataObjectPaths().addAll(dataObjectPaths);
 		}
 		
-		dataObjectsDTO.setPage(page);
-		dataObjectsDTO.setLimit(dataSearchService.getSearchResultsPageSize());
+		
 		
 		return dataObjectsDTO;
     }
@@ -337,13 +365,14 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
      *
      * @param queryName The user query.
      * @param detailedResponse The detailed response indicator.
-     * @param page The requested results page
+     * @param page The requested results page.
+     * @param totalCount The requested total count of results.
      * @return A compound metadata query DTO.
      * @throws HpcException If the user query was not found.
      */
     private HpcCompoundMetadataQueryDTO 
                toCompoundMetadataQueryDTO(String queryName, boolean detailedResponse, 
-            		                      int page)
+            		                      int page, boolean totalCount)
                                          throws HpcException
     {
     	// Input validation.
@@ -367,6 +396,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
 		compoundMetadataQueryDTO.setCompoundQuery(namedCompoundQuery.getCompoundQuery());
 		compoundMetadataQueryDTO.setDetailedResponse(detailedResponse);
 		compoundMetadataQueryDTO.setPage(page);
+		compoundMetadataQueryDTO.setTotalCount(totalCount);
 		
 		return compoundMetadataQueryDTO;
     }

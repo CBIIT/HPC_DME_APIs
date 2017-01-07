@@ -136,6 +136,23 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     }
     
     @Override
+    public int getCollectionCount(HpcCompoundMetadataQuery compoundMetadataQuery) throws HpcException
+    {
+    	// Input validation.
+    	HpcDomainValidationResult validationResult = isValidCompoundMetadataQuery(compoundMetadataQuery);
+       	if(!validationResult.getValid()) {
+           throw new HpcException("Invalid compound metadata query: " + validationResult.getMessage(), 
+        			              HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+       	
+    	// Use the hierarchical metadata views to perform the search.
+       	String dataManagementUsername = 
+       			   HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+       	return metadataDAO.getCollectionCount(compoundMetadataQuery, dataManagementUsername,
+       			                              defaultCollectionLevelFilter);
+    }
+    
+    @Override
     public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
     		                               int page) 
     		                              throws HpcException
@@ -153,6 +170,23 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
         return toRelativePaths(metadataDAO.getDataObjectPaths(compoundMetadataQuery, dataManagementUsername,
         		                                              getOffset(page), searchResultsPageSize,
         		                                              defaultDataObjectLevelFilter));
+    }
+    
+    @Override
+    public int getDataObjectCount(HpcCompoundMetadataQuery compoundMetadataQuery) throws HpcException
+    {
+    	// Input Validation.
+    	HpcDomainValidationResult validationResult = isValidCompoundMetadataQuery(compoundMetadataQuery);
+       	if(!validationResult.getValid()) {
+           throw new HpcException("Invalid compound metadata query: " + validationResult.getMessage(), 
+        			              HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+       	
+       	// Use the hierarchical metadata views to perform the search.
+       	String dataManagementUsername = 
+                   HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+        return metadataDAO.getDataObjectCount(compoundMetadataQuery, dataManagementUsername,
+                                              defaultDataObjectLevelFilter);
     }
     
     @Override
