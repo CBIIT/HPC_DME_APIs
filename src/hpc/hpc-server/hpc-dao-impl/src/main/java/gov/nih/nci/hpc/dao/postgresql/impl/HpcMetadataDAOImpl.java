@@ -586,14 +586,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     /**
      * Execute a SQL query to get collection or data object paths.
      *
-     * @param prepareQuery The prepared query to execute.
+     * @param preparedQuery The prepared query to execute.
      * @return A list of paths.
      * @throws HpcException on database error.
      */
-    private List<String> getPaths(HpcPreparedQuery prepareQuery) throws HpcException
+    private List<String> getPaths(HpcPreparedQuery preparedQuery) throws HpcException
     {
 		try {
-		     return jdbcTemplate.query(prepareQuery.sql, objectPathRowMapper, prepareQuery.args);
+		     return jdbcTemplate.query(preparedQuery.sql, objectPathRowMapper, preparedQuery.args);
 		     
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get collection/data-object Paths: " + 
@@ -605,20 +605,23 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     /**
      * Execute a SQL query to get collection or data object count.
      *
-     * @param prepareQuery The prepared query to execute.
+     * @param preparedQuery The prepared query to execute.
      * @return The count
      * @throws HpcException on database error.
      */
-    private int getCount(HpcPreparedQuery prepareQuery) throws HpcException
+    private int getCount(HpcPreparedQuery preparedQuery) throws HpcException
     {
+    	logger.error("ERAN: " + preparedQuery);
 		try {
-		     return jdbcTemplate.queryForObject(prepareQuery.sql, Integer.class, prepareQuery.args);
+		     int i = jdbcTemplate.queryForObject(preparedQuery.sql, Integer.class, preparedQuery.args);
+		     logger.error("ERAN: Query done");
+		     return i;
 		     
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to count collection/data-object: " + 
 		                               e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, e);
-		}		
+		}	
     }
     
     /**
