@@ -150,32 +150,39 @@
    		<property name="methodRolesMap">
       		<map>
       			<!-- Security Service Authorizations -->
-      			<entry key="registerUser" value="${hpc.ws.rs.auth.register-user}"/>
-      			<entry key="updateUser" value="${hpc.ws.rs.auth.update-user}"/>
-        		<entry key="getUser" value="${hpc.ws.rs.auth.get-user}"/>
-        		<entry key="setGroup" value="${hpc.ws.rs.auth.group}"/>
-        		<entry key="authenticateUser" value="${hpc.ws.rs.auth.authenticate-user}"/>
-        		<entry key="registerSystemAccount" value="${hpc.ws.rs.auth.register-system-account}"/>
+      			<entry key="registerUser" value="${hpc.ws.rs.auth.security.register-user}"/>
+      			<entry key="updateUser" value="${hpc.ws.rs.auth.security.update-user}"/>
+        		<entry key="getUser" value="${hpc.ws.rs.auth.security.get-user}"/>
+        		<entry key="setGroup" value="${hpc.ws.rs.auth.security.set-group}"/>
+        		<entry key="authenticateUser" value="${hpc.ws.rs.auth.security.authenticate-user}"/>
+        		<entry key="registerSystemAccount" value="${hpc.ws.rs.auth.security.register-system-account}"/>
         		
         		<!--  Data Management Service Authorizations -->
-        		<entry key="registerCollection" value="${hpc.ws.rs.auth.register-collection}"/>
-        		<entry key="getCollection" value="${hpc.ws.rs.auth.get-collection}"/>
-        		<entry key="getCollections" value="${hpc.ws.rs.auth.get-collections}"/>
-        		<entry key="queryCollections" value="${hpc.ws.rs.auth.query-collections}"/>
-        		<entry key="registerDataObject" value="${hpc.ws.rs.auth.register-data-object}"/>
-        		<entry key="getDataObjects" value="${hpc.ws.rs.auth.get-data-objects}"/>
-        		<entry key="queryDataObjects" value="${hpc.ws.rs.auth.query-data-objects}"/>
-        		<entry key="setPermissions" value="${hpc.ws.rs.auth.set-permissions}"/>
-        		<entry key="downloadDataObject" value="${hpc.ws.rs.auth.download-data-object}"/>
-        		<entry key="getDataManagementModel" value="${hpc.ws.rs.auth.get-data-management-model}"/>
-        		<entry key="getMetadataAttributes" value="${hpc.ws.rs.auth.get-metadata-attributes}"/>
-        		<entry key="saveQuery" value="${hpc.ws.rs.auth.save-query}"/>
-        		<entry key="deleteQuery" value="${hpc.ws.rs.auth.delete-query}"/>
-        		<entry key="getQueries" value="${hpc.ws.rs.auth.get-queries}"/>
-        		<entry key="refreshMetadataViews" value="${hpc.ws.rs.auth.refresh-metadata-views}"/>
+        		<entry key="registerCollection" value="${hpc.ws.rs.auth.data-management.register-collection}"/>
+        		<entry key="getCollection" value="${hpc.ws.rs.auth.data-management.get-collection}"/>
+        		<entry key="registerDataObject" value="${hpc.ws.rs.auth.data-management.register-data-object}"/>
+        		<entry key="getDataObject" value="${hpc.ws.rs.auth.data-management.get-data-object}"/>
+        		<entry key="setPermissions" value="${hpc.ws.rs.auth.data-management.set-permissions}"/>
+        		<entry key="downloadDataObject" value="${hpc.ws.rs.auth.data-management.download-data-object}"/>
+        		<entry key="getDataManagementModel" value="${hpc.ws.rs.auth.data-management.get-data-management-model}"/>
+        		
+        		<!--  Data Search Service Authorizations -->
+        		<entry key="queryCollections" value="${hpc.ws.rs.auth.data-search.query-collections}"/>
+        		<entry key="queryDataObjects" value="${hpc.ws.rs.auth.data-search.query-data-objects}"/>
+        		<entry key="addQuery" value="${hpc.ws.rs.auth.data-search.add-query}"/>
+        		<entry key="updateQuery" value="${hpc.ws.rs.auth.data-search.update-query}"/>
+        		<entry key="deleteQuery" value="${hpc.ws.rs.auth.data-search.delete-query}"/>
+        		<entry key="getQuery" value="${hpc.ws.rs.auth.data-search.get-query}"/>
+        		<entry key="getQueries" value="${hpc.ws.rs.auth.data-search.get-queries}"/>
+        		<entry key="getMetadataAttributes" value="${hpc.ws.rs.auth.data-search.get-metadata-attributes}"/>
+        		<entry key="refreshMetadataViews" value="${hpc.ws.rs.auth.data-search.refresh-metadata-views}"/>
+        		
+        		<!--  Notification Service Authorizations -->
+        		<entry key="subscribeNotifications" value="${hpc.ws.rs.auth.notification.subscribe-notifications}"/>
+        		<entry key="getNotificationSubscriptions" value="${hpc.ws.rs.auth.notification.get-notification-subscriptions}"/>
         		
         		<!--  Report Service Authorizations -->
-        		<entry key="generateReport" value="${hpc.ws.rs.auth.generate-report}"/>
+        		<entry key="generateReport" value="${hpc.ws.rs.auth.report.generate-report}"/>
       		</map>
    		</property>
 	</bean>
