@@ -42,6 +42,15 @@ public interface HpcDataSearchService
     		                              throws HpcException;
     
     /**
+     * Get count of collections matching a compound metadata query.
+     *
+     * @param compoundMetadataQuery The compound metadata query.
+     * @return The count of collections matching the query.
+     * @throws HpcException on service failure.
+     */
+    public int getCollectionCount(HpcCompoundMetadataQuery compoundMetadataQuery) throws HpcException;
+    
+    /**
      * Get data object paths by compound metadata query.
      *
      * @param compoundMetadataQuery The compound metadata query.
@@ -51,6 +60,15 @@ public interface HpcDataSearchService
      */
     public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page) 
     		                              throws HpcException;
+    
+    /**
+     * Get count of data object matching a compound metadata query.
+     *
+     * @param compoundMetadataQuery The compound metadata query.
+     * @return The count of data objects matching the query.
+     * @throws HpcException on service failure.
+     */
+    public int getDataObjectCount(HpcCompoundMetadataQuery compoundMetadataQuery) throws HpcException;
     
     /**
      * Get the search results page size.

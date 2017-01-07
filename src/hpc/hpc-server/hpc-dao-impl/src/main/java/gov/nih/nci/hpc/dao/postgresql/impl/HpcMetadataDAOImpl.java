@@ -136,8 +136,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String GET_COLLECTION_PATHS_SQL = 
 			"select distinct object_path from public.\"r_coll_hierarchy_meta_main\" where object_id in ";
 	
+	private static final String GET_COLLECTION_COUNT_SQL = 
+			"select count(distinct object_path) from public.\"r_coll_hierarchy_meta_main\" where object_id in ";
+	
 	private static final String GET_DATA_OBJECT_PATHS_SQL = 
 			"select distinct object_path from public.\"r_data_hierarchy_meta_main\" where object_id in ";
+	
+	private static final String GET_DATA_OBJECT_COUNT_SQL = 
+			"select count(distinct object_path) from public.\"r_data_hierarchy_meta_main\" where object_id in ";
 	
 	private static final String GET_COLLECTION_METADATA_SQL = 
 			"select meta_attr_name,  meta_attr_value, level " + 
@@ -273,6 +279,18 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
                                     		 collectionSQLLevelFilters, defaultLevelFilter),
                                      dataManagementUsername, offset, limit));
     }
+	
+	@Override
+    public int getCollectionCount(HpcCompoundMetadataQuery compoundMetadataQuery,
+    		                      String dataManagementUsername,
+                                  HpcMetadataQueryLevelFilter defaultLevelFilter) 
+                                 throws HpcException
+    {
+		return getCount(prepareQuery(GET_COLLECTION_COUNT_SQL, 
+                                     toQuery(collectionSQLQueries, compoundMetadataQuery, 
+                                    		 collectionSQLLevelFilters, defaultLevelFilter),
+                                     dataManagementUsername, null, null));
+    }
 
 	@Override 
 	public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
@@ -285,6 +303,18 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
                                      toQuery(dataObjectSQLQueries, compoundMetadataQuery,
                                     		 dataObjectSQLLevelFilters, defaultLevelFilter),
                                      dataManagementUsername, offset, limit));
+    }
+	
+	@Override 
+	public int getDataObjectCount(HpcCompoundMetadataQuery compoundMetadataQuery,
+			                      String dataManagementUsername,
+			                      HpcMetadataQueryLevelFilter defaultLevelFilter) 
+                                 throws HpcException
+    {
+		return getCount(prepareQuery(GET_DATA_OBJECT_COUNT_SQL, 
+                                     toQuery(dataObjectSQLQueries, compoundMetadataQuery,
+                                    		 dataObjectSQLLevelFilters, defaultLevelFilter),
+                                     dataManagementUsername, null, null));
     }
 	
     @Override
@@ -409,7 +439,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     private HpcPreparedQuery prepareQuery(String getObjectPathsQuery,
     		                              HpcPreparedQuery userQuery,
     		                              String dataManagementUsername,
-    		                              int offset, int limit) 
+    		                              Integer offset, Integer limit) 
     {
     	StringBuilder sqlQueryBuilder = new StringBuilder();
     	List<Object> args = new ArrayList<>();
@@ -424,9 +454,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     	sqlQueryBuilder.append(USER_ACCESS_SQL + ")");
     	args.add(dataManagementUsername);
     	
-    	sqlQueryBuilder.append(LIMIT_OFFSET_SQL);
-    	args.add(limit);
-    	args.add(offset);
+    	if(offset != null && limit != null) {
+    	   sqlQueryBuilder.append(LIMIT_OFFSET_SQL);
+    	   args.add(limit);
+    	   args.add(offset);
+    	}
     	
     	HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
     	preparedQuery.sql = sqlQueryBuilder.toString();
@@ -552,7 +584,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     }
     
     /**
-     * Execute a SQL query to get collection or data object paths
+     * Execute a SQL query to get collection or data object paths.
      *
      * @param prepareQuery The prepared query to execute.
      * @return A list of paths.
@@ -565,6 +597,25 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		     
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get collection/data-object Paths: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}		
+    }
+    
+    /**
+     * Execute a SQL query to get collection or data object count.
+     *
+     * @param prepareQuery The prepared query to execute.
+     * @return The count
+     * @throws HpcException on database error.
+     */
+    private int getCount(HpcPreparedQuery prepareQuery) throws HpcException
+    {
+		try {
+		     return jdbcTemplate.queryForObject(prepareQuery.sql, Integer.class, prepareQuery.args);
+		     
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to count collection/data-object: " + 
 		                               e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, e);
 		}		

@@ -103,7 +103,8 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response queryCollections(String queryName, Boolean detailedResponse, Integer page)
+    public Response queryCollections(String queryName, Boolean detailedResponse, Integer page, 
+    		                         Boolean totalCount)
     {
     	long start = System.currentTimeMillis();
     	logger.info("Invoking RS: GET /collection/query/compound/{queryName}" + queryName);
@@ -113,7 +114,8 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			 collections = dataSearchBusService.getCollections(
 					           queryName,
 					           detailedResponse != null ? detailedResponse : false,
-					           page != null ? page : 1);
+					           page != null ? page : 1,
+					           totalCount != null ? totalCount : false);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /collection/query/compound/{queryName}" + queryName + 
@@ -150,7 +152,8 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response queryDataObjects(String queryName, Boolean detailedResponse, Integer page)
+    public Response queryDataObjects(String queryName, Boolean detailedResponse, Integer page,
+    		                         Boolean totalCount)
     {
     	long start = System.currentTimeMillis();
     	logger.info("Invoking RS: GET /dataObject/query/compound{queryName}" + queryName);
@@ -160,7 +163,8 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			 dataObjects = dataSearchBusService.getDataObjects(
 					           queryName,
 					           detailedResponse != null ? detailedResponse : false,
-					           page != null ? page : 1);
+					           page != null ? page : 1,
+					           totalCount != null ? totalCount : false);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /dataObject/query/compound{queryName}" + queryName + 

@@ -49,7 +49,25 @@ public interface HpcMetadataDAO
     		                              throws HpcException;
     
     /**
-     * Get data object Paths by compound metadata query. Only data object Paths accessible to the user are returned. 
+     * Get count of collections matching a compound metadata query. 
+     * Only collections accessible to the user are included in the count. 
+     *
+     * @param compoundMetadataQuery The compound metadata query.
+     * @param dataManagementUsername The Data Management user name. 
+     * @param offset Skip that many path in the returned results.
+     * @param limit No more than 'limit' paths will be returned.
+     * @param defaultLevelFilter A default level filter to use if not provided in the query.
+     * @return Count of collections matching the query.
+     * @throws HpcException on database error.
+     */
+    public int getCollectionCount(HpcCompoundMetadataQuery compoundMetadataQuery,
+    		                      String dataManagementUsername,
+                                  HpcMetadataQueryLevelFilter defaultLevelFilter) 
+                                 throws HpcException;
+    
+    /**
+     * Get data object Paths by compound metadata query. 
+     * Only data object Paths accessible to the user are returned. 
      *
      * @param compoundMetadataQuery The compound metadata query.
      * @param dataManagementUsername The Data Management user name. 
@@ -64,6 +82,21 @@ public interface HpcMetadataDAO
     		                               int offset, int limit,
     		                               HpcMetadataQueryLevelFilter defaultLevelFilter) 
     		                              throws HpcException;
+    
+    /**
+     * Get a count of data objects matching a compound metadata query. 
+     * Only data object accessible to the user are included in the count. 
+     *
+     * @param compoundMetadataQuery The compound metadata query.
+     * @param dataManagementUsername The Data Management user name. 
+     * @param defaultLevelFilter A default level filter to use if not provided in the query.
+     * @return Count of data objects matching the count.
+     * @throws HpcException on database error.
+     */
+    public int getDataObjectCount(HpcCompoundMetadataQuery compoundMetadataQuery,
+    		                      String dataManagementUsername,
+                                  HpcMetadataQueryLevelFilter defaultLevelFilter) 
+                                 throws HpcException;
     
     /**
      * Get collection hierarchical metadata entries.
