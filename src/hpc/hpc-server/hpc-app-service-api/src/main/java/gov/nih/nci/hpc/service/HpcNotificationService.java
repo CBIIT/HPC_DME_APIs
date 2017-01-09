@@ -32,34 +32,28 @@ public interface HpcNotificationService
 	/**
      * Add/Update a notification subscription for a user.
      *
-     * @param userId The user ID.
      * @param notificationSubscription The notification subscription to add/update.
      * @throws HpcException on service failure.
      */
-    public void addUpdateNotificationSubscription(String userId,
-    		                                      HpcNotificationSubscription notificationSubscription)
+    public void addUpdateNotificationSubscription(HpcNotificationSubscription notificationSubscription)
                                                  throws HpcException;
     
 	/**
      * Delete a notification subscription for a user.
      *
-     * @param userId The user ID.
      * @param eventType The event type to delete.
      * @throws HpcException on service failure.
      */
-    public void deleteNotificationSubscription(String userId,
-    		                                   HpcEventType eventType)
+    public void deleteNotificationSubscription(HpcEventType eventType)
                                               throws HpcException;
     
     /**
      * Get notification subscriptions of a user.
      *
-     * @param userId The user ID.
      * @return A list of notification subscriptions.
      * @throws HpcException on service failure.
      */
-    public List<HpcNotificationSubscription> getNotificationSubscriptions(String userId) 
-    		                                                             throws HpcException;
+    public List<HpcNotificationSubscription> getNotificationSubscriptions() throws HpcException;
     
     /**
      * Get notification subscription.

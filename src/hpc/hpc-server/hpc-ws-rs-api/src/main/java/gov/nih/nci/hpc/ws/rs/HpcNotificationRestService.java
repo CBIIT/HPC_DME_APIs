@@ -16,7 +16,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -36,26 +35,23 @@ public interface HpcNotificationRestService
     /**
      * Subscribe to notifications.
      *
-     * @param nciUserId The NCI user ID.
      * @param notificationSubscriptions The notification subscriptions request.
      * @return The REST service response.
      */
 	@POST
-    @Path("/notification/{nciUserId}")
+    @Path("/notification")
     @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-    public Response subscribeNotifications(@PathParam("nciUserId") String nciUserId,
-    		                               HpcNotificationSubscriptionsRequestDTO notificationSubscriptions);
+    public Response subscribeNotifications(HpcNotificationSubscriptionsRequestDTO notificationSubscriptions);
 	
     /**
      * Get Notification Subscriptions.
      *
-     * @param nciUserId The NCI user ID.
      * @return The REST service response.
      */
 	@GET
-    @Path("/notification/{nciUserId}")
+    @Path("/notification")
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-    public Response getNotificationSubscriptions(@PathParam("nciUserId") String nciUserId);
+    public Response getNotificationSubscriptions();
 }
 
