@@ -68,17 +68,15 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//  
 	
     @Override
-    public Response subscribeNotifications(String nciUserId,
-                                           HpcNotificationSubscriptionsRequestDTO notificationSubscriptions)
+    public Response subscribeNotifications(HpcNotificationSubscriptionsRequestDTO notificationSubscriptions)
     {	
-		logger.info("Invoking RS: POST /notification/{nciUserId}: " + 
-				    nciUserId + ", " + notificationSubscriptions);
+		logger.info("Invoking RS: POST /notification: " + notificationSubscriptions);
 		
 		try {
-			 notificationBusService.subscribeNotifications(nciUserId, notificationSubscriptions);
+			 notificationBusService.subscribeNotifications(notificationSubscriptions);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /notification/{nciUserId} failed:", e);
+			    logger.error("RS: POST /notification failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -86,22 +84,21 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response getNotificationSubscriptions(String nciUserId)
+    public Response getNotificationSubscriptions()
     {
-		logger.info("Invoking RS: GET /notification/{nciUserId}: " + nciUserId);
+		logger.info("Invoking RS: GET /notification");
 	
 		HpcNotificationSubscriptionListDTO subscriptions = null;
 		try {
-			 subscriptions = notificationBusService.getNotificationSubscriptions(nciUserId);
+			 subscriptions = notificationBusService.getNotificationSubscriptions();
 		 
 		} catch(HpcException e) {
-		        logger.error("RS: GET /notification/{nciUserId} failed:", e);
+		        logger.error("RS: GET /notification failed:", e);
 		        return errorResponse(e);
 		}
 	
 		return okResponse(subscriptions, true);   	
     }
-    
 }
 
  

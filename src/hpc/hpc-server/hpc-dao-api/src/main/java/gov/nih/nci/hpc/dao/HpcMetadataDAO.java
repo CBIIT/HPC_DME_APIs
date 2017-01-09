@@ -54,8 +54,6 @@ public interface HpcMetadataDAO
      *
      * @param compoundMetadataQuery The compound metadata query.
      * @param dataManagementUsername The Data Management user name. 
-     * @param offset Skip that many path in the returned results.
-     * @param limit No more than 'limit' paths will be returned.
      * @param defaultLevelFilter A default level filter to use if not provided in the query.
      * @return Count of collections matching the query.
      * @throws HpcException on database error.

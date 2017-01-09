@@ -28,23 +28,19 @@ public interface HpcNotificationBusService
     /**
      * Subscribe to notifications.
      *
-     * @param userId The user ID to subscribe notifications for.
      * @param notificationSubscriptions The notification subscriptions request.
      * @throws HpcException on service failure.
      */
-    public void subscribeNotifications(String userId,
-    		                           HpcNotificationSubscriptionsRequestDTO notificationSubscriptions)
+    public void subscribeNotifications(HpcNotificationSubscriptionsRequestDTO notificationSubscriptions)
                                       throws HpcException;
     
     /**
      * Get notification subscriptions of a user.
      *
-     * @param userId The user ID.
      * @return A list of notification subscriptions.
      * @throws HpcException on service failure.
      */
-    public HpcNotificationSubscriptionListDTO getNotificationSubscriptions(String userId) 
-    		                                                             throws HpcException;
+    public HpcNotificationSubscriptionListDTO getNotificationSubscriptions() throws HpcException;
 }
 
  

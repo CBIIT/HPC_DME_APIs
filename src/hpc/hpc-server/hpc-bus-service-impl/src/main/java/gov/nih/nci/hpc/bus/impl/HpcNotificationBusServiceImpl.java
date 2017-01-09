@@ -12,10 +12,8 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcNotificationBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
-import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -76,65 +74,40 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService
     //---------------------------------------------------------------------//  
     
     @Override
-    public void subscribeNotifications(String userId, 
-    		                           HpcNotificationSubscriptionsRequestDTO notificationSubscriptions)
+    public void subscribeNotifications(HpcNotificationSubscriptionsRequestDTO notificationSubscriptions)
                                       throws HpcException
     {
     	logger.info("Invoking subscribeNotifications(List<HpcNotificationSubscription>): " + 
     			    notificationSubscriptions);
     	
     	// Input validation.
-    	if(notificationSubscriptions == null) {
+    	if(notificationSubscriptions == null || 
+    	   notificationSubscriptions.getAddUpdateSubscriptions() == null) {
     	   throw new HpcException("Null List<HpcNotificationSubscription>",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
-    	if(securityService.getUser(userId) == null) {
-    	   throw new HpcException("Invalid user: " + userId,
-	                              HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
-
-    	HpcUserRole requestUserRole = securityService.getUserRole(userId);
     	
     	// Add/Update subscriptions for the user.
-    	if(notificationSubscriptions.getAddUpdateSubscriptions() != null) {
-    	   for(HpcNotificationSubscription notificationSubscription : 
-    		   notificationSubscriptions.getAddUpdateSubscriptions()) {
-    	    	if(!requestUserRole.equals(HpcUserRole.SYSTEM_ADMIN) && (notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_REPORT) || 
-    	    			notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_BY_WEEKLY_REPORT) ||
-    	    			notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_BY_DOC_REPORT) ||
-    	    			notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_BY_DOC_BY_WEEKLY_REPORT) ||
-    	    			notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_BY_USER_REPORT) ||
-    	    			notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT)))
-    	    	{
-    	           			throw new HpcException("Not authorizated to subscribe to the report. Please contact system administrator",
-    	         	                  HpcRequestRejectReason.NOT_AUTHORIZED);
-    	    	}
-    	       notificationService.addUpdateNotificationSubscription(userId, notificationSubscription);
-    	   }
+    	for(HpcNotificationSubscription notificationSubscription : 
+    		notificationSubscriptions.getAddUpdateSubscriptions()) {
+   	        notificationService.addUpdateNotificationSubscription(notificationSubscription);
     	}
     	
     	// Delete subscriptions for the user.
     	if(notificationSubscriptions.getDeleteSubscriptions() != null) {
     	   for(HpcEventType eventType : 
     		   notificationSubscriptions.getDeleteSubscriptions()) {
-    	       notificationService.deleteNotificationSubscription(userId, eventType);
+    	       notificationService.deleteNotificationSubscription(eventType);
     	   }
     	}
     }
     
     @Override
     public HpcNotificationSubscriptionListDTO
-           getNotificationSubscriptions(String userId) throws HpcException
+           getNotificationSubscriptions() throws HpcException
     {
-    	// Input validation.
-    	if(securityService.getUser(userId) == null) {
-    	   throw new HpcException("Invalid user: " + userId,
-	                              HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}   
-    	
     	// Get the subscriptions for the user.
-    	List<HpcNotificationSubscription> subscriptions = 
-    		 notificationService.getNotificationSubscriptions(userId);
+    	List<HpcNotificationSubscription> subscriptions = notificationService.getNotificationSubscriptions();
     	if(subscriptions == null || subscriptions.isEmpty()) {
     	   return null;
     	}
