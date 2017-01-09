@@ -13,11 +13,14 @@ package gov.nih.nci.hpc.service.impl;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNotificationSubscription;
 import gov.nih.nci.hpc.dao.HpcNotificationDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
+import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 
@@ -92,48 +95,73 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     //---------------------------------------------------------------------//
 
     @Override
-    public void addUpdateNotificationSubscription(String userId,
-    		                                      HpcNotificationSubscription notificationSubscription)
+    public void addUpdateNotificationSubscription(HpcNotificationSubscription notificationSubscription)
                                                  throws HpcException
     {
     	// Input validation.
-    	if(userId == null || 
-    	   !isValidNotificationSubscription(notificationSubscription)) {
+    	if(!isValidNotificationSubscription(notificationSubscription)) {
     	   throw new HpcException("Invalid add/update notification subscription request",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
+    	
+    	// Validate subscription for usage summary report is allowed for system admin only 
+    	if(!HpcRequestContext.getRequestInvoker().getUserRole().equals(HpcUserRole.SYSTEM_ADMIN)) {
+    	   if(notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_REPORT) || 
+    	      notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_BY_WEEKLY_REPORT) ||
+    	      notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_BY_DOC_REPORT) ||
+    	      notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_BY_DOC_BY_WEEKLY_REPORT) ||
+    	      notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_BY_USER_REPORT) ||
+    	      notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT)) {
+    	      throw new HpcException("Not authorizated to subscribe to the report. Please contact system administrator",
+    	       	                     HpcRequestRejectReason.NOT_AUTHORIZED);
+    	   }
+    	}
+    	
+       	// Get the service invoker.
+       	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+       	if(invoker == null) {
+       	   throw new HpcException("Unknown service invoker", 
+		                          HpcErrorType.UNEXPECTED_ERROR);
+       	}
 
     	// Upsert to DB.
-    	notificationDAO.upsertSubscription(userId, notificationSubscription);
+    	notificationDAO.upsertSubscription(invoker.getNciAccount().getUserId(), 
+    			                           notificationSubscription);
     }
     
     @Override
-    public void deleteNotificationSubscription(String userId,
-                                               HpcEventType eventType)
+    public void deleteNotificationSubscription(HpcEventType eventType)
                                               throws HpcException
     {
     	// Input validation.
-    	if(userId == null || eventType == null) {
-    	   throw new HpcException("Invalid delete notification subscription request",
+    	if(eventType == null) {
+    	   throw new HpcException("Null event type",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
+    	
+       	// Get the service invoker.
+       	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+       	if(invoker == null) {
+       	   throw new HpcException("Unknown service invoker", 
+		                          HpcErrorType.UNEXPECTED_ERROR);
+       	}
 
     	// Delete from DB.
-    	notificationDAO.deleteSubscription(userId, eventType);
+    	notificationDAO.deleteSubscription(invoker.getNciAccount().getUserId(), eventType);
     }
     
     @Override
-    public List<HpcNotificationSubscription> getNotificationSubscriptions(String userId) 
-    		                                                             throws HpcException
+    public List<HpcNotificationSubscription> getNotificationSubscriptions() throws HpcException
     {
-    	// Input validation.
-    	if(userId == null) {
-    	   throw new HpcException("Invalid user ID",
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
+       	// Get the service invoker.
+       	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+       	if(invoker == null) {
+       	   throw new HpcException("Unknown service invoker", 
+		                          HpcErrorType.UNEXPECTED_ERROR);
+       	}
 
     	// Query the DB.
-    	return notificationDAO.getSubscriptions(userId);
+    	return notificationDAO.getSubscriptions(invoker.getNciAccount().getUserId());
     }
     
     @Override

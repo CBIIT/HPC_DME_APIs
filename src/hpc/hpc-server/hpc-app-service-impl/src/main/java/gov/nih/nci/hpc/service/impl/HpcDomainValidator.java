@@ -252,12 +252,12 @@ public class HpcDomainValidator
     }
     
     /**
-     * Check is a collection is empty.
+     * Check if a collection is empty.
      *
-     * @param value The string to check
+     * @param collection The collection to check.
      * @return true if not null and not empty, false otherwise.
      */
-    private static boolean isEmpty(@SuppressWarnings("rawtypes") Collection collection) 
+    private static boolean isEmpty(Collection<?> collection) 
     {
     	return collection == null ? false : collection.isEmpty();
     }
