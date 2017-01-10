@@ -93,6 +93,10 @@
           <value>metadataAttributes</value>
           <value>metadataEntries</value>
           <value>docs</value>
+          <value>namedCompoundQueries</value>
+          <value>compoundQueries</value>
+          <value>queries</value>
+          <value>subscriptions</value>
     </util:list>
 
 	<!-- JSON Provider -->

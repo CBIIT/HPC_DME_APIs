@@ -12,7 +12,7 @@
           "isDataObjectContainer": false,
           "subCollections": [
             {
-              "collectionType": "Run",
+              "collectionType": "Flowcell",
               "isDataObjectContainer": false,
               "subCollections": [
                 {
