@@ -7,7 +7,7 @@
             "validValues":[  
                "Project",
                "PI_Lab",
-               "Run",
+               "Flowcell",
                "Sample"
             ],
             "ruleEnabled":true,
@@ -21,7 +21,7 @@
             "validValues":[  
                "Project",
                "Dataset",
-               "Run",
+               "Flowcell",
                "Folder"
             ],
             "ruleEnabled":true,
@@ -505,7 +505,7 @@
             "attribute":"flowcell_id",
             "mandatory":true,
             "collectionTypes":[  
-               "Run"
+               "Flowcell"
             ],
             "ruleEnabled":true,
             "docs":[  
@@ -516,7 +516,7 @@
             "attribute":"run_name",
             "mandatory":true,
             "collectionTypes":[  
-               "Run"
+               "Flowcell"
             ],
             "ruleEnabled":true,
             "docs":[  
@@ -527,7 +527,7 @@
             "attribute":"run_date",
             "mandatory":true,
             "collectionTypes":[  
-               "Run"
+               "Flowcell"
             ],
             "ruleEnabled":true,
             "docs":[  
@@ -538,7 +538,7 @@
             "attribute":"sequencing_platform",
             "mandatory":true,
             "collectionTypes":[  
-               "Run"
+               "Flowcell"
             ],
             "ruleEnabled":true,
             "docs":[  
@@ -549,7 +549,7 @@
             "attribute":"sequencing_application_type",
             "mandatory":true,
             "collectionTypes":[  
-               "Run"
+               "Flowcell"
             ],
             "ruleEnabled":true,
             "docs":[  
@@ -560,7 +560,7 @@
             "attribute":"read_length",
             "mandatory":true,
             "collectionTypes":[  
-               "Run"
+               "Flowcell"
             ],
             "ruleEnabled":true,
             "docs":[  
@@ -571,7 +571,7 @@
             "attribute":"pooling",
             "mandatory":true,
             "collectionTypes":[  
-               "Run"
+               "Flowcell"
             ],
             "ruleEnabled":true,
             "docs":[  
