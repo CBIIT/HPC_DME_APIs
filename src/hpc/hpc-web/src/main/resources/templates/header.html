@@ -233,8 +233,8 @@
                           <span class="menu-arrow arrow_carrot-right"></span>
                       </a>
                       <ul class="sub">
-                          <li><a class="" th:href="@{/registerDataset}">Collection</a></li>
-                          <li><a class="" th:href="@{/registerProject}">Data Object</a></li>
+                          <li><a class="" th:href="@{/registercollection}">Collection</a></li>
+                          <li><a class="" th:href="@{/registerdatafile}">Data File</a></li>
                      </ul>
                   </li>
 				  <li class="sub-menu">
@@ -250,8 +250,9 @@
                           <span class="menu-arrow arrow_carrot-right"></span>
                       </a>
                       <ul class="sub">
-                          <li><a class="" th:href="@{/registerDataset}">Update Collection</a></li>
-                          <li><a class="" th:href="@{/register/project}">Update Data Object</a></li>
+                          <li><a class="" th:href="@{/updatecollection}">Update Collection</a></li>
+                          <li><a class="" th:href="@{/updatedatafile}">Update Data Object</a></li>
+                          <li><a class="" th:href="@{/subscribe}">Notifications</a></li>
                      </ul>
                   </li>
                   <li class="sub-menu">
@@ -261,9 +262,14 @@
                           <span class="menu-arrow arrow_carrot-right"></span>
                       </a>
                       <ul class="sub">
-                          <li><a class="" href="basic_table.html">Groups</a></li>
-                          <li><a class="" href="basic_table.html">Permission</a></li>
+                          <li><a class="" href="basic_table.html">Permissions</a></li>
                       </ul>
+                  </li>
+				  <li class="sub-menu">
+                      <a th:href="@{/reports}" class="">
+                          <i class="icon_document_alt"></i>
+                          <span>Reports</span>
+                      </a>
                   </li>
                   <li class="sub-menu">
                       <a href="#" class="">

@@ -1,96 +1,52 @@
-var app = angular.module('myApp', ['ui.grid']);
-var linkDatasetCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
-'  <a href="dataset?id={{row.getProperty(\'id\')}}">{{row.getProperty(col.field)}}</a>' +
+var app = angular.module('DashBoard', ['ngTouch', 'ui.grid', 'ui.grid.pagination']);
+var linkSearchNameCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
+'  <a href="search?queryName={{row.getProperty(\'message\')}}">{{row.getProperty(col.field)}}</a>' +
 '</div>';
-var linkProjectCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
-'  <a href="project?id={{row.getProperty(\'id\')}}">{{row.getProperty(col.field)}}</a>' +
-'</div>';
-app.controller('MyCtrl', function($scope, $http, $q, $attrs) {
-	var deferred = $q.defer();
-	$scope.$watch('userId', function () {
-	console.log('$scope.userId', $scope.userId);
 
+app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
 	$http.get('/query').
 	  success(function(data, status, headers, config) {
-		    console.log('success0' + data);
-		    var savedQueries = data["gov.nih.nci.hpc.web.model.HpcSavedQueries"];
-		    console.log('success1' + savedQueries);
-		    var queries = savedQueries["gov.nih.nci.hpc.web.model.HpcQuery"];
-		    console.log('success2' + queries);
-	        if(!data instanceof Array)
-	        {
-	        	console.log('not instance of array');
-	        	$scope.hpcQueries = new Array(data.queries);
-	        }
-	        else
-	        	$scope.hpcQueries = data.queries;
-			deferred.resolve($scope.hpcQueries);
+//		    console.log('success0' + data);
+//		    var str = JSON.stringify(data, null, 2);
+//		    console.log('success1' + str);
+        	$scope.hpcQueries = data;
 	  }).
 	  error(function(data, status, headers, config) {
 		console.log('Failure', status);
 	  });
 	
-//    $scope.hpcQueries = [{code: "Moroni"},
-//                         {code: "Tiancum"},
-//                         {code: "Jacob"},
-//                         {code: "Nephi"},
-//                         {code: "Enos"}];	        
-//
-
-	$scope.pagingOptions = {
-		    pageSizes: [10, 20, 30, 500, 1000, 5000], //page Sizes
-		    pageSize: 10, //Size of Paging data
-		    currentPage: 1 //what page they are currently on
-		};
+  $scope.gridOptions1 = {
+    paginationPageSizes: [25, 50, 75],
+    data: 'hpcQueries',
+    paginationPageSize: 25,
+    columnDefs: [
+      { 
+    	field: "message", 
+    	displayName: "Name",
+        enableCellEdit: false,
+        cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="search?queryName={{COL_FIELD CUSTOM_FILTERS}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>' 
+      }
+    ]
+  };
+ 
+  $scope.gridOptions2 = {
+    enablePaginationControls: false,
+    paginationPageSize: 25,
+    columnDefs: [
+      { name: 'name' }
+    ]
+  };
+ 
+	$scope.myData = [{name: "Moroni", age: 50},
+	                 {name: "Tiancum", age: 43},
+	                 {name: "Jacob", age: 27},
+	                 {name: "Nephi", age: 29},
+	                 {name: "Enos", age: 34}];
+ 
 	
-$scope.gridOptions1 = {
-        data: 'hpcNotifications',
-        enableRowSelection: false,
-        enableColumnResize: true,
-        enableCellEditOnFocus: false,
-        showSelectionCheckbox: false,
-        selectedItems:$scope.selectedRows,
-        columnDefs: [{
-            field: 'id',
-            displayName: 'Id',
-            enableCellEdit: false,
-            cellTemplate: linkDatasetCellTemplate
-         }, {
-             field: 'fileSet.name',
-             displayName: 'Type',
-             enableCellEdit: false
-         },{
-             field: 'created',
-             displayName: 'Created',
-             enableCellEdit: false,
-             cellFilter: 'date:\'yyyy-MM-dd\''
-           }],
-         sortInfo: {
-   	      fields: ['created'],
-   	      directions: ['asc']
-   	    }    
-       };
-$scope.gridOptions1.pagingOptions = $scope.pagingOptions;
-$scope.gridOptions1.showFooter = true;
-$scope.gridOptions1.enablePaging = true;
-
-$scope.gridOptions2 = {
-        enableRowSelection: false,
-        data: 'hpcQueries',
-        enableCellEditOnFocus: false,
-        enableColumnResize: true,
-        showSelectionCheckbox: false,
-        selectedItems:$scope.selectedRows,
-        columnDefs: [{
-        	 field: 'name',
-             displayName: 'name',
-             enableCellEdit: false
-         }]           
-       };
-
-$scope.gridOptions2.pagingOptions = $scope.pagingOptions;
-$scope.gridOptions2.showFooter = false;
-$scope.gridOptions2.enablePaging = false;
-})});
-
-
+  $scope.gridOptions2.onRegisterApi = function (gridApi) {
+    $scope.gridApi2 = gridApi;
+  }
+ 
+    $scope.gridOptions2.data = $scope.myData;
+}]);
