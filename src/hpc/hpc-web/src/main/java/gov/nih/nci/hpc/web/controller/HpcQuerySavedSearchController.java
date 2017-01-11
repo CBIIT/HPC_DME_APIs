@@ -40,7 +40,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM Project Search controller
+ * HPC DM Saved Search controller
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
@@ -57,35 +57,35 @@ public class HpcQuerySavedSearchController extends AbstractHpcController {
 	@JsonView(Views.Public.class)
 	@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public HpcSavedQueries  get(@Valid @ModelAttribute("hpcSaveSearch") HpcSaveSearch search, Model model, BindingResult bindingResult,
+	public List<AjaxResponseBody>  get(@Valid @ModelAttribute("hpcSaveSearch") HpcSaveSearch search, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 		HpcSavedQueries savedQueries = new HpcSavedQueries();
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		String userPasswdToken = (String) session.getAttribute("userpasstoken");
-		List<HpcQuery> result = new ArrayList<HpcQuery>();
+		List<AjaxResponseBody> result = new ArrayList<AjaxResponseBody>();
 		try {
 			HpcNamedCompoundMetadataQueryListDTO queries = 
 					HpcClientUtil.getSavedSearches(userPasswdToken, queryServiceURL, sslCertPath, sslCertPassword);
 			if(queries == null || queries.getNamedCompoundQueries() == null || queries.getNamedCompoundQueries().size() == 0)
 			{
-				HpcQuery body = new HpcQuery();
-				body.setName("No Saved Searches");
+				AjaxResponseBody body = new AjaxResponseBody();
+				body.setMessage("No Saved Searches");
 				result.add(body);
 			}
 			else
 			{
 				for(HpcNamedCompoundMetadataQuery query : queries.getNamedCompoundQueries())
 				{
-					HpcQuery body = new HpcQuery();
-					body.setName(query.getName());
+					AjaxResponseBody body = new AjaxResponseBody();
+					body.setMessage(query.getName());
 					result.add(body);
 				}
 			}
-			savedQueries.setQueries(result);
-			return savedQueries;
+			//savedQueries.setQueries(result);
+			return result;
 		} catch (Exception e) {
 			e.printStackTrace();
-			return savedQueries;
+			return result;
 		}
 	}
 }

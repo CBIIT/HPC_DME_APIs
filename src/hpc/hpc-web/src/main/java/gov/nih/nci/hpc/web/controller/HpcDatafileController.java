@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -71,7 +72,7 @@ public class HpcDatafileController extends AbstractHpcController {
 			if (restResponse.getStatus() == 200) {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-				  new JaxbAnnotationIntrospector(),
+				  new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
 				  new JacksonAnnotationIntrospector()
 				);
 				mapper.setAnnotationIntrospector(intr);
