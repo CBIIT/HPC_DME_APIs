@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.service;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -101,6 +102,31 @@ public interface HpcNotificationService
     public void createNotificationDeliveryReceipt(String userId, int eventId, 
     		                                      HpcNotificationDeliveryMethod deliveryMethod,
     		                                      boolean deliveryStatus);
+    
+    /**
+     * Get Notification Delivery Receipts for a user.
+     *
+     * @param page The requested results page.
+     * @return A list of notification delivery receipts.
+     * @throws HpcException on service failure.
+     */
+    public List<HpcNotificationDeliveryReceipt> getNotificationDeliveryReceipts(int page) 
+    		                                                                   throws HpcException;
+    
+    /**
+     * Get the notification delivery receipts page size.
+     *
+     * @return The notification delivery receipts page size.
+     */
+    public int getNotificationDeliveryReceiptsPageSize();
+    
+    /**
+     * Get Notification Delivery Receipts count for a user.
+     *
+     * @return The count of notification delivery receipts for the user.
+     * @throws HpcException on service failure.
+     */
+    public int getNotificationDeliveryReceiptsCount() throws HpcException;
 }
 
  

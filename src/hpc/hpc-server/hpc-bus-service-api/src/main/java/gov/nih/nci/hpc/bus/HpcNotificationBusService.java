@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.bus;
 
+import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -41,6 +42,18 @@ public interface HpcNotificationBusService
      * @throws HpcException on service failure.
      */
     public HpcNotificationSubscriptionListDTO getNotificationSubscriptions() throws HpcException;
+    
+    /**
+     * Get Notification Delivery Receipts.
+     *
+     * @param page The requested results page.
+     * @param totalCount If set to true, return the total count of collections matching the query
+     *                   regardless of the limit on returned entities.
+     * @return A list of delivery receipts DTO.
+     * @throws HpcException on service failure.
+     */
+    public HpcNotificationDeliveryReceiptListDTO 
+           getNotificationDeliveryReceipts(int page, boolean totalCount) throws HpcException;
 }
 
  

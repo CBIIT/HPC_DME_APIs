@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcNotificationBusService;
+import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -98,6 +99,25 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
 		}
 	
 		return okResponse(subscriptions, true);   	
+    }
+    
+    @Override
+    public Response getNotificationDeliveryReceipts(Integer page, Boolean totalCount)
+    {
+		logger.info("Invoking RS: GET /notification/deliveryReceipt");
+	
+		HpcNotificationDeliveryReceiptListDTO deliveryReceipts = null;
+		try {
+			deliveryReceipts = notificationBusService.getNotificationDeliveryReceipts(
+					                                     page != null ? page : 1,
+					                                     totalCount != null ? totalCount : false);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /notification/deliveryReceipt failed:", e);
+			    return errorResponse(e);
+		}
+	
+		return okResponse(deliveryReceipts, true);   	
     }
 }
 

@@ -20,6 +20,8 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +74,13 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
             "on conflict(\"EVENT_ID\", \"USER_ID\", \"NOTIFICATION_DELIVERY_METHOD\") do update " +
                     "set \"DELIVERY_STATUS\"=excluded.\"DELIVERY_STATUS\", \"DELIVERED\"=excluded.\"DELIVERED\"";
 	
+	private static final String GET_DELIVERY_RECEIPTS_SQL = 
+		    "select * from public.\"HPC_NOTIFICATION_DELIVERY_RECEIPT\" where \"USER_ID\" = ? " +
+	        "order by \"EVENT_ID\" limit ? offset ?";
+	
+	private static final String GET_DELIVERY_RECEIPTS_COUNT_SQL = 
+		    "select count(*) from public.\"HPC_NOTIFICATION_DELIVERY_RECEIPT\" where \"USER_ID\" = ? ";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -83,6 +92,8 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	// Row mappers.
 	private HpcNotificationSubscriptionRowMapper notificationSubscriptionRowMapper = 
 			                                     new HpcNotificationSubscriptionRowMapper();
+	HpcNotificationDeliveryReceiptRowMapper notificationDeliveryReceiptRowMapper = 
+			                                new HpcNotificationDeliveryReceiptRowMapper();
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -220,6 +231,37 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			    		               HpcErrorType.DATABASE_ERROR, e);
 		}                                    
     }
+    
+    @Override
+    public List<HpcNotificationDeliveryReceipt> 
+           getDeliveryReceipts(String userId, int offset, int limit) throws HpcException
+    {
+		try {
+		     return jdbcTemplate.query(GET_DELIVERY_RECEIPTS_SQL, notificationDeliveryReceiptRowMapper,
+		    		                   userId, limit, offset);
+		     
+		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get notification subscriptions: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}	
+    }
+
+    @Override
+    public int getDeliveryReceiptsCount(String userId) throws HpcException
+    {
+		try {
+		     return jdbcTemplate.queryForObject(GET_DELIVERY_RECEIPTS_COUNT_SQL, Integer.class, userId);
+		     
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to count notification delivery receipts: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}	
+    }
 
     //---------------------------------------------------------------------//
     // Helper Methods
@@ -240,6 +282,26 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			}
             
             return notificationSubscription;
+		}
+	}
+	
+	// HpcNotificationDeliveryReceipt Row to Object mapper.
+	private class HpcNotificationDeliveryReceiptRowMapper implements RowMapper<HpcNotificationDeliveryReceipt>
+	{
+		@Override
+		public HpcNotificationDeliveryReceipt mapRow(ResultSet rs, int rowNum) throws SQLException 
+		{
+			HpcNotificationDeliveryReceipt notificationDelivertReceipt = new HpcNotificationDeliveryReceipt();
+        	Calendar delivered = new GregorianCalendar();
+        	delivered.setTime(rs.getTimestamp("DELIVERED"));
+			notificationDelivertReceipt.setDelivered(delivered);
+			notificationDelivertReceipt.setDeliveryStatus(rs.getBoolean("DELIVERY_STATUS"));
+			notificationDelivertReceipt.setEventId(rs.getInt("EVENT_ID"));
+			notificationDelivertReceipt.setNotificationDeliveryMethod(
+					     HpcNotificationDeliveryMethod.fromValue(rs.getString("NOTIFICATION_DELIVERY_METHOD")));
+			notificationDelivertReceipt.setUserId(rs.getString("USER_ID"));
+            
+            return notificationDelivertReceipt;
 		}
 	}
 }

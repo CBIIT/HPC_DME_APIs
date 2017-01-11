@@ -114,7 +114,8 @@
 	</bean>
 	<bean id="hpcMetadataService" class="gov.nih.nci.hpc.service.impl.HpcMetadataServiceImpl" />
 	<bean id="hpcNotificationService" class="gov.nih.nci.hpc.service.impl.HpcNotificationServiceImpl">
-		<constructor-arg ref="hpcNotificationSenders" index="0" />
+		<constructor-arg value="${hpc.service.notification.notificationDeliveryReceiptsPageSize}" index="0" />
+		<constructor-arg ref="hpcNotificationSenders" index="1" />
 	</bean>
 	<bean id="hpcEventService" class="gov.nih.nci.hpc.service.impl.HpcEventServiceImpl" />
 	<bean id="hpcReportService" class="gov.nih.nci.hpc.service.impl.HpcReportServiceImpl" />
