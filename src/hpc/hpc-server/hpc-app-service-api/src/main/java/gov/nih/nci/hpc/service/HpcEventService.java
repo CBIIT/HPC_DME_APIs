@@ -43,6 +43,15 @@ public interface HpcEventService
     public void archiveEvent(HpcEvent event);
     
     /**
+     * Get an archived event. 
+     *
+     * @param eventId The archived event ID to get.
+     * @return The archived event.
+     * @throws HpcException on service failure.
+     */
+    public HpcEvent getArchivedEvent(int eventId) throws HpcException;
+    
+    /**
      * Add a data transfer download completed event.
      *
      * @param userId The user ID.
