@@ -57,6 +57,15 @@ public interface HpcEventDAO
      * @throws HpcException on database error.
      */
     public void insertEventHistory(HpcEvent event) throws HpcException;
+    
+    /**
+     * Get an event from the event history table.
+     *
+     * @param id The event ID.
+     * @return The event
+     * @throws HpcException on database error.
+     */
+    public HpcEvent getEventHistory(int id) throws HpcException;
 }
 
  

@@ -27,6 +27,8 @@ import java.util.List;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -65,6 +67,9 @@ public class HpcEventDAOImpl implements HpcEventDAO
 	                "\"ID\", \"USER_IDS\", \"TYPE\", \"PAYLOAD\", \"CREATED\") " +
 	                "values (?, ?, ?, ?, ?)"; 
 	
+	private static final String GET_EVENT_HISTORY_SQL = 
+		    "select * from public.\"HPC_EVENT_HISTORY\" where \"ID\" = ?";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -79,6 +84,9 @@ public class HpcEventDAOImpl implements HpcEventDAO
 	
 	// Row mappers.
 	private HpcEventRowMapper eventRowMapper = new HpcEventRowMapper();
+	
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -161,6 +169,22 @@ public class HpcEventDAOImpl implements HpcEventDAO
 			    throw new HpcException("Failed to insert an event to history table" + 
 		                               e.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, e);
+		}
+    }
+    
+    @Override
+    public HpcEvent getEventHistory(int id) throws HpcException
+    {
+		try {
+			 return jdbcTemplate.queryForObject(GET_EVENT_HISTORY_SQL, eventRowMapper, id);
+		     
+		} catch(IncorrectResultSizeDataAccessException irse) {
+		        logger.error("Multiple events with the same ID found", irse);
+		        return null;
+		    
+		} catch(DataAccessException e) {
+	            throw new HpcException("Failed to get an event from history: " + e.getMessage(),
+	    	    	                   HpcErrorType.DATABASE_ERROR, e);
 		}
     }
 	

@@ -89,6 +89,27 @@ public interface HpcNotificationDAO
      */
     public void upsertDeliveryReceipt(HpcNotificationDeliveryReceipt deliveryReceipt) 
     		                         throws HpcException;
+    
+    /**
+     * Get Notification Delivery Receipts for a user.
+     *
+     * @param userId The user ID to get the notification delivery receipts for. 
+     * @param offset Skip that many path in the returned results.
+     * @param limit No more than 'limit' paths will be returned.
+     * @return A list of notification delivery receipts.
+     * @throws HpcException on database failure.
+     */
+    public List<HpcNotificationDeliveryReceipt> 
+           getDeliveryReceipts(String userId, int offset, int limit) throws HpcException;
+    
+    /**
+     * Get Notification Delivery Receipts count for a user.
+     *
+     * @param userId The user ID to get the notification delivery receipts for. 
+     * @return The count of notification delivery receipts.
+     * @throws HpcException on database failure.
+     */
+    public int getDeliveryReceiptsCount(String userId) throws HpcException;
 }
 
  
