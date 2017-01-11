@@ -50,12 +50,12 @@
 	 data: $form.serialize(),
 	 success: function(msg){
 	     console.log('SUCCESS: ', msg);
-	     $('#message').html(msg.msg);
+	     $('#message').html(msg.message);
  	     ele.style.display = "block";
 	 },
 	 error: function(e){
 	 console.log('ERROR: ', e);
-	     $('#message').html(e.msg);
+	     $('#message').html(e.message);
 	     ele.style.display = "block";
 	 }
      });

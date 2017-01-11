@@ -142,14 +142,14 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			if(compoundQuery == null)
 			{
 				result.setCode("400");
-				result.setMsg("Invalid Search");
+				result.setMessage("Invalid Search");
 				return result;
 			}
 			
 			if(search.getCriteriaName() == null || search.getCriteriaName().isEmpty())
 			{
 				result.setCode("400");
-				result.setMsg("Invalid criteria name");
+				result.setMessage("Invalid criteria name");
 				return result;
 			}
 			
@@ -162,7 +162,7 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			Response restResponse = client.invoke("PUT", compoundQuery);
 			if (restResponse.getStatus() == 201) {
 				result.setCode("201");
-				result.setMsg("Saved criteria successfully!");
+				result.setMessage("Saved criteria successfully!");
 				return result;
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
@@ -178,20 +178,20 @@ public class HpcSaveSearchController extends AbstractHpcController {
 				
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
 				result.setCode("400");
-				result.setMsg("Failed to save criteria! Reason: "+exception.getMessage());
+				result.setMessage("Failed to save criteria! Reason: "+exception.getMessage());
 				return result;
 			}
 		} catch (HttpStatusCodeException e) {
 			result.setCode("400");
-			result.setMsg("Failed to save criteria: "+e.getMessage());
+			result.setMessage("Failed to save criteria: "+e.getMessage());
 			return result;
 		} catch (RestClientException e) {
 			result.setCode("400");
-			result.setMsg("Failed to save criteria: "+e.getMessage());
+			result.setMessage("Failed to save criteria: "+e.getMessage());
 			return result;
 		} catch (Exception e) {
 			result.setCode("400");
-			result.setMsg("Failed to save criteria: "+e.getMessage());
+			result.setMessage("Failed to save criteria: "+e.getMessage());
 			return result;
 		}
 	}

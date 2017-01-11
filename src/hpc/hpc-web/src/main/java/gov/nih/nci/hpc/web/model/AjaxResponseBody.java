@@ -5,17 +5,17 @@ import com.fasterxml.jackson.annotation.JsonView;
 public class AjaxResponseBody {
 
 	@JsonView(Views.Public.class)
-	String msg;
+	String message;
 
 	@JsonView(Views.Public.class)
 	String code;
 
-	public String getMsg() {
-		return msg;
+	public String getMessage() {
+		return message;
 	}
 
-	public void setMsg(String msg) {
-		this.msg = msg;
+	public void setMessage(String message) {
+		this.message = message;
 	}
 
 	public String getCode() {
