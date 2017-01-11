@@ -12,13 +12,17 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcNotificationBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
+import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptDTO;
+import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
-import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.util.List;
 
@@ -47,7 +51,7 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService
     private HpcNotificationService notificationService = null;
 	
 	@Autowired
-    private HpcSecurityService securityService = null;
+    private HpcEventService eventService = null;
 	
     // The logger instance.
 	private final Logger logger = 
@@ -116,6 +120,63 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService
     	HpcNotificationSubscriptionListDTO subscriptionsDTO = new HpcNotificationSubscriptionListDTO();
     	subscriptionsDTO.getSubscriptions().addAll(subscriptions);
     	return subscriptionsDTO;
+    }
+    
+    @Override
+    public HpcNotificationDeliveryReceiptListDTO
+           getNotificationDeliveryReceipts(int page, boolean totalCount) throws HpcException
+    {
+    	// Get the delivery receipts for the user and package in a DTO.
+    	HpcNotificationDeliveryReceiptListDTO deliveryReceiptsDTO = new HpcNotificationDeliveryReceiptListDTO();
+    	for(HpcNotificationDeliveryReceipt deliveryReceipt : notificationService.getNotificationDeliveryReceipts(page)) {
+    		deliveryReceiptsDTO.getNotificationDeliveryReceipts().add(toNotificationDeliveryReceiptDTO(deliveryReceipt));
+    	}
+    	
+    	int limit = notificationService.getNotificationDeliveryReceiptsPageSize(); 
+    	deliveryReceiptsDTO.setPage(page);
+    	deliveryReceiptsDTO.setLimit(limit);
+		if(totalCount) {
+		   int count = deliveryReceiptsDTO.getNotificationDeliveryReceipts().size();
+		   deliveryReceiptsDTO.setTotalCount((page == 1 && count < limit) ? 
+				                             count : 
+			                                 notificationService.getNotificationDeliveryReceiptsCount());
+			}
+
+    	return deliveryReceiptsDTO;
+    }
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//
+    
+    /**
+     * Construct a notification delivery receipt DTO.
+     *
+     * @param deliveryReceipt The delivery receipt domain object.
+     * @return A notification delivery receipt DTO.
+     */
+    private HpcNotificationDeliveryReceiptDTO 
+            toNotificationDeliveryReceiptDTO(HpcNotificationDeliveryReceipt deliveryReceipt)
+    {
+    	HpcNotificationDeliveryReceiptDTO deliveryReceiptDTO = new HpcNotificationDeliveryReceiptDTO();
+    	deliveryReceiptDTO.setDeliveryStatus(deliveryReceipt.getDeliveryStatus());
+    	deliveryReceiptDTO.setNotificationDeliveryMethod(deliveryReceipt.getNotificationDeliveryMethod());
+    	deliveryReceiptDTO.setDelivered(deliveryReceipt.getDelivered());
+    	
+    	// Get the archived event that triggered this notification and populate some DTO fields.
+    	try {
+    	     HpcEvent event = eventService.getArchivedEvent(deliveryReceipt.getEventId());
+    	     if(event != null) {
+    	    	deliveryReceiptDTO.setEventType(event.getType());
+    	    	deliveryReceiptDTO.setEventCreated(event.getCreated());
+    	    	deliveryReceiptDTO.getEventPayloadEntries().addAll(event.getPayloadEntries());
+    	     }
+    	     
+    	} catch(HpcException e) {
+    		    logger.error("Failed to get archived event: " + deliveryReceipt.getEventId(), e);
+    	}
+    	
+    	return deliveryReceiptDTO;
     }
 }
 

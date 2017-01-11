@@ -53,9 +53,9 @@ public interface HpcDataSearchRestService
      *
      * @param queryName A named query.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
+     * @param page The requested results page.
      * @param totalCount If set to true, return the total count of collections matching the query
      *                   regardless of the limit on returned entities.
-     * @param page The requested results page.
      * @return The REST service response.
      */
 	@GET

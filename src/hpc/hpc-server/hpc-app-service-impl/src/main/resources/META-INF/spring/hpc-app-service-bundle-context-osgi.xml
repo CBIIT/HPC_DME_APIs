@@ -32,6 +32,7 @@
 		<prop key="hpc.service.notification.formatsPath">${karaf.base}/etc/hpc-server/notificationFormats.json</prop>
 		<prop key="hpc.service.notification.mail.host">mailfwd.nih.gov</prop>
 		<prop key="hpc.service.notification.mail.port">25</prop>
+		<prop key="hpc.service.notification.notificationDeliveryReceiptsPageSize">100</prop>
 		<prop key="hpc.service.dataSearch.searchResultsPageSize">100</prop>
 		<prop key="hpc.service.dataSearch.defaultCollectionLevelFilter.level">1</prop>
 		<prop key="hpc.service.dataSearch.defaultCollectionLevelFilter.operator">NUM_GREATER_OR_EQUAL</prop>

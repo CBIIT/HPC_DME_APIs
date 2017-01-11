@@ -112,6 +112,12 @@ public class HpcEventServiceImpl implements HpcEventService
     }
     
     @Override
+    public HpcEvent getArchivedEvent(int eventId) throws HpcException
+    {
+    	return eventDAO.getEventHistory(eventId);
+    }
+    
+    @Override
     public void addDataTransferDownloadCompletedEvent(
     		       String userId, String dataTransferRequestId) throws HpcException
     {

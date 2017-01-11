@@ -17,6 +17,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -53,5 +54,19 @@ public interface HpcNotificationRestService
     @Path("/notification")
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response getNotificationSubscriptions();
+	
+    /**
+     * Get Notification Delivery Receipts.
+     *
+     * @param page The requested results page.
+     * @param totalCount If set to true, return the total count of collections matching the query
+     *                   regardless of the limit on returned entities.
+     * @return The REST service response.
+     */
+	@GET
+    @Path("/notification/deliveryReceipt")
+    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    public Response getNotificationDeliveryReceipts(@QueryParam("page") Integer page,
+                                                    @QueryParam("totalCount") Boolean totalCount);
 }
 
