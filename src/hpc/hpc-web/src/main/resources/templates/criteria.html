@@ -314,8 +314,6 @@ function populateLevelAttributes(level, id)
 	var row = id.substring(5);
 	
 	var attrOptions="<option value='-1'>----Select----</option>";
-	if(level == "datafile")
-		level = "1";
 
 	if(level == "-1")
 	{
@@ -359,6 +357,16 @@ function populateLevelAttributes(level, id)
 			attrOptions = attrOptions + "<option value='"+attrName+"'>"+attrName+"</option>"
 	
 		}
+	}
+
+	if(level == "datafile")
+	{
+		for(var i=0;i<dataattributes.length;i++)
+		{
+			var attr = dataattributes[i];
+			attrOptions = attrOptions + "<option value='"+attr+"'>"+attr+"</option>"
+		}
+	
 	}
     $('#attrName'+(row)).empty();
     $('#attrName'+(row)).append(attrOptions);
