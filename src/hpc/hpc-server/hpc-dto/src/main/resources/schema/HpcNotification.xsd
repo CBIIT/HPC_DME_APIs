@@ -48,6 +48,7 @@
 	
 	<xsd:complexType name="HpcNotificationDeliveryReceiptDTO">
 		<xsd:sequence>
+		    <xsd:element name="eventId" type="xsd:int" />
 			<xsd:element name="eventType" type="hpc-domain-notification:HpcEventType" />
 			<xsd:element name="eventPayloadEntries" 
 		    	         type="hpc-domain-notification:HpcEventPayloadEntry" 

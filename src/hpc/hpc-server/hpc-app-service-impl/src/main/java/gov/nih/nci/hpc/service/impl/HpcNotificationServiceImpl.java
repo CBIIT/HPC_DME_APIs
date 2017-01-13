@@ -261,6 +261,21 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     }
 
     @Override
+    public HpcNotificationDeliveryReceipt 
+           getNotificationDeliveryReceipt(int eventId) throws HpcException
+    {
+       	// Get the service invoker.
+       	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+       	if(invoker == null) {
+       	   throw new HpcException("Unknown service invoker", 
+		                          HpcErrorType.UNEXPECTED_ERROR);
+       	}
+       	
+    	return notificationDAO.getDeliveryReceipt(invoker.getNciAccount().getUserId(), 
+                                                   eventId);
+    }
+    
+    @Override
     public int getNotificationDeliveryReceiptsPageSize()
     {
     	return notificationDeliveryReceiptsPageSize;

@@ -11,11 +11,15 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcNotificationBusService;
+import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcNotificationRestService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.ws.rs.core.Response;
 
@@ -104,7 +108,7 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getNotificationDeliveryReceipts(Integer page, Boolean totalCount)
     {
-		logger.info("Invoking RS: GET /notification/deliveryReceipt");
+		logger.info("Invoking RS: GET /notification/deliveryReceipts");
 	
 		HpcNotificationDeliveryReceiptListDTO deliveryReceipts = null;
 		try {
@@ -113,12 +117,32 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
 					                                     totalCount != null ? totalCount : false);
 			 
 		} catch(HpcException e) {
+			    logger.error("RS: GET /notification/deliveryReceipts failed:", e);
+			    return errorResponse(e);
+		}
+	
+		return okResponse(deliveryReceipts, true);   	
+    }
+
+    @Override
+    public Response getNotificationDeliveryReceipt(Integer eventId)
+    {
+		logger.info("Invoking RS: GET /notification/deliveryReceipt");
+	
+		HpcNotificationDeliveryReceiptListDTO deliveryReceipts = new HpcNotificationDeliveryReceiptListDTO();
+		HpcNotificationDeliveryReceiptDTO deliveryReceipt = null;
+		try {
+			deliveryReceipt = notificationBusService.getNotificationDeliveryReceipt(eventId);
+			deliveryReceipts.getNotificationDeliveryReceipts().add(deliveryReceipt);
+			 
+		} catch(HpcException e) {
 			    logger.error("RS: GET /notification/deliveryReceipt failed:", e);
 			    return errorResponse(e);
 		}
 	
 		return okResponse(deliveryReceipts, true);   	
     }
+    
 }
 
  

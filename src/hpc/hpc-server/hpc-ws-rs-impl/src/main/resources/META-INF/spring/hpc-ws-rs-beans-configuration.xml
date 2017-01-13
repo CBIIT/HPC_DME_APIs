@@ -96,6 +96,8 @@
           <value>compoundQueries</value>
           <value>queries</value>
           <value>subscriptions</value>
+          <value>notificationDeliveryReceipts</value>
+          <value>eventPayloadEntries</value>
     </util:list>
 
 	<!-- JSON Provider -->

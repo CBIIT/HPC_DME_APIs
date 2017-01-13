@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.bus;
 
+import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
@@ -54,6 +55,16 @@ public interface HpcNotificationBusService
      */
     public HpcNotificationDeliveryReceiptListDTO 
            getNotificationDeliveryReceipts(int page, boolean totalCount) throws HpcException;
+    
+    /**
+     * Get Notification Delivery Receipt.
+     *
+     * @param eventId The requested receipt Id
+     * @return delivery receipts DTO.
+     * @throws HpcException on service failure.
+     */
+    public HpcNotificationDeliveryReceiptDTO getNotificationDeliveryReceipt(int eventId) throws HpcException;
+    
 }
 
  
