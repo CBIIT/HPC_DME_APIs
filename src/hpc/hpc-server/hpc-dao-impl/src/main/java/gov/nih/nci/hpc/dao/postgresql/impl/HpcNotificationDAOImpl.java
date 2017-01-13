@@ -78,6 +78,9 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		    "select * from public.\"HPC_NOTIFICATION_DELIVERY_RECEIPT\" where \"USER_ID\" = ? " +
 	        "order by \"EVENT_ID\" limit ? offset ?";
 	
+	private static final String GET_DELIVERY_RECEIPT_SQL = 
+		    "select * from public.\"HPC_NOTIFICATION_DELIVERY_RECEIPT\" where \"USER_ID\" = ? and \"EVENT_ID\" = ?";
+
 	private static final String GET_DELIVERY_RECEIPTS_COUNT_SQL = 
 		    "select count(*) from public.\"HPC_NOTIFICATION_DELIVERY_RECEIPT\" where \"USER_ID\" = ? ";
 	
@@ -239,6 +242,28 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		try {
 		     return jdbcTemplate.query(GET_DELIVERY_RECEIPTS_SQL, notificationDeliveryReceiptRowMapper,
 		    		                   userId, limit, offset);
+		     
+		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get notification subscriptions: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}	
+    }
+
+    @Override
+    public HpcNotificationDeliveryReceipt 
+           getDeliveryReceipt(String userId, int eventId) throws HpcException
+    {
+		try {
+		    List<HpcNotificationDeliveryReceipt> receipts = jdbcTemplate.query(GET_DELIVERY_RECEIPT_SQL, notificationDeliveryReceiptRowMapper,
+		    		                   userId, eventId);
+		    if(receipts != null && receipts.size() > 0)
+		    	return receipts.get(0);
+		    else
+		    	return null;
 		     
 		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
 			    return null;
