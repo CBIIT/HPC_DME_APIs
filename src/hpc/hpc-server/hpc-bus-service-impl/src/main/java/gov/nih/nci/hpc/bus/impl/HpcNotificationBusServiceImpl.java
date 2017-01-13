@@ -145,6 +145,17 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService
     	return deliveryReceiptsDTO;
     }
     
+    @Override
+    public HpcNotificationDeliveryReceiptDTO
+           getNotificationDeliveryReceipt(int eventId) throws HpcException
+    {
+    	// Get the delivery receipts for the user and package in a DTO.
+    	HpcNotificationDeliveryReceipt receipt =  notificationService.getNotificationDeliveryReceipt(eventId);
+    	if(receipt != null)
+    		return toNotificationDeliveryReceiptDTO(receipt);
+    	else
+    		return null;
+    }
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
@@ -159,6 +170,7 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService
             toNotificationDeliveryReceiptDTO(HpcNotificationDeliveryReceipt deliveryReceipt)
     {
     	HpcNotificationDeliveryReceiptDTO deliveryReceiptDTO = new HpcNotificationDeliveryReceiptDTO();
+    	deliveryReceiptDTO.setEventId(deliveryReceipt.getEventId());
     	deliveryReceiptDTO.setDeliveryStatus(deliveryReceipt.getDeliveryStatus());
     	deliveryReceiptDTO.setNotificationDeliveryMethod(deliveryReceipt.getNotificationDeliveryMethod());
     	deliveryReceiptDTO.setDelivered(deliveryReceipt.getDelivered());
