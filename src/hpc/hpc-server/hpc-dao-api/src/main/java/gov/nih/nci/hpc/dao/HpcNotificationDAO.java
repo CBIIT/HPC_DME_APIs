@@ -103,6 +103,17 @@ public interface HpcNotificationDAO
            getDeliveryReceipts(String userId, int offset, int limit) throws HpcException;
     
     /**
+     * Get Notification Delivery Receipt for a user by eventId.
+     *
+     * @param userId The user ID to get the notification delivery receipts for. 
+     * @param eventId The delivery receipt eventId.
+     * @return delivery receipt.
+     * @throws HpcException on database failure.
+     */
+    public HpcNotificationDeliveryReceipt 
+           getDeliveryReceipt(String userId, int eventId) throws HpcException;
+
+    /**
      * Get Notification Delivery Receipts count for a user.
      *
      * @param userId The user ID to get the notification delivery receipts for. 

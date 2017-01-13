@@ -64,9 +64,22 @@ public interface HpcNotificationRestService
      * @return The REST service response.
      */
 	@GET
-    @Path("/notification/deliveryReceipt")
+    @Path("/notification/deliveryReceipts")
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response getNotificationDeliveryReceipts(@QueryParam("page") Integer page,
                                                     @QueryParam("totalCount") Boolean totalCount);
+	
+	   /**
+     * Get Notification Delivery Receipt.
+     *
+     * @param eventId The requested delivery receipt event Id.
+     * @return The REST service response.
+     */
+	@GET
+    @Path("/notification/deliveryReceipt")
+    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    public Response getNotificationDeliveryReceipt(@QueryParam("eventId") Integer page);
+	
+	
 }
 
