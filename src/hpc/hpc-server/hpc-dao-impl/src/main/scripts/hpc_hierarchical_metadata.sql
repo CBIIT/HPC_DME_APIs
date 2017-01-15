@@ -12,15 +12,13 @@
 -- @version $Id$
 --
 
-
 -- Drop all views first.
+DROP MATERIALIZED VIEW IF EXISTS r_coll_hierarchy_meta_attr_name;
 DROP MATERIALIZED VIEW IF EXISTS r_coll_hierarchy_meta_main;
 DROP MATERIALIZED VIEW IF EXISTS r_coll_hierarchy_metamap;
+DROP MATERIALIZED VIEW IF EXISTS r_data_hierarchy_meta_attr_name;
 DROP MATERIALIZED VIEW IF EXISTS r_data_hierarchy_meta_main;
 DROP MATERIALIZED VIEW IF EXISTS r_data_hierarchy_metamap;
-DROP MATERIALIZED VIEW IF EXISTS r_coll_hierarchy_meta_attr_name;
-DROP MATERIALIZED VIEW IF EXISTS r_data_hierarchy_meta_attr_name;
-
 
 -- Create all materialized views
 
@@ -54,15 +52,18 @@ COMMENT ON COLUMN r_data_hierarchy_metamap.level IS
 -- Hierarchy data meta_main
 CREATE MATERIALIZED VIEW r_data_hierarchy_meta_main AS
 SELECT data_hierarchy_metamap.object_id, data_hierarchy_metamap.object_path, data_hierarchy_metamap.coll_id, 
-       data_hierarchy_metamap.meta_id, data_hierarchy_metamap.level, meta_main.meta_attr_name, meta_main.meta_attr_value
-FROM r_meta_main meta_main, r_data_hierarchy_metamap data_hierarchy_metamap 
-WHERE data_hierarchy_metamap.meta_id = meta_main.meta_id 
+       data_hierarchy_metamap.meta_id, data_hierarchy_metamap.level, coll_type_metadata.meta_attr_value as level_label,
+       meta_main.meta_attr_name, meta_main.meta_attr_value
+FROM r_data_hierarchy_metamap data_hierarchy_metamap left join r_meta_main meta_main using (meta_id) 
+     left outer join (r_objt_metamap metamap join r_meta_main coll_type_metadata 
+                      on metamap.meta_id = coll_type_metadata.meta_id and coll_type_metadata.meta_attr_name = 'collection_type')
+                on metamap.object_id = data_hierarchy_metamap.coll_id
 ORDER BY data_hierarchy_metamap.object_id;
 CREATE UNIQUE INDEX r_data_hierarchy_meta_main_unique ON r_data_hierarchy_meta_main (object_id, meta_id, level);
 CREATE INDEX r_data_hierarchy_meta_main_path_query ON r_data_hierarchy_meta_main (object_path);
 CREATE INDEX r_data_hierarchy_meta_main_id_query ON r_data_hierarchy_meta_main (object_id);
-CREATE INDEX r_data_hierarchy_meta_main_metadata_query ON r_data_hierarchy_meta_main (meta_attr_name, meta_attr_value, level);
-CREATE INDEX r_data_hierarchy_meta_main_metadata_attr_query ON r_data_hierarchy_meta_main (meta_attr_name, level);
+CREATE INDEX r_data_hierarchy_meta_main_metadata_query_level ON r_data_hierarchy_meta_main (meta_attr_name, meta_attr_value, level);
+CREATE INDEX r_data_hierarchy_meta_main_metadata_query_level_label ON r_data_hierarchy_meta_main (meta_attr_name, meta_attr_value, level_label);
 COMMENT ON COLUMN r_data_hierarchy_meta_main.object_id IS 
                   'Data object Hierarchy ID: r_data_main.data_id';
 COMMENT ON COLUMN r_data_hierarchy_metamap.object_path IS 
@@ -73,6 +74,8 @@ COMMENT ON COLUMN r_data_hierarchy_meta_main.coll_id IS
                   'Collection (in the hierarchy) ID: r_coll_main.coll_id. Null if the metadata is associated with the data object itself';
 COMMENT ON COLUMN r_data_hierarchy_meta_main.level IS 
                   'The level of the metadata in the hierarchy, starting with 1 at the data-object level';
+COMMENT ON COLUMN r_coll_hierarchy_meta_main.level_label IS 
+                  'The level label of the metadata in the hierarchy which is the collection_type value at the same level. Null if the metadata is associated with the data object itself';
 COMMENT ON COLUMN r_data_hierarchy_meta_main.meta_attr_name IS 
                   'Metadata attribute: r_meta_main.meta_attr_name';
 COMMENT ON COLUMN r_data_hierarchy_meta_main.meta_attr_value IS 
@@ -105,15 +108,19 @@ COMMENT ON COLUMN r_coll_hierarchy_metamap.level IS
 -- Hierarchy collection meta_main
 CREATE MATERIALIZED VIEW r_coll_hierarchy_meta_main AS
 SELECT coll_hierarchy_metamap.object_id, coll_hierarchy_metamap.object_path, coll_hierarchy_metamap.coll_id, 
-       coll_hierarchy_metamap.meta_id, coll_hierarchy_metamap.level, meta_main.meta_attr_name, meta_main.meta_attr_value
-FROM r_meta_main meta_main, r_coll_hierarchy_metamap coll_hierarchy_metamap 
-WHERE coll_hierarchy_metamap.meta_id = meta_main.meta_id 
+       coll_hierarchy_metamap.meta_id, coll_hierarchy_metamap.level, coll_type_metadata.meta_attr_value as level_label,
+       meta_main.meta_attr_name, meta_main.meta_attr_value
+FROM r_coll_hierarchy_metamap coll_hierarchy_metamap left join r_meta_main meta_main using (meta_id) 
+     left outer join (r_objt_metamap metamap join r_meta_main coll_type_metadata 
+                      on metamap.meta_id = coll_type_metadata.meta_id and coll_type_metadata.meta_attr_name = 'collection_type')
+                on metamap.object_id = coll_hierarchy_metamap.coll_id
 ORDER BY coll_hierarchy_metamap.object_id;
+
 CREATE UNIQUE INDEX r_coll_hierarchy_meta_main_unique ON r_coll_hierarchy_meta_main (object_id, meta_id, level);
 CREATE INDEX r_coll_hierarchy_meta_main_path_query ON r_coll_hierarchy_meta_main (object_path);
 CREATE INDEX r_coll_hierarchy_meta_main_id_query ON r_coll_hierarchy_meta_main (object_id);
-CREATE INDEX r_coll_hierarchy_meta_main_metadata_query ON r_coll_hierarchy_meta_main (meta_attr_name, meta_attr_value, level);
-CREATE INDEX r_coll_hierarchy_meta_main_metadata_attr_query ON r_coll_hierarchy_meta_main (meta_attr_name, level);
+CREATE INDEX r_coll_hierarchy_meta_main_metadata_query_level ON r_coll_hierarchy_meta_main (meta_attr_name, meta_attr_value, level);
+CREATE INDEX r_coll_hierarchy_meta_main_metadata_query_level_label ON r_coll_hierarchy_meta_main (meta_attr_name, meta_attr_value, level_label);
 COMMENT ON COLUMN r_coll_hierarchy_meta_main.object_id IS 
                   'Collection Hierarchy ID: r_coll_main.coll_id';
 COMMENT ON COLUMN r_coll_hierarchy_meta_main.object_path IS 
@@ -124,6 +131,8 @@ COMMENT ON COLUMN r_coll_hierarchy_meta_main.coll_id IS
                   'Collection (in the hierarchy) ID: r_coll_main.coll_id. Same as object_id if the metadata is associated with the collection itself';
 COMMENT ON COLUMN r_coll_hierarchy_meta_main.level IS 
                   'The level of the metadata in the hierarchy, starting with 1 at the collection level';
+COMMENT ON COLUMN r_coll_hierarchy_meta_main.level_label IS 
+                  'The level label of the metadata in the hierarchy which is the collection_type value at the same level';
 COMMENT ON COLUMN r_coll_hierarchy_meta_main.meta_attr_name IS 
                   'Metadata attribute: r_meta_main.meta_attr_name';
 COMMENT ON COLUMN r_coll_hierarchy_meta_main.meta_attr_value IS 
@@ -131,17 +140,17 @@ COMMENT ON COLUMN r_coll_hierarchy_meta_main.meta_attr_value IS
                   
 -- Hierarchy data meta_attr_name
 CREATE MATERIALIZED VIEW r_data_hierarchy_meta_attr_name AS
-SELECT level, meta_attr_name, array_agg(distinct object_id) as object_ids 
+SELECT level_label, meta_attr_name, array_agg(distinct object_id) as object_ids 
 FROM r_data_hierarchy_meta_main 
-GROUP BY level, meta_attr_name;
-CREATE UNIQUE INDEX r_data_hierarchy_meta_attr_name_unique ON r_data_hierarchy_meta_attr_name (level, meta_attr_name);   
+GROUP BY level_label, meta_attr_name;
+CREATE UNIQUE INDEX r_data_hierarchy_meta_attr_name_unique ON r_data_hierarchy_meta_attr_name (level_label, meta_attr_name);   
 
 -- Hierarchy collection meta_attr_name
 CREATE MATERIALIZED VIEW r_coll_hierarchy_meta_attr_name AS
-SELECT level, meta_attr_name, array_agg(distinct object_id) as object_ids 
+SELECT level_label, meta_attr_name, array_agg(distinct object_id) as object_ids 
 FROM r_coll_hierarchy_meta_main 
-GROUP BY level, meta_attr_name;
-CREATE UNIQUE INDEX r_coll_hierarchy_meta_attr_name_unique ON r_coll_hierarchy_meta_attr_name (level, meta_attr_name);
+GROUP BY level_label, meta_attr_name;
+CREATE UNIQUE INDEX r_coll_hierarchy_meta_attr_name_unique ON r_coll_hierarchy_meta_attr_name (level_label, meta_attr_name);
 
 -- Numerical comparison functions based on string input
 CREATE OR REPLACE FUNCTION num_less_than(text, text) RETURNS BOOLEAN AS $$
