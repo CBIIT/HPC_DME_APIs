@@ -109,11 +109,8 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     	
     	HpcCollectionListDTO collections = null;
 		try {
-			 collections = dataSearchBusService.getCollections(
-					           queryName,
-					           detailedResponse != null ? detailedResponse : false,
-					           page != null ? page : 1,
-					           totalCount != null ? totalCount : false);
+			 collections = dataSearchBusService.getCollections(queryName, detailedResponse, 
+					                                           page, totalCount);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /collection/query/compound/{queryName}" + queryName + 
@@ -158,11 +155,8 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     	
     	HpcDataObjectListDTO dataObjects = null;
 		try {
-			 dataObjects = dataSearchBusService.getDataObjects(
-					           queryName,
-					           detailedResponse != null ? detailedResponse : false,
-					           page != null ? page : 1,
-					           totalCount != null ? totalCount : false);
+			 dataObjects = dataSearchBusService.getDataObjects(queryName, detailedResponse,
+					                                           page, totalCount);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /dataObject/query/compound{queryName}" + queryName + 
