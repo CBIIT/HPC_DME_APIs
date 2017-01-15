@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidCompoundMetadataQuery;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueryLevelFilter;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.dao.HpcUserQueryDAO;
 import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
@@ -19,13 +20,13 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataSearchService;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,10 +42,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class HpcDataSearchServiceImpl implements HpcDataSearchService
 {   
-    //---------------------------------------------------------------------//
-    // Constants
-    //---------------------------------------------------------------------//
-	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -201,13 +198,16 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     		             throws HpcException
     {
     	// Validate the compound query.
-    	HpcDomainValidationResult validationResult = 
-    			 isValidCompoundMetadataQuery(namedCompoundMetadataQuery.getCompoundQuery());
+    	HpcDomainValidationResult validationResult = isValidNamedCompoundMetadataQuery(namedCompoundMetadataQuery);
        	if(!validationResult.getValid()) {
-           throw new HpcException("Invalid compound metadata query: " + validationResult.getMessage(), 
+           throw new HpcException("Invalid named compound metadata query: " + validationResult.getMessage(), 
          			              HpcErrorType.INVALID_REQUEST_INPUT);
         }
        	
+       	// Set the update timestamp.
+       	namedCompoundMetadataQuery.setUpdated(Calendar.getInstance());
+       	
+       	// Upsert the named query.
        	userQueryDAO.upsertQuery(nciUserId, namedCompoundMetadataQuery);
     }
     
@@ -231,25 +231,23 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     }
     
     @Override
-    public List<HpcMetadataLevelAttributes> 
-           getCollectionMetadataAttributes(Integer level, HpcMetadataQueryOperator levelOperator) 
-    		                              throws HpcException
+    public List<HpcMetadataLevelAttributes> getCollectionMetadataAttributes(String levelLabel) 
+    		                                                               throws HpcException
     {
     	String dataManagementUsername = 
                HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
     	
-    	return metadataDAO.getCollectionMetadataAttributes(level, levelOperator, dataManagementUsername);
+    	return metadataDAO.getCollectionMetadataAttributes(levelLabel, dataManagementUsername);
     }
     
     @Override
-    public List<HpcMetadataLevelAttributes> 
-           getDataObjectMetadataAttributes(Integer level, HpcMetadataQueryOperator levelOperator) 
-    		               throws HpcException
+    public List<HpcMetadataLevelAttributes> getDataObjectMetadataAttributes(String levelLabel) 
+    		                                                               throws HpcException
     {
     	String dataManagementUsername = 
                HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
     	
-    	return metadataDAO.getDataObjectMetadataAttributes(level, levelOperator, dataManagementUsername);
+    	return metadataDAO.getDataObjectMetadataAttributes(levelLabel, dataManagementUsername);
     }
     
     //---------------------------------------------------------------------//

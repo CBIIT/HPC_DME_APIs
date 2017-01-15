@@ -123,6 +123,9 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcCompoundMetadataQuery']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcCompoundMetadataQueryType']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryType"/>
+        </jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcNamedCompoundMetadataQuery']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery"/>
 		</jxb:bindings>

@@ -17,7 +17,12 @@ CREATE TABLE public."HPC_USER_QUERY"
 (
   "USER_ID" text NOT NULL,
   "QUERY_NAME" text NOT NULL,
-  "QUERY" bytea,
+  "QUERY" bytea NOT NULL,
+  "DETAILED_RESPONSE" boolean,
+  "TOTAL_COUNT" boolean,
+  "QUERY_TYPE" text NOT NULL,
+  "CREATED" timestamp NOT NULL,
+  "UPDATED" timestamp NOT NULL,
   CONSTRAINT "HPC_USER_QUERY_pkey" PRIMARY KEY ("USER_ID", "QUERY_NAME")
 )
 WITH (

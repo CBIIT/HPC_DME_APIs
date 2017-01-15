@@ -14,7 +14,6 @@ import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -119,30 +118,26 @@ public interface HpcMetadataDAO
     /**
      * Get a list of collection metadata attributes currently registered.
      *
-     * @param level Filter the results by level. (Optional).
-     * @param levelOperator The operator to use in the level filter. (Optional).
+     * @param levelLabel Filter the results by level label. (Optional).
      * @param dataManagementUsername The Data Management user name. 
      * @return A list of metadata attributes for each level.
      * @throws HpcException on database error.
      */
-	public List<HpcMetadataLevelAttributes> getCollectionMetadataAttributes(
-			                                   Integer level, HpcMetadataQueryOperator levelOperator,
-			                                   String dataManagementUsername) 
-			                                   throws HpcException;
+	public List<HpcMetadataLevelAttributes> 
+	getCollectionMetadataAttributes(String levelLabel, String dataManagementUsername) 
+			                       throws HpcException;
 	
     /**
      * Get a list of data object metadata attributes currently registered.
      *
-     * @param level Filter the results by level. (Optional).
-     * @param levelOperator The operator to use in the level filter. (Optional).
+     * @param levelLabel Filter the results by level label. (Optional).
      * @param dataManagementUsername The Data Management user name. 
      * @return A list of metadata attributes for each level.
      * @throws HpcException on database error.
      */
-	public List<HpcMetadataLevelAttributes> getDataObjectMetadataAttributes(
-			                                   Integer level, HpcMetadataQueryOperator levelOperator,
-			                                   String dataManagementUsername) 
-			                                   throws HpcException;
+	public List<HpcMetadataLevelAttributes> 
+	getDataObjectMetadataAttributes(String levelLabel, String dataManagementUsername) 
+			                       throws HpcException;
     
     /**
      * Refresh all materialized views.
