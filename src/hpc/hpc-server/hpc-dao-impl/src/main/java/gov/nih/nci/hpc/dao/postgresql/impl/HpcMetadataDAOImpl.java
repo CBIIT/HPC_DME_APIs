@@ -148,11 +148,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	
 	private static final String GET_COLLECTION_METADATA_SQL = 
 			"select meta_attr_name,  meta_attr_value, level, level_label " + 
-	        "from public.\"r_coll_hierarchy_meta_main\" where object_path = ? and level >= ? ";
+	        "from public.\"r_coll_hierarchy_meta_main\" where object_path = ? and level >= ? order by level";
 	
 	private static final String GET_DATA_OBJECT_METADATA_SQL = 
 			"select meta_attr_name, meta_attr_value, level, level_label " + 
-	        "from public.\"r_data_hierarchy_meta_main\" where object_path = ? and level >= ? ";
+	        "from public.\"r_data_hierarchy_meta_main\" where object_path = ? and level >= ? order by level";
 	
 	private static final String REFRESH_VIEW_SQL = "refresh materialized view concurrently";
 	
