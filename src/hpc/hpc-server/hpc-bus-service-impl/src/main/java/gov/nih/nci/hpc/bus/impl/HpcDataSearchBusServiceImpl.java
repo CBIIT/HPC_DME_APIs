@@ -121,8 +121,8 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     }
     
     @Override
-    public HpcCollectionListDTO getCollections(String queryName, boolean detailedResponse, int page,
-    		                                   boolean totalCount) 
+    public HpcCollectionListDTO getCollections(String queryName, Boolean detailedResponse, Integer page,
+    		                                   Boolean totalCount) 
                                               throws HpcException
     {
     	logger.info("Invoking getCollections(string,boolean): " + queryName);
@@ -169,8 +169,8 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     }
     
     @Override
-    public HpcDataObjectListDTO getDataObjects(String queryName, boolean detailedResponse, 
-    		                                   int page, boolean totalCount) 
+    public HpcDataObjectListDTO getDataObjects(String queryName, Boolean detailedResponse, 
+    		                                   Integer page, Boolean totalCount) 
                                               throws HpcException
     {
     	logger.info("Invoking getDataObjects(string,boolean): " + queryName);
@@ -382,8 +382,8 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
      * @throws HpcException If the user query was not found.
      */
     private HpcCompoundMetadataQueryDTO 
-               toCompoundMetadataQueryDTO(String queryName, boolean detailedResponse, 
-            		                      int page, boolean totalCount)
+               toCompoundMetadataQueryDTO(String queryName, Boolean detailedResponse, 
+            		                      Integer page, Boolean totalCount)
                                          throws HpcException
     {
     	// Input validation.
@@ -405,9 +405,11 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
 		// Construct the query DTO.
 		HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO = new HpcCompoundMetadataQueryDTO();
 		compoundMetadataQueryDTO.setCompoundQuery(namedCompoundQuery.getCompoundQuery());
-		compoundMetadataQueryDTO.setDetailedResponse(detailedResponse);
-		compoundMetadataQueryDTO.setPage(page);
-		compoundMetadataQueryDTO.setTotalCount(totalCount);
+		compoundMetadataQueryDTO.setDetailedResponse(detailedResponse != null ?
+				                                     detailedResponse : namedCompoundQuery.getDetailedResponse());
+		compoundMetadataQueryDTO.setPage(page != null ? page : 1);
+		compoundMetadataQueryDTO.setTotalCount(totalCount != null ?
+				                               totalCount : namedCompoundQuery.getTotalCount());
 		
 		return compoundMetadataQueryDTO;
     }

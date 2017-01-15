@@ -50,8 +50,8 @@ public interface HpcDataSearchBusService
      * @return A list of Collection DTO.
      * @throws HpcException on service failure.
      */
-    public HpcCollectionListDTO getCollections(String queryName, boolean detailedResponse,
-    		                                   int page, boolean totalCount) 
+    public HpcCollectionListDTO getCollections(String queryName, Boolean detailedResponse,
+    		                                   Integer page, Boolean totalCount) 
     		                                  throws HpcException;
     
     /**
@@ -75,8 +75,8 @@ public interface HpcDataSearchBusService
      * @return A list of Data Object DTO.
      * @throws HpcException on service failure.
      */
-    public HpcDataObjectListDTO getDataObjects(String queryName, boolean detailedResponse,
-    		                                   int page, boolean totalCount) 
+    public HpcDataObjectListDTO getDataObjects(String queryName, Boolean detailedResponse,
+    		                                   Integer page, Boolean totalCount) 
     		                                  throws HpcException;
 
     /**
