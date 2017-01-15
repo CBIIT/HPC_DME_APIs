@@ -19,7 +19,7 @@ CREATE TABLE public."HPC_USER_QUERY"
   "QUERY_NAME" text NOT NULL,
   "QUERY" bytea NOT NULL,
   "DETAILED_RESPONSE" boolean NOT NULL,
-  "TOTAL_COUNT" boolean NOY NULL,
+  "TOTAL_COUNT" boolean NOT NULL,
   "QUERY_TYPE" text NOT NULL,
   "CREATED" timestamp NOT NULL,
   "UPDATED" timestamp NOT NULL,
