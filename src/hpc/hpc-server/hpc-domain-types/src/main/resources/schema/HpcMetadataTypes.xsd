@@ -24,6 +24,7 @@
 			<xsd:element name="value" type="xsd:string" />
 			<xsd:element name="unit" type="xsd:string" />
 			<xsd:element name="level" type="xsd:int" minOccurs="0" />
+			<xsd:element name="levelLabel" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -83,10 +84,22 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:simpleType name="HpcCompoundMetadataQueryType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="COLLECTION" />
+			<xsd:enumeration value="DATA_OBJECT" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
 	<xsd:complexType name="HpcNamedCompoundMetadataQuery">
 		<xsd:sequence>
 			<xsd:element name="name" type="xsd:string" />
+			<xsd:element name="compoundQueryType" type="hpc-domain-metadata:HpcCompoundMetadataQueryType" />
+			<xsd:element name="detailedResponse" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="totalCount" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="compoundQuery" type="hpc-domain-metadata:HpcCompoundMetadataQuery" />
+			<xsd:element name="created" type="xsd:dateTime" />
+			<xsd:element name="updated" type="xsd:dateTime" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -108,7 +121,7 @@
 	
 	<xsd:complexType name="HpcMetadataLevelAttributes">
 		<xsd:sequence>
-			<xsd:element name="level" type="xsd:int" minOccurs="0" />
+			<xsd:element name="levelLabel" type="xsd:string" />
 			<xsd:element name="metadataAttributes" type="xsd:string"
 			             minOccurs="0"  maxOccurs="unbounded" />
 		</xsd:sequence>

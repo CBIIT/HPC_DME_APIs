@@ -157,16 +157,13 @@ public interface HpcDataSearchRestService
   /**
    * GET A list of metadata attributes currently registered.
    *
-   * @param level Filter the results by level.
-   * @param levelOperatorStr The operator to use in the level filter.
+   * @param levelLabel Filter the results by level label (Optional).
    * @return The REST service response.
    */
 	@GET
 	@Path("/metadataAttributes")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getMetadataAttributes(
-			           @QueryParam("level") Integer level,
-			           @QueryParam("levelOperator") String levelOperatorStr);
+	public Response getMetadataAttributes(@QueryParam("levelLabel") String levelLabel);
 	
     /**
      * Refresh the metadata views.

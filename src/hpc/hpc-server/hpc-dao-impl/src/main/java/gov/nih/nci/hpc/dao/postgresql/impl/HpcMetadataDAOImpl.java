@@ -120,6 +120,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String COLLECTION_LEVEL_NUM_LESS_OR_EQUAL_FILTER = " and collection.level <= ?";
 	private static final String COLLECTION_LEVEL_NUM_GREATER_THAN_FILTER = " and collection.level > ?";
 	private static final String COLLECTION_LEVEL_NUM_GREATER_OR_EQUAL_FILTER = " and collection.level >= ?";
+	
+	private static final String DATA_OBJECT_LEVEL_LABEL_EQUAL_FILTER = " and dataObject.level_label = ?";
+	private static final String COLLECTION_LEVEL_LABEL_EQUAL_FILTER = " and collection.level_label = ?";
 		   
 	private static final String USER_ACCESS_SQL = 
 			"select access.object_id from public.\"r_objt_access\" access, " +
@@ -144,27 +147,27 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			"select count(distinct object_id) from public.\"r_data_hierarchy_meta_main\" where object_id in ";
 	
 	private static final String GET_COLLECTION_METADATA_SQL = 
-			"select meta_attr_name,  meta_attr_value, level " + 
+			"select meta_attr_name,  meta_attr_value, level, level_label " + 
 	        "from public.\"r_coll_hierarchy_meta_main\" where object_path = ? and level >= ? ";
 	
 	private static final String GET_DATA_OBJECT_METADATA_SQL = 
-			"select meta_attr_name, meta_attr_value, level " + 
+			"select meta_attr_name, meta_attr_value, level, level_label " + 
 	        "from public.\"r_data_hierarchy_meta_main\" where object_path = ? and level >= ? ";
 	
 	private static final String REFRESH_VIEW_SQL = "refresh materialized view concurrently";
 	
 	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = 
-			"select collection.level, array_agg(collection.meta_attr_name) as attributes " +
+			"select collection.level_label, array_agg(collection.meta_attr_name) as attributes " +
 	        "from public.\"r_coll_hierarchy_meta_attr_name\" collection " +
 	        "where collection.object_ids && (" + USER_ACCESS_ARRAY_SQL +") ";
 	
 	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = 
-			"select dataObject.level, array_agg(dataObject.meta_attr_name) as attributes " +
+			"select dataObject.level_label, array_agg(dataObject.meta_attr_name) as attributes " +
 			"from public.\"r_data_hierarchy_meta_attr_name\" dataObject " +
 			"where dataObject.object_ids && (" +  USER_ACCESS_ARRAY_SQL +") ";
 	
 	private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL = 
-			" group by level order by level";
+			" group by level_label order by level_label";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -341,25 +344,23 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     }
     
     @Override
-    public List<HpcMetadataLevelAttributes> getCollectionMetadataAttributes(
-    		                                   Integer level, HpcMetadataQueryOperator levelOperator,
-    		                                   String dataManagementUsername) 
-    		                                   throws HpcException
+    public List<HpcMetadataLevelAttributes> 
+    getCollectionMetadataAttributes(String levelLabel, String dataManagementUsername) 
+    		                       throws HpcException
     {
     	return getMetadataAttributes(GET_COLLECTION_METADATA_ATTRIBUTES_SQL, 
-    			                     level, levelOperator, dataManagementUsername,
-    			                     collectionSQLLevelFilters);
+    			                     levelLabel, dataManagementUsername,
+    			                     COLLECTION_LEVEL_LABEL_EQUAL_FILTER);
     }
     
     @Override
-    public List<HpcMetadataLevelAttributes> getDataObjectMetadataAttributes(
-    		                                   Integer level, HpcMetadataQueryOperator levelOperator,
-    		                                   String dataManagementUsername) 
-    		                                   throws HpcException
+    public List<HpcMetadataLevelAttributes> 
+    getDataObjectMetadataAttributes(String levelLabel, String dataManagementUsername) 
+    		                       throws HpcException
     {
     	return getMetadataAttributes(GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL, 
-    			                     level, levelOperator, dataManagementUsername, 
-    			                     dataObjectSQLLevelFilters);
+    			                     levelLabel, dataManagementUsername, 
+    			                     DATA_OBJECT_LEVEL_LABEL_EQUAL_FILTER);
     }
     
 	@Override
@@ -394,6 +395,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			metadataEntry.setLevel(level != null ? level.intValue() : null);
 			metadataEntry.setAttribute(rs.getString("META_ATTR_NAME"));
 			metadataEntry.setValue(rs.getString("META_ATTR_VALUE"));
+			metadataEntry.setLevelLabel(rs.getString("LEVEL_LABEL"));
 			
 			return metadataEntry;
 		}
@@ -405,8 +407,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		public HpcMetadataLevelAttributes mapRow(ResultSet rs, int rowNum) throws SQLException 
 		{
 			HpcMetadataLevelAttributes metadataLevelAttributes = new HpcMetadataLevelAttributes();
-			Long level = rs.getLong("LEVEL");
-			metadataLevelAttributes.setLevel(level != null ? level.intValue() : null);
+			metadataLevelAttributes.setLevelLabel(rs.getString("LEVEL_LABEL"));
 			metadataLevelAttributes.getMetadataAttributes().addAll(
 				    Arrays.asList((String[]) rs.getArray("ATTRIBUTES").getArray()));
 			return metadataLevelAttributes;
@@ -630,18 +631,16 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      * Get a list of metadata attributes currently registered.
      *
      * @param query The query to invoke (for collection or data object metadata attributes).
-     * @param level Filter the results by level. (Optional).
-     * @param levelOperator The operator to use in the level filter. (Optional).
+     * @param levelLabel Filter the results by level label. (Optional).
      * @param dataManagementUsername The Data Management user name. 
-     * @param sqlLevelFilters The map from query operator to level filter ('where' condition).
+     * @param sqlLevelLabelFilter The SQL filter to apply for level label ('where' condition).
      * @return A list of metadata attributes for each level.
-     * @throws HpcException on database error or invalid level operator.
+     * @throws HpcException on database.
      */
-    private List<HpcMetadataLevelAttributes> getMetadataAttributes(String query, Integer level, 
-    		                                    HpcMetadataQueryOperator levelOperator,
-    		                                    String dataManagementUsername,
-    		                                    Map<HpcMetadataQueryOperator, String> sqlLevelFilters) 
-                                                throws HpcException
+    private List<HpcMetadataLevelAttributes> getMetadataAttributes(String query, String levelLabel, 
+    		                                                       String dataManagementUsername,
+    		                                                       String sqlLevelLabelFilter) 
+                                                                  throws HpcException
 	{
     	StringBuilder sqlQueryBuilder = new StringBuilder();
     	List<Object> args = new ArrayList<>();
@@ -649,15 +648,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     	
     	sqlQueryBuilder.append(query);
     	
-    	// Add level filter if provided.
-    	if(level != null && levelOperator != null) {
-		   String sqlLevelFilter = sqlLevelFilters.get(levelOperator);
-		   if(sqlLevelFilter == null) {
-			  throw new HpcException("Invalid level operator: " + levelOperator,
-			                         HpcErrorType.INVALID_REQUEST_INPUT); 
-		   }
-		   sqlQueryBuilder.append(sqlLevelFilter);
-		   args.add(level);
+    	// Add level label filter if provided.
+    	if(levelLabel != null && !levelLabel.isEmpty()) {
+		   sqlQueryBuilder.append(sqlLevelLabelFilter);
+		   args.add(levelLabel);
     	}
     	
     	// Add the grouping and order SQL.

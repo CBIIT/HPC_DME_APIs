@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.dao.HpcUserQueryDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
@@ -22,6 +23,8 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
@@ -55,11 +58,14 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
     // SQL Queries.
 	private static final String UPSERT_USER_QUERY_SQL = 
 			"insert into public.\"HPC_USER_QUERY\" ( " +
-	                "\"USER_ID\", \"QUERY_NAME\", \"QUERY\") " +
-	                "values (?, ?, ?) " + 
+	                "\"USER_ID\", \"QUERY_NAME\", \"QUERY\", \"DETAILED_RESPONSE\", " +
+	                "\"TOTAL_COUNT\", \"QUERY_TYPE\", \"CREATED\", \"UPDATED\" ) " +
+	                "values (?, ?, ?, ?, ?, ?, ?, ?) " + 
 	        "on conflict(\"USER_ID\", \"QUERY_NAME\") do update " +
-            "set \"QUERY\"=excluded.\"QUERY\"";
-	
+            "set \"QUERY\"=excluded.\"QUERY\", \"DETAILED_RESPONSE\"=excluded.\"DETAILED_RESPONSE\", " +
+	        "\"TOTAL_COUNT\"=excluded.\"TOTAL_COUNT\", \"QUERY_TYPE\"=excluded.\"QUERY_TYPE\", " +
+	        "\"CREATED\"=excluded.\"CREATED\", \"UPDATED\"=excluded.\"UPDATED\"";
+	        
 	private static final String DELETE_USER_QUERY_SQL = 
 		    "delete from public.\"HPC_USER_QUERY\" where \"USER_ID\" = ? and \"QUERY_NAME\" = ?";
 	
@@ -117,7 +123,12 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
 		     jdbcTemplate.update(UPSERT_USER_QUERY_SQL,
 		    		             nciUserId, namedCompoundMetadataQuery.getName(),
 		    		             encryptor.encrypt(toJSONString(
-		    		            		           namedCompoundMetadataQuery.getCompoundQuery())));
+		    		            		           namedCompoundMetadataQuery.getCompoundQuery())),
+		    		             namedCompoundMetadataQuery.getDetailedResponse(),
+		    		             namedCompoundMetadataQuery.getTotalCount(),
+		    		             namedCompoundMetadataQuery.getCompoundQueryType().value(),
+		    		             namedCompoundMetadataQuery.getCreated(),
+		    		             namedCompoundMetadataQuery.getUpdated());
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a user query " + 
@@ -188,11 +199,20 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
 			HpcNamedCompoundMetadataQuery namedCompoundQuery = new HpcNamedCompoundMetadataQuery();
 			namedCompoundQuery.setCompoundQuery(fromJSON(encryptor.decrypt(rs.getBytes("QUERY"))));
 			namedCompoundQuery.setName(rs.getString("QUERY_NAME"));
+			namedCompoundQuery.setDetailedResponse(rs.getBoolean("DETAILED_RESPONSE"));
+			namedCompoundQuery.setTotalCount(rs.getBoolean("TOTAL_COUNT"));
+			namedCompoundQuery.setCompoundQueryType(HpcCompoundMetadataQueryType.fromValue(rs.getString("QUERY_TYPE")));
+			Calendar created = new GregorianCalendar();
+			created.setTime(rs.getTimestamp("CREATED"));
+			namedCompoundQuery.setCreated(created);
+			Calendar updated = new GregorianCalendar();
+			updated.setTime(rs.getTimestamp("UPDATED"));
+			namedCompoundQuery.setUpdated(updated);
 			return namedCompoundQuery;
 		}
 	}
-	
-    /** 
+
+	/** 
      * Convert compound query into a JSON string.
      * 
      * @param compoundMetadataQuery The compound metadata query to convert.

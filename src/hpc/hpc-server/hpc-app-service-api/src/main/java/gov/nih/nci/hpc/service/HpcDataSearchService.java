@@ -12,7 +12,6 @@ package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -119,28 +118,22 @@ public interface HpcDataSearchService
     /**
      * Get a list of collection metadata attributes currently registered.
      *
-     * @param level Filter the results by level. (Optional).
-     * @param levelOperator The operator to use in the level filter. (Optional).
+     * @param levelLabel Filter the results by level label. (Optional).
      * @return A list of metadata attributes.
      * @throws HpcException on service failure.
      */
-	public List<HpcMetadataLevelAttributes> 
-	       getCollectionMetadataAttributes(Integer level, 
-	    		                           HpcMetadataQueryOperator levelOperator) 
-			                              throws HpcException;
+	public List<HpcMetadataLevelAttributes> getCollectionMetadataAttributes(String levelLabel) 		
+			                                                               throws HpcException;
 	
     /**
      * Get a list of data object metadata attributes currently registered.
      *
-     * @param level Filter the results by level. (Optional).
-     * @param levelOperator The operator to use in the level filter. (Optional).
+     * @param levelLabel Filter the results by level label. (Optional).
      * @return A list of metadata attributes.
      * @throws HpcException on service failure.
      */
-	public List<HpcMetadataLevelAttributes> 
-	       getDataObjectMetadataAttributes(Integer level, 
-	    		                           HpcMetadataQueryOperator levelOperator) 
-			                              throws HpcException;
+	public List<HpcMetadataLevelAttributes> getDataObjectMetadataAttributes(String lavelLabel) 
+			                                                               throws HpcException;
 }
 
  
