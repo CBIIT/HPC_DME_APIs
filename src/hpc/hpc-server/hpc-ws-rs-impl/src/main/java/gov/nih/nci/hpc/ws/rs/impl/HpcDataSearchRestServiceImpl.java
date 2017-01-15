@@ -12,8 +12,6 @@ package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
@@ -276,17 +274,14 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getMetadataAttributes(Integer level, String levelOperatorStr)
+    public Response getMetadataAttributes(String levelLabel)
     {
     	long start = System.currentTimeMillis();
     	logger.info("Invoking RS: GET /metadataAttributes/");
     	
     	HpcMetadataAttributesListDTO metadataAttributes = null;
 		try {
-		     metadataAttributes = 
-		    		 dataSearchBusService.getMetadataAttributes(
-		    				                 level, 
-		    				                 toMetadataQueryOperator(levelOperatorStr));
+		     metadataAttributes = dataSearchBusService.getMetadataAttributes(levelLabel);
 			 
 		} catch(HpcException e) {
 		        logger.error("RS: GET /metadataAttributes/ failed:", e);
@@ -319,30 +314,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 		logger.info((stop-start) + " refreshMetadataView: " );
 		
 		return okResponse(null, false);
-    }
-    
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//
-    
-    /**
-     * Convert a string to HpcMetadataQueryOperator
-     * 
-     * @param levelOperatorStr The level operator string.
-     * @return HpcMetadataQueryOperator
-     * 
-     * @throws HpcException if it's an invalid level operator.
-     */
-    private HpcMetadataQueryOperator toMetadataQueryOperator(String levelOperatorStr) 
-    		                                                throws HpcException
-    {
-    	try {
-    	     return levelOperatorStr != null ? HpcMetadataQueryOperator.fromValue(levelOperatorStr) : null; 
-    	     
-    	} catch(Exception e) {
-    		    throw new HpcException("Invalid level operator: " + levelOperatorStr, 
-    		    		               HpcErrorType.INVALID_REQUEST_INPUT, e);
-    	}
     }
 }
 

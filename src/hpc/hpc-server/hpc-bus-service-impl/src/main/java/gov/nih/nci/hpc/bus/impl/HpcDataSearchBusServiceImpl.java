@@ -13,7 +13,6 @@ package gov.nih.nci.hpc.bus.impl;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
@@ -25,6 +24,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataSearchService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
+import java.util.Calendar;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -203,6 +203,14 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     	HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery = new HpcNamedCompoundMetadataQuery();
     	namedCompoundMetadataQuery.setName(queryName);
     	namedCompoundMetadataQuery.setCompoundQuery(compoundMetadataQueryDTO.getCompoundQuery());
+    	namedCompoundMetadataQuery.setCreated(Calendar.getInstance());
+    	namedCompoundMetadataQuery.setDetailedResponse(
+    			                      compoundMetadataQueryDTO.getDetailedResponse() != null ?
+    			                      compoundMetadataQueryDTO.getDetailedResponse() : false);
+    	namedCompoundMetadataQuery.setTotalCount(
+    			                      compoundMetadataQueryDTO.getTotalCount() != null ?
+    			                      compoundMetadataQueryDTO.getTotalCount() : false);
+    	namedCompoundMetadataQuery.setCompoundQueryType(compoundMetadataQueryDTO.getCompoundQueryType());
     	
     	// Save the query.
     	dataSearchService.saveQuery(nciUserId, namedCompoundMetadataQuery);
@@ -231,7 +239,18 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	namedCompoundMetadataQuery.setCompoundQuery(compoundMetadataQueryDTO.getCompoundQuery());
+    	if(compoundMetadataQueryDTO.getCompoundQuery() != null) {
+    	   namedCompoundMetadataQuery.setCompoundQuery(compoundMetadataQueryDTO.getCompoundQuery());
+    	}
+    	if(compoundMetadataQueryDTO.getDetailedResponse() != null) {
+    	   namedCompoundMetadataQuery.setDetailedResponse(compoundMetadataQueryDTO.getDetailedResponse());
+    	}
+    	if(compoundMetadataQueryDTO.getTotalCount() != null) {
+    	   namedCompoundMetadataQuery.setTotalCount(compoundMetadataQueryDTO.getTotalCount());
+    	}
+    	if(compoundMetadataQueryDTO.getCompoundQueryType() != null) {
+    	   namedCompoundMetadataQuery.setCompoundQueryType(compoundMetadataQueryDTO.getCompoundQueryType());
+    	}
     	
     	// Save the query.
     	dataSearchService.saveQuery(nciUserId, namedCompoundMetadataQuery);
@@ -281,24 +300,16 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     }
     
     @Override
-	public HpcMetadataAttributesListDTO 
-	          getMetadataAttributes(Integer level, HpcMetadataQueryOperator levelOperator) 
-                                   throws HpcException
+	public HpcMetadataAttributesListDTO getMetadataAttributes(String levelLabel) 
+                                                             throws HpcException
     {
-    	logger.info("Invoking getDataManagementMode(String)");
-    	
-    	// Input validation. 
-    	if((level == null && levelOperator != null) ||
-    	   (level != null && levelOperator == null)) {
-    	   throw new HpcException("Both level and level-operator need to be provided, or omitted ", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
+    	logger.info("Invoking getMetadataAttributes(String)");
     	
     	HpcMetadataAttributesListDTO metadataAttributes = new HpcMetadataAttributesListDTO();
     	metadataAttributes.getCollectionMetadataAttributes().addAll(
-    			dataSearchService.getCollectionMetadataAttributes(level, levelOperator));
+    			dataSearchService.getCollectionMetadataAttributes(levelLabel));
     	metadataAttributes.getDataObjectMetadataAttributes().addAll(
-    			dataSearchService.getDataObjectMetadataAttributes(level, levelOperator));
+    			dataSearchService.getDataObjectMetadataAttributes(levelLabel));
     	
     	return metadataAttributes;
     }
