@@ -14,10 +14,12 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -212,6 +214,38 @@ public class HpcDomainValidator
                   isValidCompoundMetadataQuery(HpcCompoundMetadataQuery compoundMetadataQuery) 
     {
     	return isValidCompoundMetadataQuery(compoundMetadataQuery, 1); 
+    }
+    
+    public static HpcDomainValidationResult 
+                  isValidNamedCompoundMetadataQuery(HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery)
+    {
+    	HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
+    	validationResult.setValid(false);
+
+    	if(namedCompoundMetadataQuery == null) {
+    	   validationResult.setMessage("Null named compound query");
+    	   return validationResult;
+    	}
+    	if(namedCompoundMetadataQuery.getDetailedResponse() == null) { 
+    	   validationResult.setMessage("Null detailed response indicator");
+     	   return validationResult;
+    	}
+    	if(namedCompoundMetadataQuery.getTotalCount() == null) {
+    	   validationResult.setMessage("Null total count indicator");
+      	   return validationResult;
+    	}
+    	if(namedCompoundMetadataQuery.getCompoundQueryType() == null) {
+     	   validationResult.setMessage("Null compound query type. Valid values are [" +
+    			                       Arrays.asList(HpcCompoundMetadataQueryType.values()) + "]");
+       	   return validationResult;
+     	}
+    	
+    	if(namedCompoundMetadataQuery.getName() == null || namedCompoundMetadataQuery.getName().isEmpty()) {
+      	   validationResult.setMessage("Null or empty query name");
+           return validationResult;
+      	}
+    	
+    	return isValidCompoundMetadataQuery(namedCompoundMetadataQuery.getCompoundQuery());
     }
     
     //---------------------------------------------------------------------//

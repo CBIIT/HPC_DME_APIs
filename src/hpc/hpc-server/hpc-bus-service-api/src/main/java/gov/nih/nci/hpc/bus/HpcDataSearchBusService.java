@@ -10,7 +10,6 @@
 
 package gov.nih.nci.hpc.bus;
 
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
@@ -130,14 +129,12 @@ public interface HpcDataSearchBusService
   /**
   * Get a list of metadata attributes currently registered.
   *
-  * @param level Filter the results by level. (Optional).
-  * @param levelOperator The operator to use in the level filter. (Optional).
+  * @param levelLabel Filter the results by level label. (Optional).
   * @return A list of metadata attributes
   * @throws HpcException on service failure.
   */
-	public HpcMetadataAttributesListDTO 
-	          getMetadataAttributes(Integer level, HpcMetadataQueryOperator levelOperator) 
-			                       throws HpcException;
+	public HpcMetadataAttributesListDTO getMetadataAttributes(String levelLabel) 
+			                                                 throws HpcException;
 }
 
  
