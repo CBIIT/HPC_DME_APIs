@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
- <head>
+<head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="HPC Data Management"/>
@@ -68,8 +68,7 @@
 						</h3>
 						<ol class="breadcrumb">
 							<li><i class="fa fa-dashboard"></i><a th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Manage</li>
-							<li><i class="fa fa-list-alt"></i>Subscribe Notifications</li>
+							<li><i class="fa fa-list-alt"></i>Notification Details</li>
 						</ol>
 					</div>
 				</div>
@@ -80,64 +79,61 @@
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h2>
-									<i class="fa fa-list-alt red"></i><strong>Subscribe Notifications</strong>
+									<i class="fa fa-list-alt red"></i><strong>Notification Details</strong>
 								</h2>
 							</div>
-							<div th:if="${updateStatus != null}">
+							<div th:if="${error != null}">
 								<div class="alert alert-error">  
 								  <a class="close" data-dismiss="alert">×</a>  
-									   <label for="${updateStatus}" th:text="${updateStatus}"></label>
+									   <label for="${error}" th:text="${error}"></label>
 								</div>  
 							</div>
 							<div th:if="${error == null}">
 							<!--panel-body start-->
 							<div class="panel-body" >
-								<form class="form-horizontal" th:action="@{/subscribe}" id="notificationRequest" th:object="${notificationRequest}" method="post" enctype="multipart/form-data">
 								<div class="form-group">
-									<div class="col-sm-10 column">
-											<table class="table table-bordered table-hover" id="metaAttrTable">
-												<thead>
-													<tr >
-														<th class="text-center">
-															Subscribe
-														</th>
-														<th class="text-center">
-															Notification Type
-														</th>
-													</tr>
-												</thead>												
-												<tbody>
-													<tr id='attrRow0' th:each="notification : ${notifications}">
-														<td style="white-space:nowrap" align="right">
-														<div th:if="${notification.subscribed}">
-														   <input type="checkbox"  th:value="${notification.eventType}" name="eventType" checked="checked"/>
-														 </div>
-														 <div th:unless="${notification.subscribed}">
-														   <input type="checkbox"  th:value="${notification.eventType}" name="eventType"/>
-														 </div>
-														</td>
-														<td style="white-space:nowrap">
-															<label for="eventType" th:text="${notification.displayName}">value:</label>
-														</td>
-													</tr>
-												</tbody>
-											</table>
+									<div class="col-md-6 form-group">
+										<label for="Name">Id:</label> <label for="${receipt.getEventType().value()}" th:text="${receipt.getEventType().value()}"></label>
 									</div>
-									<div class="form-group">
-									  <div class="col-sm-offset-2 col-sm-10" align="left">
-										<button type="submit" class="btn btn-md btn-success" id="primaryButton">Update</button>
-									  </div>
+									<div class="col-md-6 form-group">
+										<label for="Name">Created On:</label> <label for="${receipt.getEventCreated()}" th:text="${#calendars.format(receipt.getEventCreated(),'dd/MMM/yyyy HH:mm:ss')}"></label>
 									</div>
-									
-								</div>	
-								</form>							
+									<div class="col-md-6 form-group">
+										<label for="Name">Delivered On:</label> <label for="${receipt.getDelivered()}" th:text="${#calendars.format(receipt.getDelivered(),'dd/MMM/yyyy HH:mm:ss')}"></label>
+									</div>
+									<div class="col-md-6 form-group">
+										<label for="Name">Delivery Type:</label> <label for="${receipt.getNotificationDeliveryMethod()}" th:text="${receipt.getNotificationDeliveryMethod()}"></label>
+									</div>
+								</div>
+								</div>
+								<div class="panel-heading">
+									<h2>
+										<i class="fa fa-list-alt red"></i><strong>PayLoad</strong>
+									</h2>
+								</div>
+								<div class="form-group">
+									<table class="table table-bordered  col-md-12">
+									    <thead>
+									      <tr>
+									        <th>Attribute</th>
+									        <th>Value</th>
+									      </tr>
+									    </thead>
+									    <tbody>
+										  	<tr th:each="entry : ${receipt.getEventPayloadEntries()}">
+										    <td><label th:text="${entry.getAttribute()}"></label></td>
+										    <td><label for="${entry.getAttribute()}" th:text="${entry.getValue()}"></label></td>
+										  	</tr>
+										</tbody>
+									</table>
+								</div>
+								
 							</div>
 						</div>
 
 					</div>
 					<!--/col-->
 	
-				</div>
 				</div>
 				<div class="row">
 
@@ -149,7 +145,7 @@
 	</section>
 	<!-- container section start -->
 
-    <!-- javascripts -->
+   <!-- javascripts -->
     <!-- bootstrap -->
     <script src="js/bootstrap.min.js"></script>
 
