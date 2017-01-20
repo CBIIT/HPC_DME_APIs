@@ -98,6 +98,7 @@
           <value>subscriptions</value>
           <value>notificationDeliveryReceipts</value>
           <value>eventPayloadEntries</value>
+          <value>notificationDeliveryMethods</value>
     </util:list>
 
 	<!-- JSON Provider -->
