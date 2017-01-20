@@ -1,24 +1,28 @@
-var app = angular.module('DashBoard', ['ngTouch', 'ui.grid', 'ui.grid.pagination']);
+var app = angular.module('DashBoard', ['ngTouch', 'ui.grid', 'ui.grid.pagination', 'ui.grid.resizeColumns']);
 var linkSearchNameCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
 '  <a href="search?queryName={{row.getProperty(\'message\')}}">{{row.getProperty(col.field)}}</a>' +
 '</div>';
 
 app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
-	$http.get('/query').
+	$scope.searchesloading = true;
+	$http.get('/savedSearchList').
 	  success(function(data, status, headers, config) {
-//		    console.log('success0' + data);
-//		    var str = JSON.stringify(data, null, 2);
-//		    console.log('success1' + str);
         	$scope.hpcQueries = data;
+        	$scope.searchesloading = false;
 	  }).
 	  error(function(data, status, headers, config) {
 		console.log('Failure', status);
 	  });
-	
+
   $scope.gridOptions1 = {
-    paginationPageSizes: [25, 50, 75],
     data: 'hpcQueries',
-    paginationPageSize: 25,
+    paginationPageSize: 100,
+    enableFiltering: true,
+    enableRowHeaderSelection: false, 
+    multiSelect: false,
+    enableGridMenu: true,
+    enableSorting: true,
+    enableColumnResizing: true,    
     columnDefs: [
       { 
     	field: "message", 
@@ -28,25 +32,54 @@ app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
       }
     ]
   };
- 
+
+$scope.notificationsloading = true;
+$http.get('/notificationList').
+  success(function(data, status, headers, config) {
+  	$scope.hpcNotifications = data;
+  	$scope.notificationsloading = false;
+  }).
+  error(function(data, status, headers, config) {
+	console.log('Failure', status);
+  });
+
   $scope.gridOptions2 = {
-    enablePaginationControls: false,
-    paginationPageSize: 25,
-    columnDefs: [
-      { name: 'name' }
-    ]
-  };
- 
-	$scope.myData = [{name: "Moroni", age: 50},
-	                 {name: "Tiancum", age: 43},
-	                 {name: "Jacob", age: 27},
-	                 {name: "Nephi", age: 29},
-	                 {name: "Enos", age: 34}];
- 
-	
-  $scope.gridOptions2.onRegisterApi = function (gridApi) {
-    $scope.gridApi2 = gridApi;
-  }
- 
-    $scope.gridOptions2.data = $scope.myData;
+	    data: 'hpcNotifications',
+	    paginationPageSize: 100,
+	    enableFiltering: true,
+	    enableRowHeaderSelection: false, 
+	    multiSelect: false,
+	    enableGridMenu: true,
+	    enableSorting: true,
+	    enableColumnResizing: true,    
+	    columnDefs: [
+	      { 
+	    	field: "eventId", 
+	    	displayName: "ID",
+	        enableCellEdit: false,
+	        cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="event?id={{COL_FIELD CUSTOM_FILTERS}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>' 
+	      },
+	      { 
+		    	field: "eventType", 
+		    	displayName: "Event",
+		        enableCellEdit: false ,
+		        width: "40%"
+		  },
+	      { 
+		    	field: "eventCreated", 
+		    	displayName: "Created On",
+		        enableCellEdit: false 
+		  },
+	      { 
+		    	field: "notificationDeliveryMethod", 
+		    	displayName: "Delivery Type",
+		        enableCellEdit: false 
+		  },
+	      { 
+		    	field: "delivered", 
+		    	displayName: "Delivered On",
+		        enableCellEdit: false 
+		  }
+	    ]
+	  };
 }]);
