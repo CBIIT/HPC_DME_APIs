@@ -43,6 +43,7 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
@@ -152,6 +153,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				compoundQuery = constructCriteria(hierarchy, search);
 			if (search.isDetailed())
 				compoundQuery.setDetailedResponse(true);
+			
+			
 			// criteria = criteria + "&detailedResponse=true";
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			String serviceURL = compoundDataObjectSearchServiceURL;
@@ -301,6 +304,11 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			query = buildSimpleSearch(hierarchy, search);
 
 		dto.setCompoundQuery(query);
+		dto.setDetailedResponse(search.isDetailed());
+		if(search.getSearchType().equals("collection"))
+			dto.setCompoundQueryType(HpcCompoundMetadataQueryType.COLLECTION);
+		else
+			dto.setCompoundQueryType(HpcCompoundMetadataQueryType.DATA_OBJECT);
 		dto.setDetailedResponse(search.isDetailed());
 		return dto;
 	}
