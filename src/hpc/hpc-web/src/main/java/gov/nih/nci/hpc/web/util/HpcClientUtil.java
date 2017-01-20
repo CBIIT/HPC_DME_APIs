@@ -57,6 +57,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.web.HpcWebException;
+import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
+import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 
 public class HpcClientUtil {
 
@@ -88,7 +90,7 @@ public class HpcClientUtil {
 		client.header("Authorization", "Basic " + token);
 		Response restResponse = client.get();
 		
-		if(restResponse == null)
+		if(restResponse == null || restResponse.getStatus() != 200)
         	return null;
 		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser;
@@ -121,7 +123,7 @@ public class HpcClientUtil {
 		
 		Response restResponse = client.get();
 		
-		if(restResponse == null)
+		if(restResponse == null || restResponse.getStatus() != 200)
         	return null;
 		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser;
@@ -153,7 +155,7 @@ public class HpcClientUtil {
 		
 		Response restResponse = client.get();
 		
-		if(restResponse == null)
+		if(restResponse == null || restResponse.getStatus() != 200)
         	return null;
 		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser;
@@ -177,12 +179,74 @@ public class HpcClientUtil {
 		}
 	}
 	
+	public static HpcNotificationDeliveryReceiptListDTO getNotificationReceipts(String token, String hpcQueryURL, String hpcCertPath, String hpcCertPassword)
+	{
+		
+		WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
+		client.header("Authorization", "Basic " + token);
+		
+		Response restResponse = client.get();
+		
+		if(restResponse == null || restResponse.getStatus() != 200)
+        	return null;
+		MappingJsonFactory factory = new MappingJsonFactory();
+		JsonParser parser;
+		try {
+			parser = factory.createParser((InputStream) restResponse.getEntity());
+		} catch (IllegalStateException | IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get notification receipts due to: "+e.getMessage());
+		}
+		try {
+			return parser.readValueAs(HpcNotificationDeliveryReceiptListDTO.class);
+		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get notification receipts due to: "+e.getMessage());
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get notification receipts due to: "+e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get notification receipts due to: "+e.getMessage());
+		}
+	}
+
+	public static HpcNotificationSubscriptionListDTO getUserNotifications(String token, String hpcQueryURL, String hpcCertPath, String hpcCertPassword)
+	{
+		
+		WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
+		client.header("Authorization", "Basic " + token);
+		
+		Response restResponse = client.get();
+		
+		if(restResponse == null || restResponse.getStatus() != 200)
+        	return null;
+		MappingJsonFactory factory = new MappingJsonFactory();
+		JsonParser parser;
+		try {
+			parser = factory.createParser((InputStream) restResponse.getEntity());
+		} catch (IllegalStateException | IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get notification subscriptions due to: "+e.getMessage());
+		}
+		try {
+			return parser.readValueAs(HpcNotificationSubscriptionListDTO.class);
+		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get notification subscriptions due to: "+e.getMessage());
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get notification subscriptions due to: "+e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get notification subscriptions due to: "+e.getMessage());
+		}
+	}
+	
 	public static HpcMetadataAttributesListDTO getMetadataAttrNames(String token, String hpcMetadataAttrsURL, String hpcCertPath, String hpcCertPassword)
 	{
 		
 		String url = hpcMetadataAttrsURL;
-		//if(level != null && !level.isEmpty() && operator != null && !operator.isEmpty())
-		//	url = url + "?level="+URLEncoder.encode(level)+"&levelOperator="+URLEncoder.encode(operator);
 		
 		WebClient client = HpcClientUtil.getWebClient(url , hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Basic " + token);

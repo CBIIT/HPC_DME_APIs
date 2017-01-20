@@ -43,24 +43,14 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 @Controller
 @EnableAutoConfiguration
-@RequestMapping("/dashboard")
-public class HpcDashBoardController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.dataObject}")
+@RequestMapping("/reports")
+public class HpcReportsController extends AbstractHpcController {
+	@Value("${gov.nih.nci.hpc.server.report}")
 	private String serviceURL;
-	@Value("${gov.nih.nci.hpc.server.dataObject}")
-	private String datasetURL;
-	@Value("${gov.nih.nci.hpc.server.collection}")
-	private String collectionURL;
-	@Value("${gov.nih.nci.hpc.server.query}")
-	private String queryURL;
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
-		model.addAttribute("queryURL", queryURL);
-		model.addAttribute("collectionURL", collectionURL);
-		session.removeAttribute("compoundQuery");
-		session.removeAttribute("hierarchy");
 
 		String userPasswdToken = (String) session.getAttribute("userpasstoken");
 		if (userPasswdToken == null) {
@@ -75,6 +65,7 @@ public class HpcDashBoardController extends AbstractHpcController {
 			return "redirect:/";
 		}
 		
-		return "dashboard";
+		return "reports";
 	}
+	
 }
