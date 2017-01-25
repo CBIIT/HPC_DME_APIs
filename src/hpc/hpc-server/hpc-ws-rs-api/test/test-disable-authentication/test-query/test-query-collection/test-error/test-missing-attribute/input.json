@@ -1,0 +1,17 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "value":"FNLCR",
+                "operator":"EQUAL"
+            },
+            {
+                "attribute":"name",
+                "value":"prasad project1 sub1",
+                "operator":"EQUAL"
+            }
+        ]
+    },
+    "detailedResponse":true
+}
