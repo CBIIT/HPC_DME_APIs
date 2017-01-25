@@ -1,0 +1,11 @@
+HTTP/1.1 400 Bad Request
+Date: Wed, 25 Jan 2017 18:58:51 GMT
+Server: Jetty(8.1.17.v20150415)
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+Content-Type: application/json
+HPC-API-Version: 1.0.0
+X-Frame-Options: sameorigin
+Access-Control-Allow-Origin: *
+Connection: close
+Transfer-Encoding: chunked
+
