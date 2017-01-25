@@ -99,6 +99,8 @@
           <value>notificationDeliveryReceipts</value>
           <value>eventPayloadEntries</value>
           <value>notificationDeliveryMethods</value>
+          <value>reports</value>
+          <value>reportEntries</value>
     </util:list>
 
 	<!-- JSON Provider -->
