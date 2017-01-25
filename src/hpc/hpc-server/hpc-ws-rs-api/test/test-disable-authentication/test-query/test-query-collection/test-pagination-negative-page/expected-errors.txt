@@ -1,0 +1,2 @@
+400
+Invalid search results page: -1
