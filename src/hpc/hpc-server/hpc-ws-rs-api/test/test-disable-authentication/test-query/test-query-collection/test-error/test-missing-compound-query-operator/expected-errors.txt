@@ -1,0 +1,2 @@
+400
+Invalid compound metadata query: Null compound query operator in query
