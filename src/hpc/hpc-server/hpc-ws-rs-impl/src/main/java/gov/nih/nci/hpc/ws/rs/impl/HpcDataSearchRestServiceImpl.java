@@ -283,11 +283,13 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " getMetadataAttributes: " );
 		
-		return okResponse(!metadataAttributes.getCollectionMetadataAttributes().isEmpty() || 
+		
+		Response response =  okResponse(!metadataAttributes.getCollectionMetadataAttributes().isEmpty() || 
 				          !metadataAttributes.getDataObjectMetadataAttributes().isEmpty() ? 
 				          metadataAttributes : null, true);
+		logger.info((stop-start) + " getMetadataAttributes: " );
+		return response;
     }
     
     @Override

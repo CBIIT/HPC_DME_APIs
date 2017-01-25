@@ -291,7 +291,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	boolean userAuthenticated =
     			ldapAuthentication ? 
     			    securityService.authenticate(userName, password) : false;
-    	logger.error("userAuthenticated: "+userAuthenticated);		    		
 //    	// Generate an authentication token.
 //        HpcAuthenticationTokenClaims authenticationTokenClaims = new HpcAuthenticationTokenClaims();
 //        authenticationTokenClaims.setUserName(userName);
