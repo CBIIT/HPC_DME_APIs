@@ -53,6 +53,7 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
@@ -82,198 +83,231 @@ public class HpcClientUtil {
 		return client;
 	}
 
-	public static String getAuthenticationToken(String userId, String passwd, String hpcServerURL) throws HpcWebException
-	{
-		
-		WebClient client = HpcClientUtil.getWebClient(hpcServerURL , null, null);
+	public static String getAuthenticationToken(String userId, String passwd, String hpcServerURL)
+			throws HpcWebException {
+
+		WebClient client = HpcClientUtil.getWebClient(hpcServerURL, null, null);
 		String token = DatatypeConverter.printBase64Binary((userId + ":" + passwd).getBytes());
 		client.header("Authorization", "Basic " + token);
 		Response restResponse = client.get();
-		
-		if(restResponse == null || restResponse.getStatus() != 200)
-        	return null;
+
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
 		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser;
 		try {
 			parser = factory.createParser((InputStream) restResponse.getEntity());
 		} catch (IllegalStateException | IOException e1) {
 			e1.printStackTrace();
-			throw new HpcWebException("Failed to get auth token: "+e1.getMessage());
+			throw new HpcWebException("Failed to get auth token: " + e1.getMessage());
 		}
 		try {
-			HpcAuthenticationResponseDTO dto  = parser.readValueAs(HpcAuthenticationResponseDTO.class);
+			HpcAuthenticationResponseDTO dto = parser.readValueAs(HpcAuthenticationResponseDTO.class);
 			return dto.getToken();
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get auth token: "+e.getMessage());
+			throw new HpcWebException("Failed to get auth token: " + e.getMessage());
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get auth token: "+e.getMessage());
+			throw new HpcWebException("Failed to get auth token: " + e.getMessage());
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get auth token: "+e.getMessage());
+			throw new HpcWebException("Failed to get auth token: " + e.getMessage());
 		}
 	}
 
-	public static HpcDataManagementModelDTO getDOCModel(String token, String hpcModelURL, String doc, String hpcCertPath, String hpcCertPassword)
-	{
-		
-		WebClient client = HpcClientUtil.getWebClient(hpcModelURL+"/"+doc , hpcCertPath, hpcCertPassword);
+	public static HpcDataManagementModelDTO getDOCModel(String token, String hpcModelURL, String doc,
+			String hpcCertPath, String hpcCertPassword) {
+
+		WebClient client = HpcClientUtil.getWebClient(hpcModelURL + "/" + doc, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Basic " + token);
-		
+
 		Response restResponse = client.get();
-		
-		if(restResponse == null || restResponse.getStatus() != 200)
-        	return null;
+
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
 		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser;
 		try {
 			parser = factory.createParser((InputStream) restResponse.getEntity());
 		} catch (IllegalStateException | IOException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get DOC Model for: "+ doc + " due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get DOC Model for: " + doc + " due to: " + e.getMessage());
 		}
 		try {
 			return parser.readValueAs(HpcDataManagementModelDTO.class);
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get DOC Model for: "+ doc + " due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get DOC Model for: " + doc + " due to: " + e.getMessage());
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get DOC Model for: "+ doc + " due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get DOC Model for: " + doc + " due to: " + e.getMessage());
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get DOC Model for: "+ doc + " due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get DOC Model for: " + doc + " due to: " + e.getMessage());
 		}
 	}
 
-	public static HpcNamedCompoundMetadataQueryListDTO getSavedSearches(String token, String hpcQueryURL, String hpcCertPath, String hpcCertPassword)
-	{
-		
-		WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
+	public static HpcNamedCompoundMetadataQueryDTO getQuery(String token, String hpcQueryURL, String queryName, String hpcCertPath,
+			String hpcCertPassword) {
+
+		String serviceURL = hpcQueryURL+"/"+queryName;
+		WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Basic " + token);
-		
+
 		Response restResponse = client.get();
-		
-		if(restResponse == null || restResponse.getStatus() != 200)
-        	return null;
+
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
 		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser;
 		try {
 			parser = factory.createParser((InputStream) restResponse.getEntity());
 		} catch (IllegalStateException | IOException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get saved queries due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get DOC Model for: " + queryName + " due to: " + e.getMessage());
+		}
+		try {
+			return parser.readValueAs(HpcNamedCompoundMetadataQueryDTO.class);
+		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get Query for: " + queryName + " due to: " + e.getMessage());
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get Query for: " + queryName + " due to: " + e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get Query for: " + queryName + " due to: " + e.getMessage());
+		}
+	}
+
+	public static HpcNamedCompoundMetadataQueryListDTO getSavedSearches(String token, String hpcQueryURL,
+			String hpcCertPath, String hpcCertPassword) {
+
+		WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
+		client.header("Authorization", "Basic " + token);
+
+		Response restResponse = client.get();
+
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
+		MappingJsonFactory factory = new MappingJsonFactory();
+		JsonParser parser;
+		try {
+			parser = factory.createParser((InputStream) restResponse.getEntity());
+		} catch (IllegalStateException | IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get saved queries due to: " + e.getMessage());
 		}
 		try {
 			return parser.readValueAs(HpcNamedCompoundMetadataQueryListDTO.class);
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get saved queries due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get saved queries due to: " + e.getMessage());
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get saved queries due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get saved queries due to: " + e.getMessage());
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get saved queries due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get saved queries due to: " + e.getMessage());
 		}
 	}
-	
-	public static HpcNotificationDeliveryReceiptListDTO getNotificationReceipts(String token, String hpcQueryURL, String hpcCertPath, String hpcCertPassword)
-	{
-		
+
+	public static HpcNotificationDeliveryReceiptListDTO getNotificationReceipts(String token, String hpcQueryURL,
+			String hpcCertPath, String hpcCertPassword) {
+
 		WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Basic " + token);
-		
+
 		Response restResponse = client.get();
-		
-		if(restResponse == null || restResponse.getStatus() != 200)
-        	return null;
+
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
 		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser;
 		try {
 			parser = factory.createParser((InputStream) restResponse.getEntity());
 		} catch (IllegalStateException | IOException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get notification receipts due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
 		}
 		try {
 			return parser.readValueAs(HpcNotificationDeliveryReceiptListDTO.class);
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get notification receipts due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get notification receipts due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get notification receipts due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
 		}
 	}
 
-	public static HpcNotificationSubscriptionListDTO getUserNotifications(String token, String hpcQueryURL, String hpcCertPath, String hpcCertPassword)
-	{
-		
+	public static HpcNotificationSubscriptionListDTO getUserNotifications(String token, String hpcQueryURL,
+			String hpcCertPath, String hpcCertPassword) {
+
 		WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Basic " + token);
-		
+
 		Response restResponse = client.get();
-		
-		if(restResponse == null || restResponse.getStatus() != 200)
-        	return null;
+
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
 		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser;
 		try {
 			parser = factory.createParser((InputStream) restResponse.getEntity());
 		} catch (IllegalStateException | IOException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get notification subscriptions due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get notification subscriptions due to: " + e.getMessage());
 		}
 		try {
 			return parser.readValueAs(HpcNotificationSubscriptionListDTO.class);
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get notification subscriptions due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get notification subscriptions due to: " + e.getMessage());
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get notification subscriptions due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get notification subscriptions due to: " + e.getMessage());
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get notification subscriptions due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get notification subscriptions due to: " + e.getMessage());
 		}
 	}
-	
-	public static HpcMetadataAttributesListDTO getMetadataAttrNames(String token, String hpcMetadataAttrsURL, String hpcCertPath, String hpcCertPassword)
-	{
-		
+
+	public static HpcMetadataAttributesListDTO getMetadataAttrNames(String token, String hpcMetadataAttrsURL,
+			String hpcCertPath, String hpcCertPassword) {
+
 		String url = hpcMetadataAttrsURL;
-		
-		WebClient client = HpcClientUtil.getWebClient(url , hpcCertPath, hpcCertPassword);
+
+		WebClient client = HpcClientUtil.getWebClient(url, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Basic " + token);
-		
+
 		Response restResponse = client.get();
-		
-		if(restResponse == null || restResponse.getStatus() != 200)
-        	return null;
+
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
 		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser;
 		try {
 			parser = factory.createParser((InputStream) restResponse.getEntity());
 		} catch (IllegalStateException | IOException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get Metadata attributes: due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get Metadata attributes: due to: " + e.getMessage());
 		}
 		try {
 			return parser.readValueAs(HpcMetadataAttributesListDTO.class);
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get Metadata attributes: due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get Metadata attributes: due to: " + e.getMessage());
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get Metadata attributes: due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get Metadata attributes: due to: " + e.getMessage());
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get Metadata attributes: due to: "+e.getMessage());
+			throw new HpcWebException("Failed to get Metadata attributes: due to: " + e.getMessage());
 		}
 	}
 

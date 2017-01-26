@@ -1,43 +1,53 @@
-    <!doctype html>
-    <html lang="en" xmlns:th="http://www.thymeleaf.org">
-      <head>
-        <link rel="stylesheet" type="text/css" href="../css/style.css" />
-    	<link href="../css/bootstrap.min.css" rel="stylesheet"/>
-    	<link href="../css/bootstrap-theme.css" rel="stylesheet"/>
-   
-        <script src="../js/angular/1.4.3/angular.js"></script>
-        <script src="../js/angular/1.4.3/angular-touch.js"></script>
-        <script src="../js/angular/1.4.3/angular-animate.js"></script>
-        <script src="../js/ui-grid/csv.js"></script>
-        <script src="../js/ui-grid/pdfmake.js"></script>
-        <script src="../js/ui-grid/vfs_fonts.js"></script>
-        <script src="../js/ui-grid/ui-grid.js"></script>
-       <link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css" type="text/css"/>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-      </head>
-      <body>
 
-							        <div class="modal-header">
-							          <button type="button" class="close" data-dismiss="modal">&times;</button>
-							          <h4 class="modal-title">Save Search Criteria</h4>
-							        </div>
-									<form class="form-horizontal" id="saveCriteriaForm" th:object="${hpcSaveSearch}">
-							        <div class="modal-body">
-	 									  <div class="pull-left" id="message" style="display: none;float:left"><p>&nbsp;</p></div>
-	 									  <p>&nbsp;</p>
-										  <div class="form-group">
-										    <label for="criteriaName">Name</label>
-										    <input type="text" class="form-control" th:field="*{criteriaName}" id="criteriaName"  placeholder="Enter name"/>
-										  </div>
-  							        </div>
-							        <div class="modal-footer">
-									  <button class="btn btn-success" id="submit">Save</button>
-							          <button type="button" class="btn btn-default" data-dismiss="modal" id="close">Close</button>
-							        </div>
-									</form>
-   
- <script>
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<link rel="stylesheet" type="text/css" href="../css/style.css" />
+<link href="../css/bootstrap.min.css" rel="stylesheet" />
+<link href="../css/bootstrap-theme.css" rel="stylesheet" />
+
+<script src="../js/angular/1.4.3/angular.js"></script>
+<script src="../js/angular/1.4.3/angular-touch.js"></script>
+<script src="../js/angular/1.4.3/angular-animate.js"></script>
+<script src="../js/ui-grid/csv.js"></script>
+<script src="../js/ui-grid/pdfmake.js"></script>
+<script src="../js/ui-grid/vfs_fonts.js"></script>
+<script src="../js/ui-grid/ui-grid.js"></script>
+<link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css"
+	type="text/css" />
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal">&times;</button>
+		<h4 class="modal-title">Save Search Criteria</h4>
+	</div>
+	<form class="form-horizontal" id="saveCriteriaForm"
+		th:object="${hpcSaveSearch}">
+		<div class="modal-body">
+			<div class="pull-left" id="message"
+				style="display: none; float: left">
+				<p>&nbsp;</p>
+			</div>
+			<p>&nbsp;</p>
+			<div class="form-group">
+				<label for="criteriaName">Name</label> <input type="text"
+					class="form-control" th:field="*{criteriaName}" id="criteriaName"
+					placeholder="Enter name" />
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-success" id="submit">Save</button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"
+				id="close">Close</button>
+		</div>
+	</form>
+
+	<script>
  $(function() {
 //twitter bootstrap script
  var $form = $('#saveCriteriaForm');
@@ -70,6 +80,6 @@
 	 });
  });
 </script>
-   
-    </body>
-    </html>
+
+</body>
+</html>

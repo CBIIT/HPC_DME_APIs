@@ -11,6 +11,7 @@ package gov.nih.nci.hpc.web.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -243,6 +244,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("searchType", "collection");
 		} else {
+			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 			List<HpcCollectionDTO> searchResults = collections.getCollections();
 			List<HpcCollectionSearchResultDetailed> returnResults = new ArrayList<HpcCollectionSearchResultDetailed>();
 			for (HpcCollectionDTO result : searchResults) {
@@ -250,7 +252,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				returnResult.setPath(result.getCollection().getCollectionName());
 				returnResult.setUuid(getAttributeValue("uuid", result.getMetadataEntries()));
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
-				returnResult.setCreatedOn(getAttributeValue("original_date_created", result.getMetadataEntries()));
+				returnResult.setCreatedOn(format.format(result.getCollection().getCreatedAt().getTime()));
 				returnResult.setCollectionType(getAttributeValue("collection_type", result.getMetadataEntries()));
 				returnResults.add(returnResult);
 
@@ -278,14 +280,16 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("searchType", "datafile");
 		} else {
+			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 			List<HpcDataObjectDTO> searchResults = dataObjects.getDataObjects();
 			List<HpcDatafileSearchResultDetailed> returnResults = new ArrayList<HpcDatafileSearchResultDetailed>();
 			for (HpcDataObjectDTO result : searchResults) {
 				HpcDatafileSearchResultDetailed returnResult = new HpcDatafileSearchResultDetailed();
-				returnResult.setPath(result.getDataObject().getDataName());
+				returnResult.setPath(result.getDataObject().getAbsolutePath());
 				returnResult.setUuid(getAttributeValue("uuid", result.getMetadataEntries()));
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
-				returnResult.setCreatedOn(getAttributeValue("original_date_created", result.getMetadataEntries()));
+				returnResult.setCreatedOn(format.format(result.getDataObject().getCreatedAt().getTime()));
+				returnResult.setChecksum(getAttributeValue("checksum", result.getMetadataEntries()));
 				returnResults.add(returnResult);
 
 			}
@@ -330,9 +334,10 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				criteria.setOperator(HpcMetadataQueryOperator.fromValue(operator));
 				if (level != null && !level.equals("-1")) {
 					HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
-					if(level.equals("datafile"))
-						level = "1";
-					levelFilter.setLevel(new Integer(hierarchy.get(level)));
+					if(level.equals("Data file"))
+						levelFilter.setLevel(1);
+					else
+						levelFilter.setLevel(new Integer(hierarchy.get(level)));
 					levelFilter.setOperator(HpcMetadataQueryOperator.EQUAL);
 					criteria.setLevelFilter(levelFilter);
 				}
@@ -397,29 +402,37 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		HpcMetadataHierarchy dataHierarchy = new HpcMetadataHierarchy();
 		long start = System.currentTimeMillis();
 		Map<String, String> hierarchy = new HashMap<String, String>();
-		long stop = System.currentTimeMillis();
+		
 		List<String> attrs = new ArrayList<String>();
 		
 			HpcMetadataAttributesListDTO dto = HpcClientUtil.getMetadataAttrNames(authToken,
 					hpcMetadataAttrsURL, sslCertPath, sslCertPassword);
-			stop = System.currentTimeMillis();
+			long stop = System.currentTimeMillis();
+			System.out.println("getMetadataAttrNames "+(stop-start));
 			if (dto != null && dto.getCollectionMetadataAttributes() != null) {
 				for(HpcMetadataLevelAttributes levelAttrs : dto.getCollectionMetadataAttributes()) 
 				{
-					hierarchy.put(levelAttrs.getLevelLabel(), levelAttrs.getLevelLabel());
+					String label = levelAttrs.getLevelLabel();
+					if(label == null)
+						label = "Data file";
+					hierarchy.put(label, label);
 					dataHierarchy.getCollectionAttrsSet().addAll(levelAttrs.getMetadataAttributes());
 					for(String name : levelAttrs.getMetadataAttributes())
-						attrs.add(levelAttrs.getLevelLabel()+":collection:"+name);
+						attrs.add(label+":collection:"+name);
 				}
 			}
 
 			if (dto != null && dto.getDataObjectMetadataAttributes() != null) {
 				for(HpcMetadataLevelAttributes levelAttrs : dto.getDataObjectMetadataAttributes()) 
 				{
-					hierarchy.put(levelAttrs.getLevelLabel(), levelAttrs.getLevelLabel());
+					String label = levelAttrs.getLevelLabel();
+					if(label == null)
+						label = "Data file";
+					
+					hierarchy.put(label, label);
 					dataHierarchy.getDataobjectAttrsSet().addAll(levelAttrs.getMetadataAttributes());
 					for(String name : levelAttrs.getMetadataAttributes())
-						attrs.add(levelAttrs.getLevelLabel()+":datafile:"+name);
+						attrs.add(label+":datafile:"+name);
 				}
 			}
 
@@ -441,6 +454,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 	}
 
 	private Map<String, String> getHierarchy(String authToken, HpcUserDTO user) {
+		long start = System.currentTimeMillis();
+
 		Map<String, String> hierarchiesMap = new HashMap<String, String>();
 		try {
 			HpcDataManagementModelDTO docDTO = HpcClientUtil.getDOCModel(authToken, modelServiceURL,
@@ -457,6 +472,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		long stop = System.currentTimeMillis();
+		System.out.println("getHierarchy "+(stop-start));
 		return hierarchiesMap;
 	}
 
