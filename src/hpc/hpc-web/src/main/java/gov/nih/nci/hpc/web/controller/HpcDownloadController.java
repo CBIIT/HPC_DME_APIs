@@ -9,8 +9,10 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
@@ -31,11 +34,16 @@ import javax.xml.bind.Unmarshaller;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.InputStreamSource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -59,6 +67,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
@@ -72,6 +81,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
@@ -87,6 +98,7 @@ import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcCollectionSearchResultDetailed;
 import gov.nih.nci.hpc.web.model.HpcDataColumn;
 import gov.nih.nci.hpc.web.model.HpcDatafileSearchResultDetailed;
+import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.Util;
 
@@ -101,19 +113,18 @@ import gov.nih.nci.hpc.web.util.Util;
 
 @Controller
 @EnableAutoConfiguration
-@RequestMapping("/savesearch")
-public class HpcSaveSearchController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.query}")
-	private String queryServiceURL;
-	private String hpcMetadataAttrsURL;
+@RequestMapping("/download")
+public class HpcDownloadController extends AbstractHpcController {
+	@Value("${gov.nih.nci.hpc.server.dataObject}")
+	private String dataObjectServiceURL;
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
-		HpcSaveSearch hpcSaveSearch = new HpcSaveSearch();
-		model.addAttribute("hpcSaveSearch", hpcSaveSearch);
-		String authToken = (String) session.getAttribute("hpcUserToken");
-		String userPasswdToken = (String) session.getAttribute("userpasstoken");
+		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
+		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
+		String downloadFilePath = request.getParameter("path");
+		model.addAttribute("downloadFilePath", downloadFilePath);
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
@@ -122,47 +133,28 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "index";
 		}
-		return "savesearch";
+		return "download";
 	}
 	
+	/**	
 	
-	@JsonView(Views.Public.class)
-	@RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	@ResponseBody
-	public AjaxResponseBody  search(@Valid @ModelAttribute("hpcSaveSearch") HpcSaveSearch search, Model model, BindingResult bindingResult,
-			HttpSession session, HttpServletRequest request) {
-		AjaxResponseBody result = new AjaxResponseBody();
+	public Resource download(@Valid @ModelAttribute("hpcDownloadDatafile") HpcDownloadDatafile downloadFile, Model model, BindingResult bindingResult,
+			HttpSession session, HttpServletRequest request, HttpServletResponse response) {
 		try {
 			// String criteria = getCriteria();
-			HpcCompoundMetadataQueryDTO compoundQuery = null;
-			if(session.getAttribute("compoundQuery") != null)
-				compoundQuery = (HpcCompoundMetadataQueryDTO) session.getAttribute("compoundQuery");
-			
-			if(compoundQuery == null)
-			{
-				result.setCode("400");
-				result.setMessage("Invalid Search");
-				return result;
-			}
-			
-			if(search.getCriteriaName() == null || search.getCriteriaName().isEmpty())
-			{
-				result.setCode("400");
-				result.setMessage("Invalid criteria name");
-				return result;
-			}
 			
 			String authToken = (String) session.getAttribute("hpcUserToken");
-			String serviceURL = queryServiceURL + "/" +search.getCriteriaName();
-
+			String serviceURL = dataObjectServiceURL +downloadFile.getDestinationPath()+"/download";
+			HpcDataObjectDownloadRequestDTO dto = new HpcDataObjectDownloadRequestDTO();
+			
 			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
 
-			Response restResponse = client.invoke("PUT", compoundQuery);
-			if (restResponse.getStatus() == 201) {
-				result.setCode("201");
-				result.setMessage("Saved criteria successfully!");
-				return result;
+			Response restResponse = client.invoke("POST", dto);
+			if (restResponse.getStatus() == 200) {
+				return new FileSystemResource(new File("C:\\DEV\\temp\\keystore.jks")); 
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -176,22 +168,80 @@ public class HpcSaveSearchController extends AbstractHpcController {
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 				
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				result.setCode("400");
-				result.setMessage("Failed to save criteria! Reason: "+exception.getMessage());
-				return result;
+				//return null;
 			}
 		} catch (HttpStatusCodeException e) {
-			result.setCode("400");
-			result.setMessage("Failed to save criteria: "+e.getMessage());
-			return result;
+			e.printStackTrace();
 		} catch (RestClientException e) {
-			result.setCode("400");
-			result.setMessage("Failed to save criteria: "+e.getMessage());
-			return result;
+			e.printStackTrace();
 		} catch (Exception e) {
-			result.setCode("400");
-			result.setMessage("Failed to save criteria: "+e.getMessage());
-			return result;
+			e.printStackTrace();
 		}
+		return null;
 	}
+*/	
+	
+	@RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@ResponseBody
+	public Resource  download(@Valid @ModelAttribute("hpcDownloadDatafile") HpcDownloadDatafile downloadFile, Model model, BindingResult bindingResult,
+			HttpSession session, HttpServletRequest request, HttpServletResponse response) {
+		try {
+			// String criteria = getCriteria();
+			
+			String authToken = (String) session.getAttribute("hpcUserToken");
+			String serviceURL = dataObjectServiceURL + downloadFile.getDestinationPath()+"/download";
+			HpcDataObjectDownloadRequestDTO dto = new HpcDataObjectDownloadRequestDTO();
+			if(downloadFile.getEndPointName() != null && downloadFile.getEndPointLocation() != null)
+			{
+				HpcFileLocation location = new HpcFileLocation();
+				location.setFileContainerId(downloadFile.getEndPointName());
+				location.setFileId(downloadFile.getEndPointLocation());
+				dto.setDestination(location);
+			}
+			
+			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
+			client.header("Authorization", "Bearer " + authToken);
+
+			Response restResponse = client.invoke("POST", dto);
+			if (restResponse.getStatus() == 200) {
+				return new FileSystemResource(new File("C:\\DEV\\temp\\keystore.jks"));
+//				response.setContentType("application/octet-stream");
+//				response.setHeader("Content-Disposition", String.format("inline; filename=datefile.tmp"));
+//				InputStream stream = (InputStream) restResponse.getEntity();
+//				OutputStream outStream = response.getOutputStream();
+//				 int len = 0;
+//			        byte[] buffer = new byte[4096];
+//			        while((len = stream.read(buffer)) != -1) {
+//			        	outStream.write(buffer, 0, len);
+//			        }				
+//				//FileCopyUtils.copy(stream, response.getOutputStream());
+//			        outStream.flush();
+//				stream.close();
+//			    outStream.close();				
+				
+				//return new InputStreamResource ((InputStream) restResponse.getEntity());
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+				  new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+				  new JacksonAnnotationIntrospector()
+				);
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+				
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				//return null;
+			}
+		} catch (HttpStatusCodeException e) {
+			e.printStackTrace();
+		} catch (RestClientException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}	
 }

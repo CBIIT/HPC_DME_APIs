@@ -8,6 +8,15 @@ public class HpcDatafileSearchResultDetailed {
 	private String registeredBy;
 	private String collectionType;
 	private String createdOn;
+	private String checksum;
+	
+	
+	public String getChecksum() {
+		return checksum;
+	}
+	public void setChecksum(String checksum) {
+		this.checksum = checksum;
+	}
 	public String getPath() {
 		return path;
 	}
