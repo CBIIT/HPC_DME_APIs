@@ -36,12 +36,14 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcCollectionSearchResultDetailed;
 import gov.nih.nci.hpc.web.model.HpcDatafileSearchResultDetailed;
@@ -70,8 +72,8 @@ public class HpcSearchController extends AbstractHpcController {
 	private String compoundDataObjectSearchServiceURL;
 	@Value("${gov.nih.nci.hpc.server.dataObject}")
 	private String datafileServiceURL;
-	@Value("${gov.nih.nci.hpc.server.model}")
-	private String modelServiceURL;
+	@Value("${gov.nih.nci.hpc.server.query}")
+	private String queryURL;
 	@Value("${gov.nih.nci.hpc.server.metadataattributes}")
 	private String hpcMetadataAttrsURL;
 
@@ -81,24 +83,35 @@ public class HpcSearchController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String body,  @RequestParam String queryName, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
+		HpcNamedCompoundMetadataQueryDTO query = null;
 		try {
-			HpcSearch search = new HpcSearch();
-			search.setSearchType("collection");
-			search.setDetailed(true);
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			String userPasswdToken = (String) session.getAttribute("userpasstoken");
 
 			String authToken = (String) session.getAttribute("hpcUserToken");
 
+			query = HpcClientUtil.getQuery(userPasswdToken, queryURL, queryName, sslCertPath, sslCertPassword);
 			String serviceURL = collectionServiceURL;
 			
-			serviceURL = serviceURL + "/query/"+queryName+"?detailedResponse=true&totalCount=false";
-
-			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
+			String requestURL;
+			if(query != null && query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.COLLECTION))
+				requestURL = compoundCollectionSearchServiceURL+ "/query/"+queryName;
+			else if(query != null && query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.DATA_OBJECT))
+				requestURL = compoundDataObjectSearchServiceURL+ "/"+queryName;
+			else
+				return "dashboard";
+			
+			if(query.getNamedCompoundQuery().getDetailedResponse())
+				requestURL = requestURL + "?detailedResponse=true&totalCount=false";
+			
+			WebClient client = HpcClientUtil.getWebClient(requestURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
 
 			Response restResponse = client.invoke("GET", serviceURL);
 			if (restResponse.getStatus() == 200) {
+				HpcSearch search = new HpcSearch();
+				search.setSearchType(query.getNamedCompoundQuery().getCompoundQueryType().value());
+				search.setDetailed(query.getNamedCompoundQuery().getDetailedResponse());
 				processResponseResults(search, restResponse, model);
 			} else {
 				String message = "No matching results!";
@@ -133,12 +146,23 @@ public class HpcSearchController extends AbstractHpcController {
 			return "dashboard";
 		}
 		
-		return "collectionsearchresultdetail";
+		if(query == null)
+			return "dashboard";
+		else if(query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.COLLECTION) && query.getNamedCompoundQuery().getDetailedResponse())
+			return "collectionsearchresultdetail";
+		else if(query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.COLLECTION) && !query.getNamedCompoundQuery().getDetailedResponse())
+			return "collectionsearchresult";
+		else if(query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.DATA_OBJECT) && query.getNamedCompoundQuery().getDetailedResponse())
+			return "dataobjectsearchresultdetail";
+		else if(query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.DATA_OBJECT) && !query.getNamedCompoundQuery().getDetailedResponse())
+			return "dataobjectsearchresult";
+		else
+			return "dashboard";
 	}
 
 	private void processResponseResults(HpcSearch search, Response restResponse, Model model)
 			throws JsonParseException, IOException {
-		if (search.getSearchType().equals("collection"))
+		if (search.getSearchType().equals(HpcCompoundMetadataQueryType.COLLECTION.value()))
 			processCollectionResults(search, restResponse, model);
 		else
 			processDataObjectResults(search, restResponse, model);
@@ -191,6 +215,7 @@ public class HpcSearchController extends AbstractHpcController {
 			for (String result : searchResults) {
 				HpcSearchResult returnResult = new HpcSearchResult();
 				returnResult.setPath(result);
+				returnResult.setDownload(result);
 				returnResults.add(returnResult);
 
 			}

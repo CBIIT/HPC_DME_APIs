@@ -1,20 +1,24 @@
-    <!doctype html>
-    <html ng-app="app">
-      <head>
-        <link rel="stylesheet" type="text/css" href="../css/style.css" />
-    	<link href="../css/bootstrap.min.css" rel="stylesheet"/>
-    	<link href="../css/bootstrap-theme.css" rel="stylesheet"/>
-   
-        <script src="../js/angular/1.4.3/angular.js"></script>
-        <script src="../js/angular/1.4.3/angular-touch.js"></script>
-        <script src="../js/angular/1.4.3/angular-animate.js"></script>
-        <script src="../js/ui-grid/csv.js"></script>
-        <script src="../js/ui-grid/pdfmake.js"></script>
-        <script src="../js/ui-grid/vfs_fonts.js"></script>
-        <script src="../js/ui-grid/ui-grid.js"></script>
-       <link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css" type="text/css"/>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<!doctype html>
+<html ng-app="app">
+<head>
+<link rel="stylesheet" type="text/css" href="../css/style.css" />
+<link href="../css/bootstrap.min.css" rel="stylesheet" />
+<link href="../css/bootstrap-theme.css" rel="stylesheet" />
+
+<script src="../js/angular/1.4.3/angular.js"></script>
+<script src="../js/angular/1.4.3/angular-touch.js"></script>
+<script src="../js/angular/1.4.3/angular-animate.js"></script>
+<script src="../js/ui-grid/csv.js"></script>
+<script src="../js/ui-grid/pdfmake.js"></script>
+<script src="../js/ui-grid/vfs_fonts.js"></script>
+<script src="../js/ui-grid/ui-grid.js"></script>
+<link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css"
+	type="text/css" />
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script th:inline="javascript">
 /*<![CDATA[*/
     var results = "[[${searchresults}]]";
@@ -63,68 +67,78 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 }]);
 </script>
 
-	<style>
-	/*style.css*/
+<style>
+/*style.css*/
 .gridStyle {
-    border: 1px solid rgb(212,212,212);
-    width: 800px; 
-    height: 400px
-    
+	border: 1px solid rgb(212, 212, 212);
+	width: 800px;
+	height: 400px
 }
-	</style>        
-      </head>
-      <body th:attr="ng-init='searchresults=\'' + ${searchresults} +'\''">
- <section id="container" class="">
-  <div th:include="header :: header"></div>
-      <!--main content start-->
-      <section id="main-content">
-          <section class="wrapper">
-              <!--Title start-->
-			  <div class="row">
-				<div class="col-lg-12">
-					<h3 class="page-header"><i class="fa fa-laptop"></i> Dashboard </h3>
-					<ol class="breadcrumb">
-						<li><i class="fa fa-home"></i><a th:href="@{/dashboard}">Dashboard </a> / <a th:href="@{/search}">Search</a></li>
-					</ol>
+</style>
+</head>
+<body th:attr="ng-init='searchresults=\'' + ${searchresults} +'\''">
+	<section id="container" class="">
+		<div th:include="header :: header"></div>
+		<!--main content start-->
+		<section id="main-content">
+			<section class="wrapper">
+				<!--Title start-->
+				<div class="row">
+					<div class="col-lg-12">
+						<h3 class="page-header">
+							<i class="fa fa-laptop"></i> Dashboard
+						</h3>
+						<ol class="breadcrumb">
+							<li><i class="fa fa-home"></i><a th:href="@{/dashboard}">Dashboard
+							</a> / <a th:href="@{/criteria}">Search</a></li>
+						</ol>
+					</div>
 				</div>
-			 </div>
-			<!--Title End-->
-			<!--Row start-->
-			<div class="row">
-				<div class="col-lg-12 col-md-12">
-					<div class="panel panel-default">
-						<div class="panel-heading">
- 							 <div class="pull-left">
-							<h2 align="left"><i class="fa fa-list-alt red"></i><strong>Collection Search Results</strong></h2>
+				<!--Title End-->
+				<!--Row start-->
+				<div class="row">
+					<div class="col-lg-12 col-md-12">
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<div class="pull-left">
+									<h2 align="left">
+										<i class="fa fa-list-alt red"></i><strong>Collection
+											Search Results</strong>
+									</h2>
+								</div>
+								<div class="pull-right">
+									<a data-toggle="modal" id="savesearchlink"
+										class="btn btn-link btn-sm" href="/savesearch"
+										data-target="#myModal">Save Search Criteria</a>
+								</div>
+								<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+									aria-labelledby="myModalLabel" aria-hidden="true">
+									<div class="modal-dialog">
+										<div class="modal-content"></div>
+										<!-- /.modal-content -->
+									</div>
+									<!-- /.modal-dialog -->
+								</div>
 							</div>
-							 <div class="pull-right">
-							<a data-toggle="modal" id="savesearchlink" class="btn btn-link btn-sm" href="/savesearch" data-target="#myModal">Save Search Criteria</a>
-<!--  							<button type="button" class="btn btn-link btn-sm" data-toggle="modal" href="/savesearch">Save Search Criteria</button> --> 
-<!-- 	 						<h2 align="right"><a href="#myModal"><i class="fa fa-list-alt red"></i><strong>Save Search</strong></a></h2> -->
+							<!--panel-body start-->
+							<div class="panel-body">
+								<div ng-controller="MainCtrl">
+									<div id="grid1" ui-grid="gridOptions1" ui-grid-cellNav="true"
+										ui-grid-pagination="true" ui-grid-grouping="true"
+										ui-grid-resize-columns="true" ui-grid-move-columns="true"></div>
+								</div>
 							</div>
-								<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-								    <div class="modal-dialog">
-								        <div class="modal-content">
-								        </div> <!-- /.modal-content -->
-								    </div> <!-- /.modal-dialog -->
-								</div>							  
-						</div>
-						<!--panel-body start-->
-						<div class="panel-body">
-       <div ng-controller="MainCtrl">
-           <div id="grid1" ui-grid="gridOptions1" ui-grid-cellNav="true" ui-grid-pagination="true" ui-grid-grouping="true" ui-grid-resize-columns="true" ui-grid-move-columns="true"></div>
-        </div>
-						</div>
 						</div>
 
 					</div>
 
-				</div><!--/col-->
+				</div>
+				<!--/col-->
 
-          </section>
-      </section>
-      <!--main content end-->
-  </section>    
-    
-      </body>
-    </html>
+			</section>
+		</section>
+		<!--main content end-->
+	</section>
+
+</body>
+</html>
