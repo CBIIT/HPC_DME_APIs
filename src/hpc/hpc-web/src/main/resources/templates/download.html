@@ -61,7 +61,7 @@
 										<label for="endPointLocation">Globus Endpoint Path:</label> <input
 											type="text" class="form-control"
 											th:field="*{endPointLocation}" id="endPointLocation"
-											placeholder="Enter Globus Endpoint Path" />
+											placeholder="Enter Globus Endpoint Path" size="40"/>
 									</div>
 								</div>
 								<div class="form-group" id="SyncDiv" style="display: none">
@@ -73,7 +73,7 @@
 									</div>
 								</div>
 								<div class="modal-footer">
-									<button class="btn btn-success" id="submit">Download</button>
+									<button class="btn btn-success" id="submit" onClick="return validateAndSubmit()">Download</button>
 									<button type="button" class="btn btn-default"
 										data-dismiss="modal" id="close">Close</button>
 								</div>
@@ -88,6 +88,34 @@
 	</div>
 
 	<script>
+	
+	function validateAndSubmit()
+	{
+		var radioSelected = document.getElementsByName("searchType");
+		var selected1 = radioSelected[0].checked;
+		var selected2 = radioSelected[1].checked;
+
+		if(document.getElementById("searchType").value == "async")
+		{
+			var endPointName = document.getElementById("endPointName").value;
+			var endPointLocation = document.getElementById("endPointLocation").value;
+			if(endPointLocation == null || endPointLocation.trim().length == 0 || endPointName == null || endPointName.trim().length == 0)
+			{
+				alert("Please enter asynchronous download values");
+				return false;
+			}
+		}
+		else
+		{
+			var downloadFileName = document.getElementById("downloadFileName").value;
+			if(downloadFileName == null || downloadFileName.trim().length == 0)
+			{
+				alert("Please enter synchronous download file name");
+				return false;
+			}
+		}
+		document.getElementById("downloadForm").submit();
+	}	
 		$(function() {
 			//twitter bootstrap script
 			var $form = $('#downloadForm');
