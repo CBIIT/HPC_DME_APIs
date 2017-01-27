@@ -191,12 +191,14 @@ public class HpcDownloadController extends AbstractHpcController {
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			String serviceURL = dataObjectServiceURL + downloadFile.getDestinationPath()+"/download";
 			HpcDataObjectDownloadRequestDTO dto = new HpcDataObjectDownloadRequestDTO();
+			boolean asyncDownload = false;
 			if(downloadFile.getEndPointName() != null && downloadFile.getEndPointLocation() != null)
 			{
 				HpcFileLocation location = new HpcFileLocation();
 				location.setFileContainerId(downloadFile.getEndPointName());
 				location.setFileId(downloadFile.getEndPointLocation());
 				dto.setDestination(location);
+				asyncDownload = true;
 			}
 			
 			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
@@ -204,7 +206,10 @@ public class HpcDownloadController extends AbstractHpcController {
 
 			Response restResponse = client.invoke("POST", dto);
 			if (restResponse.getStatus() == 200) {
-				return new FileSystemResource(new File("C:\\DEV\\temp\\keystore.jks"));
+				if(asyncDownload)
+					model.addAttribute("message", "Asynchronous download request is submitted successfully!");
+				
+				//return new FileSystemResource(new File("C:\\DEV\\temp\\keystore.jks"));
 //				response.setContentType("application/octet-stream");
 //				response.setHeader("Content-Disposition", String.format("inline; filename=datefile.tmp"));
 //				InputStream stream = (InputStream) restResponse.getEntity();
