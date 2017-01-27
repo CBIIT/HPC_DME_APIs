@@ -9,8 +9,15 @@ public class HpcDatafileSearchResultDetailed {
 	private String collectionType;
 	private String createdOn;
 	private String checksum;
+	private String download;
 	
 	
+	public String getDownload() {
+		return download;
+	}
+	public void setDownload(String download) {
+		this.download = download;
+	}
 	public String getChecksum() {
 		return checksum;
 	}

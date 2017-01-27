@@ -101,6 +101,8 @@ public class HpcSearchController extends AbstractHpcController {
 			else
 				return "dashboard";
 			
+			session.setAttribute("namedCompoundQuery", query.getNamedCompoundQuery());
+			
 			if(query.getNamedCompoundQuery().getDetailedResponse())
 				requestURL = requestURL + "?detailedResponse=true&totalCount=false";
 			
@@ -230,6 +232,7 @@ public class HpcSearchController extends AbstractHpcController {
 				returnResult.setUuid(getAttributeValue("uuid", result.getMetadataEntries()));
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
 				returnResult.setCreatedOn(getAttributeValue("original_date_created", result.getMetadataEntries()));
+				returnResult.setDownload(result.getDataObject().getDataName());
 				returnResults.add(returnResult);
 
 			}
