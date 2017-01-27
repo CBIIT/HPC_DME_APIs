@@ -180,14 +180,14 @@ public class HpcDownloadController extends AbstractHpcController {
 		return null;
 	}
 */	
-	
-	@RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+
+	@JsonView(Views.Public.class)
+	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
-	public Resource  download(@Valid @ModelAttribute("hpcDownloadDatafile") HpcDownloadDatafile downloadFile, Model model, BindingResult bindingResult,
+	public AjaxResponseBody  download(@Valid @ModelAttribute("hpcDownloadDatafile") HpcDownloadDatafile downloadFile, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request, HttpServletResponse response) {
+		AjaxResponseBody result = new AjaxResponseBody();
 		try {
-			// String criteria = getCriteria();
-			
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			String serviceURL = dataObjectServiceURL + downloadFile.getDestinationPath()+"/download";
 			HpcDataObjectDownloadRequestDTO dto = new HpcDataObjectDownloadRequestDTO();
@@ -207,7 +207,17 @@ public class HpcDownloadController extends AbstractHpcController {
 			Response restResponse = client.invoke("POST", dto);
 			if (restResponse.getStatus() == 200) {
 				if(asyncDownload)
-					model.addAttribute("message", "Asynchronous download request is submitted successfully!");
+				{
+					result.setCode("200");
+					result.setMessage("Asynchronous download request is submitted successfully!");
+					return result;
+				}
+				else
+				{
+					result.setCode("200");
+					result.setMessage("Synchronous download is not yet implemented. Please check back later!");
+					return result;
+				}
 				
 				//return new FileSystemResource(new File("C:\\DEV\\temp\\keystore.jks"));
 //				response.setContentType("application/octet-stream");
@@ -238,15 +248,23 @@ public class HpcDownloadController extends AbstractHpcController {
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 				
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				//return null;
+				result.setCode("400");
+				result.setMessage("Download request is not successfull: "+exception.getMessage());
+				return result;
 			}
 		} catch (HttpStatusCodeException e) {
-			e.printStackTrace();
+			result.setCode("400");
+			result.setMessage("Download request is not successfull: "+e.getMessage());
+			return result;
 		} catch (RestClientException e) {
-			e.printStackTrace();
+			result.setCode("400");
+			result.setMessage("Download request is not successfull: "+e.getMessage());
+			return result;
 		} catch (Exception e) {
-			e.printStackTrace();
+			result.setCode("400");
+			result.setMessage("Download request is not successfull: "+e.getMessage());
+			return result;
 		}
-		return null;
+		return result;
 	}	
 }

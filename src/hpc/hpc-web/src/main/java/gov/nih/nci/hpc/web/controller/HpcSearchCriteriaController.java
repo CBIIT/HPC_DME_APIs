@@ -143,15 +143,9 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		try {
 
 			// String criteria = getCriteria();
-			HpcCompoundMetadataQueryDTO compoundQuery = null;
 			Map<String, String> hierarchy = (Map<String, String>)session.getAttribute("hierarchies");
 			
-			if(session.getAttribute("compoundQuery") != null)
-			{
-				compoundQuery = (HpcCompoundMetadataQueryDTO) session.getAttribute("compoundQuery");
-			}
-			else
-				compoundQuery = constructCriteria(hierarchy, search);
+			HpcCompoundMetadataQueryDTO compoundQuery = constructCriteria(hierarchy, search);
 			if (search.isDetailed())
 				compoundQuery.setDetailedResponse(true);
 			
