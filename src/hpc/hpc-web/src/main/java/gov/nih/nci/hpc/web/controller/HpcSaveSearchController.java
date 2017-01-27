@@ -74,6 +74,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
@@ -140,9 +141,21 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			
 			if(compoundQuery == null)
 			{
-				result.setCode("400");
-				result.setMessage("Invalid Search");
-				return result;
+				HpcNamedCompoundMetadataQueryDTO namedCompoundQuery = null;
+				if(session.getAttribute("namedCompoundQuery") != null)
+					namedCompoundQuery = (HpcNamedCompoundMetadataQueryDTO) session.getAttribute("namedCompoundQuery");
+				
+				if(namedCompoundQuery == null)
+				{
+					result.setCode("400");
+					result.setMessage("Invalid Search");
+					return result;
+				}
+				compoundQuery = new HpcCompoundMetadataQueryDTO();
+				compoundQuery.setCompoundQuery(namedCompoundQuery.getNamedCompoundQuery().getCompoundQuery());
+				compoundQuery.setCompoundQueryType(namedCompoundQuery.getNamedCompoundQuery().getCompoundQueryType());
+				compoundQuery.setDetailedResponse(namedCompoundQuery.getNamedCompoundQuery().getDetailedResponse());
+				compoundQuery.setTotalCount(namedCompoundQuery.getNamedCompoundQuery().getTotalCount());
 			}
 			
 			if(search.getCriteriaName() == null || search.getCriteriaName().isEmpty())
