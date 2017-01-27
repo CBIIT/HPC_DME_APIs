@@ -67,6 +67,11 @@
 												field : 'createdOn',
 												width : 200,
 												displayName : 'Created On'
+											},{
+												field : 'download',
+												width : 500,
+												displayName : 'Download',
+												cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal">Download<i class="fa fa-download" aria-hidden="true"></i></a></div>'
 											} ],
 									treeRowHeaderAlwaysVisible : false,
 									onRegisterApi : function(gridApi) {
@@ -145,6 +150,14 @@
 									</div>
 									<!-- /.modal-dialog -->
 								</div>
+								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
+									aria-labelledby="myModalLabel" aria-hidden="true">
+									<div class="modal-dialog">
+										<div class="modal-content"></div>
+										<!-- /.modal-content -->
+									</div>
+									<!-- /.modal-dialog -->
+								</div>								
 							</div>
 							<!--panel-body start-->
 							<div class="panel-body">
