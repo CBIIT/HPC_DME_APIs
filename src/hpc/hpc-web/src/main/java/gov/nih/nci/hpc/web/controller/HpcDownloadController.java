@@ -265,6 +265,5 @@ public class HpcDownloadController extends AbstractHpcController {
 			result.setMessage("Download request is not successfull: "+e.getMessage());
 			return result;
 		}
-		return result;
 	}	
 }
