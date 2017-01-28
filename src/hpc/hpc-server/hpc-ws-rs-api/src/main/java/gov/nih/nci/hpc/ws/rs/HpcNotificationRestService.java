@@ -78,7 +78,7 @@ public interface HpcNotificationRestService
 	@GET
     @Path("/notification/deliveryReceipt")
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-    public Response getNotificationDeliveryReceipt(@QueryParam("eventId") Integer page);
+    public Response getNotificationDeliveryReceipt(@QueryParam("eventId") Integer eventId);
 	
 	
 }

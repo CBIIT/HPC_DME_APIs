@@ -12,12 +12,14 @@ package gov.nih.nci.hpc.dao.postgresql.impl;
 
 import gov.nih.nci.hpc.dao.HpcNotificationDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
@@ -49,10 +51,11 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
     // SQL Queries.
 	private static final String UPSERT_SUBSCRIPTION_SQL = 
 		    "insert into public.\"HPC_NOTIFICATION_SUBSCRIPTION\" ( " +
-                    "\"USER_ID\", \"EVENT_TYPE\", \"NOTIFICATION_DELIVERY_METHODS\") " +
-                    "values (?, ?, ?) " +
+                    "\"USER_ID\", \"EVENT_TYPE\", \"NOTIFICATION_DELIVERY_METHODS\", \"NOTIFICATION_TRIGGERS\") " +
+                    "values (?, ?, ?, ?) " +
             "on conflict(\"USER_ID\", \"EVENT_TYPE\") do update " +
-                    "set \"NOTIFICATION_DELIVERY_METHODS\"=excluded.\"NOTIFICATION_DELIVERY_METHODS\"";
+                    "set \"NOTIFICATION_DELIVERY_METHODS\"=excluded.\"NOTIFICATION_DELIVERY_METHODS\"," +
+                    "set \"NOTIFICATION_TRIGGERS\"=excluded.\"NOTIFICATION_TRIGGERS\"";
 	
 	private static final String DELETE_SUBSCRIPTION_SQL = 
 			"delete from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" " +
@@ -66,6 +69,9 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 
 	private static final String GET_SUBSCRIPTION_USERS_SQL = 
 		    "select \"USER_ID\" from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"EVENT_TYPE\" = ?";
+	
+	private static final String GET_SUBSCRIPTION_USERS_WITH_TRIGGER_SQL = 
+			GET_SUBSCRIPTION_USERS_SQL + " and \"NOTIFICATION_TRIGGERS\" <@ ?::text[]";
 	
 	private static final String UPSERT_DELIVERY_RECEIPT_SQL = 
 		    "insert into public.\"HPC_NOTIFICATION_DELIVERY_RECEIPT\" ( " +
@@ -95,8 +101,9 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	// Row mappers.
 	private HpcNotificationSubscriptionRowMapper notificationSubscriptionRowMapper = 
 			                                     new HpcNotificationSubscriptionRowMapper();
-	HpcNotificationDeliveryReceiptRowMapper notificationDeliveryReceiptRowMapper = 
-			                                new HpcNotificationDeliveryReceiptRowMapper();
+	private HpcNotificationDeliveryReceiptRowMapper notificationDeliveryReceiptRowMapper = 
+			                                     new HpcNotificationDeliveryReceiptRowMapper();
+	private SingleColumnRowMapper<String> userIdRowMapper = new SingleColumnRowMapper<>();
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -124,17 +131,11 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			          HpcNotificationSubscription notificationSubscription) throws HpcException
     {
 		try {
-			 // Map the delivery methods to a single string.
-			 StringBuilder deliveryMethods = new StringBuilder();
-			 for(HpcNotificationDeliveryMethod deliveryMethod : 
-				 notificationSubscription.getNotificationDeliveryMethods()) {
-				 deliveryMethods.append(deliveryMethod.value() + ",");
-			 }
-			 
 		     jdbcTemplate.update(UPSERT_SUBSCRIPTION_SQL,
 		    		             userId,
 		    		             notificationSubscription.getEventType().value(),
-		    		             deliveryMethods.toString());
+		    		             deliveryMethodsToSQLArray(notificationSubscription.getNotificationDeliveryMethods()),
+		                         payloadEntriesToSQLArray(notificationSubscription.getNotificationTriggers()));
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a notification subscription: " + 
@@ -201,9 +202,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
                                           throws HpcException
     {
 		try {
-		     return jdbcTemplate.query(GET_SUBSCRIPTION_USERS_SQL, 
-		    		 new SingleColumnRowMapper<String>(),
-		    		                            eventType.value());
+		     return jdbcTemplate.query(GET_SUBSCRIPTION_USERS_SQL, userIdRowMapper, eventType.value());
 		     
 		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
 			    return null;
@@ -213,7 +212,24 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		                               e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, e);
 		}				
-		
+    }
+	
+	@Override
+    public List<String> getSubscribedUsers(HpcEventType eventType, List<HpcEventPayloadEntry> eventPayloadEntries) 
+                                          throws HpcException
+    {
+		try {
+		     return jdbcTemplate.query(GET_SUBSCRIPTION_USERS_WITH_TRIGGER_SQL, userIdRowMapper,
+		    		                   eventType.value(), payloadEntriesToSQLTextArray(eventPayloadEntries));
+		     
+		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get notification subscribed users: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}				
     }
     	
     @Override
@@ -300,8 +316,8 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		{
 			HpcNotificationSubscription notificationSubscription = new HpcNotificationSubscription();
 			notificationSubscription.setEventType(HpcEventType.fromValue(rs.getString("EVENT_TYPE")));
-			String deliveryMethods = rs.getString("NOTIFICATION_DELIVERY_METHODS");
-			for(String deliveryMethod : deliveryMethods.split(",")) {
+			String[] deliveryMethods = (String[]) rs.getArray("NOTIFICATION_DELIVERY_METHODS").getArray();
+			for(String deliveryMethod : deliveryMethods) {
 				notificationSubscription.getNotificationDeliveryMethods().add(
 						    HpcNotificationDeliveryMethod.fromValue(deliveryMethod));
 			}
@@ -329,6 +345,94 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
             return notificationDelivertReceipt;
 		}
 	}
+	
+    /** 
+     * Map a collection of delivery methods to a SQL array.
+     * 
+     * @param deliveryMethods A list of delivery methods.
+     * @return SQL array of text values.
+     * @throws HpcException on SQL exception.
+     */
+	 private Array deliveryMethodsToSQLArray(List<HpcNotificationDeliveryMethod> deliveryMethods)
+	                                        throws HpcException
+	 {
+		 String[] deliveryMethodsStr = new String[deliveryMethods.size()];
+		 int i = 0;
+		 for(HpcNotificationDeliveryMethod deliveryMethod : deliveryMethods) {
+		     deliveryMethodsStr[i++] = deliveryMethod.value();
+		 }
+		 
+		 try {
+		      return jdbcTemplate.getDataSource().getConnection().createArrayOf("text", deliveryMethodsStr);
+		      
+		} catch(SQLException se) {
+			    throw new HpcException("Failed to create SQL array of delivery methods: " + 
+                                       se.getMessage(),
+		                               HpcErrorType.DATABASE_ERROR, se);
+		}
+	 }
+	 
+    /** 
+     * Map a collection of event payload entries to a SQL array.
+     * 
+     * @param payloadEntries A list of payload entries.
+     * @return SQL array of text values.
+     * @throws HpcException on SQL exception.
+     */
+	 private Array payloadEntriesToSQLArray(List<HpcEventPayloadEntry> payloadEntries)
+	                                       throws HpcException
+	 {
+		 if(payloadEntries.isEmpty()) {
+			return null;
+		 }
+		 
+		 String[] payloadEntriesStr = new String[payloadEntries.size()];
+		 int i = 0;
+		 for(HpcEventPayloadEntry payloadEntry : payloadEntries) {
+			 payloadEntriesStr[i++] = toText(payloadEntry);
+		 }
+		 
+		 try {
+		      return jdbcTemplate.getDataSource().getConnection().createArrayOf("text", payloadEntriesStr);
+		      
+		} catch(SQLException se) {
+			    throw new HpcException("Failed to create SQL array of payload entries: " + 
+                                       se.getMessage(),
+		                               HpcErrorType.DATABASE_ERROR, se);
+		}
+	 }
+	 
+    /** 
+     * Map a collection of event payload entries to a SQL text array (as a String).
+     * 
+     * @param payloadEntries A list of payload entries.
+     * @return SQL text array string.
+     */
+	 private String payloadEntriesToSQLTextArray(List<HpcEventPayloadEntry> payloadEntries)
+	 {
+		 StringBuilder payloadEntriesArray = new StringBuilder();
+		 payloadEntriesArray.append("{");
+		 for(HpcEventPayloadEntry payloadEntry : payloadEntries) {
+			 if(payloadEntriesArray.length() > 0) {
+				 payloadEntriesArray.append(",");
+			 }
+			 payloadEntriesArray.append(toText(payloadEntry));
+		 }
+		 payloadEntriesArray.append("}");
+
+		 return payloadEntriesArray.toString();
+	 }
+	 
+    /** 
+     * Convert a payload entry to a string (to be stored in the DB)
+     * 
+     * @param payloadEntry A payload entry.
+     * @return payload entry text.
+     */
+	 private String toText(HpcEventPayloadEntry payloadEntry)
+	 {
+		 return payloadEntry.getAttribute() + "=" + payloadEntry.getValue();
+	 }
 }
 
  

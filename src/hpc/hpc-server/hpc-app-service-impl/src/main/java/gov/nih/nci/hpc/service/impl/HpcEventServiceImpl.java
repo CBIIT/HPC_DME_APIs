@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.dao.HpcEventDAO;
+import gov.nih.nci.hpc.dao.HpcNotificationDAO;
 import gov.nih.nci.hpc.dao.HpcReportsDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
@@ -22,6 +23,7 @@ import gov.nih.nci.hpc.domain.report.HpcReportEntry;
 import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcEventService;
 
 import java.text.Format;
@@ -49,10 +51,14 @@ public class HpcEventServiceImpl implements HpcEventService
     //---------------------------------------------------------------------//
 	
     // Event payload entries attributes.
-	private static final String DATA_TRANSFER_REQUEST_ID_ATTRIBUTE = 
-			                    "DATA_TRANSFER_REQUEST_ID";
-	private static final String DATA_OBJECT_PATH_ATTRIBUTE = 
-                                "DATA_OBJECT_PATH";
+	public static final String DATA_TRANSFER_REQUEST_ID_PAYLOAD_ATTRIBUTE = "DATA_TRANSFER_REQUEST_ID";
+	public static final String DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE = "DATA_OBJECT_PATH";
+	public static final String CHECKSUM_PAYLOAD_ATTRIBUTE = "CHECKSUM";
+	public static final String COLLECTION_PATH_PAYLOAD_ATTRIBUTE = "COLLECTION_PATH";
+	public static final String COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE = "UPDATE";
+	public static final String COLLECTION_METADATA_UPDATE_PAYLOAD_VALUE = "METADATA";
+	public static final String COLLECTION_REGISTRATION_PAYLOAD_VALUE = "COLLECTION_REGISTRATION";
+	public static final String DATA_OBJECT_REGISTRATION_PAYLOAD_VALUE = "DATA_OBJECT_REGISTRATION";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -64,6 +70,12 @@ public class HpcEventServiceImpl implements HpcEventService
 	
 	@Autowired
     private HpcReportsDAO reportsDAO = null;
+	
+	@Autowired
+    private HpcNotificationDAO notificationDAO = null;
+	
+	@Autowired
+    private HpcDataManagementProxy dataManagementProxy = null;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -122,7 +134,7 @@ public class HpcEventServiceImpl implements HpcEventService
     		       String userId, String dataTransferRequestId) throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_DOWNLOAD_COMPLETED,
-    			             dataTransferRequestId, null);
+    			             dataTransferRequestId, null, null);
     }
     
     @Override
@@ -130,7 +142,7 @@ public class HpcEventServiceImpl implements HpcEventService
     		       String userId, String dataTransferRequestId) throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_DOWNLOAD_FAILED,
-	                         dataTransferRequestId, null);
+	                         dataTransferRequestId, null, null);
     }
     
     @Override
@@ -138,15 +150,15 @@ public class HpcEventServiceImpl implements HpcEventService
     		                                                throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE,
-                             null, path);
+                             null, path, null);
     }
     
     @Override
-    public void addDataTransferUploadArchivedEvent(String userId, String path) 
+    public void addDataTransferUploadArchivedEvent(String userId, String path, String checksum) 
     		                                      throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_ARCHIVED,
-                             null, path);
+                             null, path, checksum);
     }
     
     @Override
@@ -154,87 +166,10 @@ public class HpcEventServiceImpl implements HpcEventService
     		                                    throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_FAILED,
-                             null, path);
+                             null, path, null);
     }
     
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-    
-    /**
-     * Add an event.
-     * 
-     * @param event The event to add.
-     * 
-     * @throws HpcException if validation failed.
-     */
-    private void addEvent(HpcEvent event) throws HpcException
-    {
-    	// Input validation.
-    	if(event == null || event.getUserIds() == null || event.getUserIds().isEmpty() ||
-    	   event.getType() == null) {
-    	   throw new HpcException("Invalid event",
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-
-    	// Set the created timestamp.
-    	event.setCreated(Calendar.getInstance());
-    	
-    	// Persist to DB.
-    	eventDAO.insertEvent(event);	
-    }
-    
-    /**
-     * Instantiate a payload entry object.
-     * 
-     * @param attribute The payload entry attribute.
-     * @param value The payload entry value.
-     * @return The event payload entry.
-     */
-    private HpcEventPayloadEntry toPayloadEntry(String attribute, String value)
-    {
-		// Construct the event.
-		HpcEventPayloadEntry payloadEntry = new HpcEventPayloadEntry();
-		payloadEntry.setAttribute(attribute);
-		payloadEntry.setValue(value);
-		
-		return payloadEntry;
-    }
-    
-    /**
-     * Add a data transfer event.
-     * 
-     * @param userId The user ID.
-     * @param eventType The event type.
-     * @param dataTransferRequestId (Optional) The data transfer request ID.
-     * @param path (Optional) The data object path.
-     * @throws HpcException on service failure.
-     */
-    private void addDataTransferEvent(String userId, HpcEventType eventType, 
-    		                          String dataTransferRequestId, String path) throws HpcException
-	{
-		// Input Validation.
-		if(userId == null || eventType == null) {
-		   throw new HpcException("Invalid data transfer event input", 
-				                  HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		
-		// Construct the event.
-		HpcEvent event = new HpcEvent();
-		event.getUserIds().add(userId);
-		event.setType(eventType);
-		if(dataTransferRequestId != null) {
-		   event.getPayloadEntries().add(toPayloadEntry(DATA_TRANSFER_REQUEST_ID_ATTRIBUTE, 
-			                                            dataTransferRequestId));
-		}
-		if(path != null) {
-		   event.getPayloadEntries().add(toPayloadEntry(DATA_OBJECT_PATH_ATTRIBUTE, path));
-		}
-	
-		// Persist to DB.
-		addEvent(event);
-	}
-
+    @Override
     public void generateReportsEvents(List<String> userIds, HpcReportCriteria criteria) throws HpcException
     {
 		HpcEvent event = new HpcEvent();
@@ -288,8 +223,109 @@ public class HpcEventServiceImpl implements HpcEventService
 		}
 		// Persist to DB.
 		addEvent(event);
-    	
     }
+    
+    @Override
+    public void addCollectionUpdateEvent(String path) throws HpcException
+    {
+    	addCollectionEvent(path, COLLECTION_METADATA_UPDATE_PAYLOAD_VALUE);
+    }
+    
+    @Override
+    public void addCollectionRegistrationEvent(String path) throws HpcException
+    {
+    	addCollectionEvent(path, COLLECTION_REGISTRATION_PAYLOAD_VALUE);
+    }
+    
+    @Override
+    public void addDataObjectRegistrationEvent(String path) throws HpcException
+    {
+    	addCollectionEvent(path, DATA_OBJECT_REGISTRATION_PAYLOAD_VALUE);
+    }
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//  
+    
+    /**
+     * Add an event.
+     * 
+     * @param event The event to add.
+     * 
+     * @throws HpcException if validation failed.
+     */
+    private void addEvent(HpcEvent event) throws HpcException
+    {
+    	// Input validation.
+    	if(event == null || event.getUserIds() == null || event.getUserIds().isEmpty() ||
+    	   event.getType() == null) {
+    	   throw new HpcException("Invalid event",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+
+    	// Set the created timestamp.
+    	event.setCreated(Calendar.getInstance());
+    	
+    	// Persist to DB.
+    	eventDAO.insertEvent(event);	
+    }
+    
+    /**
+     * Instantiate a payload entry object.
+     * 
+     * @param attribute The payload entry attribute.
+     * @param value The payload entry value.
+     * @return The event payload entry.
+     */
+    private HpcEventPayloadEntry toPayloadEntry(String attribute, String value)
+    {
+		// Construct the event.
+		HpcEventPayloadEntry payloadEntry = new HpcEventPayloadEntry();
+		payloadEntry.setAttribute(attribute);
+		payloadEntry.setValue(value);
+		
+		return payloadEntry;
+    }
+    
+    /**
+     * Add a data transfer event.
+     * 
+     * @param userId The user ID.
+     * @param eventType The event type.
+     * @param dataTransferRequestId (Optional) The data transfer request ID.
+     * @param path (Optional) The data object path.
+     * @param checksum (Optional) The data checksum.
+     * @throws HpcException on service failure.
+     */
+    private void addDataTransferEvent(String userId, HpcEventType eventType, 
+    		                          String dataTransferRequestId, String path,
+    		                          String checksum) throws HpcException
+	{
+		// Input Validation.
+		if(userId == null || eventType == null) {
+		   throw new HpcException("Invalid data transfer event input", 
+				                  HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		// Construct the event.
+		HpcEvent event = new HpcEvent();
+		event.getUserIds().add(userId);
+		event.setType(eventType);
+		if(dataTransferRequestId != null) {
+		   event.getPayloadEntries().add(toPayloadEntry(DATA_TRANSFER_REQUEST_ID_PAYLOAD_ATTRIBUTE, 
+			                                            dataTransferRequestId));
+		}
+		if(path != null) {
+		   event.getPayloadEntries().add(toPayloadEntry(DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE, 
+				                                        dataManagementProxy.getRelativePath(path)));
+		}
+		if(checksum != null) {
+		   event.getPayloadEntries().add(toPayloadEntry(CHECKSUM_PAYLOAD_ATTRIBUTE, checksum));
+		}
+	
+		// Persist to DB.
+		addEvent(event);
+	}
     
     private HpcEventType getEventType(HpcReportType reportType)
     {
@@ -309,6 +345,41 @@ public class HpcEventServiceImpl implements HpcEventService
     		return HpcEventType.USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT;
     	else
     		return null;
+    }
+    
+    /**
+     * Add a collection event.
+     * 
+     * @param path The collection path.
+     * @param updatePayloadValue The value to set on COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE event payload
+     * @throws HpcException on service failure.
+     */
+    private void addCollectionEvent(String path, String updatePayloadValue) throws HpcException
+    {
+		// Input Validation.
+		if(path == null || path.isEmpty()) {
+		   throw new HpcException("Null or empty collection path", 
+				                  HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		// Construct the event.
+		HpcEvent event = new HpcEvent();
+		event.setType(HpcEventType.COLLECTION_UPDATED);
+		event.getPayloadEntries().add(toPayloadEntry(COLLECTION_PATH_PAYLOAD_ATTRIBUTE, 
+				                                     dataManagementProxy.getRelativePath(path)));
+		event.getPayloadEntries().add(toPayloadEntry(COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE, 
+				                                     updatePayloadValue));
+		
+		// Get the users subscribed for this event.
+		List<String> userIds = notificationDAO.getSubscribedUsers(HpcEventType.COLLECTION_UPDATED, event.getPayloadEntries());
+		if(userIds != null) {
+		   // Exclude the invoker. 
+		   userIds.remove(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
+		   if(!userIds.isEmpty()) {
+			  event.getUserIds().addAll(userIds); 
+			  addEvent(event);
+		   }
+		}
     }
 }
 

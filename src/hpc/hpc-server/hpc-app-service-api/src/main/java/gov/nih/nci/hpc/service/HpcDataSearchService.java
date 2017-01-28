@@ -132,7 +132,7 @@ public interface HpcDataSearchService
      * @return A list of metadata attributes.
      * @throws HpcException on service failure.
      */
-	public List<HpcMetadataLevelAttributes> getDataObjectMetadataAttributes(String lavelLabel) 
+	public List<HpcMetadataLevelAttributes> getDataObjectMetadataAttributes(String levelLabel) 
 			                                                               throws HpcException;
 }
 

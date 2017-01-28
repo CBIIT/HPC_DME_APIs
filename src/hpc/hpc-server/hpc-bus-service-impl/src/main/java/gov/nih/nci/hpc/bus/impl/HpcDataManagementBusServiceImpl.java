@@ -39,6 +39,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
+import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
@@ -50,6 +51,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 /**
  * <p>
@@ -81,6 +83,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	// The Metadata Application Service Instance.
 	@Autowired
     private HpcMetadataService metadataService = null;
+	
+	// TheEvent Application Service Instance.
+	@Autowired
+    private HpcEventService eventService = null;
 	
     // The logger instance.
 	private final Logger logger = 
@@ -141,6 +147,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
        	        String doc = metadataService.getCollectionSystemGeneratedMetadata(path).getRegistrarDOC();
        	        dataManagementService.validateHierarchy(path, doc, false);
        	        
+       	        // Add collection update event.
+       	        addCollectionUpdateEvent(path, true, false);
+       	        
        	        registrationCompleted = true;
        	        
     	   } finally {
@@ -152,6 +161,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
        	   
     	} else {
     		    metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries());
+    		    addCollectionUpdateEvent(path, false, false);
     	}
     	
     	return created;
@@ -244,6 +254,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				                                             dataObjectFile), 
 			    			                   dataObjectRegistration.getCallerObjectId()); 
 	
+			    // Add collection update event.
+       	        addCollectionUpdateEvent(path, false, true);
+       	        
 			    registrationCompleted = true;
 			     
 	    	} finally {
@@ -560,6 +573,37 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
     }
+	
+    /** 
+     * Add collection update event.
+     * 
+     * @param path The path of the entity trigger this event.
+     * @param collectionRegistered An indicator if a collection was registered.
+     * @param dataObjectRegistered An indicator if a data object was registered.
+     */
+	private void addCollectionUpdateEvent(String path, boolean collectionRegistered, 
+			                              boolean dataObjectRegistered)
+	{
+		try {
+			 if(!collectionRegistered && !dataObjectRegistered) {
+				eventService.addCollectionUpdateEvent(path);
+				return;
+			 }
+			 
+			 // A collection or data object registered, so we add an event for the parent collection.
+			 String parentCollection = path.equals("/") ? path : StringUtils.trimTrailingCharacter(path, '/');
+			 parentCollection = parentCollection.substring(0, parentCollection.lastIndexOf('/'));
+			 
+			 if(collectionRegistered) {
+				eventService.addCollectionRegistrationEvent(parentCollection);
+			 } else {
+				     eventService.addDataObjectRegistrationEvent(parentCollection);
+			 }
+			 
+		} catch(HpcException e) {
+			    logger.error("Failed to add collection update event", e);
+		}
+	}
 }
 
  

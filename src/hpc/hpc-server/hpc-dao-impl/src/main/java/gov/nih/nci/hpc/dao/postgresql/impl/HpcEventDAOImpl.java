@@ -275,7 +275,6 @@ public class HpcEventDAOImpl implements HpcEventDAO
      * @param userIds A list of user ids.
      * @return A comma separated user-ids string.
      */
-	 // Map the userIds to a single string.
 	private String toString(List<String> userIds)
 	{
 		 StringBuilder userIdsStr = new StringBuilder();
