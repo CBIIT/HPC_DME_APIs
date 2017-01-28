@@ -35,7 +35,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 
 /**
  * <p>
@@ -133,8 +132,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
     	
     	// Validate the path is not a DOC base path.
-    	if(docBasePath.containsValue(StringUtils.trimTrailingCharacter(
-    			                                     dataManagementProxy.getAbsolutePath(path), '/'))) {
+    	if(docBasePath.containsValue(dataManagementProxy.getRelativePath(path))) {
     	   throw new HpcException("Invalid collection path: " + path, 
 	                              HpcErrorType.INVALID_REQUEST_INPUT); 
     	}
@@ -154,7 +152,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	String relativePath = dataManagementProxy.getRelativePath(path);
-    	if(relativePath.isEmpty() || relativePath.equals("/")) {
+    	if(relativePath.equals("/")) {
     	   throw new HpcException("Invalid path: " + path, 
 	                              HpcErrorType.INVALID_REQUEST_INPUT); 
     	}
@@ -259,8 +257,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		                     throws HpcException
     {
     	// Calculate the collection path to validate.
-    	String validationCollectionPath = dataManagementProxy.getAbsolutePath(path);
-    	validationCollectionPath = dataManagementProxy.getRelativePath(validationCollectionPath);
+    	String validationCollectionPath = dataManagementProxy.getRelativePath(path);
     	validationCollectionPath = validationCollectionPath.substring(1, validationCollectionPath.length());
     	
     	// Build the collection path types list.

@@ -162,7 +162,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			 
     			 // Data transfer upload completed (successfully or failed). Add an event.
     			 addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
-		                                    dataTransferStatus);
+		                                    dataTransferStatus, null);
     		     
     		} catch(HpcException e) {
     			    logger.error("Failed to process data transfer upload update:" + path, e);
@@ -219,7 +219,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  			     
  			     // Data transfer upload completed (successfully or failed). Add an event.
     			 addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
-    					                    uploadResponse.getDataTransferStatus());
+    					                    uploadResponse.getDataTransferStatus(),
+    					                    uploadResponse.getChecksum());
  			     
     		} catch(HpcException e) {
     			    logger.error("Failed to transfer data from temporary archive:" + path, e);
@@ -496,14 +497,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * @param userId The user ID.
      * @param path The data object path.
      * @param dataTransferStatus The data transfer upload status.
+     * @param checksum (Optional) The data checksum.
      */
 	private void addDataTransferUploadEvent(String userId, String path,
-			                                HpcDataTransferUploadStatus dataTransferStatus) 
+			                                HpcDataTransferUploadStatus dataTransferStatus,
+			                                String checksum) 
 	{
 		try {
 			 switch(dataTransferStatus) {
 			        case ARCHIVED: 
-		                 eventService.addDataTransferUploadArchivedEvent(userId, path);
+		                 eventService.addDataTransferUploadArchivedEvent(userId, path, checksum);
 		                 break;
 		                 
 			        case IN_TEMPORARY_ARCHIVE: 

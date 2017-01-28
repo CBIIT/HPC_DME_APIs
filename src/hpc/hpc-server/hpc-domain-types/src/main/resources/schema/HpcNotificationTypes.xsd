@@ -31,6 +31,7 @@
 			<xsd:enumeration value="USAGE_SUMMARY_BY_DOC_BY_WEEKLY_REPORT" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_USER_REPORT" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT" />
+			<xsd:enumeration value="COLLECTION_UPDATED" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
@@ -46,6 +47,9 @@
 			<xsd:element name="eventType" type="hpc-domain-notification:HpcEventType" />
 			<xsd:element name="notificationDeliveryMethods" 
 			             type="hpc-domain-notification:HpcNotificationDeliveryMethod" 
+			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="notificationTriggers" 
+			             type="hpc-domain-notification:HpcEventPayloadEntry" 
 			             minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>

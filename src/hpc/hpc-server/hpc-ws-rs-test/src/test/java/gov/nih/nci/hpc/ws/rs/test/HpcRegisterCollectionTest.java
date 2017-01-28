@@ -22,6 +22,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import javax.ws.rs.core.Response;
 
+import org.junit.AfterClass;
 import org.junit.Test;
 
 /**
@@ -35,6 +36,13 @@ import org.junit.Test;
 
 public class HpcRegisterCollectionTest extends HpcRestServiceTest
 {   
+    //---------------------------------------------------------------------//
+    // Instance members
+    //---------------------------------------------------------------------//
+	
+	// Path attributes mocking a path that doesn't exist.
+	private static HpcPathAttributes pathNotExist = new HpcPathAttributes();
+	
     //---------------------------------------------------------------------//
     // Unit Tests
     //---------------------------------------------------------------------//
@@ -64,8 +72,9 @@ public class HpcRegisterCollectionTest extends HpcRestServiceTest
     public void testEmptyMetadataEntries()  
     {
     	// Invoke the service.
-    	Response response = dataManagementClient.registerCollection("/UnitTest/Collection", 
-    			                                                    new HpcCollectionRegistrationDTO());	
+    	Response response = 
+    	dataManagementClient.registerCollection("/UnitTest/Collection", 
+    	                                        createCollectionRegistrationRequest(null, null, null));	
     	
     	// Assert expected result.
     	assertEquals(HTTP_STATUS_CODE_MSG, 400, response.getStatus());
@@ -75,35 +84,76 @@ public class HpcRegisterCollectionTest extends HpcRestServiceTest
     }
     
     /**
-     * Test: Invalid metadata entry in registration request.
+     * Test: Invalid collection path in registration request. Path equals to DOC base path
      * Expected: [400] . 
      */
     @Test
-    public void testInvalidMetadataEntry() throws HpcException 
+    public void testInvalidCollectionPath() throws HpcException 
     {
     	// Mock Integration / DAO services.
-    	HpcPathAttributes pathAttributes = new HpcPathAttributes();
-    	pathAttributes.setExists(true);
-    	pathAttributes.setIsAccessible(true);
-    	pathAttributes.setIsDirectory(true);
-    	pathAttributes.setIsFile(false);
-    	when(dataManagementProxyMock.getPathAttributes(anyObject(), eq("/UnitTest/Collection"))).thenReturn(pathAttributes);
-    	
-    	// Prepare Test Input.
-    	HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
-    	HpcMetadataEntry entry = new HpcMetadataEntry();
-    	entry.setAttribute("attribute");
-    	collectionRegistration.getMetadataEntries().add(entry);
+    	when(dataManagementProxyMock.getPathAttributes(anyObject(), eq("/UnitTest"))).thenReturn(pathNotExist);
+    	when(dataManagementProxyMock.getRelativePath(eq("/UnitTest"))).thenReturn("/UnitTest");
     	
     	// Invoke the service.
-    	Response response = dataManagementClient.registerCollection("/UnitTest/Collection", 
-    			                                                    collectionRegistration);
+    	HpcCollectionRegistrationDTO collectionRegistrationRequest = 
+    	   createCollectionRegistrationRequest("ParentColllection", "text-val", null);
+    	Response response = dataManagementClient.registerCollection("/UnitTest", 
+    			                                                    collectionRegistrationRequest);
 
     	// Assert expected result.
     	assertEquals(HTTP_STATUS_CODE_MSG, 400, response.getStatus());
     	HpcExceptionDTO exceptionDTO = response.readEntity(HpcExceptionDTO.class);
     	assertEquals(HpcErrorType.INVALID_REQUEST_INPUT, exceptionDTO.getErrorType());
-    	assertEquals(EXCEPTION_MSG, "Invalid path or metadata entry", exceptionDTO.getMessage());
+    	assertEquals(EXCEPTION_MSG, "Invalid collection path: /UnitTest", exceptionDTO.getMessage());
+    }
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//
+    
+    /**
+     * Init static path attributes used in mocking.
+     */
+    @AfterClass
+    public static void initPathAttributes()  
+    {
+    	pathNotExist.setExists(false);
+    	pathNotExist.setIsAccessible(true);
+    	pathNotExist.setIsDirectory(false);
+    	pathNotExist.setIsFile(false);
+    }
+    
+    /** 
+     * Create collection registration request.
+     * 
+     * @param type The collection type
+     * @param text 'text' metadata value
+     * @param choice 'choice' metadata value
+     * @return collection registration request DTO
+     */
+    private HpcCollectionRegistrationDTO createCollectionRegistrationRequest(String type, String text, String choice)
+    {
+		HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
+		
+		if(type != null) {
+		   HpcMetadataEntry typeMetadata = new HpcMetadataEntry();
+		   typeMetadata.setAttribute("collection_type");
+		   typeMetadata.setValue(type);
+		   collectionRegistration.getMetadataEntries().add(typeMetadata);
+		}
+		if(text != null) {
+		   HpcMetadataEntry textMetadata = new HpcMetadataEntry();
+		   textMetadata.setAttribute("text");
+		   textMetadata.setValue(text);
+		   collectionRegistration.getMetadataEntries().add(textMetadata);
+		}
+		if(choice != null) {
+		   HpcMetadataEntry choiceMetadata = new HpcMetadataEntry();
+		   choiceMetadata.setAttribute("choice");
+		   choiceMetadata.setValue(choice);
+		   collectionRegistration.getMetadataEntries().add(choiceMetadata);
+		}
+		return collectionRegistration;
     }
 }
 

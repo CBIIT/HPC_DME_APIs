@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.dao;
 
+import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
@@ -68,6 +69,19 @@ public interface HpcNotificationDAO
      */
     public List<String> 
            getSubscribedUsers(HpcEventType eventType) throws HpcException;
+    
+    /**
+     * Get users subscribed to an event w/ a notification trigger.
+     *
+     * @param eventType The event type.
+     * @param eventPayloadEntries The event payload entries. Note: all user's subscribed triggers must be met for the 
+     *                            user to be included in  the returned list. 
+     * @return <code>List&lt;String&gt;</code> list of userIds
+     * @throws HpcException on database error.
+     */
+    public List<String> 
+           getSubscribedUsers(HpcEventType eventType, List<HpcEventPayloadEntry> eventPayloadEntries) 
+        		             throws HpcException;
     
     /**
      * Get notification subscription

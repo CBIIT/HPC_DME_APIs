@@ -86,9 +86,10 @@ public interface HpcEventService
      *
      * @param userId The user ID.
      * @param path The data object path.
+     * @param checksum (Optional) The data checksum.
      * @throws HpcException on service failure.
      */
-    public void addDataTransferUploadArchivedEvent(String userId, String path) 
+    public void addDataTransferUploadArchivedEvent(String userId, String path, String checksum) 
                                                   throws HpcException;
     
     /**
@@ -111,6 +112,30 @@ public interface HpcEventService
     public void generateReportsEvents(List<String> userIds, 
     		                          HpcReportCriteria criteria) 
     		                         throws HpcException;
+    
+    /**
+     * Add a collection update event.
+     *
+     * @param path The collection path.
+     * @throws HpcException on service failure.
+     */
+    public void addCollectionUpdateEvent(String path) throws HpcException;
+    
+    /**
+     * Add a collection registration event.
+     *
+     * @param path The collection path.
+     * @throws HpcException on service failure.
+     */
+    public void addCollectionRegistrationEvent(String path) throws HpcException;
+    
+    /**
+     * Add a data object registration event.
+     *
+     * @param path The collection path to which the data object was registered under.
+     * @throws HpcException on service failure.
+     */
+    public void addDataObjectRegistrationEvent(String collectionPath) throws HpcException;
 }
 
  
