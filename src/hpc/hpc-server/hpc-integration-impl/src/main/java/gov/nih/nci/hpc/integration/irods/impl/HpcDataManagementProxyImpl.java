@@ -61,6 +61,7 @@ import org.irods.jargon.core.query.AVUQueryOperatorEnum;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 /**
  * <p>
@@ -703,11 +704,12 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	   return null;
     	}
     	
-    	if(absolutePath.startsWith(irodsConnection.getBasePath())) {
-    	   return absolutePath.substring((irodsConnection.getBasePath()).length());
-    	} else {
-    		    return absolutePath;
-    	}
+    	// Ensure absolute path is valid with leading '/'.
+    	String relativePath = getAbsolutePath(absolutePath).substring((irodsConnection.getBasePath()).length());
+
+    	// Remove trailing '/'.
+    	relativePath = StringUtils.trimTrailingCharacter(relativePath, '/');
+    	return !relativePath.isEmpty() ? relativePath : "/";
     }
     
     //---------------------------------------------------------------------//
