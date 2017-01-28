@@ -90,7 +90,7 @@ public class HpcDocBasePath extends HashMap<String, String>
 			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
     		}
     		
-    		put(splitDocBasePath[0], dataManagementProxy.getAbsolutePath(splitDocBasePath[1]));
+    		put(splitDocBasePath[0], dataManagementProxy.getRelativePath(splitDocBasePath[1]));
     	}
     }
 }

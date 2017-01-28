@@ -11,6 +11,8 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNotificationSubscription;
+import static gov.nih.nci.hpc.service.impl.HpcEventServiceImpl.COLLECTION_PATH_PAYLOAD_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcEventServiceImpl.DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE;
 import gov.nih.nci.hpc.dao.HpcNotificationDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -22,6 +24,7 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 
 import java.util.Calendar;
@@ -55,6 +58,14 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     // The Notification DAO instance.
 	@Autowired
     private HpcNotificationDAO notificationDAO = null;
+	
+    // The Data Management Proxy instance.
+	@Autowired
+    private HpcDataManagementProxy dataManagementProxy = null;
+	
+    // The Data Management Authenticator.
+	@Autowired
+    private HpcDataManagementAuthenticator dataManagementAuthenticator = null;
 	
 	// The max page size of notification delivery receipts.
 	private int notificationDeliveryReceiptsPageSize = 0;
@@ -110,8 +121,15 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
+       	// Get the service invoker.
+       	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+       	if(invoker == null) {
+       	   throw new HpcException("Unknown service invoker", 
+		                          HpcErrorType.UNEXPECTED_ERROR);
+       	}
+    	
     	// Validate subscription for usage summary report is allowed for system admin only 
-    	if(!HpcRequestContext.getRequestInvoker().getUserRole().equals(HpcUserRole.SYSTEM_ADMIN)) {
+    	if(!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN)) {
     	   if(notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_REPORT) || 
     	      notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_BY_WEEKLY_REPORT) ||
     	      notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_BY_DOC_REPORT) ||
@@ -123,12 +141,8 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     	   }
     	}
     	
-       	// Get the service invoker.
-       	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
-       	if(invoker == null) {
-       	   throw new HpcException("Unknown service invoker", 
-		                          HpcErrorType.UNEXPECTED_ERROR);
-       	}
+    	// Validate the notification triggers.
+    	validateNotificationTriggers(notificationSubscription.getNotificationTriggers());
 
     	// Upsert to DB.
     	notificationDAO.upsertSubscription(invoker.getNciAccount().getUserId(), 
@@ -221,8 +235,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     }
     
     @Override
-    public void createNotificationDeliveryReceipt(String userId,
-    		                                      int eventId, 
+    public void createNotificationDeliveryReceipt(String userId, int eventId, 
                                                   HpcNotificationDeliveryMethod deliveryMethod,
                                                   boolean deliveryStatus)
     {
@@ -315,5 +328,39 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     	
     	return (page - 1) * notificationDeliveryReceiptsPageSize;
     }
+    
+    /**
+     * Validate notification triggers include collection/data-objects that exist.
+	 * In addition, event payload for collections/data-objects are referencing the relative path of 
+	 * the collection/data-object.For this reason, we make sure the triggers are referencing relative path as well.
+	 * 
+     * @param notificationTriggers The notification triggers to validate.
+     * @throws HpcException if found an invalid notification trigger.
+     */
+    private void validateNotificationTriggers(List<HpcEventPayloadEntry> notificationTriggers)
+                                             throws HpcException
+    {
+    	for(HpcEventPayloadEntry notificationTrigger : notificationTriggers) {
+			if(notificationTrigger.getAttribute().equals(COLLECTION_PATH_PAYLOAD_ATTRIBUTE)) {
+			   String collectionPath = notificationTrigger.getValue();
+			   if(dataManagementProxy.getCollection(dataManagementAuthenticator.getAuthenticatedToken(),
+				                                    collectionPath) == null) {
+				  throw new HpcException("Collection doesn't exist: " + collectionPath,
+						                 HpcErrorType.INVALID_REQUEST_INPUT); 
+			   }
+			   notificationTrigger.setValue(dataManagementProxy.getRelativePath(collectionPath));
+			   break;
+			}
+			if(notificationTrigger.getAttribute().equals(DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE)) {
+			   String dataObjectPath = notificationTrigger.getValue();
+	 		   if(dataManagementProxy.getDataObject(dataManagementAuthenticator.getAuthenticatedToken(),
+	 				                                dataObjectPath) == null) {
+	 			  throw new HpcException("Data object doesn't exist: " + dataObjectPath,
+	 					                 HpcErrorType.INVALID_REQUEST_INPUT); 
+	 		   }
+	 		   notificationTrigger.setValue(dataManagementProxy.getRelativePath(dataObjectPath));
+	 		}
+    	}
+	}
 }
 
