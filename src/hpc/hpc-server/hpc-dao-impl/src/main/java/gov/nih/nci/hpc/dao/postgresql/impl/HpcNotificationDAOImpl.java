@@ -141,7 +141,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		     jdbcTemplate.update(UPSERT_SUBSCRIPTION_SQL,
 		    		             userId,
 		    		             notificationSubscription.getEventType().value(),
-		    		             deliveryMethodsToSQLArray(notificationSubscription.getNotificationDeliveryMethods()),
+		    		             deliveryMethodsToSQLTextArray(notificationSubscription.getNotificationDeliveryMethods()),
 		                         payloadEntriesToSQLArray(notificationSubscription.getNotificationTriggers()));
 		     
 		} catch(DataAccessException e) {
@@ -385,6 +385,27 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		 
 		 logger.error("ERAN: after SQL Array");
 		 return a;
+	 }
+	 
+    /** 
+     * Map a collection of delivery methods to a SQL text array.
+     * 
+     * @param deliveryMethods A list of delivery methods.
+     * @return array of text values.
+     */
+	 private String deliveryMethodsToSQLTextArray(List<HpcNotificationDeliveryMethod> deliveryMethods)
+	 {
+		 StringBuilder deliveryMethodsArray = new StringBuilder();
+		 deliveryMethodsArray.append("{");
+		 for(HpcNotificationDeliveryMethod deliveryMethod : deliveryMethods) {
+			 if(deliveryMethodsArray.length() > 0) {
+				deliveryMethodsArray.append(",");
+			 }
+			 deliveryMethodsArray.append(deliveryMethod.value());
+		 }
+		 deliveryMethodsArray.append("}");
+
+		 return deliveryMethodsArray.toString();
 	 }
 	 
     /** 
