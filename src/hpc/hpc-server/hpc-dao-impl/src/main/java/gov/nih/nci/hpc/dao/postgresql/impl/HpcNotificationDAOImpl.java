@@ -53,9 +53,9 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		    "insert into public.\"HPC_NOTIFICATION_SUBSCRIPTION\" ( " +
                     "\"USER_ID\", \"EVENT_TYPE\", \"NOTIFICATION_DELIVERY_METHODS\", \"NOTIFICATION_TRIGGERS\") " +
                     "values (?, ?, ?, ?) " +
-            "on conflict(\"USER_ID\", \"EVENT_TYPE\") do update " +
-                    "set \"NOTIFICATION_DELIVERY_METHODS\"=excluded.\"NOTIFICATION_DELIVERY_METHODS\"," +
-                    "set \"NOTIFICATION_TRIGGERS\"=excluded.\"NOTIFICATION_TRIGGERS\"";
+            "on conflict(\"USER_ID\", \"EVENT_TYPE\") do update set " +
+                    "\"NOTIFICATION_DELIVERY_METHODS\"=excluded.\"NOTIFICATION_DELIVERY_METHODS\"," +
+                    "\"NOTIFICATION_TRIGGERS\"=excluded.\"NOTIFICATION_TRIGGERS\"";
 	
 	private static final String DELETE_SUBSCRIPTION_SQL = 
 			"delete from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" " +
