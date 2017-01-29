@@ -61,7 +61,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
                     "\"NOTIFICATION_SUBSCRIPTION_ID\", \"NOTIFICATION_TRIGGER\") values (?, ?::text[])";
 	
 	private static final String DELETE_TRIGGER_SQL = 
-		    "delete from public.\"HPC_NOTIFICATION_TRIGGER\" where \"USER_ID\" = ? and \"EVENT_TYPE\" = ?";
+		    "delete from public.\"HPC_NOTIFICATION_TRIGGER\" where \"NOTIFICATION_SUBSCRIPTION_I\" = ?";
 	
 	private static final String DELETE_SUBSCRIPTION_SQL = 
 			"delete from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" " +
@@ -147,15 +147,13 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		    		             deliveryMethodsToSQLTextArray(notificationSubscription.getNotificationDeliveryMethods()));
 		     
 		     // Update the notification triggers.
-		     jdbcTemplate.update(DELETE_TRIGGER_SQL, userId, eventType);
-		     if(!notificationSubscription.getNotificationTriggers().isEmpty()) {
-		    	Integer notificationId = 
+		     Integer notificationId = 
 		    			jdbcTemplate.queryForObject(GET_SUBSCRIPTION_ID_SQL, notificationIdRowMapper, 
 		    					                    userId, eventType);
-		    	for(HpcNotificationTrigger trigger : notificationSubscription.getNotificationTriggers()) {
-		    	    jdbcTemplate.update(INSERT_TRIGGER_SQL, notificationId, 
+		     jdbcTemplate.update(DELETE_TRIGGER_SQL, notificationId);
+		     for(HpcNotificationTrigger trigger : notificationSubscription.getNotificationTriggers()) {
+		         jdbcTemplate.update(INSERT_TRIGGER_SQL, notificationId, 
 		    		    	            payloadEntriesToSQLTextArray(trigger.getPayloadEntries()));
-		    	}
 		     }
 		     
 		} catch(DataAccessException e) {
