@@ -54,7 +54,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	private static final String UPSERT_SUBSCRIPTION_SQL = 
 		    "insert into public.\"HPC_NOTIFICATION_SUBSCRIPTION\" ( " +
                     "\"USER_ID\", \"EVENT_TYPE\", \"NOTIFICATION_DELIVERY_METHODS\", \"NOTIFICATION_TRIGGERS\") " +
-                    "values (?, ?, ?, ?::text[]) " +
+                    "values (?, ?, ?::text[], ?::text[]) " +
             "on conflict(\"USER_ID\", \"EVENT_TYPE\") do update set " +
                     "\"NOTIFICATION_DELIVERY_METHODS\"=excluded.\"NOTIFICATION_DELIVERY_METHODS\"," +
                     "\"NOTIFICATION_TRIGGERS\"=excluded.\"NOTIFICATION_TRIGGERS\"";
@@ -398,7 +398,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		 StringBuilder deliveryMethodsArray = new StringBuilder();
 		 deliveryMethodsArray.append("{");
 		 for(HpcNotificationDeliveryMethod deliveryMethod : deliveryMethods) {
-			 if(deliveryMethodsArray.length() > 0) {
+			 if(deliveryMethodsArray.length() > 1) {
 				deliveryMethodsArray.append(",");
 			 }
 			 deliveryMethodsArray.append("\"" + deliveryMethod.value() + "\"");
@@ -450,8 +450,8 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		 StringBuilder payloadEntriesArray = new StringBuilder();
 		 payloadEntriesArray.append("{");
 		 for(HpcEventPayloadEntry payloadEntry : payloadEntries) {
-			 if(payloadEntriesArray.length() > 0) {
-				 payloadEntriesArray.append(",");
+			 if(payloadEntriesArray.length() > 1) {
+				payloadEntriesArray.append(",");
 			 }
 			 payloadEntriesArray.append(toText(payloadEntry));
 		 }
