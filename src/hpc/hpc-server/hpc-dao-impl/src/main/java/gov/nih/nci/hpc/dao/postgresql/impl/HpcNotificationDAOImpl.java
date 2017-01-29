@@ -50,11 +50,10 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
     // SQL Queries.
 	private static final String UPSERT_SUBSCRIPTION_SQL = 
 		    "insert into public.\"HPC_NOTIFICATION_SUBSCRIPTION\" ( " +
-                    "\"USER_ID\", \"EVENT_TYPE\", \"NOTIFICATION_DELIVERY_METHODS\", \"NOTIFICATION_TRIGGERS\") " +
-                    "values (?, ?, ?::text[], ?::text[]) " +
+                    "\"USER_ID\", \"EVENT_TYPE\", \"NOTIFICATION_DELIVERY_METHODS\") " +
+                    "values (?, ?, ?::text[]) " +
             "on conflict(\"USER_ID\", \"EVENT_TYPE\") do update set " +
-                    "\"NOTIFICATION_DELIVERY_METHODS\"=excluded.\"NOTIFICATION_DELIVERY_METHODS\"," +
-                    "\"NOTIFICATION_TRIGGERS\"=excluded.\"NOTIFICATION_TRIGGERS\"";
+                    "\"NOTIFICATION_DELIVERY_METHODS\"=excluded.\"NOTIFICATION_DELIVERY_METHODS\"";
 	
 	private static final String DELETE_SUBSCRIPTION_SQL = 
 			"delete from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" " +
