@@ -403,7 +403,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			 }
 			 deliveryMethodsArray.append(deliveryMethod.value());
 		 }
-		 deliveryMethodsArray.append("}");
+		 deliveryMethodsArray.append("}::text[]");
 
 		 return deliveryMethodsArray.toString();
 	 }
