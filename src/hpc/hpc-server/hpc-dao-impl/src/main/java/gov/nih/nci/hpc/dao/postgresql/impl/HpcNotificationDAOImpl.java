@@ -19,15 +19,12 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -107,10 +104,6 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			                                     new HpcNotificationDeliveryReceiptRowMapper();
 	private SingleColumnRowMapper<String> userIdRowMapper = new SingleColumnRowMapper<>();
 	
-    // The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -136,20 +129,18 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			          String userId,
 			          HpcNotificationSubscription notificationSubscription) throws HpcException
     {
-		logger.error("ERAN: before: " + notificationSubscription.getEventType());
 		try {
 		     jdbcTemplate.update(UPSERT_SUBSCRIPTION_SQL,
 		    		             userId,
 		    		             notificationSubscription.getEventType().value(),
 		    		             deliveryMethodsToSQLTextArray(notificationSubscription.getNotificationDeliveryMethods()),
-		                         payloadEntriesToSQLArray(notificationSubscription.getNotificationTriggers()));
+		                         payloadEntriesToSQLTextArray(notificationSubscription.getNotificationTriggers()));
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a notification subscription: " + 
 		                               e.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, e);
 		} 
-		logger.error("ERAN: after: " + notificationSubscription.getEventType());
     }
 	
 	@Override
@@ -355,39 +346,6 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	}
 	
     /** 
-     * Map a collection of delivery methods to a SQL array.
-     * 
-     * @param deliveryMethods A list of delivery methods.
-     * @return SQL array of text values.
-     * @throws HpcException on SQL exception.
-     */
-	 private Array deliveryMethodsToSQLArray(List<HpcNotificationDeliveryMethod> deliveryMethods)
-	                                        throws HpcException
-	 {
-		 String[] deliveryMethodsStr = new String[deliveryMethods.size()];
-		 int i = 0;
-		 for(HpcNotificationDeliveryMethod deliveryMethod : deliveryMethods) {
-		     deliveryMethodsStr[i++] = deliveryMethod.value();
-		 }
-		 
-		 Array a  = null;
-		 logger.error("ERAN: before SQL Array");
-		 try {
-		      a = jdbcTemplate.getDataSource().getConnection().createArrayOf("text", deliveryMethodsStr);
-		      
-		 } catch(SQLException se) {
-			     throw new HpcException("Failed to create SQL array of delivery methods: " + 
-                                        se.getMessage(),
-		                                HpcErrorType.DATABASE_ERROR, se);
-		 } catch(Exception e) {
-			 logger.error("ERAN: exception", e);
-		 }
-		 
-		 logger.error("ERAN: after SQL Array");
-		 return a;
-	 }
-	 
-    /** 
      * Map a collection of delivery methods to a SQL text array.
      * 
      * @param deliveryMethods A list of delivery methods.
@@ -405,38 +363,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		 }
 		 deliveryMethodsArray.append("}");
 
-		 logger.error("ERAN: " + deliveryMethodsArray.toString());
 		 return deliveryMethodsArray.toString();
-	 }
-	 
-    /** 
-     * Map a collection of event payload entries to a SQL array.
-     * 
-     * @param payloadEntries A list of payload entries.
-     * @return SQL array of text values.
-     * @throws HpcException on SQL exception.
-     */
-	 private Array payloadEntriesToSQLArray(List<HpcEventPayloadEntry> payloadEntries)
-	                                       throws HpcException
-	 {
-		 if(payloadEntries.isEmpty()) {
-			return null;
-		 }
-		 
-		 String[] payloadEntriesStr = new String[payloadEntries.size()];
-		 int i = 0;
-		 for(HpcEventPayloadEntry payloadEntry : payloadEntries) {
-			 payloadEntriesStr[i++] = toText(payloadEntry);
-		 }
-		 
-		 try {
-		      return jdbcTemplate.getDataSource().getConnection().createArrayOf("text", payloadEntriesStr);
-		      
-		} catch(SQLException se) {
-			    throw new HpcException("Failed to create SQL array of payload entries: " + 
-                                       se.getMessage(),
-		                               HpcErrorType.DATABASE_ERROR, se);
-		}
 	 }
 	 
     /** 
@@ -453,22 +380,11 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			 if(payloadEntriesArray.length() > 1) {
 				payloadEntriesArray.append(",");
 			 }
-			 payloadEntriesArray.append(toText(payloadEntry));
+			 payloadEntriesArray.append("\"" + payloadEntry.getAttribute() + "=" + payloadEntry.getValue() + "\"");
 		 }
 		 payloadEntriesArray.append("}");
 
 		 return payloadEntriesArray.toString();
-	 }
-	 
-    /** 
-     * Convert a payload entry to a string (to be stored in the DB)
-     * 
-     * @param payloadEntry A payload entry.
-     * @return payload entry text.
-     */
-	 private String toText(HpcEventPayloadEntry payloadEntry)
-	 {
-		 return payloadEntry.getAttribute() + "=" + payloadEntry.getValue();
 	 }
 }
 
