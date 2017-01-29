@@ -72,6 +72,7 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response subscribeNotifications(HpcNotificationSubscriptionsRequestDTO notificationSubscriptions)
     {	
+    	long start = System.currentTimeMillis();
 		logger.info("Invoking RS: POST /notification: " + notificationSubscriptions);
 		
 		try {
@@ -81,6 +82,9 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
 			    logger.error("RS: POST /notification failed:", e);
 			    return errorResponse(e);
 		}
+		
+		long stop = System.currentTimeMillis();
+		logger.info((stop-start) + " subscribeNotifications: Total time - " + notificationSubscriptions);
 		
 		return okResponse(null, false);
 	}
