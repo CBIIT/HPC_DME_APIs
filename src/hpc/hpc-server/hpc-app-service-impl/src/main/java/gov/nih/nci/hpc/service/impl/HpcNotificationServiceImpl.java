@@ -22,6 +22,7 @@ import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationTrigger;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
@@ -337,29 +338,31 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
      * @param notificationTriggers The notification triggers to validate.
      * @throws HpcException if found an invalid notification trigger.
      */
-    private void validateNotificationTriggers(List<HpcEventPayloadEntry> notificationTriggers)
+    private void validateNotificationTriggers(List<HpcNotificationTrigger> notificationTriggers)
                                              throws HpcException
     {
-    	for(HpcEventPayloadEntry notificationTrigger : notificationTriggers) {
-			if(notificationTrigger.getAttribute().equals(COLLECTION_PATH_PAYLOAD_ATTRIBUTE)) {
-			   String collectionPath = notificationTrigger.getValue();
-			   if(dataManagementProxy.getCollection(dataManagementAuthenticator.getAuthenticatedToken(),
-				                                    collectionPath) == null) {
-				  throw new HpcException("Collection doesn't exist: " + collectionPath,
-						                 HpcErrorType.INVALID_REQUEST_INPUT); 
-			   }
-			   notificationTrigger.setValue(dataManagementProxy.getRelativePath(collectionPath));
-			   break;
-			}
-			if(notificationTrigger.getAttribute().equals(DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE)) {
-			   String dataObjectPath = notificationTrigger.getValue();
-	 		   if(dataManagementProxy.getDataObject(dataManagementAuthenticator.getAuthenticatedToken(),
-	 				                                dataObjectPath) == null) {
-	 			  throw new HpcException("Data object doesn't exist: " + dataObjectPath,
-	 					                 HpcErrorType.INVALID_REQUEST_INPUT); 
-	 		   }
-	 		   notificationTrigger.setValue(dataManagementProxy.getRelativePath(dataObjectPath));
-	 		}
+    	for(HpcNotificationTrigger notificationTrigger : notificationTriggers) {
+	    	for(HpcEventPayloadEntry payloadEntry : notificationTrigger.getPayloadEntries()) {
+				if(payloadEntry.getAttribute().equals(COLLECTION_PATH_PAYLOAD_ATTRIBUTE)) {
+				   String collectionPath = payloadEntry.getValue();
+				   if(dataManagementProxy.getCollection(dataManagementAuthenticator.getAuthenticatedToken(),
+					                                    collectionPath) == null) {
+					  throw new HpcException("Collection doesn't exist: " + collectionPath,
+							                 HpcErrorType.INVALID_REQUEST_INPUT); 
+				   }
+				   payloadEntry.setValue(dataManagementProxy.getRelativePath(collectionPath));
+				   break;
+				}
+				if(payloadEntry.getAttribute().equals(DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE)) {
+				   String dataObjectPath = payloadEntry.getValue();
+		 		   if(dataManagementProxy.getDataObject(dataManagementAuthenticator.getAuthenticatedToken(),
+		 				                                dataObjectPath) == null) {
+		 			  throw new HpcException("Data object doesn't exist: " + dataObjectPath,
+		 					                 HpcErrorType.INVALID_REQUEST_INPUT); 
+		 		   }
+		 		   payloadEntry.setValue(dataManagementProxy.getRelativePath(dataObjectPath));
+		 		}
+	    	}
     	}
 	}
 }
