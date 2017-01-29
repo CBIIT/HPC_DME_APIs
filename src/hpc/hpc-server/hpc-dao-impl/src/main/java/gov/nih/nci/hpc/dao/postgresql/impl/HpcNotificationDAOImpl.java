@@ -61,7 +61,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
                     "\"NOTIFICATION_SUBSCRIPTION_ID\", \"NOTIFICATION_TRIGGER\") values (?, ?::text[])";
 	
 	private static final String DELETE_TRIGGER_SQL = 
-		    "delete from public.\"HPC_NOTIFICATION_TRIGGER\" where \"NOTIFICATION_SUBSCRIPTION_I\" = ?";
+		    "delete from public.\"HPC_NOTIFICATION_TRIGGER\" where \"NOTIFICATION_SUBSCRIPTION_ID\" = ?";
 	
 	private static final String DELETE_SUBSCRIPTION_SQL = 
 			"delete from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" " +
