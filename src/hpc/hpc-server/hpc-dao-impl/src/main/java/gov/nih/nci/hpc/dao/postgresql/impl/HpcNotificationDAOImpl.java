@@ -26,6 +26,8 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -105,6 +107,10 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			                                     new HpcNotificationDeliveryReceiptRowMapper();
 	private SingleColumnRowMapper<String> userIdRowMapper = new SingleColumnRowMapper<>();
 	
+    // The logger instance.
+	private final Logger logger = 
+			             LoggerFactory.getLogger(this.getClass().getName());
+	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -130,6 +136,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			          String userId,
 			          HpcNotificationSubscription notificationSubscription) throws HpcException
     {
+		logger.error("ERAN: before SQL");
 		try {
 		     jdbcTemplate.update(UPSERT_SUBSCRIPTION_SQL,
 		    		             userId,
@@ -141,7 +148,10 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			    throw new HpcException("Failed to upsert a notification subscription: " + 
 		                               e.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, e);
+		} catch(Exception e) {
+			logger.error("ERAN: e");
 		}
+		logger.error("ERAN: after SQL");
     }
 	
 	@Override
