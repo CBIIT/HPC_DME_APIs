@@ -54,7 +54,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	private static final String UPSERT_SUBSCRIPTION_SQL = 
 		    "insert into public.\"HPC_NOTIFICATION_SUBSCRIPTION\" ( " +
                     "\"USER_ID\", \"EVENT_TYPE\", \"NOTIFICATION_DELIVERY_METHODS\", \"NOTIFICATION_TRIGGERS\") " +
-                    "values (?, ?, ?, ?) " +
+                    "values (?, ?, ?, ?::text[]) " +
             "on conflict(\"USER_ID\", \"EVENT_TYPE\") do update set " +
                     "\"NOTIFICATION_DELIVERY_METHODS\"=excluded.\"NOTIFICATION_DELIVERY_METHODS\"," +
                     "\"NOTIFICATION_TRIGGERS\"=excluded.\"NOTIFICATION_TRIGGERS\"";
@@ -405,6 +405,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		 }
 		 deliveryMethodsArray.append("}");
 
+		 logger.error("ERAN: " + deliveryMethodsArray.toString());
 		 return deliveryMethodsArray.toString();
 	 }
 	 
