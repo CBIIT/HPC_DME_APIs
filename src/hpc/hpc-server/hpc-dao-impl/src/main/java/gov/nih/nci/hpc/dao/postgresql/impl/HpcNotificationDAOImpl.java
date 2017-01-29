@@ -149,7 +149,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		                               e.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, e);
 		} catch(Exception e) {
-			logger.error("ERAN: e");
+			logger.error("ERAN: exception", e);
 		}
 		logger.error("ERAN: after SQL");
     }
