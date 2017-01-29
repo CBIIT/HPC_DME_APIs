@@ -136,7 +136,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			          String userId,
 			          HpcNotificationSubscription notificationSubscription) throws HpcException
     {
-		logger.error("ERAN: before SQL");
+		
 		try {
 		     jdbcTemplate.update(UPSERT_SUBSCRIPTION_SQL,
 		    		             userId,
@@ -148,9 +148,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			    throw new HpcException("Failed to upsert a notification subscription: " + 
 		                               e.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, e);
-		} catch(Exception e) {
-			logger.error("ERAN: exception", e);
-		}
+		} 
 		logger.error("ERAN: after SQL");
     }
 	
@@ -372,14 +370,21 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		     deliveryMethodsStr[i++] = deliveryMethod.value();
 		 }
 		 
+		 Array a  = null;
+		 logger.error("ERAN: before SQL");
 		 try {
-		      return jdbcTemplate.getDataSource().getConnection().createArrayOf("text", deliveryMethodsStr);
+		      a = jdbcTemplate.getDataSource().getConnection().createArrayOf("text", deliveryMethodsStr);
 		      
-		} catch(SQLException se) {
-			    throw new HpcException("Failed to create SQL array of delivery methods: " + 
-                                       se.getMessage(),
-		                               HpcErrorType.DATABASE_ERROR, se);
-		}
+		 } catch(SQLException se) {
+			     throw new HpcException("Failed to create SQL array of delivery methods: " + 
+                                        se.getMessage(),
+		                                HpcErrorType.DATABASE_ERROR, se);
+		 } catch(Exception e) {
+			 logger.error("ERAN: exception", e);
+		 }
+		 
+		 logger.error("ERAN: after SQL");
+		 return a;
 	 }
 	 
     /** 
