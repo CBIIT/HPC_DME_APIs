@@ -401,9 +401,9 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			 if(deliveryMethodsArray.length() > 0) {
 				deliveryMethodsArray.append(",");
 			 }
-			 deliveryMethodsArray.append(deliveryMethod.value());
+			 deliveryMethodsArray.append("\"" + deliveryMethod.value() + "\"");
 		 }
-		 deliveryMethodsArray.append("}::text[]");
+		 deliveryMethodsArray.append("}");
 
 		 return deliveryMethodsArray.toString();
 	 }
