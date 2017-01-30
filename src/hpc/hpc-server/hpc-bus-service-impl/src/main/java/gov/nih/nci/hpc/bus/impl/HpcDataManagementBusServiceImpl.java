@@ -584,6 +584,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	private void addCollectionUpdateEvent(String path, boolean collectionRegistered, 
 			                              boolean dataObjectRegistered)
 	{
+		/*
 		try {
 			 if(!collectionRegistered && !dataObjectRegistered) {
 				eventService.addCollectionUpdateEvent(path);
@@ -602,7 +603,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			 
 		} catch(HpcException e) {
 			    logger.error("Failed to add collection update event", e);
-		}
+		}*/
 	}
 }
 
