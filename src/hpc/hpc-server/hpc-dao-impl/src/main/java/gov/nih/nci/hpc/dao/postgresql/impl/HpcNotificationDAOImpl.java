@@ -32,6 +32,7 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * <p>
@@ -144,6 +145,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
     //---------------------------------------------------------------------//  
     
 	@Override
+	@Transactional
 	public void upsertSubscription(
 			          String userId,
 			          HpcNotificationSubscription notificationSubscription) throws HpcException
