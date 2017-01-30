@@ -56,13 +56,6 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
             "on conflict(\"USER_ID\", \"EVENT_TYPE\") do update set " +
                     "\"NOTIFICATION_DELIVERY_METHODS\"=excluded.\"NOTIFICATION_DELIVERY_METHODS\"";
 	
-	private static final String INSERT_TRIGGER_SQL = 
-		    "insert into public.\"HPC_NOTIFICATION_TRIGGER\" ( " +
-                    "\"NOTIFICATION_SUBSCRIPTION_ID\", \"NOTIFICATION_TRIGGER\") values (?, ?::text[])";
-	
-	private static final String DELETE_TRIGGER_SQL = 
-		    "delete from public.\"HPC_NOTIFICATION_TRIGGER\" where \"NOTIFICATION_SUBSCRIPTION_ID\" = ?";
-	
 	private static final String DELETE_SUBSCRIPTION_SQL = 
 			"delete from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" " +
 	                "where \"USER_ID\" = ? and \"EVENT_TYPE\" = ?";
@@ -75,12 +68,25 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	
 	private static final String GET_SUBSCRIPTION_ID_SQL = 
 		    "select \"ID\" from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"USER_ID\" = ? and \"EVENT_TYPE\" = ?";
+	
+	private static final String INSERT_TRIGGER_SQL = 
+		    "insert into public.\"HPC_NOTIFICATION_TRIGGER\" ( " +
+                    "\"NOTIFICATION_SUBSCRIPTION_ID\", \"NOTIFICATION_TRIGGER\") values (?, ?::text[])";
+	
+	private static final String GET_TRIGGER_SQL = 
+		    "select * from public.\"HPC_NOTIFICATION_TRIGGER\" where \"NOTIFICATION_SUBSCRIPTION_ID\" = ?";
+	
+	private static final String DELETE_TRIGGER_SQL = 
+		    "delete from public.\"HPC_NOTIFICATION_TRIGGER\" where \"NOTIFICATION_SUBSCRIPTION_ID\" = ?";
 
 	private static final String GET_SUBSCRIBED_USERS_SQL = 
 		    "select \"USER_ID\" from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"EVENT_TYPE\" = ?";
 	
 	private static final String GET_SUBSCRIBED_USERS_WITH_TRIGGER_SQL = 
-			GET_SUBSCRIBED_USERS_SQL + " and \"NOTIFICATION_TRIGGERS\" <@ ?::text[]";
+			"select \"USER_ID\" from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" subscription " +
+	        "join public.\"HPC_NOTIFICATION_TRIGGER\" trigger " +
+			"on subscription.\"ID\" = trigger.\"NOTIFICATION_SUBSCRIPTION_ID\" "+
+			"where subscription.\"EVENT_TYPE\" = ? and trigger.\"NOTIFICATION_TRIGGER\" <@ ?::text[]";
 	
 	private static final String UPSERT_DELIVERY_RECEIPT_SQL = 
 		    "insert into public.\"HPC_NOTIFICATION_DELIVERY_RECEIPT\" ( " +
@@ -110,6 +116,8 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	// Row mappers.
 	private HpcNotificationSubscriptionRowMapper notificationSubscriptionRowMapper = 
 			                                     new HpcNotificationSubscriptionRowMapper();
+	private HpcNotificationTriggerRowMapper notificationTriggerRowMapper = 
+                                            new HpcNotificationTriggerRowMapper();
 	private HpcNotificationDeliveryReceiptRowMapper notificationDeliveryReceiptRowMapper = 
 			                                     new HpcNotificationDeliveryReceiptRowMapper();
 	private SingleColumnRowMapper<String> userIdRowMapper = new SingleColumnRowMapper<>();
@@ -182,9 +190,19 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	public List<HpcNotificationSubscription> getSubscriptions(String userId) throws HpcException
 	{
 		try {
-		     return jdbcTemplate.query(GET_SUBSCRIPTIONS_SQL, notificationSubscriptionRowMapper,
-		    		                   userId);
+			 // Get the subscriptions.
+			 List<HpcNotificationSubscription> subscriptions =
+				  jdbcTemplate.query(GET_SUBSCRIPTIONS_SQL, notificationSubscriptionRowMapper, userId);
 		     
+			 // Set the triggers.
+			 for(HpcNotificationSubscription subscription : subscriptions) {
+				 subscription.getNotificationTriggers().addAll(
+				                 jdbcTemplate.query(GET_TRIGGER_SQL, notificationTriggerRowMapper,
+						                            subscription.getId()));
+			 }
+			 
+			 return subscriptions;
+			 
 		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
 			    return null;
 			    
@@ -201,9 +219,18 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
                                                       throws HpcException
     {
 		try {
-		     return jdbcTemplate.queryForObject(GET_SUBSCRIPTION_SQL, 
-		    		                            notificationSubscriptionRowMapper,
-		    		                            userId, eventType.value());
+			 // Get the subscription.
+			 HpcNotificationSubscription subscription =
+			    jdbcTemplate.queryForObject(GET_SUBSCRIPTION_SQL, 
+		    	                            notificationSubscriptionRowMapper,
+		    	                            userId, eventType.value());
+			 
+			 // Set the triggers.
+			 subscription.getNotificationTriggers().addAll(
+					         jdbcTemplate.query(GET_TRIGGER_SQL, notificationTriggerRowMapper,
+							                    subscription.getId()));
+			 
+			 return subscription;
 		     
 		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
 			    return null;
@@ -334,6 +361,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		public HpcNotificationSubscription mapRow(ResultSet rs, int rowNum) throws SQLException 
 		{
 			HpcNotificationSubscription notificationSubscription = new HpcNotificationSubscription();
+			notificationSubscription.setId(rs.getInt("ID"));
 			notificationSubscription.setEventType(HpcEventType.fromValue(rs.getString("EVENT_TYPE")));
 			String[] deliveryMethods = (String[]) rs.getArray("NOTIFICATION_DELIVERY_METHODS").getArray();
 			for(String deliveryMethod : deliveryMethods) {
@@ -342,6 +370,22 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			}
             
             return notificationSubscription;
+		}
+	}
+	
+	// HpcNotificationTrigger Row to Object mapper.
+	private class HpcNotificationTriggerRowMapper implements RowMapper<HpcNotificationTrigger>
+	{
+		@Override
+		public HpcNotificationTrigger mapRow(ResultSet rs, int rowNum) throws SQLException 
+		{
+			HpcNotificationTrigger notificationTrigger = new HpcNotificationTrigger();
+			String[] triggers = (String[]) rs.getArray("NOTIFICATION_TRIGGER").getArray();
+			for(String trigger : triggers) {
+				notificationTrigger.getPayloadEntries().add(fromString(trigger));
+			}
+            
+            return notificationTrigger;
 		}
 	}
 	
@@ -405,6 +449,20 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		 payloadEntriesArray.append("}");
 
 		 return payloadEntriesArray.toString();
+	 }
+	 
+	/** 
+	 * Construct a payload entry object from string.
+	 * 
+	 * @param payloadEntryStr The payload entry string.
+	 * @return payload entry object
+	 */
+	 private HpcEventPayloadEntry fromString(String payloadEntryStr)
+	 {
+		 HpcEventPayloadEntry payloadEntry = new HpcEventPayloadEntry();
+		 payloadEntry.setAttribute(payloadEntryStr.substring(0, payloadEntryStr.indexOf('=')));
+		 payloadEntry.setValue(payloadEntryStr.substring(payloadEntryStr.indexOf('=') + 1));
+		 return payloadEntry;
 	 }
 }
 

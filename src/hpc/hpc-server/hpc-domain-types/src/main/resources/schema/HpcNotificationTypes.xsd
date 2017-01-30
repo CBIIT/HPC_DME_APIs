@@ -52,6 +52,7 @@
 	
 	<xsd:complexType name="HpcNotificationSubscription">
 		<xsd:sequence>
+			<xsd:element name="id" type="xsd:int" minOccurs="0" />
 			<xsd:element name="eventType" type="hpc-domain-notification:HpcEventType" />
 			<xsd:element name="notificationDeliveryMethods" 
 			             type="hpc-domain-notification:HpcNotificationDeliveryMethod" 
