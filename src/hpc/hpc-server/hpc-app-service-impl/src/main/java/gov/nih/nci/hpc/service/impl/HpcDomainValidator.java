@@ -196,11 +196,11 @@ public class HpcDomainValidator
        	   return validationResult;
      	}
     	if(levelFilter.getLevel() == null && 
-    	   (levelFilter.getLevelLabel() == null || levelFilter.getLevelLabel().isEmpty())) {
+    	   (levelFilter.getLabel() == null || levelFilter.getLabel().isEmpty())) {
      	   validationResult.setMessage("Both level and level-label are null");
        	   return validationResult;
      	}
-    	if(levelFilter.getLevel() != null && levelFilter.getLevelLabel() != null) {
+    	if(levelFilter.getLevel() != null && levelFilter.getLabel() != null) {
      	   validationResult.setMessage("Both level and level-label are not null");
        	   return validationResult;
     	}
