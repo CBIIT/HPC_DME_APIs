@@ -120,7 +120,7 @@ public class HpcClientUtil {
 			String hpcCertPath, String hpcCertPassword) {
 
 		WebClient client = HpcClientUtil.getWebClient(hpcModelURL + "/" + doc, hpcCertPath, hpcCertPassword);
-		client.header("Authorization", "Basic " + token);
+		client.header("Authorization", "Bearer " + token);
 
 		Response restResponse = client.get();
 
@@ -153,7 +153,7 @@ public class HpcClientUtil {
 
 		String serviceURL = hpcQueryURL+"/"+queryName;
 		WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
-		client.header("Authorization", "Basic " + token);
+		client.header("Authorization", "Bearer " + token);
 
 		Response restResponse = client.get();
 
@@ -183,18 +183,17 @@ public class HpcClientUtil {
 
 	public static HpcNamedCompoundMetadataQueryListDTO getSavedSearches(String token, String hpcQueryURL,
 			String hpcCertPath, String hpcCertPassword) {
-
 		WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
-		client.header("Authorization", "Basic " + token);
+		client.header("Authorization", "Bearer " + token);
 
 		Response restResponse = client.get();
-
 		if (restResponse == null || restResponse.getStatus() != 200)
 			return null;
 		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser;
 		try {
 			parser = factory.createParser((InputStream) restResponse.getEntity());
+			
 		} catch (IllegalStateException | IOException e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to get saved queries due to: " + e.getMessage());
@@ -217,10 +216,9 @@ public class HpcClientUtil {
 			String hpcCertPath, String hpcCertPassword) {
 
 		WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
-		client.header("Authorization", "Basic " + token);
+		client.header("Authorization", "Bearer " + token);
 
 		Response restResponse = client.get();
-
 		if (restResponse == null || restResponse.getStatus() != 200)
 			return null;
 		MappingJsonFactory factory = new MappingJsonFactory();
@@ -249,7 +247,7 @@ public class HpcClientUtil {
 			String hpcCertPath, String hpcCertPassword) {
 
 		WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
-		client.header("Authorization", "Basic " + token);
+		client.header("Authorization", "Bearer " + token);
 
 		Response restResponse = client.get();
 
@@ -283,7 +281,7 @@ public class HpcClientUtil {
 		String url = hpcMetadataAttrsURL;
 
 		WebClient client = HpcClientUtil.getWebClient(url, hpcCertPath, hpcCertPassword);
-		client.header("Authorization", "Basic " + token);
+		client.header("Authorization", "Bearer " + token);
 
 		Response restResponse = client.get();
 

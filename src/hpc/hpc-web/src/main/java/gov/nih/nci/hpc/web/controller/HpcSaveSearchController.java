@@ -113,8 +113,6 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			HttpSession session, HttpServletRequest request) {
 		HpcSaveSearch hpcSaveSearch = new HpcSaveSearch();
 		model.addAttribute("hpcSaveSearch", hpcSaveSearch);
-		String authToken = (String) session.getAttribute("hpcUserToken");
-		String userPasswdToken = (String) session.getAttribute("userpasstoken");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");

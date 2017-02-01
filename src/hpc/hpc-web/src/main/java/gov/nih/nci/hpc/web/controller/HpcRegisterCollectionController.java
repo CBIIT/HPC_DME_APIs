@@ -61,9 +61,8 @@ public class HpcRegisterCollectionController extends AbstractHpcController {
 		model.addAttribute("collectionURL", collectionURL);
 		session.removeAttribute("compoundQuery");
 		session.removeAttribute("hierarchy");
-
-		String userPasswdToken = (String) session.getAttribute("userpasstoken");
-		if (userPasswdToken == null) {
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		if (authToken == null) {
 			return "redirect:/";
 		}
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");

@@ -44,8 +44,8 @@ import org.springframework.web.client.RestTemplate;
 
 @Controller
 @EnableAutoConfiguration
-@RequestMapping("/group")
-public class HpcUserController extends AbstractHpcController {
+@RequestMapping("/user")
+public class HpcGroupController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server}")
     private String serverURL;
 	@Value("${gov.nih.nci.hpc.server.user}")
@@ -61,7 +61,7 @@ public class HpcUserController extends AbstractHpcController {
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
 		}
-      return "group";
+      return "user";
   }
 
   @RequestMapping(method = RequestMethod.POST)

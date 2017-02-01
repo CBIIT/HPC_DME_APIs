@@ -44,14 +44,14 @@ import org.springframework.web.client.RestTemplate;
 
 @Controller
 @EnableAutoConfiguration
-@RequestMapping("/group")
-public class HpcUserController extends AbstractHpcController {
+@RequestMapping("/permissions")
+public class HpcPermissionController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server}")
     private String serverURL;
 	@Value("${gov.nih.nci.hpc.server.user}")
     private String serviceUserURL;
 	
-  @RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
@@ -60,8 +60,9 @@ public class HpcUserController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
+			return "index";
 		}
-      return "group";
+      return "permission";
   }
 
   @RequestMapping(method = RequestMethod.POST)

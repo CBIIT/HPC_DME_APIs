@@ -95,25 +95,15 @@
 							<li>
 								<p class="blue">You have 3 new messages</p>
 							</li>
-							<li><a href="#"> <span class="photo"><img
-										alt="avatar" src="./img/avatar-mini.jpg" /></span> <span
-									class="subject"> <span class="from">Greg Martin</span> <span
+							<li><a href="#">  <span
+									class="subject"> <span class="from">Zhengwu Lu</span> <span
 										class="time">1 min</span>
 								</span> <span class="message"> Please share Dataset1 with me </span>
 							</a></li>
-							<li><a href="#"> <span class="photo"><img
-										alt="avatar" src="./img/avatar-mini2.jpg" /></span> <span
-									class="subject"> <span class="from">Bob Mckenzie</span>
-										<span class="time">5 mins</span>
-								</span> <span class="message"> I need permission to upload my <br />datset
-										to HPC datastore
-								</span>
-							</a></li>
-							<li><a href="#"> <span class="photo"><img
-										alt="avatar" src="./img/avatar-mini3.jpg" /></span> <span
-									class="subject"> <span class="from">Phillip Park</span>
+							<li><a href="#">  <span
+									class="subject"> <span class="from">George Zaki</span>
 										<span class="time">2 hrs</span>
-								</span> <span class="message"> Please add me to your Users group
+								</span> <span class="message"> Please share your collection xyz search criteria
 								</span>
 							</a></li>
 							<li><a href="#">See all messages</a></li>
@@ -155,14 +145,10 @@
 							<div class="log-arrow-up"></div>
 							<li class="eborder-top"><a href="#"><i
 									class="icon_profile"></i> My Profile</a></li>
-							<li><a href="#"><i class="icon_mail_alt"></i> My
-									Messages</a></li>
-							<li><a href="#"><i class="icon_clock_alt"></i>My
-									Notifications</a></li>
 							<li><a href="#"><i class="icon_tools"></i> Settings</a></li>
 							<li><a href="/logout"><i
 									class="icon_arrow_triangle_right_alt"></i> Log Out</a></li>
-							<li><a href="documentation.html"><i class="icon_key_alt"></i>
+							<li><a href="https://github.com/CBIIT/HPC_DME_APIs"><i class="icon_key_alt"></i>
 									Documentation</a></li>
 						</ul></li>
 					<!-- user login dropdown end -->
@@ -207,7 +193,7 @@
 							class="menu-arrow arrow_carrot-right"></span>
 					</a>
 						<ul class="sub">
-							<li><a class="" href="basic_table.html">Permissions</a></li>
+							<li><a class="" th:href="@{/permissions}">Permissions</a></li>
 						</ul></li>
 					<li class="sub-menu"><a th:href="@{/reports}" class=""> <i
 							class="icon_document_alt"></i> <span>Reports</span>
@@ -217,9 +203,9 @@
 							class="menu-arrow arrow_carrot-right"></span>
 					</a>
 						<ul class="sub">
-							<li><a class="" href="basic_table.html">User</a></li>
-							<li><a class="" href="basic_table.html">Group</a></li>
-							<li><a class="" href="basic_table.html">DOC</a></li>
+							<li><a class="" th:href="@{/user}">User</a></li>
+							<li><a class="" th:href="@{/group}">Group</a></li>
+							<li><a class="" th:href="@{/doc}">DOC</a></li>
 						</ul></li>
 				</ul>
 				<!-- sidebar menu end-->

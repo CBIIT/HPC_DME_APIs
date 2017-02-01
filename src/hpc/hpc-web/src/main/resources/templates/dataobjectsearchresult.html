@@ -2,27 +2,61 @@
 <!doctype html>
 <html ng-app="app">
 <head>
-<link rel="stylesheet" type="text/css" href="../css/style.css" />
-<link href="../css/bootstrap.min.css" rel="stylesheet" />
-<link href="../css/bootstrap-theme.css" rel="stylesheet" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="HPC Data Management" />
+<meta name="author" content="SVG, Inc" />
+<link rel="shortcut icon" href="img/favicon.png" />
 
-<script src="../js/angular/1.4.3/angular.js"></script>
-<script src="../js/angular/1.4.3/angular-touch.js"></script>
-<script src="../js/angular/1.4.3/angular-animate.js"></script>
-<script src="../js/ui-grid/csv.js"></script>
-<script src="../js/ui-grid/pdfmake.js"></script>
-<script src="../js/ui-grid/vfs_fonts.js"></script>
-<script src="../js/ui-grid/ui-grid.js"></script>
+
+<title>HPC Data Management Environment</title>
+
+<link rel="stylesheet" type="text/css" href="css/ng-grid.css" />
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+<!-- Bootstrap CSS -->
+<link href="css/bootstrap.min.css" rel="stylesheet" />
+<!-- bootstrap theme -->
+<link href="css/bootstrap-theme.css" rel="stylesheet" />
+<!-- font icon -->
+<link href="css/elegant-icons-style.css" rel="stylesheet" />
+<link href="css/font-awesome.min.css" rel="stylesheet" />
+<!-- Custom styles -->
+<link rel="stylesheet" href="css/fullcalendar.css" />
+<link href="css/widgets.css" rel="stylesheet" />
+<link href="css/style.css" rel="stylesheet" />
+<link href="css/style-responsive.css" rel="stylesheet" />
+<link href="css/xcharts.min.css" rel=" stylesheet" />
+<link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
+<!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
+<!--[if lt IE 9]>
+      <script src="js/html5shiv.js"></script>
+      <script src="js/respond.min.js"></script>
+      <script src="js/lte-ie7.js"></script>
+    <![endif]-->
+<script
+	src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular.js"></script>
+<script
+	src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular-touch.js"></script>
+<script
+	src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular-animate.js"></script>
+<script src="http://ui-grid.info/docs/grunt-scripts/csv.js"></script>
+<script src="http://ui-grid.info/docs/grunt-scripts/pdfmake.js"></script>
+<script src="http://ui-grid.info/docs/grunt-scripts/vfs_fonts.js"></script>
+
+<script src="http://ui-grid.info/release/ui-grid.js"></script>
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+
 <link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css"
 	type="text/css" />
+
 <script
 	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script
 	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script th:inline="javascript">
-	/*<![CDATA[*/
-	var results = "[[${searchresults}]]";
-	/*]]>*/
+/*<![CDATA[*/
+    var results = "[[${searchresults}]]";
+/*]]>*/
 </script>
 
 <script>
@@ -55,7 +89,7 @@
 										field : 'download',
 										width : 500,
 										displayName : 'Download',
-										cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal">Download<i class="fa fa-download" aria-hidden="true"></i></a></div>'
+										cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>'
 									}  ],
 									onRegisterApi : function(gridApi) {
 										$scope.grid1Api = gridApi;
@@ -161,6 +195,17 @@
 		</section>
 		<!--main content end-->
 	</section>
+	<script src="js/bootstrap.min.js"></script>
+
+	<script src="js/jquery-ui-1.10.4.min.js"></script>
+	<script src="js/jquery.scrollTo.min.js"></script>
+	<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
+	<script src="assets/jquery-knob/js/jquery.knob.js"></script>
+	<script src="js/jquery.sparkline.js" type="text/javascript"></script>
+	<script src="js/jquery.customSelect.min.js"></script>
+
+	<!--custome script for all page-->
+	<script src="js/scripts.js"></script>
 
 </body>
 </html>

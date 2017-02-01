@@ -107,8 +107,8 @@ public class HpcLoginController extends AbstractHpcController {
 					return "index";
 				}
 				session.setAttribute("hpcUser", user);
-				String token = DatatypeConverter.printBase64Binary((hpcLogin.getUserId() + ":" + hpcLogin.getPasswd()).getBytes());
-				session.setAttribute("userpasstoken", token);
+//				String token = DatatypeConverter.printBase64Binary((hpcLogin.getUserId() + ":" + hpcLogin.getPasswd()).getBytes());
+//				session.setAttribute("userpasstoken", token);
 			}
 			else {
 				model.addAttribute("loginStatus", false);
