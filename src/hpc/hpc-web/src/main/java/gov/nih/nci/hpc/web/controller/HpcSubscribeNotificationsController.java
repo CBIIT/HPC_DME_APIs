@@ -82,7 +82,9 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
+		long start = System.currentTimeMillis();
 
+		String authToken = (String) session.getAttribute("hpcUserToken");
 		String userPasswdToken = (String) session.getAttribute("userpasstoken");
 		if (userPasswdToken == null) {
 			return "redirect:/";
@@ -100,6 +102,9 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 		populateNotifications(model, userPasswdToken, user, session);
 		HpcNotificationRequest notificationRequest = new HpcNotificationRequest();
 		model.addAttribute("notificationRequest", notificationRequest);
+		long stop = System.currentTimeMillis();
+		System.out.println("subscribe "+ (stop-start));
+		
 		return "subscribenotifications";
 	}
 
@@ -145,6 +150,7 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 			model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
 			e.printStackTrace();
 		} finally {
+			String authToken = (String) session.getAttribute("hpcUserToken");
 			String userPasswdToken = (String) session.getAttribute("userpasstoken");
 			if (userPasswdToken == null) {
 				return "redirect:/";

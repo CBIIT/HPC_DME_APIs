@@ -11,6 +11,7 @@ package gov.nih.nci.hpc.web.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,6 +51,7 @@ import gov.nih.nci.hpc.web.model.HpcDatafileSearchResultDetailed;
 import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.model.HpcSearchResult;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcSearchUtil;
 
 /**
  * <p>
@@ -85,17 +87,14 @@ public class HpcSearchController extends AbstractHpcController {
 			HttpSession session, HttpServletRequest request) {
 		HpcNamedCompoundMetadataQueryDTO query = null;
 		try {
-			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
-			String userPasswdToken = (String) session.getAttribute("userpasstoken");
-
 			String authToken = (String) session.getAttribute("hpcUserToken");
 
-			query = HpcClientUtil.getQuery(userPasswdToken, queryURL, queryName, sslCertPath, sslCertPassword);
+			query = HpcClientUtil.getQuery(authToken, queryURL, queryName, sslCertPath, sslCertPassword);
 			String serviceURL = collectionServiceURL;
 			
 			String requestURL;
 			if(query != null && query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.COLLECTION))
-				requestURL = compoundCollectionSearchServiceURL+ "/query/"+queryName;
+				requestURL = compoundCollectionSearchServiceURL+ "/"+queryName;
 			else if(query != null && query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.DATA_OBJECT))
 				requestURL = compoundDataObjectSearchServiceURL+ "/"+queryName;
 			else
@@ -114,7 +113,7 @@ public class HpcSearchController extends AbstractHpcController {
 				HpcSearch search = new HpcSearch();
 				search.setSearchType(query.getNamedCompoundQuery().getCompoundQueryType().value());
 				search.setDetailed(query.getNamedCompoundQuery().getDetailedResponse());
-				processResponseResults(search, restResponse, model);
+				HpcSearchUtil.processResponseResults(search, restResponse, model);
 			} else {
 				String message = "No matching results!";
 				ObjectError error = new ObjectError("hpcSearch", message);
@@ -124,27 +123,27 @@ public class HpcSearchController extends AbstractHpcController {
 			}
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
 			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search project: " + e.getMessage());
+			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
 			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search projects due to: " + e.getMessage());
+			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
 			return "dashboard";
 		} catch (HttpStatusCodeException e) {
 			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search project: " + e.getMessage());
+			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
 			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search projects due to: " + e.getMessage());
+			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
 			return "dashboard";
 		} catch (RestClientException e) {
 			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search project: " + e.getMessage());
+			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
 			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search projects due to: " + e.getMessage());
+			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
 			return "dashboard";
 		} catch (Exception e) {
 			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search project: " + e.getMessage());
+			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
 			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search projects due to: " + e.getMessage());
+			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
 			return "dashboard";
 		}
 		
@@ -188,6 +187,7 @@ public class HpcSearchController extends AbstractHpcController {
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("searchType", "collection");
 		} else {
+			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 			List<HpcCollectionDTO> searchResults = collections.getCollections();
 			List<HpcCollectionSearchResultDetailed> returnResults = new ArrayList<HpcCollectionSearchResultDetailed>();
 			for (HpcCollectionDTO result : searchResults) {
@@ -195,7 +195,7 @@ public class HpcSearchController extends AbstractHpcController {
 				returnResult.setPath(result.getCollection().getCollectionName());
 				returnResult.setUuid(getAttributeValue("uuid", result.getMetadataEntries()));
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
-				returnResult.setCreatedOn(getAttributeValue("original_date_created", result.getMetadataEntries()));
+				returnResult.setCreatedOn(format.format(result.getCollection().getCreatedAt().getTime()));
 				returnResult.setCollectionType(getAttributeValue("collection_type", result.getMetadataEntries()));
 				returnResults.add(returnResult);
 
@@ -224,15 +224,17 @@ public class HpcSearchController extends AbstractHpcController {
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("searchType", "datafile");
 		} else {
+			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 			List<HpcDataObjectDTO> searchResults = dataObjects.getDataObjects();
 			List<HpcDatafileSearchResultDetailed> returnResults = new ArrayList<HpcDatafileSearchResultDetailed>();
 			for (HpcDataObjectDTO result : searchResults) {
 				HpcDatafileSearchResultDetailed returnResult = new HpcDatafileSearchResultDetailed();
-				returnResult.setPath(result.getDataObject().getDataName());
+				returnResult.setPath(result.getDataObject().getAbsolutePath());
 				returnResult.setUuid(getAttributeValue("uuid", result.getMetadataEntries()));
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
-				returnResult.setCreatedOn(getAttributeValue("original_date_created", result.getMetadataEntries()));
-				returnResult.setDownload(result.getDataObject().getDataName());
+				returnResult.setCreatedOn(format.format(result.getDataObject().getCreatedAt().getTime()));
+				returnResult.setChecksum(getAttributeValue("checksum", result.getMetadataEntries()));
+				returnResult.setDownload(result.getDataObject().getAbsolutePath());
 				returnResults.add(returnResult);
 
 			}

@@ -59,11 +59,11 @@ public class HpcSavedSearchListController extends AbstractHpcController {
 	@ResponseBody
 	public List<AjaxResponseBody>  get(@Valid @ModelAttribute("hpcSaveSearch") HpcSaveSearch search, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
-		String userPasswdToken = (String) session.getAttribute("userpasstoken");
+		String authToken = (String) session.getAttribute("hpcUserToken");
 		List<AjaxResponseBody> result = new ArrayList<AjaxResponseBody>();
 		try {
 			HpcNamedCompoundMetadataQueryListDTO queries = 
-					HpcClientUtil.getSavedSearches(userPasswdToken, queryServiceURL, sslCertPath, sslCertPassword);
+					HpcClientUtil.getSavedSearches(authToken, queryServiceURL, sslCertPath, sslCertPassword);
 			if(queries == null || queries.getNamedCompoundQueries() == null || queries.getNamedCompoundQueries().size() == 0)
 			{
 				AjaxResponseBody body = new AjaxResponseBody();
@@ -79,7 +79,6 @@ public class HpcSavedSearchListController extends AbstractHpcController {
 					result.add(body);
 				}
 			}
-			//savedQueries.setQueries(result);
 			return result;
 		} catch (Exception e) {
 			e.printStackTrace();
