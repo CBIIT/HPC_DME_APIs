@@ -374,7 +374,7 @@ public class HpcEventServiceImpl implements HpcEventService
 		List<String> userIds = notificationDAO.getSubscribedUsers(HpcEventType.COLLECTION_UPDATED, event.getPayloadEntries());
 		if(userIds != null) {
 		   // Exclude the invoker. 
-		   userIds.remove(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
+		   //userIds.remove(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
 		   if(!userIds.isEmpty()) {
 			  event.getUserIds().addAll(userIds); 
 			  addEvent(event);
