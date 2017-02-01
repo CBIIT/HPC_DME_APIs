@@ -56,7 +56,6 @@ public class HpcCollectionController extends AbstractHpcController {
 	public String home(String path, Model model, 
 			HttpSession session) {
 
-		System.out.println("Path:" +serviceURL + path);
 		try {
 			if (path == null)
 				return "dashboard";
@@ -81,7 +80,6 @@ public class HpcCollectionController extends AbstractHpcController {
 				
 				HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
 				HpcCollectionDTO collection = collections.getCollections().get(0);
-				System.out.println("collection:" +collection);
 				model.addAttribute("collection", collection);
 			} else {
 				String message = "Collection not found!";

@@ -63,11 +63,11 @@ public class HpcNotificationsListController extends AbstractHpcController {
 	@ResponseBody
 	public List<HpcNotificationReceipt>  get(@Valid @ModelAttribute("hpcSaveSearch") HpcSaveSearch search, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
-		String userPasswdToken = (String) session.getAttribute("userpasstoken");
+		String authToken = (String) session.getAttribute("hpcUserToken");
 		List<HpcNotificationReceipt> result = new ArrayList<HpcNotificationReceipt>();
 		try {
 			HpcNotificationDeliveryReceiptListDTO notifications = 
-					HpcClientUtil.getNotificationReceipts(userPasswdToken, queryServiceURL, sslCertPath, sslCertPassword);
+					HpcClientUtil.getNotificationReceipts(authToken, queryServiceURL, sslCertPath, sslCertPassword);
 			if(notifications != null && notifications.getNotificationDeliveryReceipts() != null && notifications.getNotificationDeliveryReceipts().size() > 0)
 			{
 				for(HpcNotificationDeliveryReceiptDTO receipt : notifications.getNotificationDeliveryReceipts())
@@ -85,6 +85,7 @@ public class HpcNotificationsListController extends AbstractHpcController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 		return result;
 	}
 }

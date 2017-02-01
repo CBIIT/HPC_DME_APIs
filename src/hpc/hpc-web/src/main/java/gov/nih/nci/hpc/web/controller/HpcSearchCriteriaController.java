@@ -107,7 +107,6 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		model.addAttribute("hpcSaveSearch", hpcSaveSearch);
 		session.removeAttribute("compoundQuery");
 		String authToken = (String) session.getAttribute("hpcUserToken");
-		String userPasswdToken = (String) session.getAttribute("userpasstoken");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
@@ -116,8 +115,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "index";
 		}
-		populateHierarchy(session, model, userPasswdToken, user);
-		populateMetadata(model, userPasswdToken, user, "collection", session);
+		populateHierarchy(session, model, authToken, user);
+		populateMetadata(model, authToken, user, "collection", session);
 		populateOperators(model);
 		populateLevelOperators(model);
 		return "criteria";
@@ -131,6 +130,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			HttpSession session, HttpServletRequest request, RedirectAttributes redirectAttrs) {
 		if (search.getActionType() != null && search.getActionType().equals("refresh")) {
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+			String authToken = (String) session.getAttribute("hpcUserToken");
 			String userPasswdToken = (String) session.getAttribute("userpasstoken");
 			populateHierarchy(session, model, userPasswdToken, user);
 			populateMetadata(model, userPasswdToken, user, search.getSearchType(), session);
@@ -174,31 +174,32 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			}
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
 			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search project: " + e.getMessage());
+			ObjectError error = new ObjectError("hpcLogin", "Failed to project: " + e.getMessage());
 			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search projects due to: " + e.getMessage());
+			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
 			return "criteria";
 		} catch (HttpStatusCodeException e) {
 			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search project: " + e.getMessage());
+			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
 			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search projects due to: " + e.getMessage());
+			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
 			return "criteria";
 		} catch (RestClientException e) {
 			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search project: " + e.getMessage());
+			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
 			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search projects due to: " + e.getMessage());
+			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
 			return "criteria";
 		} catch (Exception e) {
 			e.printStackTrace();
-			ObjectError error = new ObjectError("hpcLogin", "Failed to search project: " + e.getMessage());
+			ObjectError error = new ObjectError("hpcLogin", "Failed to search: " + e.getMessage());
 			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search projects due to: " + e.getMessage());
+			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
 			return "criteria";
 		} finally {
 			if (!success) {
 				HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+				String authToken = (String) session.getAttribute("hpcUserToken");
 				String userPasswdToken = (String) session.getAttribute("userpasstoken");
 				populateHierarchy(session, model, userPasswdToken, user);
 				populateMetadata(model, userPasswdToken, user, search.getSearchType(), session);
