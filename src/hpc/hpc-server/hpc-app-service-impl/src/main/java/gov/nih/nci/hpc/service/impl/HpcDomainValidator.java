@@ -190,14 +190,23 @@ public class HpcDomainValidator
     	   validationResult.setMessage("Null level filter");
     	   return validationResult;
     	}
-    	if(levelFilter.getLevel() <= 0) { 
+    	if(levelFilter.getOperator() == null) {
+     	   validationResult.setMessage("Null level filter operator. Valid values are [" +
+     			                       Arrays.asList(HpcMetadataQueryOperator.values()) + "]");
+       	   return validationResult;
+     	}
+    	if(levelFilter.getLevel() == null && 
+    	   (levelFilter.getLevelLabel() == null || levelFilter.getLevelLabel().isEmpty())) {
+     	   validationResult.setMessage("Both level and level-label are null");
+       	   return validationResult;
+     	}
+    	if(levelFilter.getLevel() != null && levelFilter.getLevelLabel() != null) {
+     	   validationResult.setMessage("Both level and level-label are not null");
+       	   return validationResult;
+    	}
+    	if(levelFilter.getLevel() != null && levelFilter.getLevel() <= 0) { 
     	   validationResult.setMessage("Invalid level filter's level: " + levelFilter.getLevel());
      	   return validationResult;
-    	}
-    	if(levelFilter.getOperator() == null) {
-    	   validationResult.setMessage("Null level filter operator. Valid values are [" +
-    			                       Arrays.asList(HpcMetadataQueryOperator.values()) + "]");
-      	   return validationResult;
     	}
     	
     	validationResult.setValid(true);
