@@ -92,8 +92,8 @@ public class HpcReportsController extends AbstractHpcController {
 
 	private String init(Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request)
 	{
-		String userPasswdToken = (String) session.getAttribute("userpasstoken");
-		if (userPasswdToken == null) {
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		if (authToken == null) {
 			return "redirect:/";
 		}
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
