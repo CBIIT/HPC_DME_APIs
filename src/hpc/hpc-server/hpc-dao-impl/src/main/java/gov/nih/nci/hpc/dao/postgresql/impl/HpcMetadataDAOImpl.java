@@ -521,7 +521,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			HpcMetadataQueryLevelFilter levelFilter = metadataQuery.getLevelFilter() != null ?
 					                                  metadataQuery.getLevelFilter() : defaultLevelFilter;
 			if(levelFilter != null) {
-			   boolean labelFilter = levelFilter.getLevelLabel() != null;
+			   boolean labelFilter = levelFilter.getLabel() != null;
 		       String sqlLevelFilter = labelFilter ? sql.levelLabelFilters.get(levelFilter.getOperator()) :  
 		    	                                     sql.levelFilters.get(levelFilter.getOperator());
 		       if(sqlLevelFilter == null) {
@@ -529,7 +529,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		                                 HpcErrorType.INVALID_REQUEST_INPUT); 
 		       }
 		       sqlQueryBuilder.append(sqlLevelFilter);
-		       args.add(labelFilter ? levelFilter.getLevelLabel() : levelFilter.getLevel());
+		       args.add(labelFilter ? levelFilter.getLabel() : levelFilter.getLevel());
 			}
 		}
 		
