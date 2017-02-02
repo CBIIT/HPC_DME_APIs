@@ -84,7 +84,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		    "select \"USER_ID\" from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"EVENT_TYPE\" = ?";
 	
 	private static final String GET_SUBSCRIBED_USERS_WITH_TRIGGER_SQL = 
-			"select unique \"USER_ID\" from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" subscription " +
+			"select distinct \"USER_ID\" from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" subscription " +
 	        "join public.\"HPC_NOTIFICATION_TRIGGER\" trigger " +
 			"on subscription.\"ID\" = trigger.\"NOTIFICATION_SUBSCRIPTION_ID\" "+
 			"where subscription.\"EVENT_TYPE\" = ? and trigger.\"NOTIFICATION_TRIGGER\" <@ ?::text[]";
