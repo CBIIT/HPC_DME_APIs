@@ -56,9 +56,13 @@ public class HpcEventServiceImpl implements HpcEventService
 	public static final String CHECKSUM_PAYLOAD_ATTRIBUTE = "CHECKSUM";
 	public static final String COLLECTION_PATH_PAYLOAD_ATTRIBUTE = "COLLECTION_PATH";
 	public static final String COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE = "UPDATE";
+	public static final String COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE = "UPDATE_DESCRIPTION";
 	public static final String COLLECTION_METADATA_UPDATE_PAYLOAD_VALUE = "METADATA";
+	public static final String COLLECTION_METADATA_UPDATE_DESCRIPTION_PAYLOAD_VALUE = "Collection metadata updated";
 	public static final String COLLECTION_REGISTRATION_PAYLOAD_VALUE = "COLLECTION_REGISTRATION";
+	public static final String COLLECTION_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE = "Sub collection registerd";
 	public static final String DATA_OBJECT_REGISTRATION_PAYLOAD_VALUE = "DATA_OBJECT_REGISTRATION";
+	public static final String DATA_OBJECT_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE = "Data object registered";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -228,19 +232,22 @@ public class HpcEventServiceImpl implements HpcEventService
     @Override
     public void addCollectionUpdateEvent(String path) throws HpcException
     {
-    	addCollectionEvent(path, COLLECTION_METADATA_UPDATE_PAYLOAD_VALUE);
+    	addCollectionEvent(path, COLLECTION_METADATA_UPDATE_PAYLOAD_VALUE, 
+    			           COLLECTION_METADATA_UPDATE_DESCRIPTION_PAYLOAD_VALUE);
     }
     
     @Override
     public void addCollectionRegistrationEvent(String path) throws HpcException
     {
-    	addCollectionEvent(path, COLLECTION_REGISTRATION_PAYLOAD_VALUE);
+    	addCollectionEvent(path, COLLECTION_REGISTRATION_PAYLOAD_VALUE,
+    			           COLLECTION_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE);
     }
     
     @Override
     public void addDataObjectRegistrationEvent(String path) throws HpcException
     {
-    	addCollectionEvent(path, DATA_OBJECT_REGISTRATION_PAYLOAD_VALUE);
+    	addCollectionEvent(path, DATA_OBJECT_REGISTRATION_PAYLOAD_VALUE,
+    			           DATA_OBJECT_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE);
     }
     
     //---------------------------------------------------------------------//
@@ -351,10 +358,12 @@ public class HpcEventServiceImpl implements HpcEventService
      * Add a collection event.
      * 
      * @param path The collection path.
-     * @param updatePayloadValue The value to set on COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE event payload
+     * @param updatePayloadValue The value to set on COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE event payload.
+     * @param updateDescriptionPayloadValue The value to set on COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE event payload.
      * @throws HpcException on service failure.
      */
-    private void addCollectionEvent(String path, String updatePayloadValue) throws HpcException
+    private void addCollectionEvent(String path, String updatePayloadValue, String updateDescriptionPayloadValue) 
+    		                       throws HpcException
     {
 		// Input Validation.
 		if(path == null || path.isEmpty()) {
@@ -369,11 +378,11 @@ public class HpcEventServiceImpl implements HpcEventService
 				                                     dataManagementProxy.getRelativePath(path)));
 		event.getPayloadEntries().add(toPayloadEntry(COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE, 
 				                                     updatePayloadValue));
+		event.getPayloadEntries().add(toPayloadEntry(COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE, 
+                                                     updateDescriptionPayloadValue));
 		
 		// Get the users subscribed for this event.
-		logger.error("ERAN: BEFORE QUERY");
 		List<String> userIds = notificationDAO.getSubscribedUsers(HpcEventType.COLLECTION_UPDATED, event.getPayloadEntries());
-		logger.error("ERAN: AFTER QUERY: " + userIds);
 		if(userIds != null) {
 		   // Exclude the invoker. 
 		   //userIds.remove(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
