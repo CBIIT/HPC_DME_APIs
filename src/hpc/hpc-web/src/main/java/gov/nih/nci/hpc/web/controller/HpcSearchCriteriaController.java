@@ -131,9 +131,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		if (search.getActionType() != null && search.getActionType().equals("refresh")) {
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			String authToken = (String) session.getAttribute("hpcUserToken");
-			String userPasswdToken = (String) session.getAttribute("userpasstoken");
-			populateHierarchy(session, model, userPasswdToken, user);
-			populateMetadata(model, userPasswdToken, user, search.getSearchType(), session);
+			populateHierarchy(session, model, authToken, user);
+			populateMetadata(model, authToken, user, search.getSearchType(), session);
 			populateOperators(model);
 			populateLevelOperators(model);
 			return "criteria";
@@ -143,13 +142,12 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		try {
 
 			// String criteria = getCriteria();
-			Map<String, String> hierarchy = (Map<String, String>)session.getAttribute("hierarchies");
-			
+			Map<String, String> hierarchy = (Map<String, String>) session.getAttribute("hierarchies");
+
 			HpcCompoundMetadataQueryDTO compoundQuery = constructCriteria(hierarchy, search);
 			if (search.isDetailed())
 				compoundQuery.setDetailedResponse(true);
-			
-			
+
 			// criteria = criteria + "&detailedResponse=true";
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			String serviceURL = compoundDataObjectSearchServiceURL;
@@ -200,30 +198,29 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			if (!success) {
 				HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 				String authToken = (String) session.getAttribute("hpcUserToken");
-				String userPasswdToken = (String) session.getAttribute("userpasstoken");
-				populateHierarchy(session, model, userPasswdToken, user);
-				populateMetadata(model, userPasswdToken, user, search.getSearchType(), session);
+				populateHierarchy(session, model, authToken, user);
+				populateMetadata(model, authToken, user, search.getSearchType(), session);
 				populateOperators(model);
 				populateLevelOperators(model);
 			}
 		}
-		
+
 		if (search.getSearchType().equals("collection"))
 			return search.isDetailed() ? "collectionsearchresultdetail" : "collectionsearchresult";
 		else
 			return search.isDetailed() ? "dataobjectsearchresultdetail" : "dataobjectsearchresult";
 	}
 
-	private void processResponseResults(HpcSearch search, Response restResponse, Model model, RedirectAttributes redirectAttrs)
-			throws JsonParseException, IOException {
+	private void processResponseResults(HpcSearch search, Response restResponse, Model model,
+			RedirectAttributes redirectAttrs) throws JsonParseException, IOException {
 		if (search.getSearchType().equals("collection"))
 			processCollectionResults(search, restResponse, model, redirectAttrs);
 		else
 			processDataObjectResults(search, restResponse, model, redirectAttrs);
 	}
 
-	private void processCollectionResults(HpcSearch search, Response restResponse, Model model, RedirectAttributes redirectAttrs)
-			throws JsonParseException, IOException {
+	private void processCollectionResults(HpcSearch search, Response restResponse, Model model,
+			RedirectAttributes redirectAttrs) throws JsonParseException, IOException {
 		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 		HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
@@ -258,8 +255,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		}
 	}
 
-	private void processDataObjectResults(HpcSearch search, Response restResponse, Model model, RedirectAttributes redirectAttrs)
-			throws JsonParseException, IOException {
+	private void processDataObjectResults(HpcSearch search, Response restResponse, Model model,
+			RedirectAttributes redirectAttrs) throws JsonParseException, IOException {
 		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 		HpcDataObjectListDTO dataObjects = parser.readValueAs(HpcDataObjectListDTO.class);
@@ -304,7 +301,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 
 		dto.setCompoundQuery(query);
 		dto.setDetailedResponse(search.isDetailed());
-		if(search.getSearchType().equals("collection"))
+		if (search.getSearchType().equals("collection"))
 			dto.setCompoundQueryType(HpcCompoundMetadataQueryType.COLLECTION);
 		else
 			dto.setCompoundQueryType(HpcCompoundMetadataQueryType.DATA_OBJECT);
@@ -315,7 +312,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 	private HpcCompoundMetadataQuery buildSimpleSearch(Map<String, String> hierarchy, HpcSearch search) {
 		HpcCompoundMetadataQuery query = new HpcCompoundMetadataQuery();
 		List<HpcMetadataQuery> queries = new ArrayList<HpcMetadataQuery>();
-		
+
 		query.setOperator(HpcCompoundMetadataQueryOperator.AND);
 		for (int i = 0; i < search.getAttrName().length; i++) {
 			String attrName = search.getAttrName()[i];
@@ -329,7 +326,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				criteria.setOperator(HpcMetadataQueryOperator.fromValue(operator));
 				if (level != null && !level.equals("-1")) {
 					HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
-					if(level.equals("Data file"))
+					if (level.equals("Data file"))
 						levelFilter.setLevel(1);
 					else
 						levelFilter.setLevel(new Integer(hierarchy.get(level)));
@@ -388,50 +385,44 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 
 	private void populateMetadata(Model model, String authToken, HpcUserDTO user, String type, HttpSession session) {
 		model.addAttribute("doc", user.getNciAccount().getDoc());
-		if(session.getAttribute("hierarchy") != null)
-		{
+		if (session.getAttribute("hierarchy") != null) {
 			model.addAttribute("hierarchy", session.getAttribute("hierarchy"));
 			return;
 		}
-		
+
 		HpcMetadataHierarchy dataHierarchy = new HpcMetadataHierarchy();
-		long start = System.currentTimeMillis();
 		Map<String, String> hierarchy = new HashMap<String, String>();
-		
+
 		List<String> attrs = new ArrayList<String>();
-		
-			HpcMetadataAttributesListDTO dto = HpcClientUtil.getMetadataAttrNames(authToken,
-					hpcMetadataAttrsURL, sslCertPath, sslCertPassword);
-			long stop = System.currentTimeMillis();
-			System.out.println("getMetadataAttrNames "+(stop-start));
-			if (dto != null && dto.getCollectionMetadataAttributes() != null) {
-				for(HpcMetadataLevelAttributes levelAttrs : dto.getCollectionMetadataAttributes()) 
-				{
-					String label = levelAttrs.getLevelLabel();
-					if(label == null)
-						label = "Data file";
-					hierarchy.put(label, label);
-					dataHierarchy.getCollectionAttrsSet().addAll(levelAttrs.getMetadataAttributes());
-					for(String name : levelAttrs.getMetadataAttributes())
-						attrs.add(label+":collection:"+name);
-				}
-			}
 
-			if (dto != null && dto.getDataObjectMetadataAttributes() != null) {
-				for(HpcMetadataLevelAttributes levelAttrs : dto.getDataObjectMetadataAttributes()) 
-				{
-					String label = levelAttrs.getLevelLabel();
-					if(label == null)
-						label = "Data file";
-					
-					hierarchy.put(label, label);
-					dataHierarchy.getDataobjectAttrsSet().addAll(levelAttrs.getMetadataAttributes());
-					for(String name : levelAttrs.getMetadataAttributes())
-						attrs.add(label+":datafile:"+name);
-				}
+		HpcMetadataAttributesListDTO dto = HpcClientUtil.getMetadataAttrNames(authToken, hpcMetadataAttrsURL,
+				sslCertPath, sslCertPassword);
+		if (dto != null && dto.getCollectionMetadataAttributes() != null) {
+			for (HpcMetadataLevelAttributes levelAttrs : dto.getCollectionMetadataAttributes()) {
+				String label = levelAttrs.getLevelLabel();
+				if (label == null)
+					label = "Data file";
+				hierarchy.put(label, label);
+				dataHierarchy.getCollectionAttrsSet().addAll(levelAttrs.getMetadataAttributes());
+				for (String name : levelAttrs.getMetadataAttributes())
+					attrs.add(label + ":collection:" + name);
 			}
+		}
 
-		//hierarchy.put(("datafile"), "Data file");
+		if (dto != null && dto.getDataObjectMetadataAttributes() != null) {
+			for (HpcMetadataLevelAttributes levelAttrs : dto.getDataObjectMetadataAttributes()) {
+				String label = levelAttrs.getLevelLabel();
+				if (label == null)
+					label = "Data file";
+
+				hierarchy.put(label, label);
+				dataHierarchy.getDataobjectAttrsSet().addAll(levelAttrs.getMetadataAttributes());
+				for (String name : levelAttrs.getMetadataAttributes())
+					attrs.add(label + ":datafile:" + name);
+			}
+		}
+
+		// hierarchy.put(("datafile"), "Data file");
 		dataHierarchy.setLevels(hierarchy);
 		dataHierarchy.setAllAttributes(attrs);
 		model.addAttribute("hierarchy", dataHierarchy);
@@ -440,7 +431,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 
 	private void populateHierarchy(HttpSession session, Model model, String authToken, HpcUserDTO user) {
 		try {
-			if(session.getAttribute("hierarchies") == null)
+			if (session.getAttribute("hierarchies") == null)
 				session.setAttribute("hierarchies", getHierarchy(authToken, user));
 			model.addAttribute("doc", user.getNciAccount().getDoc());
 		} catch (Exception e) {
@@ -449,8 +440,6 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 	}
 
 	private Map<String, String> getHierarchy(String authToken, HpcUserDTO user) {
-		long start = System.currentTimeMillis();
-
 		Map<String, String> hierarchiesMap = new HashMap<String, String>();
 		try {
 			HpcDataManagementModelDTO docDTO = HpcClientUtil.getDOCModel(authToken, modelServiceURL,
@@ -460,15 +449,12 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			List<String> hierarchies = new ArrayList<String>();
 			getHierarchies(hierarchy, hierarchies);
 
-			
 			int count = 1;
 			for (String name : hierarchies)
 				hierarchiesMap.put(name, ("" + count++));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		long stop = System.currentTimeMillis();
-		System.out.println("getHierarchy "+(stop-start));
 		return hierarchiesMap;
 	}
 

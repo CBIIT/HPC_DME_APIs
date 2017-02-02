@@ -1,7 +1,7 @@
 package gov.nih.nci.hpc.web.model;
 
 public class HpcSearchResult {
-	
+
 	private String path;
 	private String download;
 

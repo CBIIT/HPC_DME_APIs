@@ -8,22 +8,22 @@
  * See https://ncisvn.nci.nih.gov/svn/HPC_Data_Management/branches/hpc-prototype-dev/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.web.controller;
+
 /**
  * <p>
  * HPC web interface http Request Response
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcResponse.java 
+ * @version $Id: HpcResponse.java
  */
 
 public class HpcResponse {
 
 	private String code;
 	private String message;
-	
-	public HpcResponse(String code, String message)
-	{
+
+	public HpcResponse(String code, String message) {
 		this.code = code;
 		this.message = message;
 	}
@@ -43,5 +43,5 @@ public class HpcResponse {
 	public void setMessage(String message) {
 		this.message = message;
 	}
-	
+
 }

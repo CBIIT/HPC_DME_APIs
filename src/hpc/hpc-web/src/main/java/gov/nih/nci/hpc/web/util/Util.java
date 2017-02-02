@@ -1,11 +1,7 @@
 package gov.nih.nci.hpc.web.util;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import org.springframework.ui.Model;
 
 public class Util {
 	public static Map<String, String> getPIs() {
@@ -46,5 +42,5 @@ public class Util {
 		attrs.put("UNKNOWN", "UNKNOWN");
 		return attrs;
 	}
-	
+
 }

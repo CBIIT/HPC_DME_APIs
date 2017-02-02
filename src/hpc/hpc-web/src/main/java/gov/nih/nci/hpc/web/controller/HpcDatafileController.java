@@ -10,7 +10,6 @@
 package gov.nih.nci.hpc.web.controller;
 
 import java.io.InputStream;
-import java.util.List;
 
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response;
@@ -34,8 +33,6 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
@@ -57,8 +54,7 @@ public class HpcDatafileController extends AbstractHpcController {
 	private String serviceURL;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(String path, Model model, 
-			HttpSession session) {
+	public String home(String path, Model model, HttpSession session) {
 
 		try {
 			if (path == null)
@@ -72,15 +68,14 @@ public class HpcDatafileController extends AbstractHpcController {
 			if (restResponse.getStatus() == 200) {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-				  new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-				  new JacksonAnnotationIntrospector()
-				);
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
 				mapper.setAnnotationIntrospector(intr);
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-				
+
 				MappingJsonFactory factory = new MappingJsonFactory(mapper);
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-				
+
 				HpcDataObjectListDTO dataObjects = parser.readValueAs(HpcDataObjectListDTO.class);
 				HpcDataObjectDTO dataObject = dataObjects.getDataObjects().get(0);
 				removeMetaAttribute("metadata_origin", dataObject);
@@ -99,26 +94,21 @@ public class HpcDatafileController extends AbstractHpcController {
 
 		return "datafile";
 	}
-	
-	private void removeMetaAttribute(String attrName, HpcDataObjectDTO dataObject)
-	{
-		if(dataObject.getMetadataEntries().getSelfMetadataEntries() != null && !dataObject.getMetadataEntries().getSelfMetadataEntries().isEmpty())
-		{
-			for(HpcMetadataEntry entry : dataObject.getMetadataEntries().getSelfMetadataEntries())
-			{
-				if(entry.getAttribute().equals(attrName))
-				{
+
+	private void removeMetaAttribute(String attrName, HpcDataObjectDTO dataObject) {
+		if (dataObject.getMetadataEntries().getSelfMetadataEntries() != null
+				&& !dataObject.getMetadataEntries().getSelfMetadataEntries().isEmpty()) {
+			for (HpcMetadataEntry entry : dataObject.getMetadataEntries().getSelfMetadataEntries()) {
+				if (entry.getAttribute().equals(attrName)) {
 					dataObject.getMetadataEntries().getSelfMetadataEntries().remove(entry);
 					break;
 				}
 			}
 		}
-		if(dataObject.getMetadataEntries().getParentMetadataEntries() != null && !dataObject.getMetadataEntries().getParentMetadataEntries().isEmpty())
-		{
-			for(HpcMetadataEntry entry : dataObject.getMetadataEntries().getParentMetadataEntries())
-			{
-				if(entry.getAttribute().equals(attrName))
-				{
+		if (dataObject.getMetadataEntries().getParentMetadataEntries() != null
+				&& !dataObject.getMetadataEntries().getParentMetadataEntries().isEmpty()) {
+			for (HpcMetadataEntry entry : dataObject.getMetadataEntries().getParentMetadataEntries()) {
+				if (entry.getAttribute().equals(attrName)) {
 					dataObject.getMetadataEntries().getParentMetadataEntries().remove(entry);
 					break;
 				}

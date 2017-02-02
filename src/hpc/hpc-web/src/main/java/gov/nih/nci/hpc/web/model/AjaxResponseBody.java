@@ -25,5 +25,5 @@ public class AjaxResponseBody {
 	public void setCode(String code) {
 		this.code = code;
 	}
-	
+
 }

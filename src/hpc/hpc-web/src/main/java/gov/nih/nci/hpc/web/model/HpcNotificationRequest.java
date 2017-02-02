@@ -9,6 +9,6 @@ public class HpcNotificationRequest {
 
 	public void setEventType(String[] eventType) {
 		this.eventType = eventType;
-	}	
+	}
 
 }
