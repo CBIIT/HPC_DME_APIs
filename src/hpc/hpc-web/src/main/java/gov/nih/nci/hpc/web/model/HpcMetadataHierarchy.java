@@ -13,10 +13,9 @@ public class HpcMetadataHierarchy {
 	private List<String> dataobjectAttrs;
 	private TreeSet<String> collectionAttrsSet;
 	private TreeSet<String> dataobjectAttrsSet;
-	
-	
-	public TreeSet<String> getCollectionAttrsSet() { 
-		if(collectionAttrsSet == null)
+
+	public TreeSet<String> getCollectionAttrsSet() {
+		if (collectionAttrsSet == null)
 			collectionAttrsSet = new TreeSet<String>();
 		return collectionAttrsSet;
 	}
@@ -26,7 +25,7 @@ public class HpcMetadataHierarchy {
 	}
 
 	public TreeSet<String> getDataobjectAttrsSet() {
-		if(dataobjectAttrsSet == null)
+		if (dataobjectAttrsSet == null)
 			dataobjectAttrsSet = new TreeSet<String>();
 		return dataobjectAttrsSet;
 	}
@@ -36,7 +35,7 @@ public class HpcMetadataHierarchy {
 	}
 
 	public List<String> getCollectionAttrs() {
-		if(collectionAttrs == null)
+		if (collectionAttrs == null)
 			collectionAttrs = new ArrayList<String>();
 		return collectionAttrs;
 	}
@@ -46,7 +45,7 @@ public class HpcMetadataHierarchy {
 	}
 
 	public List<String> getDataobjectAttrs() {
-		if(dataobjectAttrs == null)
+		if (dataobjectAttrs == null)
 			dataobjectAttrs = new ArrayList<String>();
 		return dataobjectAttrs;
 	}
@@ -70,12 +69,11 @@ public class HpcMetadataHierarchy {
 	public void setLevels(Map<String, String> levels) {
 		this.levels = levels;
 	}
-	
-	public void addLevel(String level, String name)
-	{
-		if(levels == null)
+
+	public void addLevel(String level, String name) {
+		if (levels == null)
 			levels = new HashMap<String, String>();
 		levels.put(level, name);
 	}
-	
+
 }

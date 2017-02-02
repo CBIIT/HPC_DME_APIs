@@ -45,7 +45,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryDTO;
-import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcCollectionSearchResultDetailed;
 import gov.nih.nci.hpc.web.model.HpcDatafileSearchResultDetailed;
 import gov.nih.nci.hpc.web.model.HpcSearch;
@@ -83,28 +82,30 @@ public class HpcSearchController extends AbstractHpcController {
 	 * Action for Datset registration page
 	 */
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(@RequestBody(required = false) String body,  @RequestParam String queryName, Model model, BindingResult bindingResult,
-			HttpSession session, HttpServletRequest request) {
+	public String home(@RequestBody(required = false) String body, @RequestParam String queryName, Model model,
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		HpcNamedCompoundMetadataQueryDTO query = null;
 		try {
 			String authToken = (String) session.getAttribute("hpcUserToken");
 
 			query = HpcClientUtil.getQuery(authToken, queryURL, queryName, sslCertPath, sslCertPassword);
 			String serviceURL = collectionServiceURL;
-			
+
 			String requestURL;
-			if(query != null && query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.COLLECTION))
-				requestURL = compoundCollectionSearchServiceURL+ "/"+queryName;
-			else if(query != null && query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.DATA_OBJECT))
-				requestURL = compoundDataObjectSearchServiceURL+ "/"+queryName;
+			if (query != null && query.getNamedCompoundQuery().getCompoundQueryType()
+					.equals(HpcCompoundMetadataQueryType.COLLECTION))
+				requestURL = compoundCollectionSearchServiceURL + "/" + queryName;
+			else if (query != null && query.getNamedCompoundQuery().getCompoundQueryType()
+					.equals(HpcCompoundMetadataQueryType.DATA_OBJECT))
+				requestURL = compoundDataObjectSearchServiceURL + "/" + queryName;
 			else
 				return "dashboard";
-			
+
 			session.setAttribute("namedCompoundQuery", query.getNamedCompoundQuery());
-			
-			if(query.getNamedCompoundQuery().getDetailedResponse())
+
+			if (query.getNamedCompoundQuery().getDetailedResponse())
 				requestURL = requestURL + "?detailedResponse=true&totalCount=false";
-			
+
 			WebClient client = HpcClientUtil.getWebClient(requestURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
 
@@ -146,16 +147,20 @@ public class HpcSearchController extends AbstractHpcController {
 			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
 			return "dashboard";
 		}
-		
-		if(query == null)
+
+		if (query == null)
 			return "dashboard";
-		else if(query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.COLLECTION) && query.getNamedCompoundQuery().getDetailedResponse())
+		else if (query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.COLLECTION)
+				&& query.getNamedCompoundQuery().getDetailedResponse())
 			return "collectionsearchresultdetail";
-		else if(query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.COLLECTION) && !query.getNamedCompoundQuery().getDetailedResponse())
+		else if (query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.COLLECTION)
+				&& !query.getNamedCompoundQuery().getDetailedResponse())
 			return "collectionsearchresult";
-		else if(query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.DATA_OBJECT) && query.getNamedCompoundQuery().getDetailedResponse())
+		else if (query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.DATA_OBJECT)
+				&& query.getNamedCompoundQuery().getDetailedResponse())
 			return "dataobjectsearchresultdetail";
-		else if(query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.DATA_OBJECT) && !query.getNamedCompoundQuery().getDetailedResponse())
+		else if (query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.DATA_OBJECT)
+				&& !query.getNamedCompoundQuery().getDetailedResponse())
 			return "dataobjectsearchresult";
 		else
 			return "dashboard";
@@ -174,7 +179,7 @@ public class HpcSearchController extends AbstractHpcController {
 		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 		HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
-		
+
 		if (!search.isDetailed()) {
 			List<String> searchResults = collections.getCollectionPaths();
 			List<HpcSearchResult> returnResults = new ArrayList<HpcSearchResult>();
@@ -244,7 +249,6 @@ public class HpcSearchController extends AbstractHpcController {
 		}
 	}
 
-
 	private String getAttributeValue(String attrName, HpcMetadataEntries entries) {
 		if (entries == null)
 			return null;
@@ -261,7 +265,5 @@ public class HpcSearchController extends AbstractHpcController {
 		}
 		return null;
 	}
-
-
 
 }

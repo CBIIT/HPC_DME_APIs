@@ -30,15 +30,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
-import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
-import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
-import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcNotificationReceipt;
-import gov.nih.nci.hpc.web.model.HpcQuery;
 import gov.nih.nci.hpc.web.model.HpcSaveSearch;
-import gov.nih.nci.hpc.web.model.HpcSavedQueries;
 import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
@@ -61,17 +56,16 @@ public class HpcNotificationsListController extends AbstractHpcController {
 	@JsonView(Views.Public.class)
 	@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public List<HpcNotificationReceipt>  get(@Valid @ModelAttribute("hpcSaveSearch") HpcSaveSearch search, Model model, BindingResult bindingResult,
-			HttpSession session, HttpServletRequest request) {
+	public List<HpcNotificationReceipt> get(@Valid @ModelAttribute("hpcSaveSearch") HpcSaveSearch search, Model model,
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		List<HpcNotificationReceipt> result = new ArrayList<HpcNotificationReceipt>();
 		try {
-			HpcNotificationDeliveryReceiptListDTO notifications = 
-					HpcClientUtil.getNotificationReceipts(authToken, queryServiceURL, sslCertPath, sslCertPassword);
-			if(notifications != null && notifications.getNotificationDeliveryReceipts() != null && notifications.getNotificationDeliveryReceipts().size() > 0)
-			{
-				for(HpcNotificationDeliveryReceiptDTO receipt : notifications.getNotificationDeliveryReceipts())
-				{
+			HpcNotificationDeliveryReceiptListDTO notifications = HpcClientUtil.getNotificationReceipts(authToken,
+					queryServiceURL, sslCertPath, sslCertPassword);
+			if (notifications != null && notifications.getNotificationDeliveryReceipts() != null
+					&& notifications.getNotificationDeliveryReceipts().size() > 0) {
+				for (HpcNotificationDeliveryReceiptDTO receipt : notifications.getNotificationDeliveryReceipts()) {
 					HpcNotificationReceipt notification = new HpcNotificationReceipt();
 					notification.setEventId(new Integer(receipt.getEventId()).toString());
 					notification.setEventType(receipt.getEventType().name());
@@ -85,7 +79,7 @@ public class HpcNotificationsListController extends AbstractHpcController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return result;
 	}
 }

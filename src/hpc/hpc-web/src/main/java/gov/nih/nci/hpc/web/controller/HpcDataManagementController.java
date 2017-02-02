@@ -9,7 +9,6 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,11 +19,11 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 
 /**
  * <p>
- * HPC Data management Web Application root Controller 
+ * HPC Data management Web Application root Controller
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDataManagementController.java 
+ * @version $Id: HpcDataManagementController.java
  */
 
 @Controller
@@ -32,10 +31,10 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 @RequestMapping("/")
 public class HpcDataManagementController extends AbstractHpcController {
 
-  @RequestMapping(method = RequestMethod.GET)
-  public String index(Model model){
-	  HpcLogin hpcLogin = new HpcLogin();
-	  model.addAttribute("hpcLogin", hpcLogin);
-      return "index";
-  }
+	@RequestMapping(method = RequestMethod.GET)
+	public String index(Model model) {
+		HpcLogin hpcLogin = new HpcLogin();
+		model.addAttribute("hpcLogin", hpcLogin);
+		return "index";
+	}
 }
