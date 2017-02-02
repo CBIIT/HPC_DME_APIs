@@ -153,7 +153,7 @@
 			}
          ]
         },
- {  
+ 		{  
          "eventType" : "USAGE_SUMMARY_BY_WEEKLY_REPORT",
          "subjectFormat" : "HPC DME Summary by weekly report: [%1$s]",
          "subjectArguments" : [
@@ -254,6 +254,22 @@
              "index" : "17"
 			}
          ]
-        }        
+        },
+        {  
+         "eventType" : "COLLECTION_UPDATED",
+         "subjectFormat" : "HPC collection updated",
+         "subjectArguments" : [],
+         "textFormat" : "Collection %1$s was updated.\n %2$s.",
+         "textArguments" : [
+         	{  
+             "payloadEntryAttribute" : "COLLECTION_PATH",
+             "index" : "0"
+			},
+			{  
+             "payloadEntryAttribute" : "UPDATE_DESCRIPTION",
+             "index" : "1"
+			}
+         ]
+        },    
     ]
 }
