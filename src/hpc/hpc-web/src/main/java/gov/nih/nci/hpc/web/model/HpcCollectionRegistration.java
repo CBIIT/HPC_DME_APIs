@@ -48,8 +48,7 @@ public class HpcCollectionRegistration {
 		return principalInvestigatorNciUserId;
 	}
 
-	public void setPrincipalInvestigatorNciUserId(
-			String principalInvestigatorNciUserId) {
+	public void setPrincipalInvestigatorNciUserId(String principalInvestigatorNciUserId) {
 		this.principalInvestigatorNciUserId = principalInvestigatorNciUserId;
 	}
 

@@ -9,9 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,23 +30,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
-import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.web.model.HpcCollectionSearchResultDetailed;
-import gov.nih.nci.hpc.web.model.HpcDatafileSearchResultDetailed;
-import gov.nih.nci.hpc.web.model.HpcSearch;
-import gov.nih.nci.hpc.web.model.HpcSearchResult;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
@@ -71,26 +57,25 @@ public class HpcEventController extends AbstractHpcController {
 	 * Action for Datset registration page
 	 */
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(@RequestBody(required = false) String body,  @RequestParam String id, Model model, BindingResult bindingResult,
-			HttpSession session, HttpServletRequest request) {
+	public String home(@RequestBody(required = false) String body, @RequestParam String id, Model model,
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		try {
 			String authToken = (String) session.getAttribute("hpcUserToken");
 
-			String serviceURL = receiptServiceURL + "?eventId="+id;
+			String serviceURL = receiptServiceURL + "?eventId=" + id;
 
 			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
-			
-			
+
 			Response restResponse = client.invoke("GET", serviceURL);
 			if (restResponse.getStatus() == 200) {
 				MappingJsonFactory factory = new MappingJsonFactory();
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-				HpcNotificationDeliveryReceiptListDTO receiptsDTO = parser.readValueAs(HpcNotificationDeliveryReceiptListDTO.class);
-				if(receiptsDTO != null)
-				{
+				HpcNotificationDeliveryReceiptListDTO receiptsDTO = parser
+						.readValueAs(HpcNotificationDeliveryReceiptListDTO.class);
+				if (receiptsDTO != null) {
 					List<HpcNotificationDeliveryReceiptDTO> receipts = receiptsDTO.getNotificationDeliveryReceipts();
-					if(receipts != null && receipts.size() > 0)
+					if (receipts != null && receipts.size() > 0)
 						model.addAttribute("receipt", receipts.get(0));
 				}
 			} else {
@@ -125,7 +110,7 @@ public class HpcEventController extends AbstractHpcController {
 			model.addAttribute("error", "Failed to search projects due to: " + e.getMessage());
 			return "dashboard";
 		}
-		
+
 		return "receiptdetails";
 	}
 }

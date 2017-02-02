@@ -154,5 +154,5 @@ public class HpcDatafileSearch {
 	public void setFromCreatedDate(String fromCreatedDate) {
 		this.fromCreatedDate = fromCreatedDate;
 	}
-	
+
 }

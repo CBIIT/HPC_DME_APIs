@@ -1,7 +1,7 @@
 package gov.nih.nci.hpc.web.model;
 
 public class HpcCollectionSearchResultDetailed {
-	
+
 	private String path;
 	private String uuid;
 	private String registeredBy;

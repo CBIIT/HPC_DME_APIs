@@ -54,7 +54,6 @@ import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcNotification;
 import gov.nih.nci.hpc.web.model.HpcNotificationRequest;
@@ -82,11 +81,8 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
-		long start = System.currentTimeMillis();
-
 		String authToken = (String) session.getAttribute("hpcUserToken");
-		String userPasswdToken = (String) session.getAttribute("userpasstoken");
-		if (userPasswdToken == null) {
+		if (authToken == null) {
 			return "redirect:/";
 		}
 
@@ -99,12 +95,10 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 			return "redirect:/";
 		}
 
-		populateNotifications(model, userPasswdToken, user, session);
+		populateNotifications(model, authToken, user, session);
 		HpcNotificationRequest notificationRequest = new HpcNotificationRequest();
 		model.addAttribute("notificationRequest", notificationRequest);
-		long stop = System.currentTimeMillis();
-		System.out.println("subscribe "+ (stop-start));
-		
+
 		return "subscribenotifications";
 	}
 
@@ -128,17 +122,16 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-				  new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-				  new JacksonAnnotationIntrospector()
-				);
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
 				mapper.setAnnotationIntrospector(intr);
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-				
+
 				MappingJsonFactory factory = new MappingJsonFactory(mapper);
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-				
+
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				model.addAttribute("updateStatus", "Failed to save criteria! Reason: "+exception.getMessage());
+				model.addAttribute("updateStatus", "Failed to save criteria! Reason: " + exception.getMessage());
 			}
 		} catch (HttpStatusCodeException e) {
 			model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
@@ -151,8 +144,7 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 			e.printStackTrace();
 		} finally {
 			String authToken = (String) session.getAttribute("hpcUserToken");
-			String userPasswdToken = (String) session.getAttribute("userpasstoken");
-			if (userPasswdToken == null) {
+			if (authToken == null) {
 				return "redirect:/";
 			}
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
@@ -164,7 +156,7 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 				return "redirect:/";
 			}
 
-			populateNotifications(model, userPasswdToken, user, session);
+			populateNotifications(model, authToken, user, session);
 			model.addAttribute("notificationRequest", notificationRequest);
 		}
 
