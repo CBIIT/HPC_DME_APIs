@@ -371,7 +371,9 @@ public class HpcEventServiceImpl implements HpcEventService
 				                                     updatePayloadValue));
 		
 		// Get the users subscribed for this event.
+		logger.error("ERAN: BEFORE QUERY");
 		List<String> userIds = notificationDAO.getSubscribedUsers(HpcEventType.COLLECTION_UPDATED, event.getPayloadEntries());
+		logger.error("ERAN: AFTER QUERY: " + userIds);
 		if(userIds != null) {
 		   // Exclude the invoker. 
 		   //userIds.remove(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
