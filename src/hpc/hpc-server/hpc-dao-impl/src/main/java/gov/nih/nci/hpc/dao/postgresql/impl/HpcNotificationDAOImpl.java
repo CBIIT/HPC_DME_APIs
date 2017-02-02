@@ -26,8 +26,6 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -86,7 +84,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		    "select \"USER_ID\" from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"EVENT_TYPE\" = ?";
 	
 	private static final String GET_SUBSCRIBED_USERS_WITH_TRIGGER_SQL = 
-			"select \"USER_ID\" from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" subscription " +
+			"select unique \"USER_ID\" from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" subscription " +
 	        "join public.\"HPC_NOTIFICATION_TRIGGER\" trigger " +
 			"on subscription.\"ID\" = trigger.\"NOTIFICATION_SUBSCRIPTION_ID\" "+
 			"where subscription.\"EVENT_TYPE\" = ? and trigger.\"NOTIFICATION_TRIGGER\" <@ ?::text[]";
@@ -107,11 +105,6 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 
 	private static final String GET_DELIVERY_RECEIPTS_COUNT_SQL = 
 		    "select count(*) from public.\"HPC_NOTIFICATION_DELIVERY_RECEIPT\" where \"USER_ID\" = ? ";
-	
-    // The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -273,9 +266,6 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
     public List<String> getSubscribedUsers(HpcEventType eventType, List<HpcEventPayloadEntry> eventPayloadEntries) 
                                           throws HpcException
     {
-		logger.error("ERAN: " + eventType);
-		logger.error("ERAN: " + eventPayloadEntries);
-		logger.error("ERAN: " + payloadEntriesToSQLTextArray(eventPayloadEntries));
 		try {
 		     return jdbcTemplate.query(GET_SUBSCRIBED_USERS_WITH_TRIGGER_SQL, userIdRowMapper,
 		    		                   eventType.value(), payloadEntriesToSQLTextArray(eventPayloadEntries));
