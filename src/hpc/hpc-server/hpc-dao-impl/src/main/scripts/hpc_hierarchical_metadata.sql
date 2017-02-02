@@ -53,7 +53,7 @@ COMMENT ON COLUMN r_data_hierarchy_metamap.level IS
 CREATE MATERIALIZED VIEW r_data_hierarchy_meta_main AS
 SELECT data_hierarchy_metamap.object_id, data_hierarchy_metamap.object_path, data_hierarchy_metamap.coll_id, 
        data_hierarchy_metamap.meta_id, data_hierarchy_metamap.level, 
-       case when(data_hierarchy_metamap.level = 1) then "DataObject" else coll_type_metadata.meta_attr_value end as level_label,
+       case when(data_hierarchy_metamap.level = 1) then 'DataObject' else coll_type_metadata.meta_attr_value end as level_label,
        meta_main.meta_attr_name, meta_main.meta_attr_value
 FROM r_data_hierarchy_metamap data_hierarchy_metamap left join r_meta_main meta_main using (meta_id) 
      left outer join (r_objt_metamap metamap join r_meta_main coll_type_metadata 
