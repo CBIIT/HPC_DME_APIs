@@ -116,6 +116,7 @@
 		<entry key="http://hpc.nci.nih.gov/dto/error" value="gov.nih.nci.hpc.dto.error" />
 		<entry key="http://hpc.nci.nih.gov/dto/security" value="gov.nih.nci.hpc.dto.security" />
 		<entry key="http://hpc.nci.nih.gov/dto/datamanagement" value="gov.nih.nci.hpc.dto.datamanagement" />
+		<entry key="http://hpc.nci.nih.gov/dto/datasearch" value="gov.nih.nci.hpc.dto.datasearch" />
 		<entry key="http://hpc.nci.nih.gov/dto/notification" value="gov.nih.nci.hpc.dto.notification" />
 		<entry key="http://hpc.nci.nih.gov/dto/report" value="gov.nih.nci.hpc.dto.report" />
 		<entry key="http://hpc.nci.nih.gov/domain/error" value="gov.nih.nci.hpc.domain.error" />
