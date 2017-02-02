@@ -9,29 +9,16 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
-import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
-import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.web.model.HpcLogin;
-import gov.nih.nci.hpc.web.util.HpcClientUtil;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.bind.DatatypeConverter;
 
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -42,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
@@ -50,7 +36,9 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
-import test.gov.nih.nci.hpc.web.ClientResponseLoggingFilter;
+import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.model.HpcLogin;
+import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
@@ -80,7 +68,7 @@ public class HpcLoginController extends AbstractHpcController {
 		model.addAttribute("hpcLogin", hpcLogin);
 		model.addAttribute("queryURL", queryURL);
 		model.addAttribute("collectionURL", collectionURL);
-	
+
 		return "index";
 	}
 
@@ -94,11 +82,10 @@ public class HpcLoginController extends AbstractHpcController {
 			RestTemplate restTemplate = HpcClientUtil.getRestTemplate(sslCertPath, sslCertPassword);
 			String authToken = HpcClientUtil.getAuthenticationToken(hpcLogin.getUserId(), hpcLogin.getPasswd(),
 					authenticateURL);
-			if (authToken != null){
+			if (authToken != null) {
 				session.setAttribute("hpcUserToken", authToken);
 				HpcUserDTO user = getUser(hpcLogin.getUserId(), authToken);
-				if(user == null)
-				{
+				if (user == null) {
 					model.addAttribute("loginStatus", false);
 					model.addAttribute("loginOutput", "Invalid login");
 					ObjectError error = new ObjectError("hpcLogin", "UserId is not found!");
@@ -107,10 +94,11 @@ public class HpcLoginController extends AbstractHpcController {
 					return "index";
 				}
 				session.setAttribute("hpcUser", user);
-//				String token = DatatypeConverter.printBase64Binary((hpcLogin.getUserId() + ":" + hpcLogin.getPasswd()).getBytes());
-//				session.setAttribute("userpasstoken", token);
-			}
-			else {
+				// String token =
+				// DatatypeConverter.printBase64Binary((hpcLogin.getUserId() +
+				// ":" + hpcLogin.getPasswd()).getBytes());
+				// session.setAttribute("userpasstoken", token);
+			} else {
 				model.addAttribute("loginStatus", false);
 				model.addAttribute("loginOutput", "Invalid login");
 				ObjectError error = new ObjectError("hpcLogin", "UserId is not found!");
@@ -129,23 +117,19 @@ public class HpcLoginController extends AbstractHpcController {
 		}
 		model.addAttribute("hpcLogin", hpcLogin);
 		model.addAttribute("queryURL", queryURL);
-		
+
 		return "dashboard";
 	}
-	
-	private HpcUserDTO getUser(String userId, String authToken) throws IOException
-	{
-		WebClient client = HpcClientUtil.getWebClient(serviceUserURL+"/"+userId, sslCertPath, sslCertPassword);
+
+	private HpcUserDTO getUser(String userId, String authToken) throws IOException {
+		WebClient client = HpcClientUtil.getWebClient(serviceUserURL + "/" + userId, sslCertPath, sslCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
 
 		Response restResponse = client.invoke("GET", null);
-		if(restResponse.getStatus() == 200)
-		{
+		if (restResponse.getStatus() == 200) {
 			ObjectMapper mapper = new ObjectMapper();
 			AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-			  new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-			  new JacksonAnnotationIntrospector()
-			);
+					new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()), new JacksonAnnotationIntrospector());
 			mapper.setAnnotationIntrospector(intr);
 			MappingJsonFactory factory = new MappingJsonFactory(mapper);
 			JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());

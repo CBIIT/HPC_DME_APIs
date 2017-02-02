@@ -55,11 +55,11 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
+import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
+import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.web.HpcWebException;
-import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
-import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 
 public class HpcClientUtil {
 
@@ -148,10 +148,10 @@ public class HpcClientUtil {
 		}
 	}
 
-	public static HpcNamedCompoundMetadataQueryDTO getQuery(String token, String hpcQueryURL, String queryName, String hpcCertPath,
-			String hpcCertPassword) {
+	public static HpcNamedCompoundMetadataQueryDTO getQuery(String token, String hpcQueryURL, String queryName,
+			String hpcCertPath, String hpcCertPassword) {
 
-		String serviceURL = hpcQueryURL+"/"+queryName;
+		String serviceURL = hpcQueryURL + "/" + queryName;
 		WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + token);
 
@@ -193,7 +193,7 @@ public class HpcClientUtil {
 		JsonParser parser;
 		try {
 			parser = factory.createParser((InputStream) restResponse.getEntity());
-			
+
 		} catch (IllegalStateException | IOException e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to get saved queries due to: " + e.getMessage());

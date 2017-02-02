@@ -9,7 +9,6 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 
 import org.springframework.ui.Model;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -27,7 +26,7 @@ import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.model.HpcSearchResult;
 
 public class HpcSearchUtil {
-	
+
 	public static void processResponseResults(HpcSearch search, Response restResponse, Model model)
 			throws JsonParseException, IOException {
 		if (search.getSearchType().equalsIgnoreCase("collection"))
@@ -109,7 +108,7 @@ public class HpcSearchUtil {
 			model.addAttribute("searchType", "datafile");
 		}
 	}
-	
+
 	private static String getAttributeValue(String attrName, HpcMetadataEntries entries) {
 		if (entries == null)
 			return null;
@@ -127,5 +126,4 @@ public class HpcSearchUtil {
 		return null;
 	}
 
-	
 }

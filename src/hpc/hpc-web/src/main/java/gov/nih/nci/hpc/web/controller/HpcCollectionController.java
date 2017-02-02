@@ -53,8 +53,7 @@ public class HpcCollectionController extends AbstractHpcController {
 	private String serviceURL;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(String path, Model model, 
-			HttpSession session) {
+	public String home(String path, Model model, HttpSession session) {
 
 		try {
 			if (path == null)
@@ -65,19 +64,19 @@ public class HpcCollectionController extends AbstractHpcController {
 			client.header("Authorization", "Bearer " + authToken);
 
 			Response restResponse = client.invoke("GET", null);
-			//System.out.println("restResponse.getStatus():" +restResponse.getStatus());
+			// System.out.println("restResponse.getStatus():"
+			// +restResponse.getStatus());
 			if (restResponse.getStatus() == 200) {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-				  new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-				  new JacksonAnnotationIntrospector()
-				);
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
 				mapper.setAnnotationIntrospector(intr);
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-				
+
 				MappingJsonFactory factory = new MappingJsonFactory(mapper);
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-				
+
 				HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
 				HpcCollectionDTO collection = collections.getCollections().get(0);
 				model.addAttribute("collection", collection);

@@ -32,7 +32,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 
@@ -45,23 +44,15 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
-import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportEntryDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportRequestDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportsDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcLogin;
-import gov.nih.nci.hpc.web.model.HpcNotificationRequest;
 import gov.nih.nci.hpc.web.model.HpcReportRequest;
-import gov.nih.nci.hpc.web.model.HpcSaveSearch;
-import gov.nih.nci.hpc.web.model.HpcSearchResult;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
@@ -85,13 +76,11 @@ public class HpcReportsController extends AbstractHpcController {
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
-			HttpSession session, HttpServletRequest request) 
-	{
+			HttpSession session, HttpServletRequest request) {
 		return init(model, bindingResult, session, request);
 	}
 
-	private String init(Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request)
-	{
+	private String init(Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		if (authToken == null) {
 			return "redirect:/";
@@ -111,20 +100,20 @@ public class HpcReportsController extends AbstractHpcController {
 	}
 
 	@RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-	public String  generate(@Valid @ModelAttribute("reportRequest") HpcReportRequest reportRequest, Model model, BindingResult bindingResult,
-			HttpSession session, HttpServletRequest request) {
+	public String generate(@Valid @ModelAttribute("reportRequest") HpcReportRequest reportRequest, Model model,
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		try {
 			HpcReportRequestDTO requestDTO = new HpcReportRequestDTO();
 			requestDTO.setType(HpcReportType.fromValue(reportRequest.getReportType()));
-			if(reportRequest.getDoc() != null && !reportRequest.getDoc().equals("-1"))
+			if (reportRequest.getDoc() != null && !reportRequest.getDoc().equals("-1"))
 				requestDTO.getDoc().add(reportRequest.getDoc());
-			if(reportRequest.getUser() != null && !reportRequest.getUser().equals("-1"))
+			if (reportRequest.getUser() != null && !reportRequest.getUser().equals("-1"))
 				requestDTO.getUser().add(reportRequest.getUser());
-			if(reportRequest.getFromDate() != null && !reportRequest.getFromDate().isEmpty())
+			if (reportRequest.getFromDate() != null && !reportRequest.getFromDate().isEmpty())
 				requestDTO.setFromDate(reportRequest.getFromDate());
-			if(reportRequest.getToDate() != null && !reportRequest.getToDate().isEmpty())
+			if (reportRequest.getToDate() != null && !reportRequest.getToDate().isEmpty())
 				requestDTO.setToDate(reportRequest.getToDate());
-			
+
 			String authToken = (String) session.getAttribute("hpcUserToken");
 
 			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
@@ -140,50 +129,44 @@ public class HpcReportsController extends AbstractHpcController {
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-				  new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-				  new JacksonAnnotationIntrospector()
-				);
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
 				mapper.setAnnotationIntrospector(intr);
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-				
+
 				MappingJsonFactory factory = new MappingJsonFactory(mapper);
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-				
+
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				model.addAttribute("message", "Failed to generate report: "+exception.getMessage());
+				model.addAttribute("message", "Failed to generate report: " + exception.getMessage());
 				System.out.println(exception);
 			}
 		} catch (HttpStatusCodeException e) {
-			model.addAttribute("message", "Failed to generate report: "+e.getMessage());
+			model.addAttribute("message", "Failed to generate report: " + e.getMessage());
 		} catch (RestClientException e) {
-			model.addAttribute("message", "Failed to generate report: "+e.getMessage());
+			model.addAttribute("message", "Failed to generate report: " + e.getMessage());
 		} catch (Exception e) {
-			model.addAttribute("message", "Failed to generate report: "+e.getMessage());
-		}
-		finally
-		{
+			model.addAttribute("message", "Failed to generate report: " + e.getMessage());
+		} finally {
 			return init(model, bindingResult, session, request);
 		}
 	}
-	
-	private List<HpcReportDTO> translate(List<HpcReportDTO> reports)
-	{
+
+	private List<HpcReportDTO> translate(List<HpcReportDTO> reports) {
 		List<HpcReportDTO> tReports = new ArrayList<HpcReportDTO>();
-		for(HpcReportDTO dto : reports)
-		{
+		for (HpcReportDTO dto : reports) {
 			List<HpcReportEntryDTO> entries = dto.getReportEntries();
-			for(HpcReportEntryDTO entry : entries)
-			{
-				if(env.getProperty(entry.getAttribute()) != null)
+			for (HpcReportEntryDTO entry : entries) {
+				if (env.getProperty(entry.getAttribute()) != null)
 					entry.setAttribute(env.getProperty(entry.getAttribute()));
 			}
 			tReports.add(dto);
 		}
 		return tReports;
 	}
-	private String getReportName(String type)
-	{
-		if(env.getProperty(type) != null)
+
+	private String getReportName(String type) {
+		if (env.getProperty(type) != null)
 			return env.getProperty(type);
 		else
 			return type;

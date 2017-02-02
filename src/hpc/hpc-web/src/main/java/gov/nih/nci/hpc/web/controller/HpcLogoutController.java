@@ -18,13 +18,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import gov.nih.nci.hpc.web.model.HpcLogin;
+
 /**
  * <p>
  * HPC Web Login controller
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcLoginController.java 
+ * @version $Id: HpcLoginController.java
  */
 
 @Controller
@@ -32,12 +33,12 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 @RequestMapping("/logout")
 public class HpcLogoutController extends AbstractHpcController {
 
-  @RequestMapping(method = RequestMethod.GET)
-  public String home(Model model, HttpSession session){
-	  session.invalidate();
-	  session = null;
-	  HpcLogin hpcLogin = new HpcLogin();
-	  model.addAttribute("hpcLogin", hpcLogin);
-	  return "index";
-  }
+	@RequestMapping(method = RequestMethod.GET)
+	public String home(Model model, HttpSession session) {
+		session.invalidate();
+		session = null;
+		HpcLogin hpcLogin = new HpcLogin();
+		model.addAttribute("hpcLogin", hpcLogin);
+		return "index";
+	}
 }

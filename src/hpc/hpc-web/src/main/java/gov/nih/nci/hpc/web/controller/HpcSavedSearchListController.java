@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,9 +33,8 @@ import com.fasterxml.jackson.annotation.JsonView;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
-import gov.nih.nci.hpc.web.model.HpcQuery;
+import gov.nih.nci.hpc.web.model.HpcNamedQuery;
 import gov.nih.nci.hpc.web.model.HpcSaveSearch;
-import gov.nih.nci.hpc.web.model.HpcSavedQueries;
 import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
@@ -57,26 +57,26 @@ public class HpcSavedSearchListController extends AbstractHpcController {
 	@JsonView(Views.Public.class)
 	@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public List<AjaxResponseBody>  get(@Valid @ModelAttribute("hpcSaveSearch") HpcSaveSearch search, Model model, BindingResult bindingResult,
-			HttpSession session, HttpServletRequest request) {
+	public List<HpcNamedQuery> get(@Valid @ModelAttribute("hpcSaveSearch") HpcSaveSearch search, Model model,
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
-		List<AjaxResponseBody> result = new ArrayList<AjaxResponseBody>();
+		List<HpcNamedQuery> result = new ArrayList<HpcNamedQuery>();
 		try {
-			HpcNamedCompoundMetadataQueryListDTO queries = 
-					HpcClientUtil.getSavedSearches(authToken, queryServiceURL, sslCertPath, sslCertPassword);
-			if(queries == null || queries.getNamedCompoundQueries() == null || queries.getNamedCompoundQueries().size() == 0)
-			{
-				AjaxResponseBody body = new AjaxResponseBody();
-				body.setMessage("No Saved Searches");
-				result.add(body);
-			}
-			else
-			{
-				for(HpcNamedCompoundMetadataQuery query : queries.getNamedCompoundQueries())
-				{
-					AjaxResponseBody body = new AjaxResponseBody();
-					body.setMessage(query.getName());
-					result.add(body);
+			HpcNamedCompoundMetadataQueryListDTO queries = HpcClientUtil.getSavedSearches(authToken, queryServiceURL,
+					sslCertPath, sslCertPassword);
+			if (queries == null || queries.getNamedCompoundQueries() == null
+					|| queries.getNamedCompoundQueries().size() == 0) {
+				HpcNamedQuery namedQuery = new HpcNamedQuery();
+				namedQuery.setSearchName("No Saved Searches");
+				result.add(namedQuery);
+			} else {
+				SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
+				for (HpcNamedCompoundMetadataQuery query : queries.getNamedCompoundQueries()) {
+					HpcNamedQuery namedQuery = new HpcNamedQuery();
+					namedQuery.setSearchName(query.getName());
+					namedQuery.setSearchType(query.getCompoundQueryType().value());
+					namedQuery.setCreatedOn(format.format(query.getCreated().getTime()));
+					result.add(namedQuery);
 				}
 			}
 			return result;

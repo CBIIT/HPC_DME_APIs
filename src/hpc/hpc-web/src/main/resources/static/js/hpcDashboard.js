@@ -22,15 +22,12 @@ app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
     multiSelect: false,
     enableGridMenu: true,
     enableSorting: true,
-    enableColumnResizing: true,    
+    enableColumnResizing: true, 
     columnDefs: [
-      { 
-    	field: "message", 
-    	displayName: "Name",
-        enableCellEdit: false,
-        cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="search?queryName={{COL_FIELD CUSTOM_FILTERS}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>' 
-      }
-    ]
+                 { field: 'searchName', width:300, displayName: 'Search Name', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="search?queryName={{COL_FIELD CUSTOM_FILTERS}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
+                 { field: 'searchType', width:200, displayName : 'Search Type' },
+                 { field: 'createdOn', width:200, displayName : 'Created On'}
+               ],
   };
 
 $scope.notificationsloading = true;
