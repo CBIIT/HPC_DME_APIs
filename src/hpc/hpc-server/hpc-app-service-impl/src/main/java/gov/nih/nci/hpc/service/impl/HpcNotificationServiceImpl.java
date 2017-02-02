@@ -345,8 +345,8 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
 	    	for(HpcEventPayloadEntry payloadEntry : notificationTrigger.getPayloadEntries()) {
 				if(payloadEntry.getAttribute().equals(COLLECTION_PATH_PAYLOAD_ATTRIBUTE)) {
 				   String collectionPath = payloadEntry.getValue();
-				   if(dataManagementProxy.getCollection(dataManagementAuthenticator.getAuthenticatedToken(),
-					                                    collectionPath) == null) {
+				   if(!dataManagementProxy.getPathAttributes(dataManagementAuthenticator.getAuthenticatedToken(),
+					                                         collectionPath).getIsDirectory()) {
 					  throw new HpcException("Collection doesn't exist: " + collectionPath,
 							                 HpcErrorType.INVALID_REQUEST_INPUT); 
 				   }
@@ -355,8 +355,8 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
 				}
 				if(payloadEntry.getAttribute().equals(DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE)) {
 				   String dataObjectPath = payloadEntry.getValue();
-		 		   if(dataManagementProxy.getDataObject(dataManagementAuthenticator.getAuthenticatedToken(),
-		 				                                dataObjectPath) == null) {
+		 		   if(!dataManagementProxy.getPathAttributes(dataManagementAuthenticator.getAuthenticatedToken(),
+		 				                                     dataObjectPath).getIsFile()) {
 		 			  throw new HpcException("Data object doesn't exist: " + dataObjectPath,
 		 					                 HpcErrorType.INVALID_REQUEST_INPUT); 
 		 		   }
