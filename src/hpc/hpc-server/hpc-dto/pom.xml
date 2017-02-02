@@ -129,6 +129,15 @@
 									</extensionArgs>
 								</xsdOption>
 								<xsdOption>
+									<xsd>xjc-build/schema/HpcDataSearch.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.dto.datasearch</packagename>
+									<bindingFile>xjc-build/schema/hpc-dto-datasearch-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:simple</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
+								<xsdOption>
 									<xsd>xjc-build/schema/HpcNotification.xsd</xsd>
 									<packagename>gov.nih.nci.hpc.dto.notification</packagename>
 									<bindingFile>xjc-build/schema/hpc-dto-notification-jaxb-binding.xjb</bindingFile>
