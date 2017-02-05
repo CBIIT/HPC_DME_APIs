@@ -54,7 +54,7 @@ CREATE MATERIALIZED VIEW r_data_hierarchy_meta_main AS
 SELECT data_hierarchy_metamap.object_id, data_hierarchy_metamap.object_path, data_hierarchy_metamap.coll_id, 
        data_hierarchy_metamap.meta_id, data_hierarchy_metamap.level, 
        case when(data_hierarchy_metamap.level = 1) then 'DataObject' else coll_type_metadata.meta_attr_value end as level_label,
-       meta_main.meta_attr_name, meta_main.meta_attr_value
+       meta_main.meta_attr_name, meta_main.meta_attr_value, meta_main.meta_attr_unit
 FROM r_data_hierarchy_metamap data_hierarchy_metamap left join r_meta_main meta_main using (meta_id) 
      left outer join (r_objt_metamap metamap join r_meta_main coll_type_metadata 
                       on metamap.meta_id = coll_type_metadata.meta_id and coll_type_metadata.meta_attr_name = 'collection_type')
@@ -72,7 +72,7 @@ COMMENT ON COLUMN r_data_hierarchy_metamap.object_path IS
 COMMENT ON COLUMN r_data_hierarchy_meta_main.meta_id IS 
                   'Metadata ID: r_meta_main.meta_id';
 COMMENT ON COLUMN r_data_hierarchy_meta_main.coll_id IS 
-                  'Collection (in the hierarchy) ID: r_coll_main.coll_id. Null if the metadata is associated with the data object itself';
+                  'Collection (in the hierarchy) ID: r_coll_main.coll_id. \'DataObject\' if the metadata is associated with the data object itself';
 COMMENT ON COLUMN r_data_hierarchy_meta_main.level IS 
                   'The level of the metadata in the hierarchy, starting with 1 at the data-object level';
 COMMENT ON COLUMN r_data_hierarchy_meta_main.level_label IS 
@@ -81,6 +81,8 @@ COMMENT ON COLUMN r_data_hierarchy_meta_main.meta_attr_name IS
                   'Metadata attribute: r_meta_main.meta_attr_name';
 COMMENT ON COLUMN r_data_hierarchy_meta_main.meta_attr_value IS 
                   'Metadata value: r_meta_main.meta_attr_value';
+COMMENT ON COLUMN r_data_hierarchy_meta_main.meta_attr_unit IS 
+                  'Metadata unit: r_meta_main.meta_attr_unit';
 
 -- Hierarchy collection metamap.
 CREATE MATERIALIZED VIEW r_coll_hierarchy_metamap AS
@@ -110,7 +112,7 @@ COMMENT ON COLUMN r_coll_hierarchy_metamap.level IS
 CREATE MATERIALIZED VIEW r_coll_hierarchy_meta_main AS
 SELECT coll_hierarchy_metamap.object_id, coll_hierarchy_metamap.object_path, coll_hierarchy_metamap.coll_id, 
        coll_hierarchy_metamap.meta_id, coll_hierarchy_metamap.level, coll_type_metadata.meta_attr_value as level_label,
-       meta_main.meta_attr_name, meta_main.meta_attr_value
+       meta_main.meta_attr_name, meta_main.meta_attr_value, meta_main.meta_attr_unit
 FROM r_coll_hierarchy_metamap coll_hierarchy_metamap left join r_meta_main meta_main using (meta_id) 
      left outer join (r_objt_metamap metamap join r_meta_main coll_type_metadata 
                       on metamap.meta_id = coll_type_metadata.meta_id and coll_type_metadata.meta_attr_name = 'collection_type')
@@ -138,6 +140,8 @@ COMMENT ON COLUMN r_coll_hierarchy_meta_main.meta_attr_name IS
                   'Metadata attribute: r_meta_main.meta_attr_name';
 COMMENT ON COLUMN r_coll_hierarchy_meta_main.meta_attr_value IS 
                   'Metadata value: r_meta_main.meta_attr_value';
+COMMENT ON COLUMN r_coll_hierarchy_meta_main.meta_attr_unit IS 
+                  'Metadata unit: r_meta_main.meta_attr_unit';
                   
 -- Hierarchy data meta_attr_name
 CREATE MATERIALIZED VIEW r_data_hierarchy_meta_attr_name AS
