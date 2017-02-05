@@ -402,10 +402,12 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		public HpcMetadataEntry mapRow(ResultSet rs, int rowNum) throws SQLException 
 		{
 			HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
-			Long level = rs.getLong("LEVEL");
-			metadataEntry.setLevel(level != null ? level.intValue() : null);
 			metadataEntry.setAttribute(rs.getString("META_ATTR_NAME"));
 			metadataEntry.setValue(rs.getString("META_ATTR_VALUE"));
+			metadataEntry.setUnit(rs.getString("META_ATTR_UNIT"));
+			
+			Long level = rs.getLong("LEVEL");
+			metadataEntry.setLevel(level != null ? level.intValue() : null);
 			metadataEntry.setLevelLabel(rs.getString("LEVEL_LABEL"));
 			
 			return metadataEntry;
