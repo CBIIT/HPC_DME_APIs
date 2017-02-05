@@ -404,7 +404,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
 			metadataEntry.setAttribute(rs.getString("META_ATTR_NAME"));
 			metadataEntry.setValue(rs.getString("META_ATTR_VALUE"));
-			metadataEntry.setUnit(rs.getString("META_ATTR_UNIT"));
+			String unit = rs.getString("META_ATTR_UNIT");
+			metadataEntry.setUnit(unit != null && !unit.isEmpty() ? unit : null);
 			
 			Long level = rs.getLong("LEVEL");
 			metadataEntry.setLevel(level != null ? level.intValue() : null);
