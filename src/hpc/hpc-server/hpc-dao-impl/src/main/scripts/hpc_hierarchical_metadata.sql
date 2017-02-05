@@ -72,11 +72,11 @@ COMMENT ON COLUMN r_data_hierarchy_metamap.object_path IS
 COMMENT ON COLUMN r_data_hierarchy_meta_main.meta_id IS 
                   'Metadata ID: r_meta_main.meta_id';
 COMMENT ON COLUMN r_data_hierarchy_meta_main.coll_id IS 
-                  'Collection (in the hierarchy) ID: r_coll_main.coll_id. \"DataObject\" if the metadata is associated with the data object itself';
+                  'Collection (in the hierarchy) ID: r_coll_main.coll_id. Null if the metadata is associated with the data object itself';
 COMMENT ON COLUMN r_data_hierarchy_meta_main.level IS 
                   'The level of the metadata in the hierarchy, starting with 1 at the data-object level';
 COMMENT ON COLUMN r_data_hierarchy_meta_main.level_label IS 
-                  'The level label of the metadata in the hierarchy which is the collection_type value at the same level. Null if the metadata is associated with the data object itself';
+                  'The level label of the metadata in the hierarchy which is the collection_type value at the same level. \"DataObject\" if the metadata is associated with the data object itself';
 COMMENT ON COLUMN r_data_hierarchy_meta_main.meta_attr_name IS 
                   'Metadata attribute: r_meta_main.meta_attr_name';
 COMMENT ON COLUMN r_data_hierarchy_meta_main.meta_attr_value IS 
