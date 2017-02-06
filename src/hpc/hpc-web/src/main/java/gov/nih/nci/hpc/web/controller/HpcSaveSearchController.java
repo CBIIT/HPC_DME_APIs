@@ -42,8 +42,8 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
-import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;

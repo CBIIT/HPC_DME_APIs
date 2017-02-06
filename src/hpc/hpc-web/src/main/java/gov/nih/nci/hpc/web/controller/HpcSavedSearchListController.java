@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
-import gov.nih.nci.hpc.dto.datamanagement.HpcNamedCompoundMetadataQueryListDTO;
+import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcNamedQuery;
 import gov.nih.nci.hpc.web.model.HpcSaveSearch;
