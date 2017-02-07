@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.integration.irods.impl;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
@@ -58,6 +59,7 @@ import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.query.AVUQueryElement;
 import org.irods.jargon.core.query.AVUQueryElement.AVUQueryPart;
 import org.irods.jargon.core.query.AVUQueryOperatorEnum;
+import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,6 +113,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     			                            ldapAuthenticated);
     }
     
+    @Override
     public HpcDataManagementAccount getHpcDataManagementAccount(Object irodsAccount) throws HpcException
     {
     	try
@@ -125,6 +128,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	
     }
     
+    @Override
     public Object getProxyManagementAccount(HpcDataManagementAccount irodsAccount) throws HpcException
     {
     	try
@@ -136,7 +140,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		                               HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} 
     }
-    
     
     @Override
     public void disconnect(Object authenticatedToken)
@@ -353,7 +356,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     {
     	try {
              return toHpcCollection(irodsConnection.getCollectionAO(authenticatedToken).
-            		                                findByAbsolutePath(getAbsolutePath(path)));
+            		                                findByAbsolutePath(getAbsolutePath(path)),
+            		                irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken).
+            		                                listDataObjectsAndCollectionsUnderPath(path));
              
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get Collection: " + 
@@ -834,9 +839,11 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
      * Convert iRODS collection to HPC collection domain object.
      *
      * @param irodsCollection The iRODS collection.
+     * @param listingEntries A list of sub-directories and files under the collection.
      * @return A collection.
      */
-    private HpcCollection toHpcCollection(Collection irodsCollection)
+    private HpcCollection toHpcCollection(Collection irodsCollection, 
+    		                              List<CollectionAndDataObjectListingEntry> listingEntries)
     {
     	if(irodsCollection == null) {
     	   return null;
@@ -863,6 +870,16 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	    Calendar modifiedAt = Calendar.getInstance();
 	    modifiedAt.setTime(irodsCollection.getModifiedAt());
 	    hpcCollection.setModifiedAt(modifiedAt);
+	    
+	    if(listingEntries != null) {
+	       for(CollectionAndDataObjectListingEntry listingEntry : listingEntries) {
+	    	   HpcCollectionListingEntry hpcCollectionListingEntry = new HpcCollectionListingEntry();
+	    	   hpcCollectionListingEntry.setId(listingEntry.getId());
+	    	   hpcCollectionListingEntry.setPath(listingEntry.getPathOrName());
+	    	   hpcCollectionListingEntry.setType(listingEntry.getObjectType().toString());
+	    	   hpcCollection.getListingEntries().add(hpcCollectionListingEntry);
+	       }
+	    }
 	    
 	    return hpcCollection;
     }
