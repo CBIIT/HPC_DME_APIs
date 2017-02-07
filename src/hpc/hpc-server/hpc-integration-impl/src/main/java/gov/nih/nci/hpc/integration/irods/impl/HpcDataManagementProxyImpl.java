@@ -358,7 +358,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
              return toHpcCollection(irodsConnection.getCollectionAO(authenticatedToken).
             		                                findByAbsolutePath(getAbsolutePath(path)),
             		                irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken).
-            		                                listDataObjectsAndCollectionsUnderPath(path));
+            		                                listDataObjectsAndCollectionsUnderPath(getAbsolutePath(path)));
              
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get Collection: " + 
