@@ -1,17 +1,16 @@
 package gov.nih.nci.hpc.cli.util;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+
+import javax.xml.bind.DatatypeConverter;
+
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.InterceptingClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-
-import java.io.IOException;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-
-import javax.xml.bind.DatatypeConverter;
 
 public class BasicAuthRestTemplate extends RestTemplate {
 	
