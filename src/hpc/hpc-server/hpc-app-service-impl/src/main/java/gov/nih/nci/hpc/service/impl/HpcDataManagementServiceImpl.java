@@ -137,7 +137,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	                              HpcErrorType.INVALID_REQUEST_INPUT); 
     	}
     	
-    	// Validate the directory path.
+    	// Validate the path is not root
+    	String relativePath = dataManagementProxy.getRelativePath(path);
+    	if(relativePath.equals("/")) {
+    	   throw new HpcException("Invalid path: " + path, 
+	                              HpcErrorType.INVALID_REQUEST_INPUT); 
+    	}
+    	
+    	// Validate the directory path doesn't exist.
     	HpcPathAttributes pathAttributes = 
     	   dataManagementProxy.getPathAttributes(authenticatedToken, path);
     	if(pathAttributes.getExists()) {
@@ -151,10 +158,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	   }
     	}
     	
-    	String relativePath = dataManagementProxy.getRelativePath(path);
-    	if(relativePath.equals("/")) {
-    	   throw new HpcException("Invalid path: " + path, 
-	                              HpcErrorType.INVALID_REQUEST_INPUT); 
+    	//  Validate the parent directory exists.
+    	if(!dataManagementProxy.isParentPathDirectory(authenticatedToken, path)) {
+    		throw new HpcException("Invalid collection path. Directory doesn't exist: " + path, 
+                                   HpcRequestRejectReason.INVALID_DATA_OBJECT_PATH);
     	}
     	
     	// Create the directory.
