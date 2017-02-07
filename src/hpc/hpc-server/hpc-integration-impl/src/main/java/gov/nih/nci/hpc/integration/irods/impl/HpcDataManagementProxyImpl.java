@@ -152,7 +152,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		try {
 			 IRODSFile collectionFile = 
 			      irodsConnection.getIRODSFileFactory(authenticatedToken).instanceIRODSFile(getAbsolutePath(path));
-			 mkdir(collectionFile);
+			 mkdirs(collectionFile);
 			 
 		} catch(JargonException e) {
 		        throw new HpcException("Failed to create a collection directory: " + 
@@ -717,18 +717,18 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     //---------------------------------------------------------------------// 
     
     /**
-     * Create directory. This Jargon API throws runtime exception if the 
+     * Create directories. This Jargon API throws runtime exception if the 
      * path is invalid, so we catch it and convert to HpcException
      *
      * @param irodsFile The iRODS file.
      * @throws HpcException on data management system failure.
      */
-    private void mkdir(IRODSFile irodsFile) throws HpcException
+    private void mkdirs(IRODSFile irodsFile) throws HpcException
     {
-    	boolean directoryCreated = true;
+    	boolean directoriesCreated = true;
     	
     	try {
-    		 directoryCreated = irodsFile.mkdirs();
+    		 directoriesCreated = irodsFile.mkdirs();
     		 
     	} catch(Throwable t) {
     		    throw new HpcException("Failed to create directory: " + 
@@ -736,7 +736,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                        HpcErrorType.INVALID_REQUEST_INPUT , t);
     	}
     	
-    	if(!directoryCreated) {
+    	if(!directoriesCreated) {
     	   throw new HpcException("Failed to create directory (possibly insufficient permission on path): " + 
                                   irodsFile.getPath(),
                                   HpcErrorType.INVALID_REQUEST_INPUT);
