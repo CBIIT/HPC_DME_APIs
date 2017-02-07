@@ -21,6 +21,7 @@ import org.irods.jargon.core.connection.auth.AuthResponse;
 import org.irods.jargon.core.exception.AuthenticationException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.CollectionAO;
+import org.irods.jargon.core.pub.CollectionAndDataObjectListAndSearchAO;
 import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.pub.UserAO;
@@ -177,6 +178,29 @@ public class HpcIRODSConnection
 		} catch(JargonException e) {
 			    throw new HpcException(
 			                 "Failed to get iRODs Data Object Access Object: " + 
+	                         e.getMessage(),
+                             HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		}	
+    }
+    
+    /**
+     * Get iRODS Data Object AO instance.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @return A data object AO.
+     * @throws HpcException on iRODS failure.
+     */
+    public CollectionAndDataObjectListAndSearchAO 
+           getCollectionAndDataObjectListAndSearchAO(Object authenticatedToken) 
+    		                                        throws HpcException
+    {
+    	try {
+			 return irodsFileSystem.getIRODSAccessObjectFactory().getCollectionAndDataObjectListAndSearchAO(
+					                   getIrodsAccount(authenticatedToken));
+			 
+		} catch(JargonException e) {
+			    throw new HpcException(
+			                 "Failed to get iRODs Collection & Data Object Listing Access Object: " + 
 	                         e.getMessage(),
                              HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		}	

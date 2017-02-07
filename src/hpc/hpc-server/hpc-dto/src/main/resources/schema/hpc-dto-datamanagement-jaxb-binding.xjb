@@ -39,6 +39,9 @@
         <jxb:bindings node="//xsd:complexType[@name='HpcCollection']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcCollection"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcCollectionListingEntry']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry"/>
+		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcDataHierarchy']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy"/>
 		</jxb:bindings>
