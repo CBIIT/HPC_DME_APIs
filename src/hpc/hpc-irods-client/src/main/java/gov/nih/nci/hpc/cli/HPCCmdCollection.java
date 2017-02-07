@@ -1,9 +1,16 @@
 package gov.nih.nci.hpc.cli;
 
-import java.io.BufferedInputStream;
+import gov.nih.nci.hpc.cli.domain.HPCCollectionRecord;
+import gov.nih.nci.hpc.cli.util.CsvFileWriter;
+import gov.nih.nci.hpc.cli.util.HpcClientUtil;
+import gov.nih.nci.hpc.cli.util.HpcCmdException;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
+
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -13,14 +20,12 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.ws.rs.core.Response;
 
@@ -32,15 +37,6 @@ import org.springframework.web.client.RestClientException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.google.gson.Gson;
-
-import gov.nih.nci.hpc.cli.domain.HPCCollectionRecord;
-import gov.nih.nci.hpc.cli.util.CsvFileWriter;
-import gov.nih.nci.hpc.cli.util.HpcClientUtil;
-import gov.nih.nci.hpc.cli.util.HpcCmdException;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCompoundMetadataQueryDTO;
 
 @Component
 public class HPCCmdCollection extends HPCCmdClient {
