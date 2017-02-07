@@ -160,7 +160,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	
     	//  Validate the parent directory exists.
     	if(!dataManagementProxy.isParentPathDirectory(authenticatedToken, path)) {
-    		throw new HpcException("Invalid collection path. Directory doesn't exist: " + path, 
+    		throw new HpcException("Invalid collection path. Parent directory doesn't exist: " + path, 
                                    HpcRequestRejectReason.INVALID_DATA_OBJECT_PATH);
     	}
     	
@@ -190,7 +190,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	
     	//  Validate the parent directory exists.
     	if(!dataManagementProxy.isParentPathDirectory(authenticatedToken, path)) {
-    		throw new HpcException("Invalid data object path. Directory doesn't exist: " + path, 
+    		throw new HpcException("Invalid data object path. Parent directory doesn't exist: " + path, 
                                    HpcRequestRejectReason.INVALID_DATA_OBJECT_PATH);
     	}
     	
