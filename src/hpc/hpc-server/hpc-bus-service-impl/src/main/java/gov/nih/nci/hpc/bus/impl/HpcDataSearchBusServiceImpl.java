@@ -334,7 +334,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
 		
 		if(detailedResponse) {
 		   for(String collectionPath : collectionPaths) {
-			   collectionsDTO.getCollections().add(dataManagementBusService.getCollection(collectionPath));
+			   collectionsDTO.getCollections().add(dataManagementBusService.getCollection(collectionPath, false));
     	   }
 		} else { 
 			    collectionsDTO.getCollectionPaths().addAll(collectionPaths);

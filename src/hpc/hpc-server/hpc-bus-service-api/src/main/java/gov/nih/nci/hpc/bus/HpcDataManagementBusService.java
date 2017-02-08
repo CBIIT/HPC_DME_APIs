@@ -52,10 +52,11 @@ public interface HpcDataManagementBusService
      * Get Collection.
      *
      * @param path The collection's path.
+     * @param list An indicator to list sub-collections and data-objects.
      * @return A Collection DTO.
      * @throws HpcException on service failure.
      */
-    public HpcCollectionDTO getCollection(String path) throws HpcException;
+    public HpcCollectionDTO getCollection(String path, Boolean list) throws HpcException;
     
     /**
      * Register a Data object.
