@@ -168,7 +168,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcCollectionDTO getCollection(String path) throws HpcException
+    public HpcCollectionDTO getCollection(String path, Boolean list) throws HpcException
     {
     	logger.info("Invoking getCollection(String): " + path);
     	
@@ -178,7 +178,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	HpcCollection collection = dataManagementService.getCollection(path);
+    	HpcCollection collection = dataManagementService.getCollection(path, list != null ? list : false);
     	if(collection == null) {
       	   return null;
       	}

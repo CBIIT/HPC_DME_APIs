@@ -62,6 +62,8 @@ import org.irods.jargon.core.query.AVUQueryOperatorEnum;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
@@ -83,6 +85,10 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     // The iRODS connection.
 	@Autowired
     private HpcIRODSConnection irodsConnection = null;
+	
+    // The logger instance.
+	private final Logger logger = 
+			             LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -351,14 +357,15 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public HpcCollection getCollection(Object authenticatedToken, String path) 
+    public HpcCollection getCollection(Object authenticatedToken, String path, boolean list) 
     		                          throws HpcException
     {
     	try {
              return toHpcCollection(irodsConnection.getCollectionAO(authenticatedToken).
             		                                findByAbsolutePath(getAbsolutePath(path)),
-            		                irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken).
-            		                                listDataObjectsAndCollectionsUnderPath(getAbsolutePath(path)));
+            		                list ? irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken).
+            		                                          listDataObjectsAndCollectionsUnderPath(getAbsolutePath(path)) :
+            		                       null);
              
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get Collection: " + 
@@ -876,8 +883,13 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	    	   HpcCollectionListingEntry hpcCollectionListingEntry = new HpcCollectionListingEntry();
 	    	   hpcCollectionListingEntry.setId(listingEntry.getId());
 	    	   hpcCollectionListingEntry.setPath(listingEntry.getPathOrName());
-	    	   hpcCollectionListingEntry.setType(listingEntry.getObjectType().toString());
-	    	   hpcCollection.getListingEntries().add(hpcCollectionListingEntry);
+	    	   if(listingEntry.isCollection()) {
+	    	      hpcCollection.getSubCollections().add(hpcCollectionListingEntry);
+	    	   } else if(listingEntry.isDataObject()) {
+	    		         hpcCollection.getDataObjects().add(hpcCollectionListingEntry);
+	    	   } else {
+	    		       logger.error("Unxpected listing entry type: " + listingEntry.getObjectType()); 
+	    	   }
 	       }
 	    }
 	    

@@ -122,7 +122,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response getCollection(String path)
+    public Response getCollection(String path, Boolean list)
     {	
     	long start = System.currentTimeMillis();
     	path = toAbsolutePath(path);
@@ -130,7 +130,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	
     	HpcCollectionListDTO collections = new HpcCollectionListDTO();
 		try {
-			 HpcCollectionDTO collection = dataManagementBusService.getCollection(path);
+			 HpcCollectionDTO collection = dataManagementBusService.getCollection(path, list);
 			 if(collection != null) {
 				collections.getCollections().add(collection);
 			 }

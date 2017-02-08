@@ -25,6 +25,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -62,12 +63,14 @@ public interface HpcDataManagementRestService
      * GET Collection.
      *
      * @param path The collection path.
+     * @param list An indicator to list sub-collections and data-objects.
      * @return The REST service response.
      */
 	@GET
 	@Path("/collection/{path:.*}")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getCollection(@PathParam("path") String path);
+	public Response getCollection(@PathParam("path") String path,
+			                      @QueryParam("list") Boolean list);
 	
     /**
      * PUT Data object registration request.
