@@ -288,11 +288,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public HpcCollection getCollection(String path) throws HpcException
+    public HpcCollection getCollection(String path, boolean list) throws HpcException
     {
     	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
     	if(dataManagementProxy.getPathAttributes(authenticatedToken, path).getIsDirectory()) {
-    	   return dataManagementProxy.getCollection(authenticatedToken, path);
+    	   return dataManagementProxy.getCollection(authenticatedToken, path, list);
     	}
     	
     	return null;

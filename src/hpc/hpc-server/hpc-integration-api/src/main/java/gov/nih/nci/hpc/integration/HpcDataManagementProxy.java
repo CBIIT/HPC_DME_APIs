@@ -189,10 +189,11 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param path The collection's path.
+     * @param list An indicator to list sub-collections and data-objects.
      * @return The Collection.
      * @throws HpcException on data management system failure.
      */
-    public HpcCollection getCollection(Object authenticatedToken, String path) 
+    public HpcCollection getCollection(Object authenticatedToken, String path, boolean list) 
     		                          throws HpcException;
     
     /**
