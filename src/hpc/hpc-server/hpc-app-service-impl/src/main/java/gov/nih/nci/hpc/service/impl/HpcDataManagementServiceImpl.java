@@ -130,15 +130,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public boolean createDirectory(String path) throws HpcException
     {
     	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
-    	
+    	String relativePath = dataManagementProxy.getRelativePath(path);
     	// Validate the path is not a DOC base path.
-    	if(docBasePath.containsValue(dataManagementProxy.getRelativePath(path))) {
+    	if(docBasePath.containsValue(relativePath)) {
     	   throw new HpcException("Invalid collection path: " + path, 
 	                              HpcErrorType.INVALID_REQUEST_INPUT); 
     	}
     	
     	// Validate the path is not root
-    	String relativePath = dataManagementProxy.getRelativePath(path);
     	if(relativePath.equals("/")) {
     	   throw new HpcException("Invalid path: " + path, 
 	                              HpcErrorType.INVALID_REQUEST_INPUT); 
