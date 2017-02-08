@@ -882,7 +882,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	       for(CollectionAndDataObjectListingEntry listingEntry : listingEntries) {
 	    	   HpcCollectionListingEntry hpcCollectionListingEntry = new HpcCollectionListingEntry();
 	    	   hpcCollectionListingEntry.setId(listingEntry.getId());
-	    	   hpcCollectionListingEntry.setPath(listingEntry.getPathOrName());
+	    	   hpcCollectionListingEntry.setPath(getRelativePath(listingEntry.getFormattedAbsolutePath()));
 	    	   if(listingEntry.isCollection()) {
 	    	      hpcCollection.getSubCollections().add(hpcCollectionListingEntry);
 	    	   } else if(listingEntry.isDataObject()) {
