@@ -34,7 +34,9 @@
 			<xsd:element name="createdAt" type="xsd:dateTime" />
 			<xsd:element name="modifiedAt" type="xsd:dateTime" />
 			<xsd:element name="specColType" type="xsd:string" />
-			<xsd:element name="listingEntries" type="hpc-domain-datamanagement:HpcCollectionListingEntry" 
+			<xsd:element name="subCollections" type="hpc-domain-datamanagement:HpcCollectionListingEntry" 
+			             minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="dataObjects" type="hpc-domain-datamanagement:HpcCollectionListingEntry" 
 			             minOccurs="0" maxOccurs="unbounded"/>
 		</xsd:sequence>
 	</xsd:complexType>
@@ -43,7 +45,6 @@
 		<xsd:sequence>
 			<xsd:element name="id" type="xsd:int" />
 			<xsd:element name="path" type="xsd:string" />
-			<xsd:element name="type" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 	

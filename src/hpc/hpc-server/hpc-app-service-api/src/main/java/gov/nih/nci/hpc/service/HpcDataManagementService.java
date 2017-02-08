@@ -95,10 +95,11 @@ public interface HpcDataManagementService
      * Get collection by its path.
      *
      * @param path The collection's path.
+     * @param list An indicator to list sub-collections and data-objects.
      * @return A collection.
      * @throws HpcException on service failure.
      */
-    public HpcCollection getCollection(String path) throws HpcException;
+    public HpcCollection getCollection(String path, boolean list) throws HpcException;
     
     /**
      * Get data object by its path.
