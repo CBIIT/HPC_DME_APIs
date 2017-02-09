@@ -32,12 +32,15 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -174,11 +177,52 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	
     	// Create a data object file to download the data if a destination was not provided.
     	if(destinationLocation == null) {
-           downloadRequest.setDestinationFile(createFile(downloadDirectory + "/" + 
-    	                                                 UUID.randomUUID().toString()));
+           downloadRequest.setDestinationFile(createDownloadFile());
     	}
 
     	return downloadDataObject(downloadRequest);
+    }
+    
+    @Override
+	public HpcDataObjectDownloadResponse downloadZipFile(String collectionPath,
+			                                             List<File> files,
+                                                         HpcFileLocation destinationLocation) 
+                                                        throws HpcException
+    {
+    	// Create a zip file and a second hop download request if needed.
+    	HpcDataObjectDownloadRequest secondHopDownloadRequest = null;
+    	File zipFile = null;
+    	if(destinationLocation == null) {
+           zipFile = createDownloadFile();
+    	} else {
+    	        // 2nd Hop needed. Create a request.
+    	        secondHopDownloadRequest =
+    			      toDownloadRequest(calculateDestination(destinationLocation, 
+    			  	            		                     HpcDataTransferType.GLOBUS,
+    			  	            		                     collectionPath),
+    			        		        HpcDataTransferType.GLOBUS,
+    			        		        collectionPath);
+    	         
+    	        zipFile = createFile(
+    			          dataTransferProxies.get(HpcDataTransferType.GLOBUS).
+                          getFilePath(secondHopDownloadRequest.getArchiveLocation().getFileId(), 
+                        	  	      false));
+    	   
+    	       // Validate the destination location.
+    	       validateFileLocation(HpcDataTransferType.GLOBUS, destinationLocation, false, true);
+    	}
+
+    	// Zip the files.
+    	zipFiles(files, zipFile);
+    	
+    	if(secondHopDownloadRequest != null) {
+    	   return secondHopDownload(secondHopDownloadRequest, zipFile.getAbsolutePath());
+    		
+    	} else {
+    		    HpcDataObjectDownloadResponse downloadResponse = new HpcDataObjectDownloadResponse();
+    		    downloadResponse.setDestinationFile(zipFile);
+    		    return downloadResponse;
+    	}
     }
     
 	@Override   
@@ -366,21 +410,21 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     /**
      * Calculate data transfer destination
      * 
-     * @param downloadRequest The download request.
+     * @param destinationLocation The destination location.
      * @param dataTransferType The data transfer type to create the request.
+     * @param sourcePath The source path.
      * @return The file location.
      * @throws HpcException on service failure.
      */    
-    private HpcFileLocation calculateDestination(HpcDataObjectDownloadRequest downloadRequest,
-    		                                     HpcDataTransferType dataTransferType) 
+    private HpcFileLocation calculateDestination(HpcFileLocation destinationLocation,
+    		                                     HpcDataTransferType dataTransferType,
+    		                                     String sourcePath) 
     		                                    throws HpcException
     {
-    	HpcFileLocation destinationLocation = downloadRequest.getDestinationLocation();
 	    if(getPathAttributes(dataTransferType, destinationLocation, false).getIsDirectory()) {
            // Caller requested to download to a directory. Append the source file name.
            HpcFileLocation calcDestination = new HpcFileLocation();
            calcDestination.setFileContainerId(destinationLocation.getFileContainerId());
-           String sourcePath = downloadRequest.getArchiveLocation().getFileId();
            calcDestination.setFileId(destinationLocation.getFileId() + 
                                      sourcePath.substring(sourcePath.lastIndexOf('/')));
            return calcDestination;
@@ -428,7 +472,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     private File createFile(String filePath) throws HpcException
     {
     	File file = new File(filePath);
-    	
     	try {
     		 FileUtils.touch(file);
   	         
@@ -438,6 +481,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
     	
     	return file;
+  	}
+    
+    /**
+     * Create an empty file placed in the download folder.
+     * 
+     * @throws HpcException on service failure.
+     */
+    private File createDownloadFile() throws HpcException
+    {
+    	return createFile(downloadDirectory + "/" + UUID.randomUUID().toString());
   	}
     
     /**
@@ -582,8 +635,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	if(dataTransferType.equals(HpcDataTransferType.S_3) && destinationLocation != null) {
     	   // 2nd Hop needed. Create a request.
     	   secondHopDownloadRequest =
-    			 toDownloadRequest(calculateDestination(downloadRequest, 
-    			  	            		                HpcDataTransferType.GLOBUS),
+    			 toDownloadRequest(calculateDestination(downloadRequest.getDestinationLocation(), 
+    			  	            		                HpcDataTransferType.GLOBUS,
+    			  	            		                downloadRequest.getArchiveLocation().getFileId()),
     			        		   HpcDataTransferType.GLOBUS,
     			                   downloadRequest.getArchiveLocation().getFileId());
     	   
@@ -603,22 +657,64 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	   dataTransferProxies.get(dataTransferType).
   	    		   downloadDataObject(getAuthenticatedToken(dataTransferType), 
   	                                  downloadRequest);	
-    	
-    	if(secondHopDownloadRequest != null) {
-    		// Perform 2nd hop download.
-    		HpcDataObjectDownloadResponse secondHopDownloadResponse = 
-    				                      downloadDataObject(secondHopDownloadRequest);
-    		
-    		// Create an entry to cleanup the file after the async download completes.
-    		saveDataObjectDownloadCleanup(secondHopDownloadResponse.getDataTransferRequestId(), 
-    		 	                          secondHopDownloadRequest.getDataTransferType(),
-    				                      downloadRequest.getDestinationFile().getAbsolutePath());
-    		
-    		return secondHopDownloadResponse;
-    		
-    	} else {
-    		    return downloadResponse;
-    	}
+
+    	// Perform second hop download if needed.
+    	return secondHopDownloadRequest != null ? 
+    	             secondHopDownload(secondHopDownloadRequest, 
+    			                       downloadRequest.getDestinationFile().getAbsolutePath()) :
+    		         downloadResponse;
     }
+    
+    /**
+     * Zip files.
+     *
+     * @param files The list of files to zip
+     * @param zipFile The zip file.
+     * @throws HpcException on service failure.
+     */    
+	private void zipFiles(List<File> files, File zipFile) throws HpcException 
+	{
+		try {
+			 FileOutputStream fos = new FileOutputStream(zipFile);
+			 ZipOutputStream zos = new ZipOutputStream(fos);
+			 for(File file : files) {
+	             if(file.isFile()) {
+	                ZipEntry entry = new ZipEntry(file.getName());
+	                zos.putNextEntry(entry);
+	                FileUtils.copyFile(file, zos);
+	                zos.closeEntry();
+	             }
+			 }
+			 zos.close();
+			 fos.close();
+			 
+		} catch(Exception e) {
+			    throw new HpcException("Failed to zip files", HpcErrorType.UNEXPECTED_ERROR, e);
+		}
+	}
+	
+    /**
+     * Perform a second hop download.
+     *
+     * @param secondHopDownloadRequest The download request
+     * @param filePath The file to remove after download completed.
+     * @return A download response.
+     * @throws HpcException on service failure.
+     */    
+	private HpcDataObjectDownloadResponse 
+	        secondHopDownload(HpcDataObjectDownloadRequest secondHopDownloadRequest,
+			                  String filePath) throws HpcException
+	{
+	   // Perform 2nd hop download.
+	   HpcDataObjectDownloadResponse secondHopDownloadResponse = 
+		    	                     downloadDataObject(secondHopDownloadRequest);
+		
+	   // Create an entry to cleanup the file after the async download completes.
+	   saveDataObjectDownloadCleanup(secondHopDownloadResponse.getDataTransferRequestId(), 
+			                         secondHopDownloadRequest.getDataTransferType(),
+				                     filePath);
+		
+	   return secondHopDownloadResponse;
+	}
 }
  

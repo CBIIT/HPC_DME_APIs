@@ -117,6 +117,7 @@ public interface HpcNotificationService
      * Get Notification Delivery Receipt.
      *
      * @param eventId The requested receipt event Id.
+     * @return A notification delivery receipt object.
      * @throws HpcException on service failure.
      */
     public HpcNotificationDeliveryReceipt getNotificationDeliveryReceipt(int eventId) 
