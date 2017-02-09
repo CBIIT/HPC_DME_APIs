@@ -324,6 +324,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	// Validate the data object exist.
+    	if(dataManagementService.getDataObject(path) == null) {
+      	   return null;
+      	}
+    	
     	// Get the System generated metadata.
     	HpcSystemGeneratedMetadata metadata = 
     	   metadataService.getDataObjectSystemGeneratedMetadata(path);
