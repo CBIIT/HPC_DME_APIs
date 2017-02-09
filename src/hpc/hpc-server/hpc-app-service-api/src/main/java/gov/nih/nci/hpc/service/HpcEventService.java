@@ -132,7 +132,7 @@ public interface HpcEventService
     /**
      * Add a data object registration event.
      *
-     * @param path The collection path to which the data object was registered under.
+     * @param collectionPath The collection path to which the data object was registered under.
      * @throws HpcException on service failure.
      */
     public void addDataObjectRegistrationEvent(String collectionPath) throws HpcException;
