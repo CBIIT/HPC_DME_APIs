@@ -157,8 +157,8 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
-	<!-- Data Object Download DTO -->
-	<xsd:element name="HpcDataObjectDownloadRequestDTO">
+	<!-- Download Request DTO -->
+	<xsd:element name="HpcDownloadRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="destination"
@@ -167,8 +167,8 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
-	<!-- Data Object Download DTO -->
-	<xsd:element name="HpcDataObjectDownloadResponseDTO">
+	<!-- Download Response DTO -->
+	<xsd:element name="HpcDownloadResponseDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 			    <xsd:element name="requestId" type="xsd:string" />

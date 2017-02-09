@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
@@ -28,9 +29,9 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
@@ -44,10 +45,12 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -195,6 +198,42 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
+    public HpcDownloadResponseDTO downloadCollection(String path,
+                                                     HpcDownloadRequestDTO downloadRequestDTO)
+                                                    throws HpcException
+    {
+    	logger.info("Invoking downloadCollection(path, downloadReqest): " + path + ", " + 
+                    downloadRequestDTO);
+    	
+    	// Input validation.
+    	if(path == null || downloadRequestDTO == null) {
+    	   throw new HpcException("Null path or download request",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Get the collection.
+    	HpcCollection collection = dataManagementService.getCollection(path, true);
+    	if(collection == null || collection.getDataObjects().isEmpty()) {
+      	   return null;
+      	}
+    	    	
+    	// Download all data objects in the collection.
+    	List<File> files = downloadDataObjects(collection.getDataObjects());
+    	
+    	// Zip and download files.
+    	HpcDataObjectDownloadResponse downloadResponse = 
+    	   dataTransferService.downloadZipFile(path, files, downloadRequestDTO.getDestination());
+    	deleteFiles(files);
+    	
+        // Construct and return download response DTO.
+        HpcDownloadResponseDTO downloadResponseDTO = new HpcDownloadResponseDTO();
+        downloadResponseDTO.setDestinationLocation(downloadResponse.getDestinationLocation());
+        downloadResponseDTO.setRequestId(downloadResponse.getDataTransferRequestId());
+        downloadResponseDTO.setDestinationFile(downloadResponse.getDestinationFile());
+        return downloadResponseDTO;
+    }
+    
+    @Override
     public boolean registerDataObject(String path,
     		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
     		                          File dataObjectFile)  
@@ -217,7 +256,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   try {
       	        // Validate the new collection meets the hierarchy definition.
     		    String collectionPath = path.substring(0, path.lastIndexOf('/'));
-    		    //String doc = metadataService.getCollectionSystemGeneratedMetadata(collectionPath).getRegistrarDOC();
     		    String doc = securityService.getRequestInvoker().getNciAccount().getDoc();
       	        dataManagementService.validateHierarchy(collectionPath, doc, true);
     		   
@@ -310,12 +348,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcDataObjectDownloadResponseDTO 
-              downloadDataObject(String path,
-                                 HpcDataObjectDownloadRequestDTO downloadRequestDTO)
-                                throws HpcException
+    public HpcDownloadResponseDTO downloadDataObject(String path,
+                                                     HpcDownloadRequestDTO downloadRequestDTO)
+                                                    throws HpcException
     {
-    	logger.info("Invoking downloadDataObject(path, downloadReqest, dataObjectFile): " + path + ", " + 
+    	logger.info("Invoking downloadDataObject(path, downloadReqest): " + path + ", " + 
                     downloadRequestDTO);
     	
     	// Input validation.
@@ -347,7 +384,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                                   metadata.getDataTransferType());
         
         // Construct and return download response DTO.
-        HpcDataObjectDownloadResponseDTO downloadResponseDTO = new HpcDataObjectDownloadResponseDTO();
+        HpcDownloadResponseDTO downloadResponseDTO = new HpcDownloadResponseDTO();
         downloadResponseDTO.setDestinationLocation(downloadResponse.getDestinationLocation());
         downloadResponseDTO.setRequestId(downloadResponse.getDataTransferRequestId());
         downloadResponseDTO.setDestinationFile(downloadResponse.getDestinationFile());
@@ -608,6 +645,45 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} catch(HpcException e) {
 			    logger.error("Failed to add collection update event", e);
 		}
+	}
+	
+    /** 
+     * Download a list of data objects.
+     * 
+     * @param dataObjectEntries A list of data object entries (in a collection).
+     * @return A list of files.
+     * @throws HpcException on service failure.
+     */
+	private List<File> downloadDataObjects(List<HpcCollectionListingEntry> dataObjectEntries) 
+			                              throws HpcException
+	{
+		// Download all data objects in the collection.
+		HpcDownloadRequestDTO dataObjectDownloadRequestDTO = new HpcDownloadRequestDTO();
+		List<File> files = new ArrayList<>();
+		try {
+		     for(HpcCollectionListingEntry dataObjectEntry : dataObjectEntries) {
+			     files.add(downloadDataObject(dataObjectEntry.getPath(), 
+			    		                      dataObjectDownloadRequestDTO).getDestinationFile());
+		     }
+		     
+		} catch(HpcException e) {
+			    deleteFiles(files);
+			    throw e;
+		}
+		
+		return files;
+	}
+	
+    /** 
+     * Delete files.
+     * 
+     * @param files a list of files to delete
+     */
+	private void deleteFiles(List<File> files)
+	{
+		for(File file : files) {
+	    	FileUtils.deleteQuietly(file);
+	    }
 	}
 }
 

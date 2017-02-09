@@ -14,9 +14,9 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -59,6 +59,18 @@ public interface HpcDataManagementBusService
     public HpcCollectionDTO getCollection(String path, Boolean list) throws HpcException;
     
     /**
+     * Download Collection.
+     *
+     * @param path The collection path.
+     * @param downloadRequest The download request DTO.
+     * @return Download ResponseDTO 
+     * @throws HpcException on service failure.
+     */
+	public HpcDownloadResponseDTO downloadCollection(String path, 
+			                                         HpcDownloadRequestDTO downloadRequest)
+			                                        throws HpcException;
+    
+    /**
      * Register a Data object.
      *
      * @param path The data object's path.
@@ -90,13 +102,12 @@ public interface HpcDataManagementBusService
      *
      * @param path The data object path.
      * @param downloadRequest The download request DTO.
-     * @return Data Object Download ResponseDTO 
+     * @return Download ResponseDTO 
      * @throws HpcException on service failure.
      */
-	public HpcDataObjectDownloadResponseDTO 
-	          downloadDataObject(String path,
-			                     HpcDataObjectDownloadRequestDTO downloadRequest)
-			                    throws HpcException;
+	public HpcDownloadResponseDTO downloadDataObject(String path, 
+			                                         HpcDownloadRequestDTO downloadRequest)
+			                                        throws HpcException;
 
     /**
      * POST Set permissions.
