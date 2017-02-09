@@ -206,9 +206,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public HpcPathAttributes setPermission(String path,
-    		                               HpcEntityPermission permissionRequest) 
-                                          throws HpcException
+    public void setPermission(String path, HpcEntityPermission permissionRequest) 
+                             throws HpcException
     {
     	// Input validation.
     	if(path == null || permissionRequest == null) {
@@ -235,13 +234,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		    throw new HpcException("Entity path doesn't exist", 
                                        HpcErrorType.INVALID_REQUEST_INPUT);   
     	}
-    	
-    	return pathAttributes;
     }    
     
     @Override
-    public HpcPathAttributes assignSystemAccountPermission(String path) 
-                                                          throws HpcException
+    public void assignSystemAccountPermission(String path) throws HpcException
     {
     	HpcIntegratedSystemAccount dataManagementAccount = 
     	    	     systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
@@ -254,7 +250,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	permissionRequest.setPermission(OWN_PERMISSION);
     	permissionRequest.setUserId(dataManagementAccount.getUsername());
     	
-    	return setPermission(path, permissionRequest);
+    	setPermission(path, permissionRequest);
     }
     
     @Override

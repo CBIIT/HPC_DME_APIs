@@ -368,7 +368,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
             		                       null);
              
 		} catch(Exception e) {
-	            throw new HpcException("Failed to get Collection: " + 
+	            throw new HpcException("Failed to get Collection: " + path + ". " +
                                         e.getMessage(),
                                         HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} 
@@ -384,7 +384,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 					              findMetadataValuesForCollection(getAbsolutePath(path)));
 
 		} catch(Exception e) {
-	            throw new HpcException("Failed to get metadata of a collection: " + 
+	            throw new HpcException("Failed to get metadata of a collection: " + path + ". " +
                                       e.getMessage(),
                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} 
@@ -446,7 +446,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 					              findMetadataValuesForDataObject(getAbsolutePath(path)));
 	
 		} catch(Exception e) {
-	            throw new HpcException("Failed to get metadata of a collection: " + 
+	            throw new HpcException("Failed to get metadata of a data object: " + path + ". " + 
 	                                   e.getMessage(),
 	                                   HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} 
