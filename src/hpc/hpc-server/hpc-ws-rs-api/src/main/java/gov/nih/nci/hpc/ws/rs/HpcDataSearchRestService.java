@@ -152,7 +152,6 @@ public interface HpcDataSearchRestService
     @Path("/query")
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response getQueries();
-    
 	
   /**
    * GET A list of metadata attributes currently registered.

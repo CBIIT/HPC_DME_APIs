@@ -146,7 +146,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	}	
        	
        	// Validate collection type is not in the update request.
-       	List<HpcMetadataEntry> existingMetadataEntries = getCollectionMetadata(path);
+       	List<HpcMetadataEntry> existingMetadataEntries = dataManagementProxy.getCollectionMetadata(
+                                                             dataManagementAuthenticator.getAuthenticatedToken(),
+                                                             path);
        	validateCollectionTypeUpdate(existingMetadataEntries, metadataEntries);
        	
        	// Validate Metadata.
@@ -191,7 +193,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
     	
-    	return toSystemGeneratedMetadata(getCollectionMetadata(path));
+    	return toSystemGeneratedMetadata(dataManagementProxy.getCollectionMetadata(
+                                             dataManagementAuthenticator.getAuthenticatedToken(),
+                                             path));
 	}
     
     @Override
@@ -401,7 +405,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
         			                  HpcErrorType.INVALID_REQUEST_INPUT);
         }	
     	
-    	return toSystemGeneratedMetadata(getDataObjectMetadata(path));
+    	return toSystemGeneratedMetadata(dataManagementProxy.getDataObjectMetadata(
+    			                             dataManagementAuthenticator.getAuthenticatedToken(),
+                                             path));
 	}
     
     @Override
@@ -479,7 +485,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	}	
        	
        	// Validate Metadata.
-       	metadataValidator.validateDataObjectMetadata(getDataObjectMetadata(path),
+       	metadataValidator.validateDataObjectMetadata(dataManagementProxy.getDataObjectMetadata(
+       			                                         dataManagementAuthenticator.getAuthenticatedToken(),
+                                                         path),
        			                                     metadataEntries);
        	
        	// Update Metadata.
@@ -528,26 +536,6 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     // Helper Methods
     //---------------------------------------------------------------------//  
 	
-    /**
-     * Get metadata of a collection.
-     *
-     * @param path The collection's path.
-     * @return The collection's metadata entries.
-     * @throws HpcException on service failure.
-     */
-    private List<HpcMetadataEntry> getCollectionMetadata(String path) throws HpcException
-    {
-       	// Input validation.
-       	if(path == null) {
-       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
-       			                  HpcErrorType.INVALID_REQUEST_INPUT);
-       	}	
-       	
-    	return dataManagementProxy.getCollectionMetadata(
-    			                      dataManagementAuthenticator.getAuthenticatedToken(),
-                                      path);
-    }
-    
     /**
      * Generate ID Metadata.
      *
@@ -634,25 +622,6 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     private HpcMetadataEntry toMetadataEntry(String attribute, Long value)
     {
     	return toMetadataEntry(attribute, value != null ? String.valueOf(value) : null);
-    }
-    
-    /**
-     * Get metadata of a data object.
-     *
-     * @param path The data object's path.
-     * @return HpcMetadataEntries The data object's metadata entries.
-     * @throws HpcException on service failure.
-     */
-    private List<HpcMetadataEntry> getDataObjectMetadata(String path) throws HpcException
-    {
-       	// Input validation.
-       	if(path == null) {
-       	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
-       			                  HpcErrorType.INVALID_REQUEST_INPUT);
-       	}	
-       	
-    	return dataManagementProxy.getDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(),
-                                                         path);
     }
     
     /**
