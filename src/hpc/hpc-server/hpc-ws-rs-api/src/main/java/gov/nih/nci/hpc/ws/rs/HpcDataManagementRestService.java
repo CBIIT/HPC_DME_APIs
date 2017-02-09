@@ -11,8 +11,8 @@
 package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 
 import java.io.InputStream;
@@ -73,6 +73,23 @@ public interface HpcDataManagementRestService
 			                      @QueryParam("list") Boolean list);
 	
     /**
+     * POST Download Collection.
+     *
+     * @param path The collection path.
+     * @param downloadRequest The download request.
+     * @param mc The message context.
+     * @return The REST service response.
+     */
+	@POST
+	@Path("/collection/{path:.*}/download")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML + "," +
+			  MediaType.APPLICATION_OCTET_STREAM)
+	public Response downloadCollection(@PathParam("path") String path,
+			                           HpcDownloadRequestDTO downloadRequest,
+			                           @Context MessageContext mc);
+	
+    /**
      * PUT Data object registration request.
      *
      * @param path The data object path.
@@ -116,7 +133,7 @@ public interface HpcDataManagementRestService
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML + "," +
 			  MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadDataObject(@PathParam("path") String path,
-			                           HpcDataObjectDownloadRequestDTO downloadRequest,
+			                           HpcDownloadRequestDTO downloadRequest,
 			                           @Context MessageContext mc);
 
     /**

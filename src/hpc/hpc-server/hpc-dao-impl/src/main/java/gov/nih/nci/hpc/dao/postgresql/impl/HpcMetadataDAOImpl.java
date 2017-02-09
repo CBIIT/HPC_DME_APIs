@@ -549,7 +549,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
      *
      * @param sql The map from query operator to SQL queries and filters.
      * @param compoundMetadataQuery The compound query to create SQL from.
-     * @param sqlLevelFilters The map from query operator to level filter ('where' condition).
      * @param defaultLevelFilter A default level filter to use if not provided in the query.
      * @return A prepared query.
      * @throws HpcException on service failure.
