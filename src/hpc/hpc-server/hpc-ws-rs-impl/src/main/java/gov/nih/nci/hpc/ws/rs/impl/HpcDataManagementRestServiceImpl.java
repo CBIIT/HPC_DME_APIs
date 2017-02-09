@@ -229,7 +229,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " downloadDataObject: Total time - " + path);
 		
-		if(downloadResponse.getDestinationFile() != null) {
+		if(downloadResponse != null && downloadResponse.getDestinationFile() != null) {
 		   // Put the download file on the message context, so the cleanup interceptor can
 		   // delete it after it was received by the caller.
 		   messageContext.put(DATA_OBJECT_DOWNLOAD_FILE, 
@@ -237,7 +237,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		   return okResponse(downloadResponse.getDestinationFile(), 
 				             MediaType.APPLICATION_OCTET_STREAM_TYPE);
 		} else {
-			    return okResponse(downloadResponse, false);
+			    return okResponse(downloadResponse, true);
 		}
     }
     
