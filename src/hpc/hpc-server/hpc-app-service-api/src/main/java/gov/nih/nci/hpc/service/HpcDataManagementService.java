@@ -14,7 +14,6 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -61,22 +60,18 @@ public interface HpcDataManagementService
      *
      * @param path The entity path.
      * @param permissionRequest The permission request (NCI user ID and permission).
-     * @return The path attributes.
      * @throws HpcException on service failure.
      */
-    public HpcPathAttributes setPermission(String path,
-    		                               HpcEntityPermission permissionRequest) 
-    		                              throws HpcException;
+    public void setPermission(String path, HpcEntityPermission permissionRequest) 
+    		                 throws HpcException;
     
     /**
      * Assign system account as an additional owner of an entity.
      *
      * @param path The entity path.
-     * @return The path attributes.
      * @throws HpcException on service failure.
      */
-    public HpcPathAttributes assignSystemAccountPermission(String path) 
-    		                                              throws HpcException;
+    public void assignSystemAccountPermission(String path) throws HpcException;
     
     /**
      * Validate a path against a hierarchy definition.
