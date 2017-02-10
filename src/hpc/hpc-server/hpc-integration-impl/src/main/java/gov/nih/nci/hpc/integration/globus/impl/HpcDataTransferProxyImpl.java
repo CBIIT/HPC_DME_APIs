@@ -438,7 +438,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         	 logger.error("ERAN RESULT: " + fileLocation + ". " + dirContent.document.toString());
         	
         } catch(APIError error) {
-        	    logger.error("ERAN ERROR CODE: " + fileLocation + ". ", error.code + " - " + error.category);
+        	    logger.error("ERAN ERROR CODE: " + error.code);
+        	    logger.error("ERAN ERROR STATUS CODE: " + new Integer(error.statusCode));
         	    logger.error("ERAN ERROR: " + fileLocation + ". ", error);
         	    if(error.code.equals(NOT_DIRECTORY_GLOBUS_CODE)) {
         	       // Path exists as a single file
