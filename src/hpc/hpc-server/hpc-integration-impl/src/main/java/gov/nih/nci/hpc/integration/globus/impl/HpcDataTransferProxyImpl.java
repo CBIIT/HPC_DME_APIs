@@ -435,8 +435,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         	 pathAttributes.setExists(true);
         	 pathAttributes.setIsDirectory(true);
         	 pathAttributes.setSize(getSize ? getDirectorySize(dirContent, client) : -1);
+        	 logger.error("ERAN RESULT: " + fileLocation + ". " + dirContent);
         	
         } catch(APIError error) {
+        	    logger.error("ERAN ERROR: " + fileLocation + ". ", error);
         	    if(error.code.equals(NOT_DIRECTORY_GLOBUS_CODE)) {
         	       // Path exists as a single file
         	       pathAttributes.setExists(true);
