@@ -60,8 +60,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	// Globus error codes.
 	private static final String NOT_DIRECTORY_GLOBUS_CODE = 
 			                    "ExternalError.DirListingFailed.NotDirectory";
-	private static final String PERMISSION_DENIED_GLOBUS_CODE = 
-                                "ExternalError.DirListingFailed.PermissionDenied";
+	
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -446,8 +445,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         	       pathAttributes.setExists(true);
         	       pathAttributes.setIsFile(true);
         	       pathAttributes.setSize(getSize ? getFileSize(fileLocation, client) : -1);
-        	    } else if(error.code.equals(PERMISSION_DENIED_GLOBUS_CODE)) {
-         	              // Path exists but not accessible.
+        	    } else if(error.statusCode == 403) {
+         	              // Permission denied.
          	              pathAttributes.setExists(true);
          	              pathAttributes.setIsAccessible(false);
          	    } // else path was not found. 
