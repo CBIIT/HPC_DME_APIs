@@ -197,19 +197,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	} else {
     	        // 2nd Hop needed. Create a request.
     	        secondHopDownloadRequest =
-    			      toDownloadRequest(calculateDestination(destinationLocation, 
-    			  	            		                     HpcDataTransferType.GLOBUS,
-    			  	            		                     collectionPath),
-    			        		        HpcDataTransferType.GLOBUS,
-    			        		        collectionPath);
+    			      toSecondHopDownloadRequest(
+    			        calculateDestinationFileLocation(destinationLocation, 
+    			  	                                     HpcDataTransferType.GLOBUS,
+    			  	            		                 collectionPath),
+    			        HpcDataTransferType.GLOBUS,
+    			        collectionPath);
     	         
     	        zipFile = createFile(
     			          dataTransferProxies.get(HpcDataTransferType.GLOBUS).
                           getFilePath(secondHopDownloadRequest.getArchiveLocation().getFileId(), 
                         	  	      false));
-    	   
-    	       // Validate the destination location.
-    	       validateFileLocation(HpcDataTransferType.GLOBUS, destinationLocation, false, true);
     	}
 
     	// Zip the files.
@@ -379,8 +377,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     }
     
     /**
-     * Create a download request for a 2nd hop download from local Globus endpoint
-     * to caller's destination.
+     * Create a download request for a 2nd hop download from local file (as Globus endpoint)
+     * to caller's Globus endpoint destination.
      * 
      * @param destinationLocation The caller's destination.
      * @param dataTransferType The data transfer type to create the request
@@ -388,10 +386,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * @return Data object download request.
      * @throws HpcException If it failed to obtain an authentication token.
      */
-    private HpcDataObjectDownloadRequest toDownloadRequest(HpcFileLocation destinationLocation,
-    		                                               HpcDataTransferType dataTransferType,
-    		                                               String path)
-    		                                              throws HpcException
+    private HpcDataObjectDownloadRequest toSecondHopDownloadRequest(HpcFileLocation destinationLocation,
+    		                                                        HpcDataTransferType dataTransferType,
+    		                                                        String path)
+    		                                                       throws HpcException
     {
     	// Create a source location.
     	HpcFileLocation sourceLocation = 
@@ -408,19 +406,40 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     }
     
     /**
-     * Calculate data transfer destination
+     * Calculate data transfer destination location.
      * 
-     * @param destinationLocation The destination location.
+     * @param destinationLocation The destination location requested by the caller..
      * @param dataTransferType The data transfer type to create the request.
      * @param sourcePath The source path.
-     * @return The file location.
+     * @return The calculated destination file location. The source file name is added if the caller provided 
+     *         a directory destination.
      * @throws HpcException on service failure.
      */    
-    private HpcFileLocation calculateDestination(HpcFileLocation destinationLocation,
-    		                                     HpcDataTransferType dataTransferType,
-    		                                     String sourcePath) 
-    		                                    throws HpcException
+    private HpcFileLocation calculateDestinationFileLocation(HpcFileLocation destinationLocation,
+    		                                                 HpcDataTransferType dataTransferType,
+    		                                                 String sourcePath) 
+    		                                                throws HpcException
     {
+	   	HpcPathAttributes pathAttributes = getPathAttributes(dataTransferType, 
+	   			                                             destinationLocation, false);
+	   	
+	   	// Validate destination file accessible.
+	   	if(!pathAttributes.getIsAccessible()) {
+	   	   throw new HpcException("Destination file location not accessible: " + 
+	   			                  destinationLocation.getFileContainerId() + ":" +
+	   			                  destinationLocation.getFileId(), 
+	   	                          HpcErrorType.INVALID_REQUEST_INPUT);	
+	   	}
+	   	
+	   	// Validate destination file doesn't exist.
+	   	if(pathAttributes.getIsFile()) {
+	   	   throw new HpcException("Destination file location exists: " + 
+	   			                  destinationLocation.getFileContainerId() + ":" +
+	   			                  destinationLocation.getFileId(), 
+	   	                          HpcErrorType.INVALID_REQUEST_INPUT);	
+	   	}
+
+	   	// Calculate the destination.
 	    if(getPathAttributes(dataTransferType, destinationLocation, false).getIsDirectory()) {
            // Caller requested to download to a directory. Append the source file name.
            HpcFileLocation calcDestination = new HpcFileLocation();
@@ -526,41 +545,45 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     }
     
     /**
-     * Validate file location.
+     * Validate source file location.
      * 
      * @param dataTransferType The data transfer type.
-     * @param fileLocation The file location to validate. If null, no validation is performed.
-     * @param validateExists If true, validate the file exists.
-     * @param validateAccessible If true, validate file accessible.
-     * @throws HpcException if validation failed.
+     * @param sourceFileLocation The file location to validate. If null, no validation is performed.
+     * @throws HpcException if the source location doesn't exist, or it's a directory.
      */
-    private void validateFileLocation(HpcDataTransferType dataTransferType,
-                                      HpcFileLocation fileLocation,
-                                      boolean validateExists,
-                                      boolean validateAccessible) 
-                                     throws HpcException
+    private void validateSourceFileLocation(HpcDataTransferType dataTransferType,
+                                            HpcFileLocation sourceFileLocation) 
+                                           throws HpcException
     		                                   
     {
-    	if(fileLocation == null) {
+    	if(sourceFileLocation == null) {
     	   return;
     	}
     
 	   	HpcPathAttributes pathAttributes = getPathAttributes(dataTransferType, 
-	   			                                             fileLocation, false);
+	   			                                             sourceFileLocation, false);
 		
-	   	// Validate file exists.
-		if(validateExists && !pathAttributes.getExists()) {
-	 	   throw new HpcException("File location doesn't exist: " + 
-	 			                  fileLocation.getFileContainerId() + ":" +
-	 			                  fileLocation.getFileId(), 
+	   	// Validate source file accessible
+		if(!pathAttributes.getIsAccessible()) {
+	 	   throw new HpcException("Source file location not accessible: " + 
+	 			                  sourceFileLocation.getFileContainerId() + ":" +
+	 			                  sourceFileLocation.getFileId(), 
 	 	                          HpcErrorType.INVALID_REQUEST_INPUT);	
 	 	}
 		
-	   	// Validate file accessible
-		if(validateAccessible && !pathAttributes.getIsAccessible()) {
-	 	   throw new HpcException("File location not accessible: " + 
-	 			                  fileLocation.getFileContainerId() + ":" +
-	 			                  fileLocation.getFileId(), 
+	   	// Validate source file exists.
+		if(!pathAttributes.getExists()) {
+	 	   throw new HpcException("Source file location doesn't exist: " + 
+	 			                  sourceFileLocation.getFileContainerId() + ":" +
+	 			                  sourceFileLocation.getFileId(), 
+	 	                          HpcErrorType.INVALID_REQUEST_INPUT);	
+	 	}
+		
+	   	// Validate source file is not a directory.
+		if(!pathAttributes.getIsDirectory()) {
+	 	   throw new HpcException("Source file location is a directory: " + 
+	 			                  sourceFileLocation.getFileContainerId() + ":" +
+	 			                  sourceFileLocation.getFileId(), 
 	 	                          HpcErrorType.INVALID_REQUEST_INPUT);	
 	 	}
     }
@@ -596,8 +619,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
     	
     	// Validate source location exists and accessible.
-    	validateFileLocation(dataTransferType, uploadRequest.getSourceLocation(), 
-    			             true, true);
+    	validateSourceFileLocation(dataTransferType, uploadRequest.getSourceLocation());
     	
     	// Upload the data object using the appropriate data transfer proxy.
   	    return dataTransferProxies.get(dataTransferType).
@@ -635,11 +657,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	if(dataTransferType.equals(HpcDataTransferType.S_3) && destinationLocation != null) {
     	   // 2nd Hop needed. Create a request.
     	   secondHopDownloadRequest =
-    			 toDownloadRequest(calculateDestination(downloadRequest.getDestinationLocation(), 
-    			  	            		                HpcDataTransferType.GLOBUS,
-    			  	            		                downloadRequest.getArchiveLocation().getFileId()),
-    			        		   HpcDataTransferType.GLOBUS,
-    			                   downloadRequest.getArchiveLocation().getFileId());
+    			 toSecondHopDownloadRequest(
+    			   calculateDestinationFileLocation(downloadRequest.getDestinationLocation(), 
+    			  		                            HpcDataTransferType.GLOBUS,
+    			  		                            downloadRequest.getArchiveLocation().getFileId()),
+    			   HpcDataTransferType.GLOBUS,
+    			   downloadRequest.getArchiveLocation().getFileId());
     	   
     	   // Set the first hop file destination to be the source file of the second hop.
     	   downloadRequest.setDestinationFile(
@@ -647,9 +670,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     			         dataTransferProxies.get(HpcDataTransferType.GLOBUS).
 	                         getFilePath(secondHopDownloadRequest.getArchiveLocation().getFileId(), 
 	                        		     false)));
-    	   
-    	   // Validate the destination location.
-    	   validateFileLocation(HpcDataTransferType.GLOBUS, destinationLocation, false, true);
     	}
     	
     	// Download the data object using the appropriate data transfer proxy.
