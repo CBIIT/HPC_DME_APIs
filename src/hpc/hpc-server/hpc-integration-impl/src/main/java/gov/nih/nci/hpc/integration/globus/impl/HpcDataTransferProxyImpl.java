@@ -334,7 +334,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
              
 		} catch(Exception e) {
 		        throw new HpcException(
-		        		     "Failed to activate endpoint: " + endpointName, 
+		        		     "Globus endpoint is inactive and could not be auto-activated: " + endpointName, 
 		        		     HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
     }
