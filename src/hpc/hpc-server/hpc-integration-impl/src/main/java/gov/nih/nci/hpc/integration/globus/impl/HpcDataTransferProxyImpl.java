@@ -57,10 +57,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	private static final String FAILED_STATUS = "FAILED"; 
 	private static final String SUCCEEDED_STATUS = "SUCCEEDED";
 	
-	// Globus error codes.
 	private static final String NOT_DIRECTORY_GLOBUS_CODE = 
 			                    "ExternalError.DirListingFailed.NotDirectory";
-	
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -438,13 +436,19 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         	
         } catch(APIError error) {
         	    logger.error("ERAN ERROR CODE: " + error.code);
+        	    logger.error("ERAN ERROR CCATEGORY: " + error.category);
         	    logger.error("ERAN ERROR STATUS CODE: " + new Integer(error.statusCode));
         	    logger.error("ERAN ERROR: " + fileLocation + ". ", error);
-        	    if(error.code.equals(NOT_DIRECTORY_GLOBUS_CODE)) {
-        	       // Path exists as a single file
-        	       pathAttributes.setExists(true);
-        	       pathAttributes.setIsFile(true);
-        	       pathAttributes.setSize(getSize ? getFileSize(fileLocation, client) : -1);
+        	    if(error.statusCode == 502) {
+        	       if(error.code.equals(NOT_DIRECTORY_GLOBUS_CODE)) {
+        	          // Path exists as a single file
+        	          pathAttributes.setExists(true);
+        	          pathAttributes.setIsFile(true);
+        	          pathAttributes.setSize(getSize ? getFileSize(fileLocation, client) : -1);
+        	       } else {
+        	    	       throw new HpcException("Invalid file location: " + fileLocation,
+        	    	    		                  HpcErrorType.INVALID_REQUEST_INPUT);
+        	       }
         	    } else if(error.statusCode == 403) {
          	              // Permission denied.
          	              pathAttributes.setExists(true);
