@@ -19,6 +19,8 @@ import java.util.HashMap;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -42,7 +44,12 @@ public class HpcDocBasePath extends HashMap<String, String>
 	@Autowired
     private HpcDataManagementProxy dataManagementProxy = null;
 	
+	// base paths from config.
 	private String docBasePaths = null;
+	
+    // The logger instance.
+	private final Logger logger = 
+			             LoggerFactory.getLogger(this.getClass().getName());
 	
 	//---------------------------------------------------------------------//
     // Constructors
@@ -83,15 +90,18 @@ public class HpcDocBasePath extends HashMap<String, String>
     @PostConstruct
     private void init() throws HpcException
     {
+    	logger.error("ERAN: base path loading");
     	for(String docBasePath : Arrays.asList(docBasePaths.split("\\s+"))) {
-    		String[] splitDocBasePath= docBasePath.split("=");
+    		String[] splitDocBasePath = docBasePath.split("=");
     		if(splitDocBasePath.length != 2) {
     		   throw new HpcException("Invalid DOC base path configuration: " + docBasePaths,
-			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
+			                          HpcErrorType.SPRING_CONFIGURATION_ERROR);
     		}
     		
     		put(splitDocBasePath[0], dataManagementProxy.getRelativePath(splitDocBasePath[1]));
     	}
+    	
+    	logger.info("Supported DOC: " + toString());
     }
 }
 
