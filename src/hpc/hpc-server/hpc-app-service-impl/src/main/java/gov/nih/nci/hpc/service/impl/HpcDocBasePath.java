@@ -69,8 +69,7 @@ public class HpcDocBasePath extends HashMap<String, String>
      * @param docBasePaths The base paths in a config-string format.
      * @throws HpcException On configuration error.
      */
-    @SuppressWarnings("unused")
-	private void setDocBasePath(String docBasePaths) throws HpcException
+	public void setDocBasePath(String docBasePaths) throws HpcException
     {
     	for(String docBasePath : Arrays.asList(docBasePaths.split("\\s+"))) {
     		String[] splitDocBasePath = docBasePath.split("=");
