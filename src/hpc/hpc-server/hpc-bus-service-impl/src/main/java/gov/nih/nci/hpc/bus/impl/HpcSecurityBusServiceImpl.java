@@ -33,6 +33,7 @@ import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserGroupResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
@@ -66,6 +67,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 	
 	@Autowired
     private HpcDataManagementSecurityService dataManagementSecurityService = null;
+	
+	@Autowired
+    private HpcDataManagementService dataManagementService = null;
 	
     // The Data Transfer Service instance.
 	@Autowired
@@ -138,9 +142,14 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	
     	boolean registrationCompleted = false;
     	try {
-    	     // Add the user to the managed collection.
+    	     // Add the user to the system.
     	     securityService.addUser(userRegistrationDTO.getNciAccount(), 
     			                     userRegistrationDTO.getDataManagementAccount());
+    	     
+    	     // Assign write permission to the DOC base path.
+    	     dataManagementService.assignDocBasePathPermission(userRegistrationDTO.getNciAccount().getDoc(), 
+    	    		                                           userRegistrationDTO.getDataManagementAccount().getUsername());
+    	     
     	     registrationCompleted = true;
     	     
     	} finally {

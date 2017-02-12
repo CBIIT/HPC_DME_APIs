@@ -74,6 +74,15 @@ public interface HpcDataManagementService
     public void assignSystemAccountPermission(String path) throws HpcException;
     
     /**
+     * Assign write permission to the DOC base path for a user..
+     *
+     * @param doc The DOC.
+     * @param userId The user ID.
+     * @throws HpcException on service failure.
+     */
+    public void assignDocBasePathPermission(String doc, String userId) throws HpcException;
+    
+    /**
      * Validate a path against a hierarchy definition.
      *
      * @param path The collection path.
