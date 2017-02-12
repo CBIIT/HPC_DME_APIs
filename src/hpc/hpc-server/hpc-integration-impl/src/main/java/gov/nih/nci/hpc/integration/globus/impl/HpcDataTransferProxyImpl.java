@@ -426,7 +426,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	pathAttributes.setSize(0);
     	pathAttributes.setIsAccessible(true);
     	
-    	logger.error("ERAN get DT path attributes: " + fileLocation);
     	// Invoke the Globus directory listing service.
         try {
         	 Result dirContent = listDirectoryContent(fileLocation, client);
