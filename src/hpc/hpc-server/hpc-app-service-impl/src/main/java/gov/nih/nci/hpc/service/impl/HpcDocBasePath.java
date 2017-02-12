@@ -65,6 +65,7 @@ public class HpcDocBasePath extends HashMap<String, String>
     {
     	super();
     	this.docBasePaths = docBasePaths;
+    	logger.error("ERAN: Constructor");
     }
     
     /**
@@ -101,7 +102,7 @@ public class HpcDocBasePath extends HashMap<String, String>
     		put(splitDocBasePath[0], dataManagementProxy.getRelativePath(splitDocBasePath[1]));
     	}
     	
-    	logger.info("Supported DOC: " + toString());
+    	logger.error("Supported DOC: " + toString());
     }
 }
 
