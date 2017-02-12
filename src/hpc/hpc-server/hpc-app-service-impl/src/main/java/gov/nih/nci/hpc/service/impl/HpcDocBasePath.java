@@ -17,8 +17,6 @@ import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,9 +42,6 @@ public class HpcDocBasePath extends HashMap<String, String>
 	@Autowired
     private HpcDataManagementProxy dataManagementProxy = null;
 	
-	// base paths from config.
-	private String docBasePaths = null;
-	
     // The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -55,28 +50,14 @@ public class HpcDocBasePath extends HashMap<String, String>
     // Constructors
     //---------------------------------------------------------------------//
 
-	/**
-     * Constructor for Spring Dependency Injection.
-     *
-     * @param docBasePaths A whitespace separated list of valid DOC values and their base path.
-     * @throws HpcException On configuration error.
-     */
-    private HpcDocBasePath(String docBasePaths) throws HpcException
-    {
-    	super();
-    	this.docBasePaths = docBasePaths;
-    	logger.error("ERAN: Constructor");
-    }
-    
     /**
      * Default constructor disabled.
      *
      * @throws HpcException Constructor is disabled.
      */
-    private HpcDocBasePath() throws HpcException
+    private HpcDocBasePath()
     {
-    	throw new HpcException("Constructor disabled",
-    			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    	super();
     }
     
 	//---------------------------------------------------------------------//
@@ -84,12 +65,12 @@ public class HpcDocBasePath extends HashMap<String, String>
     //---------------------------------------------------------------------//
 
 	/**
-     * Init the map. Need this to be post constructor to let the dependencies be set.
+     * Init the DOC base paths map. 
      *
+     * @param docBasePaths The base paths in a config-string format.
      * @throws HpcException On configuration error.
      */
-    @PostConstruct
-    public void init() throws HpcException
+    public void setDocBasePath(String docBasePaths) throws HpcException
     {
     	logger.error("ERAN: base path loading");
     	for(String docBasePath : Arrays.asList(docBasePaths.split("\\s+"))) {
