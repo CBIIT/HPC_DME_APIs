@@ -426,19 +426,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	pathAttributes.setSize(0);
     	pathAttributes.setIsAccessible(true);
     	
+    	logger.error("ERAN get DT path attributes: " + fileLocation);
     	// Invoke the Globus directory listing service.
         try {
         	 Result dirContent = listDirectoryContent(fileLocation, client);
         	 pathAttributes.setExists(true);
         	 pathAttributes.setIsDirectory(true);
         	 pathAttributes.setSize(getSize ? getDirectorySize(dirContent, client) : -1);
-        	 logger.error("ERAN RESULT: " + fileLocation + ". " + dirContent.document.toString());
+        	 
         	
         } catch(APIError error) {
-        	    logger.error("ERAN ERROR CODE: " + error.code);
-        	    logger.error("ERAN ERROR CCATEGORY: " + error.category);
-        	    logger.error("ERAN ERROR STATUS CODE: " + new Integer(error.statusCode));
-        	    logger.error("ERAN ERROR: " + fileLocation + ". ", error);
         	    if(error.statusCode == 502) {
         	       if(error.code.equals(NOT_DIRECTORY_GLOBUS_CODE)) {
         	          // Path exists as a single file
