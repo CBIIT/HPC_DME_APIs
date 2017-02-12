@@ -89,7 +89,7 @@ public class HpcDocBasePath extends HashMap<String, String>
      * @throws HpcException On configuration error.
      */
     @PostConstruct
-    private void init() throws HpcException
+    public void init() throws HpcException
     {
     	logger.error("ERAN: base path loading");
     	for(String docBasePath : Arrays.asList(docBasePaths.split("\\s+"))) {
