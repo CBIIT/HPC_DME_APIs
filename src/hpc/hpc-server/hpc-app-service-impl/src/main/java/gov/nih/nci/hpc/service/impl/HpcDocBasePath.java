@@ -51,9 +51,8 @@ public class HpcDocBasePath extends HashMap<String, String>
     //---------------------------------------------------------------------//
 
     /**
-     * Default constructor disabled.
+     * Default constructor for Spring Dependency Injection.
      *
-     * @throws HpcException Constructor is disabled.
      */
     private HpcDocBasePath()
     {
@@ -65,14 +64,14 @@ public class HpcDocBasePath extends HashMap<String, String>
     //---------------------------------------------------------------------//
 
 	/**
-     * Init the DOC base paths map. 
+     * Initialize the DOC base paths map. Called by Spring Dependency Injection.
      *
      * @param docBasePaths The base paths in a config-string format.
      * @throws HpcException On configuration error.
      */
-    public void setDocBasePath(String docBasePaths) throws HpcException
+    @SuppressWarnings("unused")
+	private void setDocBasePath(String docBasePaths) throws HpcException
     {
-    	logger.error("ERAN: base path loading");
     	for(String docBasePath : Arrays.asList(docBasePaths.split("\\s+"))) {
     		String[] splitDocBasePath = docBasePath.split("=");
     		if(splitDocBasePath.length != 2) {
@@ -83,7 +82,7 @@ public class HpcDocBasePath extends HashMap<String, String>
     		put(splitDocBasePath[0], dataManagementProxy.getRelativePath(splitDocBasePath[1]));
     	}
     	
-    	logger.error("Supported DOC: " + toString());
+    	logger.info("Supported DOC: " + toString());
     }
 }
 
