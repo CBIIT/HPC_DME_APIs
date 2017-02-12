@@ -51,8 +51,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     // Constants
     //---------------------------------------------------------------------//
 	
-	// Data Management OWN permission.
+	// Data Management permissions.
 	private static final String OWN_PERMISSION = "OWN"; 
+	private static final String WRITE_PERMISSION = "WRITE"; 
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -246,11 +247,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	      	                  HpcErrorType.UNEXPECTED_ERROR);
     	}
     	
-    	HpcUserPermission permissionRequest = new HpcUserPermission();
-    	permissionRequest.setPermission(OWN_PERMISSION);
-    	permissionRequest.setUserId(dataManagementAccount.getUsername());
-    	
-    	setPermission(path, permissionRequest);
+    	setPermission(path, dataManagementAccount.getUsername(), OWN_PERMISSION);
+    }
+    
+    @Override
+    public void assignDocBasePathPermission(String doc, String userId) throws HpcException
+    {
+    	String path = docBasePath.get(doc);
+    	if(path != null) {
+           setPermission(path, userId, WRITE_PERMISSION);
+    	}
     }
     
     @Override
@@ -386,5 +392,21 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	return null;
+    }
+    
+    /**
+     * Set permission.
+     *
+     * @param path The entity path.
+     * @param userId The user ID.
+     * @param permission The permission.
+     * @throws HpcException on service failure.
+     */
+    private void setPermission(String path, String userId, String permission) throws HpcException
+    {
+    	HpcUserPermission permissionRequest = new HpcUserPermission();
+        permissionRequest.setPermission(permission);
+        permissionRequest.setUserId(userId);
+        setPermission(path, permissionRequest);
     }
 }
