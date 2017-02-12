@@ -93,7 +93,7 @@
 	
 	<!--  The DOC to base path map -->
 	<bean id="hpcDocBasePath" class="gov.nih.nci.hpc.service.impl.HpcDocBasePath">
-		<constructor-arg value="${hpc.service.docBasePath}" index="0" />
+		<property name="docBasePath" value="${hpc.service.docBasePath}" />
 	</bean>
 	
 	<!-- HPC Application Services Beans -->
