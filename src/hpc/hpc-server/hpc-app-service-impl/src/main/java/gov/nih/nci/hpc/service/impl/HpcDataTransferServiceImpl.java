@@ -440,7 +440,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	   	}
 
 	   	// Calculate the destination.
-	    if(getPathAttributes(dataTransferType, destinationLocation, false).getIsDirectory()) {
+	    if(pathAttributes.getIsDirectory()) {
            // Caller requested to download to a directory. Append the source file name.
            HpcFileLocation calcDestination = new HpcFileLocation();
            calcDestination.setFileContainerId(destinationLocation.getFileContainerId());
