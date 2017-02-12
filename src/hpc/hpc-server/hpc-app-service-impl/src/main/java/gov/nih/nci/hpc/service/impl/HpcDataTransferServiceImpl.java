@@ -580,7 +580,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	 	}
 		
 	   	// Validate source file is not a directory.
-		if(!pathAttributes.getIsDirectory()) {
+		if(pathAttributes.getIsDirectory()) {
 	 	   throw new HpcException("Source file location is a directory: " + 
 	 			                  sourceFileLocation.getFileContainerId() + ":" +
 	 			                  sourceFileLocation.getFileId(), 
