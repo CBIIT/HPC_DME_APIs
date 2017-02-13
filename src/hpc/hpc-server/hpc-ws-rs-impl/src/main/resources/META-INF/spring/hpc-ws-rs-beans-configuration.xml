@@ -101,6 +101,8 @@
           <value>notificationDeliveryMethods</value>
           <value>reports</value>
           <value>reportEntries</value>
+          <value>notificationTriggers</value>
+          <value>payloadEntries</value>
     </util:list>
 
 	<!-- JSON Provider -->
