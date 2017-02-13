@@ -44,7 +44,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
@@ -143,7 +143,7 @@ public class HpcDownloadController extends AbstractHpcController {
 		try {
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			String serviceURL = dataObjectServiceURL + downloadFile.getDestinationPath() + "/download";
-			HpcDataObjectDownloadRequestDTO dto = new HpcDataObjectDownloadRequestDTO();
+			HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
 			boolean asyncDownload = false;
 			if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("async")) {
 				HpcFileLocation location = new HpcFileLocation();

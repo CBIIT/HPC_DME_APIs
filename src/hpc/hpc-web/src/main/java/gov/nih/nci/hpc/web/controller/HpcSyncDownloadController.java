@@ -42,7 +42,7 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
@@ -73,7 +73,7 @@ public class HpcSyncDownloadController extends AbstractHpcController {
 
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			String serviceURL = dataObjectServiceURL + downloadFile.getDestinationPath() + "/download";
-			HpcDataObjectDownloadRequestDTO dto = new HpcDataObjectDownloadRequestDTO();
+			HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
 
 			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
