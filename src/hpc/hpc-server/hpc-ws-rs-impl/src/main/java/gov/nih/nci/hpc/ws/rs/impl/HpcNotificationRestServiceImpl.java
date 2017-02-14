@@ -110,13 +110,15 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
     public Response getNotificationDeliveryReceipts(Integer page, Boolean totalCount)
     {
 		logger.info("Invoking RS: GET /notification/deliveryReceipts");
+		long start = System.currentTimeMillis();
 	
 		HpcNotificationDeliveryReceiptListDTO deliveryReceipts = null;
 		try {
 			deliveryReceipts = notificationBusService.getNotificationDeliveryReceipts(
 					                                     page != null ? page : 1,
 					                                     totalCount != null ? totalCount : false);
-			 
+		long stop = System.currentTimeMillis();
+		logger.error("getNotificationDeliveryReceipts "+ (stop-start));	 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /notification/deliveryReceipts failed:", e);
 			    return errorResponse(e);

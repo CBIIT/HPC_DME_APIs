@@ -128,8 +128,10 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 		
 		HpcAuthenticationResponseDTO authenticationResponse = null;
 		try {
+long start = System.currentTimeMillis();
 			 authenticationResponse = securityBusService.getAuthenticationResponse();
-			 
+long stop = System.currentTimeMillis();
+logger.error("authenticate "+(stop-start));			 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /authenticate failed", e);
 			    return errorResponse(e);

@@ -28,6 +28,9 @@ import org.apache.cxf.phase.Phase;
 import org.apache.cxf.security.SecurityContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * <p>
  * HPC Authentication Interceptor.
@@ -46,6 +49,8 @@ public class HpcAuthenticationInterceptor
 	
 	// HTTP header attributes.
 	private static String AUTHORIZATION_HEADER = "Authorization";
+	private final Logger logger = 
+			             LoggerFactory.getLogger(this.getClass().getName());
 	
 	// Authorization Types
 	private static String BASIC_AUTHORIZATION = "Basic";
@@ -105,6 +110,7 @@ public class HpcAuthenticationInterceptor
     public void handleMessage(Message message) 
     {
     	// Authenticate the caller (if configured to do so) and populate the request context.
+long start = System.currentTimeMillis();
         try {
         	 HpcAuthenticationResponseDTO authenticationResponse = authenticate(message);
              if(!authenticationResponse.getAuthenticated()) {
@@ -114,7 +120,8 @@ public class HpcAuthenticationInterceptor
              // Set a security context with the user's role.
              HpcSecurityContext sc = new HpcSecurityContext(authenticationResponse.getUserRole().value());
              message.put(SecurityContext.class, sc);
-             
+             long stop = System.currentTimeMillis();
+logger.error((stop-start) + " handleMessage: Total time");
         } catch(HpcException e) {
         	    throw new HpcAuthenticationException(e.getMessage(), e);
         	    
@@ -139,17 +146,24 @@ public class HpcAuthenticationInterceptor
      */
     private HpcAuthenticationResponseDTO authenticate(Message message) throws HpcException
     {
+long start = System.currentTimeMillis();
+HpcAuthenticationResponseDTO dto = null;
 		String[] authorization = getAuthorization(message);
     	String authorizationType = authorization[0];
     	
     	// Authenticate the caller (if configured to do so) and populate the request context.
         if(authorizationType.equals(BASIC_AUTHORIZATION)) {
-           return authenticate(message.get(AuthorizationPolicy.class));
+           dto = authenticate(message.get(AuthorizationPolicy.class));
+        long stop = System.currentTimeMillis();
+logger.error((stop-start) + " authenticate: Total time");
+           return dto;
         } 
         if(authorizationType.equals(TOKEN_AUTHORIZATION)) {
-           return authenticate(authorization[1]);
+           dto = authenticate(authorization[1]);
+        long stop = System.currentTimeMillis();
+logger.error((stop-start) + " authenticate1: Total time");
+           return dto;
         } 
-        
         throw new HpcAuthenticationException("Invalid Authorization Type: " + authorizationType); 
     }
     
@@ -163,13 +177,18 @@ public class HpcAuthenticationInterceptor
     private HpcAuthenticationResponseDTO authenticate(AuthorizationPolicy policy) 
     		                                         throws HpcException
     {
+long start = System.currentTimeMillis();
+HpcAuthenticationResponseDTO dto = null;
     	String userName = null, password = null;
     	if(policy != null) {
     	   userName = policy.getUserName();
     	   password = policy.getPassword();
     	}
     	
-    	return securityBusService.authenticate(userName, password, ldapAuthentication);
+    	dto = securityBusService.authenticate(userName, password, ldapAuthentication);
+long stop = System.currentTimeMillis();
+logger.error((stop-start) + " authenticate2: Total time");
+return dto;
     }
     
     /**
@@ -181,7 +200,12 @@ public class HpcAuthenticationInterceptor
      */
     private HpcAuthenticationResponseDTO authenticate(String token) throws HpcException
     {
-    	return securityBusService.authenticate(token);
+long start = System.currentTimeMillis();
+HpcAuthenticationResponseDTO dto = null;
+    	dto = securityBusService.authenticate(token);
+long stop = System.currentTimeMillis();
+logger.error((stop-start) + " authenticate3: Total time");
+return dto;
     }
     
     /**
@@ -193,6 +217,7 @@ public class HpcAuthenticationInterceptor
      */
     private String[] getAuthorization(Message message) throws HpcAuthenticationException
     {
+long start = System.currentTimeMillis();
 		// Determine the authorization type.
 		@SuppressWarnings("unchecked")
 		Map<String, Object> protocolHeaders = 
@@ -207,7 +232,8 @@ public class HpcAuthenticationInterceptor
 		if(authorization == null || authorization.isEmpty()) {
 		   throw new HpcAuthenticationException("Invalid Authorization Header"); 
 		}
-		
+long stop = System.currentTimeMillis();		
+logger.error((stop-start) + " getAuthorization: Total time");
 		return authorization.get(0).split(" ");
     }
 } 
