@@ -14,3 +14,4 @@
 
 ../../utils/cleantest
 ../utils/cleantest
+rm object* 2> /dev/null

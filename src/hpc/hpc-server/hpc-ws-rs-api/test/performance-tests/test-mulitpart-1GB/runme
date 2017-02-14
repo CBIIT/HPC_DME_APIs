@@ -15,5 +15,5 @@
 source $HPC_DM_TEST/utils/functions
 ../utils/runtest
 
-../utils/upload-object 10000
+../utils/upload-object 35000
 verify_registration dataObject-registration-response-header.tmp
