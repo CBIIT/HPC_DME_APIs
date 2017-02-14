@@ -34,7 +34,7 @@ HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 echo $HTTP_CODE >&2
 
 
-EXPECTED_MSG="Failed to create a file"
+EXPECTED_MSG="Destination file location not accessible"
 get_json_value $RESPONSE_MSG errorType >&2
 get_json_value $RESPONSE_MSG message | sed "s/^$EXPECTED_MSG.*/$EXPECTED_MSG/"  >&2
 #Do not check the file is the code is not 200
