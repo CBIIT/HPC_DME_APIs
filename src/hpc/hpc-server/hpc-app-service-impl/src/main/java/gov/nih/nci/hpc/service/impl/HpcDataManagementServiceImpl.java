@@ -53,7 +53,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	
 	// Data Management permissions.
 	private static final String OWN_PERMISSION = "OWN"; 
-	private static final String WRITE_PERMISSION = "WRITE"; 
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -248,15 +247,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	setPermission(path, dataManagementAccount.getUsername(), OWN_PERMISSION);
-    }
-    
-    @Override
-    public void assignDocBasePathPermission(String doc, String userId) throws HpcException
-    {
-    	String path = docBasePath.get(doc);
-    	if(path != null) {
-           setPermission(path, userId, WRITE_PERMISSION);
-    	}
     }
     
     @Override
