@@ -236,7 +236,9 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     	long start = System.currentTimeMillis();
     	HpcNamedCompoundMetadataQueryDTO query = null;
 		try {
+    	logger.error("Invoking RS: GET /query/{queryName}"+queryName);
 			 query = dataSearchBusService.getQuery(queryName);
+    	logger.error("Invoking RS: GET /query/{queryName }" +query);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /query/{queryName}: failed:", e);
@@ -262,7 +264,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " getQueries: Total time");
+		logger.error((stop-start) + " getQueries: Total time");
 		
     	return okResponse(!queries.getNamedCompoundQueries().isEmpty() ? queries : null, true);
     }
@@ -288,7 +290,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 		Response response =  okResponse(!metadataAttributes.getCollectionMetadataAttributes().isEmpty() || 
 				          !metadataAttributes.getDataObjectMetadataAttributes().isEmpty() ? 
 				          metadataAttributes : null, true);
-		logger.info((stop-start) + " getMetadataAttributes: " );
+		logger.error((stop-start) + " getMetadataAttributes: " );
 		return response;
     }
     

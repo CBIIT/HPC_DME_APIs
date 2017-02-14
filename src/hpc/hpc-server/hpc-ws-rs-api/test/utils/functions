@@ -419,7 +419,8 @@ function curl_register {
         RESPONSE_HEADER=${TYPE}-registration-response-header.tmp
     #fi
 
-    CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/${DESTINATION_PATH}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s"
+    #CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/${DESTINATION_PATH}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s"
+    CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/${DESTINATION_PATH}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
    
     if [ "$TYPE" == "dataObject" ]
     then
@@ -1035,6 +1036,65 @@ function query_by_metadata {
 
 
 
+# save a query
+#           :<query> The .json query file
+#           :<query-name> The query name 
+function save_query {
+
+    if [ -z "$1" ]  || [ -z "$2" ]
+    then 
+        echo "ERROR: using save_query"
+        echo "USAGE: save_query <query> <query-name>"      
+        exit
+    fi
+
+    QUERY="$1"
+    QUERY_NAME="$2"
+
+    if [ ! -e "$QUERY" ]
+    then
+        echo "ERROR: the query file $QUERY does not exist"
+        exit
+    fi
+
+    if [ -z "$RESPONSE_HEADER" ]
+    then
+        RESPONSE_HEADER=save-query-response-header.tmp
+    fi
+
+    if [ -z "$RESPONSE_MSG" ]
+    then
+        RESPONSE_MSG=save-query-response-msg.json.tmp
+    fi
+
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+    CONFIG="--config $HPC_DM_TEST/utils/config"
+
+    curl -H "Content-Type: application/json" -d @"$QUERY" -X POST $SERVER/query/$QUERY_NAME $CONFIG  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    check_connection $RESPONSE_HEADER
+}
+
+# Get search queries
+#         
+#        
+function get_queries {
+
+    if [ -z "$RESPONSE_HEADER" ]
+    then
+        RESPONSE_HEADER=get-query-response-header.tmp
+    fi
+
+    if [ -z "$RESPONSE_MSG" ]
+    then
+        RESPONSE_MSG=get-query-response-msg.json.tmp
+    fi
+
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+    CONFIG="--config $HPC_DM_TEST/utils/config"
+
+    curl  -X GET $SERVER/query $CONFIG  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    check_connection $RESPONSE_HEADER
+}
 
 #Subscribe to notifications using template
 function subscribe_to_template_notifications {
@@ -1190,6 +1250,102 @@ function update_single_permission {
     
 }
 
+#Register a query
+#Inputs:    <query-name> 
+#           <query-file>
+function register_query {
+
+    USAGE="ERROR: using register_query.\nUSAGE: register_query <query-name> <query-file>"
+
+    if [ -z "$1" ]
+    then    
+        echo "Missing query-name" >&2
+        echo "$USAGE"  1>&2
+        exit
+
+    fi
+
+    if [ -z "$2" ]
+    then
+
+        echo "Missing query-file" >&2
+        echo "$USAGE" >&2
+        exit
+    fi
+
+    QUERY_NAME="$1"
+    QUERY_PATH="$2"
+
+
+    if [ ! -f "$QUERY_PATH" ]
+    then
+        echo "The query file $QUERY_PATH does not exist" >&2
+        exit
+    fi
+
+    CONFIG="" 
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+
+    RESPONSE_HEADER=register-query-response-header.tmp
+    RESPONSE_MSG=register-query-response-message.json.tmp
+
+    curl -X PUT ${SERVER}/query/"$QUERY_NAME" -H "Content-Type: application/json" -d @$QUERY_PATH --config $HPC_DM_TEST/utils/config -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
+    check_connection $RESPONSE_HEADER
+}
+
+
+#Retrieve a saved query
+#Inputs:    <query-name> 
+function get_query {
+
+    USAGE="ERROR: using get_query.\nUSAGE: get_query <query-name>"
+
+    if [ -z "$1" ]
+    then    
+        echo "Missing query-name" >&2
+        echo "$USAGE"  1>&2
+        exit
+
+    fi
+
+    QUERY_NAME="$1"
+
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+
+    RESPONSE_HEADER=get-query-response-header.tmp
+    RESPONSE_MSG=get-query-response-message.json.tmp
+
+    curl -X GET ${SERVER}/query/"$QUERY_NAME" --config $HPC_DM_TEST/utils/config -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
+    check_connection $RESPONSE_HEADER
+}
+
+
+
+
+#Register a query from a template
+#Inputs:  [query-id]  
+function register_query_from_template {
+
+
+    if [ -z "$1" ]
+    then
+        sleep 1
+        SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+        QUERY_ID=queryid-$SUFFIX
+    else
+        QUERY_ID="$1"
+    fi
+
+    QUERY_TEMPLATE=$HPC_DM_TEST/utils/templates/query-template.json
+
+    QUERY_STRING=$(cat $QUERY_TEMPLATE  | sed "s/DXTEST/dxattribute-$QUERY_ID/")
+    QUERY_FILE="query.json.tmp"
+
+    echo "$QUERY_STRING"  >  $QUERY_FILE
+    register_query "$QUERY_ID" "$QUERY_FILE"
+    echo "$QUERY_ID"
+
+}
 
 #Refresh the query metadata view 
 #Inputs: None 
