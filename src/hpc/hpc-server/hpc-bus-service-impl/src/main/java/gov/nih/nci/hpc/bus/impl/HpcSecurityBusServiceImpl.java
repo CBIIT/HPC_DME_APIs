@@ -146,10 +146,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	     securityService.addUser(userRegistrationDTO.getNciAccount(), 
     			                     userRegistrationDTO.getDataManagementAccount());
     	     
-    	     // Assign write permission to the DOC base path.
-    	     dataManagementService.assignDocBasePathPermission(userRegistrationDTO.getNciAccount().getDoc(), 
-    	    		                                           userRegistrationDTO.getDataManagementAccount().getUsername());
-    	     
     	     registrationCompleted = true;
     	     
     	} finally {
