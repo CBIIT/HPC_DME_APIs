@@ -51,6 +51,10 @@ OBJECT_PATH=$PROJECT_PATH/object-${NAME}.txt
 OBJECT_FILE=object-$FILE_SIZE.tmp
 dd if=/dev/zero of=$OBJECT_FILE  bs=1M  count=$FILE_SIZE &> dd-output.tmp
 
-curl_register ../utils/upload-input-template.json  "$OBJECT_PATH" dataObject "$OBJECT_FILE"
+#Get the dataObject metadata
+cp $HPC_DM_TEST/utils/templates/upload-input-template.json register-dataobject.json.tmp
+
+#Register the dataObject
+curl_register register-dataobject.json.tmp  "$OBJECT_PATH" dataObject "$OBJECT_FILE"
 
 verify_registration dataObject-registration-response-header.tmp
