@@ -1,0 +1,18 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"DXTEST",
+                "value":"FNLCR",
+                "operator":"EQUAL"
+            },
+            {
+                "attribute":"name",
+                "value":"prasad project1 sub1",
+                "operator":"EQUAL"
+            }
+        ]
+    },
+    "detailedResponse":true
+}
