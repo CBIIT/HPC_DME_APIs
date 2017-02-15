@@ -1,0 +1,40 @@
+{ 
+     	"metadataEntries": [
+               {
+                "attribute": "name",
+                "value": "training data object2"
+                              },
+               {
+                "attribute": "description",
+                "value": "file-description2"
+                              },
+                              {
+                "attribute": "source_lab_pi",
+                "value": "file-Source Lab PI"
+                              },
+                              {
+                "attribute": "lab_branch",
+                "value": "file-Lab / Branch Name"
+                              },
+                              {
+                               "attribute": "pi_doc",
+                "value": "FNLCR"
+                              },
+                              {
+                               "attribute": "flow_cell_id",
+                "value": "file-FlowCell ID"
+                              },
+                              {
+                               "attribute": "run_id",
+                "value": "file-Run ID"
+                              },
+                              {
+                               "attribute": "run_date",
+                "value": "10/11/2015"
+                              },
+                              {
+                               "attribute": "library_id",
+                "value": "file-Library ID"
+                              }
+               ]
+}

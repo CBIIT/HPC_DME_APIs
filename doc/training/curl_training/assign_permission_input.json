@@ -1,0 +1,13 @@
+{
+	"entityPermissionRequests": [
+		{
+			"path": "/FNL_SF_Archive/curl_training/project_1",
+			"userPermissions": [
+       			{
+    					"userId": "test_user2",
+    					"permission": "WRITE"
+ 				}
+ 			]
+		}
+	]
+}
