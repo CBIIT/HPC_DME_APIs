@@ -1,9 +1,26 @@
 package gov.nih.nci.hpc.web.model;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class HpcNotification {
 	private String eventType;
 	private boolean subscribed;
 	private String displayName;
+	private List<HpcNotificationTriggerModel> triggers;
+	
+	
+	public List<HpcNotificationTriggerModel> getTriggers() {
+		if(triggers == null)
+			triggers = new ArrayList<HpcNotificationTriggerModel>();
+		return triggers;
+	}
+
+	public void setTriggers(List<HpcNotificationTriggerModel> triggers) {
+		this.triggers = triggers;
+	}
 
 	public String getEventType() {
 		return eventType;
