@@ -11,6 +11,7 @@ package gov.nih.nci.hpc.web.controller;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,9 +48,11 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
+import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationTrigger;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
@@ -57,6 +60,8 @@ import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcNotification;
 import gov.nih.nci.hpc.web.model.HpcNotificationRequest;
+import gov.nih.nci.hpc.web.model.HpcNotificationTriggerModel;
+import gov.nih.nci.hpc.web.model.HpcNotificationTriggerModelEntry;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
@@ -111,7 +116,7 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			String[] eventTypes = request.getParameterValues("eventType");
 			String serviceURL = notificationURL;
-			HpcNotificationSubscriptionsRequestDTO subscriptionsRequestDTO = constructRequest(eventTypes);
+			HpcNotificationSubscriptionsRequestDTO subscriptionsRequestDTO = constructRequest(eventTypes, request);
 
 			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
@@ -163,10 +168,82 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 		return "subscribenotifications";
 	}
 
-	private HpcNotificationSubscriptionsRequestDTO constructRequest(String[] eventTypes) {
+	private HpcNotificationSubscriptionsRequestDTO constructRequest(String[] eventTypes, HttpServletRequest request) {
 		HpcNotificationSubscriptionsRequestDTO dto = new HpcNotificationSubscriptionsRequestDTO();
 		List<HpcNotificationSubscription> addUpdateSubscriptions = new ArrayList<HpcNotificationSubscription>();
 		List<HpcEventType> deleteSubscriptions = new ArrayList<HpcEventType>();
+
+		boolean collectionUpdated = false;
+		Enumeration<String> params = request.getParameterNames();
+		HpcNotificationSubscription collectionUpdateSubscription = new HpcNotificationSubscription();
+		collectionUpdateSubscription.setEventType(HpcEventType.COLLECTION_UPDATED);
+		collectionUpdateSubscription.getNotificationDeliveryMethods().add(HpcNotificationDeliveryMethod.EMAIL);
+		List<HpcNotificationTrigger> triggers = new ArrayList<HpcNotificationTrigger>();
+		
+		while(params.hasMoreElements())
+		{
+			HpcNotificationSubscription addUpdateSubscription = new HpcNotificationSubscription();
+			String paramName = params.nextElement();
+			if(paramName.startsWith("collectionPathAdded"))
+			{
+				String[] value = request.getParameterValues(paramName);
+				if(value != null && !value[0].isEmpty())
+				{
+					HpcNotificationTrigger trigger = new HpcNotificationTrigger();
+					List<HpcEventPayloadEntry> entries = new ArrayList<HpcEventPayloadEntry>();
+					HpcEventPayloadEntry pathEntry = new HpcEventPayloadEntry();
+					pathEntry.setAttribute("COLLECTION_PATH");
+					pathEntry.setValue(value[0]);
+					entries.add(pathEntry);
+					String counter = paramName.substring("collectionPathAdded".length());
+					String[] metadata = request.getParameterValues("metadata"+counter);
+					if(metadata != null && metadata.length > 0 && (metadata[0].equals("true") || metadata[0].equals("on")))
+					{
+						HpcEventPayloadEntry metadataEntry = new HpcEventPayloadEntry();
+						metadataEntry.setAttribute("UPDATE");
+						metadataEntry.setValue("METADATA");
+						entries.add(metadataEntry);
+					}
+					trigger.getPayloadEntries().addAll(entries);
+					triggers.add(trigger);
+					collectionUpdated = true;
+				}
+			}
+			else if(paramName.startsWith("existingCollectionCheck"))
+			{
+				String[] value = request.getParameterValues(paramName);
+				if(value != null && value[0].equals("on"))
+				{
+					String counter = paramName.substring("existingCollectionCheck".length());
+					String[] existingCollectionPath = request.getParameterValues("existingCollectionPath"+counter);
+						HpcNotificationTrigger trigger = new HpcNotificationTrigger();
+						List<HpcEventPayloadEntry> entries = new ArrayList<HpcEventPayloadEntry>();
+						HpcEventPayloadEntry pathEntry = new HpcEventPayloadEntry();
+						pathEntry.setAttribute("COLLECTION_PATH");
+						pathEntry.setValue(existingCollectionPath[0]);
+						entries.add(pathEntry);
+						String[] existingMetadataCheck = request.getParameterValues("existingMetadataCheck"+counter);
+
+						if(existingMetadataCheck != null && existingMetadataCheck.length > 0 && (existingMetadataCheck[0].equals("true") || existingMetadataCheck[0].equals("on")))
+						{
+							HpcEventPayloadEntry metadataEntry = new HpcEventPayloadEntry();
+							metadataEntry.setAttribute("UPDATE");
+							metadataEntry.setValue("METADATA");
+							entries.add(metadataEntry);
+						}
+						
+						trigger.getPayloadEntries().addAll(entries);
+						triggers.add(trigger);
+						collectionUpdated = true;
+				}
+			}
+		}
+
+		if(collectionUpdated)
+		{
+			collectionUpdateSubscription.getNotificationTriggers().addAll(triggers);
+			dto.getAddUpdateSubscriptions().add(collectionUpdateSubscription);
+		}
 
 		if (eventTypes != null) {
 			List<HpcEventType> types = getEventTypes();
@@ -177,13 +254,17 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 					addUpdateSubscriptions.add(addUpdateSubscription);
 					addUpdateSubscription.getNotificationDeliveryMethods().add(HpcNotificationDeliveryMethod.EMAIL);
 				} else
-					deleteSubscriptions.add(type);
+				{
+					if(!type.equals(HpcEventType.COLLECTION_UPDATED))
+						deleteSubscriptions.add(type);
+					else if (!collectionUpdated)
+						deleteSubscriptions.add(type);
+				}
 
 			}
 			dto.getAddUpdateSubscriptions().addAll(addUpdateSubscriptions);
 			dto.getDeleteSubscriptions().addAll(deleteSubscriptions);
 		}
-
 		return dto;
 	}
 
@@ -200,14 +281,39 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 	private void populateNotifications(Model model, String authToken, HpcUserDTO user, HttpSession session) {
 		Map<String, String> eventTypes = new HashMap<String, String>();
 		List<HpcNotification> notifications = new ArrayList<HpcNotification>();
-		List<String> subscriptions = getUserNotifications(authToken);
+		List<HpcNotificationSubscription> subscriptions = getUserNotifications(authToken);
 		List<HpcEventType> types = getEventTypes();
 
 		for (HpcEventType type : types) {
 			HpcNotification notification = new HpcNotification();
+			HpcNotificationSubscription subscription = getNotificationSubscription(subscriptions, type);
 			notification.setEventType(type.name());
 			notification.setDisplayName(getDisplayName(type.name()));
-			notification.setSubscribed(subscriptions.contains(type.name()));
+			notification.setSubscribed(subscription == null ? false : true);
+			if(type.equals(HpcEventType.COLLECTION_UPDATED) && subscription != null)
+			{
+				List<HpcNotificationTrigger> triggers = subscription.getNotificationTriggers();
+				if(triggers != null && triggers.size() > 0)
+				{
+					for(HpcNotificationTrigger trigger : triggers)
+					{
+						HpcNotificationTriggerModel triggerModel = new HpcNotificationTriggerModel();
+						if(trigger.getPayloadEntries() != null && trigger.getPayloadEntries().size() > 0)
+						{
+							HpcNotificationTriggerModelEntry modelEntry = new HpcNotificationTriggerModelEntry();
+							for(HpcEventPayloadEntry entry : trigger.getPayloadEntries())
+							{
+								if(entry.getAttribute().equals("COLLECTION_PATH"))
+									modelEntry.setPath(entry.getValue());
+								else if(entry.getAttribute().equals("UPDATE"))
+									modelEntry.setMetadata(entry.getValue());
+							}
+							triggerModel.getEntries().add(modelEntry);
+						}
+						notification.getTriggers().add(triggerModel);
+					}
+				}
+			}
 			notifications.add(notification);
 		}
 
@@ -215,7 +321,31 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 		model.addAttribute("notifications", notifications);
 		session.setAttribute("subscribedNotifications", notifications);
 	}
+	
+	private boolean isSubscribed(List<HpcNotificationSubscription> subscriptions, HpcEventType type)
+	{
+		if(subscriptions == null || subscriptions.size() == 0)
+			return false;
+		for(HpcNotificationSubscription subscription : subscriptions)
+		{
+			if(subscription.getEventType().equals(type))
+				return true;
+		}
+		return false;
+	}
 
+	private HpcNotificationSubscription getNotificationSubscription(List<HpcNotificationSubscription> subscriptions, HpcEventType type)
+	{
+		if(subscriptions == null || subscriptions.size() == 0)
+			return null;
+		for(HpcNotificationSubscription subscription : subscriptions)
+		{
+			if(subscription.getEventType().equals(type))
+				return subscription;
+		}
+		return null;
+	}
+	
 	private List<HpcEventType> getEventTypes() {
 		HpcEventType[] types = HpcEventType.values();
 		List<HpcEventType> eventTypes = new ArrayList<HpcEventType>();
@@ -242,29 +372,9 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 			return displayName;
 		else
 			return eventName;
-		//
-		// if(eventName.equals("DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE"))
-		// return env.getProperty("DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE")
-		// != null ?
-		// env.getProperty("DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE") : "Data
-		// Transfer Upload in staging archive";
-		// else if(eventName.equals("DATA_TRANSFER_UPLOAD_ARCHIVED"))
-		// return "Data Transfer Upload archived";
-		// else if(eventName.equals("DATA_TRANSFER_UPLOAD_FAILED"))
-		// return "Data Transfer Upload failed";
-		// else if(eventName.equals("DATA_TRANSFER_DOWNLOAD_COMPLETED"))
-		// return "Data Transfer Download completed";
-		// else if(eventName.equals("DATA_TRANSFER_DOWNLOAD_FAILED"))
-		// return "Data Transfer Download failed";
-		// else if(eventName.equals("USAGE_SUMMARY_REPORT"))
-		// return "Data Archive Usage Summary report";
-		// else if(eventName.equals("USAGE_SUMMARY_BY_WEEKLY_REPORT"))
-		// return "Data Archive Usage Summary report of this week";
-		// else
-		// return eventName;
 	}
 
-	private List<String> getUserNotifications(String authToken) {
+	private List<HpcNotificationSubscription> getUserNotifications(String authToken) {
 		HpcNotificationSubscriptionListDTO subscriptionListDTO = HpcClientUtil.getUserNotifications(authToken,
 				notificationURL, sslCertPath, sslCertPassword);
 		List<String> subscriptionList = new ArrayList<String>();
@@ -272,12 +382,13 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 		if (subscriptionListDTO != null) {
 			List<HpcNotificationSubscription> subscriptions = subscriptionListDTO.getSubscriptions();
 			if (subscriptions != null && subscriptions.size() > 0) {
-				for (HpcNotificationSubscription subscription : subscriptions) {
-					subscriptionList.add(subscription.getEventType().name());
-				}
+//				for (HpcNotificationSubscription subscription : subscriptions) {
+//					subscriptionList.add(subscription.getEventType().name());
+//				}
+				return subscriptions;
 			}
 		}
-		return subscriptionList;
+		return null;
 	}
 
 }

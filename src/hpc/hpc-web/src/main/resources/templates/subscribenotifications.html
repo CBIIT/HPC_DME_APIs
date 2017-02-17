@@ -113,20 +113,55 @@
 													</thead>
 													<tbody>
 														<tr id='attrRow0'
-															th:each="notification : ${notifications}">
+															th:each="notification : ${notifications}" th:with="index=0">
 															<td style="white-space: nowrap" align="right">
-																<div th:if="${notification.subscribed}">
+																<div th:if="${notification.subscribed} == true and ${notification.eventType} != 'COLLECTION_UPDATED'">
 																	<input type="checkbox"
 																		th:value="${notification.eventType}" name="eventType"
-																		checked="checked" />
+																		checked="checked" onClick="enableSave()" />
 																</div>
-																<div th:unless="${notification.subscribed}">
+																<div th:if="${notification.subscribed} == false and ${notification.eventType} != 'COLLECTION_UPDATED'">
 																	<input type="checkbox"
-																		th:value="${notification.eventType}" name="eventType" />
+																		th:value="${notification.eventType}" name="eventType"  onClick="enableSave()"/>
 																</div>
 															</td>
-															<td style="white-space: nowrap"><label
+															<td style="white-space: nowrap">
+															<label
 																for="eventType" th:text="${notification.displayName}">value:</label>
+																<div th:if="${notification.eventType} == 'COLLECTION_UPDATED'" >
+																<br/>
+																	<table class="table table-bordered table-hover" id="collectionTable">
+																	<tbody>
+																		
+																		<tr th:each="trigger, iterationStatus : ${notification.getTriggers()}">
+																		<div th:each="entry : ${trigger.getEntries()}" id='collRow0' >
+																		<td th:if="${entry.getPath()} != null">
+																			<input type="checkbox" th:id="'existingCollectionCheck'+${iterationStatus.count}" th:name="'existingCollectionCheck'+${iterationStatus.count}"  onClick="enableSave()" checked="checked"/>
+																			<label id="existingCollectionPathAdded" th:text="${entry.getPath()}"></label>
+																			<input type="hidden" th:id="'existingCollectionPath'+${iterationStatus.count}" th:name="'existingCollectionPath'+${iterationStatus.count}" th:attr="value = ${entry.getPath()}"/>
+																		</td>
+																		<td th:if="${entry.getMetadata()} != null">
+																			<label><input type="checkbox" th:name="'existingMetadataCheck'+${iterationStatus.count}" th:id="'existingMetadataCheck'+${iterationStatus.count}" checked="checked"  onClick="enableSave()"/>Metadata Updates only</label> 
+																		</td>																		
+																		<td th:unless="${entry.getMetadata()} != null">
+																			<label><input type="checkbox" th:name="'existingMetadataCheck'+${iterationStatus.count}" th:id="'existingMetadataCheck'+${iterationStatus.count}"  onClick="enableSave()"/>Metadata Updates only</label> 
+																		</td>																		
+																		</div>
+																	</tr>
+																	</tbody>
+																	</table>															
+																<br/>
+																<table class="table table-bordered table-hover" id="collectionTable">
+																<tbody>
+																	<tr id='collRow0'><td>
+																	<input type="text" id='collectionPath' name="collectionPath" placeholder='collectionPath' class="form-control" /><br/>
+																	<label><input type="checkbox" name="metadata" id="metadata" />Metadata Updates only</label> 
+																	</td><td>
+																	<a id="addAttr" class="btn btn-default pull-left" onClick="addRow()">Add</a>
+																	</td></tr>
+																</tbody>
+																</table>
+																</div>
 															</td>
 														</tr>
 													</tbody>
@@ -135,7 +170,7 @@
 											<div class="form-group">
 												<div class="col-sm-offset-2 col-sm-10" align="left">
 													<button type="submit" class="btn btn-md btn-success"
-														id="primaryButton">Update</button>
+														id="primaryButton" disabled="disabled">Update</button>
 												</div>
 											</div>
 
@@ -170,6 +205,41 @@
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
 
+<script type="text/javascript">
+var rowId = 1;
+//<![CDATA[
+
+function enableSave()
+{
+	$('#primaryButton').removeClass('disabled');
+	$('#primaryButton').prop('disabled', false);
+}
+
+function addRow() {
+	enableSave();
+	rowId++;
+    var table = document.getElementById("collectionTable");
+    var path = document.getElementById("collectionPath").value;
+    var metadata = document.getElementById("metadata").checked;
+    
+    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+    rows = rows - 1;
+    var row = table.insertRow(rows+1);
+    row.id = "collRow"+(rows+1);
+    var cell0 = row.insertCell(0);
+    var cell1 = row.insertCell(1);
+    cell0.innerHTML = '<td><input type="checkbox" id="collection'+(rows+1)+'" name="collection'+(rows+1)+'" checked="checked"/></td><td><label id="collectionPathAdded'+ (rowId) +'">'+ (path) + '</label><input type="hidden" id="collectionPathAdded'+(rows+1)+'" name="collectionPathAdded'+(rows+1)+'" value="'+ (path) +'"/></td>';
+    if(metadata)
+    	cell1.innerHTML = '<input type="checkbox" id="metadata'+(rows+1)+'" name="metadata'+(rows+1)+'" checked="checked"/><label id="metadata'+ (rowId) +'">Metadata Updates only</label>';
+   	else
+       	cell1.innerHTML = '<input type="checkbox" id="metadata'+(rows+1)+'" name="metadata'+(rows+1)+'"/><label id="metadata'+ (rowId) +'">Metadata Updates only</label>';
+
+    document.getElementById("collectionPath").value = "";
+    document.getElementById("metadata").checked = false;
+    
+}
+//]]>
+</script>
 
 </body>
 </html>
