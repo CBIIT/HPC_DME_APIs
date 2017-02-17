@@ -329,7 +329,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 					if (level.equals("Data file") || level.equals("DataObject"))
 						levelFilter.setLevel(1);
 					else
-						levelFilter.setLevel(new Integer(hierarchy.get(level)));
+						levelFilter.setLabel(level);
 					levelFilter.setOperator(HpcMetadataQueryOperator.EQUAL);
 					criteria.setLevelFilter(levelFilter);
 				}
