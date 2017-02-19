@@ -30,8 +30,10 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadReceiptDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
@@ -45,12 +47,10 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -198,39 +198,32 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcDownloadResponseDTO downloadCollection(String path,
-                                                     HpcDownloadRequestDTO downloadRequestDTO)
-                                                    throws HpcException
+    public HpcDownloadResponseListDTO downloadCollection(String path,
+                                                         HpcDownloadRequestDTO downloadRequest)
+                                                        throws HpcException
     {
     	logger.info("Invoking downloadCollection(path, downloadReqest): " + path + ", " + 
-                    downloadRequestDTO);
+                    downloadRequest);
     	
     	// Input validation.
-    	if(path == null || downloadRequestDTO == null) {
+    	if(path == null || downloadRequest == null) {
     	   throw new HpcException("Null path or download request",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	if(downloadRequest.getDestination() == null) {
+     	   throw new HpcException("Null destination in download request",
+     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+     	}
+    	
     	// Get the collection.
     	HpcCollection collection = dataManagementService.getCollection(path, true);
-    	if(collection == null || collection.getDataObjects().isEmpty()) {
+    	if(collection == null) {
       	   return null;
       	}
     	    	
-    	// Download all data objects in the collection.
-    	List<File> files = downloadDataObjects(collection.getDataObjects());
-    	
-    	// Zip and download files.
-    	HpcDataObjectDownloadResponse downloadResponse = 
-    	   dataTransferService.downloadZipFile(path, files, downloadRequestDTO.getDestination());
-    	deleteFiles(files);
-    	
-        // Construct and return download response DTO.
-        HpcDownloadResponseDTO downloadResponseDTO = new HpcDownloadResponseDTO();
-        downloadResponseDTO.setDestinationLocation(downloadResponse.getDestinationLocation());
-        downloadResponseDTO.setRequestId(downloadResponse.getDataTransferRequestId());
-        downloadResponseDTO.setDestinationFile(downloadResponse.getDestinationFile());
-        return downloadResponseDTO;
+    	// Download all data objects in the collection tree.
+    	return downloadDataObjects(collection, downloadRequest.getDestination());
     }
     
     @Override
@@ -349,14 +342,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     
     @Override
     public HpcDownloadResponseDTO downloadDataObject(String path,
-                                                     HpcDownloadRequestDTO downloadRequestDTO)
+                                                     HpcDownloadRequestDTO downloadRequest)
                                                     throws HpcException
     {
     	logger.info("Invoking downloadDataObject(path, downloadReqest): " + path + ", " + 
-                    downloadRequestDTO);
+                    downloadRequest);
     	
     	// Input validation.
-    	if(path == null || downloadRequestDTO == null) {
+    	if(path == null || downloadRequest == null) {
     	   throw new HpcException("Null path or download request",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
@@ -379,16 +372,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Download the data object.
     	HpcDataObjectDownloadResponse downloadResponse = 
-    	   dataTransferService.downloadDataObject(metadata.getArchiveLocation(), 
-                                                  downloadRequestDTO.getDestination(),
-                                                  metadata.getDataTransferType());
-        
-        // Construct and return download response DTO.
-        HpcDownloadResponseDTO downloadResponseDTO = new HpcDownloadResponseDTO();
-        downloadResponseDTO.setDestinationLocation(downloadResponse.getDestinationLocation());
-        downloadResponseDTO.setRequestId(downloadResponse.getDataTransferRequestId());
-        downloadResponseDTO.setDestinationFile(downloadResponse.getDestinationFile());
-        return downloadResponseDTO;
+    		   dataTransferService.downloadDataObject(metadata.getArchiveLocation(), 
+                                                      downloadRequest.getDestination(),
+                                                      metadata.getDataTransferType());
+    	
+    	// Construct and return a DTO.
+    	return toDownloadResponseDTO(downloadResponse.getDataTransferRequestId(),
+    			                     downloadResponse.getDestinationLocation(),
+    			                     downloadResponse.getDestinationFile(),
+    			                     true, null); 
     }
     
     @Override
@@ -648,42 +640,100 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 	
     /** 
-     * Download a list of data objects.
+     * Download a collection tree.
      * 
-     * @param dataObjectEntries A list of data object entries (in a collection).
+     * @param collection The collection to download.
+     * @param destination The download destination location.
      * @return A list of files.
      * @throws HpcException on service failure.
      */
-	private List<File> downloadDataObjects(List<HpcCollectionListingEntry> dataObjectEntries) 
-			                              throws HpcException
+	private HpcDownloadResponseListDTO downloadDataObjects(HpcCollection collection, 
+			                                               HpcFileLocation destinationLocation) 
+			                                              throws HpcException
 	{
-		// Download all data objects in the collection.
-		HpcDownloadRequestDTO dataObjectDownloadRequestDTO = new HpcDownloadRequestDTO();
-		List<File> files = new ArrayList<>();
-		try {
-		     for(HpcCollectionListingEntry dataObjectEntry : dataObjectEntries) {
-			     files.add(downloadDataObject(dataObjectEntry.getPath(), 
-			    		                      dataObjectDownloadRequestDTO).getDestinationFile());
-		     }
-		     
-		} catch(HpcException e) {
-			    deleteFiles(files);
-			    throw e;
+		// Iterate through the data objects in the collection and download them.
+		HpcDownloadResponseListDTO dataObjectDownloadResponses = new HpcDownloadResponseListDTO();
+		for(HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
+			// Calculate the destination location for this data object.
+			String dataObjectPath = dataObjectEntry.getPath();
+			HpcDownloadRequestDTO downloadRequest = new HpcDownloadRequestDTO();
+			downloadRequest.setDestination(calculateDownloadDestinationFileLocation(destinationLocation, dataObjectPath));
+			
+			// Download this data object.
+			try {
+			     dataObjectDownloadResponses.getDownloadReceipts().add(
+				    	   downloadDataObject(dataObjectPath, downloadRequest).getDownloadReceipt());
+			     
+			} catch(HpcException e) {
+				    // Data object download failed. 
+				    logger.error("Failed to download data object in a collection" , e); 
+				    dataObjectDownloadResponses.getDownloadReceipts().add(
+  				        toDownloadResponseDTO(null, downloadRequest.getDestination(), null, false, e.getMessage()).
+				        getDownloadReceipt());
+			}
 		}
 		
-		return files;
+		// Iterate through the sub-collections and download them.
+		for(HpcCollectionListingEntry subCollectionEntry : collection.getSubCollections()) {
+			String subCollectionPath = subCollectionEntry.getPath();
+			HpcCollection subCollection = dataManagementService.getCollection(subCollectionPath, true);
+	    	if(subCollection != null) {
+	    	   // Download this sub-collection. 
+			   dataObjectDownloadResponses.getDownloadReceipts().addAll(
+				   downloadDataObjects(subCollection,
+							           calculateDownloadDestinationFileLocation(destinationLocation, 
+							        		                                    subCollectionPath)).
+							          getDownloadReceipts());
+	    	}
+		}
+		
+		return dataObjectDownloadResponses;
 	}
 	
     /** 
-     * Delete files.
+     * Calculate a download destination path for a collection entry under a collection.
      * 
-     * @param files a list of files to delete
+     * @param collectionDestination The collection destination location.
+     * @param collectionListingEntryPath The entry path under the collection to calculate the destination location for.
+     * @return A calculated destination location.
      */
-	private void deleteFiles(List<File> files)
+	
+	private HpcFileLocation calculateDownloadDestinationFileLocation(HpcFileLocation collectionDestination,
+			                                                         String collectionListingEntryPath)
 	{
-		for(File file : files) {
-	    	FileUtils.deleteQuietly(file);
-	    }
+		HpcFileLocation calcDestination = new HpcFileLocation();
+	    calcDestination.setFileContainerId(collectionDestination.getFileContainerId());
+	    calcDestination.setFileId(collectionDestination.getFileId() + 
+	    		                  collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/')));
+	    return calcDestination;
+	}
+
+    /** 
+     * Construct a download response DTO object.
+     * 
+     * @param dataTransferRequestId The data transfer request ID.
+     * @param destinationLocation The destination file location.
+     * @param destinationFile The destination file.
+     * @param result The download request result.
+     * @param message The error message.
+     * @return A download response DTO object
+     */
+	private HpcDownloadResponseDTO toDownloadResponseDTO(String dataTransferRequestId,
+			                                             HpcFileLocation destinationLocation,
+			                                             File destinationFile,
+			                                             boolean result, String message)
+	{
+		// Construct and return a DTO
+		HpcDownloadResponseDTO downloadResponse = new HpcDownloadResponseDTO();
+		HpcDownloadReceiptDTO downloadReceipt = new HpcDownloadReceiptDTO();
+		downloadReceipt.setDataTransferRequestId(dataTransferRequestId);
+		downloadReceipt.setDestinationFile(destinationFile);
+		downloadReceipt.setDestinationLocation(destinationLocation);
+		downloadReceipt.setResult(result);
+		downloadReceipt.setMessage(message);
+		
+		downloadResponse.setDownloadReceipt(downloadReceipt);
+		return downloadResponse;
 	}
 }
 
