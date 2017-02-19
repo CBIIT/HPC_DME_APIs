@@ -290,7 +290,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 			 return taskId;
 		
 		} catch(Exception e) {
-		        throw new HpcException("Failed to transfer: " + source + ", " + destination, 
+		        throw new HpcException("Failed to transfer: " + e.getMessage() + 
+		        		               ". Ssource: " + source +
+		        		               ". Destination: " + destination, 
 		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 	}
