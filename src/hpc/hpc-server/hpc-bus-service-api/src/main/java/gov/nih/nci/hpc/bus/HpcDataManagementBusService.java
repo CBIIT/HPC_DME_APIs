@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -59,16 +60,16 @@ public interface HpcDataManagementBusService
     public HpcCollectionDTO getCollection(String path, Boolean list) throws HpcException;
     
     /**
-     * Download Collection.
+     * Download a collection tree.
      *
      * @param path The collection path.
      * @param downloadRequest The download request DTO.
      * @return Download ResponseDTO 
      * @throws HpcException on service failure.
      */
-	public HpcDownloadResponseDTO downloadCollection(String path, 
-			                                         HpcDownloadRequestDTO downloadRequest)
-			                                        throws HpcException;
+	public HpcDownloadResponseListDTO downloadCollection(String path, 
+			                                             HpcDownloadRequestDTO downloadRequest)
+			                                            throws HpcException;
     
     /**
      * Register a Data object.
