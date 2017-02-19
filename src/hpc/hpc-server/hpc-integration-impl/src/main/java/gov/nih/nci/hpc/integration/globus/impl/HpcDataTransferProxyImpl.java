@@ -290,14 +290,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 			 return taskId;
 		
 		} catch(APIError error) {
-		        throw new HpcException("Failed to transfer: " + error.message + " ** " + error.statusMessage +
-		    	     	               ". Source: " + source +
+		        throw new HpcException("Failed to transfer: " + error.message +
+		    	     	               ". Source: " + source + 
 	                                   ". Destination: " + destination, 
                                        HpcErrorType.DATA_TRANSFER_ERROR, error);
 		        
 		} catch(Exception e) {
-		        throw new HpcException("Failed to transfer: " + e.getMessage() + 
-		        		               ". Ssource: " + source +
+		        throw new HpcException("Failed to transfer. Source: " + source +
 		        		               ". Destination: " + destination, 
 		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
