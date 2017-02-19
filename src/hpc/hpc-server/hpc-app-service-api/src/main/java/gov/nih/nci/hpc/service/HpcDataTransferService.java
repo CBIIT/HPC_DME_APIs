@@ -66,20 +66,6 @@ public interface HpcDataTransferService
 			                                     HpcDataTransferType dataTransferType) 
 			                                     throws HpcException;
 	
-    /** 
-     * Compress a list of files into a single zip and download to a requested destination.
-     * 
-     * @param collectionPath The collection path the files belong to.
-     * @param files The files to zip and download.
-     * @param destinationLocation The destination location.
-     * @return A data object download response.
-     * @throws HpcException on service failure.
-     */
-	public HpcDataObjectDownloadResponse downloadZipFile(String collectionPath,
-			                                             List<File> files,
-			                                             HpcFileLocation destinationLocation) 
-			                                            throws HpcException;
-    
     /**
      * Get a data transfer upload request status.
      *
