@@ -19,8 +19,10 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadReceiptDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -155,9 +157,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     	path = toAbsolutePath(path);
     	logger.info("Invoking RS: POST /collection/" + path + "/download: " + downloadRequest);
     	
-    	HpcDownloadResponseDTO downloadResponse = null;
+    	HpcDownloadResponseListDTO downloadResponses = null;
 		try {
-			 downloadResponse = dataManagementBusService.downloadCollection(path, downloadRequest);
+			 downloadResponses = dataManagementBusService.downloadCollection(path, downloadRequest);
 
 		} catch(HpcException e) {
 			    logger.error("RS: POST /collection/" + path + "/download: " + downloadRequest + 
@@ -168,7 +170,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		long stop = System.currentTimeMillis();
 		logger.info((stop-start) + " downloadDataObject: Total time - " + path);
 		
-		return downloadResponse(downloadResponse, messageContext);
+		return okResponse(downloadResponses != null && !downloadResponses.getDownloadReceipts().isEmpty() ?
+		                  downloadResponses : null, true);
     }
     
     @Override
@@ -332,19 +335,24 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
      * Create a Response object out of the DTO. Also set the download file path on the message context,
      * so that the cleanup interceptor can remove it after rge file reached the caller. 
      * 
-     * @param downloadResponse The download response DTO.
+     * @param downloadResponse The download response.
      * @param messageContext The message context.
      * @return an OK response.
      */
     private Response downloadResponse(HpcDownloadResponseDTO downloadResponse, 
     		                          MessageContext messageContext)
     {
-		if(downloadResponse != null && downloadResponse.getDestinationFile() != null) {
+    	if(downloadResponse == null) {
+    	   return okResponse(null, true);
+    	}
+    	
+    	HpcDownloadReceiptDTO downloadReceipt = downloadResponse.getDownloadReceipt();
+		if(downloadReceipt != null && downloadReceipt.getDestinationFile() != null) {
 		   // Put the download file on the message context, so the cleanup interceptor can
 		   // delete it after the file was received by the caller.
 		   messageContext.put(DATA_OBJECT_DOWNLOAD_FILE, 
-					          downloadResponse.getDestinationFile());
-		   return okResponse(downloadResponse.getDestinationFile(), 
+				              downloadReceipt.getDestinationFile());
+		   return okResponse(downloadReceipt.getDestinationFile(), 
 				             MediaType.APPLICATION_OCTET_STREAM_TYPE);
 		} else {
 			    return okResponse(downloadResponse, true);

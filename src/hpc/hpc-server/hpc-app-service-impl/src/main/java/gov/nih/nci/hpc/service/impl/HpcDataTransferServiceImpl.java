@@ -32,15 +32,12 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -181,46 +178,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
 
     	return downloadDataObject(downloadRequest);
-    }
-    
-    @Override
-	public HpcDataObjectDownloadResponse downloadZipFile(String collectionPath,
-			                                             List<File> files,
-                                                         HpcFileLocation destinationLocation) 
-                                                        throws HpcException
-    {
-    	// Create a zip file and a second hop download request if needed.
-    	HpcDataObjectDownloadRequest secondHopDownloadRequest = null;
-    	File zipFile = null;
-    	if(destinationLocation == null) {
-           zipFile = createDownloadFile();
-    	} else {
-    	        // 2nd Hop needed. Create a request.
-    	        secondHopDownloadRequest =
-    			      toSecondHopDownloadRequest(
-    			        calculateDownloadDestinationFileLocation(destinationLocation, 
-    			  	                                             HpcDataTransferType.GLOBUS,
-    			  	            		                         collectionPath),
-    			        HpcDataTransferType.GLOBUS,
-    			        collectionPath);
-    	         
-    	        zipFile = createFile(
-    			          dataTransferProxies.get(HpcDataTransferType.GLOBUS).
-                          getFilePath(secondHopDownloadRequest.getArchiveLocation().getFileId(), 
-                        	  	      false));
-    	}
-
-    	// Zip the files.
-    	zipFiles(files, zipFile);
-    	
-    	if(secondHopDownloadRequest != null) {
-    	   return secondHopDownload(secondHopDownloadRequest, zipFile.getAbsolutePath());
-    		
-    	} else {
-    		    HpcDataObjectDownloadResponse downloadResponse = new HpcDataObjectDownloadResponse();
-    		    downloadResponse.setDestinationFile(zipFile);
-    		    return downloadResponse;
-    	}
     }
     
 	@Override   
@@ -630,34 +587,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     		         downloadResponse;
     }
     
-    /**
-     * Zip files.
-     *
-     * @param files The list of files to zip
-     * @param zipFile The zip file.
-     * @throws HpcException on service failure.
-     */    
-	private void zipFiles(List<File> files, File zipFile) throws HpcException 
-	{
-		try {
-			 FileOutputStream fos = new FileOutputStream(zipFile);
-			 ZipOutputStream zos = new ZipOutputStream(fos);
-			 for(File file : files) {
-	             if(file.isFile()) {
-	                ZipEntry entry = new ZipEntry(file.getName());
-	                zos.putNextEntry(entry);
-	                FileUtils.copyFile(file, zos);
-	                zos.closeEntry();
-	             }
-			 }
-			 zos.close();
-			 fos.close();
-			 
-		} catch(Exception e) {
-			    throw new HpcException("Failed to zip files", HpcErrorType.UNEXPECTED_ERROR, e);
-		}
-	}
-	
     /**
      * Perform a second hop download.
      *
