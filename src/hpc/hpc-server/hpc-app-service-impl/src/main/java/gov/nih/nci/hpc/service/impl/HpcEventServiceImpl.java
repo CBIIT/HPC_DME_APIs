@@ -406,7 +406,9 @@ public class HpcEventServiceImpl implements HpcEventService
     	HashSet<String> userIds = new HashSet<String>();
     
 		// Get the users subscribed for this event.
+    	logger.error("ERAN: " + path);
 		userIds.addAll(notificationDAO.getSubscribedUsers(HpcEventType.COLLECTION_UPDATED, payloadEntries));
+		logger.error("ERAN: user-ids" + userIds);
 		
 		// Add the user subscribed to the parent collection (if path is not root).
 		int parentCollectionIndex = path.lastIndexOf('/');
@@ -418,6 +420,7 @@ public class HpcEventServiceImpl implements HpcEventService
 		// Exclude the invoker from the list. (No need to notify the invoker of a collection update they requested).
 		//userIds.remove(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
 		
+		logger.error("ERAN: aggregate user-ids" + userIds);
 		return userIds;
     }
 }
