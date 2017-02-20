@@ -151,7 +151,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
        	        dataManagementService.validateHierarchy(path, doc, false);
        	        
        	        // Add collection update event.
-       	        addCollectionUpdateEvent(path, true, false);
+       	        addCollectionUpdatedEvent(path, true, false);
        	        
        	        registrationCompleted = true;
        	        
@@ -164,7 +164,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
        	   
     	} else {
     		    metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries());
-    		    addCollectionUpdateEvent(path, false, false);
+    		    addCollectionUpdatedEvent(path, false, false);
     	}
     	
     	return created;
@@ -286,7 +286,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			    			                   dataObjectRegistration.getCallerObjectId()); 
 	
 			    // Add collection update event.
-       	        addCollectionUpdateEvent(path, false, true);
+       	        addCollectionUpdatedEvent(path, false, true);
        	        
 			    registrationCompleted = true;
 			     
@@ -615,8 +615,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * @param collectionRegistered An indicator if a collection was registered.
      * @param dataObjectRegistered An indicator if a data object was registered.
      */
-	private void addCollectionUpdateEvent(String path, boolean collectionRegistered, 
-			                              boolean dataObjectRegistered)
+	private void addCollectionUpdatedEvent(String path, boolean collectionRegistered, 
+			                               boolean dataObjectRegistered)
 	{
 		try {
 			 if(!collectionRegistered && !dataObjectRegistered) {
@@ -626,8 +626,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			 }
 			 
 			 // A collection or data object registered, so we add an event for the parent collection.
-			 String parentCollection = path.equals("/") ? path : StringUtils.trimTrailingCharacter(path, '/');
-			 parentCollection = parentCollection.substring(0, parentCollection.lastIndexOf('/'));
+			 String parentCollection = StringUtils.trimTrailingCharacter(path, '/');
+			 int parentCollectionIndex = parentCollection.lastIndexOf('/');
+			 parentCollection = parentCollectionIndex <= 0 ? "/" : 
+				                parentCollection.substring(0, parentCollectionIndex);
 			 
 			 if(collectionRegistered) {
 				eventService.addCollectionRegistrationEvent(parentCollection);
