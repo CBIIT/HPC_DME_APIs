@@ -403,7 +403,7 @@ public class HpcEventServiceImpl implements HpcEventService
     		                                                        throws HpcException
     
     {
-    	HashSet<String> userIds = new HashSet<String>();
+    	HashSet<String> userIds = new HashSet<>();
     
 		// Get the users subscribed for this event.
     	logger.error("ERAN: " + path);
@@ -415,7 +415,7 @@ public class HpcEventServiceImpl implements HpcEventService
 		
 		// Add the user subscribed to the parent collection (if path is not root).
 		int parentCollectionIndex = path.lastIndexOf('/');
-		if(parentCollectionIndex > 0) {
+		if(!path.equals("/") && parentCollectionIndex >= 0) {
 		   userIds.addAll(getCollectionUpdatedEventSubscribedUsers(path.substring(0, parentCollectionIndex), 
 				                                                   updatePayloadValue, 
                                                                    updateDescriptionPayloadValue)); 
