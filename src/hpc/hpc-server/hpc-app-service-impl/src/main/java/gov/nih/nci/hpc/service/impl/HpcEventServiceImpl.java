@@ -416,7 +416,7 @@ public class HpcEventServiceImpl implements HpcEventService
 		}
 		
 		// Exclude the invoker from the list. (No need to notify the invoker of a collection update they requested).
-		userIds.remove(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
+		//userIds.remove(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
 		
 		return userIds;
     }
