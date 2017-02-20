@@ -114,12 +114,12 @@ public interface HpcEventService
     		                         throws HpcException;
     
     /**
-     * Add a collection update event.
+     * Add a collection updated event.
      *
      * @param path The collection path.
      * @throws HpcException on service failure.
      */
-    public void addCollectionUpdateEvent(String path) throws HpcException;
+    public void addCollectionUpdatedEvent(String path) throws HpcException;
     
     /**
      * Add a collection registration event.
