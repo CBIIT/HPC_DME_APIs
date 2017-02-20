@@ -416,7 +416,8 @@ public class HpcEventServiceImpl implements HpcEventService
 		// Add the user subscribed to the parent collection (if path is not root).
 		int parentCollectionIndex = path.lastIndexOf('/');
 		if(!path.equals("/") && parentCollectionIndex >= 0) {
-		   userIds.addAll(getCollectionUpdatedEventSubscribedUsers(path.substring(0, parentCollectionIndex), 
+		   userIds.addAll(getCollectionUpdatedEventSubscribedUsers(parentCollectionIndex > 0 ? 
+				                                                   path.substring(0, parentCollectionIndex) : "/", 
 				                                                   updatePayloadValue, 
                                                                    updateDescriptionPayloadValue)); 
 		}
