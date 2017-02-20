@@ -28,6 +28,7 @@ import gov.nih.nci.hpc.service.HpcEventService;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
@@ -376,13 +377,10 @@ public class HpcEventServiceImpl implements HpcEventService
 		// Construct an event.
 		HpcEvent event = new HpcEvent();
 		event.setType(HpcEventType.COLLECTION_UPDATED);
-		event.getPayloadEntries().add(toPayloadEntry(COLLECTION_PATH_PAYLOAD_ATTRIBUTE, 
-		    	                                     dataManagementProxy.getRelativePath(path)));
-		event.getPayloadEntries().add(toPayloadEntry(COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE, 
-			   	                                     updatePayloadValue));
-		event.getPayloadEntries().add(toPayloadEntry(COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE, 
-		                                             updateDescriptionPayloadValue));
-		event.getUserIds().addAll(getCollectionEventSubscribedUsers(path, event.getPayloadEntries()));
+		event.getPayloadEntries().addAll(toCollectionUpdatedPayloadEntries(path, updatePayloadValue, 
+				                                                           updateDescriptionPayloadValue));
+		event.getUserIds().addAll(getCollectionUpdatedEventSubscribedUsers(path, updatePayloadValue, 
+                                                                           updateDescriptionPayloadValue));
 		
 		// Add the event if found subscriber(s).
 		if(!event.getUserIds().isEmpty()) {
@@ -393,28 +391,34 @@ public class HpcEventServiceImpl implements HpcEventService
     /**
      * Get a list of users subscribed to a collection updated event.
      * 
-     * @param path The collection path. 
-     * @param payloadEntries The event's payload entries.
+     * @param path The collection path.
+     * @param updatePayloadValue The value to set on COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE event payload.
+     * @param updateDescriptionPayloadValue The value to set on COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE event payload.
      * @return A list of user Ids subscribed to this event. This includes users registered to the collection path itself and
      *         anywhere in the hierarchy up to the root.
      * @throws HpcException on service failure.
      */
-    private HashSet<String> getCollectionEventSubscribedUsers(String path, List<HpcEventPayloadEntry> payloadEntries) 
-    		                                                 throws HpcException
+    private HashSet<String> getCollectionUpdatedEventSubscribedUsers(String path, String updatePayloadValue, 
+                                                                     String updateDescriptionPayloadValue) 
+    		                                                        throws HpcException
     
     {
     	HashSet<String> userIds = new HashSet<String>();
     
 		// Get the users subscribed for this event.
     	logger.error("ERAN: " + path);
-		userIds.addAll(notificationDAO.getSubscribedUsers(HpcEventType.COLLECTION_UPDATED, payloadEntries));
+		userIds.addAll(notificationDAO.getSubscribedUsers(
+				                          HpcEventType.COLLECTION_UPDATED, 
+				                          toCollectionUpdatedPayloadEntries(path, updatePayloadValue, 
+                                                                            updateDescriptionPayloadValue)));
 		logger.error("ERAN: user-ids" + userIds);
 		
 		// Add the user subscribed to the parent collection (if path is not root).
 		int parentCollectionIndex = path.lastIndexOf('/');
 		if(parentCollectionIndex > 0) {
-		   userIds.addAll(getCollectionEventSubscribedUsers(path.substring(0, parentCollectionIndex), 
-				                                            payloadEntries)); 
+		   userIds.addAll(getCollectionUpdatedEventSubscribedUsers(path.substring(0, parentCollectionIndex), 
+				                                                   updatePayloadValue, 
+                                                                   updateDescriptionPayloadValue)); 
 		}
 		
 		// Exclude the invoker from the list. (No need to notify the invoker of a collection update they requested).
@@ -422,6 +426,28 @@ public class HpcEventServiceImpl implements HpcEventService
 		
 		logger.error("ERAN: aggregate user-ids" + userIds);
 		return userIds;
+    }
+    
+    /**
+     * Generate collection updated payload entries.
+     * 
+     * @param path The collection path.
+     * @param updatePayloadValue The value to set on COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE event payload.
+     * @param updateDescriptionPayloadValue The value to set on COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE event payload.
+     * @return A list of payload entries.
+     * @throws HpcException on service failure.
+     */
+    private List<HpcEventPayloadEntry> toCollectionUpdatedPayloadEntries(String path, String updatePayloadValue, 
+                                                                         String updateDescriptionPayloadValue)
+    {
+    	List<HpcEventPayloadEntry> payloadEntries = new ArrayList<>();
+    	payloadEntries.add(toPayloadEntry(COLLECTION_PATH_PAYLOAD_ATTRIBUTE, 
+                                          dataManagementProxy.getRelativePath(path)));
+    	payloadEntries.add(toPayloadEntry(COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE, 
+                                          updatePayloadValue));
+    	payloadEntries.add(toPayloadEntry(COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE, 
+                                          updateDescriptionPayloadValue));
+    	return payloadEntries;
     }
 }
 
