@@ -24,6 +24,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.util.StringUtils;
 
 /**
  * <p>
@@ -121,7 +122,7 @@ public abstract class HpcRestServiceImpl
     }
     
     /**
-     * Convert a path to an absolute 'path' (i.e. it begins with '/')
+     * Convert a path to an absolute 'path' (i.e. it begins with '/' and no trailing '/' unless root)
      *
      * @param path The path.
      * @return The absolute path.
@@ -129,11 +130,11 @@ public abstract class HpcRestServiceImpl
 	protected String toAbsolutePath(String path)
 	{
 		StringBuilder buf = new StringBuilder();
-
-		if(path.isEmpty() || path.charAt(0) != '/') {
+		String absolutePath = StringUtils.trimTrailingCharacter(path, '/');
+		if(absolutePath.isEmpty() || absolutePath.charAt(0) != '/') {
 		   buf.append('/');
 		} 
-		buf.append(path);
+		buf.append(absolutePath);
 		return buf.toString();
 	}
 }
