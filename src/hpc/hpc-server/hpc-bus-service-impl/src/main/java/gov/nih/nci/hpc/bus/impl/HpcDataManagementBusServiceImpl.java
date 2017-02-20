@@ -620,7 +620,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	{
 		try {
 			 if(!collectionRegistered && !dataObjectRegistered) {
-				eventService.addCollectionUpdateEvent(path);
+				// Add collection metadata updated event.
+				eventService.addCollectionUpdatedEvent(path);
 				return;
 			 }
 			 

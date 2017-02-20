@@ -29,6 +29,7 @@ import gov.nih.nci.hpc.service.HpcEventService;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -230,24 +231,24 @@ public class HpcEventServiceImpl implements HpcEventService
     }
     
     @Override
-    public void addCollectionUpdateEvent(String path) throws HpcException
+    public void addCollectionUpdatedEvent(String path) throws HpcException
     {
-    	addCollectionEvent(path, COLLECTION_METADATA_UPDATE_PAYLOAD_VALUE, 
-    			           COLLECTION_METADATA_UPDATE_DESCRIPTION_PAYLOAD_VALUE);
+    	addCollectionUpdatedEvent(path, COLLECTION_METADATA_UPDATE_PAYLOAD_VALUE, 
+    			                  COLLECTION_METADATA_UPDATE_DESCRIPTION_PAYLOAD_VALUE);
     }
     
     @Override
     public void addCollectionRegistrationEvent(String path) throws HpcException
     {
-    	addCollectionEvent(path, COLLECTION_REGISTRATION_PAYLOAD_VALUE,
-    			           COLLECTION_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE);
+    	addCollectionUpdatedEvent(path, COLLECTION_REGISTRATION_PAYLOAD_VALUE,
+    			                  COLLECTION_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE);
     }
     
     @Override
     public void addDataObjectRegistrationEvent(String path) throws HpcException
     {
-    	addCollectionEvent(path, DATA_OBJECT_REGISTRATION_PAYLOAD_VALUE,
-    			           DATA_OBJECT_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE);
+    	addCollectionUpdatedEvent(path, DATA_OBJECT_REGISTRATION_PAYLOAD_VALUE,
+    			                  DATA_OBJECT_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE);
     }
     
     //---------------------------------------------------------------------//
@@ -355,15 +356,16 @@ public class HpcEventServiceImpl implements HpcEventService
     }
     
     /**
-     * Add a collection event.
+     * Add a collection updated event.
      * 
      * @param path The collection path.
      * @param updatePayloadValue The value to set on COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE event payload.
      * @param updateDescriptionPayloadValue The value to set on COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE event payload.
      * @throws HpcException on service failure.
      */
-    private void addCollectionEvent(String path, String updatePayloadValue, String updateDescriptionPayloadValue) 
-    		                       throws HpcException
+    private void addCollectionUpdatedEvent(String path, String updatePayloadValue, 
+    		                               String updateDescriptionPayloadValue) 
+    		                              throws HpcException
     {
 		// Input Validation.
 		if(path == null || path.isEmpty()) {
@@ -371,26 +373,52 @@ public class HpcEventServiceImpl implements HpcEventService
 				                  HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		
-		// Construct the event.
+		// Construct an event.
 		HpcEvent event = new HpcEvent();
 		event.setType(HpcEventType.COLLECTION_UPDATED);
 		event.getPayloadEntries().add(toPayloadEntry(COLLECTION_PATH_PAYLOAD_ATTRIBUTE, 
-				                                     dataManagementProxy.getRelativePath(path)));
+		    	                                     dataManagementProxy.getRelativePath(path)));
 		event.getPayloadEntries().add(toPayloadEntry(COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE, 
-				                                     updatePayloadValue));
+			   	                                     updatePayloadValue));
 		event.getPayloadEntries().add(toPayloadEntry(COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE, 
-                                                     updateDescriptionPayloadValue));
+		                                             updateDescriptionPayloadValue));
+		event.getUserIds().addAll(getCollectionEventSubscribedUsers(path, event.getPayloadEntries()));
 		
-		// Get the users subscribed for this event.
-		List<String> userIds = notificationDAO.getSubscribedUsers(HpcEventType.COLLECTION_UPDATED, event.getPayloadEntries());
-		if(userIds != null) {
-		   // Exclude the invoker. 
-		   userIds.remove(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
-		   if(!userIds.isEmpty()) {
-			  event.getUserIds().addAll(userIds); 
-			  addEvent(event);
-		   }
+		// Add the event if found subscriber(s).
+		if(!event.getUserIds().isEmpty()) {
+		   addEvent(event);
 		}
+    }
+    
+    /**
+     * Get a list of users subscribed to a collection updated event.
+     * 
+     * @param path The collection path. 
+     * @param payloadEntries The event's payload entries.
+     * @return A list of user Ids subscribed to this event. This includes users registered to the collection path itself and
+     *         anywhere in the hierarchy up to the root.
+     * @throws HpcException on service failure.
+     */
+    private HashSet<String> getCollectionEventSubscribedUsers(String path, List<HpcEventPayloadEntry> payloadEntries) 
+    		                                                 throws HpcException
+    
+    {
+    	HashSet<String> userIds = new HashSet<String>();
+    
+		// Get the users subscribed for this event.
+		userIds.addAll(notificationDAO.getSubscribedUsers(HpcEventType.COLLECTION_UPDATED, payloadEntries));
+		
+		// Add the user subscribed to the parent collection (if path is not root).
+		int parentCollectionIndex = path.lastIndexOf('/');
+		if(parentCollectionIndex > 0) {
+		   userIds.addAll(getCollectionEventSubscribedUsers(path.substring(0, parentCollectionIndex), 
+				                                            payloadEntries)); 
+		}
+		
+		// Exclude the invoker from the list. (No need to notify the invoker of a collection update they requested).
+		userIds.remove(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
+		
+		return userIds;
     }
 }
 
