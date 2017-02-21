@@ -2,7 +2,8 @@
 	"metadataEntries": [
       	{
       	 "attribute": "name",
-      	 "value": "dice test project 1"
+      	 "value": "dice test project 1",
+         "unit": "dxtest-unit"
    		},
       	{
       	 "attribute": "collection_type",
