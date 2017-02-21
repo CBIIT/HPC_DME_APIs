@@ -40,7 +40,7 @@ fi
 RESPONSE_HEADER=download-response-header.tmp 
 RESPONSE_MSG=download-response-message.json.tmp
 
-download_dataobject_async "$OBJECT_PATH"
+download_async "dataObject/$OBJECT_PATH"
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
 ERROR_REASON=`get_json_value $RESPONSE_MSG requestRejectReason`
