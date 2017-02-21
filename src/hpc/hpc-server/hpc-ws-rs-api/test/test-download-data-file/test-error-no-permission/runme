@@ -27,7 +27,7 @@ echo "$INPUT_JSON" > input.json
 
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
-download_dataobject_async "$OBJECT_PATH" "input.json"
+download_async "dataObject/$OBJECT_PATH" "input.json"
 
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
