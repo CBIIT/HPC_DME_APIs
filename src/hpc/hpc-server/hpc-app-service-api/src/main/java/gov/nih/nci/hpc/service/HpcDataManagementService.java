@@ -39,6 +39,15 @@ public interface HpcDataManagementService
     public boolean createDirectory(String path) throws HpcException;
     
     /**
+     * Check if the path's parent is a directory.
+     *
+     * @param path The path.
+     * @return true if the parent path is a directory, or false otherwise.
+     * @throws HpcException on data management system failure.
+     */
+    public boolean isPathParentDirectory(String path) throws HpcException;   
+    
+    /**
      * Create a data object's file.
      *
      * @param path The data object path.
