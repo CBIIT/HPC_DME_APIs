@@ -161,14 +161,14 @@ public interface HpcDataManagementProxy
     		                            throws HpcException;
     
     /**
-     * Check if a parent path is a directory.
+     * Check if a path's parent is a directory.
      *
      * @param authenticatedToken An authenticated token.
      * @param path The path.
      * @return true if the parent path is a directory, or false otherwise.
      * @throws HpcException on data management system failure.
      */
-    public boolean isParentPathDirectory(Object authenticatedToken, 
+    public boolean isPathParentDirectory(Object authenticatedToken, 
     		                             String path)
     		                            throws HpcException;   
     
