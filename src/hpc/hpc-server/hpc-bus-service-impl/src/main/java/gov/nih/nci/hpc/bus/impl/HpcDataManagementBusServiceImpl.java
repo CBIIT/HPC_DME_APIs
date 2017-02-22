@@ -249,13 +249,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Create parent collections if requested to.
-    	Boolean createParentCollections = dataObjectRegistration.getCreateParentCollections();
-    	if(createParentCollections != null && createParentCollections &&
-    	   !dataManagementService.isPathParentDirectory(path)) {
-    	   HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
-    	   collectionRegistration.getMetadataEntries().addAll(dataObjectRegistration.getMetadataEntries());
-    	   registerCollection(path.substring(0, path.lastIndexOf('/')), collectionRegistration);
-    	}
+    	createParentCollections(path, dataObjectRegistration);
     	
     	// Create a data object file (in the data management system).
 	    boolean created = dataManagementService.createFile(path);
@@ -753,6 +747,27 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		
 		downloadResponse.setDownloadReceipt(downloadReceipt);
 		return downloadResponse;
+	}
+	
+    /** 
+     * Construct a download response DTO object.
+     * 
+     * @param path The data object's path.
+     * @param dataObjectRegistration A DTO contains the metadata.
+     * @throws HpcException on service failure.
+     */
+	private void createParentCollections(String path, 
+			                             HpcDataObjectRegistrationDTO dataObjectRegistration)
+			                            throws HpcException
+	{
+		// Create parent collections if requested and needed to.
+		Boolean createParentCollections = dataObjectRegistration.getCreateParentCollections();
+		if(createParentCollections != null && createParentCollections &&
+		   !dataManagementService.isPathParentDirectory(path)) {
+		   HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
+		   collectionRegistration.getMetadataEntries().addAll(dataObjectRegistration.getMetadataEntries());
+		   registerCollection(path.substring(0, path.lastIndexOf('/')), collectionRegistration);
+		}
 	}
 }
 
