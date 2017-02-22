@@ -766,6 +766,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		   !dataManagementService.isPathParentDirectory(path)) {
 		   HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
 		   collectionRegistration.getMetadataEntries().addAll(dataObjectRegistration.getMetadataEntries());
+		   collectionRegistration.setCreateParentCollections(true);
 		   registerCollection(path.substring(0, path.lastIndexOf('/')), collectionRegistration);
 		}
 	}
