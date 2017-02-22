@@ -158,7 +158,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	//  Validate the parent directory exists.
-    	if(!dataManagementProxy.isParentPathDirectory(authenticatedToken, path)) {
+    	if(!dataManagementProxy.isPathParentDirectory(authenticatedToken, path)) {
     		throw new HpcException("Invalid collection path. Parent directory doesn't exist: " + path, 
                                    HpcRequestRejectReason.INVALID_DATA_OBJECT_PATH);
     	}
@@ -166,6 +166,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	// Create the directory.
     	dataManagementProxy.createCollectionDirectory(authenticatedToken, path);
     	return true;
+    }
+    
+    @Override
+    public boolean isPathParentDirectory(String path) throws HpcException
+    {
+    	return dataManagementProxy.isPathParentDirectory(dataManagementAuthenticator.getAuthenticatedToken(), path);
     }
     
     @Override
@@ -188,7 +194,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	//  Validate the parent directory exists.
-    	if(!dataManagementProxy.isParentPathDirectory(authenticatedToken, path)) {
+    	if(!dataManagementProxy.isPathParentDirectory(authenticatedToken, path)) {
     		throw new HpcException("Invalid data object path. Parent directory doesn't exist: " + path, 
                                    HpcRequestRejectReason.INVALID_DATA_OBJECT_PATH);
     	}
