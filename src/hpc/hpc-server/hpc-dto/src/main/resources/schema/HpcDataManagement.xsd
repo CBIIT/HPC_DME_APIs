@@ -35,6 +35,7 @@
 				<xsd:element name="metadataEntries" 
 				             type="hpc-domain-metadata:HpcMetadataEntry" 
 					         maxOccurs="unbounded" />
+				<xsd:element name="createParentCollections" type="xsd:boolean" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
@@ -73,6 +74,7 @@
 				<xsd:element name="metadataEntries" 
 				             type="hpc-domain-metadata:HpcMetadataEntry" 
 					         maxOccurs="unbounded" />
+				<xsd:element name="createParentCollections" type="xsd:boolean" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	

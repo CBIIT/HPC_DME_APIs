@@ -320,7 +320,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override    
-    public boolean isParentPathDirectory(Object authenticatedToken, 
+    public boolean isPathParentDirectory(Object authenticatedToken, 
     		                             String path) 
     		                            throws HpcException
     {

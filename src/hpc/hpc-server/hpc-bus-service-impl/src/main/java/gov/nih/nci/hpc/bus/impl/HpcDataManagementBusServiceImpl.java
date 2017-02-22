@@ -130,6 +130,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	// Create parent collections if requested to.
+    	Boolean createParentCollections = collectionRegistration.getCreateParentCollections();
+    	if(createParentCollections != null && createParentCollections &&
+    	   !dataManagementService.isPathParentDirectory(path)) {
+    	   registerCollection(path.substring(0, path.lastIndexOf('/')), collectionRegistration);
+    	}
+    	
     	// Create a collection directory.
     	boolean created = dataManagementService.createDirectory(path);
     	
@@ -239,6 +246,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	if(path == null || dataObjectRegistration == null) {
     	   throw new HpcException("Null path or dataObjectRegistrationDTO",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Create parent collections if requested to.
+    	Boolean createParentCollections = dataObjectRegistration.getCreateParentCollections();
+    	if(createParentCollections != null && createParentCollections &&
+    	   !dataManagementService.isPathParentDirectory(path)) {
+    	   HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
+    	   collectionRegistration.getMetadataEntries().addAll(dataObjectRegistration.getMetadataEntries());
+    	   registerCollection(path.substring(0, path.lastIndexOf('/')), collectionRegistration);
     	}
     	
     	// Create a data object file (in the data management system).
