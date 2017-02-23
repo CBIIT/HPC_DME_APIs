@@ -35,11 +35,14 @@ source $HPC_DM_TEST/utils/functions
 BASE_FOLDER=$HPC_DM_TEST/sampledata/
 
 #Register all the collections
+
 register_verify $BASE_FOLDER/project1_metadata.json "$(get_basefolder)/dice_project1" collection
 
 register_verify $BASE_FOLDER/project2_metadata.json "$(get_basefolder)/dice_project2" collection
 
 register_verify $BASE_FOLDER/project3_metadata.json "$(get_basefolder)/dice_project3" collection
+
+register_verify $BASE_FOLDER/project4_metadata.json "$(get_basefolder)/dice_project4" collection
 
 register_verify $BASE_FOLDER/project1_sub1_metadata.json "$(get_basefolder)/dice_project1/sub1" collection
 
@@ -62,6 +65,12 @@ register_verify $BASE_FOLDER/project1_sub1_object2_metadata.json "$(get_basefold
 register_verify $BASE_FOLDER/project2_sub2_object1_metadata.json "$(get_basefolder)/dice_project2/sub2/object1" dataObject dummy-file.txt
 
 register_verify $BASE_FOLDER/project2_sub2_object2_metadata.json "$(get_basefolder)/dice_project2/sub2/object2" dataObject dummy-file.txt
+
+#Add more than 100 objects in project 4 to test the pagination
+for i in `seq 3 101`
+do 
+    register_verify $BASE_FOLDER/project4_datafile.json "$(get_basefolder)/dice_project4/dice_object_$i" dataObject dummy-file.txt
+done
 
 
 #Update the views 
