@@ -199,6 +199,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
  		
      	HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
      	collectionDTO.setCollection(collection);
+     	if(metadataEntries != null && 
+     			(metadataEntries.getParentMetadataEntries() != null && metadataEntries.getParentMetadataEntries().size()>0) || 
+     			(metadataEntries.getSelfMetadataEntries() != null && metadataEntries.getSelfMetadataEntries().size()>0))
         collectionDTO.setMetadataEntries(metadataEntries);
      	
      	return collectionDTO;
@@ -469,6 +472,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	dataManagementModel.getDataObjectMetadataValidationRules().addAll(
 	                           metadataService.getDataObjectMetadataValidationRules(doc));
     	dataManagementModel.setDataHierarchy(dataManagementService.getDataHierarchy(doc));
+    	dataManagementModel.setBasePath(dataManagementService.getDocBasePath(doc));
     	
     	return dataManagementModel;
     }

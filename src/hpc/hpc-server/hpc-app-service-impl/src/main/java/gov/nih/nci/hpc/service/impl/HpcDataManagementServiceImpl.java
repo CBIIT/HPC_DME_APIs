@@ -405,4 +405,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
         permissionRequest.setUserId(userId);
         setPermission(path, permissionRequest);
     }
+
+    /**
+     * Get DOC base path
+     * 
+     * @param docName DOC name
+     * @return base path
+     * @throws HpcExcpetion on service failure
+     */
+    public String getDocBasePath(String docName) throws HpcException
+    {
+    	if(docName == null || docName.isEmpty())
+    		return null;
+    	
+    	return docBasePath.get(docName);
+    }
 }

@@ -143,6 +143,16 @@ public interface HpcDataManagementService
      * Close connection to Data Management system for the current service call.
      */
     public void closeConnection();
+    
+    /**
+     * Get DOC base path
+     * 
+     * @param docName DOC name
+     * @return base path
+     * @throws HpcExcpetion on service failure
+     */
+    public String getDocBasePath(String docName) throws HpcException;
+    
 }
 
  
