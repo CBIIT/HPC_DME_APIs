@@ -103,6 +103,7 @@
           <value>reportEntries</value>
           <value>notificationTriggers</value>
           <value>payloadEntries</value>
+          <value>subCollections</value>
     </util:list>
 
 	<!-- JSON Provider -->

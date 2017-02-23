@@ -136,7 +136,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			 if(collection != null) {
 				collections.getCollections().add(collection);
 			 }
-			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /collection/" + path + 
 			    		     " failed:", e);
