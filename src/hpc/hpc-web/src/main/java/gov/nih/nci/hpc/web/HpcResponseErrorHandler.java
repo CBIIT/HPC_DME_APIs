@@ -1,7 +1,5 @@
 package gov.nih.nci.hpc.web;
 
-import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -13,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.ResponseErrorHandler;
+
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 
 public class HpcResponseErrorHandler implements ResponseErrorHandler {
