@@ -200,6 +200,7 @@
 	<xsd:element name="HpcDataManagementModelDTO">
 		<xsd:complexType>
 			<xsd:sequence>
+			    <xsd:element name="basePath" type="xsd:string" />
 				<xsd:element name="collectionMetadataValidationRules"
 				             type="hpc-domain-metadata:HpcMetadataValidationRule"
 					         minOccurs="0" maxOccurs="unbounded" />
