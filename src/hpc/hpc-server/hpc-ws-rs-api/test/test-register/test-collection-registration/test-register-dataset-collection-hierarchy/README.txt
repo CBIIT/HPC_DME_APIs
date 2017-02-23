@@ -13,7 +13,7 @@
 @ddblock_end copyright
 ******************************/
 
-Register a Dataset with valid inputs without following the collection. 
+Register a Dataset with valid inputs without following the collection hierarchy. 
 At the time this test is checked, the input.json file follows the policies file.  
 
 However, the dataset should follow the hierarchy /project/datatset/dataObject which is not the case
