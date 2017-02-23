@@ -45,12 +45,21 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.integration.http.converter.MultipartAwareFormHttpMessageConverter;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
@@ -145,6 +154,40 @@ public class HpcClientUtil {
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to get DOC Model for: " + doc + " due to: " + e.getMessage());
+		}
+	}
+
+	public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL, String path, boolean list,
+			String hpcCertPath, String hpcCertPassword) {
+		try {
+			WebClient client = HpcClientUtil.getWebClient(
+					hpcCollectionlURL + "/" + path + (list ? "?list=true" : "?list=false"), hpcCertPath,
+					hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.invoke("GET", null);
+			// System.out.println("restResponse.getStatus():"
+			// +restResponse.getStatus());
+			if (restResponse.getStatus() == 200) {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
+				return collections;
+			} else {
+				throw new HpcWebException("Collection not found!");
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get Collection for: " + path + " due to: " + e.getMessage());
 		}
 	}
 

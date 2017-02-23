@@ -1,9 +1,7 @@
 package gov.nih.nci.hpc.web.model;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class HpcNotification {
 	private String eventType;
