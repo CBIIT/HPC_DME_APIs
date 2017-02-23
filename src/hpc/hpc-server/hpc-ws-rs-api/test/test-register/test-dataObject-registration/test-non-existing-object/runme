@@ -26,7 +26,7 @@ PROJECT_PATH=`cat registered-project-path.tmp`
 
 curl_register input.json $PROJECT_PATH/object-${NAME}.txt dataObject 
 
-EXPECTED_MSG="File location doesn't exist"
+EXPECTED_MSG="Source file location doesn't exist"
 get_http_code $RESPONSE_HEADER >&2
 get_json_value $RESPONSE_MSG errorType >&2
 get_json_value $RESPONSE_MSG message | sed "s#^$EXPECTED_MSG.*#$EXPECTED_MSG#" >&2
