@@ -219,10 +219,10 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	String updateFirstName = (updateUserRequestDTO.getFirstName() != null && !updateUserRequestDTO.getFirstName().isEmpty()) ?
     			                 updateUserRequestDTO.getFirstName() :
     			                 user.getNciAccount().getFirstName();
-        String updateLastName = (updateUserRequestDTO.getLastName() != null && updateUserRequestDTO.getLastName().isEmpty()) ?
+        String updateLastName = (updateUserRequestDTO.getLastName() != null && !updateUserRequestDTO.getLastName().isEmpty()) ?
     	    			        updateUserRequestDTO.getLastName() :
     	    			        user.getNciAccount().getLastName();
-    	String updateDOC = (updateUserRequestDTO.getDoc() != null && updateUserRequestDTO.getDoc().isEmpty()) ?
+    	String updateDOC = (updateUserRequestDTO.getDoc() != null && !updateUserRequestDTO.getDoc().isEmpty()) ?
     	    	           updateUserRequestDTO.getDoc() :
     	    	    	   user.getNciAccount().getDoc();
     	HpcUserRole updateRole = (updateUserRequestDTO.getUserRole() != null && updateUserRequestDTO.getUserRole().isEmpty()) ?
