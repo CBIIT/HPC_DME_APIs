@@ -16,7 +16,7 @@ source ../../../utils/functions
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username ../../../utils/config`
 
-DATASET_PATH=$(get_basefolder)/test-${NAME}/dice-unit-test-new
+DATASET_PATH=$(get_basefolder)/test-${NAME}
 
 
 
