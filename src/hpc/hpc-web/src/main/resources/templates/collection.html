@@ -137,7 +137,7 @@
 												<th>Value</th>
 											</tr>
 										</thead>
-										<tbody>
+										<tbody th:if="${collection.getMetadataEntries() != null}">
 											<tr
 												th:each="metadataItem : ${collection.getMetadataEntries().getSelfMetadataEntries()}">
 												<td><label th:text="${metadataItem.getAttribute()}"></label></td>
@@ -164,7 +164,7 @@
 												<th>Value</th>
 											</tr>
 										</thead>
-										<tbody>
+										<tbody th:if="${collection.getMetadataEntries() != null}">
 											<tr
 												th:each="metadataItem : ${collection.getMetadataEntries().getParentMetadataEntries()}">
 												<td><label th:text="${metadataItem.getAttribute()}"></label></td>
