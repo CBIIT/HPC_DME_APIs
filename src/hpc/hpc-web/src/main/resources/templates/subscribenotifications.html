@@ -140,12 +140,14 @@
 																			<label id="existingCollectionPathAdded" th:text="${entry.getPath()}"></label>
 																			<input type="hidden" th:id="'existingCollectionPath'+${iterationStatus.count}" th:name="'existingCollectionPath'+${iterationStatus.count}" th:attr="value = ${entry.getPath()}"/>
 																		</td>
+																		<!-- 
 																		<td th:if="${entry.getMetadata()} != null">
 																			<label><input type="checkbox" th:name="'existingMetadataCheck'+${iterationStatus.count}" th:id="'existingMetadataCheck'+${iterationStatus.count}" checked="checked"  onClick="enableSave()"/>Metadata Updates only</label> 
 																		</td>																		
 																		<td th:unless="${entry.getMetadata()} != null">
 																			<label><input type="checkbox" th:name="'existingMetadataCheck'+${iterationStatus.count}" th:id="'existingMetadataCheck'+${iterationStatus.count}"  onClick="enableSave()"/>Metadata Updates only</label> 
-																		</td>																		
+																		</td>
+																		 -->																		
 																		</div>
 																	</tr>
 																	</tbody>
@@ -155,7 +157,8 @@
 																<tbody>
 																	<tr id='collRow0'><td>
 																	<input type="text" id='collectionPath' name="collectionPath" placeholder='collectionPath' class="form-control" /><br/>
-																	<label><input type="checkbox" name="metadata" id="metadata" />Metadata Updates only</label> 
+																	<!-- 
+																	<label><input type="checkbox" name="metadata" id="metadata" />Metadata Updates only</label> --> 
 																	</td><td>
 																	<a id="addAttr" class="btn btn-default pull-left" onClick="addRow()">Add</a>
 																	</td></tr>
@@ -206,6 +209,19 @@
 	<script src="js/scripts.js"></script>
 
 <script type="text/javascript">
+
+function showalert(message,alerttype) {
+
+    $('#alert_placeholder').append('<div id="alertdiv" class="alert ' +  alerttype + '"><a class="close" data-dismiss="alert">×</a><span>'+message+'</span></div>')
+
+    setTimeout(function() { // this will automatically close the alert and remove this if the users doesnt close it in 5 secs
+
+
+      $("#alertdiv").remove();
+
+    }, 5000);
+  }
+
 var rowId = 1;
 //<![CDATA[
 
@@ -216,11 +232,19 @@ function enableSave()
 }
 
 function addRow() {
+	var path = document.getElementById("collectionPath").value;
+	if(path == null || path.trim().length == 0)
+	{
+//		showalert("Please enter path to monitor", "alert-error");
+		alert("Please enter path to monitor");
+		return;
+	}
+	
 	enableSave();
 	rowId++;
     var table = document.getElementById("collectionTable");
-    var path = document.getElementById("collectionPath").value;
-    var metadata = document.getElementById("metadata").checked;
+    
+   // var metadata = document.getElementById("metadata").checked;
     
     var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
     rows = rows - 1;
@@ -229,13 +253,14 @@ function addRow() {
     var cell0 = row.insertCell(0);
     var cell1 = row.insertCell(1);
     cell0.innerHTML = '<td><input type="checkbox" id="collection'+(rows+1)+'" name="collection'+(rows+1)+'" checked="checked"/></td><td><label id="collectionPathAdded'+ (rowId) +'">'+ (path) + '</label><input type="hidden" id="collectionPathAdded'+(rows+1)+'" name="collectionPathAdded'+(rows+1)+'" value="'+ (path) +'"/></td>';
-    if(metadata)
-    	cell1.innerHTML = '<input type="checkbox" id="metadata'+(rows+1)+'" name="metadata'+(rows+1)+'" checked="checked"/><label id="metadata'+ (rowId) +'">Metadata Updates only</label>';
-   	else
-       	cell1.innerHTML = '<input type="checkbox" id="metadata'+(rows+1)+'" name="metadata'+(rows+1)+'"/><label id="metadata'+ (rowId) +'">Metadata Updates only</label>';
+  
+    //if(metadata)
+    //	cell1.innerHTML = '<input type="checkbox" id="metadata'+(rows+1)+'" name="metadata'+(rows+1)+'" checked="checked"/><label id="metadata'+ (rowId) +'">Metadata Updates only</label>';
+   	//else
+    //   	cell1.innerHTML = '<input type="checkbox" id="metadata'+(rows+1)+'" name="metadata'+(rows+1)+'"/><label id="metadata'+ (rowId) +'">Metadata Updates only</label>';
 
     document.getElementById("collectionPath").value = "";
-    document.getElementById("metadata").checked = false;
+    //document.getElementById("metadata").checked = false;
     
 }
 //]]>
