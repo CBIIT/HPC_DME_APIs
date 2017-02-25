@@ -9,19 +9,19 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id:$
+ * @version $Id$
  -->
 
 <!DOCTYPE aspectj PUBLIC "-//AspectJ//DTD//EN" "http://www.eclipse.org/aspectj/dtd/aspectj.dtd">
 <aspectj>
 
     <weaver>
-        <!-- only weave classes in our application-specific packages -->
+        <!-- Only weave classes in this package -->
         <include within="gov.nih.nci.hpc.ws.rs.*"/>
     </weaver>
 
     <aspects>
-        <!-- weave in just this aspect -->
+        <!-- Weave in just this aspect -->
         <aspect name="gov.nih.nci.hpc.ws.rs.impl.HpcRestServiceAspect"/>
     </aspects>
 
