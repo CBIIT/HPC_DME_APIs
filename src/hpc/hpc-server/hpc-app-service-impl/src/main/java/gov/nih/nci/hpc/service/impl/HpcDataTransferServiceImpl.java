@@ -256,7 +256,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	File file = new File(dataTransferProxies.get(dataTransferType).getFilePath(fileId, true));
     	if(!file.exists()) {
     	   throw new HpcException("Archive file could not be found: " + file.getAbsolutePath(),
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    			                  HpcRequestRejectReason.FILE_NOT_FOUND);
     	}
     	
     	return file;
