@@ -44,7 +44,6 @@
 							org.apache.cxf.bus.spring,
 							org.apache.cxf.common.injection,
 							javax.ws.rs,
-							org.springframework.context.weaving,
 							*
 						</Import-Package>
 					</instructions>
@@ -199,18 +198,6 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-aop</artifactId>
-		</dependency>
- 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-		</dependency>
-	  	<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectjrt</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>

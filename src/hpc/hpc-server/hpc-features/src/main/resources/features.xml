@@ -50,7 +50,6 @@
 		<bundle>mvn:commons-io/commons-io/${commons-io.version}</bundle>
 		
 		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.aspectj/${aspectj.version}_1</bundle>
-		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-context/${spring.version}_1</bundle>
 		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-aop/${spring.version}_1</bundle>
 		
 		<!-- Current version of JJWT 0.6 has a defect in the bundle manifest which requires
