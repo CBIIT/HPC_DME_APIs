@@ -68,15 +68,14 @@ public class HpcBusServiceAspect
 	@Around("allBusServices()")
 	public Object profileService(ProceedingJoinPoint joinPoint) throws Throwable
     {
-		logger.info(joinPoint.toShortString() + " business service invoked.");
 		long start = System.currentTimeMillis();
 		try {
 			 return joinPoint.proceed();
 			 
 		} finally {
 			       long executionTime = System.currentTimeMillis() - start;
-			       logger.info(joinPoint.toShortString() + " business service completed in " + executionTime +
-			    		       " milliseconds.");
+			       logger.info(joinPoint.getSignature().toShortString() + " business service completed in " + 
+			                   executionTime + " milliseconds.");
 		}
     }
 }
