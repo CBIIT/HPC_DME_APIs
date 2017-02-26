@@ -8,12 +8,10 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 
-package gov.nih.nci.hpc.ws.rs.impl;
+package gov.nih.nci.hpc.bus.impl;
 
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +25,6 @@ import org.slf4j.LoggerFactory;
  * @version $Id$
  */
 
-@Aspect
 public class HpcRestServiceAspect
 {   
     //---------------------------------------------------------------------//
@@ -39,27 +36,21 @@ public class HpcRestServiceAspect
 			             LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
-    // Pointcuts.
-    //---------------------------------------------------------------------//
-	
-    /**
-     * A joint point for all rest services API.
-     */
-    @Pointcut("execution(* gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl.*(..))")
-    public void restService() {}
-    
-    //---------------------------------------------------------------------//
     // Advices.
     //---------------------------------------------------------------------//
     
-	@Around("restService()")
 	public void profile(ProceedingJoinPoint pjp) throws Throwable
     {
         logger.error("ERAN: " + pjp.getSignature().toShortString());
         logger.error("ERAN: " + pjp.getSignature().toString());
         logger.error("ERAN: " + pjp.getSignature().toLongString());
         pjp.proceed();
+        logger.error("ERAN: AFTER");
     }
+	
+	public void logBefore(JoinPoint joinPoint) {
+		logger.error("ERAN: BEFORE");
+	}
     
 }
 
