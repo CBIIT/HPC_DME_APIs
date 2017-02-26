@@ -12,6 +12,9 @@ package gov.nih.nci.hpc.bus.impl;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +28,7 @@ import org.slf4j.LoggerFactory;
  * @version $Id$
  */
 
+@Aspect
 public class HpcRestServiceAspect
 {   
     //---------------------------------------------------------------------//
@@ -36,9 +40,20 @@ public class HpcRestServiceAspect
 			             LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
+    // Pointcuts.
+    //---------------------------------------------------------------------//
+	
+	@Pointcut("within(gov.nih.nci.hpc.bus.impl.HpcDataManagementBusServiceImpl) && " +
+			  "execution(* gov.nih.nci.hpc.bus.impl.HpcDataManagementBusServiceImpl.*(..))")
+	private void busService() 
+	{
+	}
+	
+    //---------------------------------------------------------------------//
     // Advices.
     //---------------------------------------------------------------------//
     
+	@Around("busService()")
 	public Object profile(ProceedingJoinPoint pjp) throws Throwable
     {
         logger.error("ERAN: " + pjp.getSignature().toShortString());
