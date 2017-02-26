@@ -27,7 +27,7 @@
    	<aop:config>
       <aop:aspect id="log" ref="hpcRestServiceAspect">
          <aop:pointcut id="selectAll" expression="within(gov.nih.nci.hpc.bus.impl.HpcDataManagementBusServiceImpl) and execution(* gov.nih.nci.hpc.bus.impl.HpcDataManagementBusServiceImpl.*(..))" />
-         <aop:before pointcut-ref="selectAll" method="logBefore"/>
+         <aop:around pointcut-ref="selectAll" method="profile"/>
          
       </aop:aspect>
    </aop:config>
