@@ -39,13 +39,14 @@ public class HpcRestServiceAspect
     // Advices.
     //---------------------------------------------------------------------//
     
-	public void profile(ProceedingJoinPoint pjp) throws Throwable
+	public Object profile(ProceedingJoinPoint pjp) throws Throwable
     {
         logger.error("ERAN: " + pjp.getSignature().toShortString());
         logger.error("ERAN: " + pjp.getSignature().toString());
         logger.error("ERAN: " + pjp.getSignature().toLongString());
-        pjp.proceed();
+        Object retVal = pjp.proceed();
         logger.error("ERAN: AFTER");
+        return retVal;
     }
 	
 	public void logBefore(JoinPoint joinPoint) {
