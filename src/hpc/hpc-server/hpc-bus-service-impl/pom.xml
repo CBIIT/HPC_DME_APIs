@@ -38,6 +38,9 @@
 							gov.nih.nci.hpc.bus.impl
 						</Private-Package>
 						<Import-Package>
+							org.springframework.aop,
+							org.springframework.aop.framework,
+							org.aopalliance.aop,
 							*
 						</Import-Package>
 					</instructions>
@@ -67,6 +70,20 @@
 		<dependency>
     		<groupId>commons-io</groupId>
     		<artifactId>commons-io</artifactId>
+		</dependency>
+		<!--  
+				<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
+		</dependency>
+ 		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+		-->
+	  	<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
 		</dependency>
 	</dependencies>
 </project>

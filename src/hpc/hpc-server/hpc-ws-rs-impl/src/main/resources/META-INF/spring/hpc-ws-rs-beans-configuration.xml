@@ -23,7 +23,6 @@
 	   xmlns:httpj="http://cxf.apache.org/transports/http-jetty/configuration"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	   xmlns:context="http://www.springframework.org/schema/context"
-	   xmlns:aop="http://www.springframework.org/schema/aop"
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
                            http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
@@ -32,14 +31,10 @@
 	                       http://cxf.apache.org/transports/http-jetty/configuration http://cxf.apache.org/schemas/configuration/http-jetty.xsd
                            http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
                            http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
-                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-                           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 	<context:annotation-config />
-	<context:load-time-weaver weaver-class="org.springframework.instrument.classloading.InstrumentationLoadTimeWeaver"
-	                          aspectj-weaving="on" />
-	
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
-
+	
 	<!--  HTTP-JETTY SSL Configuration -->
 	<httpj:engine-factory bus="cxf">
     	<httpj:identifiedTLSServerParameters id="hpcTLSServerParameters">
@@ -220,9 +215,6 @@
 	<bean id="hpcDataSearchRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataSearchRestServiceImpl" />
 	<bean id="hpcNotificationRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcNotificationRestServiceImpl" />
 	<bean id="hpcReportRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcReportRestServiceImpl" />
-	
-	<!-- Rest Services Aspect -->
-	<bean id="hpcRestServiceAspect" class="gov.nih.nci.hpc.ws.rs.impl.HpcRestServiceAspect" />
 	
 	<!-- CXF JAX-RS Server Config -->
 	<jaxrs:server id="hpc-server" address="${hpc.ws.rs.url}" bus="cxf">
