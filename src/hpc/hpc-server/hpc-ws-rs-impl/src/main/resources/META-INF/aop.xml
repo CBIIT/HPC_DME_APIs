@@ -17,7 +17,7 @@
 
     <weaver>
         <!-- Only weave classes in this package -->
-        <include within="gov.nih.nci.hpc.ws.rs.*"/>
+        <include within="gov.nih.nci.hpc.ws.rs.impl.*"/>
     </weaver>
 
     <aspects>

@@ -45,7 +45,7 @@ public class HpcRestServiceAspect
     /**
      * A joint point for all rest services API.
      */
-    @Pointcut("execution(* gov.nih.nci.hpc.ws.rs.*.*(..))")
+    @Pointcut("execution(* gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl.*(..))")
     public void restService() {}
     
     //---------------------------------------------------------------------//
