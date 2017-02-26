@@ -22,18 +22,6 @@
 	<context:annotation-config />
 	<aop:aspectj-autoproxy />
 	
-	<!-- Rest Services Aspect -->
-	<bean id="hpcRestServiceAspect" class="gov.nih.nci.hpc.bus.impl.HpcRestServiceAspect" />
-
-<!--  
-   	<aop:config>
-      <aop:aspect id="log" ref="hpcRestServiceAspect">
-         <aop:pointcut id="selectAll" expression="within(gov.nih.nci.hpc.bus.impl.HpcDataManagementBusServiceImpl) and execution(* gov.nih.nci.hpc.bus.impl.HpcDataManagementBusServiceImpl.*(..))" />
-         <aop:around pointcut-ref="selectAll" method="profile"/>
-         
-      </aop:aspect>
-   </aop:config>
--->
 	<!-- HPC Business Services Beans -->
 	<bean id="hpcSecurityBusService" class="gov.nih.nci.hpc.bus.impl.HpcSecurityBusServiceImpl" />
 	<bean id="hpcDataManagementBusService" class="gov.nih.nci.hpc.bus.impl.HpcDataManagementBusServiceImpl" />
@@ -41,5 +29,8 @@
 	<bean id="hpcSystemBusService" class="gov.nih.nci.hpc.bus.impl.HpcSystemBusServiceImpl" />
 	<bean id="hpcNotificationBusService" class="gov.nih.nci.hpc.bus.impl.HpcNotificationBusServiceImpl" />
 	<bean id="hpcReportBusService" class="gov.nih.nci.hpc.bus.impl.HpcReportBusServiceImpl" />
+	
+	<!-- Business Services Aspects -->
+	<bean id="hpcBusServiceAspect" class="gov.nih.nci.hpc.bus.aspect.HpcBusServiceAspect" />
 
 </beans>
