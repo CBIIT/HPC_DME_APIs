@@ -35,7 +35,8 @@
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package />
 						<Private-Package>
-							gov.nih.nci.hpc.bus.impl
+							gov.nih.nci.hpc.bus.impl,
+							gov.nih.nci.hpc.bus.aspect
 						</Private-Package>
 						<Import-Package>
 							org.springframework.aop,
