@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
-import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
@@ -45,19 +45,20 @@ public class HpcRestServiceAspect
     /**
      * A joint point for all rest services API.
      */
-    @Pointcut("execution(* gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService.getCollection(..))")
-    private void restService() {}
+    @Pointcut("execution(* gov.nih.nci.hpc.ws.rs.*.*(..))")
+    public void restService() {}
     
     //---------------------------------------------------------------------//
     // Advices.
     //---------------------------------------------------------------------//
     
-	@Before("gov.nih.nci.hpc.ws.rs.impl.HpcRestServiceAspect.restService()")
-    public void logBeforeV2(JoinPoint joinPoint) 
+	@Before("restService()")
+	public Object profile(ProceedingJoinPoint pjp) throws Throwable
     {
-        logger.error("ERAN: " + joinPoint.getSignature().toShortString());
-        logger.error("ERAN: " + joinPoint.getSignature().toString());
-        logger.error("ERAN: " + joinPoint.getSignature().toLongString());
+        logger.error("ERAN: " + pjp.getSignature().toShortString());
+        logger.error("ERAN: " + pjp.getSignature().toString());
+        logger.error("ERAN: " + pjp.getSignature().toLongString());
+        return pjp.proceed();
     }
     
 }
