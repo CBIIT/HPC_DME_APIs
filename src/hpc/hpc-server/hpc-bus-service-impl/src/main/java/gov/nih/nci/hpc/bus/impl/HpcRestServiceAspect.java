@@ -49,7 +49,7 @@ public class HpcRestServiceAspect
     }
 	
 	public void logBefore(JoinPoint joinPoint) {
-		logger.error("ERAN: BEFORE");
+		logger.error("ERAN: " + joinPoint.getSignature().toShortString());
 	}
     
 }
