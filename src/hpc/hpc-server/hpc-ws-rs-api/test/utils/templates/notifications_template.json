@@ -27,6 +27,20 @@
     {
         "eventType": "USAGE_SUMMARY_BY_WEEKLY_REPORT",
         "notificationDeliveryMethods": ["EMAIL"]
+    },
+    {
+        "eventType" : "COLLECTION_UPDATED",
+        "notificationDeliveryMethods" : ["EMAIL"],
+        "notificationTriggers" : [
+            { 
+                "payloadEntries" : [
+                    { 
+                        "attribute" : "COLLECTION_PATH", 
+                        "value" : "/DXBASEFOLDER" 
+                    }
+                ]
+            }
+        ]
     }
    ]
 }
