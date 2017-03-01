@@ -913,32 +913,21 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	    hpcDataObject.setCollectionId(irodsDataObject.getCollectionId());
 	    hpcDataObject.setCollectionName(getRelativePath(irodsDataObject.getCollectionName()));
 	    hpcDataObject.setAbsolutePath(getRelativePath(irodsDataObject.getAbsolutePath()));
-	    hpcDataObject.setDataReplicationNumber(irodsDataObject.getDataReplicationNumber());
-	    hpcDataObject.setDataVersion(irodsDataObject.getDataVersion());
 	    hpcDataObject.setDataSize(irodsDataObject.getDataSize());
-	    hpcDataObject.setDataTypeName(irodsDataObject.getDataTypeName());
-	    hpcDataObject.setResourceGroupName(irodsDataObject.getResourceGroupName());
-	    hpcDataObject.setResourceName(irodsDataObject.getResourceName());
 	    hpcDataObject.setDataPath(irodsDataObject.getDataPath());
 	    hpcDataObject.setDataOwnerName(irodsDataObject.getDataOwnerName());
-	    hpcDataObject.setDataOwnerZone(irodsDataObject.getDataOwnerZone());
-	    hpcDataObject.setReplicationStatus(irodsDataObject.getReplicationStatus());
-	    hpcDataObject.setDataStatus(irodsDataObject.getDataStatus());
-	    hpcDataObject.setChecksum(irodsDataObject.getChecksum());
-	    hpcDataObject.setExpiry(irodsDataObject.getExpiry());
-	    hpcDataObject.setDataMapId(irodsDataObject.getDataMapId());
-	    hpcDataObject.setComments(irodsDataObject.getComments());
-	    hpcDataObject.setSpecColType(irodsDataObject.getSpecColType().toString());
 	    
 	    Calendar createdAt = Calendar.getInstance();
-	    if(irodsDataObject.getCreatedAt() != null)
-	    {
-	    	createdAt.setTime(irodsDataObject.getCreatedAt());
-	    	hpcDataObject.setCreatedAt(createdAt);
+	    if(irodsDataObject.getCreatedAt() != null) {
+	       createdAt.setTime(irodsDataObject.getCreatedAt());
+	       hpcDataObject.setCreatedAt(createdAt);
 	    }
+	    
 	    Calendar updatedAt = Calendar.getInstance();
-	    updatedAt.setTime(irodsDataObject.getUpdatedAt());
-	    hpcDataObject.setUpdatedAt(updatedAt);
+	    if(irodsDataObject.getUpdatedAt() != null) {
+	       updatedAt.setTime(irodsDataObject.getUpdatedAt());
+	       hpcDataObject.setUpdatedAt(updatedAt);
+	    }
 	    
 	    return hpcDataObject;
     }

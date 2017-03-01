@@ -24,6 +24,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
@@ -768,9 +769,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		Boolean createParentCollections = dataObjectRegistration.getCreateParentCollections();
 		if(createParentCollections != null && createParentCollections &&
 		   !dataManagementService.isPathParentDirectory(path)) {
+		   // Validate parent collection metadata provided w/ the request.
+		   List<HpcMetadataEntry> parentCollectionMetadataEntries = 
+				                  dataObjectRegistration.getParentCollectionMetadataEntries();
+		   if(parentCollectionMetadataEntries == null || parentCollectionMetadataEntries.isEmpty()) {
+			  throw new HpcException("Null or empty parent metadata entries", 
+					                 HpcErrorType.INVALID_REQUEST_INPUT);
+		   }
+		   
+		   // Create a collection registration request DTO. 
 		   HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
-		   collectionRegistration.getMetadataEntries().addAll(dataObjectRegistration.getMetadataEntries());
+		   collectionRegistration.getMetadataEntries().addAll(parentCollectionMetadataEntries);
 		   collectionRegistration.setCreateParentCollections(true);
+		   
+		   // Register the parent collection.
 		   registerCollection(path.substring(0, path.lastIndexOf('/')), collectionRegistration);
 		}
 	}
