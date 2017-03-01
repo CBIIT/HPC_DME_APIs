@@ -18,7 +18,7 @@ source $HPC_DM_TEST/utils/functions
 verify_registration  collection-registration-response-header.tmp
 verify_registration  dataObject-registration-response-header.tmp
 
-#sleep 60
+async_sleep
 
 OBJECT_PATH=`cat registered-dataobject-path.tmp`
 
