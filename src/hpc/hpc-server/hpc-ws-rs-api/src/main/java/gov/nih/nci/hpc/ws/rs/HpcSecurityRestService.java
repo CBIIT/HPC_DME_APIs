@@ -22,6 +22,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -72,6 +73,22 @@ public interface HpcSecurityRestService
     @Path("/user/{nciUserId}")
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response getUser(@PathParam("nciUserId") String nciUserId);
+    
+    /**
+     * Get users by search criterias.
+     *
+     * @param nciUserId The user ID to search for.
+     * @param firstName The first name to search for.
+     * @param lastName The last name to search for.
+     * @return gov.nih.nci.hpc.dto.security.HpcUserListDTO entity.
+     * @return The REST service response.
+     */
+    @GET
+    @Path("/user")
+    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    public Response getUsers(@QueryParam("nciUserId") String nciUserId,
+    		                 @QueryParam("firstName") String firstName,
+    		                 @QueryParam("lastName") String lastName);
 
     /**
      * Authenticate a user.
