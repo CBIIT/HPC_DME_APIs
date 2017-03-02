@@ -282,6 +282,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     {
     	// Get the users based on search criteria.
     	HpcUserListDTO users = new HpcUserListDTO();
+    	for(HpcUser user : securityService.getUsers(nciUserId, firstName, lastName)) {
+    	    users.getNciAccounts().add(user.getNciAccount());
+    	}
     	
     	return users;
     }
