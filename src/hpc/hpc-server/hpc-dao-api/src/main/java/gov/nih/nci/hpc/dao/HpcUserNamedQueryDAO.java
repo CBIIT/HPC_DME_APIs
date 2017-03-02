@@ -1,5 +1,5 @@
 /**
- * HpcEventDAO.java
+ * HpcUserNamedQueryDAO.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -17,14 +17,14 @@ import java.util.List;
 
 /**
  * <p>
- * HPC User Query DAO Interface.
+ * HPC User Named-Query DAO Interface.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public interface HpcUserQueryDAO 
+public interface HpcUserNamedQueryDAO 
 {    
     /**
      * Upsert a query for a user.

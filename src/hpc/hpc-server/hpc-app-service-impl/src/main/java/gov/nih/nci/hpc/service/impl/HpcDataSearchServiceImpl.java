@@ -14,7 +14,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidCompoundMet
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidMetadataQueryLevelFilter;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
-import gov.nih.nci.hpc.dao.HpcUserQueryDAO;
+import gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO;
 import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
@@ -52,7 +52,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
 	
 	// User Query DAO.
 	@Autowired
-	private HpcUserQueryDAO userQueryDAO = null;
+	private HpcUserNamedQueryDAO userNamedQueryDAO = null;
 	
     // The Data Management Proxy instance.
 	@Autowired
@@ -208,26 +208,26 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
        	namedCompoundMetadataQuery.setUpdated(Calendar.getInstance());
        	
        	// Upsert the named query.
-       	userQueryDAO.upsertQuery(nciUserId, namedCompoundMetadataQuery);
+       	userNamedQueryDAO.upsertQuery(nciUserId, namedCompoundMetadataQuery);
     }
     
     @Override
     public void deleteQuery(String nciUserId, String queryName) throws HpcException
     {
-    	userQueryDAO.deleteQuery(nciUserId, queryName);
+    	userNamedQueryDAO.deleteQuery(nciUserId, queryName);
     	
     }
 
     @Override
     public List<HpcNamedCompoundMetadataQuery> getQueries(String nciUserId) throws HpcException
     {
-    	return userQueryDAO.getQueries(nciUserId);
+    	return userNamedQueryDAO.getQueries(nciUserId);
     }
     
     @Override
     public HpcNamedCompoundMetadataQuery getQuery(String nciUserId, String queryName) throws HpcException
     {
-    	return userQueryDAO.getQuery(nciUserId, queryName);
+    	return userNamedQueryDAO.getQuery(nciUserId, queryName);
     }
     
     @Override

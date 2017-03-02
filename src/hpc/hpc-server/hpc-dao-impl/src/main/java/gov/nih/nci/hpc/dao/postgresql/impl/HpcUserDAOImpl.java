@@ -20,8 +20,10 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +49,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
     //---------------------------------------------------------------------//    
     
     // SQL Queries.
-	private static final String UPSERT_SQL = 
+	private static final String UPSERT_USER_SQL = 
 		    "insert into public.\"HPC_USER\" ( " +
                     "\"USER_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"DOC\", " +
                     "\"IRODS_USERNAME\", \"IRODS_PASSWORD\", " +
@@ -61,7 +63,12 @@ public class HpcUserDAOImpl implements HpcUserDAO
                                                    "\"CREATED\"=excluded.\"CREATED\", " +
                                                    "\"LAST_UPDATED\"=excluded.\"LAST_UPDATED\"";
 
-	private static final String GET_SQL = "select * from public.\"HPC_USER\" where \"USER_ID\" = ?";
+	private static final String GET_USER_SQL = "select * from public.\"HPC_USER\" where \"USER_ID\" = ?";
+	
+	private static final String GET_USERS_SQL = "select * from public.\"HPC_USER\" where ?";
+    private static final String GET_USERS_USER_ID_FILTER = " and \"USER_ID\" = ? ";
+    private static final String GET_USERS_FIRST_NAME_FILTER = " and \"FIRST_NAME\" = ? ";
+    private static final String GET_USERS_LAST_NAME_FILTER = " and \"LAST_NAME\" = ? ";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -106,7 +113,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 	public void upsert(HpcUser user) throws HpcException
     {
 		try {
-		     jdbcTemplate.update(UPSERT_SQL,
+		     jdbcTemplate.update(UPSERT_USER_SQL,
 		                         user.getNciAccount().getUserId(),
 		                         user.getNciAccount().getFirstName(),
 		                         user.getNciAccount().getLastName(),
@@ -126,7 +133,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 	public HpcUser getUser(String nciUserId) throws HpcException
 	{
 		try {
-		     return jdbcTemplate.queryForObject(GET_SQL, rowMapper, nciUserId);
+		     return jdbcTemplate.queryForObject(GET_USER_SQL, rowMapper, nciUserId);
 		     
 		} catch(IncorrectResultSizeDataAccessException irse) {
 			    logger.error("Multiple users with the same ID found", irse);
@@ -137,6 +144,41 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		    	    	               HpcErrorType.DATABASE_ERROR, e);
 		}
 	}
+	
+	public List<HpcUser> getUsers(String nciUserId, String firstName, String lastName) 
+                                 throws HpcException
+    {
+		// Build the query based on provided search criteria.
+		StringBuilder sqlQueryBuilder = new StringBuilder();
+    	List<Object> args = new ArrayList<>();
+    	
+    	sqlQueryBuilder.append(GET_USERS_SQL);
+    	args.add(true);
+    	
+    	if(nciUserId != null) {
+    	   sqlQueryBuilder.append(GET_USERS_USER_ID_FILTER);
+    	   args.add(nciUserId);
+    	}
+    	if(firstName != null) {
+     	   sqlQueryBuilder.append(GET_USERS_FIRST_NAME_FILTER);
+     	   args.add(firstName);
+     	}
+    	if(lastName != null) {
+     	   sqlQueryBuilder.append(GET_USERS_LAST_NAME_FILTER);
+     	   args.add(lastName);
+     	}
+    	
+		try {
+		     return jdbcTemplate.query(sqlQueryBuilder.toString(), rowMapper, args);
+		     
+		} catch(IncorrectResultSizeDataAccessException irse) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get users: " + e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}		
+    }
 	
     //---------------------------------------------------------------------//
     // Helper Methods

@@ -37,6 +37,7 @@ import io.jsonwebtoken.SignatureException;
 
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -233,6 +234,14 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 
     	return userDAO.getUser(nciUserId);
     }
+    
+    @Override
+    public List<HpcUser> getUsers(String nciUserId, String firstName, String lastName) 
+                                 throws HpcException
+    {
+    	return userDAO.getUsers(nciUserId, firstName, lastName);
+    }
+                                 
 
     @Override
     public HpcUserRole getUserRole(String nciUserId) throws HpcException

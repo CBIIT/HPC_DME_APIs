@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.dto.security.HpcGroupResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
 import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -57,6 +58,18 @@ public interface HpcSecurityBusService
      * @throws HpcException on service failure.
      */
     public HpcUserDTO getUser(String nciUserId) throws HpcException;
+    
+    /**
+     * Get users by search criterias.
+     *
+     * @param nciUserId (Optional) The user ID to search for.
+     * @param firstName (Optional) The first name to search for.
+     * @param lastName (Optional) The last name to search for.
+     * @return A list of users.
+     * @throws HpcException on service failure.
+     */
+    public HpcUserListDTO getUsers(String nciUserId, String firstName, String lastName) 
+    		                      throws HpcException;
     
     /**
      * Authenticate user.
