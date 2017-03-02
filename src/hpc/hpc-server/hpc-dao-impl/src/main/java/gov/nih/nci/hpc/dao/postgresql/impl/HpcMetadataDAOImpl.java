@@ -422,8 +422,16 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		{
 			HpcMetadataLevelAttributes metadataLevelAttributes = new HpcMetadataLevelAttributes();
 			metadataLevelAttributes.setLevelLabel(rs.getString("LEVEL_LABEL"));
-			metadataLevelAttributes.getMetadataAttributes().addAll(
-				    Arrays.asList((String[]) rs.getArray("ATTRIBUTES").getArray()));
+			
+			// Extract the metadata attributes for this level. Defensive coding to exclude any null values.
+			String[] metadataAttributes = (String[]) rs.getArray("ATTRIBUTES").getArray();
+			int metadataAttributesSize = metadataAttributes.length;
+			for(int i = 0; i < metadataAttributesSize; i++) {
+				if(metadataAttributes[i] != null) {
+				   metadataLevelAttributes.getMetadataAttributes().add(metadataAttributes[i]);
+				}
+			}
+			
 			return metadataLevelAttributes;
 		}
 	}
