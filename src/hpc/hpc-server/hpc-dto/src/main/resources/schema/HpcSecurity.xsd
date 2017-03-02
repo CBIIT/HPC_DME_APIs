@@ -37,6 +37,16 @@
 		</xsd:complexType>
 	</xsd:element>
 	
+		<!-- User DTO -->
+	<xsd:element name="HpcUserListDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="nciAccounts" type="hpc-domain-user:HpcNciAccount" 
+				             minOccurs="0" maxOccurs="unbounded"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
 	<!-- Update User Request -->
 	<xsd:element name="HpcUpdateUserRequestDTO">
 		<xsd:complexType>

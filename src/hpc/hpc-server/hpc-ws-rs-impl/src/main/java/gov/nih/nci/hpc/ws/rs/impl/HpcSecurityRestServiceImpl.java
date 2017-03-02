@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.dto.security.HpcGroupResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
 import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcSecurityRestService;
 
@@ -109,17 +110,34 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     {
 		logger.info("Invoking RS: GET /user/{nciUserId}: " + nciUserId);
 		
-		HpcUserDTO userDTO = null;
+		HpcUserDTO user = null;
 		try {
-			 userDTO = securityBusService.getUser(nciUserId);
+			 user = securityBusService.getUser(nciUserId);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /user/{nciUserId} failed:", e);
 			    return errorResponse(e);
 		}
 		
-		return okResponse(userDTO, true);
+		return okResponse(user, true);
 	}
+    
+    @Override
+    public Response getUsers(String nciUserId, String firstName, String lastName)
+    {
+		logger.info("Invoking RS: GET /user");
+		
+		HpcUserListDTO users = null;
+		try {
+			 users = securityBusService.getUsers(nciUserId, firstName, lastName);
+			 
+		} catch(HpcException e) {
+			    logger.error("RS: GET /user failed:", e);
+			    return errorResponse(e);
+		}
+		
+		return okResponse(!users.getNciAccounts().isEmpty() ? users.getNciAccounts() : null, true);
+    }
     
     @Override
     public Response authenticate()
