@@ -65,7 +65,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 
 	private static final String GET_USER_SQL = "select * from public.\"HPC_USER\" where \"USER_ID\" = ?";
 	
-	private static final String GET_USERS_SQL = "select * from public.\"HPC_USER\" where true";
+	private static final String GET_USERS_SQL = "select * from public.\"HPC_USER\" where ?";
     private static final String GET_USERS_USER_ID_FILTER = " and \"USER_ID\" = ? ";
     private static final String GET_USERS_FIRST_NAME_FILTER = " and \"FIRST_NAME\" = ? ";
     private static final String GET_USERS_LAST_NAME_FILTER = " and \"LAST_NAME\" = ? ";
@@ -153,6 +153,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
     	List<Object> args = new ArrayList<>();
     	
     	sqlQueryBuilder.append(GET_USERS_SQL);
+    	args.add(true);
     	
     	if(nciUserId != null) {
     	   sqlQueryBuilder.append(GET_USERS_USER_ID_FILTER);
@@ -168,7 +169,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
      	}
     	
 		try {
-		     return jdbcTemplate.query(sqlQueryBuilder.toString(), rowMapper, args);
+		     return jdbcTemplate.query(sqlQueryBuilder.toString(), rowMapper, args.toArray());
 		     
 		} catch(IncorrectResultSizeDataAccessException irse) {
 			    return null;
