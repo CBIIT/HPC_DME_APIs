@@ -1,5 +1,5 @@
 /**
- * HpcEventDAOImpl.java
+ * HpcUserNamedQueryDAOImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,7 +10,7 @@
 
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
-import gov.nih.nci.hpc.dao.HpcUserQueryDAO;
+import gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
@@ -42,14 +42,14 @@ import org.springframework.jdbc.core.RowMapper;
 
 /**
  * <p>
- * HPC User Query DAO Implementation.
+ * HPC User Named-Query DAO Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
+public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 { 
     //---------------------------------------------------------------------//
     // Constants
@@ -102,7 +102,7 @@ public class HpcUserQueryDAOImpl implements HpcUserQueryDAO
      * Constructor for Spring Dependency Injection. 
      * 
      */
-    private HpcUserQueryDAOImpl()
+    private HpcUserNamedQueryDAOImpl()
     {
     }   
     

@@ -19,6 +19,8 @@ import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import java.util.List;
+
 /**
  * <p>
  * HPC User Application Service Interface.
@@ -61,6 +63,18 @@ public interface HpcSecurityService
      * @throws HpcException on service failure.
      */
     public HpcUser getUser(String nciUserId) throws HpcException;
+    
+    /**
+     * Get users by search criterias.
+     *
+     * @param nciUserId (Optional) The user ID to search for.
+     * @param firstName (Optional) The first name to search for.
+     * @param lastName (Optional) The last name to search for.
+     * @return A list of users.
+     * @throws HpcException on service failure.
+     */
+    public List<HpcUser> getUsers(String nciUserId, String firstName, String lastName) 
+    		                     throws HpcException;
     
     /**
      * Get user role.

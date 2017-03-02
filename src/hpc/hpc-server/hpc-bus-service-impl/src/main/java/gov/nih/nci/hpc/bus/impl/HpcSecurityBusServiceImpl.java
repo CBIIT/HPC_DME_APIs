@@ -31,6 +31,7 @@ import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
 import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserGroupResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -258,16 +259,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	// Authorize calling this service w/ 'nciUserId'.
     	securityService.authorizeUserService(nciUserId);
     	
-    	// System admins allow to call this service for any user. Regular users allow to call this 
-    	// on their own user-id only.
-    	HpcRequestInvoker invoker = securityService.getRequestInvoker();
-    	if(invoker == null || 
-    	   (!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN) &&
-    	    !invoker.getNciAccount().getUserId().equals(nciUserId))) {
-     	   throw new HpcException("Unauthorized access request",
-	                  HpcErrorType.UNAUTHORIZED_REQUEST);
-    	}
-    	
     	// Get the managed data domain object.
     	HpcUser user = securityService.getUser(nciUserId);
     	if(user == null) {
@@ -284,6 +275,15 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	maskPasswords(userDTO);
     	
     	return userDTO;
+    }
+    
+    public HpcUserListDTO getUsers(String nciUserId, String firstName, String lastName) 
+                                  throws HpcException
+    {
+    	// Get the users based on search criteria.
+    	HpcUserListDTO users = new HpcUserListDTO();
+    	
+    	return users;
     }
     
     @Override
