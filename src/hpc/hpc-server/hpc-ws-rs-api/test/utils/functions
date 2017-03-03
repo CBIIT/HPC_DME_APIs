@@ -280,6 +280,24 @@ function get_username {
 }
 
 
+#Get the globus username from the test configuration file.
+function get_globus_user {
+
+    TEST_CONFIG=$HPC_DM_TEST/utils/test-configuration 
+    GLOBUS_USER_NAME=$(get_json_value $TEST_CONFIG globus-user)
+
+    if [ -z "$GLOBUS_USER_NAME" ]
+    then 
+        echo "ERROR: Can not retrieve globus-user from $TEST_CONFIG"
+        exit 
+    fi
+    echo $GLOBUS_USER_NAME
+}
+
+
+
+
+
 #Get the basefolder 
 function get_basefolder {
 
