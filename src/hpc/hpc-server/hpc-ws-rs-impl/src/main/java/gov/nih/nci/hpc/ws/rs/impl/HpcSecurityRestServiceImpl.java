@@ -136,7 +136,7 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return okResponse(!users.getNciAccounts().isEmpty() ? users.getNciAccounts() : null, true);
+		return okResponse(!users.getNciAccounts().isEmpty() ? users : null, true);
     }
     
     @Override
