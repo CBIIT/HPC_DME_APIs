@@ -2,6 +2,7 @@ package gov.nih.nci.hpc.web.model;
 
 public class HpcSearch {
 
+	private String[] rowId;
 	private String[] level;
 	private String[] levelOperator;
 	private String[] attrName;
@@ -11,6 +12,15 @@ public class HpcSearch {
 	private String searchType;
 	private String advancedCriteria;
 	private String actionType;
+
+	
+	public String[] getRowId() {
+		return rowId;
+	}
+
+	public void setRowId(String[] rowId) {
+		this.rowId = rowId;
+	}
 
 	public String getActionType() {
 		return actionType;

@@ -8,6 +8,15 @@ public class HpcDatafileSearchResultDetailed {
 	private String createdOn;
 	private String checksum;
 	private String download;
+	private String permission;
+
+	public String getPermission() {
+		return permission;
+	}
+
+	public void setPermission(String permission) {
+		this.permission = permission;
+	}
 
 	public String getDownload() {
 		return download;
