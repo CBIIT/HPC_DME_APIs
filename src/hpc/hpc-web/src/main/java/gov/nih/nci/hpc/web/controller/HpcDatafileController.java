@@ -99,7 +99,7 @@ public class HpcDatafileController extends AbstractHpcController {
 		if (dataObject.getMetadataEntries().getSelfMetadataEntries() != null
 				&& !dataObject.getMetadataEntries().getSelfMetadataEntries().isEmpty()) {
 			for (HpcMetadataEntry entry : dataObject.getMetadataEntries().getSelfMetadataEntries()) {
-				if (entry.getAttribute().equals(attrName)) {
+				if (entry.getAttribute() != null && entry.getAttribute().equals(attrName)) {
 					dataObject.getMetadataEntries().getSelfMetadataEntries().remove(entry);
 					break;
 				}
@@ -108,7 +108,7 @@ public class HpcDatafileController extends AbstractHpcController {
 		if (dataObject.getMetadataEntries().getParentMetadataEntries() != null
 				&& !dataObject.getMetadataEntries().getParentMetadataEntries().isEmpty()) {
 			for (HpcMetadataEntry entry : dataObject.getMetadataEntries().getParentMetadataEntries()) {
-				if (entry.getAttribute().equals(attrName)) {
+				if (entry.getAttribute() != null && entry.getAttribute().equals(attrName)) {
 					dataObject.getMetadataEntries().getParentMetadataEntries().remove(entry);
 					break;
 				}
