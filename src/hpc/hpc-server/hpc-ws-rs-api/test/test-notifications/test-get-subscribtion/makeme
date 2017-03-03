@@ -18,5 +18,9 @@ $HPC_DM_TEST/test-notifications/utils/maketest
 
 source $HPC_DM_TEST/utils/functions
 
+
+RESPONSE_HEADER=subscribe-notifications-response-header.tmp
+RESPONSE_MSG=subscribe-notifications-response-message.json.tmp
+
 #subscribe to notifications
 subscribe_to_template_notifications
