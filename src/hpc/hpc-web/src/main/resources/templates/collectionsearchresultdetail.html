@@ -72,7 +72,13 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
                  { field: 'uuid', width:200, displayName : 'UUID' },
                  { field: 'registeredBy', width:200, displayName : 'Registered by' },
                  { field: 'collectionType', width:200, displayName : 'Collection Type'},
-                 { field: 'createdOn', width:200, displayName : 'Created On'}
+                 { field: 'createdOn', width:200, displayName : 'Created On'},
+                 {
+						field : 'permission',
+						width : 120,
+						displayName : 'Permission',
+						cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>'  
+				 }
                ],
     treeRowHeaderAlwaysVisible: false,
     onRegisterApi: function( gridApi ) {

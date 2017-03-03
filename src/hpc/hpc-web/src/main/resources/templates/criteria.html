@@ -82,8 +82,7 @@
 						<UL>Search
 						</UL>
 					</h3>
-					<br />
-					<br />
+					<br /> <br />
 					<div th:if="${error != null}">
 						<div class="alert alert-error">
 							<a class="close" data-dismiss="alert">×</a> <label for="${error}"
@@ -99,9 +98,10 @@
 							<div class="col-sm-10">
 								<label class="radio-inline"><input type="radio"
 									th:field="*{searchType}" name="searchType" value="collection"
-									onChange="resetRows()" />Collection</label> <label class="radio-inline"><input
-									type="radio" th:field="*{searchType}" name="searchType"
-									value="datafile" onChange="resetRows()" />Data file</label>
+									onChange="resetRows()" />Collection</label> <label
+									class="radio-inline"><input type="radio"
+									th:field="*{searchType}" name="searchType" value="datafile"
+									onChange="resetRows()" />Data Object</label>
 							</div>
 						</div>
 						<div class="form-group">
@@ -122,6 +122,7 @@
 									<tbody>
 										<tr id='attrRow0'>
 											<td style="white-space: nowrap"><label id="rowId0">A1</label>
+												<input type="hidden" id="rowId0" name="rowId" value="A1" />
 											</td>
 											<td style="white-space: nowrap"><select size="1"
 												id="level1" name="level" class="form-control"
@@ -157,8 +158,7 @@
 												onClick="deleteRow('attrRow0')"
 												class="pull-right btn btn-default"> <i
 													class="fa fa-times" aria-hidden="true"></i>
-												</a>
-											</td>
+											</a></td>
 										</tr>
 										<tr id='attr1'></tr>
 									</tbody>
@@ -171,22 +171,24 @@
 									onClick="addRow()">Add Criteria</a>
 							</div>
 						</div>
-						<!-- 
-    <div class="form-group" id="advanced">
-	  <a id="addAttr" class="btn link pull-left col-sm-2" onClick="advancedSearch()">Advanced Search
-	  <span class="menu-arrow arrow_carrot-right" id="arrow"></span>
-	  </a>
-	  <div class="col-sm-10">
-		   <label class="control-label col-sm-2" for="level">&nbsp;</label>
-	  </div>
-	 </div>
-	
-	<div class="form-group" id="advancedarea" style="display: none">
-	  <div class="col-sm-offset-2 col-sm-10">
-		<textarea class="form-control" rows="5" id="advcritiria"></textarea>
-	  </div>
-	</div>
--->
+
+						<div class="form-group" id="advanced">
+							<a id="addAttr" class="btn link pull-left col-sm-2"
+								onClick="advancedSearch()">Advanced Search <span
+								class="menu-arrow arrow_carrot-right" id="arrow"></span>
+							</a>
+							<div class="col-sm-10">
+								<label class="control-label col-sm-2" for="level">&nbsp;</label>
+							</div>
+						</div>
+
+						<div class="form-group" id="advancedarea" style="display: none">
+							<div class="col-sm-offset-2 col-sm-10">
+								<textarea class="form-control" rows="5"
+									th:field="*{advancedCriteria}"></textarea>
+							</div>
+						</div>
+
 						<div class="form-group">
 							<div class="col-sm-offset-2 col-sm-10">
 								<label><input type="checkbox" th:field="*{detailed}"
@@ -464,7 +466,7 @@ function addRow() {
     var cell3 = row.insertCell(3);
     var cell4 = row.insertCell(4);
     var cell5 = row.insertCell(5);
-    cell0.innerHTML = '<label id="rowId'+ (rowId) +'">A'+ (rowId) + '</label>';
+    cell0.innerHTML = '<label id="rowId'+ (rowId) +'">A'+ (rowId) + '</label><input type="hidden" id="rowId'+ (rowId) +'" name="rowId" value="A'+ (rowId) +'"/>';
     cell1.innerHTML = '<select id="level'+(rows+1)+'" name="level" class="form-control" th:required="required" onChange="populateLevelAttributes(this.value, this.id)"></select>';
     cell2.innerHTML = '<select id="attrName'+(rows+1)+'" name="attrName" class="form-control" th:required="required"> <option value="-1">----Select----</option></select>';
     cell3.innerHTML = '<select id="operator'+(rows+1)+'" name="operator" class="form-control" th:required="required"> <option value="-1">----Select----</option> <option value="1">=</option><option value="2">!=</option><option value="3">&lt;</option><option value="4">&gt;</option></select>';
@@ -517,6 +519,7 @@ function cancel() {
 function validateAndSubmit()
 {
 	var inputs = new Array();
+	var valid = false;
 	inputs = document.getElementsByTagName("select");
 	for(var i = 0; i < inputs.length; i++)
 	{
@@ -524,21 +527,24 @@ function validateAndSubmit()
 		if(attrName.startsWith("attrName"))
 		{
 			var suffix = attrName.substring("attrName".length);
-//			alert("End " + suffix);
 			var attrNameValue = document.getElementsByName(attrName)[0].value;
 			if(attrNameValue != "-1")
 			{
 				var attrOperValue = document.getElementsByName("operator"+suffix)[0].value;	
-				//alert("attrOperValue "+attrOperValue);
 				var attrValueValue = document.getElementsByName("attrValue"+suffix)[0].value;
-				//alert("attrValueValue "+attrValueValue);
 				if(attrOperValue == "-1" || attrValueValue == null || attrValueValue.trim().length == 0)
 				{
 					alert("Invalid Valid criteria. Please enter operator and value");
 					return false;
 				}
+				valid = true;
 			}
 		}
+	}
+	if(!valid)
+	{
+		alert("Invalid Valid criteria");
+		return false;
 	}
 	document.getElementById("simplesearchform").submit();
 }
