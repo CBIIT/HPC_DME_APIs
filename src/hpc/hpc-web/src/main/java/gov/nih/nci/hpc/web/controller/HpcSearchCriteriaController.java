@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -60,6 +61,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcCollectionSearchResultDetailed;
+import gov.nih.nci.hpc.web.model.HpcCompoundQuery;
 import gov.nih.nci.hpc.web.model.HpcDatafileSearchResultDetailed;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcMetadataHierarchy;
@@ -67,6 +69,7 @@ import gov.nih.nci.hpc.web.model.HpcSaveSearch;
 import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.model.HpcSearchResult;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcCompoundSearchBuilder;
 
 /**
  * <p>
@@ -295,7 +298,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		HpcCompoundMetadataQueryDTO dto = new HpcCompoundMetadataQueryDTO();
 		HpcCompoundMetadataQuery query = null;
 		if (search.getAdvancedCriteria() != null && !search.getAdvancedCriteria().isEmpty())
-			query = buildAdvancedSearch(search);
+			query = buildAdvancedSearch(hierarchy, search);
 		else
 			query = buildSimpleSearch(hierarchy, search);
 
@@ -311,10 +314,22 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 
 	private HpcCompoundMetadataQuery buildSimpleSearch(Map<String, String> hierarchy, HpcSearch search) {
 		HpcCompoundMetadataQuery query = new HpcCompoundMetadataQuery();
-		List<HpcMetadataQuery> queries = new ArrayList<HpcMetadataQuery>();
-
 		query.setOperator(HpcCompoundMetadataQueryOperator.AND);
+		Map<String, HpcMetadataQuery> queriesMap = getQueries(hierarchy, search);
+		List<HpcMetadataQuery> queries = new ArrayList<HpcMetadataQuery>();
+		Iterator<String> iter = queriesMap.keySet().iterator();
+		while(iter.hasNext())
+			queries.add(queriesMap.get(iter.next()));
+
+		query.getQueries().addAll(queries);
+		return query;
+	}
+
+	private Map<String, HpcMetadataQuery> getQueries(Map<String, String> hierarchy, HpcSearch search)
+	{
+		Map<String, HpcMetadataQuery> queries = new HashMap<String, HpcMetadataQuery>();
 		for (int i = 0; i < search.getAttrName().length; i++) {
+			String rowId = search.getRowId()[i];
 			String attrName = search.getAttrName()[i];
 			String attrValue = search.getAttrValue()[i];
 			String operator = search.getOperator()[i];
@@ -333,16 +348,18 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 					levelFilter.setOperator(HpcMetadataQueryOperator.EQUAL);
 					criteria.setLevelFilter(levelFilter);
 				}
-				queries.add(criteria);
+				queries.put(rowId, criteria);
 			}
-		}
-		query.getQueries().addAll(queries);
-		return query;
+		}	
+		return queries;
 	}
-
-	private HpcCompoundMetadataQuery buildAdvancedSearch(HpcSearch search) {
-		HpcCompoundMetadataQuery query = new HpcCompoundMetadataQuery();
-		return query;
+	
+	private HpcCompoundMetadataQuery buildAdvancedSearch(Map<String, String> hierarchy, HpcSearch search) {
+		Map<String, HpcMetadataQuery> queries = getQueries(hierarchy, search);
+		HpcCompoundQuery compoundQuery = new HpcCompoundQuery();
+		compoundQuery.setQueries(queries);
+		compoundQuery.setCriteria(search.getAdvancedCriteria());
+		return new HpcCompoundSearchBuilder(compoundQuery).build();
 	}
 
 	private String getAttributeValue(String attrName, HpcMetadataEntries entries) {
@@ -401,7 +418,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			for (HpcMetadataLevelAttributes levelAttrs : dto.getCollectionMetadataAttributes()) {
 				String label = levelAttrs.getLevelLabel();
 				if (label == null)
-					label = "Data file";
+					continue;
+//					label = "Data file";
 				hierarchy.put(label, label);
 				dataHierarchy.getCollectionAttrsSet().addAll(levelAttrs.getMetadataAttributes());
 				for (String name : levelAttrs.getMetadataAttributes())
@@ -413,8 +431,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			for (HpcMetadataLevelAttributes levelAttrs : dto.getDataObjectMetadataAttributes()) {
 				String label = levelAttrs.getLevelLabel();
 				if (label == null)
-					label = "Data file";
-
+					continue;
+				
 				hierarchy.put(label, label);
 				dataHierarchy.getDataobjectAttrsSet().addAll(levelAttrs.getMetadataAttributes());
 				for (String name : levelAttrs.getMetadataAttributes())

@@ -70,7 +70,17 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
     paginationPageSize: 25,
     treeRowHeaderAlwaysVisible: false,
     columnDefs: [
-                 { field: 'path', width:500, displayName: 'Path', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="../collection?path={{COL_FIELD CUSTOM_FILTERS}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  }
+                 { field: 'path', 
+                	 width:500, 
+                	 displayName: 'Path', 
+                	 cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="../collection?path={{COL_FIELD CUSTOM_FILTERS}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  
+                  }
+                 ,{
+						field : 'permission',
+						width : 120,
+						displayName : 'Permission',
+						cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>'
+					}
                ],
     onRegisterApi: function( gridApi ) {
       $scope.grid1Api = gridApi;

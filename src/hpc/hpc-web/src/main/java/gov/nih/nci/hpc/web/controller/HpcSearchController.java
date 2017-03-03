@@ -223,8 +223,8 @@ public class HpcSearchController extends AbstractHpcController {
 				HpcSearchResult returnResult = new HpcSearchResult();
 				returnResult.setPath(result);
 				returnResult.setDownload(result);
+				returnResult.setPermission(result);
 				returnResults.add(returnResult);
-
 			}
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("searchType", "datafile");
@@ -240,6 +240,7 @@ public class HpcSearchController extends AbstractHpcController {
 				returnResult.setCreatedOn(format.format(result.getDataObject().getCreatedAt().getTime()));
 				returnResult.setChecksum(getAttributeValue("checksum", result.getMetadataEntries()));
 				returnResult.setDownload(result.getDataObject().getAbsolutePath());
+				returnResult.setPermission(result.getDataObject().getAbsolutePath());
 				returnResults.add(returnResult);
 
 			}
