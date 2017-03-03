@@ -47,6 +47,10 @@
 
 <link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css"
 	type="text/css" />
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 <style>
 /*style.css*/
@@ -89,12 +93,6 @@
 									<i class="fa fa-list-alt red"></i><strong>Data File &nbsp; <a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?path=' + ${dataObject.getDataObject().getAbsolutePath()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></strong>
 								</h2>
 							</div>
-							<div th:if="${error != null}">
-								<div class="alert alert-error">
-									<a class="close" data-dismiss="alert">×</a> <label
-										for="${error}" th:text="${error}"></label>
-								</div>
-							</div>
 								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
 									aria-labelledby="myModalLabel" aria-hidden="true">
 									<div class="modal-dialog">
@@ -103,6 +101,13 @@
 									</div>
 									<!-- /.modal-dialog -->
 								</div>								
+							
+							<div th:if="${error != null}">
+								<div class="alert alert-error">
+									<a class="close" data-dismiss="alert">×</a> <label
+										for="${error}" th:text="${error}"></label>
+								</div>
+							</div>
 							<div th:if="${error == null}">
 								<!--panel-body start-->
 								<div class="panel-body">

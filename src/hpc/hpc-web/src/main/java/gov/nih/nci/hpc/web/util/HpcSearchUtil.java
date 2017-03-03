@@ -47,6 +47,7 @@ public class HpcSearchUtil {
 				HpcSearchResult returnResult = new HpcSearchResult();
 				returnResult.setPath(result);
 				returnResults.add(returnResult);
+				returnResult.setPermission(result);
 
 			}
 			model.addAttribute("searchresults", returnResults);
@@ -62,6 +63,7 @@ public class HpcSearchUtil {
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
 				returnResult.setCreatedOn(format.format(result.getCollection().getCreatedAt().getTime()));
 				returnResult.setCollectionType(getAttributeValue("collection_type", result.getMetadataEntries()));
+				returnResult.setPermission(result.getCollection().getAbsolutePath());
 				returnResults.add(returnResult);
 
 			}
@@ -83,6 +85,7 @@ public class HpcSearchUtil {
 				HpcSearchResult returnResult = new HpcSearchResult();
 				returnResult.setPath(result);
 				returnResult.setDownload(result);
+				returnResult.setPermission(result);
 				returnResults.add(returnResult);
 
 			}
@@ -100,6 +103,7 @@ public class HpcSearchUtil {
 				returnResult.setCreatedOn(format.format(result.getDataObject().getCreatedAt().getTime()));
 				returnResult.setChecksum(getAttributeValue("checksum", result.getMetadataEntries()));
 				returnResult.setDownload(result.getDataObject().getAbsolutePath());
+				returnResult.setPermission(result.getDataObject().getAbsolutePath());
 				returnResults.add(returnResult);
 
 			}
