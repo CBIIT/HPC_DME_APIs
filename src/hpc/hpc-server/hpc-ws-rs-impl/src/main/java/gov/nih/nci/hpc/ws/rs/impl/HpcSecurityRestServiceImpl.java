@@ -75,8 +75,6 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response registerUser(HpcUserDTO userRegistrationDTO)
     {	
-		logger.info("Invoking RS: PUT /user: " + userRegistrationDTO);
-		
 		try {
 			securityBusService.registerUser(userRegistrationDTO);
 			 
@@ -92,8 +90,6 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     public Response updateUser(String nciUserId,
                                HpcUpdateUserRequestDTO updateUserRequestDTO)
     {	
-		logger.info("Invoking RS: POST /user: " + updateUserRequestDTO);
-		
 		try {
 			 securityBusService.updateUser(nciUserId, updateUserRequestDTO);
 			 
@@ -108,8 +104,6 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getUser(String nciUserId)
     {
-		logger.info("Invoking RS: GET /user/{nciUserId}: " + nciUserId);
-		
 		HpcUserDTO user = null;
 		try {
 			 user = securityBusService.getUser(nciUserId);
@@ -125,8 +119,6 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getUsers(String nciUserId, String firstName, String lastName)
     {
-		logger.info("Invoking RS: GET /user");
-		
 		HpcUserListDTO users = null;
 		try {
 			 users = securityBusService.getUsers(nciUserId, firstName, lastName);
@@ -142,14 +134,10 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response authenticate()
     {
-		logger.info("Invoking RS: POST /authenticate");
-		
 		HpcAuthenticationResponseDTO authenticationResponse = null;
 		try {
-long start = System.currentTimeMillis();
 			 authenticationResponse = securityBusService.getAuthenticationResponse();
-long stop = System.currentTimeMillis();
-logger.error("authenticate "+(stop-start));			 
+
 		} catch(HpcException e) {
 			    logger.error("RS: POST /authenticate failed", e);
 			    return errorResponse(e);
@@ -161,8 +149,6 @@ logger.error("authenticate "+(stop-start));
     @Override
     public Response setGroup(HpcGroupRequestDTO groupRequest)
     {
-    	logger.info("Invoking RS: POST /group: " + groupRequest);
-    	
     	HpcGroupResponseDTO groupResponse = null;
 		try {
 			 groupResponse = securityBusService.setGroup(groupRequest);
@@ -178,9 +164,6 @@ logger.error("authenticate "+(stop-start));
     @Override
     public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistrationDTO)
     {
-		logger.info("Invoking RS: PUT /systemAccount: " + 
-                    systemAccountRegistrationDTO.getAccount().getIntegratedSystem());
-		
 		try {
 			 securityBusService.registerSystemAccount(systemAccountRegistrationDTO);
 			 

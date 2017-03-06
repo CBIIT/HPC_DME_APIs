@@ -10,7 +10,11 @@
 
 package gov.nih.nci.hpc.bus.aspect;
 
+import gov.nih.nci.hpc.exception.HpcException;
+
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
@@ -21,6 +25,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * HPC Bus Services Aspect - implement cross cutting concerns:
  * 1. Basic business service profiler - log execution time.
+ * 2. Exception logger - logging when exceptions are thrown by API impl.
  * 
  * </p>
  *
@@ -74,10 +79,24 @@ public class HpcBusServiceAspect
 			 
 		} finally {
 			       long executionTime = System.currentTimeMillis() - start;
-			       logger.info(joinPoint.getSignature().toShortString() + " business service completed in " + 
-			                   executionTime + " milliseconds.");
+			       logger.debug(joinPoint.getSignature().toShortString() + " business service completed in " + 
+			                    executionTime + " milliseconds.");
 		}
     }
+	
+    /** 
+     * Advice that logs business service exception. 
+     * 
+     * @param joinPoint The join point.
+     * @return The advised object return.
+     * @throws Throwable The advised object exception.
+     */
+	@AfterThrowing (pointcut = "allBusServices()", throwing = "e")
+    public void logException(JoinPoint joinPoint, HpcException e) throws Throwable  
+	{
+		logger.error(joinPoint.getSignature().toShortString() + 
+				     " business service error:  " + e.getMessage(), e); 
+	}
 }
 
  

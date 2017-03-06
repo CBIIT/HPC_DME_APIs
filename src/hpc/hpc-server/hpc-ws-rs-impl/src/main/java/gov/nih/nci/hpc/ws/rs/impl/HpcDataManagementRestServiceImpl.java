@@ -105,8 +105,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     		                           HpcCollectionRegistrationDTO collectionRegistration)
     {	
     	path = toAbsolutePath(path);
-		logger.info("Invoking RS: PUT /collection" + path);
-		long start = System.currentTimeMillis();
 		boolean created = true;
 		try {
 			 created = dataManagementBusService.registerCollection(path, collectionRegistration);
@@ -115,8 +113,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    logger.error("RS: PUT /collection" + path + " failed:", e);
 			    return errorResponse(e);
 		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " registerCollection: Total time - " + path);
 		
 		if(created) {
 		   return createdResponse(null);
@@ -128,23 +124,19 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getCollection(String path, Boolean list)
     {	
-    	long start = System.currentTimeMillis();
     	path = toAbsolutePath(path);
-    	logger.info("Invoking RS: GET /collection/" + path);
-    	
     	HpcCollectionListDTO collections = new HpcCollectionListDTO();
 		try {
 			 HpcCollectionDTO collection = dataManagementBusService.getCollection(path, list);
 			 if(collection != null) {
 				collections.getCollections().add(collection);
 			 }
+			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /collection/" + path + 
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " getCollection: Total time - " + path);
 		
 		return okResponse(!collections.getCollections().isEmpty() ? collections : null , true);
     }
@@ -154,10 +146,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
                                        HpcDownloadRequestDTO downloadRequest,
                                        MessageContext messageContext)
     {
-    	long start = System.currentTimeMillis();
     	path = toAbsolutePath(path);
-    	logger.info("Invoking RS: POST /collection/" + path + "/download: " + downloadRequest);
-    	
     	HpcDownloadResponseListDTO downloadResponses = null;
 		try {
 			 downloadResponses = dataManagementBusService.downloadCollection(path, downloadRequest);
@@ -167,10 +156,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
-		
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " downloadDataObject: Total time - " + path);
-		
+
 		return okResponse(downloadResponses != null && !downloadResponses.getDownloadReceipts().isEmpty() ?
 		                  downloadResponses : null, true);
     }
@@ -180,13 +166,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     		                           HpcDataObjectRegistrationDTO dataObjectRegistration,
     		                           InputStream dataObjectInputStream)
     {	
-    	long start = System.currentTimeMillis();
     	path = toAbsolutePath(path);
-		logger.info("Invoking RS: PUT /dataObject" + path);
-		
 		File dataObjectFile = null;
 		boolean created = true;
-
 		try {
 			 dataObjectFile = toFile(dataObjectInputStream);
 			 created = dataManagementBusService.registerDataObject(path, 
@@ -202,9 +184,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 	    	       FileUtils.deleteQuietly(dataObjectFile);
 		}
 		
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " registerDataObject: Total time - " + path);
-		
 		if(created) {
 		   return createdResponse(null);
 		} else {
@@ -215,10 +194,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getDataObject(String path)
     {	
-    	long start = System.currentTimeMillis();
     	path = toAbsolutePath(path);
-    	logger.info("Invoking RS: GET /dataObject/" + path);
-    	
     	HpcDataObjectListDTO dataObjects = new HpcDataObjectListDTO();
 		try {
 			 HpcDataObjectDTO dataObject = dataManagementBusService.getDataObject(path);
@@ -231,8 +207,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " getDataObject: Total time - " + path);
+
 		return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null, true);
     }
     
@@ -241,10 +216,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
                                        HpcDownloadRequestDTO downloadRequest,
                                        MessageContext messageContext)
     {
-    	long start = System.currentTimeMillis();
     	path = toAbsolutePath(path);
-    	logger.info("Invoking RS: POST /dataObject/" + path + "/download: " + downloadRequest);
-    	
     	HpcDownloadResponseDTO downloadResponse = null;
 		try {
 			 downloadResponse = dataManagementBusService.downloadDataObject(path, downloadRequest);
@@ -255,17 +227,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " downloadDataObject: Total time - " + path);
-		
 		return downloadResponse(downloadResponse, messageContext);
     }
     
     @Override
     public Response setPermissions(List<HpcEntityPermissionRequestDTO> entityPermissionRequests)
     {
-    	logger.info("Invoking RS: POST /acl: " + entityPermissionRequests);
-    	long start = System.currentTimeMillis();
     	HpcEntityPermissionResponseListDTO permissionResponseList = null;
 		try {
 			 permissionResponseList = dataManagementBusService.setPermissions(
@@ -276,8 +243,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " setPermissions: Total time - "+entityPermissionRequests);
 		
 		return okResponse(permissionResponseList, false);
     }
@@ -285,9 +250,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getDataManagementModel(String doc)
     {
-    	long start = System.currentTimeMillis();
-    	logger.info("Invoking RS: GET /model/" + doc);
-    	
     	HpcDataManagementModelDTO dataModel = null;
 		try {
 			 dataModel = dataManagementBusService.getDataManagementModel(doc);
@@ -296,8 +258,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    logger.error("RS: GET /model/" + doc + " failed:", e);
 			    return errorResponse(e);
 		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " getDataManagementModel: " + doc);
 		
 		return okResponse(dataModel, true);
     }
