@@ -10,12 +10,15 @@
 
 package gov.nih.nci.hpc.ws.rs.interceptor;
 
+import javax.servlet.http.HttpServletRequest;
+
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
+import org.apache.cxf.transport.http.AbstractHTTPDestination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: HpcAuthenticationInterceptor.java 2035 2017-02-14 01:00:07Z rosenbergea $
+ * @version $Id$
  */
 
 public class HpcProfileInterceptor 
@@ -102,8 +105,10 @@ public class HpcProfileInterceptor
     @Override
     public void handleMessage(Message message) 
     {
+    	HttpServletRequest request = (HttpServletRequest) message.get(AbstractHTTPDestination.HTTP_REQUEST);
+    	
     	if(phase.equals(Phase.RECEIVE)) {
-    	   logger.error("ERAN: in" + message.toString());
+    	   logger.error("ERAN: in " + request.getMethod() );
     	   message.getExchange().put(SERVIVE_INVOKE_TIME_MC_ATTRIBUTE, System.currentTimeMillis());
     	} else if(phase.equals(Phase.SEND_ENDING)) {
     		      Long startTime = (Long) message.getExchange().get(SERVIVE_INVOKE_TIME_MC_ATTRIBUTE);
