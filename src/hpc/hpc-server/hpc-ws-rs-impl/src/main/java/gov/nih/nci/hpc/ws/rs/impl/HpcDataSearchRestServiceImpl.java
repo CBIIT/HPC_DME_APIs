@@ -81,9 +81,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
     {
-    	long start = System.currentTimeMillis();
-    	logger.info("Invoking RS: POST /collection/query/compound" + compoundMetadataQueryDTO);
-    	
     	HpcCollectionListDTO collections = null;
 		try {
 			 collections = dataSearchBusService.getCollections(compoundMetadataQueryDTO);
@@ -93,8 +90,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " getCollections: Total time - " + compoundMetadataQueryDTO);
 		
 		return okResponse(!collections.getCollections().isEmpty() ||
 				          !collections.getCollectionPaths().isEmpty() ? collections : null , true);
@@ -104,9 +99,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     public Response queryCollections(String queryName, Boolean detailedResponse, Integer page, 
     		                         Boolean totalCount)
     {
-    	long start = System.currentTimeMillis();
-    	logger.info("Invoking RS: GET /collection/query/compound/{queryName}" + queryName);
-    	
     	HpcCollectionListDTO collections = null;
 		try {
 			 collections = dataSearchBusService.getCollections(queryName, detailedResponse, 
@@ -117,8 +109,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " getCollections: Total time - " + queryName);
 		
 		return okResponse(!collections.getCollections().isEmpty() ||
 				          !collections.getCollectionPaths().isEmpty() ? collections : null , true);
@@ -127,9 +117,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
     {
-    	long start = System.currentTimeMillis();
-    	logger.info("Invoking RS: POST /dataObject/query/compound" + compoundMetadataQueryDTO);
-    	
     	HpcDataObjectListDTO dataObjects = null;
 		try {
 			 dataObjects = dataSearchBusService.getDataObjects(compoundMetadataQueryDTO);
@@ -139,8 +126,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " queryDataObjects" + compoundMetadataQueryDTO);
 		
 		return okResponse(!dataObjects.getDataObjects().isEmpty() ||
 				          !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects : null, true);
@@ -150,9 +135,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     public Response queryDataObjects(String queryName, Boolean detailedResponse, Integer page,
     		                         Boolean totalCount)
     {
-    	long start = System.currentTimeMillis();
-    	logger.info("Invoking RS: GET /dataObject/query/compound{queryName}" + queryName);
-    	
     	HpcDataObjectListDTO dataObjects = null;
 		try {
 			 dataObjects = dataSearchBusService.getDataObjects(queryName, detailedResponse,
@@ -163,8 +145,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " queryDataObjects" + queryName);
 		
 		return okResponse(!dataObjects.getDataObjects().isEmpty() ||
 				          !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects : null, true);
@@ -174,8 +154,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     public Response addQuery(String queryName,
     		                 HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
     {
-    	logger.info("Invoking RS: PUT /query/{queryName}: " + queryName);
-    	long start = System.currentTimeMillis();
 		try {
 			 dataSearchBusService.addQuery(queryName, compoundMetadataQueryDTO);
 			 
@@ -184,8 +162,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " saveQuery: Total time");
 		
     	return createdResponse(null);
     }
@@ -194,8 +170,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     public Response updateQuery(String queryName,
     		                    HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
     {
-    	logger.info("Invoking RS: POST /query/{queryName}: " + queryName);
-    	long start = System.currentTimeMillis();
 		try {
 			 dataSearchBusService.updateQuery(queryName, compoundMetadataQueryDTO);
 			 
@@ -204,8 +178,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " updateQuery: Total time");
 		
     	return okResponse(null, false);
     }
@@ -213,8 +185,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response deleteQuery(String queryName)
     {
-    	logger.info("Invoking RS: DELETE /query/{queryName}: " +  queryName);
-    	long start = System.currentTimeMillis();
 		try {
 			 dataSearchBusService.deleteQuery(queryName);
 			 
@@ -223,8 +193,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			    		     " failed:", e);
 			    return errorResponse(e);
 		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " deleteQuery: Total time");
 		
     	return okResponse(null, false);
     }
@@ -232,20 +200,14 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getQuery(String queryName)
     {
-    	logger.info("Invoking RS: GET /query/{queryName}");
-    	long start = System.currentTimeMillis();
     	HpcNamedCompoundMetadataQueryDTO query = null;
 		try {
-    	logger.error("Invoking RS: GET /query/{queryName}"+queryName);
 			 query = dataSearchBusService.getQuery(queryName);
-    	logger.error("Invoking RS: GET /query/{queryName }" +query);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /query/{queryName}: failed:", e);
 			    return errorResponse(e);
 		}
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " getQuery: Total time");
 		
     	return okResponse(query.getNamedCompoundQuery() != null ? query : null, true);
     }    
@@ -253,8 +215,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getQueries()
     {
-    	logger.info("Invoking RS: GET /query");
-    	long start = System.currentTimeMillis();
     	HpcNamedCompoundMetadataQueryListDTO queries = null;
 		try {
 			 queries = dataSearchBusService.getQueries();
@@ -263,8 +223,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			    logger.error("RS: GET /query: failed:", e);
 			    return errorResponse(e);
 		}
-		long stop = System.currentTimeMillis();
-		logger.error((stop-start) + " getQueries: Total time");
 		
     	return okResponse(!queries.getNamedCompoundQueries().isEmpty() ? queries : null, true);
     }
@@ -272,9 +230,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getMetadataAttributes(String levelLabel)
     {
-    	long start = System.currentTimeMillis();
-    	logger.info("Invoking RS: GET /metadataAttributes/");
-    	
     	HpcMetadataAttributesListDTO metadataAttributes = null;
 		try {
 		     metadataAttributes = dataSearchBusService.getMetadataAttributes(levelLabel);
@@ -284,22 +239,14 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		long stop = System.currentTimeMillis();
-		
-		
-		Response response =  okResponse(!metadataAttributes.getCollectionMetadataAttributes().isEmpty() || 
-				          !metadataAttributes.getDataObjectMetadataAttributes().isEmpty() ? 
-				          metadataAttributes : null, true);
-		logger.error((stop-start) + " getMetadataAttributes: " );
-		return response;
+		return  okResponse(!metadataAttributes.getCollectionMetadataAttributes().isEmpty() || 
+				           !metadataAttributes.getDataObjectMetadataAttributes().isEmpty() ? 
+				           metadataAttributes : null, true);
     }
     
     @Override
     public Response refreshMetadataViews()
     {
-       	long start = System.currentTimeMillis();
-    	logger.info("Invoking RS: POST /refreshMetadataViews");
-    	
 		try {
 		     systemBusService.refreshMetadataViews();
 			 
@@ -307,9 +254,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 		        logger.error("RS: POST /refreshMetadataViews failed:", e);
 			    return errorResponse(e);
 		}
-		
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " refreshMetadataView: " );
 		
 		return okResponse(null, false);
     }

@@ -72,9 +72,6 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response subscribeNotifications(HpcNotificationSubscriptionsRequestDTO notificationSubscriptions)
     {	
-    	long start = System.currentTimeMillis();
-		logger.info("Invoking RS: POST /notification: " + notificationSubscriptions);
-		
 		try {
 			 notificationBusService.subscribeNotifications(notificationSubscriptions);
 			 
@@ -83,17 +80,12 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		long stop = System.currentTimeMillis();
-		logger.info((stop-start) + " subscribeNotifications: Total time - " + notificationSubscriptions);
-		
 		return okResponse(null, false);
 	}
     
     @Override
     public Response getNotificationSubscriptions()
     {
-		logger.info("Invoking RS: GET /notification");
-	
 		HpcNotificationSubscriptionListDTO subscriptions = null;
 		try {
 			 subscriptions = notificationBusService.getNotificationSubscriptions();
@@ -109,16 +101,12 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getNotificationDeliveryReceipts(Integer page, Boolean totalCount)
     {
-		logger.info("Invoking RS: GET /notification/deliveryReceipts");
-		long start = System.currentTimeMillis();
-	
-		HpcNotificationDeliveryReceiptListDTO deliveryReceipts = null;
+ 		HpcNotificationDeliveryReceiptListDTO deliveryReceipts = null;
 		try {
-			deliveryReceipts = notificationBusService.getNotificationDeliveryReceipts(
-					                                     page != null ? page : 1,
-					                                     totalCount != null ? totalCount : false);
-		long stop = System.currentTimeMillis();
-		logger.error("getNotificationDeliveryReceipts "+ (stop-start));	 
+			 deliveryReceipts = notificationBusService.getNotificationDeliveryReceipts(
+			 		                                      page != null ? page : 1,
+					                                      totalCount != null ? totalCount : false);
+
 		} catch(HpcException e) {
 			    logger.error("RS: GET /notification/deliveryReceipts failed:", e);
 			    return errorResponse(e);
@@ -130,13 +118,11 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getNotificationDeliveryReceipt(Integer eventId)
     {
-		logger.info("Invoking RS: GET /notification/deliveryReceipt");
-	
 		HpcNotificationDeliveryReceiptListDTO deliveryReceipts = new HpcNotificationDeliveryReceiptListDTO();
 		HpcNotificationDeliveryReceiptDTO deliveryReceipt = null;
 		try {
-			deliveryReceipt = notificationBusService.getNotificationDeliveryReceipt(eventId);
-			deliveryReceipts.getNotificationDeliveryReceipts().add(deliveryReceipt);
+			 deliveryReceipt = notificationBusService.getNotificationDeliveryReceipt(eventId);
+			 deliveryReceipts.getNotificationDeliveryReceipts().add(deliveryReceipt);
 			 
 		} catch(HpcException e) {
 			    logger.error("RS: GET /notification/deliveryReceipt failed:", e);
@@ -145,7 +131,6 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
 	
 		return okResponse(deliveryReceipts, true);   	
     }
-    
 }
 
  
