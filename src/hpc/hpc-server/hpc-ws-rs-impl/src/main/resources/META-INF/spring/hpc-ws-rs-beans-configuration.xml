@@ -209,6 +209,16 @@
 	<bean id="hpcCleanupInterceptor" 
 	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcCleanupInterceptor" />
 	
+	<!--  Service Profiling Interceptors -->      
+	<bean id="hpcProfileInInterceptor" 
+	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor">
+		<constructor-arg value="receive" />
+	</bean>
+	<bean id="hpcProfileOutInterceptor" 
+	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor">
+		<constructor-arg value="send-ending" />
+	</bean>
+	
 	<!-- JAX-RS Service Beans -->
 	<bean id="hpcSecurityRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcSecurityRestServiceImpl" />
 	<bean id="hpcDataManagementRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl" />
@@ -233,12 +243,14 @@
 			<ref bean="hpcAuthorizationExceptionMapper" />
 		</jaxrs:providers>
 		<jaxrs:inInterceptors>
+			<ref bean="hpcProfileInInterceptor" />
 			<ref bean="hpcAuthenticationInterceptor" />
 			<ref bean="hpcAuthorizationInterceptor" />
       	</jaxrs:inInterceptors>
       	<jaxrs:outInterceptors>
       		<ref bean="hpcAPIVersionInterceptor" />
       		<ref bean="hpcCleanupInterceptor" />
+      		<ref bean="hpcProfileOutInterceptor" />
       	</jaxrs:outInterceptors>
 	</jaxrs:server>
 	
@@ -259,12 +271,14 @@
 			<ref bean="hpcAuthorizationExceptionMapper" />
 		</jaxrs:providers>
 		<jaxrs:inInterceptors>
+			<ref bean="hpcProfileInInterceptor" />
 			<ref bean="hpcAuthenticationInterceptor" />
 			<ref bean="hpcAuthorizationInterceptor" />
       	</jaxrs:inInterceptors>
       	<jaxrs:outInterceptors>
       		<ref bean="hpcAPIVersionInterceptor" />
       		<ref bean="hpcCleanupInterceptor" />
+      		<ref bean="hpcProfileOutInterceptor" />
       	</jaxrs:outInterceptors>
     </jaxrs:server>
     
