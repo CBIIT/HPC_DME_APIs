@@ -65,8 +65,8 @@ public class HpcReportRestServiceImpl extends HpcRestServiceImpl implements HpcR
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public Response generateReport(HpcReportRequestDTO reportDTO) {
-		logger.info("Invoking RS: POST /report: " + reportDTO);
+	public Response generateReport(HpcReportRequestDTO reportDTO) 
+	{
 		HpcReportsDTO report = null;
 		try {
 			 report = reportBusService.generateReport(reportDTO);
