@@ -60,7 +60,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     // Constants
     //---------------------------------------------------------------------//   
 	
-	public static String DATA_OBJECT_DOWNLOAD_FILE = "DataObjectDownloadFile";
+	// The attribue name to save download file path on the message context.
+	public static String DATA_OBJECT_DOWNLOAD_FILE_MC_ATTRIBUTE = 
+			             "gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestService.dataObjectDownloadFile";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -349,7 +351,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		if(downloadReceipt != null && downloadReceipt.getDestinationFile() != null) {
 		   // Put the download file on the message context, so the cleanup interceptor can
 		   // delete it after the file was received by the caller.
-		   messageContext.put(DATA_OBJECT_DOWNLOAD_FILE, 
+		   messageContext.put(DATA_OBJECT_DOWNLOAD_FILE_MC_ATTRIBUTE, 
 				              downloadReceipt.getDestinationFile());
 		   return okResponse(downloadReceipt.getDestinationFile(), 
 				             MediaType.APPLICATION_OCTET_STREAM_TYPE);

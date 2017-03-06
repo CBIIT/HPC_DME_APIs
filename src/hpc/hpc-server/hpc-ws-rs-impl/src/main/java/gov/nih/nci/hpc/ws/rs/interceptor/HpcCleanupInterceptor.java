@@ -74,7 +74,8 @@ public class HpcCleanupInterceptor
     	systemBusService.closeConnection();
     	
     	// Clean up files returned by the data object download service.
-    	Object fileObj = message.getContextualProperty(HpcDataManagementRestServiceImpl.DATA_OBJECT_DOWNLOAD_FILE);
+    	Object fileObj = message.getContextualProperty(
+    			                    HpcDataManagementRestServiceImpl.DATA_OBJECT_DOWNLOAD_FILE_MC_ATTRIBUTE);
     	if(fileObj != null && fileObj instanceof File) {
     	   File file = (File) fileObj;
     	   if(!FileUtils.deleteQuietly(file)) {
