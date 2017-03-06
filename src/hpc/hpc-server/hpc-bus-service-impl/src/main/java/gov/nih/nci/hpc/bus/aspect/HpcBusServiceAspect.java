@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * HPC Bus Services Aspect - implement cross cutting concerns:
  * 1. Basic business service profiler - log execution time.
- * 2. Normalize path parameter - ensure user called path starts with '/' and remove trailing '/'
+ * 
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
