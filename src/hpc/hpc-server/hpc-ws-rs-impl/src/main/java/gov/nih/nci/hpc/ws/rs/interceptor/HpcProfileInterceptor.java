@@ -39,8 +39,10 @@ public class HpcProfileInterceptor
     //---------------------------------------------------------------------//   
 	
 	// The attribue name to save the service invoke time.
-	private static String SERVIVE_INVOKE_TIME_MC_ATTRIBUTE = 
-			              "gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor.rerviceInvokeTime";
+	private static String SERVICE_INVOKE_TIME_MC_ATTRIBUTE = 
+			              "gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor.serviceInvokeTime";
+	private static String SERVICE_NAME_MC_ATTRIBUTE = 
+                          "gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor.serviceName";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -105,15 +107,18 @@ public class HpcProfileInterceptor
     @Override
     public void handleMessage(Message message) 
     {
-    	HttpServletRequest request = (HttpServletRequest) message.get(AbstractHTTPDestination.HTTP_REQUEST);
-    	
     	if(phase.equals(Phase.RECEIVE)) {
-    	   logger.error("ERAN: in " + request.getMethod() );
-    	   message.getExchange().put(SERVIVE_INVOKE_TIME_MC_ATTRIBUTE, System.currentTimeMillis());
+    	   HttpServletRequest request = (HttpServletRequest) message.get(AbstractHTTPDestination.HTTP_REQUEST);
+    	   String serviceName = request.getMethod() + " " + request.getRequestURI() + request.getQueryString();
+    	   logger.info("RS called: " + serviceName);
+    	   message.getExchange().put(SERVICE_INVOKE_TIME_MC_ATTRIBUTE, System.currentTimeMillis());
+    	   message.getExchange().put(SERVICE_NAME_MC_ATTRIBUTE, serviceName);
     	} else if(phase.equals(Phase.SEND_ENDING)) {
-    		      Long startTime = (Long) message.getExchange().get(SERVIVE_INVOKE_TIME_MC_ATTRIBUTE);
-    		      if(startTime != null) {
-    		    	 logger.error("Eran: out " + (System.currentTimeMillis() - startTime));
+    		      Long startTime = (Long) message.getExchange().get(SERVICE_INVOKE_TIME_MC_ATTRIBUTE);
+    		      String serviceName = (String) message.getExchange().get(SERVICE_NAME_MC_ATTRIBUTE);
+    		      if(startTime != null && serviceName != null) {
+    		    	 logger.info("RS completed: " + serviceName +  " - Service execution time: " +
+    		                     (System.currentTimeMillis() - startTime) + " milliseconds.");
     		      }
     	}
     }
