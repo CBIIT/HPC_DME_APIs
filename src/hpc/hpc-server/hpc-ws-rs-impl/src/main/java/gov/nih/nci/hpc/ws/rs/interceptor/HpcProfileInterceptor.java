@@ -110,7 +110,7 @@ public class HpcProfileInterceptor
     	if(phase.equals(Phase.RECEIVE)) {
     	   HttpServletRequest request = (HttpServletRequest) message.get(AbstractHTTPDestination.HTTP_REQUEST);
     	   String serviceName = request.getMethod() + " " + request.getRequestURI() + 
-    			                request.getQueryString() != null ? request.getQueryString() : "";
+    			                (request.getQueryString() != null ? request.getQueryString() : "");
     	   logger.info("RS called: " + serviceName);
     	   message.getExchange().put(SERVICE_INVOKE_TIME_MC_ATTRIBUTE, System.currentTimeMillis());
     	   message.getExchange().put(SERVICE_NAME_MC_ATTRIBUTE, serviceName);
