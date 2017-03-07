@@ -40,8 +40,6 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,9 +74,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 	@Autowired
 	private HpcMultipartProvider multipartProvider = null;
 	
-	// The Logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // constructors
@@ -104,13 +99,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     public Response registerCollection(String path, 
     		                           HpcCollectionRegistrationDTO collectionRegistration)
     {	
-    	path = toAbsolutePath(path);
 		boolean created = true;
 		try {
-			 created = dataManagementBusService.registerCollection(path, collectionRegistration);
+			 created = dataManagementBusService.registerCollection(toAbsolutePath(path), collectionRegistration);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: PUT /collection" + path + " failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -124,17 +117,14 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getCollection(String path, Boolean list)
     {	
-    	path = toAbsolutePath(path);
     	HpcCollectionListDTO collections = new HpcCollectionListDTO();
 		try {
-			 HpcCollectionDTO collection = dataManagementBusService.getCollection(path, list);
+			 HpcCollectionDTO collection = dataManagementBusService.getCollection(toAbsolutePath(path), list);
 			 if(collection != null) {
 				collections.getCollections().add(collection);
 			 }
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /collection/" + path + 
-			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -146,14 +136,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
                                        HpcDownloadRequestDTO downloadRequest,
                                        MessageContext messageContext)
     {
-    	path = toAbsolutePath(path);
     	HpcDownloadResponseListDTO downloadResponses = null;
 		try {
-			 downloadResponses = dataManagementBusService.downloadCollection(path, downloadRequest);
+			 downloadResponses = dataManagementBusService.downloadCollection(toAbsolutePath(path), downloadRequest);
 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /collection/" + path + "/download: " + downloadRequest + 
-			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 
@@ -166,17 +153,15 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     		                           HpcDataObjectRegistrationDTO dataObjectRegistration,
     		                           InputStream dataObjectInputStream)
     {	
-    	path = toAbsolutePath(path);
 		File dataObjectFile = null;
 		boolean created = true;
 		try {
 			 dataObjectFile = toFile(dataObjectInputStream);
-			 created = dataManagementBusService.registerDataObject(path, 
+			 created = dataManagementBusService.registerDataObject(toAbsolutePath(path), 
 					                                               dataObjectRegistration,
 					                                               dataObjectFile);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: PUT /dataObject" + path + " failed:", e);
 			    return errorResponse(e);
 			    
 		} finally {
@@ -194,17 +179,14 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getDataObject(String path)
     {	
-    	path = toAbsolutePath(path);
     	HpcDataObjectListDTO dataObjects = new HpcDataObjectListDTO();
 		try {
-			 HpcDataObjectDTO dataObject = dataManagementBusService.getDataObject(path);
+			 HpcDataObjectDTO dataObject = dataManagementBusService.getDataObject(toAbsolutePath(path));
 			 if(dataObject != null) {
 				dataObjects.getDataObjects().add(dataObject);
 			 }
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /dataObjects/" + path + 
-			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 
@@ -216,14 +198,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
                                        HpcDownloadRequestDTO downloadRequest,
                                        MessageContext messageContext)
     {
-    	path = toAbsolutePath(path);
     	HpcDownloadResponseDTO downloadResponse = null;
 		try {
-			 downloadResponse = dataManagementBusService.downloadDataObject(path, downloadRequest);
+			 downloadResponse = dataManagementBusService.downloadDataObject(toAbsolutePath(path), downloadRequest);
 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /dataObject/" + path + "/download: " + downloadRequest + 
-			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -239,8 +218,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 					                                              entityPermissionRequests);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /acl: " + entityPermissionRequests + 
-			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -255,7 +232,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			 dataModel = dataManagementBusService.getDataManagementModel(doc);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /model/" + doc + " failed:", e);
 			    return errorResponse(e);
 		}
 		

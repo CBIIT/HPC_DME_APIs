@@ -13,9 +13,9 @@ package gov.nih.nci.hpc.ws.rs.impl;
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
-import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
+import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -23,8 +23,6 @@ import gov.nih.nci.hpc.ws.rs.HpcDataSearchRestService;
 
 import javax.ws.rs.core.Response;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -54,10 +52,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 	@Autowired
     private HpcSystemBusService systemBusService = null;
 	
-	// The Logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
     //---------------------------------------------------------------------//
     // constructors
     //---------------------------------------------------------------------//
@@ -86,8 +80,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			 collections = dataSearchBusService.getCollections(compoundMetadataQueryDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /collection/query/compound" + compoundMetadataQueryDTO + 
-			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -105,8 +97,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 					                                           page, totalCount);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /collection/query/compound/{queryName}" + queryName + 
-			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -122,8 +112,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			 dataObjects = dataSearchBusService.getDataObjects(compoundMetadataQueryDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /dataObject/query/compound" + compoundMetadataQueryDTO + 
-			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -141,8 +129,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 					                                           page, totalCount);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /dataObject/query/compound{queryName}" + queryName + 
-			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -158,8 +144,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			 dataSearchBusService.addQuery(queryName, compoundMetadataQueryDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: PUT /query/{queryName}: " + "," + queryName +
-			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -174,8 +158,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			 dataSearchBusService.updateQuery(queryName, compoundMetadataQueryDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /query/{queryName}: " + "," + queryName +
-			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -189,8 +171,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			 dataSearchBusService.deleteQuery(queryName);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /query/{queryName}: " + queryName +
-			    		     " failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -205,7 +185,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			 query = dataSearchBusService.getQuery(queryName);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /query/{queryName}: failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -220,7 +199,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 			 queries = dataSearchBusService.getQueries();
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /query: failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -235,7 +213,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 		     metadataAttributes = dataSearchBusService.getMetadataAttributes(levelLabel);
 			 
 		} catch(HpcException e) {
-		        logger.error("RS: GET /metadataAttributes/ failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -251,7 +228,6 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 		     systemBusService.refreshMetadataViews();
 			 
 		} catch(HpcException e) {
-		        logger.error("RS: POST /refreshMetadataViews failed:", e);
 			    return errorResponse(e);
 		}
 		

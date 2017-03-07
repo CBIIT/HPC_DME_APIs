@@ -20,8 +20,6 @@ import gov.nih.nci.hpc.ws.rs.HpcNotificationRestService;
 
 import javax.ws.rs.core.Response;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -43,10 +41,6 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
     // The Notification Business Service instance.
 	@Autowired
     private HpcNotificationBusService notificationBusService = null;
-    
-	// The Logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
     
     //---------------------------------------------------------------------//
     // constructors
@@ -76,7 +70,6 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
 			 notificationBusService.subscribeNotifications(notificationSubscriptions);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /notification failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -91,7 +84,6 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
 			 subscriptions = notificationBusService.getNotificationSubscriptions();
 		 
 		} catch(HpcException e) {
-		        logger.error("RS: GET /notification failed:", e);
 		        return errorResponse(e);
 		}
 	
@@ -108,7 +100,6 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
 					                                      totalCount != null ? totalCount : false);
 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /notification/deliveryReceipts failed:", e);
 			    return errorResponse(e);
 		}
 	
@@ -125,7 +116,6 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
 			 deliveryReceipts.getNotificationDeliveryReceipts().add(deliveryReceipt);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /notification/deliveryReceipt failed:", e);
 			    return errorResponse(e);
 		}
 	
