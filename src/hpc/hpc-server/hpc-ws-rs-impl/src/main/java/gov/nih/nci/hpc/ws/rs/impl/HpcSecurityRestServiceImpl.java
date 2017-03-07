@@ -23,8 +23,6 @@ import gov.nih.nci.hpc.ws.rs.HpcSecurityRestService;
 
 import javax.ws.rs.core.Response;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -46,10 +44,6 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     // The Security Business Service instance.
 	@Autowired
     private HpcSecurityBusService securityBusService = null;
-    
-	// The Logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
     
     //---------------------------------------------------------------------//
     // constructors
@@ -79,7 +73,6 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 			securityBusService.registerUser(userRegistrationDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: PUT /user failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -94,7 +87,6 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 			 securityBusService.updateUser(nciUserId, updateUserRequestDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /user failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -109,7 +101,6 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 			 user = securityBusService.getUser(nciUserId);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /user/{nciUserId} failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -124,7 +115,6 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 			 users = securityBusService.getUsers(nciUserId, firstName, lastName);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: GET /user failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -139,7 +129,6 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 			 authenticationResponse = securityBusService.getAuthenticationResponse();
 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /authenticate failed", e);
 			    return errorResponse(e);
 		}
 		
@@ -154,7 +143,6 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 			 groupResponse = securityBusService.setGroup(groupRequest);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: POST /group: " + groupResponse + " failed:", e);
 			    return errorResponse(e);
 		}
 		
@@ -168,7 +156,6 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 			 securityBusService.registerSystemAccount(systemAccountRegistrationDTO);
 			 
 		} catch(HpcException e) {
-			    logger.error("RS: PUT /systemAccount failed:", e);
 			    return errorResponse(e);
 		}
 		
