@@ -18,8 +18,6 @@ import gov.nih.nci.hpc.ws.rs.HpcReportRestService;
 
 import javax.ws.rs.core.Response;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -39,9 +37,6 @@ public class HpcReportRestServiceImpl extends HpcRestServiceImpl implements HpcR
 	// The Report Business Service instance.
 	@Autowired
 	private HpcReportBusService reportBusService = null;
-
-	// The Logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// constructors
@@ -71,9 +66,8 @@ public class HpcReportRestServiceImpl extends HpcRestServiceImpl implements HpcR
 		try {
 			 report = reportBusService.generateReport(reportDTO);
 
-		} catch (HpcException e) {
-			logger.error("RS: POST /notification/{nciUserId} failed:", e);
-			return errorResponse(e);
+		} catch(HpcException e) {
+			    return errorResponse(e);
 		}
 
 		return okResponse(report , true);
