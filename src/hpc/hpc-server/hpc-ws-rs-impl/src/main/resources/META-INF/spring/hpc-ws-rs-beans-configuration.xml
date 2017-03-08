@@ -104,6 +104,7 @@
           <value>notificationTriggers</value>
           <value>payloadEntries</value>
           <value>subCollections</value>
+          <value>nciAccounts</value>
     </util:list>
 
 	<!-- JSON Provider -->
