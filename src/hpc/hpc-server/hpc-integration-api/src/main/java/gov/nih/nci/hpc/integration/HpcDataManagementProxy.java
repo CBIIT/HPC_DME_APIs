@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
@@ -292,6 +293,18 @@ public interface HpcDataManagementProxy
                           throws HpcException;
     
     /**
+     * Get Collection permissions.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param path The collection's path.
+     * @return A list of users and their permission on the collection.
+     * @throws HpcException on data management system failure.
+     */
+    public List<HpcUserPermission> getCollectionPermissions(Object authenticatedToken,
+    		                                                String path) 
+    		                                               throws HpcException; 
+    
+    /**
      * Set Collection permission.
      *
      * @param authenticatedToken An authenticated token.
@@ -305,6 +318,18 @@ public interface HpcDataManagementProxy
     		                           throws HpcException;   
     
     /**
+     * Get Data Object permissions.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param path Tdata object's path.
+     * @return A list of users and their permission on the data object.
+     * @throws HpcException on data management system failure.
+     */
+    public List<HpcUserPermission> getDataObjectPermissions(Object authenticatedToken,
+    		                                                String path) 
+    		                                               throws HpcException; 
+    
+    /**
      * Set Data Object permission.
      *
      * @param authenticatedToken An authenticated token.
@@ -316,6 +341,18 @@ public interface HpcDataManagementProxy
     		                            String path,
     		                            HpcEntityPermission permissionRequest) 
     		                           throws HpcException; 
+    
+    /**
+     * Get user groups by search criteria.
+     * 
+     * @param authenticatedToken An authenticated token.
+     * @param groupNameLikeSearchCriteria Groups that their name is (SQL) like this will be returned.
+     * @return A list of group names.
+     * @throws HpcException on data management system failure.
+     */
+    public List<String> getGroups(Object authenticatedToken, String groupNameLikeSearchCriteria) 
+                                 throws HpcException;
+    
     /**
      * Create User group and assign/remove users to group.
      * 
