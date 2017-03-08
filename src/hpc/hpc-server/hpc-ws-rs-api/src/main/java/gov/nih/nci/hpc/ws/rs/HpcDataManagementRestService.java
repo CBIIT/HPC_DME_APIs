@@ -137,6 +137,17 @@ public interface HpcDataManagementRestService
 			                           @Context MessageContext mc);
 
     /**
+     * GET entity (collection or data object) permissions.
+     *
+     * @param path The collection or data object path.
+     * @return The REST service response.
+     */
+	@GET
+	@Path("/acl/{path:.*}")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getPermissions(@PathParam("path") String path);
+	
+    /**
      * POST Set permissions.
      *
      * @param entityPermissionRequests Requests to set entities (Collections or Data Objects) permissions.

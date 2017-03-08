@@ -38,6 +38,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -395,6 +396,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                     downloadResponse.getDestinationLocation(),
     			                     downloadResponse.getDestinationFile(),
     			                     true, null); 
+    }
+    
+    @Override
+    public HpcEntityPermissionsDTO getPermissions(String path) throws HpcException
+    {
+    	// Input validation.
+    	if(path == null) {
+    	   throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	HpcEntityPermissionsDTO entityPermissions = new HpcEntityPermissionsDTO();
+    	entityPermissions.setPath(path);
+    	entityPermissions.getUserPermissions().addAll(dataManagementService.getPermissions(path));
+    	return entityPermissions;
     }
     
     @Override

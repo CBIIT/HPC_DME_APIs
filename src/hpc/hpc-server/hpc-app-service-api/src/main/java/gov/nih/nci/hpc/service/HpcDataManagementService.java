@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -63,6 +64,15 @@ public interface HpcDataManagementService
      * @throws HpcException on service failure.
      */
     public void delete(String path) throws HpcException;
+    
+    /**
+     * Get permissions of an entity (collection or data object). 
+     *
+     * @param path The entity path.
+     * @return A list of users and their permission on the entity.
+     * @throws HpcException on service failure.
+     */
+    public List<HpcUserPermission> getPermissions(String path) throws HpcException;
     
     /**
      * Set permission of an entity (collection or data object) for a user. 
