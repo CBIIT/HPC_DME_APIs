@@ -33,6 +33,7 @@ import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -226,10 +227,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response setPermissions(List<HpcEntityPermissionRequestDTO> entityPermissionRequests)
+    public Response setPermissions(HpcEntityPermissionRequestDTO entityPermissionRequest)
     {
     	HpcEntityPermissionResponseListDTO permissionResponseList = null;
 		try {
+			List<HpcEntityPermissionRequestDTO> entityPermissionRequests = new ArrayList<HpcEntityPermissionRequestDTO>();
+			entityPermissionRequests.add(entityPermissionRequest);
 			 permissionResponseList = dataManagementBusService.setPermissions(
 					                                              entityPermissionRequests);
 			 
