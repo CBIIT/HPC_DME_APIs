@@ -63,6 +63,7 @@ import org.irods.jargon.core.query.AVUQueryOperatorEnum;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
+import org.irods.jargon.core.query.RodsGenQueryEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -639,12 +640,33 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
     	} 
     }
+    /*
+    @Override
+    public List<String> getGroupMembers(Object authenticatedToken, String groupName) 
+                                       throws HpcException
+	{
+    	try {
+	         return toHpcUserIds(irodsConnection.getUserGroupAO(authenticatedToken).listUserGroupMembers(groupName));
+	
+    	} catch(Exception e) {
+	            throw new HpcException("Failed to get group members: " + e.getMessage(),
+	                                   HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+    	}
+	}*/
     
     @Override
     public List<String> getGroups(Object authenticatedToken, String groupNameLikeSearchCriteria) 
     		                     throws HpcException
     {
-    	return null;
+    	try {
+    		 String where = RodsGenQueryEnum.COL_USER_GROUP_NAME.toString() + " LIKE " + 
+    	                    groupNameLikeSearchCriteria;
+    		 return toHpcUserGroups(irodsConnection.getUserGroupAO(authenticatedToken).findWhere(where));
+    		 
+    	} catch(Exception e) {
+                throw new HpcException("Failed to get user groups: " + e.getMessage(),
+		                               HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+    	}
     }
 
 	@Override
@@ -1090,6 +1112,26 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	}
     	
     	return hpcUserPermissions;
+    }
+    
+    /**
+     * Convert a list of iRODS user groups to HPC group names.
+     *
+     * @param irodsUserGroups The iRODS user groups.
+     * @return A list of HPC user group names.
+     */
+    private List<String> toHpcUserGroups(List<UserGroup> irodsUserGroups)
+    {
+    	if(irodsUserGroups == null) {
+    	   return null;
+    	}
+    	
+    	List<String> hpcUserGroups = new ArrayList<>();
+    	for(UserGroup irodsUserGroup : irodsUserGroups) {
+    		hpcUserGroups.add(irodsUserGroup.getUserGroupName());
+    	}
+    	
+    	return hpcUserGroups;
     }
 }
 
