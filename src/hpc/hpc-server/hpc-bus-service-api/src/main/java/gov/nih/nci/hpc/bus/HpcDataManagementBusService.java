@@ -20,6 +20,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.io.File;
@@ -111,7 +112,16 @@ public interface HpcDataManagementBusService
 			                                        throws HpcException;
 
     /**
-     * POST Set permissions.
+     * Get permissions of an entity (collection or data object).
+     *
+     * @param path The path of the collection or data object.
+     * @return A DTO containing a list of users and their permission on the entity.
+     * @throws HpcException on service failure.
+     */
+	public HpcEntityPermissionsDTO getPermissions(String path) throws HpcException;
+	
+    /**
+     * Set permissions.
      *
      * @param entityPermissionRequests Requests to set entities (Collections or Data Objects) permissions.
      * @return Responses with each request's result.

@@ -25,6 +25,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
@@ -207,6 +208,21 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		return downloadResponse(downloadResponse, messageContext);
+    }
+    
+    @Override
+    public Response getPermissions(String path)
+    {
+    	HpcEntityPermissionsDTO entityPermissions = null;
+		try {
+			 entityPermissions = dataManagementBusService.getPermissions(toAbsolutePath(path));
+			 
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+		return okResponse(entityPermissions, false);
+    	
     }
     
     @Override

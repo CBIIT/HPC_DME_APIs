@@ -212,6 +212,32 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
+    public List<HpcUserPermission> getPermissions(String path) throws HpcException
+    {
+    	// Input validation.
+    	if(path == null) {
+           throw new HpcException("Null path", 
+		                          HpcErrorType.INVALID_REQUEST_INPUT);    	   	
+    	}
+    	
+    	// Get the path attributes.
+    	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
+    	HpcPathAttributes pathAttributes = 
+    		              dataManagementProxy.getPathAttributes(authenticatedToken, 
+    				                                            path);
+    	
+    	// Get collection or data-object permissions.
+    	if(pathAttributes.getIsDirectory()) {
+    	   return dataManagementProxy.getCollectionPermissions(authenticatedToken, path);
+    	} else if(pathAttributes.getIsFile()) {
+    		      return dataManagementProxy.getDataObjectPermissions(authenticatedToken, path);
+    	} else {
+    		    throw new HpcException("Entity path doesn't exist", 
+                                       HpcErrorType.INVALID_REQUEST_INPUT);   
+    	}
+    }    
+    
+    @Override
     public void setPermission(String path, HpcEntityPermission permissionRequest) 
                              throws HpcException
     {

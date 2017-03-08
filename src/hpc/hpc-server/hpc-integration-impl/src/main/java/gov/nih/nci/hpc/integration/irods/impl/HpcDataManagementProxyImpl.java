@@ -53,6 +53,7 @@ import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.Collection;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.core.pub.domain.User;
+import org.irods.jargon.core.pub.domain.UserFilePermission;
 import org.irods.jargon.core.pub.domain.UserGroup;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
@@ -520,7 +521,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		}    	
     }
-  
+    
     @Override
     public void deleteUser(Object authenticatedToken, String nciUserId)
                           throws HpcException
@@ -533,6 +534,22 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                 throw new HpcException("Failed delete iRODS user: " + e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		}
+    }
+    
+    @Override
+    public List<HpcUserPermission> getCollectionPermissions(Object authenticatedToken,
+                                                            String path) 
+                                                           throws HpcException
+    {
+    	try {
+    		 return toHpcUserPermissions(
+    				  irodsConnection.getCollectionAO(authenticatedToken).listPermissionsForCollection(path));
+    	     
+    	} catch(Exception e) {
+                throw new HpcException("Failed to get collection permissions: " + 
+    	                               e.getMessage(),
+                		               HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+    	}
     }
     
     @Override
@@ -572,6 +589,22 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
+    public List<HpcUserPermission> getDataObjectPermissions(Object authenticatedToken,
+                                                            String path) 
+                                                           throws HpcException
+    {
+    	try {
+    		 return toHpcUserPermissions(
+    				  irodsConnection.getDataObjectAO(authenticatedToken).listPermissionsForDataObject(path));
+    	     
+    	} catch(Exception e) {
+                throw new HpcException("Failed to get collection permissions: " + 
+    	                               e.getMessage(),
+                		               HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+    	}
+    }
+    
+    @Override
     public void setDataObjectPermission(
     		       Object authenticatedToken,
                    String path,
@@ -605,6 +638,13 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
     	} 
+    }
+    
+    @Override
+    public List<String> getGroups(Object authenticatedToken, String groupNameLikeSearchCriteria) 
+    		                     throws HpcException
+    {
+    	return null;
     }
 
 	@Override
@@ -1026,8 +1066,30 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		        throw new HpcException("Failed to get a parent path" + 
 	                                   e.getMessage(),
 	                                   HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		        
 		}    
+    }
+    
+    /**
+     * Convert a list of iRODS user permission to list of HPC user permission.
+     *
+     * @param irodsUserPermissions The iRODS user permissions.
+     * @return A list of HPC user permission
+     */
+    private List<HpcUserPermission> toHpcUserPermissions(List<UserFilePermission> irodsUserPermissions)
+    {
+    	if(irodsUserPermissions == null) {
+    	   return null;
+    	}
+    	
+    	List<HpcUserPermission> hpcUserPermissions = new ArrayList<>();
+    	for(UserFilePermission irodsUserPermission : irodsUserPermissions) {
+    		HpcUserPermission hpcUserPermission = new HpcUserPermission();
+    		hpcUserPermission.setUserId(irodsUserPermission.getUserName());
+    		hpcUserPermission.setPermission(irodsUserPermission.getFilePermissionEnum().toString());
+    		hpcUserPermissions.add(hpcUserPermission);
+    	}
+    	
+    	return hpcUserPermissions;
     }
 }
 
