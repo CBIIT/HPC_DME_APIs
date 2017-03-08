@@ -106,7 +106,7 @@ public class HpcDocController extends AbstractHpcController {
 			HttpHeaders headers = response.getHeaders();
 			String location = headers.getLocation().toString();
 			String id = location.substring(location.lastIndexOf("/") + 1);
-			hpcUser.setId(id);
+			// hpcUser.setId(id);
 			model.addAttribute("registrationStatus", true);
 			model.addAttribute("hpcUser", hpcUser);
 		} catch (Exception e) {

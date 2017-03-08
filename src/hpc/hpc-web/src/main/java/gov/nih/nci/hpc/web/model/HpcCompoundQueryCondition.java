@@ -3,9 +3,8 @@ package gov.nih.nci.hpc.web.model;
 public class HpcCompoundQueryCondition {
 	private String queryPart;
 	private String name;
-	
-	public HpcCompoundQueryCondition(String name, String queryPart)
-	{
+
+	public HpcCompoundQueryCondition(String name, String queryPart) {
 		this.queryPart = queryPart;
 		this.name = name;
 	}

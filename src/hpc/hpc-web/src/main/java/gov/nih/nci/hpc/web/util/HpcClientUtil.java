@@ -45,7 +45,6 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.integration.http.converter.MultipartAwareFormHttpMessageConverter;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -58,15 +57,16 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.web.HpcWebException;
 
@@ -191,6 +191,57 @@ public class HpcClientUtil {
 		}
 	}
 
+	public static HpcUserListDTO getUsers(String token, String hpcUserURL, String userId, String firstName,
+			String lastName, String hpcCertPath, String hpcCertPassword) {
+		try {
+			boolean first = true;
+			String paramsURL = "";
+			if (userId != null && userId.trim().length() > 0) {
+				paramsURL = "?nciUserId=" + userId;
+				first = false;
+			}
+			if (firstName != null && firstName.trim().length() > 0) {
+				if (first) {
+					paramsURL = "firstName=" + firstName;
+					first = false;
+				} else
+					paramsURL = paramsURL + "&firstName=" + firstName;
+			}
+			if (lastName != null && lastName.trim().length() > 0) {
+				if (first) {
+					paramsURL = "lastName=" + lastName;
+					first = false;
+				} else
+					paramsURL = paramsURL + "&lastName=" + lastName;
+			}
+
+			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + paramsURL, hpcCertPath, hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.invoke("GET", null);
+			if (restResponse.getStatus() == 200) {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcUserListDTO users = parser.readValueAs(HpcUserListDTO.class);
+				return users;
+			} else {
+				throw new HpcWebException("Collection not found!");
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get Users due to: " + e.getMessage());
+		}
+	}
+
 	public static HpcNamedCompoundMetadataQueryDTO getQuery(String token, String hpcQueryURL, String queryName,
 			String hpcCertPath, String hpcCertPassword) {
 
@@ -274,6 +325,37 @@ public class HpcClientUtil {
 		}
 		try {
 			return parser.readValueAs(HpcNotificationDeliveryReceiptListDTO.class);
+		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
+		}
+	}
+
+	public static HpcEntityPermissionsDTO getPermissions(String token, String hpcServiceURL, String hpcCertPath,
+			String hpcCertPassword) {
+
+		WebClient client = HpcClientUtil.getWebClient(hpcServiceURL, hpcCertPath, hpcCertPassword);
+		client.header("Authorization", "Bearer " + token);
+
+		Response restResponse = client.get();
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
+		MappingJsonFactory factory = new MappingJsonFactory();
+		JsonParser parser;
+		try {
+			parser = factory.createParser((InputStream) restResponse.getEntity());
+		} catch (IllegalStateException | IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
+		}
+		try {
+			return parser.readValueAs(HpcEntityPermissionsDTO.class);
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());

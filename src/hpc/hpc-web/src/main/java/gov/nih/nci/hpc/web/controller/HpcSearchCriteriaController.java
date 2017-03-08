@@ -318,15 +318,14 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		Map<String, HpcMetadataQuery> queriesMap = getQueries(hierarchy, search);
 		List<HpcMetadataQuery> queries = new ArrayList<HpcMetadataQuery>();
 		Iterator<String> iter = queriesMap.keySet().iterator();
-		while(iter.hasNext())
+		while (iter.hasNext())
 			queries.add(queriesMap.get(iter.next()));
 
 		query.getQueries().addAll(queries);
 		return query;
 	}
 
-	private Map<String, HpcMetadataQuery> getQueries(Map<String, String> hierarchy, HpcSearch search)
-	{
+	private Map<String, HpcMetadataQuery> getQueries(Map<String, String> hierarchy, HpcSearch search) {
 		Map<String, HpcMetadataQuery> queries = new HashMap<String, HpcMetadataQuery>();
 		for (int i = 0; i < search.getAttrName().length; i++) {
 			String rowId = search.getRowId()[i];
@@ -350,10 +349,10 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				}
 				queries.put(rowId, criteria);
 			}
-		}	
+		}
 		return queries;
 	}
-	
+
 	private HpcCompoundMetadataQuery buildAdvancedSearch(Map<String, String> hierarchy, HpcSearch search) {
 		Map<String, HpcMetadataQuery> queries = getQueries(hierarchy, search);
 		HpcCompoundQuery compoundQuery = new HpcCompoundQuery();
@@ -419,7 +418,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				String label = levelAttrs.getLevelLabel();
 				if (label == null)
 					continue;
-//					label = "Data file";
+				// label = "Data file";
 				hierarchy.put(label, label);
 				dataHierarchy.getCollectionAttrsSet().addAll(levelAttrs.getMetadataAttributes());
 				for (String name : levelAttrs.getMetadataAttributes())
@@ -432,7 +431,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				String label = levelAttrs.getLevelLabel();
 				if (label == null)
 					continue;
-				
+
 				hierarchy.put(label, label);
 				dataHierarchy.getDataobjectAttrsSet().addAll(levelAttrs.getMetadataAttributes());
 				for (String name : levelAttrs.getMetadataAttributes())
