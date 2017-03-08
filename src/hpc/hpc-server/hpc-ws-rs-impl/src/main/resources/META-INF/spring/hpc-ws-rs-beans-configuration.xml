@@ -165,6 +165,7 @@
       			<entry key="registerUser" value="${hpc.ws.rs.auth.security.register-user}"/>
       			<entry key="updateUser" value="${hpc.ws.rs.auth.security.update-user}"/>
         		<entry key="getUser" value="${hpc.ws.rs.auth.security.get-user}"/>
+        		<entry key="getUsers" value="${hpc.ws.rs.auth.security.get-users}"/>
         		<entry key="setGroup" value="${hpc.ws.rs.auth.security.set-group}"/>
         		<entry key="authenticateUser" value="${hpc.ws.rs.auth.security.authenticate-user}"/>
         		<entry key="registerSystemAccount" value="${hpc.ws.rs.auth.security.register-system-account}"/>
@@ -175,6 +176,7 @@
         		<entry key="registerDataObject" value="${hpc.ws.rs.auth.data-management.register-data-object}"/>
         		<entry key="getDataObject" value="${hpc.ws.rs.auth.data-management.get-data-object}"/>
         		<entry key="setPermissions" value="${hpc.ws.rs.auth.data-management.set-permissions}"/>
+        		<entry key="setPermissions" value="${hpc.ws.rs.auth.data-management.get-permissions}"/>
         		<entry key="downloadDataObject" value="${hpc.ws.rs.auth.data-management.download-data-object}"/>
         		<entry key="getDataManagementModel" value="${hpc.ws.rs.auth.data-management.get-data-management-model}"/>
         		
