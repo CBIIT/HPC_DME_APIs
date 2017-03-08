@@ -157,7 +157,7 @@ public interface HpcDataManagementRestService
 	@Path("/acl")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response setPermissions(List<HpcEntityPermissionRequestDTO> entityPermissionRequests);
+	public Response setPermissions(HpcEntityPermissionRequestDTO entityPermissionRequest);
 	
     /**
      * GET Data Management Model (Metadata validation rules and hierarchy definition).
