@@ -8,10 +8,9 @@ public class HpcNotification {
 	private boolean subscribed;
 	private String displayName;
 	private List<HpcNotificationTriggerModel> triggers;
-	
-	
+
 	public List<HpcNotificationTriggerModel> getTriggers() {
-		if(triggers == null)
+		if (triggers == null)
 			triggers = new ArrayList<HpcNotificationTriggerModel>();
 		return triggers;
 	}

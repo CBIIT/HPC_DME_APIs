@@ -99,29 +99,31 @@
 										Permissions</strong>
 								</h2>
 							</div>
-							<div th:if="${error != null}">
+							<div th:if="${updateStatus != null}">
 								<div class="alert alert-error">
 									<a class="close" data-dismiss="alert">×</a> <label
-										for="${error}" th:text="${error}"></label>
+										for="${updateStatus}" th:text="${updateStatus}"></label>
 								</div>
 							</div>
-								<div class="modal fade" id="userNameModal" tabindex="-1" role="dialog"
-									aria-labelledby="userNameModalLabel" aria-hidden="true">
-									<div class="modal-dialog">
-										<div class="modal-content"></div>
-										<!-- /.modal-content -->
-									</div>
-									<!-- /.modal-dialog -->
-								</div>								
-								<div class="modal fade" id="groupNameModal" tabindex="-1" role="dialog"
-									aria-labelledby="groupNameModalLabel" aria-hidden="true">
-									<div class="modal-dialog">
-										<div class="modal-content"></div>
-										<!-- /.modal-content -->
-									</div>
-									<!-- /.modal-dialog -->
-								</div>								
-							
+							<div class="modal fade" id="userNameModal" tabindex="-1"
+								role="dialog" aria-labelledby="userNameModalLabel"
+								aria-hidden="true">
+								<div class="modal-dialog">
+									<div class="modal-content"></div>
+									<!-- /.modal-content -->
+								</div>
+								<!-- /.modal-dialog -->
+							</div>
+							<div class="modal fade" id="groupNameModal" tabindex="-1"
+								role="dialog" aria-labelledby="groupNameModalLabel"
+								aria-hidden="true">
+								<div class="modal-dialog">
+									<div class="modal-content"></div>
+									<!-- /.modal-content -->
+								</div>
+								<!-- /.modal-dialog -->
+							</div>
+
 							<div th:if="${error == null}">
 								<!--panel-body start-->
 								<div class="panel-body">
@@ -146,6 +148,7 @@
 																<th class="text-center">Own</th>
 																<th class="text-center">Read</th>
 																<th class="text-center">Write</th>
+																<th class="text-center">None</th>
 															</tr>
 														</thead>
 														<tbody>
@@ -156,57 +159,63 @@
 																	for="${permission.getName()}"
 																	th:text="${permission.getName()}"></label> <input
 																	type="hidden"
-																	th:id="'permissionName'+${iterationStatus.count}" 
+																	th:id="'permissionName'+${iterationStatus.count}"
 																	th:name="'permissionName'+${iterationStatus.count}"
 																	th:value="${permission.getName()}" /></td>
 																<td style="white-space: nowrap" align="center"><label
 																	for="${permission.getType().value()}"
 																	th:text="${permission.getType().value()}"></label> <input
 																	type="hidden"
-																	th:id="'permissionType'+${iterationStatus.count}" 
+																	th:id="'permissionType'+${iterationStatus.count}"
 																	th:name="'permissionType'+${iterationStatus.count}"
 																	th:value="${permission.getType().value()}" /></td>
 																<td style="white-space: nowrap" align="center">
 																	<div th:if="${permission.isOwn()} == false">
-																		<input type="checkbox"
-																			th:id="'own'+${iterationStatus.count}"
-																			th:name="'own'+${iterationStatus.count}"
-																			onClick="enableSave()" />
+																		<input type="radio"
+																			th:id="'permission_own'+${iterationStatus.count}"
+																			th:name="'permission'+${iterationStatus.count}"
+																			value="own" onClick="enableSave()" />
 																	</div>
 																	<div th:if="${permission.isOwn()} == true">
-																		<input type="checkbox" checked="checked"
-																			th:id="'own'+${iterationStatus.count}"
-																			th:name="'own'+${iterationStatus.count}"
-																			onClick="enableSave()" />
+																		<input type="radio" checked="checked"
+																			th:id="'permission_own'+${iterationStatus.count}"
+																			th:name="'permission'+${iterationStatus.count}"
+																			value="own" onClick="enableSave()" />
 																	</div>
 																</td>
 																<td style="white-space: nowrap" align="center">
 																	<div th:if="${permission.isRead()} == false">
-																		<input type="checkbox"
-																			th:id="'read'+${iterationStatus.count}"
-																			th:name="'read'+${iterationStatus.count}"
-																			onClick="enableSave()" />
+																		<input type="radio"
+																			th:id="'permission_read'+${iterationStatus.count}"
+																			th:name="'permission'+${iterationStatus.count}"
+																			value="read" onClick="enableSave()" />
 																	</div>
 																	<div th:if="${permission.isRead()} == true">
-																		<input type="checkbox" checked="checked"
-																			th:id="'read'+${iterationStatus.count}"
-																			th:name="'read'+${iterationStatus.count}"
-																			onClick="enableSave()" />
+																		<input type="radio" checked="checked"
+																			th:id="'permission_read'+${iterationStatus.count}"
+																			th:name="'permission'+${iterationStatus.count}"
+																			value="read" onClick="enableSave()" />
 																	</div>
 																</td>
 																<td style="white-space: nowrap" align="center">
 																	<div th:if="${permission.isWrite()} == false">
-																		<input type="checkbox"
-																			th:id="'write'+${iterationStatus.count}"
-																			th:name="'write'+${iterationStatus.count}"
-																			onClick="enableSave()" />
+																		<input type="radio"
+																			th:id="'permission_write'+${iterationStatus.count}"
+																			th:name="'permission'+${iterationStatus.count}"
+																			value="write" onClick="enableSave()" />
 																	</div>
 																	<div th:if="${permission.isWrite()} == true">
-																		<input type="checkbox" checked="checked"
-																			th:id="'write'+${iterationStatus.count}"
-																			th:name="'write'+${iterationStatus.count}"
-																			onClick="enableSave()" />
+																		<input type="radio" checked="checked"
+																			th:id="'permission_write'+${iterationStatus.count}"
+																			th:name="'permission'+${iterationStatus.count}"
+																			value="write" onClick="enableSave()" />
 																	</div>
+																</td>
+																<td style="white-space: nowrap" align="center">
+																		<input type="radio"
+																			th:id="'permission_none'+${iterationStatus.count}"
+																			th:name="'permission'+${iterationStatus.count}"
+																			value="none" onClick="enableSave()" />
 																</td>
 															</tr>
 														</tbody>
@@ -224,40 +233,46 @@
 															<td style="white-space: nowrap" align="right"><label
 																for="Share With">Share With:</label></td>
 															<td style="white-space: nowrap" align="left"><input
-																type="radio" name="shareWithType" id="shareWithTypeName" value="user"
-																checked="checked" onClick="enableUserGroup(this)" />User&nbsp;&nbsp;&nbsp;
-																<input type="radio" name="shareWithType" id="shareWithTypeGroup" value="group"
+																type="radio" name="shareWithType" id="shareWithTypeName"
+																value="user" checked="checked"
+																onClick="enableUserGroup(this)" />User&nbsp;&nbsp;&nbsp;
+																<input type="radio" name="shareWithType"
+																id="shareWithTypeGroup" value="group"
 																onClick="enableUserGroup(this)" />Group</td>
 														</tr>
 														<tr id='entryTableRow1' align="center">
 															<td style="white-space: nowrap" align="right"><label
 																for="Share With">User(s):</label></td>
 															<td style="white-space: nowrap" align="left"><input
-																type="text" id="userName" />&nbsp;&nbsp;&nbsp;
-																<a data-toggle="modal" id="userNamelink" class="btn btn-link btn-sm" th:href="@{'../finduser'}" data-target="#userNameModal">Search</a>																
-															</td>
+																type="text" id="userName" th:value="${selectedUsers}" />&nbsp;&nbsp;&nbsp;
+																<a id="userNamelink" class="btn btn-link btn-sm"
+																th:href="@{'../finduser'}">Search</a></td>
 														</tr>
 														<tr id='entryTableRow2' align="center"
 															style="display: none">
 															<td style="white-space: nowrap" align="right"><label
 																for="Share With">Group(s):</label></td>
 															<td style="white-space: nowrap" align="left"><input
-																type="text" id="groupName" />&nbsp;&nbsp;&nbsp;
-																<a data-toggle="modal" id="groupNamelink" class="btn btn-link btn-sm" th:href="@{'../findgroup'}" data-target="#groupNameModal">Search</a>																
-															</td>
+																type="text" id="groupName" />&nbsp;&nbsp;&nbsp; <a
+																data-toggle="modal" id="groupNamelink"
+																class="btn btn-link btn-sm" th:href="@{'../findgroup'}"
+																data-target="#groupNameModal">Search</a></td>
 														</tr>
 														<tr id='entryTableRow3' align="center">
 															<td style="white-space: nowrap" align="right"><label
 																for="Share With">Permissions:</label></td>
 															<td style="white-space: nowrap" align="left"><input
-																type="checkbox" name="addown" id="addown" />&nbsp;Own&nbsp;&nbsp;&nbsp;
-																<input type="checkbox" name="addread" id="addread" />&nbsp;Read&nbsp;&nbsp;&nbsp;
-																<input type="checkbox" name="addwrite" id="addwrite" />&nbsp;Write&nbsp;&nbsp;&nbsp;
-															</td>
+																type="radio" name="addpermission" id="addpermission_own"
+																value="addown" />&nbsp;Own&nbsp;&nbsp;&nbsp; <input
+																type="radio" name="addpermission" id="addpermission_read"
+																value="addread" />&nbsp;Read&nbsp;&nbsp;&nbsp; <input
+																type="radio" name="addpermission" id="addpermission_write"
+																value="addwrite" />&nbsp;Write&nbsp;&nbsp;&nbsp;</td>
 														</tr>
 														<tr id='entryTableRow4' align="center">
 															<td style="white-space: nowrap" align="right" colspan="2">
-																<a id="addPermission" class="btn btn-default pull-right" onClick="addPermission()">Add</a>
+																<a id="addPermissionButton" class="btn btn-default pull-right"
+																onClick="addPermission()">Add</a>
 															</td>
 														</tr>
 													</table>
@@ -296,7 +311,6 @@
 
 	<script type="text/javascript">
 	//<![CDATA[
-
 		function enableSave() {
 			$('#primaryButton').removeClass('disabled');
 			$('#primaryButton').prop('disabled', false);
@@ -316,37 +330,46 @@
 			}
 			var userName = document.getElementById("userName");
 			var groupName = document.getElementById("groupName");
-			var own = document.getElementById("addown");
-			var read = document.getElementById("addread");
-			var write = document.getElementById("addwrite");
+			var addpermissionOwn = document.getElementById("addpermission_own");
+			var addpermissionRead = document.getElementById("addpermission_read");
+			var addpermissionWrite = document.getElementById("addpermission_write");
 			userName.value ='';
 			groupName.value ='';
-			own.checked = false;
-			write.checked = false;
-			read.checked = false;
+			addpermissionOwn.checked = false;
+			addpermissionRead.checked = false;
+			addpermissionWrite.checked = false;
 		}
 
 		var rowId = 1;
 
 		function addPermission() {
 			rowId++;
+			var groupNames;
+			var userNames;
 			var table = document.getElementById("permissionsTable");
 			var rows = table.getElementsByTagName("tbody")[0]
 					.getElementsByTagName("tr").length;
 			var shareWithName = document.getElementById("shareWithTypeName");
 			var shareWithGroup = document.getElementById("shareWithTypeGroup");
 			var userName = document.getElementById("userName");
+			if(userName != null)
+				userNames = userName.value.split(";");
 			var groupName = document.getElementById("groupName");
-			var own = document.getElementById("addown");
-			var read = document.getElementById("addread");
-			var write = document.getElementById("addwrite");
+			if(groupName != null)
+				groupNames = groupName.value.split(";");
+			var addpermissionOwn = document.getElementById("addpermission_own");
+			var addpermissionRead = document.getElementById("addpermission_read");
+			var addpermissionWrite = document.getElementById("addpermission_write");
 			
 			for(i = 0; i < assignedNames.length; i++)
 			{
-				if(userName.value == assignedNames[i] || groupName.value == assignedNames[i])
+				for(var j=0;j<userNames.length;j++)
+				{
+				if(userNames[j] == assignedNames[i])
 				{
 					alert("Duplicate Entry!");
 					return false;
+				}
 				}
 			}
 			
@@ -356,76 +379,96 @@
 				return false;
 			}
 			
-			if(own.checked != true && read.checked != true && write.checked != true)
+			if(addpermissionOwn.checked == false && addpermissionRead.checked == false && addpermissionWrite.checked == false)
 			{
 				alert("Select a permission")
 				return false;
 			}
 			
-			if(own.checked == true)
+			for(var i=0;i<userNames.length;i++)
 			{
-				read.checked = false;
-				write.checked = false;
+				rows = rows + 1;
+				var row = table.insertRow(rows);
+				row.id = "permissionRow" + (rows);
+				var cell0 = row.insertCell(0);
+				var cell1 = row.insertCell(1);
+				var cell2 = row.insertCell(2);
+				var cell3 = row.insertCell(3);
+				var cell4 = row.insertCell(4);
+				var cell5 = row.insertCell(5);
+				cell0.align="center";
+				cell1.align="center";
+				cell2.align="center";
+				cell3.align="center";
+				cell4.align="center";
+				cell5.align="center";
+				
+				if (shareWithName.checked == true) {
+					cell0.innerHTML = '<label id="permissionName' + (rows)
+							+ '">' + (userNames[i]) + '</label>'
+							+ '<input type="hidden" name="permissionName'
+							+ (rows) + '" id="permissionName'
+							+ (rows) + '" value="' + (userNames[i]) + '" />';
+					cell1.innerHTML = '<label id="permissionType' + (rows)
+							+ '">USER</label>'
+							+ '<input type="hidden" name="permissionType'
+							+ (rows) + '" id="permissionType'
+							+ (rows) + '" value="USER" />';
+					assignedNames.push(userNames[i]);
+				} else {
+					cell0.innerHTML = '<label id="permissionName' + (rows)
+							+ '">' + (groupName.value) + '</label>'
+							+ '<input type="hidden" name="permissionName'
+							+ (rows) + '" id="permissionName'
+							+ (rows) + '" value="' + (groupName.value) + '" />';
+					cell1.innerHTML = '<label id="permissionType' + (rows)
+							+ '">GROUP</label>'
+							+ '<input type="hidden" name="permissionType'
+							+ (rows) + '" id="permissionType'
+							+ (rows) + '" value="GROUP" />';
+					assignedNames.push(groupNames.value);
+				}
+	
+				if (addpermissionOwn.checked == true)
+				{
+					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
+							+ '" name="permission' + (rows) + '" value="own" checked="checked" />';
+					cell3.innerHTML = '<input type="radio" id="permission_read'
+						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
+					cell4.innerHTML = '<input type="radio" id="permission_write'
+						+ (rows) + '" name="permission' + (rows) + '" value="write" />';
+					cell5.innerHTML = '<input type="radio" id="permission_none'
+						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
+				}
+				else if (addpermissionRead.checked == true)
+				{
+					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
+					+ '" name="permission' + (rows) + '" value="own" />';
+					cell3.innerHTML = '<input type="radio" id="permission_read'
+						+ (rows) + '" name="permission' + (rows)
+						+ '" value="read" checked="checked" />';
+					cell4.innerHTML = '<input type="radio" id="permission_write'
+						+ (rows) + '" name="permission' + (rows) + '" value="write" />';
+					cell5.innerHTML = '<input type="radio" id="permission_none'
+						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
+				}
+				else if (addpermissionWrite.checked == true)
+				{
+					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
+						+ '" name="permission' + (rows) + '" value="own" />';
+					cell3.innerHTML = '<input type="radio" id="permission_read'
+						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
+					cell4.innerHTML = '<input type="radio" id="permission_write'
+						+ (rows) + '" name="permission' + (rows)
+						+ '" value="write" checked="checked" />';
+					cell5.innerHTML = '<input type="radio" id="permission_none'
+						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
+				}
+	
 			}
-			
-			var row = table.insertRow(rows + 1);
-			row.id = "permissionRow" + (rows + 1);
-			var cell0 = row.insertCell(0);
-			var cell1 = row.insertCell(1);
-			var cell2 = row.insertCell(2);
-			var cell3 = row.insertCell(3);
-			var cell4 = row.insertCell(4);
-			cell0.align="center";
-			cell1.align="center";
-			cell2.align="center";
-			cell3.align="center";
-			cell4.align="center";
-			
-			if (shareWithName.checked == true) {
-				cell0.innerHTML = '<label id="permissionName' + (rows + 1)
-						+ '">' + (userName.value) + '</label>'
-						+ '<input type="hidden" id="permissionName'
-						+ (rows + 1) + '" value="' + (userName.value) + '" />';
-				cell1.innerHTML = '<label id="permissionType' + (rows + 1)
-						+ '">USER</label>'
-						+ '<input type="hidden" id="permissionType'
-						+ (rows + 1) + '" value="USER" />';
-				assignedNames.push(userName.value);
-			} else {
-				cell0.innerHTML = '<label id="permissionName' + (rows + 1)
-						+ '">' + (groupName.value) + '</label>'
-						+ '<input type="hidden" id="permissionName'
-						+ (rows + 1) + '" value="' + (groupName.value) + '" />';
-				cell1.innerHTML = '<label id="permissionType' + (rows + 1)
-						+ '">GROUP</label>'
-						+ '<input type="hidden" id="permissionType'
-						+ (rows + 1) + '" value="GROUP" />';
-				assignedNames.push(groupName.value);
-			}
+			$('#primaryButton').removeClass('disabled');
+			$('#primaryButton').prop('disabled', false);
 
-			if (own.checked == true)
-				cell2.innerHTML = '<input type="checkbox" id="own' + (rows + 1)
-						+ '" name="own' + (rows + 1) + '" checked="checked" />';
-			else
-				cell2.innerHTML = '<input type="checkbox" id="own' + (rows + 1)
-						+ '" name="own' + (rows + 1) + '" />';
-
-			if (read.checked == true)
-				cell3.innerHTML = '<input type="checkbox" id="read'
-						+ (rows + 1) + '" name="read' + (rows + 1)
-						+ '" checked="checked" />';
-			else
-				cell3.innerHTML = '<input type="checkbox" id="read'
-						+ (rows + 1) + '" name="read' + (rows + 1) + '" />';
-
-			if (write.checked == true)
-				cell4.innerHTML = '<input type="checkbox" id="write'
-						+ (rows + 1) + '" name="write' + (rows + 1)
-						+ '" checked="checked" />';
-			else
-				cell4.innerHTML = '<input type="checkbox" id="write'
-						+ (rows + 1) + '" name="write' + (rows + 1) + '" />';
-			
 			return false;
 		}
 		/*]]>*/

@@ -2,9 +2,7 @@ package gov.nih.nci.hpc.web.util;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -156,7 +154,7 @@ public class HpcCompoundSearchBuilder {
 			} else if (operator) {
 				part = true;
 				operator = false;
-				if(operatorTokenPrevious == null)
+				if (operatorTokenPrevious == null)
 					operatorTokenPrevious = operatorToken;
 			}
 			if (operatorTokenPrevious != null && !operatorTokenPrevious.equals(operatorToken)) {
@@ -291,8 +289,7 @@ public class HpcCompoundSearchBuilder {
 		query.setCriteria(criteria);
 
 		// Test2
-		HpcCompoundMetadataQuery compoundMetadataQuery = new
-		HpcCompoundSearchBuilder(query).build();
+		HpcCompoundMetadataQuery compoundMetadataQuery = new HpcCompoundSearchBuilder(query).build();
 		System.out.println(compoundMetadataQuery);
 
 		query = new HpcCompoundQuery();

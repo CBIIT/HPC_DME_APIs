@@ -10,7 +10,6 @@
 package gov.nih.nci.hpc.web.controller;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -23,8 +22,6 @@ import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -36,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -48,18 +44,16 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
-import gov.nih.nci.hpc.domain.user.HpcNciAccount;
+import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
-import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
-import gov.nih.nci.hpc.web.model.HpcNotificationRequest;
 import gov.nih.nci.hpc.web.model.HpcPermissionEntry;
 import gov.nih.nci.hpc.web.model.HpcPermissionEntryType;
 import gov.nih.nci.hpc.web.model.HpcPermissions;
-import gov.nih.nci.hpc.web.model.HpcPermissionsRequest;
-import gov.nih.nci.hpc.web.model.HpcWebUser;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
@@ -75,8 +69,8 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 @EnableAutoConfiguration
 @RequestMapping("/permissions")
 public class HpcPermissionController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server}")
-	private String serverURL;
+	@Value("${gov.nih.nci.hpc.server.acl}")
+	private String serverAclURL;
 	@Value("${gov.nih.nci.hpc.server.user}")
 	private String serviceURL;
 
@@ -84,6 +78,8 @@ public class HpcPermissionController extends AbstractHpcController {
 	public String home(@RequestBody(required = false) String body, @RequestParam String path, Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		String authToken = (String) session.getAttribute("hpcUserToken");
+
 		if (user == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
 			bindingResult.addError(error);
@@ -91,36 +87,70 @@ public class HpcPermissionController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "index";
 		}
-		populatePermissions(model, path);
+		if (path == null)
+			path = (String) session.getAttribute("permissionsPath");
+
+		String selectedUsers = (String) session.getAttribute("selectedUsers");
+		model.addAttribute("selectedUsers", selectedUsers);
+		// if(selectedUsers != null)
+		// {
+		// StringTokenizer tokens = new StringTokenizer(selectedUsers, ",");
+		// StringBuffer users = new StringBuffer();
+		// while(tokens.hasMoreTokens())
+		// {
+		// users.append(tokens.nextToken());
+		// if(tokens.hasMoreTokens())
+		// users.append(";");
+		// }
+		// model.addAttribute("selectedUsers", users.toString());
+		//
+		// }
+		populatePermissions(model, path, authToken);
+		session.setAttribute("permissionsPath", path);
 		return "permission";
 	}
 
-	private void populatePermissions(Model model, String path)
-	{
-		//Get path permissions
+	private void populatePermissions(Model model, String path, String token) {
+		HpcEntityPermissionsDTO permissionsDTO = HpcClientUtil.getPermissions(token, serverAclURL + "/" + path,
+				sslCertPath, sslCertPassword);
+		// Get path permissions
 		List<String> assignedNames = new ArrayList<String>();
 		HpcPermissions permissions = new HpcPermissions();
 		permissions.setPath(path);
-		HpcPermissionEntry entry = new HpcPermissionEntry();
-		entry.setName("konkapv");
-		entry.setType(HpcPermissionEntryType.USER);
-		entry.setRead(true);
-		permissions.getEntries().add(entry);
+		if (permissionsDTO != null) {
+			List<HpcUserPermission> userPermissions = permissionsDTO.getUserPermissions();
+			for (HpcUserPermission permission : userPermissions) {
+				if (permission.getUserId().equals("rods"))
+					continue;
+				HpcPermissionEntry entry = new HpcPermissionEntry();
+				entry.setName(permission.getUserId());
+				entry.setType(HpcPermissionEntryType.USER);
+				if (permission.getPermission().equals("READ"))
+					entry.setRead(true);
+				else if (permission.getPermission().equals("WRITE"))
+					entry.setWrite(true);
+				else if (permission.getPermission().equals("OWN"))
+					entry.setOwn(true);
+
+				permissions.getEntries().add(entry);
+				assignedNames.add(permission.getUserId());
+			}
+		}
 		model.addAttribute("permissions", permissions);
-		assignedNames.add("konkapv");
 		model.addAttribute("names", assignedNames);
 	}
-	
+
 	@RequestMapping(method = RequestMethod.POST)
-	public String search(@Valid @ModelAttribute("permissions") HpcPermissions permissionsRequest,
-			Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request,
+	public String setPermissions(@Valid @ModelAttribute("permissions") HpcPermissions permissionsRequest, Model model,
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
 			RedirectAttributes redirectAttrs) {
 
+		String path = (String) session.getAttribute("permissionsPath");
 		try {
 			String authToken = (String) session.getAttribute("hpcUserToken");
-			List<HpcEntityPermissionRequestDTO> subscriptionsRequestDTO = constructRequest(request);
+			HpcEntityPermissionRequestDTO subscriptionsRequestDTO = constructRequest(request, path);
 
-			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
+			WebClient client = HpcClientUtil.getWebClient(serverAclURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
 
 			Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
@@ -163,27 +193,60 @@ public class HpcPermissionController extends AbstractHpcController {
 				return "redirect:/";
 			}
 
-			populatePermissions(model, permissionsRequest.getPath());
+			populatePermissions(model, path, authToken);
 		}
 
 		return "permission";
 	}
-	
-	private List<HpcEntityPermissionRequestDTO> constructRequest(HttpServletRequest request)
-	{
+
+	private HpcEntityPermissionRequestDTO constructRequest(HttpServletRequest request, String path) {
 		Enumeration<String> params = request.getParameterNames();
-		while(params.hasMoreElements())
-		{
+
+		HpcEntityPermissionRequestDTO dto = new HpcEntityPermissionRequestDTO();
+		dto.setPath(path);
+		List<HpcUserPermission> userPermissions = new ArrayList<HpcUserPermission>();
+		List<HpcGroupPermission> groupPermissions = new ArrayList<HpcGroupPermission>();
+		while (params.hasMoreElements()) {
 			String paramName = params.nextElement();
-			if(paramName.startsWith("permissionName"))
-			{
+			if (paramName.startsWith("permissionName")) {
 				String index = paramName.substring("permissionName".length());
 				String[] permissionName = request.getParameterValues(paramName);
-				String[] permissionType = request.getParameterValues("permissionType"+index);
-				
+				String[] permissionType = request.getParameterValues("permissionType" + index);
+				if (permissionType[0].equals("USER")) {
+					HpcUserPermission userPermission = new HpcUserPermission();
+					userPermission.setUserId(permissionName[0]);
+
+					String[] permission = request.getParameterValues("permission" + index);
+					if (permission[0].equals("own"))
+						userPermission.setPermission("OWN");
+					else if (permission[0].equals("read"))
+						userPermission.setPermission("READ");
+					else if (permission[0].equals("write"))
+						userPermission.setPermission("WRITE");
+					else if (permission[0].equals("none"))
+						userPermission.setPermission("NONE");
+					userPermissions.add(userPermission);
+				} else {
+					HpcGroupPermission groupPermission = new HpcGroupPermission();
+					groupPermission.setGroupId(permissionName[0]);
+
+					String[] permission = request.getParameterValues("permission" + index);
+					if (permission[0].equals("own"))
+						groupPermission.setPermission("OWN");
+					else if (permission[0].equals("read"))
+						groupPermission.setPermission("READ");
+					else if (permission[0].equals("write"))
+						groupPermission.setPermission("WRITE");
+					else if (permission[0].equals("none"))
+						groupPermission.setPermission("NONE");
+					groupPermissions.add(groupPermission);
+				}
 			}
 		}
-		List<HpcEntityPermissionRequestDTO> dto = new ArrayList<HpcEntityPermissionRequestDTO>();
+		if (userPermissions.size() > 0)
+			dto.getUserPermissions().addAll(userPermissions);
+		if (groupPermissions.size() > 0)
+			dto.getGroupPermissions().addAll(groupPermissions);
 		return dto;
 	}
 }

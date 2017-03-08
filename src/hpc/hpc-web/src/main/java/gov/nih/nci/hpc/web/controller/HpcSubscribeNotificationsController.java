@@ -179,16 +179,13 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 		collectionUpdateSubscription.setEventType(HpcEventType.COLLECTION_UPDATED);
 		collectionUpdateSubscription.getNotificationDeliveryMethods().add(HpcNotificationDeliveryMethod.EMAIL);
 		List<HpcNotificationTrigger> triggers = new ArrayList<HpcNotificationTrigger>();
-		
-		while(params.hasMoreElements())
-		{
+
+		while (params.hasMoreElements()) {
 			HpcNotificationSubscription addUpdateSubscription = new HpcNotificationSubscription();
 			String paramName = params.nextElement();
-			if(paramName.startsWith("collectionPathAdded"))
-			{
+			if (paramName.startsWith("collectionPathAdded")) {
 				String[] value = request.getParameterValues(paramName);
-				if(value != null && !value[0].isEmpty())
-				{
+				if (value != null && !value[0].isEmpty()) {
 					HpcNotificationTrigger trigger = new HpcNotificationTrigger();
 					List<HpcEventPayloadEntry> entries = new ArrayList<HpcEventPayloadEntry>();
 					HpcEventPayloadEntry pathEntry = new HpcEventPayloadEntry();
@@ -196,51 +193,50 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 					pathEntry.setValue(value[0]);
 					entries.add(pathEntry);
 					String counter = paramName.substring("collectionPathAdded".length());
-//					String[] metadata = request.getParameterValues("metadata"+counter);
-//					if(metadata != null && metadata.length > 0 && (metadata[0].equals("true") || metadata[0].equals("on")))
-//					{
-//						HpcEventPayloadEntry metadataEntry = new HpcEventPayloadEntry();
-//						metadataEntry.setAttribute("UPDATE");
-//						metadataEntry.setValue("METADATA");
-//						entries.add(metadataEntry);
-//					}
+					// String[] metadata =
+					// request.getParameterValues("metadata"+counter);
+					// if(metadata != null && metadata.length > 0 &&
+					// (metadata[0].equals("true") || metadata[0].equals("on")))
+					// {
+					// HpcEventPayloadEntry metadataEntry = new
+					// HpcEventPayloadEntry();
+					// metadataEntry.setAttribute("UPDATE");
+					// metadataEntry.setValue("METADATA");
+					// entries.add(metadataEntry);
+					// }
+					trigger.getPayloadEntries().addAll(entries);
+					triggers.add(trigger);
+					collectionUpdated = true;
+				}
+			} else if (paramName.startsWith("existingCollectionCheck")) {
+				String[] value = request.getParameterValues(paramName);
+				if (value != null && value[0].equals("on")) {
+					String counter = paramName.substring("existingCollectionCheck".length());
+					String[] existingCollectionPath = request.getParameterValues("existingCollectionPath" + counter);
+					HpcNotificationTrigger trigger = new HpcNotificationTrigger();
+					List<HpcEventPayloadEntry> entries = new ArrayList<HpcEventPayloadEntry>();
+					HpcEventPayloadEntry pathEntry = new HpcEventPayloadEntry();
+					pathEntry.setAttribute("COLLECTION_PATH");
+					pathEntry.setValue(existingCollectionPath[0]);
+					entries.add(pathEntry);
+					String[] existingMetadataCheck = request.getParameterValues("existingMetadataCheck" + counter);
+
+					if (existingMetadataCheck != null && existingMetadataCheck.length > 0
+							&& (existingMetadataCheck[0].equals("true") || existingMetadataCheck[0].equals("on"))) {
+						HpcEventPayloadEntry metadataEntry = new HpcEventPayloadEntry();
+						metadataEntry.setAttribute("UPDATE");
+						metadataEntry.setValue("METADATA");
+						entries.add(metadataEntry);
+					}
+
 					trigger.getPayloadEntries().addAll(entries);
 					triggers.add(trigger);
 					collectionUpdated = true;
 				}
 			}
-			else if(paramName.startsWith("existingCollectionCheck"))
-			{
-				String[] value = request.getParameterValues(paramName);
-				if(value != null && value[0].equals("on"))
-				{
-					String counter = paramName.substring("existingCollectionCheck".length());
-					String[] existingCollectionPath = request.getParameterValues("existingCollectionPath"+counter);
-						HpcNotificationTrigger trigger = new HpcNotificationTrigger();
-						List<HpcEventPayloadEntry> entries = new ArrayList<HpcEventPayloadEntry>();
-						HpcEventPayloadEntry pathEntry = new HpcEventPayloadEntry();
-						pathEntry.setAttribute("COLLECTION_PATH");
-						pathEntry.setValue(existingCollectionPath[0]);
-						entries.add(pathEntry);
-						String[] existingMetadataCheck = request.getParameterValues("existingMetadataCheck"+counter);
-
-						if(existingMetadataCheck != null && existingMetadataCheck.length > 0 && (existingMetadataCheck[0].equals("true") || existingMetadataCheck[0].equals("on")))
-						{
-							HpcEventPayloadEntry metadataEntry = new HpcEventPayloadEntry();
-							metadataEntry.setAttribute("UPDATE");
-							metadataEntry.setValue("METADATA");
-							entries.add(metadataEntry);
-						}
-						
-						trigger.getPayloadEntries().addAll(entries);
-						triggers.add(trigger);
-						collectionUpdated = true;
-				}
-			}
 		}
 
-		if(collectionUpdated)
-		{
+		if (collectionUpdated) {
 			collectionUpdateSubscription.getNotificationTriggers().addAll(triggers);
 			dto.getAddUpdateSubscriptions().add(collectionUpdateSubscription);
 		}
@@ -253,9 +249,8 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 					addUpdateSubscription.setEventType(type);
 					addUpdateSubscriptions.add(addUpdateSubscription);
 					addUpdateSubscription.getNotificationDeliveryMethods().add(HpcNotificationDeliveryMethod.EMAIL);
-				} else
-				{
-					if(!type.equals(HpcEventType.COLLECTION_UPDATED))
+				} else {
+					if (!type.equals(HpcEventType.COLLECTION_UPDATED))
 						deleteSubscriptions.add(type);
 					else if (!collectionUpdated)
 						deleteSubscriptions.add(type);
@@ -290,23 +285,19 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 			notification.setEventType(type.name());
 			notification.setDisplayName(getDisplayName(type.name()));
 			notification.setSubscribed(subscription == null ? false : true);
-			if(type.equals(HpcEventType.COLLECTION_UPDATED) && subscription != null)
-			{
+			if (type.equals(HpcEventType.COLLECTION_UPDATED) && subscription != null) {
 				List<HpcNotificationTrigger> triggers = subscription.getNotificationTriggers();
-				if(triggers != null && triggers.size() > 0)
-				{
-					for(HpcNotificationTrigger trigger : triggers)
-					{
+				if (triggers != null && triggers.size() > 0) {
+					for (HpcNotificationTrigger trigger : triggers) {
 						HpcNotificationTriggerModel triggerModel = new HpcNotificationTriggerModel();
-						if(trigger.getPayloadEntries() != null && trigger.getPayloadEntries().size() > 0)
-						{
+						if (trigger.getPayloadEntries() != null && trigger.getPayloadEntries().size() > 0) {
 							HpcNotificationTriggerModelEntry modelEntry = new HpcNotificationTriggerModelEntry();
-							for(HpcEventPayloadEntry entry : trigger.getPayloadEntries())
-							{
-								if(entry.getAttribute().equals("COLLECTION_PATH"))
+							for (HpcEventPayloadEntry entry : trigger.getPayloadEntries()) {
+								if (entry.getAttribute().equals("COLLECTION_PATH"))
 									modelEntry.setPath(entry.getValue());
-								//else if(entry.getAttribute().equals("UPDATE"))
-								//	modelEntry.setMetadata(entry.getValue());
+								// else
+								// if(entry.getAttribute().equals("UPDATE"))
+								// modelEntry.setMetadata(entry.getValue());
 							}
 							triggerModel.getEntries().add(modelEntry);
 						}
@@ -321,31 +312,28 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 		model.addAttribute("notifications", notifications);
 		session.setAttribute("subscribedNotifications", notifications);
 	}
-	
-	private boolean isSubscribed(List<HpcNotificationSubscription> subscriptions, HpcEventType type)
-	{
-		if(subscriptions == null || subscriptions.size() == 0)
+
+	private boolean isSubscribed(List<HpcNotificationSubscription> subscriptions, HpcEventType type) {
+		if (subscriptions == null || subscriptions.size() == 0)
 			return false;
-		for(HpcNotificationSubscription subscription : subscriptions)
-		{
-			if(subscription.getEventType().equals(type))
+		for (HpcNotificationSubscription subscription : subscriptions) {
+			if (subscription.getEventType().equals(type))
 				return true;
 		}
 		return false;
 	}
 
-	private HpcNotificationSubscription getNotificationSubscription(List<HpcNotificationSubscription> subscriptions, HpcEventType type)
-	{
-		if(subscriptions == null || subscriptions.size() == 0)
+	private HpcNotificationSubscription getNotificationSubscription(List<HpcNotificationSubscription> subscriptions,
+			HpcEventType type) {
+		if (subscriptions == null || subscriptions.size() == 0)
 			return null;
-		for(HpcNotificationSubscription subscription : subscriptions)
-		{
-			if(subscription.getEventType().equals(type))
+		for (HpcNotificationSubscription subscription : subscriptions) {
+			if (subscription.getEventType().equals(type))
 				return subscription;
 		}
 		return null;
 	}
-	
+
 	private List<HpcEventType> getEventTypes() {
 		HpcEventType[] types = HpcEventType.values();
 		List<HpcEventType> eventTypes = new ArrayList<HpcEventType>();
@@ -382,9 +370,10 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 		if (subscriptionListDTO != null) {
 			List<HpcNotificationSubscription> subscriptions = subscriptionListDTO.getSubscriptions();
 			if (subscriptions != null && subscriptions.size() > 0) {
-//				for (HpcNotificationSubscription subscription : subscriptions) {
-//					subscriptionList.add(subscription.getEventType().name());
-//				}
+				// for (HpcNotificationSubscription subscription :
+				// subscriptions) {
+				// subscriptionList.add(subscription.getEventType().name());
+				// }
 				return subscriptions;
 			}
 		}

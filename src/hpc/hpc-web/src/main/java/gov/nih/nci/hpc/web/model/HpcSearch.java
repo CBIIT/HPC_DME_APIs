@@ -13,7 +13,6 @@ public class HpcSearch {
 	private String advancedCriteria;
 	private String actionType;
 
-	
 	public String[] getRowId() {
 		return rowId;
 	}
