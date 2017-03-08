@@ -9,7 +9,6 @@ public class HpcCollectionSearchResultDetailed {
 	private String createdOn;
 	private String permission;
 
-	
 	public String getPermission() {
 		return permission;
 	}

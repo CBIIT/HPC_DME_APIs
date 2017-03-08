@@ -178,7 +178,7 @@ public class HpcDownloadController extends AbstractHpcController {
 					stream.close();
 					outStream.close();
 					result.setCode("200");
-					result.setMessage("Synchronous download is not yet implemented. Please check back later!");
+					result.setMessage("Synchronous download is successful!");
 					return result;
 				}
 

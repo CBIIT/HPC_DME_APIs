@@ -8,7 +8,7 @@ public class HpcNamedQuery {
 
 	@JsonView(Views.Public.class)
 	private String searchType;
-	
+
 	@JsonView(Views.Public.class)
 	private String createdOn;
 

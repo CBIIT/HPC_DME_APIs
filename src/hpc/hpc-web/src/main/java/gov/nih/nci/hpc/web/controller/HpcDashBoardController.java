@@ -54,6 +54,8 @@ public class HpcDashBoardController extends AbstractHpcController {
 		model.addAttribute("collectionURL", collectionURL);
 		session.removeAttribute("compoundQuery");
 		session.removeAttribute("hierarchy");
+		session.removeAttribute("permissionsPath");
+		session.removeAttribute("selectedUsers");
 
 		String authToken = (String) session.getAttribute("hpcUserToken");
 

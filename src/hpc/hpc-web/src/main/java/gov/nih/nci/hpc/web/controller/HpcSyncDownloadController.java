@@ -97,7 +97,7 @@ public class HpcSyncDownloadController extends AbstractHpcController {
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				System.out.println("Error: "+exception.getMessage());
+				System.out.println("Error: " + exception.getMessage());
 				// return null;
 			}
 		} catch (HttpStatusCodeException e) {
