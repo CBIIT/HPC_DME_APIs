@@ -10,5 +10,5 @@ public class HpcPermissionsRequest {
 	public void setPath(String path) {
 		this.path = path;
 	}
-	
+
 }

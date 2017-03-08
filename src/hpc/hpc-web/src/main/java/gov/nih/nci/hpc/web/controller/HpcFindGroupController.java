@@ -9,16 +9,12 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import javax.ws.rs.core.Response;
 
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -29,29 +25,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestClientException;
 
-import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-
-import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.web.model.AjaxResponseBody;
-import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.model.HpcLogin;
-import gov.nih.nci.hpc.web.model.Views;
-import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.model.HpcWebGroup;
 
 /**
  * <p>
@@ -66,8 +43,8 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 @EnableAutoConfiguration
 @RequestMapping("/findgroup")
 public class HpcFindGroupController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.dataObject}")
-	private String dataObjectServiceURL;
+	@Value("${gov.nih.nci.hpc.server.group}")
+	private String groupServiceURL;
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
@@ -80,6 +57,54 @@ public class HpcFindGroupController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "index";
 		}
+		HpcWebGroup webGroup = new HpcWebGroup();
+		model.addAttribute("hpcWebGroup", webGroup);
+		session.removeAttribute("selectedGroups");
+		session.removeAttribute("selectedUsers");
+		return "findgroup";
+	}
+
+	/*
+	 * Action for Dataset registration
+	 */
+	@RequestMapping(method = RequestMethod.POST)
+	public String findUsers(@Valid @ModelAttribute("hpcGroup") HpcWebGroup hpcWebGroup, BindingResult bindingResult,
+			Model model, HttpSession session, HttpServletRequest request) {
+		try {
+			String path = (String) session.getAttribute("permissionsPath");
+			String[] actionType = request.getParameterValues("actionType");
+			if (actionType != null && actionType.length > 0 && actionType[0].equals("selected")) {
+				String[] selectedGroups = request.getParameterValues("selectedGroups");
+				StringBuffer buffer = new StringBuffer();
+				for (int i = 0; i < selectedGroups.length; i++) {
+					StringTokenizer tokens = new StringTokenizer(selectedGroups[i], ",");
+					while (tokens.hasMoreTokens()) {
+						buffer.append(tokens.nextToken());
+						if (tokens.hasMoreTokens())
+							buffer.append(";");
+					}
+				}
+				session.setAttribute("selectedGroups", buffer.toString());
+				if (selectedGroups != null && selectedGroups.length > 0)
+					return "redirect:/permissions?path=" + path;
+			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
+				session.removeAttribute("selectedGroups");
+				return "redirect:/permissions?path=" + path;
+			}
+
+			String authToken = (String) session.getAttribute("hpcUserToken");
+			// HpcGroupListDTO groups = HpcClientUtil.getGroups(authToken,
+			// groupServiceURL, hpcWebGroup.getGroupId(),
+			// sslCertPath, sslCertPassword);
+			// if (groups != null)
+			// model.addAttribute("searchresults", groups);
+		} catch (Exception e) {
+			ObjectError error = new ObjectError("hpcDatasetSearch", "Failed to search by name: " + e.getMessage());
+			bindingResult.addError(error);
+			model.addAttribute("error", "Failed to search by name: " + e.getMessage());
+			return "finduser";
+		}
+		model.addAttribute("hpcWebGroup", hpcWebGroup);
 		return "findgroup";
 	}
 }

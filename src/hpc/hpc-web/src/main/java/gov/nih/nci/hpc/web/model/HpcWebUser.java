@@ -1,20 +1,31 @@
 package gov.nih.nci.hpc.web.model;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import com.fasterxml.jackson.annotation.JsonView;
 
 public class HpcWebUser {
-	private String id;
 
-	@NotEmpty(message = "NCI User Id is required")
+	@JsonView(Views.Public.class)
 	private String nciUserId;
 
-	@NotEmpty(message = "First name is required")
+	@JsonView(Views.Public.class)
 	private String firstName;
 
-	@NotEmpty(message = "Last name is required")
+	@JsonView(Views.Public.class)
 	private String lastName;
 
+	@JsonView(Views.Public.class)
 	private String nciUserPasswd;
+
+	@JsonView(Views.Public.class)
+	private String doc;
+
+	public String getDoc() {
+		return doc;
+	}
+
+	public void setDoc(String doc) {
+		this.doc = doc;
+	}
 
 	public String getFirstName() {
 		return firstName;
@@ -30,14 +41,6 @@ public class HpcWebUser {
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
 	}
 
 	public String getNciUserId() {
