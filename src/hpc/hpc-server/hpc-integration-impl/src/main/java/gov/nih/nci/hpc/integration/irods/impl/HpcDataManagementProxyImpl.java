@@ -544,7 +544,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     {
     	try {
     		 return toHpcUserPermissions(
-    				  irodsConnection.getCollectionAO(authenticatedToken).listPermissionsForCollection(path));
+    				  irodsConnection.getCollectionAO(authenticatedToken).
+    				                  listPermissionsForCollection(getAbsolutePath(path)));
     	     
     	} catch(Exception e) {
                 throw new HpcException("Failed to get collection permissions: " + 
@@ -596,7 +597,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     {
     	try {
     		 return toHpcUserPermissions(
-    				  irodsConnection.getDataObjectAO(authenticatedToken).listPermissionsForDataObject(path));
+    				  irodsConnection.getDataObjectAO(authenticatedToken).
+    				                  listPermissionsForDataObject(getAbsolutePath(path)));
     	     
     	} catch(Exception e) {
                 throw new HpcException("Failed to get collection permissions: " + 
