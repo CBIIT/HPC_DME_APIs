@@ -202,14 +202,14 @@ public class HpcClientUtil {
 			}
 			if (firstName != null && firstName.trim().length() > 0) {
 				if (first) {
-					paramsURL = "firstName=" + firstName;
+					paramsURL = "?firstName=" + firstName;
 					first = false;
 				} else
 					paramsURL = paramsURL + "&firstName=" + firstName;
 			}
 			if (lastName != null && lastName.trim().length() > 0) {
 				if (first) {
-					paramsURL = "lastName=" + lastName;
+					paramsURL = "?lastName=" + lastName;
 					first = false;
 				} else
 					paramsURL = paramsURL + "&lastName=" + lastName;
@@ -232,14 +232,13 @@ public class HpcClientUtil {
 
 				HpcUserListDTO users = parser.readValueAs(HpcUserListDTO.class);
 				return users;
-			} else {
-				throw new HpcWebException("Collection not found!");
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to get Users due to: " + e.getMessage());
 		}
+		return null;
 	}
 
 	public static HpcNamedCompoundMetadataQueryDTO getQuery(String token, String hpcQueryURL, String queryName,
