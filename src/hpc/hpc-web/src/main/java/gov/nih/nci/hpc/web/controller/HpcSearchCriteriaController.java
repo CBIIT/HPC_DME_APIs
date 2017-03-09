@@ -233,6 +233,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			for (String result : searchResults) {
 				HpcSearchResult returnResult = new HpcSearchResult();
 				returnResult.setPath(result);
+				returnResult.setPermission(result);
 				returnResults.add(returnResult);
 
 			}
@@ -245,6 +246,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			for (HpcCollectionDTO result : searchResults) {
 				HpcCollectionSearchResultDetailed returnResult = new HpcCollectionSearchResultDetailed();
 				returnResult.setPath(result.getCollection().getCollectionName());
+				returnResult.setPermission(result.getCollection().getCollectionName());
 				returnResult.setUuid(getAttributeValue("uuid", result.getMetadataEntries()));
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
 				returnResult.setCreatedOn(format.format(result.getCollection().getCreatedAt().getTime()));
@@ -269,6 +271,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			for (String result : searchResults) {
 				HpcSearchResult returnResult = new HpcSearchResult();
 				returnResult.setPath(result);
+				returnResult.setPermission(result);
 				returnResults.add(returnResult);
 
 			}
@@ -281,6 +284,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			for (HpcDataObjectDTO result : searchResults) {
 				HpcDatafileSearchResultDetailed returnResult = new HpcDatafileSearchResultDetailed();
 				returnResult.setPath(result.getDataObject().getAbsolutePath());
+				returnResult.setPermission(result.getDataObject().getAbsolutePath());
 				returnResult.setUuid(getAttributeValue("uuid", result.getMetadataEntries()));
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
 				returnResult.setCreatedOn(format.format(result.getDataObject().getCreatedAt().getTime()));
