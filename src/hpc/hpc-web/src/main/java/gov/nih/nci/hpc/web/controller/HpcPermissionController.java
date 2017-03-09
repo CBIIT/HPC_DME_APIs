@@ -87,26 +87,15 @@ public class HpcPermissionController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "index";
 		}
+		String sessionPath = (String) session.getAttribute("permissionsPath");
 		if (path == null)
-			path = (String) session.getAttribute("permissionsPath");
+			path = sessionPath;
+		else if(!path.equals(sessionPath))
+			session.setAttribute("permissionsPath", path);
 
 		String selectedUsers = (String) session.getAttribute("selectedUsers");
 		model.addAttribute("selectedUsers", selectedUsers);
-		// if(selectedUsers != null)
-		// {
-		// StringTokenizer tokens = new StringTokenizer(selectedUsers, ",");
-		// StringBuffer users = new StringBuffer();
-		// while(tokens.hasMoreTokens())
-		// {
-		// users.append(tokens.nextToken());
-		// if(tokens.hasMoreTokens())
-		// users.append(";");
-		// }
-		// model.addAttribute("selectedUsers", users.toString());
-		//
-		// }
 		populatePermissions(model, path, authToken);
-		session.setAttribute("permissionsPath", path);
 		return "permission";
 	}
 
@@ -120,7 +109,7 @@ public class HpcPermissionController extends AbstractHpcController {
 		if (permissionsDTO != null) {
 			List<HpcUserPermission> userPermissions = permissionsDTO.getUserPermissions();
 			for (HpcUserPermission permission : userPermissions) {
-				if (permission.getUserId().equals("rods"))
+				if (permission.getUserId().equals("rods") || permission.getUserId().equals("ncif-hpcdm-svc"))
 					continue;
 				HpcPermissionEntry entry = new HpcPermissionEntry();
 				entry.setName(permission.getUserId());
