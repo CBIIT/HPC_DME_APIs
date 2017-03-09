@@ -93,9 +93,19 @@ public class HpcFindUserController extends AbstractHpcController {
 				return "redirect:/permissions?path=" + path;
 			}
 
+			String userId = null;
+			String firstName = null;
+			String lastName = null;
+			if(hpcWebUser.getNciUserId() != null && hpcWebUser.getNciUserId().trim().length() > 0)
+				userId = hpcWebUser.getNciUserId();
+			if(hpcWebUser.getFirstName() != null && hpcWebUser.getFirstName().trim().length() > 0)
+				firstName = hpcWebUser.getFirstName();
+			if(hpcWebUser.getLastName() != null && hpcWebUser.getLastName().trim().length() > 0)
+				lastName = hpcWebUser.getLastName();
+			
 			String authToken = (String) session.getAttribute("hpcUserToken");
-			HpcUserListDTO users = HpcClientUtil.getUsers(authToken, userServiceURL, hpcWebUser.getNciUserId(),
-					hpcWebUser.getFirstName(), hpcWebUser.getLastName(), sslCertPath, sslCertPassword);
+			HpcUserListDTO users = HpcClientUtil.getUsers(authToken, userServiceURL, userId,
+					firstName, lastName, sslCertPath, sslCertPassword);
 			if (users != null && users.getNciAccounts() != null && users.getNciAccounts().size() > 0)
 				model.addAttribute("searchresults", users.getNciAccounts());
 		} catch (Exception e) {
