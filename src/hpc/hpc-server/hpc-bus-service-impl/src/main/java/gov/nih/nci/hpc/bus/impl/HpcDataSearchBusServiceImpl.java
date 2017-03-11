@@ -27,8 +27,6 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
 import java.util.Calendar;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -58,10 +56,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
 	@Autowired
     private HpcDataManagementBusService dataManagementBusService = null;
 	
-    // The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -86,8 +80,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     public HpcCollectionListDTO getCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
                                               throws HpcException
     {
-    	logger.info("Invoking getCollections(HpcCompoundMetadataQueryDTO): " + compoundMetadataQueryDTO);
-    	
     	// Input validation.
     	if(compoundMetadataQueryDTO == null) {
     	   throw new HpcException("Null compound metadata query",
@@ -125,8 +117,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     		                                   Boolean totalCount) 
                                               throws HpcException
     {
-    	logger.info("Invoking getCollections(string,boolean): " + queryName);
-    	
     	return getCollections(toCompoundMetadataQueryDTO(queryName, detailedResponse, page, totalCount));
     }
     
@@ -134,8 +124,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     public HpcDataObjectListDTO getDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
                                               throws HpcException
     {
-    	logger.info("Invoking getDataObjects(HpcCompoundMetadataQueryDTO): " + compoundMetadataQueryDTO);
-    	
     	// Input validation.
     	if(compoundMetadataQueryDTO == null) {
     	   throw new HpcException("Null compound metadata query",
@@ -173,8 +161,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     		                                   Integer page, Boolean totalCount) 
                                               throws HpcException
     {
-    	logger.info("Invoking getDataObjects(string,boolean): " + queryName);
-    	
     	return getDataObjects(toCompoundMetadataQueryDTO(queryName, detailedResponse, page, totalCount));
     }
     
@@ -183,8 +169,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     		             HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
     		            throws HpcException
     {
-    	logger.info("Invoking addQuery(String, HpcCompoundMetadataQueryDTO)");
-    	
     	// Input validation.
     	if(queryName == null || queryName.isEmpty() ||
            compoundMetadataQueryDTO == null) {
@@ -221,8 +205,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     		                HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO) 
     		               throws HpcException
     {
-    	logger.info("Invoking updateQuery(String, HpcCompoundMetadataQueryDTO)");
-    	
     	// Input validation.
     	if(queryName == null || queryName.isEmpty() ||
            compoundMetadataQueryDTO == null) {
@@ -259,8 +241,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     @Override
     public void deleteQuery(String queryName) throws HpcException
     {
-    	logger.info("Invoking deleteQuery(String)");
-    	
     	// Input validation.
     	if(queryName == null || queryName.isEmpty())  {
     	   throw new HpcException("Null or empty nciUserId / queryName", 
@@ -275,8 +255,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     @Override
     public HpcNamedCompoundMetadataQueryDTO getQuery(String queryName) throws HpcException
     {
-    	logger.info("Invoking getQuery(queryName)");
-    	
     	HpcNamedCompoundMetadataQueryDTO queryDTO = new HpcNamedCompoundMetadataQueryDTO();
     	queryDTO.setNamedCompoundQuery(
     			    dataSearchService.getQuery(
@@ -289,8 +267,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     @Override
     public HpcNamedCompoundMetadataQueryListDTO getQueries() throws HpcException
     {
-    	logger.info("Invoking getQueries()");
-    	
     	HpcNamedCompoundMetadataQueryListDTO queriesList = new HpcNamedCompoundMetadataQueryListDTO();
     	queriesList.getNamedCompoundQueries().addAll(
     			       dataSearchService.getQueries(
@@ -303,8 +279,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
 	public HpcMetadataAttributesListDTO getMetadataAttributes(String levelLabel) 
                                                              throws HpcException
     {
-    	logger.info("Invoking getMetadataAttributes(String)");
-    	
     	HpcMetadataAttributesListDTO metadataAttributes = new HpcMetadataAttributesListDTO();
     	metadataAttributes.getCollectionMetadataAttributes().addAll(
     			dataSearchService.getCollectionMetadataAttributes(levelLabel));
