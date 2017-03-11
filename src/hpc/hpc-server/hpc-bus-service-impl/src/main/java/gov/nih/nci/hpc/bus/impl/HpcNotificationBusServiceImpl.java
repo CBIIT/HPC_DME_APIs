@@ -81,9 +81,6 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService
     public void subscribeNotifications(HpcNotificationSubscriptionsRequestDTO notificationSubscriptions)
                                       throws HpcException
     {
-    	logger.info("Invoking subscribeNotifications(List<HpcNotificationSubscription>): " + 
-    			    notificationSubscriptions);
-    	
     	// Input validation.
     	if(notificationSubscriptions == null || 
     	   notificationSubscriptions.getAddUpdateSubscriptions() == null) {
