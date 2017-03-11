@@ -18,13 +18,11 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * <p>
@@ -71,6 +69,28 @@ public interface HpcDataManagementBusService
 	public HpcDownloadResponseListDTO downloadCollection(String path, 
 			                                             HpcDownloadRequestDTO downloadRequest)
 			                                            throws HpcException;
+	
+    /**
+     * Set collection permissions.
+     *
+     * @param path The collection path.
+     * @param collectionPermissionsRequest Request to set collection permissions.
+     * @return Permissions request response.
+     * @throws HpcException on service failure.
+     */
+	public HpcEntityPermissionsResponseDTO 
+	       setCollectionPermissions(String path,
+	    		                    HpcEntityPermissionsDTO collectionPermissionsRequest)
+			                       throws HpcException;
+	
+    /**
+     * Get collection permissions.
+     *
+     * @param path The path of the collection.
+     * @return A list of users/groups and their permission on the collection.
+     * @throws HpcException on service failure.
+     */
+	public HpcEntityPermissionsDTO getCollectionPermissions(String path) throws HpcException;
     
     /**
      * Register a Data object.
@@ -112,24 +132,26 @@ public interface HpcDataManagementBusService
 			                                        throws HpcException;
 
     /**
-     * Get permissions of an entity (collection or data object).
+     * Set data object permissions.
      *
-     * @param path The path of the collection or data object.
-     * @return A DTO containing a list of users and their permission on the entity.
+     * @param path The data object path.
+     * @param dataObjectPermissionsRequest Request to set data object permissions.
+     * @return Permissions request response.
      * @throws HpcException on service failure.
      */
-	public HpcEntityPermissionsDTO getPermissions(String path) throws HpcException;
+	public HpcEntityPermissionsResponseDTO 
+	       setDataObjectPermissions(String path,
+	    		                    HpcEntityPermissionsDTO dataObjectPermissionsRequest)
+			                       throws HpcException;
 	
     /**
-     * Set permissions.
+     * Get data object permissions.
      *
-     * @param entityPermissionRequests Requests to set entities (Collections or Data Objects) permissions.
-     * @return Responses with each request's result.
+     * @param path The path of the data object.
+     * @return A list of users/groups and their permission on the data object.
      * @throws HpcException on service failure.
      */
-	public HpcEntityPermissionResponseListDTO setPermissions(
-			                  List<HpcEntityPermissionRequestDTO> entityPermissionRequests)
-			                  throws HpcException;
+	public HpcEntityPermissionsDTO getDataObjectPermissions(String path) throws HpcException;
 	
     /**
      * Get the Data Management Model (Metadata validation rules and hierarchy definition) for a DOC.

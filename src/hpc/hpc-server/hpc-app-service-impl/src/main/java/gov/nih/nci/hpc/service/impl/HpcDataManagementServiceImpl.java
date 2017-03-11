@@ -14,9 +14,8 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_ST
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
-import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -212,61 +211,32 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<HpcUserPermission> getPermissions(String path) throws HpcException
+    public void setCollectionPermission(String path, HpcSubjectPermission subjectPermission) 
+                                       throws HpcException
     {
-    	// Input validation.
-    	if(path == null) {
-           throw new HpcException("Null path", 
-		                          HpcErrorType.INVALID_REQUEST_INPUT);    	   	
-    	}
-    	
-    	// Get the path attributes.
-    	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
-    	HpcPathAttributes pathAttributes = 
-    		              dataManagementProxy.getPathAttributes(authenticatedToken, 
-    				                                            path);
-    	
-    	// Get collection or data-object permissions.
-    	if(pathAttributes.getIsDirectory()) {
-    	   return dataManagementProxy.getCollectionPermissions(authenticatedToken, path);
-    	} else if(pathAttributes.getIsFile()) {
-    		      return dataManagementProxy.getDataObjectPermissions(authenticatedToken, path);
-    	} else {
-    		    throw new HpcException("Entity path doesn't exist", 
-                                       HpcErrorType.INVALID_REQUEST_INPUT);   
-    	}
-    }    
-    
+        dataManagementProxy.setCollectionPermission(dataManagementAuthenticator.getAuthenticatedToken(), 
+    		    		                            path, subjectPermission);
+    }
+
     @Override
-    public void setPermission(String path, HpcEntityPermission permissionRequest) 
-                             throws HpcException
+    public List<HpcSubjectPermission> getCollectionPermissions(String path) throws HpcException
     {
-    	// Input validation.
-    	if(path == null || permissionRequest == null) {
-           throw new HpcException("Null path or permission request", 
-		                          HpcErrorType.INVALID_REQUEST_INPUT);    	   	
-    	}
-    	
-    	// Get the path attributes.
-    	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
-    	HpcPathAttributes pathAttributes = 
-    		              dataManagementProxy.getPathAttributes(authenticatedToken, 
-    				                                            path);
-    	
-    	// Set collection or data-object permission.
-    	if(pathAttributes.getIsDirectory()) {
-    	   dataManagementProxy.setCollectionPermission(authenticatedToken, 
-    			                                       path, 
-    			                                       permissionRequest);
-    	} else if(pathAttributes.getIsFile()) {
-    		      dataManagementProxy.setDataObjectPermission(authenticatedToken, 
-    		    		                                      path, 
-                                                              permissionRequest);
-    	} else {
-    		    throw new HpcException("Entity path doesn't exist", 
-                                       HpcErrorType.INVALID_REQUEST_INPUT);   
-    	}
-    }    
+    	return dataManagementProxy.getCollectionPermissions(dataManagementAuthenticator.getAuthenticatedToken(), path);
+    }
+
+    @Override
+    public void setDataObjectPermission(String path, HpcSubjectPermission subjectPermission) 
+                                       throws HpcException
+    {
+    	dataManagementProxy.setDataObjectPermission(dataManagementAuthenticator.getAuthenticatedToken(), 
+                                                    path, subjectPermission);
+    }
+
+    @Override
+    public List<HpcSubjectPermission> getDataObjectPermissions(String path) throws HpcException
+    {
+    	return dataManagementProxy.getDataObjectPermissions(dataManagementAuthenticator.getAuthenticatedToken(), path);
+    }
     
     @Override
     public void assignSystemAccountPermission(String path) throws HpcException
@@ -278,7 +248,18 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	      	                  HpcErrorType.UNEXPECTED_ERROR);
     	}
     	
-    	setPermission(path, dataManagementAccount.getUsername(), OWN_PERMISSION);
+        HpcSubjectPermission permissionRequest = new HpcSubjectPermission();
+        permissionRequest.setPermission(OWN_PERMISSION);
+        permissionRequest.setSubject(dataManagementAccount.getUsername());
+            
+        // Determine if it's a collection or data object.
+        HpcPathAttributes pathAttributes = 
+          	   dataManagementProxy.getPathAttributes(dataManagementAuthenticator.getAuthenticatedToken(), path);
+        if(pathAttributes.getIsDirectory()) {
+           setCollectionPermission(path, permissionRequest);
+        } else if(pathAttributes.getIsFile()) {
+        	      setDataObjectPermission(path, permissionRequest);
+        }
     }
     
     @Override
@@ -416,22 +397,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	return null;
     }
     
-    /**
-     * Set permission.
-     *
-     * @param path The entity path.
-     * @param userId The user ID.
-     * @param permission The permission.
-     * @throws HpcException on service failure.
-     */
-    private void setPermission(String path, String userId, String permission) throws HpcException
-    {
-    	HpcUserPermission permissionRequest = new HpcUserPermission();
-        permissionRequest.setPermission(permission);
-        permissionRequest.setUserId(userId);
-        setPermission(path, permissionRequest);
-    }
-
     /**
      * Get DOC base path
      * 
