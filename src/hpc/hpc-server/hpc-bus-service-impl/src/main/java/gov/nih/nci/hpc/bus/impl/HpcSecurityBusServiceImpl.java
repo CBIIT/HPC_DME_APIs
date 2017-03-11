@@ -567,7 +567,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	Set<String> addUserIds = new HashSet<>();
     	addUserIds.addAll(groupMembersRequest.getAddUserIds());
     	Set<String> deleteUserIds = new HashSet<>();
-    	addUserIds.addAll(groupMembersRequest.getDeleteUserIds());
+    	deleteUserIds.addAll(groupMembersRequest.getDeleteUserIds());
     	
     	// Validate a user-id is not in both add and delete lists.
     	Set<String> userIds = new HashSet<>();
