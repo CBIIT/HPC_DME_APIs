@@ -123,9 +123,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		                          HpcCollectionRegistrationDTO collectionRegistration)  
     		                         throws HpcException
     {
-    	logger.info("Invoking registerCollection(HpcCollectionRegistrationDTO): " + 
-    			    collectionRegistration);
-    	
     	// Input validation.
     	if(path == null || path.isEmpty() || collectionRegistration == null || 
     	   collectionRegistration.getMetadataEntries().isEmpty()) {
@@ -183,8 +180,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     @Override
     public HpcCollectionDTO getCollection(String path, Boolean list) throws HpcException
     {
-    	logger.info("Invoking getCollection(String): " + path);
-    	
     	// Input validation.
     	if(path == null) {
     	   throw new HpcException("Null collection path",
@@ -215,9 +210,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                                          HpcDownloadRequestDTO downloadRequest)
                                                         throws HpcException
     {
-    	logger.info("Invoking downloadCollection(path, downloadReqest): " + path + ", " + 
-                    downloadRequest);
-    	
     	// Input validation.
     	if(path == null || downloadRequest == null) {
     	   throw new HpcException("Null path or download request",
@@ -244,13 +236,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	       setCollectionPermissions(String path, HpcEntityPermissionsDTO collectionPermissionsRequest)
                                    throws HpcException
     {
+    	// Input validation.
+    	if(path == null) {
+    	   throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	validatePermissionsRequest(collectionPermissionsRequest);
+    	
     	// Validate the collection exists.
     	if(dataManagementService.getCollection(path, false) == null) {
       	   return null;
       	}
-    	
-    	// Input Validation.
-    	validatePermissionsRequest(collectionPermissionsRequest);
     	
     	HpcEntityPermissionsResponseDTO permissionsResponse = new HpcEntityPermissionsResponseDTO();
     	
@@ -273,6 +269,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	// Validate the collection exists.
+    	if(dataManagementService.getCollection(path, false) == null) {
+      	   return null;
+      	}
+    	
     	return toEntityPermissionsDTO(dataManagementService.getCollectionPermissions(path));
     }
     
@@ -282,9 +283,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		                          File dataObjectFile)  
     		                         throws HpcException
     {
-    	logger.info("Invoking registerDataObject(HpcDataObjectRegistrationDTO): " + 
-    			    dataObjectRegistration);
-    	
     	// Input validation.
     	if(path == null || dataObjectRegistration == null) {
     	   throw new HpcException("Null path or dataObjectRegistrationDTO",
@@ -365,8 +363,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     @Override
     public HpcDataObjectDTO getDataObject(String path) throws HpcException
     {
-    	logger.info("Invoking getDataObject(String): " + path);
-    	
     	// Input validation.
     	if(path == null) {
     	   throw new HpcException("Null data object path",
@@ -398,9 +394,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                                      HpcDownloadRequestDTO downloadRequest)
                                                     throws HpcException
     {
-    	logger.info("Invoking downloadDataObject(path, downloadReqest): " + path + ", " + 
-                    downloadRequest);
-    	
     	// Input validation.
     	if(path == null || downloadRequest == null) {
     	   throw new HpcException("Null path or download request",
@@ -441,13 +434,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	       setDataObjectPermissions(String path, HpcEntityPermissionsDTO dataObjectPermissionsRequest)
                                    throws HpcException
     {
+    	// Input Validation.
+    	if(path == null) {
+     	   throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);	
+     	}
+    	
+    	validatePermissionsRequest(dataObjectPermissionsRequest);
+    	
     	// Validate the data object exists.
     	if(dataManagementService.getDataObject(path) == null) {
       	   return null;
       	}
-    	
-    	// Input Validation.
-    	validatePermissionsRequest(dataObjectPermissionsRequest);
     	
     	HpcEntityPermissionsResponseDTO permissionsResponse = new HpcEntityPermissionsResponseDTO();
     	
@@ -465,10 +462,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     @Override
     public HpcEntityPermissionsDTO getDataObjectPermissions(String path) throws HpcException
     {
-    	// Input validation.
+    	// Input Validation.
     	if(path == null) {
-    	   throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
+     	   throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);	
+     	}
+    	
+    	// Validate the data object exists.
+    	if(dataManagementService.getDataObject(path) == null) {
+      	   return null;
+      	}
     	
     	return toEntityPermissionsDTO(dataManagementService.getDataObjectPermissions(path));
     }
@@ -476,8 +478,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     @Override
     public HpcDataManagementModelDTO getDataManagementModel(String doc) throws HpcException
     {
-    	logger.info("Invoking getDataManagementMode(String): " + doc);
-    	
     	// Input validation.
     	if(doc == null || doc.isEmpty()) {
     	   throw new HpcException("Null or empty DOC", HpcErrorType.INVALID_REQUEST_INPUT);	
