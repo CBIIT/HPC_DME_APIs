@@ -572,7 +572,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	// Validate a user-id is not in both add and delete lists.
     	Set<String> userIds = new HashSet<>();
     	userIds.addAll(addUserIds);
-    	addUserIds.retainAll(deleteUserIds);
+    	userIds.retainAll(deleteUserIds);
     	if(!userIds.isEmpty()) {
     	   throw new HpcException("User Id(s) found in both add and delete lists: " + userIds,
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
