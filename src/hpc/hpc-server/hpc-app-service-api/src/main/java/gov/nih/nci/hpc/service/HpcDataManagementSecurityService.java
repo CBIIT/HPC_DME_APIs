@@ -10,14 +10,12 @@
 
 package gov.nih.nci.hpc.service;
 
+import java.util.List;
+
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
-import gov.nih.nci.hpc.domain.model.HpcGroup;
-import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
-
-import java.util.List;
 
 /**
  * <p>
@@ -64,23 +62,55 @@ public interface HpcDataManagementSecurityService
     /**
      * Get the role of a given user's name.
      *
-     * @param username The user's name.
+     * @param nciUserId The user-id.
      * @return HpcUserRole The user's role.
      * @throws HpcException on service failure.
      */
-    public HpcUserRole getUserRole(String username) throws HpcException;  
+    public HpcUserRole getUserRole(String nciUserId) throws HpcException;  
     
     /**
-     * Create User group.
+     * Add a group.
      * 
-     * @param group group name.
-     * @param addUserId List of userIds to add to the group.
-     * @param removeUserId List of userIds to remove from the group.
-     * @return A group response.
+     * @param groupName The group name.
      * @throws HpcException on service failure.
      */
-    public HpcGroupResponse setGroup(HpcGroup group, List<String> addUserId, List<String> removeUserId) 
-    		                        throws HpcException;
+    public void addGroup(String groupName) throws HpcException;
+    
+    /**
+     * Check if a group exists
+     * 
+     * @param groupName The group name.
+     * @return True if the group exists. and false otherwise
+     * @throws HpcException on data management system failure.
+     */
+    public boolean groupExists(String groupName) throws HpcException;
+    
+    /**
+     * Add a member to a group.
+     * 
+     * @param groupName The group name.
+     * @param userId The member's user id to add to the group.
+     * @throws HpcException on service failure.
+     */
+    public void addGroupMember(String groupName, String userId) throws HpcException;
+    
+    /**
+     * Delete a member from a group.
+     * 
+     * @param groupName The group name.
+     * @param userId The member's user id to delete from the group.
+     * @throws HpcException on service failure.
+     */
+    public void deleteGroupMember(String groupName, String userId) throws HpcException;
+    
+    /**
+     * Get group members.
+     * 
+     * @param groupName The group name.
+     * @param A list of the group members user id.
+     * @throws HpcException on service failure.
+     */
+    public List<String> getGroupMembers(String groupName) throws HpcException;
     
     /**
      * Create HPC data management account from proxy account object. 

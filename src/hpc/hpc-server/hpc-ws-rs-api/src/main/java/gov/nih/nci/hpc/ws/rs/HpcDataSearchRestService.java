@@ -37,7 +37,7 @@ import javax.ws.rs.core.Response;
 public interface HpcDataSearchRestService
 {
     /**
-     * POST Collections query.
+     * Get collections by compound metadata query..
      *
      * @param compoundMetadataQueryDTO A compund metadata query DTO.
      * @return The REST service response.
@@ -49,7 +49,7 @@ public interface HpcDataSearchRestService
 	public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
 	
     /**
-     * GET Collections by named query.
+     * Get collections by named query.
      *
      * @param queryName A named query.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
@@ -67,7 +67,7 @@ public interface HpcDataSearchRestService
 			                         @QueryParam("totalCount") Boolean totalCount);
 	
     /**
-     * POST Data objects query.
+     * Get data objects by compound metadata query.
      *
      * @param compoundMetadataQueryDTO A compund metadata query DTO.
      * @return The REST service response.
@@ -79,7 +79,7 @@ public interface HpcDataSearchRestService
 	public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
 	
     /**
-     * GET Data objects by named query.
+     * Get data objects by named query.
      *
      * @param queryName A named query.
      * @param detailedResponse If set to true, return entity details (attributes + metadata).
@@ -154,7 +154,7 @@ public interface HpcDataSearchRestService
     public Response getQueries();
 	
   /**
-   * GET A list of metadata attributes currently registered.
+   * Get a list of metadata attributes currently registered.
    *
    * @param levelLabel Filter the results by level label (Optional).
    * @return The REST service response.
