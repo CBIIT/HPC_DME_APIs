@@ -37,7 +37,7 @@
 		</xsd:complexType>
 	</xsd:element>
 	
-		<!-- User DTO -->
+	<!-- User list DTO -->
 	<xsd:element name="HpcUserListDTO">
 		<xsd:complexType>
 			<xsd:sequence>
@@ -82,10 +82,9 @@
 	</xsd:element>
 
 	<!-- User Group DTO -->
-	<xsd:element name="HpcGroupRequestDTO">
+	<xsd:element name="HpcGroupMembersRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="group" type="xsd:string" />
 				<xsd:element name="addUserIds" type="xsd:string"
 					         minOccurs="0" maxOccurs="unbounded" />
 			    <xsd:element name="deleteUserIds" type="xsd:string"
@@ -94,7 +93,7 @@
 		</xsd:complexType>
 	</xsd:element>
 	
-	<xsd:complexType name="HpcUserGroupResponseDTO">
+	<xsd:complexType name="HpcGroupMemberResponse">
 		<xsd:sequence>
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="result" type="xsd:boolean" />
@@ -102,16 +101,48 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
-	<xsd:element name="HpcGroupResponseDTO">
+	<xsd:element name="HpcGroupMembersResponseDTO">
 		<xsd:complexType> 
 			<xsd:sequence>
-				<xsd:element name="group" type="xsd:string" />
-				<xsd:element name="result" type="xsd:boolean" />
-				<xsd:element name="message" type="xsd:string" />
-				<xsd:element name="userGroupResponses"
-				             type="hpc-dto-security:HpcUserGroupResponseDTO"
+				<xsd:element name="addGroupMemberResponses"
+				             type="hpc-dto-security:HpcGroupMemberResponse"
+					         minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="deleteGroupMemberResponses"
+				             type="hpc-dto-security:HpcGroupMemberResponse"
 					         minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
+	
+	<xsd:element name="HpcGroupMembersDTO">
+		<xsd:complexType> 
+			<xsd:sequence>
+				<xsd:element name="userIds" type="xsd:string"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
+	<xsd:complexType name="HpcGroup">
+		<xsd:sequence>
+			<xsd:sequence>
+			    <xsd:element name="groupName" type="xsd:string" />
+				<xsd:element name="userIds" type="xsd:string"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="HpcGroupListDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:sequence>
+				    <xsd:element name="groups"
+					             type="hpc-dto-security:HpcGroup"
+						         minOccurs="0" maxOccurs="unbounded" />
+				</xsd:sequence>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
 </xsd:schema>

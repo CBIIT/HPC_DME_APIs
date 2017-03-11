@@ -605,7 +605,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                       HpcErrorType.INVALID_REQUEST_INPUT);	
 			}
 			if(!groupNames.add(groupName)) {
-			   throw new HpcException("Duplicate groupId name a permission request: " + groupName,
+			   throw new HpcException("Duplicate group name in a permission request: " + groupName,
                                       HpcErrorType.INVALID_REQUEST_INPUT);	 
 			}
 			if(permission == null || permission.isEmpty()) { 

@@ -15,22 +15,20 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
-import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
-import gov.nih.nci.hpc.domain.user.HpcGroupUserResponse;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
-import gov.nih.nci.hpc.dto.security.HpcGroupRequestDTO;
-import gov.nih.nci.hpc.dto.security.HpcGroupResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupMemberResponse;
+import gov.nih.nci.hpc.dto.security.HpcGroupMembersDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupMembersResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
 import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.dto.security.HpcUserGroupResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
@@ -38,7 +36,6 @@ import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -351,37 +348,77 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     }
     
 	@Override
-	public HpcGroupResponseDTO setGroup(HpcGroupRequestDTO groupRequest) throws HpcException {
-		if (groupRequest == null || groupRequest.getGroup() == null)
-			throw new HpcException("Null Group request", HpcErrorType.INVALID_REQUEST_INPUT);
-		HpcGroup hpcGroup = new HpcGroup();
-		hpcGroup.setGroupName(groupRequest.getGroup());
-
-		HpcGroupResponseDTO dto = new HpcGroupResponseDTO();
-
-		try {
-			HpcGroupResponse response = dataManagementSecurityService.setGroup(hpcGroup, groupRequest.getAddUserIds(),
-					groupRequest.getDeleteUserIds());
-			dto.setGroup(groupRequest.getGroup());
-			dto.setResult(response.getResult());
-			dto.setMessage(response.getMessage());
-			if (response.getGroupuser() != null && response.getGroupuser().size() > 0) {
-				List<HpcUserGroupResponseDTO> userGroupResponse = new ArrayList<HpcUserGroupResponseDTO>();
-				for (HpcGroupUserResponse gResponse : response.getGroupuser()) {
-					HpcUserGroupResponseDTO userGroupResponseDTO = new HpcUserGroupResponseDTO();
-					userGroupResponseDTO.setUserId(gResponse.getUserId());
-					userGroupResponseDTO.setResult(gResponse.getResult());
-					userGroupResponseDTO.setMessage(gResponse.getMessage());
-					userGroupResponse.add(userGroupResponseDTO);
-				}
-				dto.getUserGroupResponses().addAll(userGroupResponse);
-			}
-		} catch (HpcException e) {
-			dto.setResult(false);
-			dto.setMessage("Group is not created due to: " + e.getMessage());
-			throw e;
+	public HpcGroupMembersResponseDTO registerGroup(String groupName,
+                                                    HpcGroupMembersRequestDTO groupMembersRequest) 
+                                                   throws HpcException
+    {
+		// Input validation.
+		if(groupName == null) {
+		   throw new HpcException("Null group name", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		return dto;
+		if(groupMembersRequest != null && !groupMembersRequest.getDeleteUserIds().isEmpty()) {
+		   throw new HpcException("Delete users is invalid in group registration request", 
+				                  HpcErrorType.INVALID_REQUEST_INPUT);	
+		}
+		
+    	// Validate the group doesn't already exists.
+    	if(dataManagementSecurityService.groupExists(groupName)) {
+    	   throw new HpcException("Group already exists: " + groupName, 
+    	                          HpcRequestRejectReason.GROUP_ALREADY_EXISTS);
+    	}
+		
+		// Add the group.
+		dataManagementSecurityService.addGroup(groupName);
+		
+		// Optionally add members.
+		return updateGroupMembers(groupName, groupMembersRequest);
+    }
+	
+	public HpcGroupMembersResponseDTO updateGroup(String groupName,
+                                                  HpcGroupMembersRequestDTO groupMembersRequest)
+                                                 throws HpcException
+    {
+		// Input validation.
+		if(groupName == null) {
+		   throw new HpcException("Null group name", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if(groupMembersRequest == null || 
+		   (groupMembersRequest.getDeleteUserIds().isEmpty() && groupMembersRequest.getAddUserIds().isEmpty())) {
+		   throw new HpcException("Null or empty requests to add/delete members to group", 
+				                  HpcErrorType.INVALID_REQUEST_INPUT);	
+		}
+		
+    	// Validate the group exists.
+    	if(!dataManagementSecurityService.groupExists(groupName)) {
+    	   throw new HpcException("Group doesn't exist", 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+		
+		// Optionally add members.
+		return updateGroupMembers(groupName, groupMembersRequest);		
+    }
+
+	@Override
+	public HpcGroupMembersDTO getGroup(String groupName) throws HpcException
+	{
+		// Input validation.
+		if(groupName == null) {
+		   throw new HpcException("Null group name", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+    	// Validate the group exists.
+    	if(!dataManagementSecurityService.groupExists(groupName)) {
+    	   return null;
+    	}
+		
+		// Return the group members.
+    	HpcGroupMembersDTO groupMembers = new HpcGroupMembersDTO();
+    	List<String> userIds = dataManagementSecurityService.getGroupMembers(groupName);
+    	if(userIds != null) {
+    	   groupMembers.getUserIds().addAll(userIds);
+    	}
+    	
+    	return groupMembers;
 	}
 	
     //---------------------------------------------------------------------//
@@ -504,7 +541,64 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 			requestInvoker.setDataManagementAuthenticatedToken(dataManagementSecurityService.getProxyManagementAccount(dmAccount));
 		
 		return authenticationResponse;
-    }    
+    }  
+    
+    /**
+     * Update group members of a group.
+     * 
+     * @param groupName The group name.
+     * @param groupMembersRequest A list of users to add and delete from the group.
+     * @return A DTO containing the results of each add/delete member request.
+     * @throws HpcException on service failure.
+     */
+    private HpcGroupMembersResponseDTO updateGroupMembers(String groupName,
+                                                          HpcGroupMembersRequestDTO groupMembersRequest) 
+                                                         throws HpcException
+    {
+    	if(groupMembersRequest == null) {
+    	   return null;	
+    	}
+    	
+    	HpcGroupMembersResponseDTO groupMembersResponses = new HpcGroupMembersResponseDTO();
+    	
+    	// Add group members.
+    	for(String userId : groupMembersRequest.getAddUserIds()) {
+    		HpcGroupMemberResponse addGroupMemberResponse = new HpcGroupMemberResponse();
+    		addGroupMemberResponse.setUserId(userId);
+    		addGroupMemberResponse.setResult(true);
+    		try {
+		    	  dataManagementSecurityService.addGroupMember(groupName, userId);
+			     
+		    } catch(HpcException e) {
+		    	    // Request failed. Record the message and keep going.
+		    	    addGroupMemberResponse.setResult(false);
+		    	    addGroupMemberResponse.setMessage(e.getMessage());
+		    }
+    		
+    		// Add this user add group member response to the list.
+    		groupMembersResponses.getAddGroupMemberResponses().add(addGroupMemberResponse);
+    	}
+    	
+    	// Delete group members.
+    	for(String userId : groupMembersRequest.getDeleteUserIds()) {
+    		HpcGroupMemberResponse deleteGroupMemberResponse = new HpcGroupMemberResponse();
+    		deleteGroupMemberResponse.setUserId(userId);
+    		deleteGroupMemberResponse.setResult(true);
+    		try {
+		    	  dataManagementSecurityService.deleteGroupMember(groupName, userId);
+			     
+		    } catch(HpcException e) {
+		    	    // Request failed. Record the message and keep going.
+		    	    deleteGroupMemberResponse.setResult(false);
+		         	deleteGroupMemberResponse.setMessage(e.getMessage());
+		    }
+    		
+    		// Add this user add group member response to the list.
+    		groupMembersResponses.getDeleteGroupMemberResponses().add(deleteGroupMemberResponse);
+    	}
+    	
+    	return groupMembersResponses;
+    }
 }
 
  
