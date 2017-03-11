@@ -457,15 +457,12 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     public HpcUserRole getUserRole(Object authenticatedToken, String username) 
     		                      throws HpcException
     {
-		
 		 User irodsUser = getUser(authenticatedToken, username);
 		 if(irodsUser == null) {
 			return null;  
 		 }
 		 
 		 return toHpcUserRole(irodsUser.getUserType());
-	
-		
 	}  
 
     @Override
@@ -1126,9 +1123,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			 return FilePermissionEnum.valueOf(permission);
 			 
 		} catch(Throwable t) {
-			    throw new HpcException("Invalid permission: " + permission + " . Valid values[ " +
-		                                FilePermissionEnum.values() + " ]",
-			    		                HpcErrorType.INVALID_REQUEST_INPUT, t);
+			    throw new HpcException("Invalid permission: " + permission + " . Valid values are[ " +
+			    		               Arrays.asList(FilePermissionEnum.values())  + " ]",
+			    		               HpcErrorType.INVALID_REQUEST_INPUT, t);
 		}
     }
 }
