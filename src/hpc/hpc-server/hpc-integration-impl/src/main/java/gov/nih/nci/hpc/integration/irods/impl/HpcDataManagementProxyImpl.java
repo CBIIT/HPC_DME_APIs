@@ -13,10 +13,9 @@ package gov.nih.nci.hpc.integration.irods.impl;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
-import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -538,12 +537,12 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public List<HpcUserPermission> getCollectionPermissions(Object authenticatedToken,
-                                                            String path) 
-                                                           throws HpcException
+    public List<HpcSubjectPermission> getCollectionPermissions(Object authenticatedToken,
+                                                               String path) 
+                                                              throws HpcException
     {
     	try {
-    		 return toHpcUserPermissions(
+    		 return toHpcSubjectPermissions(
     				  irodsConnection.getCollectionAO(authenticatedToken).
     				                  listPermissionsForCollection(getAbsolutePath(path)));
     	     
@@ -555,33 +554,18 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public void setCollectionPermission(
-    		       Object authenticatedToken,
-                   String path,
-                   HpcEntityPermission permissionRequest) 
-                   throws HpcException
+    public void setCollectionPermission(Object authenticatedToken, String path,
+                                        HpcSubjectPermission permissionRequest) 
+                                       throws HpcException
     {
-    	FilePermissionEnum permission = null;
-    	try {
-    		 permission = FilePermissionEnum.valueOf(permissionRequest.getPermission());
-    		 
-    	} catch(Throwable t) {
-    		    throw new HpcException("Invalid permission: " + permissionRequest.getPermission(),
-    		    		               HpcErrorType.INVALID_REQUEST_INPUT, t);
-    	}
+    	// Validate the permission string and convert to IRODS enum.
+    	FilePermissionEnum permission = toIRODSFilePermissionEnum(permissionRequest.getPermission());
     	
-    	try {
-    		String id = null;
-    		if(permissionRequest instanceof HpcUserPermission)
-    			id = ((HpcUserPermission)permissionRequest).getUserId();
-    		else if(permissionRequest instanceof HpcGroupPermission)
-    			id = ((HpcGroupPermission)permissionRequest).getGroupId();
-    		
+		// Set the permission.
+		try {
     	     irodsConnection.getCollectionAO(authenticatedToken).setAccessPermission(
-    		     	                         irodsConnection.getZone(), 
-    		     	                         getAbsolutePath(path),
-    			                             id,
-    			                             true, permission);
+    		     	            irodsConnection.getZone(), getAbsolutePath(path), 
+    		     	            permissionRequest.getSubject(), true, permission);
     	     
     	} catch(Exception e) {
                 throw new HpcException("Failed to set collection permission: " + 
@@ -591,12 +575,12 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public List<HpcUserPermission> getDataObjectPermissions(Object authenticatedToken,
-                                                            String path) 
-                                                           throws HpcException
+    public List<HpcSubjectPermission> getDataObjectPermissions(Object authenticatedToken,
+                                                               String path) 
+                                                              throws HpcException
     {
     	try {
-    		 return toHpcUserPermissions(
+    		 return toHpcSubjectPermissions(
     				  irodsConnection.getDataObjectAO(authenticatedToken).
     				                  listPermissionsForDataObject(getAbsolutePath(path)));
     	     
@@ -608,40 +592,26 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public void setDataObjectPermission(
-    		       Object authenticatedToken,
-                   String path,
-                   HpcEntityPermission permissionRequest) 
-                   throws HpcException
+    public void setDataObjectPermission(Object authenticatedToken, String path,
+                                        HpcSubjectPermission permissionRequest) 
+                                       throws HpcException
     {
-    	FilePermissionEnum permission = null;
-    	try {
-    		 permission = FilePermissionEnum.valueOf(permissionRequest.getPermission());
-    		 
-    	} catch(Throwable t) {
-    		    throw new HpcException("Invalid permission: " + permissionRequest.getPermission(),
-    		    		               HpcErrorType.INVALID_REQUEST_INPUT, t);
-    	}
+    	// Validate the permission string and convert to IRODS enum.
+    	FilePermissionEnum permission = toIRODSFilePermissionEnum(permissionRequest.getPermission());
     	
-    	try {
-    		String id = null;
-    		if(permissionRequest instanceof HpcUserPermission)
-    			id = ((HpcUserPermission)permissionRequest).getUserId();
-    		else if(permissionRequest instanceof HpcGroupPermission)
-    			id = ((HpcGroupPermission)permissionRequest).getGroupId();
-    		
+		// Set the permission.
+		try {
     	     irodsConnection.getDataObjectAO(authenticatedToken).setAccessPermission(
-    		     	                         irodsConnection.getZone(), 
-    		     	                         getAbsolutePath(path),
-    			                             id,
-    			                             permission);
+    		     	            irodsConnection.getZone(), getAbsolutePath(path), 
+    		     	            permissionRequest.getSubject(), permission);
     	     
     	} catch(Exception e) {
-                throw new HpcException("Failed to set data object permission: " + 
+                throw new HpcException("Failed to set collection permission: " + 
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
     	} 
     }
+
     /*
     @Override
     public List<String> getGroupMembers(Object authenticatedToken, String groupName) 
@@ -1094,26 +1064,33 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     /**
-     * Convert a list of iRODS user permission to list of HPC user permission.
+     * Convert a list of iRODS user permission to list of HPC entity permission.
      *
      * @param irodsUserPermissions The iRODS user permissions.
-     * @return A list of HPC user permission
+     * @return A list of HPC subject permissions.
      */
-    private List<HpcUserPermission> toHpcUserPermissions(List<UserFilePermission> irodsUserPermissions)
+    private List<HpcSubjectPermission> toHpcSubjectPermissions(List<UserFilePermission> irodsUserPermissions)
     {
     	if(irodsUserPermissions == null) {
     	   return null;
     	}
     	
-    	List<HpcUserPermission> hpcUserPermissions = new ArrayList<>();
+    	List<HpcSubjectPermission> hpcSubjectPermissions = new ArrayList<>();
     	for(UserFilePermission irodsUserPermission : irodsUserPermissions) {
-    		HpcUserPermission hpcUserPermission = new HpcUserPermission();
-    		hpcUserPermission.setUserId(irodsUserPermission.getUserName());
-    		hpcUserPermission.setPermission(irodsUserPermission.getFilePermissionEnum().toString());
-    		hpcUserPermissions.add(hpcUserPermission);
+    		HpcSubjectPermission hpcSubjectPermission = new HpcSubjectPermission();
+    		hpcSubjectPermission.setPermission(irodsUserPermission.getFilePermissionEnum().toString());
+    		hpcSubjectPermission.setSubject(irodsUserPermission.getUserName());
+    		// The IRODS user-type determines the HPC subject-type.
+    		if(irodsUserPermission.getUserType().equals(UserTypeEnum.RODS_GROUP)) {
+    		   hpcSubjectPermission.setSubjectType(HpcSubjectType.GROUP);
+    		} else {
+    			    hpcSubjectPermission.setSubjectType(HpcSubjectType.USER);
+    		}
+    		
+    		hpcSubjectPermissions.add(hpcSubjectPermission);
     	}
     	
-    	return hpcUserPermissions;
+    	return hpcSubjectPermissions;
     }
     
     /**
@@ -1134,6 +1111,25 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	}
     	
     	return hpcUserGroups;
+    }
+    
+    /**
+     * Convert HPC permission string to irods permission enum.
+     *
+     * @param irodsUserGroups The iRODS user groups.
+     * @return The IRODS file permission enum.
+     * @throws HpcException if failed to map the input string to an enum value.
+     */
+    private FilePermissionEnum toIRODSFilePermissionEnum(String permission) throws HpcException
+    {
+		try {
+			 return FilePermissionEnum.valueOf(permission);
+			 
+		} catch(Throwable t) {
+			    throw new HpcException("Invalid permission: " + permission + " . Valid values[ " +
+		                                FilePermissionEnum.values() + " ]",
+			    		                HpcErrorType.INVALID_REQUEST_INPUT, t);
+		}
     }
 }
 

@@ -13,10 +13,9 @@ package gov.nih.nci.hpc.ws.rs;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 
 import java.io.InputStream;
-import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -90,6 +89,31 @@ public interface HpcDataManagementRestService
 			                           @Context MessageContext mc);
 	
     /**
+     * POST Set collection permissions.
+     *
+     * @param path The collection path.
+     * @param collectionPermissionsRequest Request to set collection permissions.
+     * @return The REST service response.
+     */
+	@POST
+	@Path("/collection/{path:.*}/acl")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response setCollectionPermissions(@PathParam("path") String path,
+			                                 HpcEntityPermissionsDTO collectionPermissionsRequest);
+	
+    /**
+     * GET collection permissions.
+     *
+     * @param path The collection path.
+     * @return The REST service response.
+     */
+	@GET
+	@Path("/collection/{path:.*}/acl")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getCollectionPermissions(@PathParam("path") String path);
+	
+    /**
      * PUT Data object registration request.
      *
      * @param path The data object path.
@@ -137,27 +161,29 @@ public interface HpcDataManagementRestService
 			                           @Context MessageContext mc);
 
     /**
-     * GET entity (collection or data object) permissions.
+     * POST Set Data Object permissions.
      *
-     * @param path The collection or data object path.
-     * @return The REST service response.
-     */
-	@GET
-	@Path("/acl/{path:.*}")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getPermissions(@PathParam("path") String path);
-	
-    /**
-     * POST Set permissions.
-     *
-     * @param entityPermissionRequests Requests to set entities (Collections or Data Objects) permissions.
+     * @param path The data object path.
+     * @param dataObjectPermissionsRequest Request to set data object permissions.
      * @return The REST service response.
      */
 	@POST
-	@Path("/acl")
+	@Path("/dataObject/{path:.*}/acl")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response setPermissions(HpcEntityPermissionRequestDTO entityPermissionRequest);
+	public Response setDataObjectPermissions(@PathParam("path") String path,
+			                                 HpcEntityPermissionsDTO dataObjectPermissionsRequest);
+	
+    /**
+     * GET Data Object permissions.
+     *
+     * @param path The data object path.
+     * @return The REST service response.
+     */
+	@GET
+	@Path("/dataObject/{path:.*}/acl")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getDataObjectPermissions(@PathParam("path") String path);
 	
     /**
      * GET Data Management Model (Metadata validation rules and hierarchy definition).

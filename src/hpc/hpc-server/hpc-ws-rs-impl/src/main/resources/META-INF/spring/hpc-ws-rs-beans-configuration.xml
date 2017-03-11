@@ -174,11 +174,14 @@
         		<!--  Data Management Service Authorizations -->
         		<entry key="registerCollection" value="${hpc.ws.rs.auth.data-management.register-collection}"/>
         		<entry key="getCollection" value="${hpc.ws.rs.auth.data-management.get-collection}"/>
+        		<entry key="downloadCollection" value="${hpc.ws.rs.auth.data-management.download-collection}"/>
+        		<entry key="setCollectionPermissions" value="${hpc.ws.rs.auth.data-management.set-collection-permissions}"/>
+        		<entry key="getCollectionPermissions" value="${hpc.ws.rs.auth.data-management.get-collection-permissions}"/>
         		<entry key="registerDataObject" value="${hpc.ws.rs.auth.data-management.register-data-object}"/>
         		<entry key="getDataObject" value="${hpc.ws.rs.auth.data-management.get-data-object}"/>
-        		<entry key="setPermissions" value="${hpc.ws.rs.auth.data-management.set-permissions}"/>
-        		<entry key="setPermissions" value="${hpc.ws.rs.auth.data-management.get-permissions}"/>
         		<entry key="downloadDataObject" value="${hpc.ws.rs.auth.data-management.download-data-object}"/>
+        		<entry key="setDataObjectPermissions" value="${hpc.ws.rs.auth.data-management.set-data-object-permissions}"/>
+        		<entry key="getDataObjectPermissions" value="${hpc.ws.rs.auth.data-management.get-data-object-permissions}"/>
         		<entry key="getDataManagementModel" value="${hpc.ws.rs.auth.data-management.get-data-management-model}"/>
         		
         		<!--  Data Search Service Authorizations -->

@@ -110,10 +110,9 @@
 	</xsd:element>	
 	
 	<!-- Permissions DTO -->
-	<xsd:element name="HpcEntityPermissionRequestDTO">
+	<xsd:element name="HpcEntityPermissionsDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="path" type="xsd:string" />
 				<xsd:element name="userPermissions"
 				             type="hpc-domain-datamanagement:HpcUserPermission"
 					         minOccurs="0" maxOccurs="unbounded" />
@@ -131,18 +130,17 @@
 			<xsd:element name="message" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-
-	<xsd:complexType name="HpcGroupPermissionResponseDTO">
+	
+		<xsd:complexType name="HpcGroupPermissionResponseDTO">
 		<xsd:sequence>
-			<xsd:element name="groupId" type="xsd:string" />
+			<xsd:element name="groupName" type="xsd:string" />
 			<xsd:element name="result" type="xsd:boolean" />
 			<xsd:element name="message" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
-	<xsd:complexType name="HpcEntityPermissionResponseDTO"> 
+
+	<xsd:complexType name="HpcEntityPermissionsResponseDTO"> 
 		<xsd:sequence>
-			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="userPermissionResponses"
 			             type="hpc-dto-datamanagement:HpcUserPermissionResponseDTO"
 				         minOccurs="0" maxOccurs="unbounded" />
@@ -151,27 +149,6 @@
 				         minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
-	<xsd:element name="HpcEntityPermissionResponseListDTO">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="entityPermissionResponses"
-				             type="hpc-dto-datamanagement:HpcEntityPermissionResponseDTO"
-					         minOccurs="0" maxOccurs="unbounded" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>	
-	
-	<xsd:element name="HpcEntityPermissionsDTO"> 
-		<xsd:complexType> 
-			<xsd:sequence>
-				<xsd:element name="path" type="xsd:string" />
-				<xsd:element name="userPermissions"
-				             type="hpc-domain-datamanagement:HpcUserPermission"
-					         minOccurs="0" maxOccurs="unbounded" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
 	
 	<!-- Download Request DTO -->
 	<xsd:element name="HpcDownloadRequestDTO">

@@ -23,9 +23,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadReceiptDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
@@ -33,8 +32,6 @@ import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
@@ -101,19 +98,16 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     public Response registerCollection(String path, 
     		                           HpcCollectionRegistrationDTO collectionRegistration)
     {	
-		boolean created = true;
+		boolean collectionCreated = true;
 		try {
-			 created = dataManagementBusService.registerCollection(toAbsolutePath(path), collectionRegistration);
+			 collectionCreated = dataManagementBusService.registerCollection(toAbsolutePath(path), 
+					                                                         collectionRegistration);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
 		}
 		
-		if(created) {
-		   return createdResponse(null);
-		} else {
-			    return okResponse(null, false);
-		}
+		return collectionCreated ? createdResponse(null) : okResponse(null, false);
 	}
     
     @Override
@@ -151,17 +145,47 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
+    public Response setCollectionPermissions(String path, HpcEntityPermissionsDTO collectionPermissionsRequest)
+    {
+    	HpcEntityPermissionsResponseDTO permissionsResponse = null;
+		try {
+			 permissionsResponse = 
+					    dataManagementBusService.setCollectionPermissions(toAbsolutePath(path), 
+					                                                      collectionPermissionsRequest);
+			 
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+		return okResponse(permissionsResponse, false);
+    }
+    
+    @Override
+    public Response getCollectionPermissions(String path)
+    {
+    	HpcEntityPermissionsDTO entityPermissions = null;
+		try {
+			 entityPermissions = dataManagementBusService.getCollectionPermissions(toAbsolutePath(path));
+			 
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+		return okResponse(entityPermissions, true);
+    }
+    
+    @Override
     public Response registerDataObject(String path, 
     		                           HpcDataObjectRegistrationDTO dataObjectRegistration,
     		                           InputStream dataObjectInputStream)
     {	
 		File dataObjectFile = null;
-		boolean created = true;
+		boolean dataObjectCreated = true;
 		try {
 			 dataObjectFile = toFile(dataObjectInputStream);
-			 created = dataManagementBusService.registerDataObject(toAbsolutePath(path), 
-					                                               dataObjectRegistration,
-					                                               dataObjectFile);
+			 dataObjectCreated = dataManagementBusService.registerDataObject(toAbsolutePath(path), 
+					                                                         dataObjectRegistration,
+					                                                         dataObjectFile);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -171,11 +195,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 	    	       FileUtils.deleteQuietly(dataObjectFile);
 		}
 		
-		if(created) {
-		   return createdResponse(null);
-		} else {
-				return okResponse(null, false);
-		}
+		return dataObjectCreated ? createdResponse(null) : okResponse(null, false);
 	}
     
     @Override
@@ -212,35 +232,33 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getPermissions(String path)
+    public Response setDataObjectPermissions(String path, HpcEntityPermissionsDTO dataObjectPermissionsRequest)
     {
-    	HpcEntityPermissionsDTO entityPermissions = null;
+    	HpcEntityPermissionsResponseDTO permissionsResponse = null;
 		try {
-			 entityPermissions = dataManagementBusService.getPermissions(toAbsolutePath(path));
+			 permissionsResponse = 
+					    dataManagementBusService.setDataObjectPermissions(toAbsolutePath(path), 
+					                                                      dataObjectPermissionsRequest);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
 		}
 		
-		return okResponse(entityPermissions, false);
-    	
+		return okResponse(permissionsResponse, false);
     }
     
     @Override
-    public Response setPermissions(HpcEntityPermissionRequestDTO entityPermissionRequest)
+    public Response getDataObjectPermissions(String path)
     {
-    	HpcEntityPermissionResponseListDTO permissionResponseList = null;
+    	HpcEntityPermissionsDTO entityPermissions = null;
 		try {
-			List<HpcEntityPermissionRequestDTO> entityPermissionRequests = new ArrayList<HpcEntityPermissionRequestDTO>();
-			entityPermissionRequests.add(entityPermissionRequest);
-			 permissionResponseList = dataManagementBusService.setPermissions(
-					                                              entityPermissionRequests);
+			 entityPermissions = dataManagementBusService.getDataObjectPermissions(toAbsolutePath(path));
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
 		}
 		
-		return okResponse(permissionResponseList, false);
+		return okResponse(entityPermissions, true);
     }
     
     @Override
