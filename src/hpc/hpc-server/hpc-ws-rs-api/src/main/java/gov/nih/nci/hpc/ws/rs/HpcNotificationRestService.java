@@ -56,7 +56,7 @@ public interface HpcNotificationRestService
     public Response getNotificationSubscriptions();
 	
     /**
-     * Get Notification Delivery Receipts.
+     * Get notification delivery receipts.
      *
      * @param page The requested results page.
      * @param totalCount If set to true, return the total count of collections matching the query
@@ -69,7 +69,7 @@ public interface HpcNotificationRestService
     public Response getNotificationDeliveryReceipts(@QueryParam("page") Integer page,
                                                     @QueryParam("totalCount") Boolean totalCount);
 	
-	   /**
+	/**
      * Get Notification Delivery Receipt.
      *
      * @param eventId The requested delivery receipt event Id.
@@ -79,7 +79,5 @@ public interface HpcNotificationRestService
     @Path("/notification/deliveryReceipt")
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response getNotificationDeliveryReceipt(@QueryParam("eventId") Integer eventId);
-	
-	
 }
 

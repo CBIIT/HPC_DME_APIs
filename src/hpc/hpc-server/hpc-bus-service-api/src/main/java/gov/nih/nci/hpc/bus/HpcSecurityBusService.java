@@ -11,8 +11,9 @@
 package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
-import gov.nih.nci.hpc.dto.security.HpcGroupRequestDTO;
-import gov.nih.nci.hpc.dto.security.HpcGroupResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupMembersDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupMembersResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
 import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
@@ -103,13 +104,53 @@ public interface HpcSecurityBusService
     public HpcAuthenticationResponseDTO getAuthenticationResponse() throws HpcException; 
     
     /**
-     * Set (create or update) a group and assign/remove users.
+     * Register a group
      *
-     * @param groupRequest The request DTO to create/update a group.
-     * @return A list of result for each user.
+     * @param groupName The group name.
+     * @param groupMembersRequest (Optional) request to add users to the registered group.
+     * @return A list of responses to the add members requests.
      * @throws HpcException on service failure.
      */
-	public HpcGroupResponseDTO setGroup(HpcGroupRequestDTO groupRequest) throws HpcException;
+	public HpcGroupMembersResponseDTO registerGroup(String groupName,
+			                                        HpcGroupMembersRequestDTO groupMembersRequest) 
+			                                       throws HpcException;
+	
+    /**
+     * Group update.
+     *
+     * @param groupName The group name.
+     * @param groupMembersRequest Request to add/remove users to/from a group.
+     * @return A list of responses to the add/delete members requests.
+     * @throws HpcException on service failure.
+     */
+	public HpcGroupMembersResponseDTO updateGroup(String groupName,
+			                                      HpcGroupMembersRequestDTO groupMembersRequest)
+			                                     throws HpcException;
+
+	/**
+     * Get a group by name.
+     *
+     * @param groupName The group name.
+     * @return A list of group members if the group exists, otherwise null.
+     * @throws HpcException on service failure.
+     */
+    public HpcGroupMembersDTO getGroup(String groupName) throws HpcException;
+    
+    /**
+     * Get groups by search criteria.
+     *
+     * @param groupSearchCriteria The group search criteria (In the form of SQL 'LIKE').
+     * @return The REST service response.
+     */
+    //public Response getGroups(@QueryParam("groupSearchCriteria") String groupSearchCriteria);
+    
+    /**
+     * Delete a group.
+     *
+     * @param groupName The group name
+     * @return The REST service response.
+     */
+    //public Response deleteGroup(@PathParam("groupName") String groupName);
 	
     /**
      * Register a System Account.

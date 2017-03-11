@@ -21,9 +21,6 @@ import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
-import gov.nih.nci.hpc.domain.model.HpcGroup;
-import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
-import gov.nih.nci.hpc.domain.user.HpcGroupUserResponse;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -47,7 +44,6 @@ import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.protovalues.UserTypeEnum;
 import org.irods.jargon.core.pub.CollectionAO;
 import org.irods.jargon.core.pub.DataObjectAO;
-import org.irods.jargon.core.pub.UserGroupAO;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.Collection;
 import org.irods.jargon.core.pub.domain.DataObject;
@@ -62,7 +58,6 @@ import org.irods.jargon.core.query.AVUQueryOperatorEnum;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
-import org.irods.jargon.core.query.RodsGenQueryEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -564,6 +559,16 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		     	            irodsConnection.getZone(), getAbsolutePath(path), 
     		     	            permissionRequest.getSubject(), true, permission);
     	     
+		} catch(InvalidGroupException ige) {
+			    throw new HpcException("Failed to set collection permission. Invalid group: " + 
+			    		               permissionRequest.getSubject(),
+                                       HpcErrorType.INVALID_REQUEST_INPUT, ige);
+			    
+		} catch(InvalidUserException iue) {
+			    throw new HpcException("Failed to set collection permission. Invalid user: " + 
+		                               permissionRequest.getSubject(),
+                                       HpcErrorType.INVALID_REQUEST_INPUT, iue);
+			    
     	} catch(Exception e) {
                 throw new HpcException("Failed to set collection permission: " + 
                                        e.getMessage(),
@@ -608,9 +613,81 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
     	} 
     }
+    
+	@Override
+	public void addGroup(Object authenticatedToken, String groupName) throws HpcException 
+	{
+		try {
+			 UserGroup irodsUserGroup = new UserGroup();
+			 irodsUserGroup.setUserGroupName(groupName);
+			 irodsUserGroup.setZone(irodsConnection.getZone());
+			 irodsConnection.getUserGroupAO(authenticatedToken).addUserGroup(irodsUserGroup);
 
-    /*
-    @Override
+    	} catch(Exception e) {
+                throw new HpcException("Failed to add a group: " + e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+    	}
+	}
+	
+	@Override
+	public boolean groupExists(Object authenticatedToken, String groupName) throws HpcException
+	{
+		try {
+			 return (irodsConnection.getUserGroupAO(authenticatedToken).findByName(groupName) != null) ? true : false;
+
+		} catch(Exception e) {
+                throw new HpcException("Failed to get a group: " + e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		}	
+	}
+	
+	@Override
+	public void addGroupMember(Object authenticatedToken, String groupName, 
+                               String userId) 
+                              throws HpcException
+    {
+		try {
+			 irodsConnection.getUserGroupAO(authenticatedToken).addUserToGroup(groupName, userId, 
+					                                                           irodsConnection.getZone());
+			 
+		} catch(InvalidGroupException ige) {
+		        throw new HpcException("Failed to add group member. Invalid group: " + groupName,
+                                       HpcErrorType.INVALID_REQUEST_INPUT, ige);
+		    
+		} catch(InvalidUserException iue) {
+		        throw new HpcException("Failed to add group member. Invalid user: " + userId,
+                                       HpcErrorType.INVALID_REQUEST_INPUT, iue);
+		    
+		} catch(Exception e) {
+                throw new HpcException("Failed to add group member: " + e.getMessage(),
+                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		}
+    }
+	
+	@Override
+	public void deleteGroupMember(Object authenticatedToken, String groupName, 
+                                  String userId) 
+                                 throws HpcException
+	{
+		try {
+			 irodsConnection.getUserGroupAO(authenticatedToken).removeUserFromGroup(groupName, userId, 
+			                                                                        irodsConnection.getZone());
+		
+		} catch(InvalidGroupException ige) {
+			    throw new HpcException("Failed to delete group member. Invalid group: " + groupName,
+		                               HpcErrorType.INVALID_REQUEST_INPUT, ige);
+		
+		} catch(InvalidUserException iue) {
+		        throw new HpcException("Failed to delete group member. Invalid user: " + userId,
+		                               HpcErrorType.INVALID_REQUEST_INPUT, iue);
+		
+		} catch(Exception e) {
+		        throw new HpcException("Failed to delete group member: " + e.getMessage(),
+		                               HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		}
+	}
+
+	@Override
     public List<String> getGroupMembers(Object authenticatedToken, String groupName) 
                                        throws HpcException
 	{
@@ -621,8 +698,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	            throw new HpcException("Failed to get group members: " + e.getMessage(),
 	                                   HpcErrorType.DATA_MANAGEMENT_ERROR, e);
     	}
-	}*/
-    
+	}
+    /*
     @Override
     public List<String> getGroups(Object authenticatedToken, String groupNameLikeSearchCriteria) 
     		                     throws HpcException
@@ -636,8 +713,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                 throw new HpcException("Failed to get user groups: " + e.getMessage(),
 		                               HpcErrorType.DATA_MANAGEMENT_ERROR, e);
     	}
-    }
+    }*/
 
+    /*
 	@Override
 	public HpcGroupResponse addGroup(Object authenticatedToken, HpcGroup hpcGroup, List<String> addUserIds,
 			List<String> removeUserIds) throws HpcException {
@@ -724,7 +802,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 					e);
 		}
 		return response;
-	}
+	} */
 	
 	@Override
 	public String getAbsolutePath(String path)
@@ -1096,7 +1174,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
      * @param irodsUserGroups The iRODS user groups.
      * @return A list of HPC user group names.
      */
-    private List<String> toHpcUserGroups(List<UserGroup> irodsUserGroups)
+    private List<String> toHpcGroupNames(List<UserGroup> irodsUserGroups)
     {
     	if(irodsUserGroups == null) {
     	   return null;
@@ -1108,6 +1186,26 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	}
     	
     	return hpcUserGroups;
+    }
+    
+    /**
+     * Convert a list of iRODS users to list of HPC user ids.
+     *
+     * @param irodsUserGroups The iRODS user groups.
+     * @return A list of HPC user group names.
+     */
+    private List<String> toHpcUserIds(List<User> irodsUsers)
+    {
+    	if(irodsUsers == null) {
+    	   return null;
+    	}
+    	
+    	List<String> hpcUserIds = new ArrayList<>();
+    	for(User irodsUser : irodsUsers) {
+    		hpcUserIds.add(irodsUser.getName());
+    	}
+    	
+    	return hpcUserIds;
     }
     
     /**
@@ -1123,8 +1221,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			 return FilePermissionEnum.valueOf(permission);
 			 
 		} catch(Throwable t) {
-			    throw new HpcException("Invalid permission: " + permission + " . Valid values are[ " +
-			    		               Arrays.asList(FilePermissionEnum.values())  + " ]",
+			    throw new HpcException("Invalid permission: " + permission + " . Valid values are " +
+			    		               Arrays.asList(FilePermissionEnum.values()),
 			    		               HpcErrorType.INVALID_REQUEST_INPUT, t);
 		}
     }
