@@ -570,6 +570,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	private void validatePermissionsRequest(HpcEntityPermissionsDTO entityPermissionsRequest)
                                            throws HpcException
     {
+		if(entityPermissionsRequest == null || 
+		   (entityPermissionsRequest.getUserPermissions().isEmpty() && 
+		    entityPermissionsRequest.getGroupPermissions().isEmpty())) {
+			throw new HpcException("Null or empty permissions request",
+                                   HpcErrorType.INVALID_REQUEST_INPUT);	
+		}
+		
 		Set<String> userIds = new HashSet<String>(); 
 		for(HpcUserPermission userPermissionRequest : entityPermissionsRequest.getUserPermissions()) {
 			String userId = userPermissionRequest.getUserId();
