@@ -104,9 +104,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     public void registerUser(HpcUserDTO userRegistrationDTO)  
     		                throws HpcException
     {
-    	logger.info("Invoking registerUser(HpcUserDTO): " + 
-                    userRegistrationDTO);
-    	
     	// Input validation.
     	if(userRegistrationDTO == null) {
     	   throw new HpcException("Null HpcUserRegistrationDTO",
@@ -163,7 +160,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
                            HpcUpdateUserRequestDTO updateUserRequestDTO) 
                           throws HpcException
     {
-    	logger.info("Invoking updateUser(HpcUserDTO): " + updateUserRequestDTO);
     	// Input validation.
     	if(updateUserRequestDTO == null) {
     	   throw new HpcException("Null HpcUpdateUserRequestDTO",
@@ -248,8 +244,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     @Override
     public HpcUserDTO getUser(String nciUserId) throws HpcException
     {
-    	logger.info("Invoking getUser(String nciUserId): " + nciUserId);
-    	
     	// Input validation.
     	if(nciUserId == null) {
     	   throw new HpcException("Null NCI User ID",
@@ -345,8 +339,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     public void registerSystemAccount(HpcSystemAccountDTO systemAccountRegistrationDTO)  
     		                         throws HpcException
     {
-    	logger.info("Invoking registerSystemAccount(HpcSystemAccountDTO)");
-    	
     	// Input validation.
     	if(systemAccountRegistrationDTO == null) {
     	   throw new HpcException("Null HpcSystemAccountDTO",
