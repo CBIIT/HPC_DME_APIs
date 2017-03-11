@@ -1,5 +1,12 @@
 package gov.nih.nci.hpc.cli;
 
+import gov.nih.nci.hpc.cli.util.Constants;
+import gov.nih.nci.hpc.cli.util.HpcClientUtil;
+import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
+import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -12,7 +19,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -24,22 +30,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
-import gov.nih.nci.hpc.cli.util.Constants;
-import gov.nih.nci.hpc.cli.util.HpcClientUtil;
-import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
-import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionResponseListDTO;
 
 @Component
 public class HPCPermissions extends HPCBatchClient {
@@ -119,14 +113,13 @@ public class HPCPermissions extends HPCBatchClient {
 					if (pathPermission == null)
 						pathPermission = new ArrayList<HpcGroupPermission>();
 					HpcGroupPermission groupPermission = new HpcGroupPermission();
-					groupPermission.setGroupId(ruserId);
+					groupPermission.setGroupName(ruserId);
 					groupPermission.setPermission(permission);
 					pathPermission.add(groupPermission);
 					groupPermissions.put(path, pathPermission);
 				}
-				List<HpcEntityPermissionRequestDTO> dtos = new ArrayList<HpcEntityPermissionRequestDTO>();
-				HpcEntityPermissionRequestDTO hpcPermissionDTO = new HpcEntityPermissionRequestDTO();
-				hpcPermissionDTO.setPath(path);
+				List<HpcEntityPermissionsDTO> dtos = new ArrayList<HpcEntityPermissionsDTO>();
+				HpcEntityPermissionsDTO hpcPermissionDTO = new HpcEntityPermissionsDTO();
 				if(userPermissions.get(path) != null && userPermissions.get(path).size() > 0)
 					hpcPermissionDTO.getUserPermissions().addAll(userPermissions.get(path));
 				if(groupPermissions.get(path) != null && groupPermissions.get(path).size() > 0)
@@ -144,7 +137,7 @@ public class HPCPermissions extends HPCBatchClient {
 				HttpEntity<?> entity = new HttpEntity<Object>(dtos, headers);
 				try {
 					//HttpEntity<HpcEntityPermissionResponseListDTO> response = restTemplate.postForEntity(hpcServerURL + "/acl", entity, HpcEntityPermissionResponseListDTO.class);
-					restTemplate.postForEntity(hpcServerURL + "/acl", entity, null);
+					restTemplate.postForEntity(hpcServerURL + "/collection" + path + "/acl", entity, null);
 				} catch (HttpStatusCodeException e) {
 					success = false;
 					String message = "Failed to process record due to: " + e.getMessage();
