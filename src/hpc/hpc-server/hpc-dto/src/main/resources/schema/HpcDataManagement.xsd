@@ -131,7 +131,7 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
-		<xsd:complexType name="HpcGroupPermissionResponseDTO">
+	<xsd:complexType name="HpcGroupPermissionResponseDTO">
 		<xsd:sequence>
 			<xsd:element name="groupName" type="xsd:string" />
 			<xsd:element name="result" type="xsd:boolean" />
@@ -139,16 +139,18 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
-	<xsd:complexType name="HpcEntityPermissionsResponseDTO"> 
-		<xsd:sequence>
-			<xsd:element name="userPermissionResponses"
-			             type="hpc-dto-datamanagement:HpcUserPermissionResponseDTO"
-				         minOccurs="0" maxOccurs="unbounded" />
-			<xsd:element name="groupPermissionResponses"
-			             type="hpc-dto-datamanagement:HpcGroupPermissionResponseDTO"
-				         minOccurs="0" maxOccurs="unbounded" />
-		</xsd:sequence>
-	</xsd:complexType>
+	<xsd:element name="HpcEntityPermissionsResponseDTO">
+		<xsd:complexType> 
+			<xsd:sequence>
+				<xsd:element name="userPermissionResponses"
+				             type="hpc-dto-datamanagement:HpcUserPermissionResponseDTO"
+					         minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="groupPermissionResponses"
+				             type="hpc-dto-datamanagement:HpcGroupPermissionResponseDTO"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 	
 	<!-- Download Request DTO -->
 	<xsd:element name="HpcDownloadRequestDTO">
