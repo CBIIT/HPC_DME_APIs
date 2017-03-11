@@ -1,5 +1,4 @@
 /**
- * HpcDataManagementService.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -13,8 +12,7 @@ package gov.nih.nci.hpc.service;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
-import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -66,23 +64,42 @@ public interface HpcDataManagementService
     public void delete(String path) throws HpcException;
     
     /**
-     * Get permissions of an entity (collection or data object). 
+     * Set collection permission for a subject (user or group). 
      *
-     * @param path The entity path.
-     * @return A list of users and their permission on the entity.
+     * @param path The collection path.
+     * @param subjectPermission The subject permission request.
      * @throws HpcException on service failure.
      */
-    public List<HpcUserPermission> getPermissions(String path) throws HpcException;
+    public void setCollectionPermission(String path, HpcSubjectPermission subjectPermission) 
+    		                           throws HpcException;
     
     /**
-     * Set permission of an entity (collection or data object) for a user. 
+     * Get collection permissions. 
      *
-     * @param path The entity path.
-     * @param permissionRequest The permission request (NCI user ID and permission).
+     * @param path The collection path.
+     * @return A list of permissions on the collection.
      * @throws HpcException on service failure.
      */
-    public void setPermission(String path, HpcEntityPermission permissionRequest) 
-    		                 throws HpcException;
+    public List<HpcSubjectPermission> getCollectionPermissions(String path) throws HpcException;
+    
+    /**
+     * Set data object permission for a subject (user or group). 
+     *
+     * @param path The data object path.
+     * @param subjectPermission The subject permission request.
+     * @throws HpcException on service failure.
+     */
+    public void setDataObjectPermission(String path, HpcSubjectPermission subjectPermission) 
+    		                           throws HpcException;
+    
+    /**
+     * Get data object permissions. 
+     *
+     * @param path The data object path.
+     * @return A list of permissions on the data object.
+     * @throws HpcException on service failure.
+     */
+    public List<HpcSubjectPermission> getDataObjectPermissions(String path) throws HpcException;
     
     /**
      * Assign system account as an additional owner of an entity.
