@@ -11,18 +11,15 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
-
-import java.util.List;
-
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
-import gov.nih.nci.hpc.domain.model.HpcGroup;
-import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
+
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -114,23 +111,79 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     }
     
     @Override
-    public HpcUserRole getUserRole(String username) throws HpcException
+    public HpcUserRole getUserRole(String nciUserId) throws HpcException
     {
+    	// Input validation.
+    	if(nciUserId == null) {	
+    	   throw new HpcException("Invalid NCI user ID", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
     	return dataManagementProxy.getUserRole(dataManagementAuthenticator.getAuthenticatedToken(), 
-    			                               username);
+    			                               nciUserId);
     }
 
     @Override
-    public HpcGroupResponse setGroup(HpcGroup hpcGroup, List<String> addUserIds, List<String> removeUserIds) throws HpcException
+    public void addGroup(String groupName) throws HpcException
     {
     	// Input validation.
-    	if(hpcGroup == null) {	
+    	if(groupName == null) {	
     	   throw new HpcException("Null group name", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
-       	
-    	return dataManagementProxy.addGroup(dataManagementAuthenticator.getAuthenticatedToken(), 
-    			                            hpcGroup, addUserIds, removeUserIds);
+    	
+    	dataManagementProxy.addGroup(dataManagementAuthenticator.getAuthenticatedToken(), groupName);
+    }
+    
+    @Override
+    public boolean groupExists(String groupName) throws HpcException
+    {
+    	// Input validation.
+    	if(groupName == null) {	
+    	   throw new HpcException("Null group name", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	return dataManagementProxy.groupExists(dataManagementAuthenticator.getAuthenticatedToken(), groupName);
+    }
+    
+    @Override
+    public void addGroupMember(String groupName, String userId) throws HpcException
+    {
+    	// Input validation.
+    	if(groupName == null || userId == null) {	
+    	   throw new HpcException("Null group name or user id", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	dataManagementProxy.addGroupMember(dataManagementAuthenticator.getAuthenticatedToken(), 
+    			                           groupName, userId);
+    }
+    
+    @Override
+    public void deleteGroupMember(String groupName, String userId) throws HpcException
+    {
+    	// Input validation.
+    	if(groupName == null || userId == null) {	
+    	   throw new HpcException("Null group name or user id", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	dataManagementProxy.deleteGroupMember(dataManagementAuthenticator.getAuthenticatedToken(), 
+    			                              groupName, userId);
+    }
+    
+    @Override
+    public List<String> getGroupMembers(String groupName) throws HpcException
+    {
+    	// Input validation.
+    	if(groupName == null) {	
+    	   throw new HpcException("Null group name", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	return dataManagementProxy.getGroupMembers(dataManagementAuthenticator.getAuthenticatedToken(), 
+    			                                   groupName);   	
     }
     
     @Override

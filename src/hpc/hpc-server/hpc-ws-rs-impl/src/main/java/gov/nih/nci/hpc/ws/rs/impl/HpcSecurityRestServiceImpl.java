@@ -12,8 +12,9 @@ package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
-import gov.nih.nci.hpc.dto.security.HpcGroupRequestDTO;
-import gov.nih.nci.hpc.dto.security.HpcGroupResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupMembersDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupMembersResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
 import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
@@ -136,18 +137,67 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 	}    
 
     @Override
-    public Response setGroup(HpcGroupRequestDTO groupRequest)
-    {
-    	HpcGroupResponseDTO groupResponse = null;
+	public Response registerGroup(String groupName,
+			                      HpcGroupMembersRequestDTO groupMembersRequest)
+	{
+    	HpcGroupMembersResponseDTO groupMembersResponse = null;
 		try {
-			 groupResponse = securityBusService.setGroup(groupRequest);
+			 groupMembersResponse = securityBusService.registerGroup(groupName, groupMembersRequest);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
 		}
 		
-		return okResponse(groupResponse, false);
+		return createdResponse(groupName, groupMembersResponse);
+	}
+	
+    @Override
+	public Response updateGroup(String groupName,
+			                    HpcGroupMembersRequestDTO groupMembersRequest)
+    {
+    	HpcGroupMembersResponseDTO groupMembersResponse = null;
+		try {
+			 groupMembersResponse = securityBusService.updateGroup(groupName, groupMembersRequest);
+			 
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+		return okResponse(groupMembersResponse, false);
+    }
+	
+    @Override
+    public Response getGroup(String groupName)
+    {
+    	HpcGroupMembersDTO groupMembers = null;
+		try {
+			 groupMembers = securityBusService.getGroup(groupName);
+			 
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+		return okResponse(groupMembers, true);
+    }
+    
+    @Override
+    public Response getGroups(String groupSearchCriteria)
+    {
+    	return null;
+    }
+    
+    @Override
+    public Response deleteGroup(String groupName)
+    {
+    	return null;
+    }
+/*
+    @Override
+    public Response setGroup(HpcGroupRequestDTO groupRequest)
+    {
+
     }    
+  */
     
     @Override
     public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistrationDTO)

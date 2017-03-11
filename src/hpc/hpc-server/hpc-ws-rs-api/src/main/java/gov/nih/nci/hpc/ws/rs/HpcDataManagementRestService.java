@@ -45,7 +45,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 public interface HpcDataManagementRestService
 {
     /**
-     * PUT Collection registration request.
+     * Collection registration.
      *
      * @param path The collection path.
      * @param collectionRegistration A DTO contains the list of metadata entries to attach to the collection.
@@ -59,7 +59,7 @@ public interface HpcDataManagementRestService
 			                           HpcCollectionRegistrationDTO collectionRegistration);
 	
     /**
-     * GET Collection.
+     * Get a collection.
      *
      * @param path The collection path.
      * @param list An indicator to list sub-collections and data-objects.
@@ -72,7 +72,7 @@ public interface HpcDataManagementRestService
 			                      @QueryParam("list") Boolean list);
 	
     /**
-     * POST Download Collection.
+     * Download a collection.
      *
      * @param path The collection path.
      * @param downloadRequest The download request.
@@ -89,7 +89,7 @@ public interface HpcDataManagementRestService
 			                           @Context MessageContext mc);
 	
     /**
-     * POST Set collection permissions.
+     * Set a collection's permissions.
      *
      * @param path The collection path.
      * @param collectionPermissionsRequest Request to set collection permissions.
@@ -103,7 +103,7 @@ public interface HpcDataManagementRestService
 			                                 HpcEntityPermissionsDTO collectionPermissionsRequest);
 	
     /**
-     * GET collection permissions.
+     * Get a collection's permissions.
      *
      * @param path The collection path.
      * @return The REST service response.
@@ -114,7 +114,7 @@ public interface HpcDataManagementRestService
 	public Response getCollectionPermissions(@PathParam("path") String path);
 	
     /**
-     * PUT Data object registration request.
+     * Data object registration.
      *
      * @param path The data object path.
      * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
@@ -133,7 +133,7 @@ public interface HpcDataManagementRestService
 			        InputStream dataObjectInputStream);
 
     /**
-     * GET Data Object.
+     * Get a data object.
      *
      * @param path The data object path.
      * @return The REST service response.
@@ -144,7 +144,7 @@ public interface HpcDataManagementRestService
 	public Response getDataObject(@PathParam("path") String path);
 	
     /**
-     * POST Download Data Object.
+     * Download a data object.
      *
      * @param path The data object path.
      * @param downloadRequest The download request.
@@ -161,7 +161,7 @@ public interface HpcDataManagementRestService
 			                           @Context MessageContext mc);
 
     /**
-     * POST Set Data Object permissions.
+     * Set a data object's permissions.
      *
      * @param path The data object path.
      * @param dataObjectPermissionsRequest Request to set data object permissions.
@@ -175,7 +175,7 @@ public interface HpcDataManagementRestService
 			                                 HpcEntityPermissionsDTO dataObjectPermissionsRequest);
 	
     /**
-     * GET Data Object permissions.
+     * Get a data object's permissions.
      *
      * @param path The data object path.
      * @return The REST service response.
@@ -186,7 +186,7 @@ public interface HpcDataManagementRestService
 	public Response getDataObjectPermissions(@PathParam("path") String path);
 	
     /**
-     * GET Data Management Model (Metadata validation rules and hierarchy definition).
+     * Get the data management model (metadata validation rules and hierarchy definition).
      *
      * @param doc The DOC to get the model for.
      * @return The REST service response.

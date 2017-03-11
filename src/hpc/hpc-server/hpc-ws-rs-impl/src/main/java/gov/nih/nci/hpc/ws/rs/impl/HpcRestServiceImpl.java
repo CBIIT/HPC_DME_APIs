@@ -73,6 +73,25 @@ public abstract class HpcRestServiceImpl
     }
     
     /**
+     * Build a created (HTTP 201) REST response instance w/entity attached.
+     *
+     * @param id the entity id of the created resource.
+     * @param entity The entity to attach to the response.
+     * @return The REST response object.
+     */
+    protected Response createdResponse(String id, Object entity)
+    {
+    	if(entity == null) {
+    	   return createdResponse(id);
+    	}
+    	
+		UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
+        URI uri = uriBuilder.path(id != null ? id : "").build();
+               
+		return Response.created(uri).entity(entity).build();
+    }
+    
+    /**
      * Build an 'ok' (HTTP 200) REST response instance.
      *
      * @param entity The entity to attach to the response.

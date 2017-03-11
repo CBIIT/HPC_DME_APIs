@@ -10,12 +10,13 @@
 
 package gov.nih.nci.hpc.ws.rs;
 
-import gov.nih.nci.hpc.dto.security.HpcGroupRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
 import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -39,7 +40,7 @@ import javax.ws.rs.core.Response;
 public interface HpcSecurityRestService
 {
     /**
-     * Register user.
+     * User registration.
      *
      * @param userRegistrationDTO The user DTO to register.
      * @return The REST service response.
@@ -50,7 +51,7 @@ public interface HpcSecurityRestService
     public Response registerUser(HpcUserDTO userRegistrationDTO);
 
     /**
-     * Update an existing user.
+     * Update a user.
      *
      * @param nciUserId The user ID to update.
      * @param updateUserRequestDTO The update request DTO.
@@ -63,7 +64,7 @@ public interface HpcSecurityRestService
     		                   HpcUpdateUserRequestDTO updateUserRequestDTO);
 
     /**
-     * Get user by NCI User ID.
+     * Get a user by NCI user id.
      *
      * @param nciUserId The registered user ID.
      * @return gov.nih.nci.hpc.dto.security.HpcUserDTO entity.
@@ -101,16 +102,65 @@ public interface HpcSecurityRestService
     public Response authenticate();
 
     /**
-     * POST Set (create or update) a group and assign/remove users.
+     * Group registration.
      *
-     * @param groupRequest The request DTO to create/update a group.
+     * @param groupName The group name.
+     * @param groupMembersRequest (Optional) request to add users to the registered group.
+     * @return The REST service response.
+     */
+	@PUT
+	@Path("/group/{groupName}")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response registerGroup(@PathParam("groupName") String groupName,
+			                     HpcGroupMembersRequestDTO groupMembersRequest);
+	
+    /**
+     * Group update.
+     *
+     * @param groupName The group name.
+     * @param groupMembersRequest Request to add/remove users to/from a group.
      * @return The REST service response.
      */
 	@POST
-	@Path("/group")
+	@Path("/group/{groupName}")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response setGroup(HpcGroupRequestDTO groupRequest);
+	public Response updateGroup(@PathParam("groupName") String groupName,
+			                    HpcGroupMembersRequestDTO groupMembersRequest);
+	
+    /**
+     * Get a group by name.
+     *
+     * @param groupName The group name
+     * @return The REST service response.
+     */
+    @GET
+    @Path("/group/{groupName}")
+    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    public Response getGroup(@PathParam("groupName") String groupName);
+    
+    /**
+     * Get groups by search criteria.
+     *
+     * @param groupSearchCriteria The group search criteria (In the form of SQL 'LIKE').
+     * @return The REST service response.
+     */
+    @GET
+    @Path("/group")
+    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    public Response getGroups(@QueryParam("groupSearchCriteria") String groupSearchCriteria);
+    
+    /**
+     * Delete a group.
+     *
+     * @param groupName The group name
+     * @return The REST service response.
+     */
+    @DELETE
+    @Path("/group/{groupName}")
+    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    public Response deleteGroup(@PathParam("groupName") String groupName);
 
     /**
      * Register system account.

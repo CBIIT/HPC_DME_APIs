@@ -167,8 +167,12 @@
       			<entry key="updateUser" value="${hpc.ws.rs.auth.security.update-user}"/>
         		<entry key="getUser" value="${hpc.ws.rs.auth.security.get-user}"/>
         		<entry key="getUsers" value="${hpc.ws.rs.auth.security.get-users}"/>
-        		<entry key="setGroup" value="${hpc.ws.rs.auth.security.set-group}"/>
         		<entry key="authenticateUser" value="${hpc.ws.rs.auth.security.authenticate-user}"/>
+        		<entry key="registerGroup" value="${hpc.ws.rs.auth.security.register-group}"/>
+        		<entry key="updateGroup" value="${hpc.ws.rs.auth.security.update-group}"/>
+        		<entry key="getGroup" value="${hpc.ws.rs.auth.security.get-group}"/>
+        		<entry key="getGroups" value="${hpc.ws.rs.auth.security.get-groups}"/>
+        		<entry key="deleteGroups" value="${hpc.ws.rs.auth.security.delete-groups}"/>
         		<entry key="registerSystemAccount" value="${hpc.ws.rs.auth.security.register-system-account}"/>
         		
         		<!--  Data Management Service Authorizations -->

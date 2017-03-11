@@ -17,8 +17,6 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
-import gov.nih.nci.hpc.domain.model.HpcGroup;
-import gov.nih.nci.hpc.domain.user.HpcGroupResponse;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -349,23 +347,63 @@ public interface HpcDataManagementProxy
      * @return A list of group names.
      * @throws HpcException on data management system failure.
      */
+    /*
     public List<String> getGroups(Object authenticatedToken, String groupNameLikeSearchCriteria) 
-                                 throws HpcException;
+                                 throws HpcException;*/
     
     /**
-     * Create User group and assign/remove users to group.
+     * Add a group.
      * 
      * @param authenticatedToken An authenticated token.
-     * @param hpcGroup The group
-     * @param addUserIds List of userIds to add to the group.
-     * @param removeUserIds List of userIds to remove from the group.
-     * @return Group response.
+     * @param groupName The group name.
      * @throws HpcException on data management system failure.
      */
-    public HpcGroupResponse addGroup(Object authenticatedToken,
-                                     HpcGroup hpcGroup, List<String> addUserIds, 
-                                     List<String> removeUserIds) 
-                                    throws HpcException;
+    public void addGroup(Object authenticatedToken, String groupName) throws HpcException;
+    
+    /**
+     * Check if a group exists
+     * 
+     * @param authenticatedToken An authenticated token.
+     * @param groupName The group name.
+     * @return True if the group exists. and false otherwise
+     * @throws HpcException on data management system failure.
+     */
+    public boolean groupExists(Object authenticatedToken, String groupName) throws HpcException;
+    
+    /**
+     * Add a member to a group.
+     * 
+     * @param authenticatedToken An authenticated token.
+     * @param groupName The group name.
+     * @param userId The member's user id to add to the group.
+     * @throws HpcException on service failure.
+     */
+    public void addGroupMember(Object authenticatedToken, String groupName, 
+    		                   String userId) 
+    		                  throws HpcException;
+    
+    /**
+     * Delete a member from a group.
+     * 
+     * @param authenticatedToken An authenticated token.
+     * @param groupName The group name.
+     * @param userId The member's user id to delete from the group.
+     * @throws HpcException on service failure.
+     */
+    public void deleteGroupMember(Object authenticatedToken, String groupName, 
+    		                      String userId) 
+    		                     throws HpcException;
+    
+    /**
+     * Get group members.
+     * 
+     * @param authenticatedToken An authenticated token.
+     * @param groupName The group name.
+     * @param A list of the group members user id.
+     * @throws HpcException on service failure.
+     */
+    public List<String> getGroupMembers(Object authenticatedToken, String groupName) 
+    		                           throws HpcException;
     
     /**
      * Get absolute path (append the iRODs base path, to the user provided path).
