@@ -37,7 +37,9 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -561,8 +563,23 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	
     	HpcGroupMembersResponseDTO groupMembersResponses = new HpcGroupMembersResponseDTO();
     	
+    	// Remove duplicates from the add/delete user-ids lists. 
+    	Set<String> addUserIds = new HashSet<>();
+    	addUserIds.addAll(groupMembersRequest.getAddUserIds());
+    	Set<String> deleteUserIds = new HashSet<>();
+    	addUserIds.addAll(groupMembersRequest.getDeleteUserIds());
+    	
+    	// Validate a user-id is not in both add and delete lists.
+    	Set<String> userIds = new HashSet<>();
+    	userIds.addAll(addUserIds);
+    	addUserIds.retainAll(deleteUserIds);
+    	if(!userIds.isEmpty()) {
+    	   throw new HpcException("User Id(s) found in both add and delete lists: " + userIds,
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
     	// Add group members.
-    	for(String userId : groupMembersRequest.getAddUserIds()) {
+    	for(String userId : addUserIds) {
     		HpcGroupMemberResponse addGroupMemberResponse = new HpcGroupMemberResponse();
     		addGroupMemberResponse.setUserId(userId);
     		addGroupMemberResponse.setResult(true);
@@ -580,7 +597,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	}
     	
     	// Delete group members.
-    	for(String userId : groupMembersRequest.getDeleteUserIds()) {
+    	for(String userId : deleteUserIds) {
     		HpcGroupMemberResponse deleteGroupMemberResponse = new HpcGroupMemberResponse();
     		deleteGroupMemberResponse.setUserId(userId);
     		deleteGroupMemberResponse.setResult(true);

@@ -148,7 +148,7 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return createdResponse(groupName, groupMembersResponse);
+		return createdResponse(null, groupMembersResponse);
 	}
 	
     @Override
