@@ -12,9 +12,8 @@ package gov.nih.nci.hpc.integration;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
-import gov.nih.nci.hpc.domain.datamanagement.HpcEntityPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
@@ -297,49 +296,49 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param path The collection's path.
-     * @return A list of users and their permission on the collection.
+     * @return A list of subjects (users/groups) and their permission on the collection.
      * @throws HpcException on data management system failure.
      */
-    public List<HpcUserPermission> getCollectionPermissions(Object authenticatedToken,
-    		                                                String path) 
-    		                                               throws HpcException; 
+    public List<HpcSubjectPermission> getCollectionPermissions(Object authenticatedToken,
+    		                                                   String path) 
+    		                                                  throws HpcException; 
     
     /**
      * Set Collection permission.
      *
      * @param authenticatedToken An authenticated token.
      * @param path The collection's path.
-     * @param permissionRequest The user permission request.
+     * @param permissionRequest The permission request for a subject (user or group).
      * @throws HpcException on data management system failure.
      */
     public void setCollectionPermission(Object authenticatedToken,
     		                            String path,
-    		                            HpcEntityPermission permissionRequest) 
+    		                            HpcSubjectPermission permissionRequest) 
     		                           throws HpcException;   
     
     /**
      * Get Data Object permissions.
      *
      * @param authenticatedToken An authenticated token.
-     * @param path Tdata object's path.
-     * @return A list of users and their permission on the data object.
+     * @param path data object's path.
+     * @return A list of subjects (users/groups) and their permission on the data object.
      * @throws HpcException on data management system failure.
      */
-    public List<HpcUserPermission> getDataObjectPermissions(Object authenticatedToken,
-    		                                                String path) 
-    		                                               throws HpcException; 
+    public List<HpcSubjectPermission> getDataObjectPermissions(Object authenticatedToken,
+    		                                                   String path) 
+    		                                                  throws HpcException; 
     
     /**
      * Set Data Object permission.
      *
      * @param authenticatedToken An authenticated token.
      * @param path The data object's path.
-     * @param permissionRequest The user permission request.
+     * @param permissionRequest The subject (user or group) permission request.
      * @throws HpcException on data management system failure.
      */
     public void setDataObjectPermission(Object authenticatedToken,
     		                            String path,
-    		                            HpcEntityPermission permissionRequest) 
+    		                            HpcSubjectPermission permissionRequest) 
     		                           throws HpcException; 
     
     /**
