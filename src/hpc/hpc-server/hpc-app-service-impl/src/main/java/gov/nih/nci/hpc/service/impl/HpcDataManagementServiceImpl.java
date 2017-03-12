@@ -400,9 +400,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     /**
      * Get DOC base path
      * 
-     * @param docName DOC name
-     * @return base path
-     * @throws HpcExcpetion on service failure
+     * @param docName DOC name.
+     * @return The base path.
+     * @throws HpcException on service failure.
      */
     public String getDocBasePath(String docName) throws HpcException
     {

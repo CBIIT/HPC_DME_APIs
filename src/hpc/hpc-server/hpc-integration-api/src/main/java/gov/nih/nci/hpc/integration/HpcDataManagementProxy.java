@@ -396,7 +396,7 @@ public interface HpcDataManagementProxy
      * 
      * @param authenticatedToken An authenticated token.
      * @param groupName The group name.
-     * @param A list of the group members user id.
+     * @return A list of the group members user id.
      * @throws HpcException on service failure.
      */
     public List<String> getGroupMembers(Object authenticatedToken, String groupName) 

@@ -1128,8 +1128,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     /**
      * Convert a list of iRODS users to list of HPC user ids.
      *
-     * @param irodsUserGroups The iRODS user groups.
-     * @return A list of HPC user group names.
+     * @param irodsUsers The iRODS users.
+     * @return A list of HPC user ids.
      */
     private List<String> toHpcUserIds(List<User> irodsUsers)
     {
@@ -1148,7 +1148,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     /**
      * Convert HPC permission string to irods permission enum.
      *
-     * @param irodsUserGroups The iRODS user groups.
+     * @param permission The HPC permission string.
      * @return The IRODS file permission enum.
      * @throws HpcException if failed to map the input string to an enum value.
      */

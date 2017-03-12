@@ -115,7 +115,7 @@ public interface HpcDataManagementSecurityService
      * Get group members.
      * 
      * @param groupName The group name.
-     * @param A list of the group members user id.
+     * @return A list of the group members user id.
      * @throws HpcException on service failure.
      */
     public List<String> getGroupMembers(String groupName) throws HpcException;

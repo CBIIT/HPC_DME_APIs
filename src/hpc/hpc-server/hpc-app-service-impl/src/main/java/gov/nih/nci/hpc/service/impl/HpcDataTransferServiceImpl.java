@@ -451,6 +451,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     /**
      * Create an empty file placed in the download folder.
      * 
+     * @return The created file.
      * @throws HpcException on service failure.
      */
     private File createDownloadFile() throws HpcException

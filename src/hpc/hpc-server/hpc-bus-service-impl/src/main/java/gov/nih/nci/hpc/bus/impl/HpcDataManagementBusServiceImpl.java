@@ -564,7 +564,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     /** 
      * Validate permissions request.
      * 
-     * @param entityPermissionRequests The requests to validate.
+     * @param entityPermissionsRequest The request to validate.
      * @throws HpcException if found an invalid request in the list.
      */
 	private void validatePermissionsRequest(HpcEntityPermissionsDTO entityPermissionsRequest)
@@ -653,7 +653,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * Download a collection tree.
      * 
      * @param collection The collection to download.
-     * @param destination The download destination location.
+     * @param destinationLocation The download destination location.
      * @return A list of files.
      * @throws HpcException on service failure.
      */

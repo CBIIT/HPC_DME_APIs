@@ -150,8 +150,7 @@ public interface HpcSecurityBusService
     /**
      * Delete a group.
      *
-     * @param groupName The group name
-     * @return The REST service response.
+     * @param groupName The group name.
      */
     public void deleteGroup(String groupName) throws HpcException;
 	
