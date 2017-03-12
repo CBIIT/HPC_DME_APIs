@@ -90,14 +90,14 @@ public class HpcBusServiceAspect
      * Advice that logs business service exception. 
      * 
      * @param joinPoint The join point.
-     * @return The advised object return.
+     * @param exception The exception to log.
      * @throws Throwable The advised object exception.
      */
-	@AfterThrowing (pointcut = "allBusServices()", throwing = "e")
-    public void logException(JoinPoint joinPoint, HpcException e) throws Throwable  
+	@AfterThrowing (pointcut = "allBusServices()", throwing = "exception")
+    public void logException(JoinPoint joinPoint, HpcException exception) throws Throwable  
 	{
 		logger.error(joinPoint.getSignature().toShortString() + 
-				     " business service error:  " + e.getMessage(), e); 
+				     " business service error:  " + exception.getMessage(), exception); 
 	}
 }
 

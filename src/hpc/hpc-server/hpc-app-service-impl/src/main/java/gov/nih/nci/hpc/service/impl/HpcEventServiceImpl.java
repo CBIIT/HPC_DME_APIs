@@ -433,7 +433,6 @@ public class HpcEventServiceImpl implements HpcEventService
      * @param updatePayloadValue The value to set on COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE event payload.
      * @param updateDescriptionPayloadValue The value to set on COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE event payload.
      * @return A list of payload entries.
-     * @throws HpcException on service failure.
      */
     private List<HpcEventPayloadEntry> toCollectionUpdatedPayloadEntries(String path, String updatePayloadValue, 
                                                                          String updateDescriptionPayloadValue)

@@ -68,6 +68,7 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
      * @param password The password to access the LDAP server.
      * @param base The LDAP search base.
      * @param userIdFilter The user ID filter.
+     * @param userDomainName The user domain name.
      */
 	private HpcLdapAuthenticationProxyImpl(String url, String username, String password,
 			                               String base, String userIdFilter, String userDomainName) 

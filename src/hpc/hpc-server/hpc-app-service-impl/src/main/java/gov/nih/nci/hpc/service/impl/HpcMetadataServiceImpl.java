@@ -649,7 +649,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
      * Validate that collection type is not updated
      *
      * @param existingMetadataEntries Existing collection metadata entries.
-     * @param existingMetadataEntries Updated collection metadata entries.
+     * @param metadataEntries Updated collection metadata entries.
      * @throws HpcException If the user tries to update the collection type metadata.
      */
     private void validateCollectionTypeUpdate(List<HpcMetadataEntry> existingMetadataEntries,
