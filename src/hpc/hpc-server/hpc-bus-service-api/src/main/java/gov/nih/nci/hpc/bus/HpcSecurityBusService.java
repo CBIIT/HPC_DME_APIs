@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersResponseDTO;
@@ -140,9 +141,10 @@ public interface HpcSecurityBusService
      * Get groups by search criteria.
      *
      * @param groupSearchCriteria The group search criteria (In the form of SQL 'LIKE').
-     * @return The REST service response.
+     * @return A list of groups and their members.
+     * @throws HpcException on service failure.
      */
-    //public Response getGroups(@QueryParam("groupSearchCriteria") String groupSearchCriteria);
+    public HpcGroupListDTO getGroups(String groupSearchCriteria) throws HpcException;
     
     /**
      * Delete a group.

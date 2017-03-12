@@ -58,6 +58,7 @@ import org.irods.jargon.core.query.AVUQueryOperatorEnum;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
+import org.irods.jargon.core.query.RodsGenQueryEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -699,110 +700,21 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	                                   HpcErrorType.DATA_MANAGEMENT_ERROR, e);
     	}
 	}
-    /*
-    @Override
-    public List<String> getGroups(Object authenticatedToken, String groupNameLikeSearchCriteria) 
+
+	@Override
+    public List<String> getGroups(Object authenticatedToken, String groupSearchCriteria) 
     		                     throws HpcException
     {
     	try {
     		 String where = RodsGenQueryEnum.COL_USER_GROUP_NAME.toString() + " LIKE " + 
-    	                    groupNameLikeSearchCriteria;
-    		 return toHpcUserGroups(irodsConnection.getUserGroupAO(authenticatedToken).findWhere(where));
+    				        groupSearchCriteria;
+    		 return toHpcGroupNames(irodsConnection.getUserGroupAO(authenticatedToken).findWhere(where));
     		 
     	} catch(Exception e) {
                 throw new HpcException("Failed to get user groups: " + e.getMessage(),
 		                               HpcErrorType.DATA_MANAGEMENT_ERROR, e);
     	}
-    }*/
-
-    /*
-	@Override
-	public HpcGroupResponse addGroup(Object authenticatedToken, HpcGroup hpcGroup, List<String> addUserIds,
-			List<String> removeUserIds) throws HpcException {
-		// Instantiate an iRODS user domain object.
-		HpcGroupResponse response = new HpcGroupResponse();
-		List<HpcGroupUserResponse> userresponses = new ArrayList<HpcGroupUserResponse>();
-		UserGroup irodsUserGroup = new UserGroup();
-		irodsUserGroup.setUserGroupName(hpcGroup.getGroupName());
-		irodsUserGroup.setZone(irodsConnection.getZone());
-		boolean updated = false;
-		try {
-			UserGroupAO userGroupAO = irodsConnection.getUserGroupAO(authenticatedToken);
-			UserGroup group = userGroupAO.findByName(hpcGroup.getGroupName());
-			if (group == null)
-			{
-				userGroupAO.addUserGroup(irodsUserGroup);
-				updated = true;
-				response.setMessage("Group is created");
-			}
-			if (addUserIds != null && addUserIds.size() > 0) {
-				for (String userId : addUserIds) {
-					HpcGroupUserResponse userResponse = new HpcGroupUserResponse();
-					userResponse.setResult(true);
-					userResponse.setUserId(userId);
-
-					try {
-						userGroupAO.addUserToGroup(hpcGroup.getGroupName(), userId, irodsConnection.getZone());
-						updated= true;
-						userResponse.setMessage("UserId: " + userId + "is added to group: " + hpcGroup.getGroupName());
-					} catch (InvalidGroupException e) {
-						userResponse.setResult(false);
-						userResponse.setMessage("Invalid group: " + hpcGroup.getGroupName() + " | UserId: " + userId
-								+ "is not added to group: " + hpcGroup.getGroupName() + " due to: " + e.getMessage());
-					} catch (InvalidUserException e) {
-						userResponse.setResult(false);
-						userResponse.setMessage("Invalid user: " + userId + " | UserId: " + userId
-								+ "is not added to group: " + hpcGroup.getGroupName() + " due to: " + e.getMessage());
-					} catch (JargonException e) {
-						userResponse.setResult(false);
-						userResponse.setMessage("Internal error adding User: " + userId + " | UserId: " + userId
-								+ "is not added to group: " + hpcGroup.getGroupName() + " due to: " + e.getMessage());
-					}
-					userresponses.add(userResponse);
-				}
-			}
-			if (removeUserIds != null && removeUserIds.size() > 0) {
-				for (String userId : removeUserIds) {
-					HpcGroupUserResponse userResponse = new HpcGroupUserResponse();
-					userResponse.setResult(true);
-					userResponse.setUserId(userId);
-					try {
-						userGroupAO.removeUserFromGroup(hpcGroup.getGroupName(), userId, irodsConnection.getZone());
-						updated = true;
-						userResponse
-								.setMessage("UserId: " + userId + "is removed from group: " + hpcGroup.getGroupName());
-					} catch (InvalidGroupException e) {
-						userResponse.setResult(false);
-						userResponse.setMessage("Invalid group: " + hpcGroup.getGroupName() + " | UserId: " + userId
-								+ "is not removed from the group: " + hpcGroup.getGroupName() + " due to: " + e.getMessage());
-					} catch (InvalidUserException e) {
-						userResponse.setResult(false);
-						userResponse.setMessage("Invalid user: " + userId + " | UserId: " + userId
-								+ "is not removed from the group: " + hpcGroup.getGroupName() + " due to: " + e.getMessage());
-					} catch (JargonException e) {
-						userResponse.setResult(false);
-						userResponse.setMessage("Internal error adding User: " + userId + " | UserId: " + userId
-								+ "is not removed from the group: " + hpcGroup.getGroupName() + " due to: " + e.getMessage());
-					}
-					userresponses.add(userResponse);
-				}
-			}
-			if(updated)
-				response.setMessage("Group is updated");
-
-			response.setResult(updated);
-			response.getGroupuser().addAll(userresponses);
-
-		} catch (DuplicateDataException ex) {
-			throw new HpcException("iRODS group already exists: " + hpcGroup.getGroupName(),
-					HpcErrorType.DATA_MANAGEMENT_ERROR, ex);
-
-		} catch (Exception e) {
-			throw new HpcException("Failed add iRODS user group: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR,
-					e);
-		}
-		return response;
-	} */
+    }
 	
 	@Override
 	public String getAbsolutePath(String path)

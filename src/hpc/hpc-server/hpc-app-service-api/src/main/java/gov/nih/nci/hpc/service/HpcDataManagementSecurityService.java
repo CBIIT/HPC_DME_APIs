@@ -10,12 +10,12 @@
 
 package gov.nih.nci.hpc.service;
 
-import java.util.List;
-
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.util.List;
 
 /**
  * <p>
@@ -111,6 +111,15 @@ public interface HpcDataManagementSecurityService
      * @throws HpcException on service failure.
      */
     public List<String> getGroupMembers(String groupName) throws HpcException;
+    
+    /**
+     * Get groups by search criteria.
+     *
+     * @param groupSearchCriteria The group search criteria (In the form of SQL 'LIKE').
+     * @return A list of groups names matching the criteria.
+     * @throws HpcException on service failure.
+     */
+    public List<String> getGroups(String groupSearchCriteria) throws HpcException;
     
     /**
      * Create HPC data management account from proxy account object. 
