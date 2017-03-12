@@ -566,7 +566,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                        HpcErrorType.INVALID_REQUEST_INPUT, ige);
 			    
 		} catch(InvalidUserException iue) {
-			    throw new HpcException("Failed to set collection permission. Invalid user: " + 
+			    throw new HpcException("Failed to set collection permission. " +
+			    		               (permissionRequest.getSubjectType().equals(HpcSubjectType.USER) ? 
+			    		                "Invalid user: " : "Invalid group") + 
 		                               permissionRequest.getSubject(),
                                        HpcErrorType.INVALID_REQUEST_INPUT, iue);
 			    
