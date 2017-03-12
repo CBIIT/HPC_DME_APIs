@@ -706,6 +706,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                     throws HpcException
     {
     	try {
+    		 logger.error("ERAN: " + RodsGenQueryEnum.COL_USER_GROUP_NAME.getName());
     		 String where = "USER_GROUP_NAME LIKE '" + groupSearchCriteria + "'";
     		 return toHpcGroupNames(irodsConnection.getUserGroupAO(authenticatedToken).findWhere(where));
     		 
