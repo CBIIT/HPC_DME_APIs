@@ -198,7 +198,14 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response deleteGroup(String groupName)
     {
-    	return null;
+		try {
+			 securityBusService.deleteGroup(groupName);
+			 
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+		return okResponse(null, false);
     }
     
     @Override

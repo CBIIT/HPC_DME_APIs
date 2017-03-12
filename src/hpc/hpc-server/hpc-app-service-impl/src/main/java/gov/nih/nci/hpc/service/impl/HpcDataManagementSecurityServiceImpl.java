@@ -136,6 +136,18 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     }
     
     @Override
+    public void deleteGroup(String groupName) throws HpcException
+    {
+    	// Input validation.
+    	if(groupName == null) {	
+    	   throw new HpcException("Null group name", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	dataManagementProxy.deleteGroup(dataManagementAuthenticator.getAuthenticatedToken(), groupName);
+    }
+    
+    @Override
     public boolean groupExists(String groupName) throws HpcException
     {
     	// Input validation.
