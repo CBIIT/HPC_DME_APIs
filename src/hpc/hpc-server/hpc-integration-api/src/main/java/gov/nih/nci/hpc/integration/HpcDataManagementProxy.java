@@ -340,18 +340,6 @@ public interface HpcDataManagementProxy
     		                           throws HpcException; 
     
     /**
-     * Get user groups by search criteria.
-     * 
-     * @param authenticatedToken An authenticated token.
-     * @param groupNameLikeSearchCriteria Groups that their name is (SQL) like this will be returned.
-     * @return A list of group names.
-     * @throws HpcException on data management system failure.
-     */
-    /*
-    public List<String> getGroups(Object authenticatedToken, String groupNameLikeSearchCriteria) 
-                                 throws HpcException;*/
-    
-    /**
      * Add a group.
      * 
      * @param authenticatedToken An authenticated token.
@@ -404,6 +392,17 @@ public interface HpcDataManagementProxy
      */
     public List<String> getGroupMembers(Object authenticatedToken, String groupName) 
     		                           throws HpcException;
+    
+    /**
+     * Get user groups by search criteria.
+     * 
+     * @param authenticatedToken An authenticated token.
+     * @param groupSearchCriteria The group search criteria (In the form of SQL 'LIKE').
+     * @return A list of group names.
+     * @throws HpcException on data management system failure.
+     */
+    public List<String> getGroups(Object authenticatedToken, String groupSearchCriteria) 
+                                 throws HpcException;
     
     /**
      * Get absolute path (append the iRODs base path, to the user provided path).
