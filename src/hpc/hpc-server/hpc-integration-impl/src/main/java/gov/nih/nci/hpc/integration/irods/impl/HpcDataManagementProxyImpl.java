@@ -610,11 +610,23 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		     	            irodsConnection.getZone(), getAbsolutePath(path), 
     		     	            permissionRequest.getSubject(), permission);
     	     
-    	} catch(Exception e) {
-                throw new HpcException("Failed to set collection permission: " + 
+		} catch(InvalidGroupException ige) {
+		    throw new HpcException("Failed to set data object permission. Invalid group: " + 
+		    		               permissionRequest.getSubject(),
+                                   HpcErrorType.INVALID_REQUEST_INPUT, ige);
+		    
+		} catch(InvalidUserException iue) {
+		        throw new HpcException("Failed to set data object permission. " +
+		       		                   (permissionRequest.getSubjectType().equals(HpcSubjectType.USER) ? 
+		    		                    "Invalid user: " : "Invalid group") + 
+	                                   permissionRequest.getSubject(),
+                                       HpcErrorType.INVALID_REQUEST_INPUT, iue);
+		    
+		} catch(Exception e) {
+                throw new HpcException("Failed to set data object permission: " + 
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-    	} 
+		} 
     }
     
 	@Override
