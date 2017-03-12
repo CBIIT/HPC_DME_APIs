@@ -645,6 +645,18 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	}
 	
 	@Override
+	public void deleteGroup(Object authenticatedToken, String groupName) throws HpcException 
+	{
+		try {
+			 irodsConnection.getUserGroupAO(authenticatedToken).removeUserGroup(groupName);
+
+    	} catch(Exception e) {
+                throw new HpcException("Failed to delete a group: " + e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+    	}
+	}
+	
+	@Override
 	public boolean groupExists(Object authenticatedToken, String groupName) throws HpcException
 	{
 		try {
