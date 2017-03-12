@@ -453,6 +453,20 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	return groups;		
 	}
 	
+	@Override
+	public void deleteGroup(String groupName) throws HpcException
+	{
+		// Input validation.
+		if(groupName == null) {
+		   throw new HpcException("Null group name", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+    	// Delete the group
+    	if(!dataManagementSecurityService.groupExists(groupName)) {
+    	   dataManagementSecurityService.deleteGroup(groupName);
+    	}
+	}
+	
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
