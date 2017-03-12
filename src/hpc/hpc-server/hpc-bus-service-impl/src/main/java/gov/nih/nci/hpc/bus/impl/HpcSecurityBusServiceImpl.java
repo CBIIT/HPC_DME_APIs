@@ -22,6 +22,8 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroup;
+import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMemberResponse;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
@@ -421,6 +423,38 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	}
     	
     	return groupMembers;
+	}
+	
+	@Override
+	public HpcGroupListDTO getGroups(String groupSearchCriteria) throws HpcException
+	{
+		// Input validation.
+		if(groupSearchCriteria == null) {
+		   throw new HpcException("Null group search criteria", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		// Search for groups.
+    	List<String> groupNames = dataManagementSecurityService.getGroups(groupSearchCriteria);
+    	if(groupNames == null || groupNames.isEmpty()) {
+    	   return null;
+    	}
+    	
+    	// Construct the DTO to return.
+    	HpcGroupListDTO groups = new HpcGroupListDTO();
+    	for(String groupName : groupNames) {
+    		HpcGroup group = new HpcGroup();
+    		group.setGroupName(groupName);
+    		
+    		// Get members of this groups. 
+    		List<String> userIds = dataManagementSecurityService.getGroupMembers(groupName);
+        	if(userIds != null) {
+        	   group.getUserIds().addAll(userIds);
+        	}
+        	
+    		groups.getGroups().add(group);
+    	}
+    	
+    	return groups;		
 	}
 	
     //---------------------------------------------------------------------//
