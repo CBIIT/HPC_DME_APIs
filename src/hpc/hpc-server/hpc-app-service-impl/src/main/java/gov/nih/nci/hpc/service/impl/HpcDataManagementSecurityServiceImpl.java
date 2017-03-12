@@ -187,6 +187,19 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     }
     
     @Override
+    public List<String> getGroups(String groupSearchCriteria) throws HpcException
+    {
+    	// Input validation.
+    	if(groupSearchCriteria == null) {	
+    	   throw new HpcException("Null group search criteria", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	return dataManagementProxy.getGroups(dataManagementAuthenticator.getAuthenticatedToken(), 
+    			                             groupSearchCriteria);      	
+    }
+    
+    @Override
     public HpcDataManagementAccount getHpcDataManagementAccount(Object irodsAccount) throws HpcException
     {
    		return dataManagementProxy.getHpcDataManagementAccount(irodsAccount);

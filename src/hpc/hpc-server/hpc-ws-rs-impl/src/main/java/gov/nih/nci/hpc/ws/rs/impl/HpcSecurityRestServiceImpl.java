@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersResponseDTO;
@@ -183,7 +184,15 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getGroups(String groupSearchCriteria)
     {
-    	return null;
+    	HpcGroupListDTO groups = null;
+		try {
+			 groups = securityBusService.getGroups(groupSearchCriteria);
+			 
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+		return okResponse(groups, true);
     }
     
     @Override
@@ -191,13 +200,6 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     {
     	return null;
     }
-/*
-    @Override
-    public Response setGroup(HpcGroupRequestDTO groupRequest)
-    {
-
-    }    
-  */
     
     @Override
     public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistrationDTO)
