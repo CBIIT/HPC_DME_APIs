@@ -153,7 +153,7 @@ public interface HpcSecurityBusService
      * @param groupName The group name
      * @return The REST service response.
      */
-    //public Response deleteGroup(@PathParam("groupName") String groupName);
+    public void deleteGroup(String groupName) throws HpcException;
 	
     /**
      * Register a System Account.

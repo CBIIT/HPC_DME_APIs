@@ -349,6 +349,15 @@ public interface HpcDataManagementProxy
     public void addGroup(Object authenticatedToken, String groupName) throws HpcException;
     
     /**
+     * Delete a group.
+     * 
+     * @param authenticatedToken An authenticated token.
+     * @param groupName The group name.
+     * @throws HpcException on data management system failure.
+     */
+    public void deleteGroup(Object authenticatedToken, String groupName) throws HpcException;  
+    
+    /**
      * Check if a group exists
      * 
      * @param authenticatedToken An authenticated token.
