@@ -143,7 +143,8 @@ public interface HpcSecurityRestService
     /**
      * Get groups by search criteria.
      *
-     * @param groupSearchCriteria The group search criteria (In the form of SQL 'LIKE').
+     * @param groupSearchCriteria (Optional) The group search criteria (In the form of SQL 'LIKE').
+     *                            If null - then all groups are returned.
      * @return The REST service response.
      */
     @GET
