@@ -428,13 +428,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 	@Override
 	public HpcGroupListDTO getGroups(String groupSearchCriteria) throws HpcException
 	{
-		// Input validation.
-		if(groupSearchCriteria == null) {
-		   throw new HpcException("Null group search criteria", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		
 		// Search for groups.
-    	List<String> groupNames = dataManagementSecurityService.getGroups(groupSearchCriteria);
+    	List<String> groupNames = dataManagementSecurityService.getGroups(
+    			                      groupSearchCriteria != null ? groupSearchCriteria : "%");
     	if(groupNames == null || groupNames.isEmpty()) {
     	   return null;
     	}
