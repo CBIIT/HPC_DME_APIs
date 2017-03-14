@@ -49,7 +49,7 @@ public class HpcScheduledTasksImpl
      * Constructor for Spring Dependency Injection.
      * 
      */
-    private HpcScheduledTasksImpl() 
+    public HpcScheduledTasksImpl() 
     {
     }
     
