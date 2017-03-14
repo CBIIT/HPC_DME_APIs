@@ -52,7 +52,8 @@ public class HpcScheduledTasksAspect
      * in the gov.nih.nci.hpc.bus package, and implemented by a concrete class
      * in gov.nih.nci.hpc.bus.impl
      */
-	@Pointcut("within(gov.nih.nci.hpc.scheduler.impl.*) && annotation(org.springframework.scheduling.annotation.Scheduled)")
+	@Pointcut("execution(* gov.nih.nci.hpc.scheduler.impl.*(..)) && " +
+			  "annotation(org.springframework.scheduling.annotation.Scheduled)")
 	private void allScheduledTasks() 
 	{
 		// Intentionally left blank.
