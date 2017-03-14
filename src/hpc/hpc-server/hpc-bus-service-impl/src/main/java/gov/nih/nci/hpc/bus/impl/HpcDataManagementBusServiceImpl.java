@@ -505,8 +505,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   throw new HpcException("Null or empty DOC", HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	String docBasePath = dataManagementService.getDocBasePath(doc);
+    	if(docBasePath == null) {
+    	   return null;
+    	}
+    	
     	HpcDataManagementTreeDTO dataManagementTree = new HpcDataManagementTreeDTO();
-    	dataManagementTree.setBasePath(getCollectionTree(dataManagementService.getDocBasePath(doc)));
+    	dataManagementTree.setBasePath(getCollectionTree(docBasePath));
     	
     	return dataManagementTree;
     }
