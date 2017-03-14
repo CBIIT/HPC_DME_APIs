@@ -423,6 +423,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     }
     
     @Override
+    public void setSystemRequestInvoker() throws HpcException
+    {
+    	securityService.setSystemRequestInvoker();
+    }
+    
+    @Override
     public void closeConnection()
     {
     	dataManagementService.closeConnection();

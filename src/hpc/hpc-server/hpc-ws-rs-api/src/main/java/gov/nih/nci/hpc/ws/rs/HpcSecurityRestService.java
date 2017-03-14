@@ -113,7 +113,7 @@ public interface HpcSecurityRestService
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response registerGroup(@PathParam("groupName") String groupName,
-			                     HpcGroupMembersRequestDTO groupMembersRequest);
+			                      HpcGroupMembersRequestDTO groupMembersRequest);
 	
     /**
      * Group update.

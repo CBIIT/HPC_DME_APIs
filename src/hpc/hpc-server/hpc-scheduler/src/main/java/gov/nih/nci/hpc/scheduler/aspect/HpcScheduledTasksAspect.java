@@ -1,5 +1,5 @@
 /**
- * HpcBusServiceAspect.java
+ * HpcScheduledTasksAspect.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -8,13 +8,11 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 
-package gov.nih.nci.hpc.bus.aspect;
+package gov.nih.nci.hpc.scheduler.aspect;
 
 import gov.nih.nci.hpc.exception.HpcException;
 
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
@@ -23,9 +21,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * HPC Bus Services Aspect - implement cross cutting concerns:
- * 1. Basic business service profiler - log execution time.
- * 2. Exception logger - logging when exceptions are thrown by API impl.
+ * HPC Scheduled Task Aspect - implement cross cutting concerns:
+ * 1. Basic scheduled task profiler - log execution time.
+ * 2. Setup service account as the request invoker and close data management connection on completion of services. 
+ * 3. Exception logger - logging when exceptions are thrown scheduled tasks.
  * 
  * </p>
  *
@@ -34,7 +33,7 @@ import org.slf4j.LoggerFactory;
  */
 
 @Aspect
-public class HpcBusServiceAspect
+public class HpcScheduledTasksAspect
 {   
     //---------------------------------------------------------------------//
     // Instance members
@@ -53,8 +52,8 @@ public class HpcBusServiceAspect
      * in the gov.nih.nci.hpc.bus package, and implemented by a concrete class
      * in gov.nih.nci.hpc.bus.impl
      */
-	@Pointcut("within(gov.nih.nci.hpc.bus.impl.*) && execution(* gov.nih.nci.hpc.bus.*.*(..))")
-	private void allBusServices() 
+	@Pointcut("within(gov.nih.nci.hpc.scheduler.impl.*) && annotation(org.springframework.scheduling.annotation.Scheduled)")
+	private void allScheduledTasks() 
 	{
 		// Intentionally left blank.
 	}
@@ -64,42 +63,34 @@ public class HpcBusServiceAspect
     //---------------------------------------------------------------------//
     
     /** 
-     * Advice that logs business service execution time. 
+     * Advice that performs the following on all scheduled task.
+     * 1. Basic scheduled task profiler - log execution time.
+     * 2. Setup service account as the request invoker and close data management connection on completion of services. 
+     * 2. Exception logger - logging when exceptions are thrown scheduled tasks.
      * 
      * @param joinPoint The join point.
      * @return The advised object return.
      * @throws Throwable The advised object exception.
      */
-	@Around("allBusServices()")
-	public Object profileService(ProceedingJoinPoint joinPoint) throws Throwable
+	@Around("allScheduledTasks()")
+	public void scheduledTaskAdvice(ProceedingJoinPoint joinPoint) throws Throwable
     {
 		long start = System.currentTimeMillis();
-		String businessService = joinPoint.getSignature().toShortString();
-		logger.info(businessService + " business service invoked.");
+		String scheduledTask = joinPoint.getSignature().toShortString();
+		logger.info("ERAN :" + scheduledTask + " scheduled task started.");
 		
 		try {
-			 return joinPoint.proceed();
+			 joinPoint.proceed();
+			 
+		} catch(HpcException e) {
+			    logger.error("ERAN :" +  scheduledTask  + " scheduled task failed:  " + e.getMessage(), e); 
 			 
 		} finally {
 			       long executionTime = System.currentTimeMillis() - start;
-			       logger.debug(businessService + " business service completed in " + 
+			       logger.info("ERAN :" + scheduledTask + " scheduled task completed in " + 
 			                    executionTime + " milliseconds.");
 		}
     }
-	
-    /** 
-     * Advice that logs business service exception. 
-     * 
-     * @param joinPoint The join point.
-     * @param exception The exception to log.
-     * @throws Throwable The advised object exception.
-     */
-	@AfterThrowing (pointcut = "allBusServices()", throwing = "exception")
-    public void logException(JoinPoint joinPoint, HpcException exception) throws Throwable  
-	{
-		logger.error(joinPoint.getSignature().toShortString() + 
-				     " business service error:  " + exception.getMessage(), exception); 
-	}
 }
 
  
