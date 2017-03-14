@@ -354,6 +354,15 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     }
     
+    @Override
+    public String getDocBasePath(String docName) throws HpcException
+    {
+    	if(docName == null || docName.isEmpty())
+    		return null;
+    	
+    	return docBasePath.get(docName);
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -395,20 +404,5 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	return null;
-    }
-    
-    /**
-     * Get DOC base path
-     * 
-     * @param docName DOC name.
-     * @return The base path.
-     * @throws HpcException on service failure.
-     */
-    public String getDocBasePath(String docName) throws HpcException
-    {
-    	if(docName == null || docName.isEmpty())
-    		return null;
-    	
-    	return docBasePath.get(docName);
     }
 }

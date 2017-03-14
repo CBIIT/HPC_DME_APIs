@@ -8,7 +8,7 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 
-package gov.nih.nci.hpc.scheduler;
+package gov.nih.nci.hpc.scheduler.impl;
 
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -27,7 +27,7 @@ import org.springframework.scheduling.annotation.Scheduled;
  * @version $Id: HpcScheduledTasks.java 932 2016-03-01 02:05:17Z rosenbergea $
  */
 
-public class HpcScheduledTasks 
+public class HpcScheduledTasksImpl 
 {   
     //---------------------------------------------------------------------//
     // Instance members
@@ -49,7 +49,7 @@ public class HpcScheduledTasks
      * Constructor for Spring Dependency Injection.
      * 
      */
-    private HpcScheduledTasks() 
+    private HpcScheduledTasksImpl() 
     {
     }
     
