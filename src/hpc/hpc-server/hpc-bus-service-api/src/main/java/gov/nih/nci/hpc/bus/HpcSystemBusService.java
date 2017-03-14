@@ -103,6 +103,13 @@ public interface HpcSystemBusService
 	public void refreshMetadataViews() throws HpcException;
 	
 	/**
+	 * Set the system account as request the invoker.
+	 * 
+	 * @throws HpcException on service failure.
+	 */
+	public void setSystemRequestInvoker() throws HpcException;
+	
+	/**
 	 * Close connection to Data Management system for the current service call.
 	 */
 	public void closeConnection();

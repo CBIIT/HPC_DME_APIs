@@ -186,14 +186,25 @@ public interface HpcDataManagementRestService
 	public Response getDataObjectPermissions(@PathParam("path") String path);
 	
     /**
-     * Get the data management model (metadata validation rules and hierarchy definition).
+     * Get data management model (metadata validation rules and hierarchy definition) configured for a DOC.
      *
      * @param doc The DOC to get the model for.
      * @return The REST service response.
      */
 	@GET
-	@Path("/model/{doc}")
+	@Path("/dm/model/{doc}")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getDataManagementModel(@PathParam("doc") String doc);
+	
+    /**
+     * Get data management tree (collections and data objects) from a DOC base path.
+     *
+     * @param doc The DOC to get the tree for.
+     * @return The REST service response.
+     */
+	@GET
+	@Path("/dm/tree/{doc}")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getDataManagementTree(@PathParam("doc") String doc);
 }
 
