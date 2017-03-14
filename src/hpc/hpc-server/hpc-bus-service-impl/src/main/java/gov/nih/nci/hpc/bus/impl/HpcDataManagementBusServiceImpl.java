@@ -31,6 +31,8 @@ import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadReceiptDTO;
@@ -198,9 +200,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      	HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
      	collectionDTO.setCollection(collection);
      	if(metadataEntries != null && 
-     			(metadataEntries.getParentMetadataEntries() != null && metadataEntries.getParentMetadataEntries().size()>0) || 
-     			(metadataEntries.getSelfMetadataEntries() != null && metadataEntries.getSelfMetadataEntries().size()>0))
-        collectionDTO.setMetadataEntries(metadataEntries);
+     	   (!metadataEntries.getParentMetadataEntries().isEmpty() || 
+     	    !metadataEntries.getSelfMetadataEntries().isEmpty())) {
+           collectionDTO.setMetadataEntries(metadataEntries);
+     	}
      	
      	return collectionDTO;
     }
@@ -492,6 +495,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	dataManagementModel.setBasePath(dataManagementService.getDocBasePath(doc));
     	
     	return dataManagementModel;
+    }
+    
+    @Override
+    public HpcDataManagementTreeDTO getDataManagementTree(String doc) throws HpcException
+    {
+    	// Input validation.
+    	if(doc == null || doc.isEmpty()) {
+    	   throw new HpcException("Null or empty DOC", HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	HpcDataManagementTreeDTO dataManagementTree = new HpcDataManagementTreeDTO();
+    	dataManagementTree.setBasePath(getCollectionTree(dataManagementService.getDocBasePath(doc)));
+    	
+    	return dataManagementTree;
     }
     
     //---------------------------------------------------------------------//
@@ -896,6 +913,38 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		
 		return entityPermissions;
 	}
+	
+    /** 
+     * Get the data management tree for a given collection path.
+     * 
+     * @param path The collection to get the tree for.
+     * @return A data management tree .
+     * @throws HpcException on service failure.
+     */
+    private HpcDataManagementTreeEntry getCollectionTree(String path) throws HpcException
+    {
+    	HpcDataManagementTreeEntry collectionTreeEntry = new HpcDataManagementTreeEntry();
+    	collectionTreeEntry.setPath(path);
+    	
+    	// Get the collection.
+    	HpcCollection collection = dataManagementService.getCollection(path, true);
+    	if(collection == null) {
+      	   throw new HpcException("Failed to get collection: " + path, 
+      			                  HpcErrorType.DATA_MANAGEMENT_ERROR);
+      	}
+    	
+    	// List the data objects.
+    	for(HpcCollectionListingEntry dataObject : collection.getDataObjects()) {
+    		collectionTreeEntry.getDataObjects().add(dataObject.getPath());
+    	}
+    	
+    	// Recursively list the sub collections.
+    	for(HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
+    		collectionTreeEntry.getSubCollections().add(getCollectionTree(subCollection.getPath()));
+    	}
+    	
+    	return collectionTreeEntry;
+    }
 }
 
  
