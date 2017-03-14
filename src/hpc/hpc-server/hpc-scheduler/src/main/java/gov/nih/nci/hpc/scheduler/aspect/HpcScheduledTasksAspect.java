@@ -52,7 +52,7 @@ public class HpcScheduledTasksAspect
      * in the gov.nih.nci.hpc.bus package, and implemented by a concrete class
      * in gov.nih.nci.hpc.bus.impl
      */
-	@Pointcut("execution(* gov.nih.nci.hpc.scheduler.impl.*.*(..))")
+	@Pointcut("within(gov.nih.nci.hpc.scheduler.impl.*) && execution(* gov.nih.nci.hpc.scheduler.impl.*.*(..))")
 	private void allScheduledTasks() 
 	{
 		// Intentionally left blank.
