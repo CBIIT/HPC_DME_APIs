@@ -49,7 +49,7 @@ public class HpcScheduledTasksImpl
      * Constructor for Spring Dependency Injection.
      * 
      */
-    public HpcScheduledTasksImpl() 
+    private HpcScheduledTasksImpl() 
     {
     }
     
@@ -62,7 +62,7 @@ public class HpcScheduledTasksImpl
      * 
      */    
     @Scheduled(cron = "${hpc.scheduler.cron.updateDataTransferUploadStatus.delay}")
-    public void updateDataTransferUploadStatusTask()
+    private void updateDataTransferUploadStatusTask()
     {
         logger.info("Starting Update Data Transfer Upload Status Task...");
 
@@ -84,7 +84,7 @@ public class HpcScheduledTasksImpl
      * 
      */    
     @Scheduled(cron = "${hpc.scheduler.cron.processTemporaryArchive.delay}")
-    public void processTemporaryArchiveTask()
+    private void processTemporaryArchiveTask()
     {
         logger.info("Starting Process Temporary Archive Task...");
 
@@ -105,7 +105,7 @@ public class HpcScheduledTasksImpl
      * 
      */    
     @Scheduled(cron = "${hpc.scheduler.cron.cleanupDataTransferDownloadFiles.delay}")
-    public void cleanupDataTransferDownloadFilesTask()
+    private void cleanupDataTransferDownloadFilesTask()
     {
         logger.info("Starting Cleanup Data Transfer Download Task...");
 
@@ -127,7 +127,7 @@ public class HpcScheduledTasksImpl
      * 
      */  
     @Scheduled(cron = "${hpc.scheduler.cron.summaryreport.delay}")
-    public void generateSummaryReport()
+    private void generateSummaryReport()
     {
         logger.info("Generating reports...");
 
@@ -149,7 +149,7 @@ public class HpcScheduledTasksImpl
      * 
      */  
     @Scheduled(cron = "${hpc.scheduler.cron.weeklysummaryreport.delay}")
-    public void generateWeeklySummaryReport()
+    private void generateWeeklySummaryReport()
     {
         logger.info("Generating weekly summary reports...");
 
@@ -171,7 +171,7 @@ public class HpcScheduledTasksImpl
      * 
      */  
     @Scheduled(cron = "${hpc.scheduler.cron.processevents.delay}")
-    public void processEvents()
+    private void processEvents()
     {
         logger.info("Starting Process Events Task...");
 
@@ -193,7 +193,7 @@ public class HpcScheduledTasksImpl
      * 
      */    
     @Scheduled(cron = "${hpc.scheduler.cron.refreshMaterializedViews.delay}")
-    public void refreshMetadataViewsTask()
+    private void refreshMetadataViewsTask()
     {
         logger.info("Starting Refreshing Metadata Materialized Views Task...");
 
