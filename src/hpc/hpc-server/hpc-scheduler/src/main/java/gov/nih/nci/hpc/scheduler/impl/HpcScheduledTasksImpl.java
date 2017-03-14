@@ -62,7 +62,7 @@ public class HpcScheduledTasksImpl
      * 
      */    
     @Scheduled(cron = "${hpc.scheduler.cron.updateDataTransferUploadStatus.delay}")
-    private void updateDataTransferUploadStatusTask()
+    public void updateDataTransferUploadStatusTask()
     {
         logger.info("Starting Update Data Transfer Upload Status Task...");
 
@@ -84,7 +84,7 @@ public class HpcScheduledTasksImpl
      * 
      */    
     @Scheduled(cron = "${hpc.scheduler.cron.processTemporaryArchive.delay}")
-    private void processTemporaryArchiveTask()
+    public void processTemporaryArchiveTask()
     {
         logger.info("Starting Process Temporary Archive Task...");
 
@@ -105,7 +105,7 @@ public class HpcScheduledTasksImpl
      * 
      */    
     @Scheduled(cron = "${hpc.scheduler.cron.cleanupDataTransferDownloadFiles.delay}")
-    private void cleanupDataTransferDownloadFilesTask()
+    public void cleanupDataTransferDownloadFilesTask()
     {
         logger.info("Starting Cleanup Data Transfer Download Task...");
 
@@ -127,7 +127,7 @@ public class HpcScheduledTasksImpl
      * 
      */  
     @Scheduled(cron = "${hpc.scheduler.cron.summaryreport.delay}")
-    private void generateSummaryReport()
+    public void generateSummaryReport()
     {
         logger.info("Generating reports...");
 
@@ -149,7 +149,7 @@ public class HpcScheduledTasksImpl
      * 
      */  
     @Scheduled(cron = "${hpc.scheduler.cron.weeklysummaryreport.delay}")
-    private void generateWeeklySummaryReport()
+    public void generateWeeklySummaryReport()
     {
         logger.info("Generating weekly summary reports...");
 
@@ -171,7 +171,7 @@ public class HpcScheduledTasksImpl
      * 
      */  
     @Scheduled(cron = "${hpc.scheduler.cron.processevents.delay}")
-    private void processEvents()
+    public void processEvents()
     {
         logger.info("Starting Process Events Task...");
 
@@ -193,7 +193,7 @@ public class HpcScheduledTasksImpl
      * 
      */    
     @Scheduled(cron = "${hpc.scheduler.cron.refreshMaterializedViews.delay}")
-    private void refreshMetadataViewsTask()
+    public void refreshMetadataViewsTask()
     {
         logger.info("Starting Refreshing Metadata Materialized Views Task...");
 
