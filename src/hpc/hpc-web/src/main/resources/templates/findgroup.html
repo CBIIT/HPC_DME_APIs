@@ -77,10 +77,10 @@
 					paginationPageSize : 100,
 					treeRowHeaderAlwaysVisible : false,
 					columnDefs : [ {
-						field : 'groupId',
-						width : 250,
+						field : 'groupName',
+						width : 120,
 						displayName : 'Group Name'
-					} ],
+					}],
 					onRegisterApi : function(gridApi) {
 						$scope.grid1Api = gridApi;
 					}
@@ -108,7 +108,7 @@
 					}
 					for(var i=0;i<$scope.mySelectedRows.length;i++)
 					{
-						groupsArray[i] = $scope.mySelectedRows[i].groupId;
+						groupsArray[i] = $scope.mySelectedRows[i].groupName;
 					}
 					document.getElementById("selectedGroups").value = groupsArray;
 					document.getElementById("actionType").value = "selected";
@@ -199,9 +199,9 @@
 																<td>
 																	<div class="form-group">
 																		<div class="col-sm-12 column">
-																			<label for="groupId">Group Name:</label> <input
+																			<label for="groupName">Group Name:</label> <input
 																				type="text" class="form-control"
-																				th:field="*{groupId}" placeholder="Enter Group Name" />
+																				th:field="*{groupName}" placeholder="Enter Group Name" />
 																		</div>
 																	</div>
 																	<div class="modal-footer">
@@ -209,6 +209,8 @@
 																			id="primaryButton" onClick="prepareAndSubmit()">Search</button>
 																		<button type="cancel" class="btn btn-md btn-primary"
 																			id="cancelButton" onclick="cancel()">Cancel</button>
+																		<input type="hidden" th:field="*{path}" th:value="${hpcWebGroup.getPath()}"/>
+																		<input type="hidden" th:field="*{type}" th:value="${hpcWebGroup.getType()}"/>
 																	</div>
 																</td>
 															</tr>

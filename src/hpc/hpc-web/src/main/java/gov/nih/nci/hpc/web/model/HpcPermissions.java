@@ -6,8 +6,21 @@ import java.util.List;
 public class HpcPermissions {
 	private String path;
 	private String type;
+	private String assignType;
 	private List<HpcPermissionEntry> entries;
 
+	public String getAssignType() {
+		return assignType;
+	}
+
+	public void setAssignType(String assignType) {
+		this.assignType = assignType;
+	}
+
+	public boolean isUserType()
+	{
+		return (assignType == null || assignType.equals("User"));
+	}
 	public String getPath() {
 		return path;
 	}
