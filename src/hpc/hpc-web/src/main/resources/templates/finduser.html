@@ -235,6 +235,8 @@
 																			id="primaryButton" onClick="prepareAndSubmit()">Search</button>
 																		<button type="cancel" class="btn btn-md btn-primary"
 																			id="cancelButton" onclick="cancel()">Cancel</button>
+																		<input type="hidden" th:field="*{path}" th:value="${hpcWebUser.getPath()}"/>
+																		<input type="hidden" th:field="*{type}" th:value="${hpcWebUser.getType()}"/>
 																	</div>
 																</td>
 															</tr>
