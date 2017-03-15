@@ -187,6 +187,7 @@
         		<entry key="setDataObjectPermissions" value="${hpc.ws.rs.auth.data-management.set-data-object-permissions}"/>
         		<entry key="getDataObjectPermissions" value="${hpc.ws.rs.auth.data-management.get-data-object-permissions}"/>
         		<entry key="getDataManagementModel" value="${hpc.ws.rs.auth.data-management.get-data-management-model}"/>
+        		<entry key="getDataManagementTree" value="${hpc.ws.rs.auth.data-management.get-data-management-tree}"/>
         		
         		<!--  Data Search Service Authorizations -->
         		<entry key="queryCollections" value="${hpc.ws.rs.auth.data-search.query-collections}"/>
