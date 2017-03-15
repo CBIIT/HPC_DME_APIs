@@ -234,31 +234,66 @@
 														<tr id='entryTableRow0' align="center">
 															<td style="white-space: nowrap" align="right"><label
 																for="Share With">Share With:</label></td>
-															<td style="white-space: nowrap" align="left"><input
+															<td style="white-space: nowrap" align="left">
+															<div th:if="${permissions.isUserType()} == true">
+															<input
 																type="radio" name="shareWithType" id="shareWithTypeName"
 																value="user" checked="checked"
 																onClick="enableUserGroup(this)" />User&nbsp;&nbsp;&nbsp;
-																<input type="radio" name="shareWithType"
+																
+															<input type="radio" name="shareWithType"
 																id="shareWithTypeGroup" value="group"
-																onClick="enableUserGroup(this)" />Group</td>
+																onClick="enableUserGroup(this)" />Group
+															</div>	
+															<div th:if="${permissions.isUserType()} == false">
+															<input
+																type="radio" name="shareWithType" id="shareWithTypeName"
+																value="user" 
+																onClick="enableUserGroup(this)" />User&nbsp;&nbsp;&nbsp;
+																
+															<input type="radio" name="shareWithType"
+																id="shareWithTypeGroup" value="group" checked="checked"
+																onClick="enableUserGroup(this)" />Group
+															</div>	
+															</td>
 														</tr>
-														<tr id='entryTableRow1' align="center">
+														<tr id='entryTableRow1' align="center" th:if="${permissions.isUserType()} == true">
 															<td style="white-space: nowrap" align="right"><label
 																for="Share With">User(s):</label></td>
-															<td style="white-space: nowrap" align="left"><input
+															<td style="white-space: nowrap" align="left">															
+															<input
 																type="text" id="userName" th:value="${selectedUsers}" />&nbsp;&nbsp;&nbsp;
 																<a id="userNamelink" class="btn btn-link btn-sm"
-																th:href="@{'../finduser?path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a></td>
+																th:href="@{'../finduser?path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a>
+																
+															</td>
 														</tr>
-														<tr id='entryTableRow2' align="center"
-															style="display: none">
+														<tr id='entryTableRow2' style="display: none" align="center" th:if="${permissions.isUserType()} == true">
 															<td style="white-space: nowrap" align="right"><label
 																for="Share With">Group(s):</label></td>
 															<td style="white-space: nowrap" align="left"><input
-																type="text" id="groupName" />&nbsp;&nbsp;&nbsp; <a
-																data-toggle="modal" id="groupNamelink"
-																class="btn btn-link btn-sm" th:href="@{'../findgroup?path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}"
-																data-target="#groupNameModal">Search</a></td>
+																type="text" id="groupName" th:value="${selectedGroups}" />&nbsp;&nbsp;&nbsp;
+																<a id="groupNamelink" class="btn btn-link btn-sm"
+																th:href="@{'../findgroup?path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a></td>
+														</tr>
+														<tr id='entryTableRow1' style="display: none" align="center" th:if="${permissions.isUserType()} == false">
+															<td style="white-space: nowrap" align="right"><label
+																for="Share With">User(s):</label></td>
+															<td style="white-space: nowrap" align="left">															
+															<input
+																type="text" id="userName" th:value="${selectedUsers}" />&nbsp;&nbsp;&nbsp;
+																<a id="userNamelink" class="btn btn-link btn-sm"
+																th:href="@{'../finduser?path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a>
+																
+															</td>
+														</tr>
+														<tr id='entryTableRow2' align="center" th:if="${permissions.isUserType()} == false">
+															<td style="white-space: nowrap" align="right"><label
+																for="Share With">Group(s):</label></td>
+															<td style="white-space: nowrap" align="left"><input
+																type="text" id="groupName" th:value="${selectedGroups}" />&nbsp;&nbsp;&nbsp;
+																<a id="groupNamelink" class="btn btn-link btn-sm"
+																th:href="@{'../findgroup?path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a></td>
 														</tr>
 														<tr id='entryTableRow3' align="center">
 															<td style="white-space: nowrap" align="right"><label
