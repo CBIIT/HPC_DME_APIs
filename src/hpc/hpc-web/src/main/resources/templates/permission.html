@@ -137,6 +137,8 @@
 													<label for="Name">Path:</label> <label
 														for="${permissions.getPath()}"
 														th:text="${permissions.getPath()}"></label>
+														<input type="hidden" th:field="*{path}" th:value="${permissions.getPath()}"/>
+														<input type="hidden" th:field="*{type}" th:value="${permissions.getType()}"/>
 												</div>
 												<div class="form-group">
 													<table class="table table-bordered table-hover"
@@ -246,7 +248,7 @@
 															<td style="white-space: nowrap" align="left"><input
 																type="text" id="userName" th:value="${selectedUsers}" />&nbsp;&nbsp;&nbsp;
 																<a id="userNamelink" class="btn btn-link btn-sm"
-																th:href="@{'../finduser'}">Search</a></td>
+																th:href="@{'../finduser?path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a></td>
 														</tr>
 														<tr id='entryTableRow2' align="center"
 															style="display: none">
@@ -255,7 +257,7 @@
 															<td style="white-space: nowrap" align="left"><input
 																type="text" id="groupName" />&nbsp;&nbsp;&nbsp; <a
 																data-toggle="modal" id="groupNamelink"
-																class="btn btn-link btn-sm" th:href="@{'../findgroup'}"
+																class="btn btn-link btn-sm" th:href="@{'../findgroup?path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}"
 																data-target="#groupNameModal">Search</a></td>
 														</tr>
 														<tr id='entryTableRow3' align="center">

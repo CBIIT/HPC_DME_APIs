@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
@@ -49,7 +50,7 @@ public class HpcFindUserController extends AbstractHpcController {
 	private String userServiceURL;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
+	public String home(@RequestBody(required = false) String q, @RequestParam String path, @RequestParam String type,  Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
@@ -60,6 +61,8 @@ public class HpcFindUserController extends AbstractHpcController {
 			return "index";
 		}
 		HpcWebUser webUser = new HpcWebUser();
+		webUser.setPath(path);
+		webUser.setType(type);
 		model.addAttribute("hpcWebUser", webUser);
 		session.removeAttribute("selectedUsers");
 		return "finduser";
@@ -87,10 +90,10 @@ public class HpcFindUserController extends AbstractHpcController {
 				}
 				session.setAttribute("selectedUsers", buffer.toString());
 				if (selectedUsers != null && selectedUsers.length > 0)
-					return "redirect:/permissions?path=" + path;
+					return "redirect:/permissions?path=" + hpcWebUser.getPath()  + "&type="+hpcWebUser.getType();
 			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
 				session.removeAttribute("selectedUsers");
-				return "redirect:/permissions?path=" + path;
+				return "redirect:/permissions?path=" + hpcWebUser.getPath() + "&type="+hpcWebUser.getType();
 			}
 
 			String userId = null;
