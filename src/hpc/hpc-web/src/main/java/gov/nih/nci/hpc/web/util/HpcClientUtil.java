@@ -59,6 +59,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
@@ -157,6 +158,40 @@ public class HpcClientUtil {
 		}
 	}
 
+	public static HpcDataManagementTreeDTO getDOCTree(String token, String serviceURL, String docName, boolean list,
+			String hpcCertPath, String hpcCertPassword) {
+		try {
+			WebClient client = HpcClientUtil.getWebClient(
+					serviceURL + "/" + docName , hpcCertPath,
+					hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.invoke("GET", null);
+			// System.out.println("restResponse.getStatus():"
+			// +restResponse.getStatus());
+			if (restResponse.getStatus() == 200) {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcDataManagementTreeDTO tree = parser.readValueAs(HpcDataManagementTreeDTO.class);
+				return tree;
+			} else {
+				throw new HpcWebException("Collection not found!");
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get tree for: " + docName + " due to: " + e.getMessage());
+		}
+	}
+	
 	public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL, String path, boolean list,
 			String hpcCertPath, String hpcCertPassword) {
 		try {
