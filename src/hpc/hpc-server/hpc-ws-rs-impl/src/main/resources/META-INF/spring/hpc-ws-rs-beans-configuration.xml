@@ -105,6 +105,10 @@
           <value>payloadEntries</value>
           <value>subCollections</value>
           <value>nciAccounts</value>
+          <value>groups</value>
+          <value>userIds</value>
+          <value>groupPermissions</value>
+          <value>userPermissions</value>
     </util:list>
 
 	<!-- JSON Provider -->
