@@ -5,6 +5,7 @@ import java.util.List;
 
 public class HpcPermissions {
 	private String path;
+	private String type;
 	private List<HpcPermissionEntry> entries;
 
 	public String getPath() {
@@ -13,6 +14,15 @@ public class HpcPermissions {
 
 	public void setPath(String path) {
 		this.path = path;
+	}
+
+	
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	public List<HpcPermissionEntry> getEntries() {

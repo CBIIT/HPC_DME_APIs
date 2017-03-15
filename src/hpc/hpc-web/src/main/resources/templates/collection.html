@@ -84,7 +84,7 @@
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h2>
-									<i class="fa fa-list-alt red"></i><strong>Collection</strong>&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-users" aria-hidden="true"></i></a>
+									<i class="fa fa-list-alt red"></i><strong>Collection</strong>&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-users" aria-hidden="true"></i></a>
 								</h2>
 							</div>
 							<div th:if="${error != null}">

@@ -5,6 +5,12 @@ import com.fasterxml.jackson.annotation.JsonView;
 public class HpcWebUser {
 
 	@JsonView(Views.Public.class)
+	private String path;
+
+	@JsonView(Views.Public.class)
+	private String type;
+	
+	@JsonView(Views.Public.class)
 	private String nciUserId;
 
 	@JsonView(Views.Public.class)
@@ -58,4 +64,21 @@ public class HpcWebUser {
 	public void setNciUserId(String nciUserId) {
 		this.nciUserId = nciUserId;
 	}
+
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+	
 }
