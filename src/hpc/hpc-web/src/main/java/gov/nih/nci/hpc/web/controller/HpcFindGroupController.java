@@ -67,6 +67,7 @@ public class HpcFindGroupController extends AbstractHpcController {
 		webGroup.setType(type);
 		model.addAttribute("hpcWebGroup", webGroup);
 		session.removeAttribute("selectedGroups");
+		session.removeAttribute("selectedUsers");
 		return "findgroup";
 	}
 
