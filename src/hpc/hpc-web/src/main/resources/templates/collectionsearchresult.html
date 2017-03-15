@@ -79,7 +79,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 						field : 'permission',
 						width : 120,
 						displayName : 'Permission',
-						cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>'
+						cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?assignType=User&amp;type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>'
 					}
                ],
     onRegisterApi: function( gridApi ) {
