@@ -1,5 +1,5 @@
 /**
- * HpcScheduledTasks.java
+ * HpcScheduledTasksImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -20,7 +20,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 /**
  * <p>
- * HPC Scheduled tasks.
+ * HPC Scheduled tasks implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
@@ -64,18 +64,14 @@ public class HpcScheduledTasksImpl
     @Scheduled(cron = "${hpc.scheduler.cron.updateDataTransferUploadStatus.delay}")
     private void updateDataTransferUploadStatusTask()
     {
-        logger.info("Starting Update Data Transfer Upload Status Task...");
-
-        try { 
-		     systemBusService.updateDataTransferUploadStatus();
-		     
-        } catch(HpcException e) {
-        	    logger.error("Update Data Transfer Upload Status task failed", e);
-        	    
-        } finally {
-        	       systemBusService.closeConnection();
-        	       logger.info("Completed Update Data Transfer Upload Status Task...");	
-        }
+    	executeTask("updateDataTransferUploadStatusTask()", 
+    	            new HpcScheduledTask() 
+    	            {
+    					@Override public void execute() throws HpcException
+    	                {
+    						systemBusService.updateDataTransferUploadStatus();
+    	                }
+    	            });
     }
     
     /**
@@ -86,18 +82,14 @@ public class HpcScheduledTasksImpl
     @Scheduled(cron = "${hpc.scheduler.cron.processTemporaryArchive.delay}")
     private void processTemporaryArchiveTask()
     {
-        logger.info("Starting Process Temporary Archive Task...");
-
-        try { 
-		     systemBusService.processTemporaryArchive();
-		     
-        } catch(HpcException e) {
-        	    logger.error("Process Temporary Archive task failed", e);
-        	    
-        } finally {
-        	       systemBusService.closeConnection();
-        	       logger.info("Completed Process Temporary Archive Task...");	
-        }
+    	executeTask("processTemporaryArchiveTask()", 
+		            new HpcScheduledTask() 
+		            {
+						@Override public void execute() throws HpcException
+		                {
+							systemBusService.processTemporaryArchive();
+		                }
+		            });
     }
     
     /**
@@ -107,19 +99,14 @@ public class HpcScheduledTasksImpl
     @Scheduled(cron = "${hpc.scheduler.cron.cleanupDataTransferDownloadFiles.delay}")
     private void cleanupDataTransferDownloadFilesTask()
     {
-        logger.info("Starting Cleanup Data Transfer Download Task...");
-
-        try { 
-		     systemBusService.cleanupDataTransferDownloadFiles();
-		     
-        } catch(HpcException e) {
-        	    logger.error("Cleanup Data Transfer Download task failed", e);
-        	    
-        } finally {
-        	       // TODO - make this AOP.
-        	       systemBusService.closeConnection();
-        	       logger.info("Completed Cleanup Data Transfer Download Task...");	
-        }
+    	executeTask("cleanupDataTransferDownloadFilesTask()", 
+		            new HpcScheduledTask() 
+		            {
+						@Override public void execute() throws HpcException
+		                {
+							systemBusService.cleanupDataTransferDownloadFiles();
+		                }
+		            });
     }
     
     /**
@@ -129,19 +116,14 @@ public class HpcScheduledTasksImpl
     @Scheduled(cron = "${hpc.scheduler.cron.summaryreport.delay}")
     private void generateSummaryReport()
     {
-        logger.info("Generating reports...");
-
-        try { 
-		     systemBusService.generateSummaryReportEvent();
-		     
-        } catch(HpcException e) {
-        	    logger.error("Process Events task failed", e);
-        	    
-        } finally {
-        	       // TODO - make this AOP.
-        	       systemBusService.closeConnection();
-        	       logger.info("Completed Process Events Task...");	
-        }
+    	executeTask("generateSummaryReport()", 
+		            new HpcScheduledTask() 
+		            {
+						@Override public void execute() throws HpcException
+		                {
+							systemBusService.generateSummaryReportEvent();
+		                }
+		            });
     }
     
     /**
@@ -151,19 +133,14 @@ public class HpcScheduledTasksImpl
     @Scheduled(cron = "${hpc.scheduler.cron.weeklysummaryreport.delay}")
     private void generateWeeklySummaryReport()
     {
-        logger.info("Generating weekly summary reports...");
-
-        try { 
-		     systemBusService.generateWeeklySummaryReportEvent();
-		     
-        } catch(HpcException e) {
-        	    logger.error("Process Events task failed", e);
-        	    
-        } finally {
-        	       // TODO - make this AOP.
-        	       systemBusService.closeConnection();
-        	       logger.info("Completed Process Events Task...");	
-        }
+    	executeTask("generateWeeklySummaryReport()", 
+		            new HpcScheduledTask() 
+		            {
+						@Override public void execute() throws HpcException
+		                {
+							systemBusService.generateWeeklySummaryReportEvent();
+		                }
+		            });
     }
 
      /**
@@ -173,19 +150,14 @@ public class HpcScheduledTasksImpl
     @Scheduled(cron = "${hpc.scheduler.cron.processevents.delay}")
     private void processEvents()
     {
-        logger.info("Starting Process Events Task...");
-
-        try { 
-		     systemBusService.processEvents();
-		     
-        } catch(HpcException e) {
-        	    logger.error("Process Events task failed", e);
-        	    
-        } finally {
-        	       // TODO - make this AOP.
-        	       systemBusService.closeConnection();
-        	       logger.info("Completed Process Events Task...");	
-        }
+    	executeTask("processEvents()", 
+		            new HpcScheduledTask() 
+		            {
+						@Override public void execute() throws HpcException
+		                {
+							systemBusService.processEvents();
+		                }
+		            });
     }
     
     /**
@@ -195,17 +167,42 @@ public class HpcScheduledTasksImpl
     @Scheduled(cron = "${hpc.scheduler.cron.refreshMaterializedViews.delay}")
     private void refreshMetadataViewsTask()
     {
-        logger.info("Starting Refreshing Metadata Materialized Views Task...");
+    	executeTask("refreshMetadataViewsTask()", 
+		            new HpcScheduledTask() 
+		            {
+						@Override public void execute() throws HpcException
+		                {
+							systemBusService.refreshMetadataViews();
+		                }
+		            });
+    }
+    
+    //---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//
+    
+    /**
+     * Execute a scheduled task.
+     * 
+     * @param name The task name.
+     * @param task The task to execute.
+     */    
+    private void executeTask(String name, HpcScheduledTask task)
+    {
+    	long start = System.currentTimeMillis();
+        logger.info("Scheduled task started: " + name);
 
         try { 
-		     systemBusService.refreshMetadataViews();
+		     task.execute();
 		     
         } catch(HpcException e) {
-        	    logger.error("Update Data Transfer Upload Status task failed", e);
+        	    logger.error("Scheduled task failed: " + name, e);
         	    
         } finally {
         	       systemBusService.closeConnection();
-        	       logger.info("Completed Refreshing Materialized Views Task...");	
+        	       long executionTime = System.currentTimeMillis() - start;
+			       logger.info("Scheduled task completed: " + name + " - Task execution time: " + 
+        	                   executionTime + " milliseconds.");
         }
     }
 }
