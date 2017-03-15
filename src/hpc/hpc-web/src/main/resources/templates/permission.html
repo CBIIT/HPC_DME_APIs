@@ -389,10 +389,10 @@
 			var shareWithName = document.getElementById("shareWithTypeName");
 			var shareWithGroup = document.getElementById("shareWithTypeGroup");
 			var userName = document.getElementById("userName");
-			if(userName != null)
+			if(userName != null && userName != "")
 				userNames = userName.value.split(";");
 			var groupName = document.getElementById("groupName");
-			if(groupName != null)
+			if(groupName != null && groupName != "")
 				groupNames = groupName.value.split(";");
 			var addpermissionOwn = document.getElementById("addpermission_own");
 			var addpermissionRead = document.getElementById("addpermission_read");
@@ -402,11 +402,19 @@
 			{
 				for(var j=0;j<userNames.length;j++)
 				{
-				if(userNames[j] == assignedNames[i])
-				{
-					alert("Duplicate Entry!");
-					return false;
+					if(userNames[j] == assignedNames[i])
+					{
+						alert("Duplicate Entry!");
+						return false;
+					}
 				}
+				for(var j=0;j<groupNames.length;j++)
+				{
+					if(groupNames[j] == assignedNames[i])
+					{
+						alert("Duplicate Entry!");
+						return false;
+					}
 				}
 			}
 			
@@ -424,6 +432,9 @@
 			
 			for(var i=0;i<userNames.length;i++)
 			{
+				if(userNames[i] == "")
+					continue;
+
 				rows = rows + 1;
 				var row = table.insertRow(rows);
 				row.id = "permissionRow" + (rows);
@@ -452,19 +463,7 @@
 							+ (rows) + '" id="permissionType'
 							+ (rows) + '" value="USER" />';
 					assignedNames.push(userNames[i]);
-				} else {
-					cell0.innerHTML = '<label id="permissionName' + (rows)
-							+ '">' + (groupName.value) + '</label>'
-							+ '<input type="hidden" name="permissionName'
-							+ (rows) + '" id="permissionName'
-							+ (rows) + '" value="' + (groupName.value) + '" />';
-					cell1.innerHTML = '<label id="permissionType' + (rows)
-							+ '">GROUP</label>'
-							+ '<input type="hidden" name="permissionType'
-							+ (rows) + '" id="permissionType'
-							+ (rows) + '" value="GROUP" />';
-					assignedNames.push(groupNames.value);
-				}
+				} 
 	
 				if (addpermissionOwn.checked == true)
 				{
@@ -503,6 +502,77 @@
 				}
 	
 			}
+			for(var i=0;i<groupNames.length;i++)
+			{
+				if(groupNames[i] == "")
+					continue;
+				rows = rows + 1;
+				var row = table.insertRow(rows);
+				row.id = "permissionRow" + (rows);
+				var cell0 = row.insertCell(0);
+				var cell1 = row.insertCell(1);
+				var cell2 = row.insertCell(2);
+				var cell3 = row.insertCell(3);
+				var cell4 = row.insertCell(4);
+				var cell5 = row.insertCell(5);
+				cell0.align="center";
+				cell1.align="center";
+				cell2.align="center";
+				cell3.align="center";
+				cell4.align="center";
+				cell5.align="center";
+				
+				if (shareWithGroup.checked == true) {
+					cell0.innerHTML = '<label id="permissionName' + (rows)
+							+ '">' + (groupNames[i]) + '</label>'
+							+ '<input type="hidden" name="permissionName'
+							+ (rows) + '" id="permissionName'
+							+ (rows) + '" value="' + (groupNames[i]) + '" />';
+					cell1.innerHTML = '<label id="permissionType' + (rows)
+							+ '">GROUP</label>'
+							+ '<input type="hidden" name="permissionType'
+							+ (rows) + '" id="permissionType'
+							+ (rows) + '" value="GROUP" />';
+					assignedNames.push(groupNames[i]);
+				} 
+	
+				if (addpermissionOwn.checked == true)
+				{
+					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
+							+ '" name="permission' + (rows) + '" value="own" checked="checked" />';
+					cell3.innerHTML = '<input type="radio" id="permission_read'
+						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
+					cell4.innerHTML = '<input type="radio" id="permission_write'
+						+ (rows) + '" name="permission' + (rows) + '" value="write" />';
+					cell5.innerHTML = '<input type="radio" id="permission_none'
+						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
+				}
+				else if (addpermissionRead.checked == true)
+				{
+					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
+					+ '" name="permission' + (rows) + '" value="own" />';
+					cell3.innerHTML = '<input type="radio" id="permission_read'
+						+ (rows) + '" name="permission' + (rows)
+						+ '" value="read" checked="checked" />';
+					cell4.innerHTML = '<input type="radio" id="permission_write'
+						+ (rows) + '" name="permission' + (rows) + '" value="write" />';
+					cell5.innerHTML = '<input type="radio" id="permission_none'
+						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
+				}
+				else if (addpermissionWrite.checked == true)
+				{
+					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
+						+ '" name="permission' + (rows) + '" value="own" />';
+					cell3.innerHTML = '<input type="radio" id="permission_read'
+						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
+					cell4.innerHTML = '<input type="radio" id="permission_write'
+						+ (rows) + '" name="permission' + (rows)
+						+ '" value="write" checked="checked" />';
+					cell5.innerHTML = '<input type="radio" id="permission_none'
+						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
+				}
+	
+			}			
 			$('#primaryButton').removeClass('disabled');
 			$('#primaryButton').prop('disabled', false);
 
