@@ -133,11 +133,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Create parent collections if requested to.
-    	Boolean createParentCollections = collectionRegistration.getCreateParentCollections();
-    	if(createParentCollections != null && createParentCollections &&
-    	   !dataManagementService.isPathParentDirectory(path)) {
-    	   registerCollection(path.substring(0, path.lastIndexOf('/')), collectionRegistration);
-    	}
+    	createParentCollections(path, collectionRegistration.getCreateParentCollections(), 
+    			                collectionRegistration.getParentCollectionMetadataEntries());
     	
     	// Create a collection directory.
     	boolean created = dataManagementService.createDirectory(path);
@@ -293,7 +290,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Create parent collections if requested to.
-    	createParentCollections(path, dataObjectRegistration);
+    	createParentCollections(path, dataObjectRegistration.getCreateParentCollections(), 
+    			                dataObjectRegistration.getParentCollectionMetadataEntries());
     	
     	// Create a data object file (in the data management system).
 	    boolean created = dataManagementService.createFile(path);
@@ -772,20 +770,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * Construct a download response DTO object.
      * 
      * @param path The data object's path.
-     * @param dataObjectRegistration A DTO contains the metadata.
+     * @param createParentCollections The indicator whether to create parent collections.
+     * @param parentCollectionMetadataEntries The parent collection metadata entries.
      * @throws HpcException on service failure.
      */
 	private void createParentCollections(String path, 
-			                             HpcDataObjectRegistrationDTO dataObjectRegistration)
+			                             Boolean createParentCollections, 
+			                             List<HpcMetadataEntry> parentCollectionMetadataEntries)
 			                            throws HpcException
 	{
 		// Create parent collections if requested and needed to.
-		Boolean createParentCollections = dataObjectRegistration.getCreateParentCollections();
 		if(createParentCollections != null && createParentCollections &&
 		   !dataManagementService.isPathParentDirectory(path)) {
 		   // Validate parent collection metadata provided w/ the request.
-		   List<HpcMetadataEntry> parentCollectionMetadataEntries = 
-				                  dataObjectRegistration.getParentCollectionMetadataEntries();
 		   if(parentCollectionMetadataEntries == null || parentCollectionMetadataEntries.isEmpty()) {
 			  throw new HpcException("Null or empty parent metadata entries", 
 					                 HpcErrorType.INVALID_REQUEST_INPUT);
@@ -794,6 +791,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		   // Create a collection registration request DTO. 
 		   HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
 		   collectionRegistration.getMetadataEntries().addAll(parentCollectionMetadataEntries);
+		   collectionRegistration.getParentCollectionMetadataEntries().addAll(parentCollectionMetadataEntries);
 		   collectionRegistration.setCreateParentCollections(true);
 		   
 		   // Register the parent collection.
