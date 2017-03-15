@@ -732,7 +732,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                     throws HpcException
     {
     	try {
-    		 String where = RodsGenQueryEnum.COL_USER_GROUP_NAME.getName() + " LIKE '" + groupSearchCriteria + "'";
+    		 String where = RodsGenQueryEnum.COL_USER_GROUP_NAME.getName() + " LIKE '" + groupSearchCriteria + "' and " +
+    				 RodsGenQueryEnum.COL_USER_TYPE.getName() + " = 'rodsgroup'";
     		 return toHpcGroupNames(irodsConnection.getUserGroupAO(authenticatedToken).findWhere(where));
     		 
     	} catch(Exception e) {
