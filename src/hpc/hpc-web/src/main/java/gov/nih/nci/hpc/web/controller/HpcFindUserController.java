@@ -64,6 +64,7 @@ public class HpcFindUserController extends AbstractHpcController {
 		webUser.setPath(path);
 		webUser.setType(type);
 		model.addAttribute("hpcWebUser", webUser);
+		session.removeAttribute("selectedGroups");
 		session.removeAttribute("selectedUsers");
 		return "finduser";
 	}
