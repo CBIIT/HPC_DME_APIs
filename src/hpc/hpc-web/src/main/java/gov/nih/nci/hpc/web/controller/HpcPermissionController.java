@@ -78,7 +78,7 @@ public class HpcPermissionController extends AbstractHpcController {
 	private String serverDataObjectURL;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(@RequestBody(required = false) String body, @RequestParam String path, @RequestParam String type, Model model,
+	public String home(@RequestBody(required = false) String body, @RequestParam String path, @RequestParam String type, @RequestParam String assignType, Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		String authToken = (String) session.getAttribute("hpcUserToken");
@@ -90,9 +90,10 @@ public class HpcPermissionController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "index";
 		}
-		String sessionPath = (String) session.getAttribute("permissionsPath");
-		String sessionType = (String) session.getAttribute("permissionsPathType");
-
+		
+		if(assignType == null || assignType.trim().length() == 0)
+			assignType = "User";
+		
 		if (path == null || type == null || path.trim().length() == 0 || type.trim().length() == 0)
 			model.addAttribute("updateStatus", "Invalid request! Path or Path type is missing");
 		
@@ -110,7 +111,7 @@ public class HpcPermissionController extends AbstractHpcController {
 		model.addAttribute("selectedUsers", selectedUsers);
 		String selectedGroups = (String) session.getAttribute("selectedGroups");
 		model.addAttribute("selectedGroups", selectedGroups);
-		populatePermissions(model, path, type, authToken);
+		populatePermissions(model, path, type, assignType, authToken);
 		return "permission";
 	}
 
@@ -129,7 +130,7 @@ public class HpcPermissionController extends AbstractHpcController {
 		return serviceAPIUrl;
 	}
 	
-	private void populatePermissions(Model model, String path, String type, String token) {
+	private void populatePermissions(Model model, String path, String type, String assignType, String token) {
 		String serviceAPIUrl = getServiceURL(model, path, type);
 		if(serviceAPIUrl == null)
 			return;
@@ -141,6 +142,7 @@ public class HpcPermissionController extends AbstractHpcController {
 		HpcPermissions permissions = new HpcPermissions();
 		permissions.setPath(path);
 		permissions.setType(type);
+		permissions.setAssignType(assignType);
 		if (permissionsDTO != null) {
 			List<HpcUserPermission> userPermissions = permissionsDTO.getUserPermissions();
 			for (HpcUserPermission permission : userPermissions) {
@@ -159,6 +161,24 @@ public class HpcPermissionController extends AbstractHpcController {
 				permissions.getEntries().add(entry);
 				assignedNames.add(permission.getUserId());
 			}
+			List<HpcGroupPermission> groupPermissions = permissionsDTO.getGroupPermissions();
+			for (HpcGroupPermission permission : groupPermissions) {
+				if (permission.getGroupName().equals("rodsadmin"))
+					continue;
+				HpcPermissionEntry entry = new HpcPermissionEntry();
+				entry.setName(permission.getGroupName());
+				entry.setType(HpcPermissionEntryType.GROUP);
+				if (permission.getPermission().equals("READ"))
+					entry.setRead(true);
+				else if (permission.getPermission().equals("WRITE"))
+					entry.setWrite(true);
+				else if (permission.getPermission().equals("OWN"))
+					entry.setOwn(true);
+
+				permissions.getEntries().add(entry);
+				assignedNames.add(permission.getGroupName());
+			}
+			
 		}
 		model.addAttribute("permissions", permissions);
 		model.addAttribute("names", assignedNames);
@@ -221,7 +241,7 @@ public class HpcPermissionController extends AbstractHpcController {
 				return "redirect:/";
 			}
 
-			populatePermissions(model, permissionsRequest.getPath(), permissionsRequest.getType(), authToken);
+			populatePermissions(model, permissionsRequest.getPath(), permissionsRequest.getType(), permissionsRequest.getAssignType(), authToken);
 		}
 
 		return "permission";

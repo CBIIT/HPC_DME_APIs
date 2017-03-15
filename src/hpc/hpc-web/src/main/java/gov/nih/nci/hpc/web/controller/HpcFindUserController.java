@@ -90,10 +90,10 @@ public class HpcFindUserController extends AbstractHpcController {
 				}
 				session.setAttribute("selectedUsers", buffer.toString());
 				if (selectedUsers != null && selectedUsers.length > 0)
-					return "redirect:/permissions?path=" + hpcWebUser.getPath()  + "&type="+hpcWebUser.getType();
+					return "redirect:/permissions?assignType=User&path=" + hpcWebUser.getPath()  + "&type="+hpcWebUser.getType();
 			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
 				session.removeAttribute("selectedUsers");
-				return "redirect:/permissions?path=" + hpcWebUser.getPath() + "&type="+hpcWebUser.getType();
+				return "redirect:/permissions?assignType=User&path=" + hpcWebUser.getPath() + "&type="+hpcWebUser.getType();
 			}
 
 			String userId = null;

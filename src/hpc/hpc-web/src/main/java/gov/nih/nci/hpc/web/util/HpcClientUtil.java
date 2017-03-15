@@ -67,6 +67,7 @@ import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.web.HpcWebException;
@@ -267,6 +268,39 @@ public class HpcClientUtil {
 
 				HpcUserListDTO users = parser.readValueAs(HpcUserListDTO.class);
 				return users;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get Users due to: " + e.getMessage());
+		}
+		return null;
+	}
+
+	public static HpcGroupListDTO getGroups(String token, String hpcGroupURL, String groupName, String hpcCertPath, String hpcCertPassword) {
+		try {
+			String paramsURL = "";
+			if (groupName != null && groupName.trim().length() > 0) {
+				paramsURL = "?groupSearchCriteria=" + groupName;
+			}
+
+			WebClient client = HpcClientUtil.getWebClient(hpcGroupURL + paramsURL, hpcCertPath, hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.invoke("GET", null);
+			if (restResponse.getStatus() == 200) {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcGroupListDTO groups = parser.readValueAs(HpcGroupListDTO.class);
+				return groups;
 			}
 
 		} catch (Exception e) {

@@ -25,10 +25,15 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebGroup;
+import gov.nih.nci.hpc.web.model.HpcWebUser;
+import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
@@ -47,7 +52,7 @@ public class HpcFindGroupController extends AbstractHpcController {
 	private String groupServiceURL;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
+	public String home(@RequestBody(required = false) String q, @RequestParam String path, @RequestParam String type,  Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
@@ -58,9 +63,10 @@ public class HpcFindGroupController extends AbstractHpcController {
 			return "index";
 		}
 		HpcWebGroup webGroup = new HpcWebGroup();
+		webGroup.setPath(path);
+		webGroup.setType(type);
 		model.addAttribute("hpcWebGroup", webGroup);
 		session.removeAttribute("selectedGroups");
-		session.removeAttribute("selectedUsers");
 		return "findgroup";
 	}
 
@@ -86,23 +92,26 @@ public class HpcFindGroupController extends AbstractHpcController {
 				}
 				session.setAttribute("selectedGroups", buffer.toString());
 				if (selectedGroups != null && selectedGroups.length > 0)
-					return "redirect:/permissions?path=" + path;
+					return "redirect:/permissions?assignType=Group&path=" + hpcWebGroup.getPath()  + "&type="+hpcWebGroup.getType();
 			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
 				session.removeAttribute("selectedGroups");
-				return "redirect:/permissions?path=" + path;
+				return "redirect:/permissions?assignType=Group&path=" + hpcWebGroup.getPath() + "&type="+hpcWebGroup.getType();
 			}
 
+			String groupName = null;
+			if(hpcWebGroup.getGroupName() != null && hpcWebGroup.getGroupName().trim().length() > 0)
+				groupName = hpcWebGroup.getGroupName();
+			
 			String authToken = (String) session.getAttribute("hpcUserToken");
-			// HpcGroupListDTO groups = HpcClientUtil.getGroups(authToken,
-			// groupServiceURL, hpcWebGroup.getGroupId(),
-			// sslCertPath, sslCertPassword);
-			// if (groups != null)
-			// model.addAttribute("searchresults", groups);
+			HpcGroupListDTO groups = HpcClientUtil.getGroups(authToken, groupServiceURL, groupName,
+					sslCertPath, sslCertPassword);
+			if (groups != null && groups.getGroups() != null && groups.getGroups().size() > 0)
+				model.addAttribute("searchresults", groups.getGroups());
 		} catch (Exception e) {
 			ObjectError error = new ObjectError("hpcDatasetSearch", "Failed to search by name: " + e.getMessage());
 			bindingResult.addError(error);
 			model.addAttribute("error", "Failed to search by name: " + e.getMessage());
-			return "finduser";
+			return "findgroup";
 		}
 		model.addAttribute("hpcWebGroup", hpcWebGroup);
 		return "findgroup";
