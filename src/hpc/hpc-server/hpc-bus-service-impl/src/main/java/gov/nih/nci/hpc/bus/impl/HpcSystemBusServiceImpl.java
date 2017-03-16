@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
+import gov.nih.nci.hpc.bus.aspect.SystemBusServiceImpl;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadCleanup;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
@@ -413,6 +414,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	}
     
     @Override
+    @SystemBusServiceImpl // Weave setSystemRequestInvoker() advice.
     public void refreshMetadataViews() throws HpcException
     {
     	// Use system account to perform this service.
@@ -420,12 +422,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	securityService.setSystemRequestInvoker();
     	
     	metadataService.refreshViews();
-    }
-    
-    @Override
-    public void setSystemRequestInvoker() throws HpcException
-    {
-    	securityService.setSystemRequestInvoker();
     }
     
     @Override
