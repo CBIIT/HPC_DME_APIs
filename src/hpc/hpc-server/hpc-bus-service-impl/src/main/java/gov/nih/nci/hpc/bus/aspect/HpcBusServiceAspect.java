@@ -59,16 +59,6 @@ public class HpcBusServiceAspect
 		// Intentionally left blank.
 	}
 	
-    /** 
-     * Join Point for all system business services that are implemented in 
-     * gov.nih.nci.hpc.bus.impl.HpcSystemBusServiceImpl and annotated with @SystemBusServiceImpl
-     */
-	@Pointcut("within(gov.nih.nci.hpc.bus.impl.HpcSystemBusServiceImpl) && annotation(SystemBusServiceImpl)")
-	private void systemBusServices() 
-	{
-		// Intentionally left blank.
-	}
-	
     //---------------------------------------------------------------------//
     // Advices.
     //---------------------------------------------------------------------//
@@ -118,7 +108,7 @@ public class HpcBusServiceAspect
      * @return The advised object return.
      * @throws Throwable The advised object exception.
      */
-	@Around("systemBusServices()")
+	@Around("busServices() && @annotation(gov.nih.nci.hpc.bus.aspect.SystemBusServiceImpl)")
 	public Object setSystemRequestInvoker(ProceedingJoinPoint joinPoint) throws Throwable
     {
 		logger.info("ERAN: set system request invoker");
