@@ -54,7 +54,17 @@ public class HpcBusServiceAspect
      * in gov.nih.nci.hpc.bus.impl
      */
 	@Pointcut("within(gov.nih.nci.hpc.bus.impl.*) && execution(* gov.nih.nci.hpc.bus.*.*(..))")
-	private void allBusServices() 
+	private void busServices() 
+	{
+		// Intentionally left blank.
+	}
+	
+    /** 
+     * Join Point for all system business services that are implemented in 
+     * gov.nih.nci.hpc.bus.impl.HpcSystemBusServiceImpl and annotated with @SystemBusServiceImpl
+     */
+	@Pointcut("within(gov.nih.nci.hpc.bus.impl.HpcSystemBusServiceImpl) && annotation(SystemBusServiceImpl)")
+	private void systemBusServices() 
 	{
 		// Intentionally left blank.
 	}
@@ -70,7 +80,7 @@ public class HpcBusServiceAspect
      * @return The advised object return.
      * @throws Throwable The advised object exception.
      */
-	@Around("allBusServices()")
+	@Around("busServices()")
 	public Object profileService(ProceedingJoinPoint joinPoint) throws Throwable
     {
 		long start = System.currentTimeMillis();
@@ -94,12 +104,32 @@ public class HpcBusServiceAspect
      * @param exception The exception to log.
      * @throws Throwable The advised object exception.
      */
-	@AfterThrowing (pointcut = "allBusServices()", throwing = "exception")
+	@AfterThrowing (pointcut = "busServices()", throwing = "exception")
     public void logException(JoinPoint joinPoint, HpcException exception) throws Throwable  
 	{
 		logger.error(joinPoint.getSignature().toShortString() + 
 				     " business service error:  " + exception.getMessage(), exception); 
 	}
+	
+    /** 
+     * Advice that set up the system account as the request invoker
+     * 
+     * @param joinPoint The join point.
+     * @return The advised object return.
+     * @throws Throwable The advised object exception.
+     */
+	@Around("systemBusServices()")
+	public Object setSystemRequestInvoker(ProceedingJoinPoint joinPoint) throws Throwable
+    {
+		logger.info("ERAN: set system request invoker");
+		
+		try {
+			 return joinPoint.proceed();
+			 
+		} finally {
+			       logger.info("ERAN: unset system request invoker"); 
+		}
+    }
 }
 
  
