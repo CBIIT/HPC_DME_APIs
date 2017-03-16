@@ -29,6 +29,7 @@ import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -86,6 +87,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	// Prepared query to get data objects that have their data in temporary archive.
 	private List<HpcMetadataQuery> dataTransferInTemporaryArchiveQuery = new ArrayList<>();
 	
+	// List of subjects (user-id / group-name) that permission update is not allowed.
+	private List<String> systemAdminSubjects = new ArrayList<>();
+	
     // The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -95,8 +99,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	
     /**
      * Constructor for Spring Dependency Injection.
+     * 
+     * @param systemAdminSubjects The system admin subjects (which update permissions not allowed for).
      */
-    private HpcDataManagementServiceImpl()
+    private HpcDataManagementServiceImpl(String systemAdminSubjects)
     {
     	// Prepare the query to get data objects in data transfer in-progress to archive.
         dataTransferInProgressToArchiveQuery.add(
@@ -115,6 +121,21 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
         	toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, 
         			        HpcMetadataQueryOperator.EQUAL, 
         			        HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE.value()));
+        
+        // Populate the list of system admin subjects (user-id / group-name). Set permission is 
+        // not allowed for these subjects.
+        this.systemAdminSubjects.addAll(Arrays.asList(systemAdminSubjects.split("\\s+")));
+    }   
+    
+    /**
+     * Default Constructor.
+     * 
+     * @throws HpcException Constructor is disabled.
+     */
+	private HpcDataManagementServiceImpl() throws HpcException
+    {
+    	throw new HpcException("Default Constructor disabled",
+    			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }   
     
     //---------------------------------------------------------------------//
@@ -214,6 +235,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public void setCollectionPermission(String path, HpcSubjectPermission subjectPermission) 
                                        throws HpcException
     {
+    	// Validate the permission request - ensure the subject is NOT a system account.
+    	validatePermissionRequest(subjectPermission);
+    	
         dataManagementProxy.setCollectionPermission(dataManagementAuthenticator.getAuthenticatedToken(), 
     		    		                            path, subjectPermission);
     }
@@ -228,6 +252,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public void setDataObjectPermission(String path, HpcSubjectPermission subjectPermission) 
                                        throws HpcException
     {
+    	// Validate the permission request - ensure the subject is NOT a system account.
+    	validatePermissionRequest(subjectPermission);
+    	
     	dataManagementProxy.setDataObjectPermission(dataManagementAuthenticator.getAuthenticatedToken(), 
                                                     path, subjectPermission);
     }
@@ -404,5 +431,29 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	return null;
+    }
+    
+    /**
+     * Validate that the subject is not system account. A system account is either the HPC system account
+     * or other 'system admin' accounts that are configured to disallow permission change.
+     *
+     * @param subjectPermission The permission request.
+     * @throws HpcException If the request is to change permission of a system account
+     */
+    private void validatePermissionRequest(HpcSubjectPermission subjectPermission) 
+                                          throws HpcException
+    {
+    	HpcIntegratedSystemAccount dataManagementAccount = 
+   	                               systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
+		if(dataManagementAccount == null) {
+		   throw new HpcException("System Data Management Account not configured",
+		     	                  HpcErrorType.UNEXPECTED_ERROR);
+		}
+		
+		String subject = subjectPermission.getSubject();
+		if(subject.equals(dataManagementAccount.getUsername()) || systemAdminSubjects.contains(subject)) {
+		   throw new HpcException("Changing permission of system/admin account is not allowed: " + subject,
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
+		}
     }
 }
