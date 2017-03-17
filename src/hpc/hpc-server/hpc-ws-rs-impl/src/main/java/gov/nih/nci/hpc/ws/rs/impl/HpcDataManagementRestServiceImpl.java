@@ -142,7 +142,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 
 		return okResponse(downloadResponses != null && !downloadResponses.getDownloadReceipts().isEmpty() ?
-		                  downloadResponses : null, true);
+		                  downloadResponses : null, false);
     }
     
     @Override
@@ -158,7 +158,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return okResponse(permissionsResponse, true);
+		return okResponse(permissionsResponse, false);
     }
     
     @Override
@@ -245,7 +245,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return okResponse(permissionsResponse, true);
+		return okResponse(permissionsResponse, false);
     }
     
     @Override
@@ -332,7 +332,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     		                          MessageContext messageContext)
     {
     	if(downloadResponse == null) {
-    	   return okResponse(null, true);
+    	   return okResponse(null, false);
     	}
     	
     	HpcDownloadReceiptDTO downloadReceipt = downloadResponse.getDownloadReceipt();
@@ -344,7 +344,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		   return okResponse(downloadReceipt.getDestinationFile(), 
 				             MediaType.APPLICATION_OCTET_STREAM_TYPE);
 		} else {
-			    return okResponse(downloadResponse, true);
+			    return okResponse(downloadResponse, false);
 		}
     }
 }
