@@ -613,6 +613,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			   throw new HpcException("Duplicate userId in a permission request: " + userId,
                                       HpcErrorType.INVALID_REQUEST_INPUT);	 
 			}
+	    	if(securityService.getUser(userId) == null) {
+	    	   throw new HpcException("User not found: " + userId, 
+	    			                  HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
+	    	}
 			if(permission == null || permission.isEmpty()) { 
 			   throw new HpcException("Null or empty permission in a permission request",
                                        HpcErrorType.INVALID_REQUEST_INPUT);	
