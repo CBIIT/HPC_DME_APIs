@@ -45,7 +45,7 @@ import gov.nih.nci.hpc.web.model.HpcWebUser;
 
 @Controller
 @EnableAutoConfiguration
-@RequestMapping("/user")
+@RequestMapping("/group")
 public class HpcGroupController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server}")
 	private String serverURL;
@@ -62,7 +62,7 @@ public class HpcGroupController extends AbstractHpcController {
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
 		}
-		return "user";
+		return "managegroup";
 	}
 
 	@RequestMapping(method = RequestMethod.POST)

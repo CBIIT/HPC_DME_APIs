@@ -1,5 +1,5 @@
 /**
- * HpcUserRegistrationController.java
+ * HpcSearchProjectController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -9,7 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import java.net.URI;
+import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -17,8 +17,6 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -27,33 +25,32 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
+import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM User registration controller
+ * HPC DM Project Search controller
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcUserRegistrationController.java
+ * @version $Id: HpcDataRegistrationController.java
  */
 
 @Controller
 @EnableAutoConfiguration
-@RequestMapping("/group")
+@RequestMapping("/user")
 public class HpcUserController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server}")
-	private String serverURL;
 	@Value("${gov.nih.nci.hpc.server.user}")
-	private String serviceUserURL;
+	private String userServiceURL;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
+	public String home(@RequestBody(required = false) String q,  Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
@@ -61,59 +58,63 @@ public class HpcUserController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
+			return "index";
 		}
-		return "group";
+		HpcWebUser webUser = new HpcWebUser();
+		model.addAttribute("hpcWebUser", webUser);
+		return "manageuser";
 	}
 
+	/*
+	 * Action for Dataset registration
+	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public String register(@Valid @ModelAttribute("hpcUser") HpcWebUser hpcUser, BindingResult bindingResult,
-			Model model) {
-		RestTemplate restTemplate = new RestTemplate();
-
+	public String findUsers(@Valid @ModelAttribute("hpcUser") HpcWebUser hpcWebUser, BindingResult bindingResult,
+			Model model, HttpSession session, HttpServletRequest request) {
 		try {
+			String path = (String) session.getAttribute("permissionsPath");
+			String[] actionType = request.getParameterValues("actionType");
+			if (actionType != null && actionType.length > 0 && actionType[0].equals("selected")) {
+				String[] selectedUsers = request.getParameterValues("selectedUsers");
+				StringBuffer buffer = new StringBuffer();
+				for (int i = 0; i < selectedUsers.length; i++) {
+					StringTokenizer tokens = new StringTokenizer(selectedUsers[i], ",");
+					while (tokens.hasMoreTokens()) {
+						buffer.append(tokens.nextToken());
+						if (tokens.hasMoreTokens())
+							buffer.append(";");
+					}
+				}
+				session.setAttribute("selectedUsers", buffer.toString());
+				if (selectedUsers != null && selectedUsers.length > 0)
+					return "redirect:/permissions?assignType=User&path=" + hpcWebUser.getPath()  + "&type="+hpcWebUser.getType();
+			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
+				session.removeAttribute("selectedUsers");
+				return "redirect:/permissions?assignType=User&path=" + hpcWebUser.getPath() + "&type="+hpcWebUser.getType();
+			}
 
-			URI uri = new URI(serviceUserURL + "/" + hpcUser.getNciUserId());
-			/*
-			 * ResponseEntity<HpcUserDTO> userEntity =
-			 * restTemplate.getForEntity(uri, HpcUserDTO.class); if(userEntity
-			 * != null && userEntity.hasBody() && userEntity.getBody() != null)
-			 * { ObjectError error = new ObjectError("nihUserId",
-			 * "UserId is already enrolled!"); bindingResult.addError(error); }
-			 * 
-			 * if (bindingResult.hasErrors()) { return "enroll"; }
-			 */
-			// HpcProxy client = new HpcProxyImpl(serverURL);
-			// HpcUserRegistrationRestService userRegistration =
-			// client.getUserRegistrationServiceProxy();
-			HpcUserDTO userDTO = new HpcUserDTO();
-			HpcNciAccount user = new HpcNciAccount();
-			user.setUserId(hpcUser.getNciUserId());
-			user.setFirstName(hpcUser.getFirstName());
-			user.setLastName(hpcUser.getLastName());
-			userDTO.setNciAccount(user);
-			/*
-			 * Boolean validGlobusCredentials = restTemplate.postForObject(new
-			 * URI(serviceGlobusUserURL), userDTO, Boolean.class);
-			 * if(validGlobusCredentials != null) { //Boolean valid =
-			 * validGlobusCredentials.getBody(); if(!validGlobusCredentials) {
-			 * ObjectError error = new ObjectError("nihUserId",
-			 * "Invalid Globus credentials!"); bindingResult.addError(error);
-			 * return "enroll"; } }
-			 */
-
-			HttpEntity<String> response = restTemplate.postForEntity(serviceUserURL, userDTO, String.class);
-			String resultString = response.getBody();
-			HttpHeaders headers = response.getHeaders();
-			String location = headers.getLocation().toString();
-			String id = location.substring(location.lastIndexOf("/") + 1);
-			// hpcUser.setId(id);
-			model.addAttribute("registrationStatus", true);
-			model.addAttribute("hpcUser", hpcUser);
+			String userId = null;
+			String firstName = null;
+			String lastName = null;
+			if(hpcWebUser.getNciUserId() != null && hpcWebUser.getNciUserId().trim().length() > 0)
+				userId = hpcWebUser.getNciUserId();
+			if(hpcWebUser.getFirstName() != null && hpcWebUser.getFirstName().trim().length() > 0)
+				firstName = hpcWebUser.getFirstName();
+			if(hpcWebUser.getLastName() != null && hpcWebUser.getLastName().trim().length() > 0)
+				lastName = hpcWebUser.getLastName();
+			
+			String authToken = (String) session.getAttribute("hpcUserToken");
+			HpcUserListDTO users = HpcClientUtil.getUsers(authToken, userServiceURL, userId,
+					firstName, lastName, sslCertPath, sslCertPassword);
+			if (users != null && users.getNciAccounts() != null && users.getNciAccounts().size() > 0)
+				model.addAttribute("searchresults", users.getNciAccounts());
 		} catch (Exception e) {
-			ObjectError error = new ObjectError("nciUserId", "Failed to enroll: " + e.getMessage());
+			ObjectError error = new ObjectError("hpcDatasetSearch", "Failed to search by name: " + e.getMessage());
 			bindingResult.addError(error);
-			return "enroll";
+			model.addAttribute("error", "Failed to search by name: " + e.getMessage());
+			return "finduser";
 		}
-		return "enrollresult";
+		model.addAttribute("hpcWebUser", hpcWebUser);
+		return "finduser";
 	}
 }
