@@ -20,10 +20,12 @@
 				<ul class="nav pull-right top-menu">
 
 					<!-- task notificatoin start -->
+					<!--
 					<li id="task_notificatoin_bar" class="dropdown"><a
 						data-toggle="dropdown" class="dropdown-toggle" href="#"> <i
 							class="icon-task-l"></i> <span class="badge bg-important">4</span>
 					</a>
+					 
 						<ul class="dropdown-menu extended tasks-bar">
 							<div class="notify-arrow notify-arrow-blue"></div>
 							<li>
@@ -83,9 +85,11 @@
 							</a></li>
 							<li class="external"><a href="#">See All Upload/Download
 									Tasks</a></li>
-						</ul></li>
+						</ul>
+						</li>
+						-->
 					<!-- task notificatoin end -->
-					<!-- inbox notificatoin start-->
+					<!-- inbox notificatoin start
 					<li id="mail_notificatoin_bar" class="dropdown"><a
 						data-toggle="dropdown" class="dropdown-toggle" href="#"> <i
 							class="icon-envelope-l"></i> <span class="badge bg-important">3</span>
@@ -108,8 +112,9 @@
 							</a></li>
 							<li><a href="#">See all messages</a></li>
 						</ul></li>
+					-->
 					<!-- inbox notificatoin end -->
-					<!-- alert notification start-->
+					<!-- alert notification start
 					<li id="alert_notificatoin_bar" class="dropdown"><a
 						data-toggle="dropdown" class="dropdown-toggle" href="#"> <i
 							class="icon-bell-l"></i> <span class="badge bg-important">3</span>
@@ -135,6 +140,7 @@
 							</a></li>
 							<li><a href="#">See all notifications</a></li>
 						</ul></li>
+					-->
 					<!-- alert notification end-->
 					<!-- user login dropdown start-->
 					<li class="dropdown"><a data-toggle="dropdown"
@@ -203,15 +209,21 @@
 					<li class="sub-menu"><a th:href="@{/reports}" class=""> <i
 							class="icon_document_alt"></i> <span>Reports</span>
 					</a></li>
-					<li class="sub-menu"><a href="#" class=""> <i
-							class="icon_lock_alt"></i> <span>Admin</span> <span
-							class="menu-arrow arrow_carrot-right"></span>
-					</a>
-						<ul class="sub">
+					<li class="sub-menu" th:if="${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN' or ${session.hpcUser.getUserRole()} == 'GROUP_ADMIN'">
+						<a href="#" class=""> 
+						<i class="icon_lock_alt"></i> 
+							<span>Admin</span> 
+							<span class="menu-arrow arrow_carrot-right"></span>
+						</a>
+						<ul class="sub" >
 							<li><a class="" th:href="@{/user}">User</a></li>
 							<li><a class="" th:href="@{/group}">Group</a></li>
-							<li><a class="" th:href="@{/doc}">DOC</a></li>
-						</ul></li>
+							<li><a class="" th:if="${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN'">DOC</a></li>
+						</ul>
+					</li>
+					<li><a href="/logout"><i
+									class="icon_arrow_triangle_right_alt"></i> Log Out</a></li>
+					
 				</ul>
 				<!-- sidebar menu end-->
 			</div>
