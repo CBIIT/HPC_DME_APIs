@@ -452,7 +452,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		
 		String subject = subjectPermission.getSubject();
 		if(subject.equals(dataManagementAccount.getUsername()) || systemAdminSubjects.contains(subject)) {
-		   throw new HpcException("Changing permission of system/admin account is not allowed: " + subject,
+		   throw new HpcException("Changing permission of admin account/group is not allowed: " + subject,
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
 		}
     }
