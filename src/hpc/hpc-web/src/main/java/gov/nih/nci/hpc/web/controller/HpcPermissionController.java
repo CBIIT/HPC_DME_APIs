@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -82,7 +83,7 @@ public class HpcPermissionController extends AbstractHpcController {
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		String authToken = (String) session.getAttribute("hpcUserToken");
-
+		session.removeAttribute("permissions");
 		if (user == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
 			bindingResult.addError(error);
@@ -97,21 +98,11 @@ public class HpcPermissionController extends AbstractHpcController {
 		if (path == null || type == null || path.trim().length() == 0 || type.trim().length() == 0)
 			model.addAttribute("updateStatus", "Invalid request! Path or Path type is missing");
 		
-//		if (path == null)
-//			path = sessionPath;
-//		else if(!path.equals(sessionPath))
-//			session.setAttribute("permissionsPath", path);
-//
-//		if (type == null)
-//			type = sessionType;
-//		else if(!type.equals(sessionType))
-//			session.setAttribute("permissionsPathType", sessionType);
-
 		String selectedUsers = (String) session.getAttribute("selectedUsers");
 		model.addAttribute("selectedUsers", selectedUsers);
 		String selectedGroups = (String) session.getAttribute("selectedGroups");
 		model.addAttribute("selectedGroups", selectedGroups);
-		populatePermissions(model, path, type, assignType, authToken);
+		populatePermissions(model, path, type, assignType, authToken, session);
 		return "permission";
 	}
 
@@ -130,7 +121,7 @@ public class HpcPermissionController extends AbstractHpcController {
 		return serviceAPIUrl;
 	}
 	
-	private void populatePermissions(Model model, String path, String type, String assignType, String token) {
+	private void populatePermissions(Model model, String path, String type, String assignType, String token, HttpSession session) {
 		String serviceAPIUrl = getServiceURL(model, path, type);
 		if(serviceAPIUrl == null)
 			return;
@@ -180,6 +171,7 @@ public class HpcPermissionController extends AbstractHpcController {
 			}
 			
 		}
+		session.setAttribute("permissions", permissions);
 		model.addAttribute("permissions", permissions);
 		model.addAttribute("names", assignedNames);
 	}
@@ -197,7 +189,7 @@ public class HpcPermissionController extends AbstractHpcController {
 		try {
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			HpcEntityPermissionsDTO subscriptionsRequestDTO = constructRequest(request, permissionsRequest.getPath());
-
+			setChangedPermissions(session, subscriptionsRequestDTO);
 			WebClient client = HpcClientUtil.getWebClient(serviceAPIUrl, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
 
@@ -241,12 +233,58 @@ public class HpcPermissionController extends AbstractHpcController {
 				return "redirect:/";
 			}
 
-			populatePermissions(model, permissionsRequest.getPath(), permissionsRequest.getType(), permissionsRequest.getAssignType(), authToken);
+			populatePermissions(model, permissionsRequest.getPath(), permissionsRequest.getType(), permissionsRequest.getAssignType(), authToken, session);
 		}
 
 		return "permission";
 	}
 
+	private void setChangedPermissions(HttpSession session, HpcEntityPermissionsDTO subscriptionsRequestDTO)
+	{
+		HpcPermissions permissions = (HpcPermissions) session.getAttribute("permissions");
+		if(permissions == null)
+			return;
+		List<HpcUserPermission> updatedUserPermissions = new ArrayList<HpcUserPermission>();
+		List<HpcGroupPermission> updatedGroupPermissions = new ArrayList<HpcGroupPermission>();
+		TreeSet<HpcPermissionEntry> permissionEntires = permissions.getEntries();
+		for(HpcPermissionEntry entry : permissionEntires)
+		{
+			HpcPermissionEntryType type = entry.getType();
+			if(type.equals(HpcPermissionEntryType.USER))
+			{
+				List<HpcUserPermission> userPermissions = subscriptionsRequestDTO.getUserPermissions();
+				for(HpcUserPermission userPermission : userPermissions)
+				{
+					if(userPermission.getUserId().equals(entry.getName()))
+					{
+						if(!userPermission.getPermission().equals(entry.getPermission()))
+							updatedUserPermissions.add(userPermission);
+						break;
+					}
+							
+				}
+			}
+			else if(type.equals(HpcPermissionEntryType.GROUP))
+			{
+				List<HpcGroupPermission> groupPermissions = subscriptionsRequestDTO.getGroupPermissions();
+				for(HpcGroupPermission groupPermission : groupPermissions)
+				{
+					if(groupPermission.getGroupName().equals(entry.getName()))
+					{
+						if(!groupPermission.getPermission().equals(entry.getPermission()))
+							updatedGroupPermissions.add(groupPermission);
+						break;
+					}
+							
+				}
+			}
+		}
+		subscriptionsRequestDTO.getUserPermissions().clear();
+		subscriptionsRequestDTO.getGroupPermissions().clear();
+		subscriptionsRequestDTO.getGroupPermissions().addAll(updatedGroupPermissions);
+		subscriptionsRequestDTO.getUserPermissions().addAll(updatedUserPermissions);
+	}
+	
 	private HpcEntityPermissionsDTO constructRequest(HttpServletRequest request, String path) {
 		Enumeration<String> params = request.getParameterNames();
 

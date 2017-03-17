@@ -56,6 +56,7 @@ public class HpcDashBoardController extends AbstractHpcController {
 		session.removeAttribute("hierarchy");
 		session.removeAttribute("permissionsPath");
 		session.removeAttribute("selectedUsers");
+		session.removeAttribute("permissions");
 
 		String authToken = (String) session.getAttribute("hpcUserToken");
 
