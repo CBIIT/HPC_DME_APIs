@@ -224,7 +224,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Get the collection.
     	HpcCollection collection = dataManagementService.getCollection(path, true);
     	if(collection == null) {
-      	   return null;
+    	   throw new HpcException("Collection doesn't exist: " + path,
+	                              HpcErrorType.INVALID_REQUEST_INPUT);	
       	}
     	    	
     	// Download all data objects in the collection tree.
@@ -245,7 +246,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Validate the collection exists.
     	if(dataManagementService.getCollection(path, false) == null) {
-      	   return null;
+    	   throw new HpcException("Collection doesn't exist: " + path,
+                                  HpcErrorType.INVALID_REQUEST_INPUT);	
       	}
     	
     	HpcEntityPermissionsResponseDTO permissionsResponse = new HpcEntityPermissionsResponseDTO();
@@ -403,7 +405,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Validate the data object exist.
     	if(dataManagementService.getDataObject(path) == null) {
-      	   return null;
+    	   throw new HpcException("Data object doesn't exist: " + path,
+                                  HpcErrorType.INVALID_REQUEST_INPUT);	
       	}
     	
     	// Get the System generated metadata.
@@ -444,7 +447,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Validate the data object exists.
     	if(dataManagementService.getDataObject(path) == null) {
-      	   return null;
+    	   throw new HpcException("Data object doesn't exist: " + path,
+                                  HpcErrorType.INVALID_REQUEST_INPUT);
       	}
     	
     	HpcEntityPermissionsResponseDTO permissionsResponse = new HpcEntityPermissionsResponseDTO();
