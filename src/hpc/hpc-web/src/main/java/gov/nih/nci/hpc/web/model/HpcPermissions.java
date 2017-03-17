@@ -2,12 +2,13 @@ package gov.nih.nci.hpc.web.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 public class HpcPermissions {
 	private String path;
 	private String type;
 	private String assignType;
-	private List<HpcPermissionEntry> entries;
+	private TreeSet<HpcPermissionEntry> entries;
 
 	public String getAssignType() {
 		return assignType;
@@ -38,13 +39,13 @@ public class HpcPermissions {
 		this.type = type;
 	}
 
-	public List<HpcPermissionEntry> getEntries() {
+	public TreeSet<HpcPermissionEntry> getEntries() {
 		if (entries == null)
-			entries = new ArrayList<HpcPermissionEntry>();
+			entries = new TreeSet<HpcPermissionEntry>();
 		return entries;
 	}
 
-	public void setEntries(List<HpcPermissionEntry> entries) {
+	public void setEntries(TreeSet<HpcPermissionEntry> entries) {
 		this.entries = entries;
 	}
 }
