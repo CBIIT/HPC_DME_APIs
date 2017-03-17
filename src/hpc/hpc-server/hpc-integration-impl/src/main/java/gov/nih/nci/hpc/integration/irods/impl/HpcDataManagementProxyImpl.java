@@ -568,7 +568,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		} catch(InvalidUserException iue) {
 			    throw new HpcException("Failed to set collection permission. " +
 			    		               (permissionRequest.getSubjectType().equals(HpcSubjectType.USER) ? 
-			    		                "Invalid user: " : "Invalid group") + 
+			    		                "Invalid user: " : "Invalid group: ") + 
 		                               permissionRequest.getSubject(),
                                        HpcErrorType.INVALID_REQUEST_INPUT, iue);
 			    
@@ -618,7 +618,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		} catch(InvalidUserException iue) {
 		        throw new HpcException("Failed to set data object permission. " +
 		       		                   (permissionRequest.getSubjectType().equals(HpcSubjectType.USER) ? 
-		    		                    "Invalid user: " : "Invalid group") + 
+		    		                    "Invalid user: " : "Invalid group: ") + 
 	                                   permissionRequest.getSubject(),
                                        HpcErrorType.INVALID_REQUEST_INPUT, iue);
 		    
