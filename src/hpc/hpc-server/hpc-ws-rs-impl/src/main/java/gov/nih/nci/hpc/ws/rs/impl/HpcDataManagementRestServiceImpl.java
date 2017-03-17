@@ -158,7 +158,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return okResponse(permissionsResponse, false);
+		return okResponse(permissionsResponse, true);
     }
     
     @Override
@@ -245,7 +245,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return okResponse(permissionsResponse, false);
+		return okResponse(permissionsResponse, true);
     }
     
     @Override
