@@ -540,7 +540,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     				                  listPermissionsForCollection(getAbsolutePath(path)));
     		for(HpcSubjectPermission per : p) {
     			if(per.getSubjectType().equals(HpcSubjectType.GROUP)) {
-                   logger.error("ERAN: " + per.getSubject() + groupExists(authenticatedToken, per.getSubject()));
+                   logger.error("ERAN: " + per.getSubject() + " " + groupExists(authenticatedToken, per.getSubject()) +
+                		        " " + (getUser(authenticatedToken, per.getSubject()) != null));
     			}
     		}
     		return p;
