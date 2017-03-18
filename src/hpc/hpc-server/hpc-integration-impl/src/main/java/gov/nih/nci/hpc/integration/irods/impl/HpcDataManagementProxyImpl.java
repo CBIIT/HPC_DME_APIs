@@ -535,9 +535,15 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                                               throws HpcException
     {
     	try {
-    		 return toHpcSubjectPermissions(
+    		List<HpcSubjectPermission> p =  toHpcSubjectPermissions(
     				  irodsConnection.getCollectionAO(authenticatedToken).
     				                  listPermissionsForCollection(getAbsolutePath(path)));
+    		for(HpcSubjectPermission per : p) {
+    			if(per.getSubjectType().equals(HpcSubjectType.GROUP)) {
+                   logger.error("ERAN: " + per.getSubject() + groupExists(authenticatedToken, per.getSubject()));
+    			}
+    		}
+    		return p;
     	     
     	} catch(Exception e) {
                 throw new HpcException("Failed to get collection permissions: " + 
