@@ -16,9 +16,9 @@ import gov.nih.nci.hpc.dto.security.HpcGroupMembersDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
-import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -33,23 +33,25 @@ import gov.nih.nci.hpc.exception.HpcException;
 public interface HpcSecurityBusService 
 {         
     /**
-     * Register a User.
+     * Register a User. 
      *
-     * @param userRegistrationDTO The user registration DTO.
+     * @param nciUserId The user ID to register.
+     * @param userRegistrationRequest The user registration request DTO.
      * @throws HpcException on service failure.
      */
-    public void registerUser(HpcUserDTO userRegistrationDTO) 
+    public void registerUser(String nciUserId,
+    		                 HpcUserRequestDTO userRegistrationRequest) 
     		                throws HpcException;
     
     /**
      * Update a User.
      *
      * @param nciUserId The user ID to update.
-     * @param updateUserRequestDTO The update request DTO.
+     * @param userUpdateRequest The user update request DTO.
      * @throws HpcException on service failure.
      */
     public void updateUser(String nciUserId, 
-    		               HpcUpdateUserRequestDTO updateUserRequestDTO)  
+    		               HpcUserRequestDTO userUpdateRequest)  
     		              throws HpcException;
 
     /**

@@ -17,9 +17,9 @@ import gov.nih.nci.hpc.dto.security.HpcGroupMembersDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
-import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcSecurityRestService;
 
@@ -69,24 +69,24 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//  
 	
     @Override
-    public Response registerUser(HpcUserDTO userRegistrationDTO)
+    public Response registerUser(String nciUserId, 
+    		                     HpcUserRequestDTO userRegistrationRequest)
     {	
 		try {
-			securityBusService.registerUser(userRegistrationDTO);
+			 securityBusService.registerUser(nciUserId, userRegistrationRequest);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
 		}
 		
-		return createdResponse(userRegistrationDTO.getNciAccount().getUserId());
+		return createdResponse(null);
 	}
     
     @Override
-    public Response updateUser(String nciUserId,
-                               HpcUpdateUserRequestDTO updateUserRequestDTO)
+    public Response updateUser(String nciUserId, HpcUserRequestDTO userUpdateRequest)
     {	
 		try {
-			 securityBusService.updateUser(nciUserId, updateUserRequestDTO);
+			 securityBusService.updateUser(nciUserId, userUpdateRequest);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -120,7 +120,7 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 		
-		return okResponse(!users.getNciAccounts().isEmpty() ? users : null, true);
+		return okResponse(!users.getUsers().isEmpty() ? users : null, true);
     }
     
     @Override
