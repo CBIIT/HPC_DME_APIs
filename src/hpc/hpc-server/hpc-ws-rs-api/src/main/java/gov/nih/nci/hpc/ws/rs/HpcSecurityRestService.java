@@ -12,8 +12,7 @@ package gov.nih.nci.hpc.ws.rs;
 
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
-import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
-import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -42,26 +41,28 @@ public interface HpcSecurityRestService
     /**
      * User registration.
      *
-     * @param userRegistrationDTO The user DTO to register.
-     * @return The REST service response.
+     * @param nciUserId The NCI user ID to register.
+     * @param userRegistrationRequest The user registration request DTO.
+     * @return The REST service response. 
      */
     @PUT
-    @Path("/user")
+    @Path("/user/{nciUserId}")
     @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-    public Response registerUser(HpcUserDTO userRegistrationDTO);
+    public Response registerUser(@PathParam("nciUserId") String nciUserId,
+    		                     HpcUserRequestDTO userRegistrationRequest);
 
     /**
      * Update a user.
      *
      * @param nciUserId The user ID to update.
-     * @param updateUserRequestDTO The update request DTO.
+     * @param userUpdateRequest The user update request DTO.
      * @return The REST service response.
      */
     @POST
     @Path("/user/{nciUserId}")
     @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response updateUser(@PathParam("nciUserId") String nciUserId,
-    		                   HpcUpdateUserRequestDTO updateUserRequestDTO);
+    		                   HpcUserRequestDTO userUpdateRequest);
 
     /**
      * Get a user by NCI user id.

@@ -13,8 +13,6 @@ package gov.nih.nci.hpc.dao.postgresql.impl;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -52,23 +50,23 @@ public class HpcUserDAOImpl implements HpcUserDAO
 	private static final String UPSERT_USER_SQL = 
 		    "insert into public.\"HPC_USER\" ( " +
                     "\"USER_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"DOC\", " +
-                    "\"IRODS_USERNAME\", \"IRODS_PASSWORD\", " +
                     "\"CREATED\", \"LAST_UPDATED\") " +
                     "values (?, ?, ?, ?, ?, ?, ?, ?) " +
             "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", " +
                                                    "\"DOC\"=excluded.\"DOC\", " +
                                                    "\"LAST_NAME\"=excluded.\"LAST_NAME\", " +
-                                                   "\"IRODS_USERNAME\"=excluded.\"IRODS_USERNAME\", " +
-                                                   "\"IRODS_PASSWORD\"=excluded.\"IRODS_PASSWORD\", " +
                                                    "\"CREATED\"=excluded.\"CREATED\", " +
                                                    "\"LAST_UPDATED\"=excluded.\"LAST_UPDATED\"";
 
 	private static final String GET_USER_SQL = "select * from public.\"HPC_USER\" where \"USER_ID\" = ?";
-	
+
 	private static final String GET_USERS_SQL = "select * from public.\"HPC_USER\" where ?";
-    private static final String GET_USERS_USER_ID_FILTER = " and \"USER_ID\" = ? ";
-    private static final String GET_USERS_FIRST_NAME_FILTER = " and \"FIRST_NAME\" = ? ";
-    private static final String GET_USERS_LAST_NAME_FILTER = " and \"LAST_NAME\" = ? ";
+    
+	private static final String GET_USERS_USER_ID_FILTER = " and \"USER_ID\" = ? ";
+    
+	private static final String GET_USERS_FIRST_NAME_FILTER = " and \"FIRST_NAME\" = ? ";
+    
+	private static final String GET_USERS_LAST_NAME_FILTER = " and \"LAST_NAME\" = ? ";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -118,8 +116,6 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		                         user.getNciAccount().getFirstName(),
 		                         user.getNciAccount().getLastName(),
 		                         user.getNciAccount().getDoc(),
-		                         user.getDataManagementAccount().getUsername(),
-		                         encryptor.encrypt(user.getDataManagementAccount().getPassword()),
 		                         user.getCreated(),
 		                         user.getLastUpdated());
 		     
@@ -196,11 +192,6 @@ public class HpcUserDAOImpl implements HpcUserDAO
 			nciAccount.setLastName(rs.getString("LAST_NAME"));
 			nciAccount.setDoc(rs.getString("DOC"));
 			
-			HpcIntegratedSystemAccount dataManagementAccount = new HpcIntegratedSystemAccount();
-			dataManagementAccount.setIntegratedSystem(HpcIntegratedSystem.IRODS);
-			dataManagementAccount.setUsername(rs.getString("IRODS_USERNAME"));
-			dataManagementAccount.setPassword(encryptor.decrypt(rs.getBytes("IRODS_PASSWORD")));
-			
         	HpcUser user = new HpcUser();
         	Calendar created = new GregorianCalendar();
         	created.setTime(rs.getDate("CREATED"));
@@ -211,7 +202,6 @@ public class HpcUserDAOImpl implements HpcUserDAO
         	user.setLastUpdated(lastUpdated);
         	
         	user.setNciAccount(nciAccount);
-        	user.setDataManagementAccount(dataManagementAccount);
             
             return user;
 		}

@@ -26,35 +26,35 @@
 		        schemaLocation="HpcDataTransferTypes.xsd" />
 
 	<!-- User DTO -->
-	<xsd:element name="HpcUserDTO">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="nciAccount" type="hpc-domain-user:HpcNciAccount" />
-				<xsd:element name="dataManagementAccount"
-					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
-				<xsd:element name="userRole" type="xsd:string" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-	
-	<!-- User list DTO -->
-	<xsd:element name="HpcUserListDTO">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="nciAccounts" type="hpc-domain-user:HpcNciAccount" 
-				             minOccurs="0" maxOccurs="unbounded"/>
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-	
-	<!-- Update User Request -->
-	<xsd:element name="HpcUpdateUserRequestDTO">
+	<xsd:element name="HpcUserRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="firstName" type="xsd:string" />
 				<xsd:element name="lastName" type="xsd:string" />
 				<xsd:element name="doc" type="xsd:string" />
 				<xsd:element name="userRole" type="xsd:string" />
+				<xsd:element name="createDataManagementAccount" type="xsd:boolean" minOccurs="0" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="HpcUserDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="firstName" type="xsd:string" />
+				<xsd:element name="lastName" type="xsd:string" />
+				<xsd:element name="doc" type="xsd:string" />
+				<xsd:element name="userRole" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<!--  list DTO -->
+	<xsd:element name="HpcUserListDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="users" type="hpc-domain-user:HpcNciAccount" 
+				             minOccurs="0" maxOccurs="unbounded"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
