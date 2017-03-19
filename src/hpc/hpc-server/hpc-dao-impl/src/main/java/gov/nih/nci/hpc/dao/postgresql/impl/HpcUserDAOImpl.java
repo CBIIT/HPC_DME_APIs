@@ -51,7 +51,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		    "insert into public.\"HPC_USER\" ( " +
                     "\"USER_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"DOC\", " +
                     "\"CREATED\", \"LAST_UPDATED\") " +
-                    "values (?, ?, ?, ?, ?, ?, ?, ?) " +
+                    "values (?, ?, ?, ?, ?, ?) " +
             "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", " +
                                                    "\"DOC\"=excluded.\"DOC\", " +
                                                    "\"LAST_NAME\"=excluded.\"LAST_NAME\", " +
