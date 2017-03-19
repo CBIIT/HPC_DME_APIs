@@ -29,9 +29,9 @@ import gov.nih.nci.hpc.dto.security.HpcGroupMembersDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
-import gov.nih.nci.hpc.dto.security.HpcUpdateUserRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,20 +103,30 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     //---------------------------------------------------------------------//  
     
     @Override
-    public void registerUser(HpcUserDTO userRegistrationDTO)  
+    public void registerUser(String nciUserId, HpcUserRequestDTO userRegistrationRequest)  
     		                throws HpcException
     {
     	// Input validation.
-    	if(userRegistrationDTO == null) {
-    	   throw new HpcException("Null HpcUserRegistrationDTO",
+    	if(StringUtils.isEmpty(nciUserId) || userRegistrationRequest == null) {
+    	   throw new HpcException("Null NCI user ID or user registation request",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Create data management account if not provided.
-    	if(userRegistrationDTO.getDataManagementAccount() == null) {
+    	// Instantiate an NCI account domain object.
+ 	    HpcNciAccount nciAccount = new HpcNciAccount();
+ 	    nciAccount.setUserId(nciUserId);
+ 	    nciAccount.setFirstName(userRegistrationRequest.getFirstName());
+ 	    nciAccount.setLastName(userRegistrationRequest.getLastName());
+ 	    nciAccount.setDoc(userRegistrationRequest.getDoc());
+    	
+    	// HPC-DM is integrated with a data management system (IRODS). When registering a user with HPC-DM, 
+ 	    // this service (by default) creates an account for the user with the data management system, unless
+ 	    // asked otherwise by the caller.
+    	if(userRegistrationRequest.getCreateDataManagementAccount() == null ||
+    	   userRegistrationRequest.getCreateDataManagementAccount()) {
     	   // Determine the user role to create. If not provided, default to USER.
-    	   HpcUserRole role = userRegistrationDTO.getUserRole() != null ?
-    			              roleFromString(userRegistrationDTO.getUserRole()) : 
+    	   HpcUserRole role = userRegistrationRequest.getUserRole() != null ?
+    			              roleFromString(userRegistrationRequest.getUserRole()) : 
     			              HpcUserRole.USER;
     			              
            // GROUP_ADMIN not supported by current Jargon API version. Respond with a workaround.
@@ -127,82 +138,29 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	   }
     			           
     	   // Create the data management account.
-    	   dataManagementSecurityService.addUser(
-    			         userRegistrationDTO.getNciAccount(), role);
-    	   
-    	   // Add the new account to the DTO.
-    	   HpcIntegratedSystemAccount dataManagementAccount = 
-    			                      new HpcIntegratedSystemAccount();
-    	   dataManagementAccount.setUsername(userRegistrationDTO.getNciAccount().getUserId());
-    	   dataManagementAccount.setPassword("N/A - LDAP Authenticated");
-    	   dataManagementAccount.setIntegratedSystem(HpcIntegratedSystem.IRODS);
-    	   userRegistrationDTO.setDataManagementAccount(dataManagementAccount);
+    	   dataManagementSecurityService.addUser(nciAccount, role);
     	}
     	
     	boolean registrationCompleted = false;
     	try {
     	     // Add the user to the system.
-    	     securityService.addUser(userRegistrationDTO.getNciAccount(), 
-    			                     userRegistrationDTO.getDataManagementAccount());
-    	     
+    	     securityService.addUser(nciAccount);
     	     registrationCompleted = true;
     	     
     	} finally {
     		       if(!registrationCompleted) {
     		    	  // Registration failed. Remove the data management account.
-    		    	  dataManagementSecurityService.deleteUser(
-    		    		  userRegistrationDTO.getNciAccount().getUserId());
+    		    	  dataManagementSecurityService.deleteUser(nciUserId);
     		       }
     	}
     }
     
     @Override
-    public void updateUser(String nciUserId, 
-                           HpcUpdateUserRequestDTO updateUserRequestDTO) 
+    public void updateUser(String nciUserId, HpcUserRequestDTO userUpdateRequest) 
                           throws HpcException
     {
     	// Input validation.
-    	if(updateUserRequestDTO == null) {
-    	   throw new HpcException("Null HpcUpdateUserRequestDTO",
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
-    	
-		if ((updateUserRequestDTO.getUserRole() == null || updateUserRequestDTO.getUserRole().isEmpty())
-				&& (updateUserRequestDTO.getFirstName() == null || updateUserRequestDTO.getFirstName().isEmpty())
-				&& (updateUserRequestDTO.getLastName() == null || updateUserRequestDTO.getLastName().isEmpty())
-				&& (updateUserRequestDTO.getDoc() == null || updateUserRequestDTO.getDoc().isEmpty()))
-	     	   throw new HpcException("Invalid update user input. Please provide firstName, lastName, doc or userRole to update.",
-     			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	
-		if(updateUserRequestDTO.getUserRole() != null && !updateUserRequestDTO.getUserRole().isEmpty())
-			roleFromString(updateUserRequestDTO.getUserRole());
-		
-    	HpcRequestInvoker invoker = securityService.getRequestInvoker();
-    	if(invoker == null || 
-    	   (!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))) {
-   			throw new HpcException("Not authorizated to update frist name, last name, doc, role. Please contact system administrator",
- 	                  HpcRequestRejectReason.NOT_AUTHORIZED);
-    	}
-    	
-    	if(invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))
-    	{
-    		if(nciUserId != null && nciUserId.equals(invoker.getNciAccount().getUserId()) && updateUserRequestDTO.getUserRole() != null && !updateUserRequestDTO.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN.value()))
-           			throw new HpcException("Not authorizated to downgrade self role. Please contact system administrator",
-         	                  HpcRequestRejectReason.NOT_AUTHORIZED);
-    				
-    	}
-    	else
-    	{
-    		if(updateUserRequestDTO.getFirstName() != null ||
-       			 updateUserRequestDTO.getLastName() != null ||
-       			 updateUserRequestDTO.getDoc() != null ||
-       			 updateUserRequestDTO.getUserRole() != null)
-       		{
-       			throw new HpcException("Not authorizated to update frist name, last name, DOC, role. Please contact system administrator",
-   	                  HpcRequestRejectReason.NOT_AUTHORIZED);
-       		}
-
-    	}
+    	validateUserUpdateRequest(nciUserId, userUpdateRequest);
     	
     	// Get the user.
     	HpcUser user = securityService.getUser(nciUserId);
@@ -211,34 +169,32 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     			                  HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
     	}
     	
-    	HpcUserRole requestUserRole = dataManagementSecurityService.getUserRole(nciUserId);
+    	// Get the current user role.
+    	HpcUserRole currentUserRole = dataManagementSecurityService.getUserRole(nciUserId);
     	
     	// Determine update values.
-    	String updateFirstName = (updateUserRequestDTO.getFirstName() != null && !updateUserRequestDTO.getFirstName().isEmpty()) ?
-    			                 updateUserRequestDTO.getFirstName() :
-    			                 user.getNciAccount().getFirstName();
-        String updateLastName = (updateUserRequestDTO.getLastName() != null && !updateUserRequestDTO.getLastName().isEmpty()) ?
-    	    			        updateUserRequestDTO.getLastName() :
-    	    			        user.getNciAccount().getLastName();
-    	String updateDOC = (updateUserRequestDTO.getDoc() != null && !updateUserRequestDTO.getDoc().isEmpty()) ?
-    	    	           updateUserRequestDTO.getDoc() :
-    	    	    	   user.getNciAccount().getDoc();
-    	HpcUserRole updateRole = (updateUserRequestDTO.getUserRole() != null && updateUserRequestDTO.getUserRole().isEmpty()) ?
-    		                     roleFromString(updateUserRequestDTO.getUserRole()) : 
-    		                     requestUserRole;
+    	String updateFirstName = !StringUtils.isEmpty(userUpdateRequest.getFirstName()) ?
+    			                 userUpdateRequest.getFirstName() : user.getNciAccount().getFirstName();
+        String updateLastName = !StringUtils.isEmpty(userUpdateRequest.getLastName()) ?
+        		                userUpdateRequest.getLastName() : user.getNciAccount().getLastName();
+    	String updateDOC = !StringUtils.isEmpty(userUpdateRequest.getDoc()) ?
+    			           userUpdateRequest.getDoc() : user.getNciAccount().getDoc();
+    	HpcUserRole updateRole = !StringUtils.isEmpty(userUpdateRequest.getUserRole()) ?
+    		                     roleFromString(userUpdateRequest.getUserRole()) : currentUserRole;
         // GROUP_ADMIN not supported by current Jargon API version. Respond with a workaround.
   	    if(updateRole == HpcUserRole.GROUP_ADMIN) {
   		   throw new HpcException("GROUP_ADMIN currently not supported by the API. " +
   	                              "Run 'iadmin moduser' command to change the user's role to GROUP_ADMIN",
   				                  HpcRequestRejectReason.API_NOT_SUPPORTED);
   	    }
-    		                     
-  	  dataManagementSecurityService.updateUser(nciUserId, updateFirstName,
-     			                         updateLastName, updateRole);
+    		    
+  	    // Update the data management (IRODS) account.
+  	    dataManagementSecurityService.updateUser(nciUserId, updateFirstName,
+     	     		                             updateLastName, updateRole);
     	
-	     // Update User.
-	     securityService.updateUser(nciUserId, updateFirstName, 
-	    		                updateLastName, updateDOC);
+	    // Update User.
+	    securityService.updateUser(nciUserId, updateFirstName, 
+	    		                   updateLastName, updateDOC);
     }
 
     
@@ -262,12 +218,10 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	
     	// Map it to the DTO.
     	HpcUserDTO userDTO = new HpcUserDTO();
-    	userDTO.setNciAccount(user.getNciAccount());
-    	userDTO.setDataManagementAccount(user.getDataManagementAccount());
+    	userDTO.setFirstName(user.getNciAccount().getFirstName());
+    	userDTO.setLastName(user.getNciAccount().getLastName());
+    	userDTO.setDoc(user.getNciAccount().getDoc());
     	userDTO.setUserRole(dataManagementSecurityService.getUserRole(nciUserId).value());
-    	
-    	// Mask passwords.
-    	maskPasswords(userDTO);
     	
     	return userDTO;
     }
@@ -278,7 +232,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	// Get the users based on search criteria.
     	HpcUserListDTO users = new HpcUserListDTO();
     	for(HpcUser user : securityService.getUsers(nciUserId, firstName, lastName)) {
-    	    users.getNciAccounts().add(user.getNciAccount());
+    	    users.getUsers().add(user.getNciAccount());
     	}
     	
     	return users;
@@ -472,18 +426,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     //---------------------------------------------------------------------//
     
     /**
-     * Mask account passwords.
-     * 
-     * @param userDTO the user DTO to have passwords masked.
-     */
-    private void maskPasswords(HpcUserDTO userDTO)
-    {
-    	if(userDTO.getDataManagementAccount() != null) {
-    	   userDTO.getDataManagementAccount().setPassword("*****");
-    	}
-    }
-    
-    /**
      * Convert a user role from string to enum.
      * 
      * @param roleStr The role string.
@@ -659,6 +601,45 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	}
     	
     	return groupMembersResponses;
+    }
+    
+    /**
+     * Validate a user update request
+     * 
+     * @param nciUserId The NCI user ID to be updated
+     * @param userUpdateRequest The user update request.
+     * @throws HpcException If the user update request is invalid.
+     */
+    private void validateUserUpdateRequest(String nciUserId, HpcUserRequestDTO userUpdateRequest) 
+                                          throws HpcException
+    {                                                    
+		// Input validation.
+		if(StringUtils.isEmpty(nciUserId) || userUpdateRequest == null) {
+		   throw new HpcException("Null NCI user ID or user update request",
+				                  HpcErrorType.INVALID_REQUEST_INPUT);	
+		}
+		
+		if(StringUtils.isEmpty(userUpdateRequest.getFirstName()) &&
+		   StringUtils.isEmpty(userUpdateRequest.getLastName()) &&
+		   StringUtils.isEmpty(userUpdateRequest.getDoc()) &&
+		   StringUtils.isEmpty(userUpdateRequest.getUserRole())) {
+	      throw new HpcException("Invalid update user request. Please provide firstName, lastName, doc or userRole to update.",
+	 			                 HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+	    // Validate an administrator is not downgrading self role.
+		HpcRequestInvoker invoker = securityService.getRequestInvoker();
+		if(invoker == null) {
+		   throw new HpcException("Null request invoker", HpcErrorType.UNEXPECTED_ERROR);
+		}
+		if(invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN) &&
+		   nciUserId.equals(invoker.getNciAccount().getUserId()) && 
+		   userUpdateRequest.getUserRole() != null && 
+		   !userUpdateRequest.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN.value())) {
+	       throw new HpcException("Not authorizated to downgrade self role. Please contact system administrator",
+	     	                      HpcRequestRejectReason.NOT_AUTHORIZED);
+					
+		}
     }
 }
 

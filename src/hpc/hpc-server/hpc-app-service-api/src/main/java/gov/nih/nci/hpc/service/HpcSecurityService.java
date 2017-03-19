@@ -36,17 +36,16 @@ public interface HpcSecurityService
      * Add a user.
      *
      * @param nciAccount The user's NCI account.
-     * @param dataTransferAccount The user's data management account.
      * @throws HpcException on service failure.
      */
-    public void addUser(HpcNciAccount nciAccount, 
-    		            HpcIntegratedSystemAccount dataTransferAccount) 
+    public void addUser(HpcNciAccount nciAccount) 
     		           throws HpcException;
     
     /**
      * Update a user.
      *
-     * @param nciUserId The NCI user ID of the user to update.
+     * @param nciUserId (Optional) The NCI user ID of the user to update. 
+     *                  If null then the request invoker is updated
      * @param firstName The user first name.
      * @param lastName The user last name. 
      * @param doc The user DOC.

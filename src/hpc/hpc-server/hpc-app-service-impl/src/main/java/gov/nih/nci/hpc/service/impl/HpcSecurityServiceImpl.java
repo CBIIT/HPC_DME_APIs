@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,13 +150,10 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     //---------------------------------------------------------------------//
 
     @Override
-    public void addUser(HpcNciAccount nciAccount,
-	                    HpcIntegratedSystemAccount dataManagementAccount)
-	                   throws HpcException
+    public void addUser(HpcNciAccount nciAccount) throws HpcException
     {
     	// Input validation.
-    	if(!isValidNciAccount(nciAccount) ||
-    	   !isValidIntegratedSystemAccount(dataManagementAccount)) {
+    	if(!isValidNciAccount(nciAccount)) {
     	   throw new HpcException("Invalid add user input",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
@@ -176,7 +174,6 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	HpcUser user = new HpcUser();
 
     	user.setNciAccount(nciAccount);
-    	user.setDataManagementAccount(dataManagementAccount);
     	user.setCreated(Calendar.getInstance());
 
     	// Persist to the DB.
@@ -192,7 +189,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	                  HpcErrorType.INVALID_REQUEST_INPUT);
 
     	// Input validation.
-    	if((firstName == null || firstName.isEmpty()) && (lastName == null || lastName.isEmpty()) && (doc == null || doc.isEmpty())) {
+    	if(StringUtils.isEmpty(firstName) && StringUtils.isEmpty(lastName) && StringUtils.isEmpty(doc)) {
     	   throw new HpcException("Invalid update user input",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
