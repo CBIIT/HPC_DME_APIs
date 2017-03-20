@@ -233,22 +233,22 @@ public class HpcClientUtil {
 			boolean first = true;
 			String paramsURL = "";
 			if (userId != null && userId.trim().length() > 0) {
-				paramsURL = "?nciUserId=" + userId;
+				paramsURL = "?nciUserId=" + URLEncoder.encode(userId);
 				first = false;
 			}
 			if (firstName != null && firstName.trim().length() > 0) {
 				if (first) {
-					paramsURL = "?firstName=" + firstName;
+					paramsURL = "?firstName=" + URLEncoder.encode(firstName);
 					first = false;
 				} else
-					paramsURL = paramsURL + "&firstName=" + firstName;
+					paramsURL = paramsURL + "&firstName=" + URLEncoder.encode(firstName);
 			}
 			if (lastName != null && lastName.trim().length() > 0) {
 				if (first) {
-					paramsURL = "?lastName=" + lastName;
+					paramsURL = "?lastName=" + URLEncoder.encode(lastName);
 					first = false;
 				} else
-					paramsURL = paramsURL + "&lastName=" + lastName;
+					paramsURL = paramsURL + "&lastName=" + URLEncoder.encode(lastName);
 			}
 
 			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + paramsURL, hpcCertPath, hpcCertPassword);
@@ -281,7 +281,7 @@ public class HpcClientUtil {
 		try {
 			String paramsURL = "";
 			if (groupName != null && groupName.trim().length() > 0) {
-				paramsURL = "?groupSearchCriteria=" + groupName;
+				paramsURL = "?groupSearchCriteria=" + URLEncoder.encode(groupName);
 			}
 
 			WebClient client = HpcClientUtil.getWebClient(hpcGroupURL + paramsURL, hpcCertPath, hpcCertPassword);
