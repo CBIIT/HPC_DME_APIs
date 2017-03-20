@@ -181,16 +181,28 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     }
 
     @Override
+    public void deleteUser(String nciUserId) throws HpcException
+    {
+    	if(StringUtils.isEmpty(nciUserId)) {
+      	   throw new HpcException("Null or empty nciUserId",
+ 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	userDAO.deleteUser(nciUserId);
+    }
+    
+    @Override
     public void updateUser(String nciUserId, String firstName, String lastName, String doc)
 	                      throws HpcException
     {
-    	if(nciUserId == null || nciUserId.isEmpty())
-     	   throw new HpcException("Invalid update UserId",
-	                  HpcErrorType.INVALID_REQUEST_INPUT);
-
     	// Input validation.
+    	if(StringUtils.isEmpty(nciUserId)) {
+     	   throw new HpcException("Null or empty nciUserId",
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
     	if(StringUtils.isEmpty(firstName) && StringUtils.isEmpty(lastName) && StringUtils.isEmpty(doc)) {
-    	   throw new HpcException("Invalid update user input",
+    	   throw new HpcException("Invalid update user input. Nothing to update",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
@@ -422,7 +434,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     private void upsert(HpcUser user) throws HpcException
     {
     	user.setLastUpdated(Calendar.getInstance());
-    	userDAO.upsert(user);
+    	userDAO.upsertUser(user);
     }
     
     /**

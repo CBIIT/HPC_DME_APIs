@@ -39,6 +39,14 @@ public interface HpcDataManagementSecurityService
     		           throws HpcException;
     
     /**
+     * Delete a user.
+     *
+     * @param nciUserId The user-id to delete.
+     * @throws HpcException on service failure.
+     */
+    public void deleteUser(String nciUserId) throws HpcException;
+    
+    /**
      * Update a user.
      *
      * @param nciUserId The NCI user ID of the user to update.
@@ -50,14 +58,6 @@ public interface HpcDataManagementSecurityService
     public void updateUser(String nciUserId, String firstName, String lastName,
                            HpcUserRole userRole) 
     		              throws HpcException;
-    
-    /**
-     * Delete a user.
-     *
-     * @param nciUserId The user-id to delete.
-     * @throws HpcException on service failure.
-     */
-    public void deleteUser(String nciUserId) throws HpcException;
     
     /**
      * Get the role of a given user's name.
