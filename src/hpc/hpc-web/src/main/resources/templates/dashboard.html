@@ -103,7 +103,7 @@
 </style>
 </head>
 <body ng-controller="DashBoardCtrl"
-	th:attr="ng-init='userId=\'' + ${session.hpcUser.nciAccount.userId} + '\'; queryURL=\'' + ${queryURL} +'\'; collectionURL=\'' + ${collectionURL} +'\''">
+	th:attr="ng-init='userId=\'' + ${session.hpcUserId} + '\'; queryURL=\'' + ${queryURL} +'\'; collectionURL=\'' + ${collectionURL} +'\''">
 
 	<!-- container section start -->
 	<section id="container" class="">

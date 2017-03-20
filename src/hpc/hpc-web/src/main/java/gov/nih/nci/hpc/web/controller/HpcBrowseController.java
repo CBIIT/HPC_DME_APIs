@@ -68,7 +68,7 @@ public class HpcBrowseController extends AbstractHpcController {
 		try {
 			HpcBrowserEntry browserEntry = new HpcBrowserEntry();
 			browserEntry.setFolder(true);
-			browserEntry = populateBrowserEntries(browserEntry, user.getNciAccount().getDoc(), authToken, model);
+			browserEntry = populateBrowserEntries(browserEntry, user.getDoc(), authToken, model);
 			browserEntry = trimPath(browserEntry, browserEntry.getName());
 			if (browserEntry != null) {
 				List<HpcBrowserEntry> entries = new ArrayList<HpcBrowserEntry>();
