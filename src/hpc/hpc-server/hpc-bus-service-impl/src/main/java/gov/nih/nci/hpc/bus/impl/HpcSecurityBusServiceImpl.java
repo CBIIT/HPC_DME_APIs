@@ -121,9 +121,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	
     	// HPC-DM is integrated with a data management system (IRODS). When registering a user with HPC-DM, 
  	    // this service (by default) creates an account for the user with the data management system, unless
- 	    // asked otherwise by the caller.
-    	if(userRegistrationRequest.getCreateDataManagementAccount() == null ||
-    	   userRegistrationRequest.getCreateDataManagementAccount()) {
+ 	    // asked to skip it by the caller
+    	if(userRegistrationRequest.getSkipDataManagementAccountCreation() == null ||
+    	   !userRegistrationRequest.getSkipDataManagementAccountCreation()) {
     	   // Determine the user role to create. If not provided, default to USER.
     	   HpcUserRole role = userRegistrationRequest.getUserRole() != null ?
     			              roleFromString(userRegistrationRequest.getUserRole()) : 
@@ -137,7 +137,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     				                 HpcRequestRejectReason.API_NOT_SUPPORTED);
     	   }
     			           
-    	   // Create the data management account.
+    	   // Create the data management (IRODS) account.
     	   dataManagementSecurityService.addUser(nciAccount, role);
     	}
     	
@@ -196,7 +196,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 	    securityService.updateUser(nciUserId, updateFirstName, 
 	    		                   updateLastName, updateDOC);
     }
-
     
     @Override
     public HpcUserDTO getUser(String nciUserId) throws HpcException
@@ -226,6 +225,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	return userDTO;
     }
     
+    @Override
     public HpcUserListDTO getUsers(String nciUserId, String firstName, String lastName) 
                                   throws HpcException
     {
@@ -236,6 +236,23 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	}
     	
     	return users;
+    }
+    
+    @Override
+    public void deleteUser(String nciUserId) throws HpcException
+    {
+    	// Input validation.
+    	if(nciUserId == null) {
+    	   throw new HpcException("Null NCI User ID",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}   
+    	
+	    // Delete the user. Intentionally, we delete the data management account (IRODS) last after
+    	// the user was removed from the HPC-DM account. 
+	    securityService.deleteUser(nciUserId);
+	    
+  	    // Delete the data management (IRODS) account.
+  	    dataManagementSecurityService.deleteUser(nciUserId);
     }
     
     @Override

@@ -489,6 +489,20 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
+    public void deleteUser(Object authenticatedToken, String nciUserId)
+                          throws HpcException
+    {
+    	// Delete the user in iRODS.
+    	try {
+    	     irodsConnection.getUserAO(authenticatedToken).deleteUser(nciUserId);
+    	     
+		} catch(Exception e) {
+                throw new HpcException("Failed delete iRODS user: " + e.getMessage(),
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		}
+    }
+    
+    @Override
     public void updateUser(Object authenticatedToken,
                            String username, String firstName, String lastName,
                            HpcUserRole userRole) 
@@ -513,20 +527,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                 throw new HpcException("Failed to update iRODS user: " + e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		}    	
-    }
-    
-    @Override
-    public void deleteUser(Object authenticatedToken, String nciUserId)
-                          throws HpcException
-    {
-    	// Delete the user in iRODS.
-    	try {
-    	     irodsConnection.getUserAO(authenticatedToken).deleteUser(nciUserId);
-    	     
-		} catch(Exception e) {
-                throw new HpcException("Failed delete iRODS user: " + e.getMessage(),
-                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		}
     }
     
     @Override
