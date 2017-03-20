@@ -404,7 +404,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 	}
 
 	private void populateMetadata(Model model, String authToken, HpcUserDTO user, String type, HttpSession session) {
-		model.addAttribute("doc", user.getNciAccount().getDoc());
+		model.addAttribute("doc", user.getDoc());
 		if (session.getAttribute("hierarchy") != null) {
 			model.addAttribute("hierarchy", session.getAttribute("hierarchy"));
 			return;
@@ -454,7 +454,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		try {
 			if (session.getAttribute("hierarchies") == null)
 				session.setAttribute("hierarchies", getHierarchy(authToken, user));
-			model.addAttribute("doc", user.getNciAccount().getDoc());
+			model.addAttribute("doc", user.getDoc());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -464,7 +464,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		Map<String, String> hierarchiesMap = new HashMap<String, String>();
 		try {
 			HpcDataManagementModelDTO docDTO = HpcClientUtil.getDOCModel(authToken, modelServiceURL,
-					user.getNciAccount().getDoc(), sslCertPath, sslCertPassword);
+					user.getDoc(), sslCertPath, sslCertPassword);
 			HpcDataHierarchy hierarchy = docDTO.getDataHierarchy();
 
 			List<String> hierarchies = new ArrayList<String>();

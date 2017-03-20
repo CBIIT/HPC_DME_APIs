@@ -110,8 +110,8 @@ public class HpcFindUserController extends AbstractHpcController {
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			HpcUserListDTO users = HpcClientUtil.getUsers(authToken, userServiceURL, userId,
 					firstName, lastName, sslCertPath, sslCertPassword);
-			if (users != null && users.getNciAccounts() != null && users.getNciAccounts().size() > 0)
-				model.addAttribute("searchresults", users.getNciAccounts());
+			if (users != null && users.getUsers() != null && users.getUsers().size() > 0)
+				model.addAttribute("searchresults", users.getUsers());
 		} catch (Exception e) {
 			ObjectError error = new ObjectError("hpcDatasetSearch", "Failed to search by name: " + e.getMessage());
 			bindingResult.addError(error);

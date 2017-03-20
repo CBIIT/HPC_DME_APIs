@@ -77,10 +77,22 @@
 					paginationPageSize : 100,
 					treeRowHeaderAlwaysVisible : false,
 					columnDefs : [ {
-						field : 'groupName',
-						width : 250,
-						displayName : 'Group Name'
-					}],
+						field : 'userId',
+						width : 120,
+						displayName : 'User Id'
+					}, {
+						field : 'firstName',
+						width : 120,
+						displayName : 'First Name'
+					}, {
+						field : 'lastName',
+						width : 120,
+						displayName : 'Last Name'
+					}, {
+						field : 'doc',
+						width : 120,
+						displayName : 'DOC'
+					} ],
 					onRegisterApi : function(gridApi) {
 						$scope.grid1Api = gridApi;
 					}
@@ -96,24 +108,26 @@
 					$scope.gridApi = gridApi;
 					gridApi.selection.on.rowSelectionChanged($scope, function(
 							row) {
+						var msg = 'row selected ' + row.entity.userId;
+						console.log('SUCCESS: ', msg);
 					});
 				}
 				$scope.getSelectedRows = function() {
 					$scope.mySelectedRows = $scope.gridApi.selection.getSelectedRows();
-					var groupsArray = new Array($scope.mySelectedRows.length);
+					var usersArray = new Array($scope.mySelectedRows.length);
 					if($scope.mySelectedRows.length == 0)
 					{
-						alert("Select at least one group to assign");
+						alert("Select at least one user to assign");
 						return;
 					}
 					for(var i=0;i<$scope.mySelectedRows.length;i++)
 					{
-						groupsArray[i] = $scope.mySelectedRows[i].groupName;
+						usersArray[i] = $scope.mySelectedRows[i].userId;
 					}
-					document.getElementById("selectedGroups").value = groupsArray;
+					document.getElementById("selectedUsers").value = usersArray;
 					document.getElementById("actionType").value = "selected";
-					$('#groupForm').attr('action', '/findgroup');
-					$("#groupForm").submit();
+					$('#userForm').attr('action', '/finduser');
+					$("#userForm").submit();
 					
 				};
 
@@ -150,8 +164,8 @@
 						<ol class="breadcrumb">
 							<li><i class="fa fa-dashboard"></i><a
 								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Authorization</li>
-							<li><i class="fa fa-list-alt"></i>Assign Group(s)</li>
+							<li><i class="fa fa-list-alt"></i>Admin</li>
+							<li><i class="fa fa-list-alt"></i>User(s)</li>
 						</ol>
 					</div>
 				</div>
@@ -161,10 +175,10 @@
 					<div class="col-lg-9 col-md-12">
 						<div class="panel panel-default">
 							<div class="panel-heading">
-								<h2>
-									<i class="fa fa-list-alt red"></i><strong>Manage
-										Permissions - Assign Group(s)</strong>
-								</h2>
+								<h2 align="left">
+									<i class="fa fa-list-alt red"></i><strong>Manage User(s)</strong>
+								</h2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								<h2 align="right">Create User</h2>
 							</div>
 							<div th:if="${error != null}">
 								<div class="alert alert-error">
@@ -177,8 +191,8 @@
 								<div class="panel-body">
 									<div class="form-group">
 										<div class="col-md-12 form-group">
-											<form class="form-horizontal" id="groupForm"
-												th:object="${hpcWebGroup}" th:action="@{/findgroup}"
+											<form class="form-horizontal" id="userForm"
+												th:object="${hpcWebUser}" th:action="@{/user}"
 												method="POST">
 												<div class="panel panel-default">
 													<div class="panel-body">
@@ -199,9 +213,21 @@
 																<td>
 																	<div class="form-group">
 																		<div class="col-sm-12 column">
-																			<label for="groupName">Group Name:</label> <input
+																			<label for="userId">User Id:</label> <input
 																				type="text" class="form-control"
-																				th:field="*{groupName}" placeholder="Enter Group Name" />
+																				th:field="*{nciUserId}" placeholder="Enter UserId" />
+																		</div>
+																		<div class="col-sm-12 column">
+																			<label for="firstName">First Name:</label> <input
+																				type="text" class="form-control"
+																				th:field="*{firstName}"
+																				placeholder="Enter First Name" size="40" />
+																		</div>
+																		<div class="col-sm-12 column">
+																			<label for="lastName">Last Name:</label> <input
+																				type="text" class="form-control"
+																				th:field="*{lastName}" placeholder="Enter Last Name"
+																				size="40" />
 																		</div>
 																	</div>
 																	<div class="modal-footer">
@@ -209,8 +235,6 @@
 																			id="primaryButton" onClick="prepareAndSubmit()">Search</button>
 																		<button type="cancel" class="btn btn-md btn-primary"
 																			id="cancelButton" onclick="cancel()">Cancel</button>
-																		<input type="hidden" th:field="*{path}" th:value="${hpcWebGroup.getPath()}"/>
-																		<input type="hidden" th:field="*{type}" th:value="${hpcWebGroup.getType()}"/>
 																	</div>
 																</td>
 															</tr>
@@ -218,14 +242,10 @@
 													</div>
 												</div>
 												<input type="hidden" id="actionType" name="actionType" value=""/>
-												<input type="hidden" id="selectedGroups" name="selectedGroups" value=""/>
+												<input type="hidden" id="selectedUsers" name="selectedUsers" value=""/>
 											</form>
 										</div>
 										<div ng-controller="MainCtrl">
-										<button type="button" class="btn btn-info"
-											ng-click="getSelectedRows()">Assign</button>
-										<button type="button" class="btn btn-info"
-											ng-click="clearAll()">Clear All</button>
 											<div id="grid1" ui-grid="gridOptions1"
 												ui-grid-pagination="true" ui-grid-resize-columns="true"
 												ui-grid-selection="true" ui-grid-move-columns="true"></div>
@@ -269,8 +289,8 @@
 		
 		function cancel() {
 			document.getElementById("actionType").value = "cancel";
-			$('#groupForm').attr('action', '/findgroup');
-			$("#groupForm").submit();
+			$('#userForm').attr('action', '/finduser');
+			$("#userForm").submit();
 		}
 		/*]]>*/
 	</script>

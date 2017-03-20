@@ -247,38 +247,47 @@ public class HpcPermissionController extends AbstractHpcController {
 		List<HpcUserPermission> updatedUserPermissions = new ArrayList<HpcUserPermission>();
 		List<HpcGroupPermission> updatedGroupPermissions = new ArrayList<HpcGroupPermission>();
 		TreeSet<HpcPermissionEntry> permissionEntires = permissions.getEntries();
-		for(HpcPermissionEntry entry : permissionEntires)
+		List<String> updatedUsers = new ArrayList<String>();
+		List<String> updatedgroups = new ArrayList<String>();
+		List<HpcUserPermission> userPermissions = subscriptionsRequestDTO.getUserPermissions();
+		List<HpcGroupPermission> groupPermissions = subscriptionsRequestDTO.getGroupPermissions();
+		
+		for(HpcUserPermission userPermission :  subscriptionsRequestDTO.getUserPermissions())
 		{
-			HpcPermissionEntryType type = entry.getType();
-			if(type.equals(HpcPermissionEntryType.USER))
+			boolean found = false;
+			for(HpcPermissionEntry entry : permissionEntires)
 			{
-				List<HpcUserPermission> userPermissions = subscriptionsRequestDTO.getUserPermissions();
-				for(HpcUserPermission userPermission : userPermissions)
+				HpcPermissionEntryType type = entry.getType();
+				if(type.equals(HpcPermissionEntryType.USER) && userPermission.getUserId().equals(entry.getName()))
 				{
-					if(userPermission.getUserId().equals(entry.getName()))
-					{
-						if(!userPermission.getPermission().equals(entry.getPermission()))
-							updatedUserPermissions.add(userPermission);
-						break;
-					}
-							
+					found = true;
+					if(!userPermission.getPermission().equals(entry.getPermission()))
+						updatedUserPermissions.add(userPermission);
+					break;
 				}
 			}
-			else if(type.equals(HpcPermissionEntryType.GROUP))
-			{
-				List<HpcGroupPermission> groupPermissions = subscriptionsRequestDTO.getGroupPermissions();
-				for(HpcGroupPermission groupPermission : groupPermissions)
-				{
-					if(groupPermission.getGroupName().equals(entry.getName()))
-					{
-						if(!groupPermission.getPermission().equals(entry.getPermission()))
-							updatedGroupPermissions.add(groupPermission);
-						break;
-					}
-							
-				}
-			}
+			if(!found)
+				updatedUserPermissions.add(userPermission);
 		}
+		
+		for(HpcGroupPermission groupPermission :  subscriptionsRequestDTO.getGroupPermissions())
+		{
+			boolean found = false;
+			for(HpcPermissionEntry entry : permissionEntires)
+			{
+				HpcPermissionEntryType type = entry.getType();
+				if(type.equals(HpcPermissionEntryType.GROUP) && groupPermission.getGroupName().equals(entry.getName()))
+				{
+					found = true;
+					if(!groupPermission.getPermission().equals(entry.getPermission()))
+						updatedGroupPermissions.add(groupPermission);
+					break;
+				}
+			}
+			if(!found)
+				updatedGroupPermissions.add(groupPermission);
+		}
+		
 		subscriptionsRequestDTO.getUserPermissions().clear();
 		subscriptionsRequestDTO.getGroupPermissions().clear();
 		subscriptionsRequestDTO.getGroupPermissions().addAll(updatedGroupPermissions);

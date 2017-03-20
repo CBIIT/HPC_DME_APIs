@@ -50,26 +50,16 @@ public class HpcRegisterCollectionController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
-		model.addAttribute("queryURL", queryURL);
-		model.addAttribute("collectionURL", collectionURL);
-		session.removeAttribute("compoundQuery");
-		session.removeAttribute("hierarchy");
 		String authToken = (String) session.getAttribute("hpcUserToken");
-		if (authToken == null) {
-			return "redirect:/";
-		}
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
-		if (user == null) {
+		if (authToken == null || user == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "redirect:/";
 		}
-
-		// populateSavedSearches(model, user, userPasswdToken);
-		// populateNotifications(model, user, userPasswdToken);
-		return "updatecollection";
+		return "registercollection";
 	}
 
 }
