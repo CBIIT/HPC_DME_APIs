@@ -247,6 +247,11 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}   
     	
+    	if(securityService.getUser(nciUserId) == null) {
+    	   throw new HpcException("User not found: " + nciUserId, 
+    			                  HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
+    	}
+    	
 	    // Delete the user. Intentionally, we delete the data management account (IRODS) last after
     	// the user was removed from the HPC-DM account. 
 	    securityService.deleteUser(nciUserId);
@@ -432,10 +437,14 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		   throw new HpcException("Null group name", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		
-    	// Delete the group.
-    	if(dataManagementSecurityService.groupExists(groupName)) {
-    	   dataManagementSecurityService.deleteGroup(groupName);
+    	// Validate the group exists.
+    	if(!dataManagementSecurityService.groupExists(groupName)) {
+    	   throw new HpcException("Group doesn't exist", 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
+		
+    	// Delete the group.
+        dataManagementSecurityService.deleteGroup(groupName);
 	}
 	
     //---------------------------------------------------------------------//
