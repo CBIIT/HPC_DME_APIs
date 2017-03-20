@@ -38,14 +38,20 @@ public interface HpcSecurityService
      * @param nciAccount The user's NCI account.
      * @throws HpcException on service failure.
      */
-    public void addUser(HpcNciAccount nciAccount) 
-    		           throws HpcException;
+    public void addUser(HpcNciAccount nciAccount) throws HpcException;
+    
+    /**
+     * Delete a user.
+     *
+     * @param nciAccount The NCI user ID of the user to update. 
+     * @throws HpcException on service failure.
+     */
+    public void deleteUser(String nciUserId) throws HpcException;
     
     /**
      * Update a user.
      *
-     * @param nciUserId (Optional) The NCI user ID of the user to update. 
-     *                  If null then the request invoker is updated
+     * @param nciUserId The NCI user ID of the user to update. 
      * @param firstName The user first name.
      * @param lastName The user last name. 
      * @param doc The user DOC.

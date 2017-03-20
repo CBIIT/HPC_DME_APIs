@@ -83,6 +83,19 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     }
     
     @Override
+    public void deleteUser(String nciUserId) throws HpcException
+    {
+    	// Input validation.
+    	if(nciUserId == null) {	
+    	   throw new HpcException("Invalid NCI user ID", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+       	
+    	dataManagementProxy.deleteUser(dataManagementAuthenticator.getAuthenticatedToken(), 
+    			                       nciUserId);
+    }
+    
+    @Override
     public void updateUser(String nciUserId, String firstName, String lastName,
                            HpcUserRole userRole) throws HpcException
     {
@@ -96,19 +109,6 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     	dataManagementProxy.updateUser(dataManagementAuthenticator.getAuthenticatedToken(), 
     			                       nciUserId, firstName, lastName, userRole);
     }    
-    
-    @Override
-    public void deleteUser(String nciUserId) throws HpcException
-    {
-    	// Input validation.
-    	if(nciUserId == null) {	
-    	   throw new HpcException("Invalid NCI user ID", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-       	
-    	dataManagementProxy.deleteUser(dataManagementAuthenticator.getAuthenticatedToken(), 
-    			                       nciUserId);
-    }
     
     @Override
     public HpcUserRole getUserRole(String nciUserId) throws HpcException

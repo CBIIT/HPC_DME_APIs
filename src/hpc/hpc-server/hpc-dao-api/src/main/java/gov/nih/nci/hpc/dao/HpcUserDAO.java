@@ -32,7 +32,15 @@ public interface HpcUserDAO
      * @param user The user to be added/updated.
      * @throws HpcException on database error.
      */
-    public void upsert(HpcUser user) throws HpcException;
+    public void upsertUser(HpcUser user) throws HpcException;
+    
+    /**
+     * Delete a user.
+     *
+     * @param nciUserId the user NCI ID.
+     * @throws HpcException on database error.
+     */
+    public void deleteUser(String nciUserId) throws HpcException;
     
     /**
      * Get user from the repository by ID.
