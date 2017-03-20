@@ -57,6 +57,8 @@ public class HpcUserDAOImpl implements HpcUserDAO
                                                    "\"LAST_NAME\"=excluded.\"LAST_NAME\", " +
                                                    "\"CREATED\"=excluded.\"CREATED\", " +
                                                    "\"LAST_UPDATED\"=excluded.\"LAST_UPDATED\"";
+	
+	private static final String DELETE_USER_SQL = "delete from public.\"HPC_USER\" where \"USER_ID\" = ?";
 
 	private static final String GET_USER_SQL = "select * from public.\"HPC_USER\" where \"USER_ID\" = ?";
 
@@ -108,7 +110,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void upsert(HpcUser user) throws HpcException
+	public void upsertUser(HpcUser user) throws HpcException
     {
 		try {
 		     jdbcTemplate.update(UPSERT_USER_SQL,
@@ -121,6 +123,18 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a user: " + e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, e);
+		}
+    }
+	
+	@Override
+	public void deleteUser(String nciUserId) throws HpcException
+    {
+		try {
+		     jdbcTemplate.update(DELETE_USER_SQL, nciUserId);
+		     
+		} catch(DataAccessException e) {
+			    throw new HpcException("Failed to delete a user: " + e.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, e);
 		}
     }

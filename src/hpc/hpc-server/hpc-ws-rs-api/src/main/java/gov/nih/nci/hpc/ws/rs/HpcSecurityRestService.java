@@ -91,6 +91,16 @@ public interface HpcSecurityRestService
     public Response getUsers(@QueryParam("nciUserId") String nciUserId,
     		                 @QueryParam("firstName") String firstName,
     		                 @QueryParam("lastName") String lastName);
+    
+    /**
+     * Delete a user.
+     *
+     * @param nciUserId The user ID to delete.
+     * @return The REST service response.
+     */
+    @DELETE
+    @Path("/user/{nciUserId}")
+    public Response deleteUser(@PathParam("nciUserId") String nciUserId);
 
     /**
      * Authenticate a user.
@@ -161,7 +171,6 @@ public interface HpcSecurityRestService
      */
     @DELETE
     @Path("/group/{groupName}")
-    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response deleteGroup(@PathParam("groupName") String groupName);
 
     /**
