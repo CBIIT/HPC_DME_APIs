@@ -87,10 +87,10 @@ public class HpcGroupController extends AbstractHpcController {
 			// client.getUserRegistrationServiceProxy();
 			HpcUserDTO userDTO = new HpcUserDTO();
 			HpcNciAccount user = new HpcNciAccount();
-			user.setUserId(hpcUser.getNciUserId());
-			user.setFirstName(hpcUser.getFirstName());
-			user.setLastName(hpcUser.getLastName());
-			userDTO.setNciAccount(user);
+			//userDTO.setUserId(hpcUser.getNciUserId());
+			userDTO.setFirstName(hpcUser.getFirstName());
+			userDTO.setLastName(hpcUser.getLastName());
+			//userDTO.setNciAccount(user);
 			/*
 			 * Boolean validGlobusCredentials = restTemplate.postForObject(new
 			 * URI(serviceGlobusUserURL), userDTO, Boolean.class);

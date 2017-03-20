@@ -94,7 +94,7 @@ public class HpcReportsController extends AbstractHpcController {
 			return "redirect:/";
 		}
 		model.addAttribute("userRole", user.getUserRole());
-		model.addAttribute("userDOC", user.getNciAccount().getDoc());
+		model.addAttribute("userDOC", user.getDoc());
 		model.addAttribute("reportRequest", new HpcReportRequest());
 		return "reports";
 	}
