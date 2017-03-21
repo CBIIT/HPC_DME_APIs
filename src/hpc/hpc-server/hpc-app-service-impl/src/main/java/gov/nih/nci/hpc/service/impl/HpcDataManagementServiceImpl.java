@@ -280,12 +280,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
         permissionRequest.setSubject(dataManagementAccount.getUsername());
             
         // Determine if it's a collection or data object.
-        HpcPathAttributes pathAttributes = 
-          	   dataManagementProxy.getPathAttributes(dataManagementAuthenticator.getAuthenticatedToken(), path);
+        Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
+        HpcPathAttributes pathAttributes = dataManagementProxy.getPathAttributes(authenticatedToken, path);
         if(pathAttributes.getIsDirectory()) {
-           setCollectionPermission(path, permissionRequest);
+           dataManagementProxy.setCollectionPermission(authenticatedToken, path, permissionRequest);
         } else if(pathAttributes.getIsFile()) {
-        	      setDataObjectPermission(path, permissionRequest);
+        	      dataManagementProxy.setDataObjectPermission(authenticatedToken, path, permissionRequest);
         }
     }
     
