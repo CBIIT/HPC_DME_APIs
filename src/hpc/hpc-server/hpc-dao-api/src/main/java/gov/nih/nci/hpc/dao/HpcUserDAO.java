@@ -54,9 +54,9 @@ public interface HpcUserDAO
     /**
      * Get users by search criterias.
      *
-     * @param nciUserId (Optional) The user ID to search for.
-     * @param firstName (Optional) The first name to search for.
-     * @param lastName (Optional) The last name to search for.
+     * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
+     * @param firstName (Optional) The first name to search for (using case insensitive comparison).
+     * @param lastName (Optional) The last name to search for (using case insensitive comparison).
      * @return A list of users.
      * @throws HpcException on service failure.
      */

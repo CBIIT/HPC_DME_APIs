@@ -79,9 +79,9 @@ public interface HpcSecurityRestService
     /**
      * Get users by search criterias.
      *
-     * @param nciUserId The user ID to search for.
-     * @param firstName The first name to search for.
-     * @param lastName The last name to search for.
+     * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
+     * @param firstName (Optional) The first name to search for (using case insensitive comparison).
+     * @param lastName (Optional) The last name to search for (using case insensitive comparison).
      * @return gov.nih.nci.hpc.dto.security.HpcUserListDTO entity.
      * @return The REST service response.
      */
