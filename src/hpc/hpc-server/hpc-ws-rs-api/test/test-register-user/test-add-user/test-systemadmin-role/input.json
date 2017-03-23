@@ -1,15 +1,8 @@
 {
-    "nciAccount": {
         "userId": "testid",
             "firstName": "testfirst",
             "lastName": "testlast",
-            "doc":"FNLCR"
-    },
-    "dataTransferAccount":    {
-     "username": "testhpcdm",
-      "password": "***REMOVED***",
-      "integratedSystem": "GLOBUS"
-   },
+            "doc":"FNLCR",
    
     "userRole" :"SYSTEM_ADMIN"
 }
