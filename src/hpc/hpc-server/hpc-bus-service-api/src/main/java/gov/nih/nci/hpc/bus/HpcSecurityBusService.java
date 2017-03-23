@@ -150,7 +150,7 @@ public interface HpcSecurityBusService
     /**
      * Get groups by search criteria.
      *
-     * @param groupSearchCriteria (Optional) The group search criteria (In the form of SQL 'LIKE').
+     * @param groupSearchCriteria (Optional) The group search criteria (In the form of SQL 'LIKE', using case insensitive matching).
      *                            If not provided, then all groups are returned.
      * @return A list of groups and their members.
      * @throws HpcException on service failure.
