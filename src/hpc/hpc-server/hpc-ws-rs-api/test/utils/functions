@@ -541,6 +541,43 @@ function verify_globus_file {
 }
 
 
+#Enroll a user 
+#Inputs:    userid
+#           registration-template.json 
+#           response-header      
+#           response-message
+function enroll_user {
+
+    usage="USAGE: enroll_user <userid> <registration-template.json> <response-header> <response-message>"
+
+    nargs=$#
+    if [ "$nargs" -ne  "4" ]
+    then
+        echo "ERROR: using enroll_user" >&2
+        echo "received $nargs arguments." >&2
+        echo "$usage" >&2 
+        exit
+    fi
+
+    USER_ID="$1"
+    REGISTRATION_TEMPLATE="$2"
+    RESPONSE_HEADER="$3"
+    RESPONSE_MSG="$4"
+
+    if [ ! -e $REGISTRATION_TEMPLATE ] 
+    then
+        echo "ERROR: The registration template file:$REGISTRATION_TEMPLATE does not exist "
+        exit
+    fi  
+    
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+   
+    curl  -X PUT -H "Content-Type: application/json" -d @$REGISTRATION_TEMPLATE ${SERVER}/user/$USER_ID  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
+    check_connection $RESPONSE_HEADER
+}
+
+
+
 #Register a new test user 
 #Input: registration-template.json 
 function create_new_user {
@@ -565,19 +602,20 @@ function create_new_user {
     NEW_USER_ID=testid-$SUFFIX
     UPDATED_FIRST=`cat $REGISTRATION_TEMPLATE | sed "s/testfirst/testfirst-$SUFFIX/"`
     UPDATED_LAST=`echo "$UPDATED_FIRST" | sed "s/testlast/testlast-$SUFFIX/"`
-    UPDATED_ID=`echo "$UPDATED_LAST" | sed "s/testid/$NEW_USER_ID/"`
-    echo "$UPDATED_ID" > register-user.json.tmp
+    echo "$UPDATED_LAST" > register-user.json.tmp
     echo "$NEW_USER_ID" > new-user-id.tmp 
     
     RESPONSE_HEADER=user-registration-response-header.tmp
     RESPONSE_MSG=user-registration-response-message.json.tmp
-    SERVER=`cat $HPC_DM_TEST/utils/server`
-    
-    curl -H "Content-Type: application/json" -d @register-user.json.tmp -X PUT ${SERVER}/user  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
-    check_connection $RESPONSE_HEADER
+
+    enroll_user $NEW_USER_ID register-user.json.tmp $RESPONSE_HEADER $RESPONSE_MSG
+
     RESPONSE_CODE=`get_http_code $RESPONSE_HEADER`
     echo $RESPONSE_CODE
 }
+
+
+
 
 #Register a new test user using the tempalte
 function register_user_from_template {
@@ -610,7 +648,7 @@ function register_group {
     RESPONSE_MSG="$3"
 
     SERVER=`cat $HPC_DM_TEST/utils/server`
-    curl -H "Content-Type: application/json" -d @"$INPUT_FILE" -X POST ${SERVER}/group  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
+    echo curl -H "Content-Type: application/json" -d @"$INPUT_FILE" -X POST ${SERVER}/group  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
     check_connection $RESPONSE_HEADER
 
 }
@@ -727,6 +765,7 @@ function register_dataobject_async_from_template {
     fi
 
     COLLECTION_PATH="$1"
+    sleep 1
     SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
     DATAOBJECT_PATH="${COLLECTION_PATH}/object-${SUFFIX}.txt"
     echo "$DATAOBJECT_PATH" > registered-data-object-path.tmp
@@ -763,6 +802,7 @@ function register_dataobject_sync_from_template {
     then
         OBJECT_NAME="$2" 
     else 
+        sleep 1
         SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
         OBJECT_NAME="object-${SUFFIX}.txt"
     fi
@@ -934,6 +974,30 @@ function get_notifications {
 
     check_connection $RESPONSE_HEADER
 }
+
+
+#Get the notifications receiptsfor a particular user
+function get_notification_receipts {
+
+    if [ -z $RESPONSE_HEADER ] 
+    then
+        RESPONSE_HEADER=get-notifications-response-header.tmp
+    fi
+
+    if [ -z $RESPONSE_MSG ] 
+    then
+        RESPONSE_MSG=get-notifications-response-message.json.tmp
+    fi
+
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+
+
+    curl -G -X GET $SERVER/notification/deliveryReceipts?totalCount=true --config $HPC_DM_TEST/utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+
+    check_connection $RESPONSE_HEADER
+}
+
+
 
 
 #Get the metadata attributes for a user 
