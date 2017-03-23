@@ -732,10 +732,14 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                     throws HpcException
     {
     	try {
-    		 String where = "lower(" + RodsGenQueryEnum.COL_USER_GROUP_NAME.getName() + ") " + 
+    		 /*String where = "lower(" + RodsGenQueryEnum.COL_USER_GROUP_NAME.getName() + ") " + 
     	                    "LIKE lower('" + groupSearchCriteria + "') and " +
     				        RodsGenQueryEnum.COL_USER_TYPE.getName() + " = '" + 
-    	                    UserTypeEnum.RODS_GROUP.getTextValue() + "'";
+    	                    UserTypeEnum.RODS_GROUP.getTextValue() + "'";*/
+    		String where = RodsGenQueryEnum.COL_USER_GROUP_NAME.getName() + " " + 
+                    "LIKE '" + groupSearchCriteria + "' and " +
+			        RodsGenQueryEnum.COL_USER_TYPE.getName() + " = '" + 
+                    UserTypeEnum.RODS_GROUP.getTextValue() + "'";
     		 logger.error("ERAN: WHERE: " + where);
     		 return toHpcGroupNames(irodsConnection.getUserGroupAO(authenticatedToken).findWhere(where));
     		 
