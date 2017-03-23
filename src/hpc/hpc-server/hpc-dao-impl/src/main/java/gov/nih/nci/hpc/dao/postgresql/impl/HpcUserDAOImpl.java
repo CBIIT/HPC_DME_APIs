@@ -64,11 +64,11 @@ public class HpcUserDAOImpl implements HpcUserDAO
 
 	private static final String GET_USERS_SQL = "select * from public.\"HPC_USER\" where ?";
     
-	private static final String GET_USERS_USER_ID_FILTER = " and \"USER_ID\" = ? ";
+	private static final String GET_USERS_USER_ID_FILTER = " and lower(\"USER_ID\") = lower(?) ";
     
-	private static final String GET_USERS_FIRST_NAME_FILTER = " and \"FIRST_NAME\" = ? ";
+	private static final String GET_USERS_FIRST_NAME_FILTER = " and lower(\"FIRST_NAME\") = lower(?) ";
     
-	private static final String GET_USERS_LAST_NAME_FILTER = " and \"LAST_NAME\" = ? ";
+	private static final String GET_USERS_LAST_NAME_FILTER = " and lower(\"LAST_NAME\") = lower(?) ";
 	
     //---------------------------------------------------------------------//
     // Instance members
