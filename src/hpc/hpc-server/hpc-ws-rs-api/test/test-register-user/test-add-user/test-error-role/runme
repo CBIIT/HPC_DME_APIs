@@ -19,17 +19,15 @@ source $HPC_DM_TEST/utils/functions
 $HPC_DM_TEST/utils/runtest
 
 
-RESPONSE_HEADER=response-header
-RESPONSE_MSG=response-message.json
-SERVER=`cat $HPC_DM_TEST/utils/server`
 
-curl -H "Content-Type: application/json" -d @input.json.tmp -X PUT ${SERVER}/user  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
-#echo "curl -H \"Content-Type: application/json\" -d @input.json.tmp -X PUT ${SERVER}/user  --config $HPC_DM_TEST/utils/config  -H \"Accept: application/json\" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status "
+RESPONSE_HEADER=user-registration-response-header.tmp
+RESPONSE_MSG=user-registration-response-message.json.tmp
 
-check_connection $RESPONSE_HEADER
+ERROR_CODE=$(create_new_user input.json)
 
-RESPONSE_CODE=`get_http_code $RESPONSE_HEADER`
-ERROR_TYPE=$(get_json_value response-message.json errorType)
+ERROR_TYPE=$(get_json_value $RESPONSE_MSG  errorType)
+ERROR_MSG=$(get_json_value $RESPONSE_MSG  message)
 
-echo $RESPONSE_CODE 1>&2
+echo $ERROR_CODE 1>&2
 echo $ERROR_TYPE 1>&2
+echo $ERROR_MSG | sed "s/^Invalid user role.*/Invalid user role/" >&2

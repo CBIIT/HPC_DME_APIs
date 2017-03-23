@@ -1,13 +1,5 @@
 {
-    "nciAccount": {
-        "userId": "zakigf",
             "firstName": "George",
             "lastName": "Zaki",
             "doc": "FNLCR"
-    },
-        "dataTransferAccount":    {
-            "username": "eranrosenberg",
-            "password": "Magicboots11!",
-            "integratedSystem": "GLOBUS"
-        }
 }
