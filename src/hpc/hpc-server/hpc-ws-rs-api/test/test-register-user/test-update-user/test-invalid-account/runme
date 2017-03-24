@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# makeme 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+
+#import common functions
+source ../utils/functions
+
+#Run common script
+$HPC_DM_TEST/utils/runtest
+
+
+
+sleep 1
+SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+NEW_USER_ID=testid-$SUFFIX
+echo "$NEW_USER_ID" > new-user-id.tmp 
+
+RESPONSE_HEADER=response-header.tmp
+RESPONSE_MSG=response-message.json.tmp
+
+update_existing_user $NEW_USER_ID input.json $RESPONSE_HEADER $RESPONSE_MSG
+
+RESPONSE_CODE=`get_http_code $RESPONSE_HEADER`
+echo $RESPONSE_CODE  >&2
+EXPECTED_MSG="User not found:"
+get_json_value  $RESPONSE_MSG  errorType >&2
+get_json_value  $RESPONSE_MSG  message   | sed "s/$EXPECTED_MSG.*/$EXPECTED_MSG/" >&2
