@@ -25,3 +25,22 @@ update_user
 
 RESPONSE_CODE=`get_http_code $RESPONSE_HEADER`
 echo $RESPONSE_CODE 
+
+
+#Verify the user is updated
+USER_ID=$(cat new-user-id.tmp)
+RESPONSE_HEADER=get-user-response-header.tmp
+RESPONSE_MSG=get-user-response-message.tmp
+
+get_user $USER_ID $RESPONSE_HEADER $RESPONSE_MSG
+
+get_http_code $RESPONSE_HEADER
+
+EXIST_FIRST=$(grep "newtestfirst" $RESPONSE_MSG)
+EXIST_LAST=$(grep "newtestlast" $RESPONSE_MSG)
+
+if [ -z "$EXIST_FIRST" ] || [ -z "$EXIST_LAST" ]
+then
+    echo "ERROR: Updated name is not: newtestfirst newtestlast" >&2
+fi
+
