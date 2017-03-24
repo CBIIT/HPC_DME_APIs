@@ -25,3 +25,21 @@ update_user
 
 RESPONSE_CODE=`get_http_code $RESPONSE_HEADER`
 echo $RESPONSE_CODE 
+
+
+#Verify the user is updated
+USER_ID=$(cat new-user-id.tmp)
+RESPONSE_HEADER=get-user-response-header.tmp
+RESPONSE_MSG=get-user-response-message.tmp
+
+get_user $USER_ID $RESPONSE_HEADER $RESPONSE_MSG
+
+get_http_code $RESPONSE_HEADER
+
+EXISTS=$(grep "DUMMY" $RESPONSE_MSG)
+
+if [ -z "$EXISTS" ]
+then
+    echo "ERROR: DOC did not change to DUMMY" >&2
+fi
+
