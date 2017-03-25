@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -132,7 +133,22 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
-    	dataManagementProxy.addGroup(dataManagementAuthenticator.getAuthenticatedToken(), groupName);
+    	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
+    	
+    	// Validate the group doesn't already exists.
+    	if(dataManagementProxy.groupExists(authenticatedToken, groupName)) {
+    	   throw new HpcException("Group already exists: " + groupName, 
+    	                          HpcRequestRejectReason.GROUP_ALREADY_EXISTS);
+    	}
+    	
+    	// Validate the group name doesn't exist as a user-id.
+    	if(dataManagementProxy.userExists(authenticatedToken, groupName)) {
+    	   throw new HpcException("Group name exists as a user-id: " + groupName, 
+    	                          HpcRequestRejectReason.GROUP_ALREADY_EXISTS);
+    	}
+    	
+    	// Add the group.
+    	dataManagementProxy.addGroup(authenticatedToken, groupName);
     }
     
     @Override

@@ -341,12 +341,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 				                  HpcErrorType.INVALID_REQUEST_INPUT);	
 		}
 		
-    	// Validate the group doesn't already exists.
-    	if(dataManagementSecurityService.groupExists(groupName)) {
-    	   throw new HpcException("Group already exists: " + groupName, 
-    	                          HpcRequestRejectReason.GROUP_ALREADY_EXISTS);
-    	}
-		
 		// Add the group.
 		dataManagementSecurityService.addGroup(groupName);
 		
@@ -374,7 +368,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
 		
-		// Optionally add members.
+		// Add/Delete group members.
 		return updateGroupMembers(groupName, groupMembersRequest);		
     }
 
