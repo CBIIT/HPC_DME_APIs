@@ -50,16 +50,16 @@ public class HpcUserDAOImpl implements HpcUserDAO
 	private static final String UPSERT_USER_SQL = 
 		    "insert into public.\"HPC_USER\" ( " +
                     "\"USER_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"DOC\", " +
-                    "\"CREATED\", \"LAST_UPDATED\") " +
-                    "values (?, ?, ?, ?, ?, ?) " +
+                    "\"ACTIVE\", \"CREATED\", \"LAST_UPDATED\", \"ACTIVE_UPDATED_BY\") " +
+                    "values (?, ?, ?, ?, ?, ?, ?, ?) " +
             "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", " +
                                                    "\"DOC\"=excluded.\"DOC\", " +
                                                    "\"LAST_NAME\"=excluded.\"LAST_NAME\", " +
+                                                   "\"ACTIVE\"=excluded.\"ACTIVE\", " +
+                                                   "\"ACTIVE_UPDATED_BY\"=excluded.\"ACTIVE_UPDATED_BY\", " +
                                                    "\"CREATED\"=excluded.\"CREATED\", " +
                                                    "\"LAST_UPDATED\"=excluded.\"LAST_UPDATED\"";
 	
-	private static final String DELETE_USER_SQL = "delete from public.\"HPC_USER\" where \"USER_ID\" = ?";
-
 	private static final String GET_USER_SQL = "select * from public.\"HPC_USER\" where \"USER_ID\" = ?";
 
 	private static final String GET_USERS_SQL = "select * from public.\"HPC_USER\" where ?";
@@ -118,23 +118,13 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		                         user.getNciAccount().getFirstName(),
 		                         user.getNciAccount().getLastName(),
 		                         user.getNciAccount().getDoc(),
+		                         user.getActive(),
 		                         user.getCreated(),
-		                         user.getLastUpdated());
+		                         user.getLastUpdated(),
+		                         user.getActiveUpdatedBy());
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a user: " + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
-		}
-    }
-	
-	@Override
-	public void deleteUser(String nciUserId) throws HpcException
-    {
-		try {
-		     jdbcTemplate.update(DELETE_USER_SQL, nciUserId);
-		     
-		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to delete a user: " + e.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, e);
 		}
     }

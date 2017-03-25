@@ -169,28 +169,25 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	                          nciAccount.getUserId(),
     	                          HpcRequestRejectReason.USER_ALREADY_EXISTS);
     	}
+    	
+       	// Get the service invoker.
+       	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+       	if(invoker == null) {
+       	   throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+       	}
 
     	// Create the User domain object.
     	HpcUser user = new HpcUser();
 
     	user.setNciAccount(nciAccount);
     	user.setCreated(Calendar.getInstance());
+    	user.setActive(true);
+    	user.setActiveUpdatedBy(invoker.getNciAccount().getUserId());
 
     	// Persist to the DB.
     	upsert(user);
     }
 
-    @Override
-    public void deleteUser(String nciUserId) throws HpcException
-    {
-    	if(StringUtils.isEmpty(nciUserId)) {
-      	   throw new HpcException("Null or empty nciUserId",
- 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
-    	
-    	userDAO.deleteUser(nciUserId);
-    }
-    
     @Override
     public void updateUser(String nciUserId, String firstName, String lastName, String doc)
 	                      throws HpcException

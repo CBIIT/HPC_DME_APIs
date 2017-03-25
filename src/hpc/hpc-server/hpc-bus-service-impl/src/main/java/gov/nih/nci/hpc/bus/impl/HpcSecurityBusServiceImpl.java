@@ -239,28 +239,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     }
     
     @Override
-    public void deleteUser(String nciUserId) throws HpcException
-    {
-    	// Input validation.
-    	if(nciUserId == null) {
-    	   throw new HpcException("Null NCI User ID",
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}   
-    	
-    	if(securityService.getUser(nciUserId) == null) {
-    	   throw new HpcException("User not found: " + nciUserId, 
-    			                  HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
-    	}
-    	
-	    // Delete the user. Intentionally, we delete the data management account (IRODS) last after
-    	// the user was removed from the HPC-DM account. 
-	    securityService.deleteUser(nciUserId);
-	    
-  	    // Delete the data management (IRODS) account.
-  	    dataManagementSecurityService.deleteUser(nciUserId);
-    }
-    
-    @Override
     public HpcAuthenticationResponseDTO 
            authenticate(String userName, String password, 
     		            boolean ldapAuthentication) 
@@ -362,12 +340,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 				                  HpcErrorType.INVALID_REQUEST_INPUT);	
 		}
 		
-    	// Validate the group exists.
-    	if(!dataManagementSecurityService.groupExists(groupName)) {
-    	   throw new HpcException("Group doesn't exist", 
-	                              HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
-		
 		// Add/Delete group members.
 		return updateGroupMembers(groupName, groupMembersRequest);		
     }
@@ -380,14 +352,11 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		   throw new HpcException("Null group name", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		
-    	// Validate the group exists.
-    	if(!dataManagementSecurityService.groupExists(groupName)) {
-    	   return null;
-    	}
+		// Get the group members.
+		List<String> userIds = dataManagementSecurityService.getGroupMembers(groupName);
 		
-		// Return the group members.
+		// Construct and return the group members DTO.
     	HpcGroupMembersDTO groupMembers = new HpcGroupMembersDTO();
-    	List<String> userIds = dataManagementSecurityService.getGroupMembers(groupName);
     	if(userIds != null) {
     	   groupMembers.getUserIds().addAll(userIds);
     	}
@@ -430,12 +399,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		if(groupName == null) {
 		   throw new HpcException("Null group name", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		
-    	// Validate the group exists.
-    	if(!dataManagementSecurityService.groupExists(groupName)) {
-    	   throw new HpcException("Group doesn't exist", 
-	                              HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
 		
     	// Delete the group.
         dataManagementSecurityService.deleteGroup(groupName);

@@ -93,16 +93,6 @@ public interface HpcSecurityRestService
     		                 @QueryParam("lastName") String lastName);
     
     /**
-     * Delete a user.
-     *
-     * @param nciUserId The user ID to delete.
-     * @return The REST service response.
-     */
-    @DELETE
-    @Path("/user/{nciUserId}")
-    public Response deleteUser(@PathParam("nciUserId") String nciUserId);
-
-    /**
      * Authenticate a user.
      *
      * @return gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO entity.

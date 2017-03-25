@@ -22,6 +22,7 @@ import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -78,22 +79,25 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     	   throw new HpcException("Invalid NCI Account: Null user ID or name or DOC", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
+    	
+    	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
+
+    	// Validate the data management account doesn't exist.
+    	if(dataManagementProxy.userExists(authenticatedToken, nciAccount.getUserId())) {
+    	   throw new HpcException("Data management account already exists: " + nciAccount.getUserId(), 
+    	                          HpcRequestRejectReason.USER_ALREADY_EXISTS);
+    	}
        	
-    	dataManagementProxy.addUser(dataManagementAuthenticator.getAuthenticatedToken(), 
-    			                    nciAccount, userRole);
+    	dataManagementProxy.addUser(authenticatedToken, nciAccount, userRole);
     }
     
     @Override
     public void deleteUser(String nciUserId) throws HpcException
     {
     	// Input validation.
-    	if(nciUserId == null) {	
-    	   throw new HpcException("Invalid NCI user ID", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
+    	validateUserExists(nciUserId);
        	
-    	dataManagementProxy.deleteUser(dataManagementAuthenticator.getAuthenticatedToken(), 
-    			                       nciUserId);
+    	dataManagementProxy.deleteUser(dataManagementAuthenticator.getAuthenticatedToken(), nciUserId);
     }
     
     @Override
@@ -101,10 +105,9 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
                            HpcUserRole userRole) throws HpcException
     {
     	// Input validation.
-    	if(nciUserId == null || firstName == null || lastName == null ||
-    	   userRole == null) {	
-    	   throw new HpcException("Invalid update user input", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	validateUserExists(nciUserId);
+    	if(StringUtils.isEmpty(firstName) || StringUtils.isEmpty(lastName) || userRole == null) {	
+    	   throw new HpcException("Invalid update user input", HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
     	dataManagementProxy.updateUser(dataManagementAuthenticator.getAuthenticatedToken(), 
@@ -115,21 +118,17 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     public HpcUserRole getUserRole(String nciUserId) throws HpcException
     {
     	// Input validation.
-    	if(nciUserId == null) {	
-    	   throw new HpcException("Invalid NCI user ID", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
+    	validateUserExists(nciUserId);
     	
-    	return dataManagementProxy.getUserRole(dataManagementAuthenticator.getAuthenticatedToken(), 
-    			                               nciUserId);
+    	return dataManagementProxy.getUserRole(dataManagementAuthenticator.getAuthenticatedToken(), nciUserId);
     }
 
     @Override
     public void addGroup(String groupName) throws HpcException
     {
     	// Input validation.
-    	if(groupName == null) {	
-    	   throw new HpcException("Null group name", 
+    	if(StringUtils.isEmpty(groupName)) {	
+    	   throw new HpcException("Null or empty group name", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
@@ -155,33 +154,18 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     public void deleteGroup(String groupName) throws HpcException
     {
     	// Input validation.
-    	if(groupName == null) {	
-    	   throw new HpcException("Null group name", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
+    	validateGroupExists(groupName);
     	
     	dataManagementProxy.deleteGroup(dataManagementAuthenticator.getAuthenticatedToken(), groupName);
-    }
-    
-    @Override
-    public boolean groupExists(String groupName) throws HpcException
-    {
-    	// Input validation.
-    	if(groupName == null) {	
-    	   throw new HpcException("Null group name", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-    	
-    	return dataManagementProxy.groupExists(dataManagementAuthenticator.getAuthenticatedToken(), groupName);
     }
     
     @Override
     public void addGroupMember(String groupName, String userId) throws HpcException
     {
     	// Input validation.
-    	if(groupName == null || userId == null) {	
-    	   throw new HpcException("Null group name or user id", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	validateGroupExists(groupName);
+    	if(StringUtils.isEmpty(userId)) {	
+    	   throw new HpcException("Null or empty user id", HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
     	dataManagementProxy.addGroupMember(dataManagementAuthenticator.getAuthenticatedToken(), 
@@ -192,10 +176,10 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     public void deleteGroupMember(String groupName, String userId) throws HpcException
     {
     	// Input validation.
-    	if(groupName == null || userId == null) {	
-    	   throw new HpcException("Null group name or user id", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
+    	validateGroupExists(groupName);
+    	if(StringUtils.isEmpty(userId)) {	
+     	   throw new HpcException("Null or empty user id", HpcErrorType.INVALID_REQUEST_INPUT);
+     	}
     	
     	dataManagementProxy.deleteGroupMember(dataManagementAuthenticator.getAuthenticatedToken(), 
     			                              groupName, userId);
@@ -205,10 +189,7 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     public List<String> getGroupMembers(String groupName) throws HpcException
     {
     	// Input validation.
-    	if(groupName == null) {	
-    	   throw new HpcException("Null group name", 
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
+    	validateGroupExists(groupName);
     	
     	return dataManagementProxy.getGroupMembers(dataManagementAuthenticator.getAuthenticatedToken(), 
     			                                   groupName);   	
@@ -218,8 +199,8 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     public List<String> getGroups(String groupSearchCriteria) throws HpcException
     {
     	// Input validation.
-    	if(groupSearchCriteria == null) {	
-    	   throw new HpcException("Null group search criteria", 
+    	if(StringUtils.isEmpty(groupSearchCriteria)) {	
+    	   throw new HpcException("Null or empty group search criteria", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
@@ -242,4 +223,44 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
+    
+    /**
+     * Validate that a group exists.
+     *
+     * @param groupName The group name to validate.
+     * @throws HpcException If the group doesn't exist.
+     */
+    private void validateGroupExists(String groupName) throws HpcException
+    {
+    	// Input validation.
+    	if(StringUtils.isEmpty(groupName)) {	
+    	   throw new HpcException("Null or empty group name", HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	// Validate the group exists.
+    	if(!dataManagementProxy.groupExists(dataManagementAuthenticator.getAuthenticatedToken(), groupName)) {
+    	   throw new HpcException("Group doesn't exist: " + groupName, 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    }
+    
+    /**
+     * Validate a data management account exists.
+     *
+     * @param nciUserId The user id to check if a data management account exists.
+     * @throws HpcException If the data management account doesn't exist.
+     */
+    private void validateUserExists(String nciUserId) throws HpcException
+    {
+    	// Input validation.
+    	if(StringUtils.isEmpty(nciUserId)) {	
+    	   throw new HpcException("Null or empty user ID", HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	// Validate the group exists.
+    	if(!dataManagementProxy.userExists(dataManagementAuthenticator.getAuthenticatedToken(), nciUserId)) {
+    	   throw new HpcException("Data management account doesn't exist: " + nciUserId, 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    }
 }
