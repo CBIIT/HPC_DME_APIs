@@ -76,14 +76,6 @@ public interface HpcSecurityBusService
     		                      throws HpcException;
     
     /**
-     * Delete a user.
-     *
-     * @param nciUserId The user ID to delete.
-     * @throws HpcException on service failure.
-     */
-    public void deleteUser(String nciUserId) throws HpcException;
-    
-    /**
      * Authenticate user.
      *
      * @param userName The user's name.

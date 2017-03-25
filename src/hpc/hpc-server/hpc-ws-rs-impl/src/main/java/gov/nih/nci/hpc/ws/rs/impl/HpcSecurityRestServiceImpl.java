@@ -124,19 +124,6 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response deleteUser(String nciUserId)
-    {
-		try {
-			 securityBusService.deleteUser(nciUserId);
-			 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return okResponse(null, false);
-    }
-    
-    @Override
     public Response authenticate()
     {
 		HpcAuthenticationResponseDTO authenticationResponse = null;
