@@ -242,17 +242,6 @@ public interface HpcDataManagementProxy
    		                                               throws HpcException;   
     
     /**
-     * Get the user's role.
-     *
-     * @param authenticatedToken An authenticated token.
-     * @param username The user name of the account to get its type.
-     * @return The user's role.
-     * @throws HpcException on data management system failure.
-     */
-    public HpcUserRole getUserRole(Object authenticatedToken, String username) 
-    		                      throws HpcException;   
-    
-    /**
      * Add a user.
      *
      * @param authenticatedToken An authenticated token.
@@ -288,6 +277,27 @@ public interface HpcDataManagementProxy
     		               String username, String firstName, String lastName,
                            HpcUserRole userRole) 
     		              throws HpcException;
+    
+    /**
+     * Check if a user exists
+     * 
+     * @param authenticatedToken An authenticated token.
+     * @param username The user name of the account to check if it exists.
+     * @return True if the user exists. and false otherwise.
+     * @throws HpcException on data management system failure.
+     */
+    public boolean userExists(Object authenticatedToken, String username) throws HpcException;
+    
+    /**
+     * Get the user's role.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param username The user name of the account to get its type.
+     * @return The user's role.
+     * @throws HpcException on data management system failure.
+     */
+    public HpcUserRole getUserRole(Object authenticatedToken, String username) 
+    		                      throws HpcException;   
 
     /**
      * Get Collection permissions.

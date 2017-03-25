@@ -450,18 +450,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	}
     
     @Override
-    public HpcUserRole getUserRole(Object authenticatedToken, String username) 
-    		                      throws HpcException
-    {
-		 User irodsUser = getUser(authenticatedToken, username);
-		 if(irodsUser == null) {
-			return null;  
-		 }
-		 
-		 return toHpcUserRole(irodsUser.getUserType());
-	}  
-
-    @Override
     public void addUser(Object authenticatedToken,
                         HpcNciAccount nciAccount, HpcUserRole userRole) 
                        throws HpcException
@@ -530,12 +518,32 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
+    public HpcUserRole getUserRole(Object authenticatedToken, String username) 
+    		                      throws HpcException
+    {
+		 User irodsUser = getUser(authenticatedToken, username);
+		 if(irodsUser == null) {
+			return null;  
+		 }
+		 
+		 return toHpcUserRole(irodsUser.getUserType());
+	}  
+    
+    @Override
+    public boolean userExists(Object authenticatedToken, String username) 
+    		                 throws HpcException
+    {
+		 return getUser(authenticatedToken, username) != null;
+	}  
+    
+    @Override
     public List<HpcSubjectPermission> getCollectionPermissions(Object authenticatedToken,
                                                                String path) 
                                                               throws HpcException
     {
     	try {
     		 return toHpcSubjectPermissions(
+    				  authenticatedToken,
     				  irodsConnection.getCollectionAO(authenticatedToken).
     				                  listPermissionsForCollection(getAbsolutePath(path)));
     	     
@@ -586,6 +594,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     {
     	try {
     		 return toHpcSubjectPermissions(
+    				  authenticatedToken,
     				  irodsConnection.getDataObjectAO(authenticatedToken).
     				                  listPermissionsForDataObject(getAbsolutePath(path)));
     	     
@@ -660,7 +669,11 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	public boolean groupExists(Object authenticatedToken, String groupName) throws HpcException
 	{
 		try {
-			 return (irodsConnection.getUserGroupAO(authenticatedToken).findByName(groupName) != null) ? true : false;
+   		 	 String where = RodsGenQueryEnum.COL_USER_GROUP_NAME.getName() + " = '" + groupName + "' and " +
+	                        RodsGenQueryEnum.COL_USER_TYPE.getName() + " = '" + 
+                            UserTypeEnum.RODS_GROUP.getTextValue() + "'";
+			
+			 return (irodsConnection.getUserGroupAO(authenticatedToken).findWhere(where) != null) ? true : false;
 
 		} catch(Exception e) {
                 throw new HpcException("Failed to get a group: " + e.getMessage(),
@@ -732,19 +745,11 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		                     throws HpcException
     {
     	try {
-    		 /*String where = "lower(" + RodsGenQueryEnum.COL_USER_GROUP_NAME.getName() + ") " + 
-    	                    "LIKE lower('" + groupSearchCriteria + "') and " +
-    				        RodsGenQueryEnum.COL_USER_TYPE.getName() + " = '" + 
-    	                    UserTypeEnum.RODS_GROUP.getTextValue() + "'";
-    		String where = RodsGenQueryEnum.COL_USER_GROUP_NAME.getName() + " " + 
-                    "LIKE '" + groupSearchCriteria + "' and " +
-			        RodsGenQueryEnum.COL_USER_TYPE.getName() + " = '" + 
-                    UserTypeEnum.RODS_GROUP.getTextValue() + "'";*/
-    		String where = "lower(\""+RodsGenQueryEnum.COL_USER_GROUP_NAME.getName() + "\") " + 
-                    "LIKE '" + groupSearchCriteria + "' and " +
-			        RodsGenQueryEnum.COL_USER_TYPE.getName() + " = '" + 
-                    UserTypeEnum.RODS_GROUP.getTextValue() + "'";
-    		 logger.error("ERAN: WHERE: " + where);
+    		 String where = RodsGenQueryEnum.COL_USER_GROUP_NAME.getName() + " " + 
+                            "LIKE '" + groupSearchCriteria + "' and " +
+			                RodsGenQueryEnum.COL_USER_TYPE.getName() + " = '" + 
+                            UserTypeEnum.RODS_GROUP.getTextValue() + "'";
+    		
     		 return toHpcGroupNames(irodsConnection.getUserGroupAO(authenticatedToken).findWhere(where));
     		 
     	} catch(Exception e) {
@@ -1093,7 +1098,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
      * @param irodsUserPermissions The iRODS user permissions.
      * @return A list of HPC subject permissions.
      */
-    private List<HpcSubjectPermission> toHpcSubjectPermissions(List<UserFilePermission> irodsUserPermissions)
+    private List<HpcSubjectPermission> 
+            toHpcSubjectPermissions(Object authenticatedToken, List<UserFilePermission> irodsUserPermissions)
+    		                       throws HpcException
     {
     	if(irodsUserPermissions == null) {
     	   return null;
@@ -1106,7 +1113,14 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		hpcSubjectPermission.setSubject(irodsUserPermission.getUserName());
     		// The IRODS user-type determines the HPC subject-type.
     		if(irodsUserPermission.getUserType().equals(UserTypeEnum.RODS_GROUP)) {
+    		   if(!groupExists(authenticatedToken, irodsUserPermission.getUserName())) {
+    			  // For collections, IRODS return individual user-id as groups (RODS_GROUP).
+        		  // This is possibly a defect in the Jargon API or the IRODS security schema.
+        		  // As a workaround, we confirm the 'subject' is a group
+    			  continue;
+    		   }
     		   hpcSubjectPermission.setSubjectType(HpcSubjectType.GROUP);
+    		   
     		} else {
     			    hpcSubjectPermission.setSubjectType(HpcSubjectType.USER);
     		}
