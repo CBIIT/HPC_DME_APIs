@@ -473,7 +473,7 @@ function update_uid {
     fi
     INPUT_FILE="$1"
     OUTPUT_FILE="$2"
-    USERID=`get_username $HPC_DM_TEST/utils/config`
+    USERID=`get_username $HPC_DM_TEST/utils/config` $RESPONSE_HEADER $RESPONSE_MSG
     ENDPOINT=$(get_json_value $HPC_DM_TEST/utils/test-configuration globus-shared-endpoint-uid)
     OUT=`cat "$INPUT_FILE" | sed "s/dxtestuid/$USERID/"`
     OUT=`echo "$OUT" | sed "s/globus-shared-endpoint-uid/$ENDPOINT/"`
@@ -539,6 +539,35 @@ function verify_globus_file {
     fi
     
 }
+
+
+#Get a user 
+#Inputs:    userid
+#           response-header      
+#           response-message
+function get_user {
+
+    usage="USAGE: get_user <userid> <response-header> <response-message>"
+
+    nargs=$#
+    if [ "$nargs" -ne  "3" ]
+    then
+        echo "ERROR: using get_user" >&2
+        echo "received $nargs arguments." >&2
+        echo "$usage" >&2 
+        exit
+    fi
+
+    USER_ID="$1"
+    RESPONSE_HEADER="$2"
+    RESPONSE_MSG="$3"
+    
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+   
+    curl  -X GET ${SERVER}/user/$USER_ID  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
+    check_connection $RESPONSE_HEADER
+}
+
 
 
 #Enroll a user 
@@ -628,7 +657,49 @@ function register_user_from_template {
         echo "Response code:$RESPONSE_CODE "
         exit
     fi
+
 }
+
+#Update existing user 
+#Inputs userid: The ID of the user
+#       update-template: A json file with the updated attributes/values
+#       response-header: the response header file 
+#       response-message: the response message file 
+
+function update_existing_user {
+
+    usage="USAGE: update_user <userid> <update-template.json> <response-header> <response-message>"
+
+    nargs=$#
+    if [ "$nargs" -ne  "4" ]
+    then
+        echo "ERROR: using update_existing_user" >&2
+        echo "received $nargs arguments." >&2
+        echo "$usage" >&2 
+        exit
+    fi
+
+    USER_ID="$1"
+    UPDATES="$2"
+    RESPONSE_HEADER="$3"
+    RESPONSE_MSG="$4"
+
+
+    if [ ! -e $UPDATES ] 
+    then
+        echo "ERROR: The update template file:$UPDATES does not exist "
+        exit
+    fi  
+    
+    
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+    
+    curl -H "Content-Type: application/json" -d @$UPDATES -X POST ${SERVER}/user/$USER_ID  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    check_connection $RESPONSE_HEADER
+}
+
+
+
 
 #Register a new group
 #Inputs: registration-input.json
