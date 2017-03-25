@@ -735,8 +735,12 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		 /*String where = "lower(" + RodsGenQueryEnum.COL_USER_GROUP_NAME.getName() + ") " + 
     	                    "LIKE lower('" + groupSearchCriteria + "') and " +
     				        RodsGenQueryEnum.COL_USER_TYPE.getName() + " = '" + 
-    	                    UserTypeEnum.RODS_GROUP.getTextValue() + "'";*/
+    	                    UserTypeEnum.RODS_GROUP.getTextValue() + "'";
     		String where = RodsGenQueryEnum.COL_USER_GROUP_NAME.getName() + " " + 
+                    "LIKE '" + groupSearchCriteria + "' and " +
+			        RodsGenQueryEnum.COL_USER_TYPE.getName() + " = '" + 
+                    UserTypeEnum.RODS_GROUP.getTextValue() + "'";*/
+    		String where = "lower("+RodsGenQueryEnum.COL_USER_GROUP_NAME.getName() + ") " + 
                     "LIKE '" + groupSearchCriteria + "' and " +
 			        RodsGenQueryEnum.COL_USER_TYPE.getName() + " = '" + 
                     UserTypeEnum.RODS_GROUP.getTextValue() + "'";
