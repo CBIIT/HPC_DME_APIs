@@ -171,7 +171,6 @@
       			<entry key="updateUser" value="${hpc.ws.rs.auth.security.update-user}"/>
         		<entry key="getUser" value="${hpc.ws.rs.auth.security.get-user}"/>
         		<entry key="getUsers" value="${hpc.ws.rs.auth.security.get-users}"/>
-        		<entry key="deleteUser" value="${hpc.ws.rs.auth.security.delete-user}"/>
         		<entry key="authenticate" value="${hpc.ws.rs.auth.security.authenticate}"/>
         		<entry key="registerGroup" value="${hpc.ws.rs.auth.security.register-group}"/>
         		<entry key="updateGroup" value="${hpc.ws.rs.auth.security.update-group}"/>

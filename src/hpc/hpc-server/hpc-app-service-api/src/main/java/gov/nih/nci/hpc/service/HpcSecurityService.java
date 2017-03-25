@@ -41,14 +41,6 @@ public interface HpcSecurityService
     public void addUser(HpcNciAccount nciAccount) throws HpcException;
     
     /**
-     * Delete a user.
-     *
-     * @param nciAccount The NCI user ID of the user to update. 
-     * @throws HpcException on service failure.
-     */
-    public void deleteUser(String nciUserId) throws HpcException;
-    
-    /**
      * Update a user.
      *
      * @param nciUserId The NCI user ID of the user to update. 
