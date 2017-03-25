@@ -339,6 +339,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		   throw new HpcException("Null or empty requests to add/delete members to group", 
 				                  HpcErrorType.INVALID_REQUEST_INPUT);	
 		}
+		if(!dataManagementSecurityService.groupExists(groupName)) {
+		   throw new HpcException("Group doesn't exist: " + groupName, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 		
 		// Add/Delete group members.
 		return updateGroupMembers(groupName, groupMembersRequest);		
