@@ -77,6 +77,15 @@ public interface HpcDataManagementSecurityService
     public void addGroup(String groupName) throws HpcException;
     
     /**
+     * Check if a group exists.
+     * 
+     * @param groupName The group name.
+     * @return True if the group exists, and false otherwise.
+     * @throws HpcException on service failure.
+     */
+    public boolean groupExists(String groupName) throws HpcException;
+    
+    /**
      * Delete a group.
      * 
      * @param groupName The group name.
