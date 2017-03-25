@@ -672,7 +672,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
    		 	 String where = RodsGenQueryEnum.COL_USER_GROUP_NAME.getName() + " = '" + groupName + "' and " +
 	                        RodsGenQueryEnum.COL_USER_TYPE.getName() + " = '" + 
                             UserTypeEnum.RODS_GROUP.getTextValue() + "'";
-			 logger.error("ERAN: WHERE: " + where);
 			 return !irodsConnection.getUserGroupAO(authenticatedToken).findWhere(where).isEmpty();
 
 		} catch(Exception e) {
