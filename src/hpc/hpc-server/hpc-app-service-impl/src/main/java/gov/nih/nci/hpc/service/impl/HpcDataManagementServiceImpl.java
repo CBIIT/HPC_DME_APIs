@@ -236,7 +236,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
                                        throws HpcException
     {
     	// Validate the permission request - ensure the subject is NOT a system account.
-    	validatePermissionRequest(subjectPermission);
+    	//validatePermissionRequest(subjectPermission);
     	
         dataManagementProxy.setCollectionPermission(dataManagementAuthenticator.getAuthenticatedToken(), 
     		    		                            path, subjectPermission);
@@ -253,7 +253,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
                                        throws HpcException
     {
     	// Validate the permission request - ensure the subject is NOT a system account.
-    	validatePermissionRequest(subjectPermission);
+    	//validatePermissionRequest(subjectPermission);
     	
     	dataManagementProxy.setDataObjectPermission(dataManagementAuthenticator.getAuthenticatedToken(), 
                                                     path, subjectPermission);
