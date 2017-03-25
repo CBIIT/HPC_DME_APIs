@@ -673,7 +673,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	                        RodsGenQueryEnum.COL_USER_TYPE.getName() + " = '" + 
                             UserTypeEnum.RODS_GROUP.getTextValue() + "'";
 			 logger.error("ERAN: WHERE: " + where);
-			 return irodsConnection.getUserGroupAO(authenticatedToken).findByName(groupName) != null;
+			 return irodsConnection.getUserGroupAO(authenticatedToken).findWhere(where) != null;
 
 		} catch(Exception e) {
                 throw new HpcException("Failed to get a group: " + e.getMessage(),
