@@ -116,6 +116,10 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	   throw new HpcException("Activation/Deactivation indicator is not allowed in user registration",
 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
+    	if(securityService.getUser(nciUserId) != null) {
+    	   throw new HpcException("User already exists: " + nciUserId, 
+    			                  HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
+    	}
     	
     	// Instantiate an NCI account domain object.
  	    HpcNciAccount nciAccount = new HpcNciAccount();
@@ -125,10 +129,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
  	    nciAccount.setDoc(userRegistrationRequest.getDoc());
     	
     	// HPC-DM is integrated with a data management system (IRODS). When registering a user with HPC-DM, 
- 	    // this service (by default) creates an account for the user with the data management system, unless
- 	    // asked to skip it by the caller
-    	if(userRegistrationRequest.getSkipDataManagementAccountCreation() == null ||
-    	   !userRegistrationRequest.getSkipDataManagementAccountCreation()) {
+ 	    // this service creates an account for the user with the data management system, unless an account
+ 	    // already established for the user.
+    	if(!dataManagementSecurityService.userExists(nciUserId)) {
     	   // Determine the user role to create. If not provided, default to USER.
     	   HpcUserRole role = userRegistrationRequest.getUserRole() != null ?
     			              roleFromString(userRegistrationRequest.getUserRole()) : 

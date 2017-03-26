@@ -34,7 +34,6 @@
 				<xsd:element name="doc" type="xsd:string" />
 				<xsd:element name="userRole" type="xsd:string" />
 				<xsd:element name="active" type="xsd:boolean" minOccurs="0" />
-				<xsd:element name="skipDataManagementAccountCreation" type="xsd:boolean" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
