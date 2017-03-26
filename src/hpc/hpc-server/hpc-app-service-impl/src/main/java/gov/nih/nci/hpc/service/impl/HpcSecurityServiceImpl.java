@@ -252,7 +252,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     public List<HpcUser> getUsers(String nciUserId, String firstName, String lastName) 
                                  throws HpcException
     {
-    	return userDAO.getUsers(nciUserId, firstName, lastName);
+    	return userDAO.getUsers(nciUserId, firstName, lastName, true);
     }
                                  
 
