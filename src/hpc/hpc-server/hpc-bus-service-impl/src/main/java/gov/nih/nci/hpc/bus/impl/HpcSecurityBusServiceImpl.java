@@ -38,6 +38,7 @@ import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -111,6 +112,10 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	   throw new HpcException("Null NCI user ID or user registation request",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
+    	if(userRegistrationRequest.getActive() != null) {
+    	   throw new HpcException("Activation/Deactivation indicator is not allowed in user registration",
+	                              HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
     	
     	// Instantiate an NCI account domain object.
  	    HpcNciAccount nciAccount = new HpcNciAccount();
@@ -181,6 +186,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     			           userUpdateRequest.getDoc() : user.getNciAccount().getDoc();
     	HpcUserRole updateRole = !StringUtils.isEmpty(userUpdateRequest.getUserRole()) ?
     		                     roleFromString(userUpdateRequest.getUserRole()) : currentUserRole;
+    	boolean active = userUpdateRequest.getActive() != null ? 
+    			         userUpdateRequest.getActive() : user.getActive();
+    			         
         // GROUP_ADMIN not supported by current Jargon API version. Respond with a workaround.
   	    if(updateRole == HpcUserRole.GROUP_ADMIN) {
   		   throw new HpcException("GROUP_ADMIN currently not supported by the API. " +
@@ -193,8 +201,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
      	     		                             updateLastName, updateRole);
     	
 	    // Update User.
-	    securityService.updateUser(nciUserId, updateFirstName, 
-	    		                   updateLastName, updateDOC);
+	    securityService.updateUser(nciUserId, updateFirstName, updateLastName, 
+	    		                   updateDOC, active);
     }
     
     @Override
@@ -605,11 +613,16 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 				                  HpcErrorType.INVALID_REQUEST_INPUT);	
 		}
 		
-		if(StringUtils.isEmpty(userUpdateRequest.getFirstName()) &&
-		   StringUtils.isEmpty(userUpdateRequest.getLastName()) &&
-		   StringUtils.isEmpty(userUpdateRequest.getDoc()) &&
-		   StringUtils.isEmpty(userUpdateRequest.getUserRole())) {
-	      throw new HpcException("Invalid update user request. Please provide firstName, lastName, doc or userRole to update.",
+		// Validate that at least one user attribute (out of firstName, lastName, DOC, role, active) is updated.
+		List<Boolean> updateItems = new ArrayList<>(Arrays.asList(
+				                                    !StringUtils.isEmpty(userUpdateRequest.getFirstName()),
+				                                    !StringUtils.isEmpty(userUpdateRequest.getLastName()),
+				                                    !StringUtils.isEmpty(userUpdateRequest.getDoc()),
+				                                    !StringUtils.isEmpty(userUpdateRequest.getUserRole()),
+				                                    userUpdateRequest.getActive() != null));
+		if(!updateItems.contains(true)) {
+	      throw new HpcException("Invalid update user request. Please provide firstName, lastName, doc, " + 
+		                         "userRole or active to update.",
 	 			                 HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		

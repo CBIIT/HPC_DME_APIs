@@ -189,7 +189,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     }
 
     @Override
-    public void updateUser(String nciUserId, String firstName, String lastName, String doc)
+    public void updateUser(String nciUserId, String firstName, String lastName, String doc, boolean active)
 	                      throws HpcException
     {
     	// Input validation.
@@ -198,11 +198,6 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
-    	if(StringUtils.isEmpty(firstName) && StringUtils.isEmpty(lastName) && StringUtils.isEmpty(doc)) {
-    	   throw new HpcException("Invalid update user input. Nothing to update",
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-
     	if(doc != null && !docBasePath.containsKey(doc)) {
     	   throw new HpcException("Invalid DOC: " + doc +
     			                  ". Valid values: " + docBasePath.keySet(),
@@ -217,12 +212,24 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	}
 
     	// Create the User domain object.
-    	if(firstName != null && !firstName.isEmpty())
-    		user.getNciAccount().setFirstName(firstName);
-    	if(lastName != null && !lastName.isEmpty())
+    	if(!StringUtils.isEmpty(firstName)) {
+    	   user.getNciAccount().setFirstName(firstName);
+    	}
+    	if(!StringUtils.isEmpty(lastName)) {
     		user.getNciAccount().setLastName(lastName);
-    	if(doc != null && !doc.isEmpty())
-    		user.getNciAccount().setDoc(doc);
+    	}
+    	if(!StringUtils.isEmpty(doc)) {
+    	   user.getNciAccount().setDoc(doc);
+    	}
+    	if(user.getActive() != active) {
+    	   user.setActive(active);
+    	   // Active indicator has changed. Update the invoker (admin) who changed it.
+           HpcRequestInvoker invoker = getRequestInvoker();
+           if(invoker == null) {
+              throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+           }
+           user.setActiveUpdatedBy(invoker.getNciAccount().getUserId());
+    	}
     	user.setLastUpdated(Calendar.getInstance());
 
     	// Persist to the DB.
