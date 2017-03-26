@@ -49,10 +49,11 @@ public interface HpcUserDAO
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
      * @param firstName (Optional) The first name to search for (using case insensitive comparison).
      * @param lastName (Optional) The last name to search for (using case insensitive comparison).
+     * @param active (Optional) The active indicator of the user.
      * @return A list of users.
      * @throws HpcException on service failure.
      */
-    public List<HpcUser> getUsers(String nciUserId, String firstName, String lastName) 
+    public List<HpcUser> getUsers(String nciUserId, String firstName, String lastName, Boolean active) 
     		                     throws HpcException;
 }
 
