@@ -77,7 +77,7 @@ public interface HpcSecurityRestService
     public Response getUser(@PathParam("nciUserId") String nciUserId);
     
     /**
-     * Get users by search criterias.
+     * Get users by search criterias. Note: only active users are returned.
      *
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
      * @param firstName (Optional) The first name to search for (using case insensitive comparison).

@@ -63,7 +63,7 @@ public interface HpcSecurityService
     public HpcUser getUser(String nciUserId) throws HpcException;
     
     /**
-     * Get users by search criterias.
+     * Get users by search criterias. Note: only active users are returned.
      *
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
      * @param firstName (Optional) The first name to search for (using case insensitive comparison).

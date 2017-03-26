@@ -70,6 +70,8 @@ public class HpcUserDAOImpl implements HpcUserDAO
     
 	private static final String GET_USERS_LAST_NAME_FILTER = " and lower(\"LAST_NAME\") = lower(?) ";
 	
+	private static final String GET_USERS_ACTIVE_FILTER = " and \"ACTIVE\" = ? ";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -145,7 +147,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		}
 	}
 	
-	public List<HpcUser> getUsers(String nciUserId, String firstName, String lastName) 
+	public List<HpcUser> getUsers(String nciUserId, String firstName, String lastName, Boolean active) 
                                  throws HpcException
     {
 		// Build the query based on provided search criteria.
@@ -167,6 +169,10 @@ public class HpcUserDAOImpl implements HpcUserDAO
      	   sqlQueryBuilder.append(GET_USERS_LAST_NAME_FILTER);
      	   args.add(lastName);
      	}
+    	if(active != null) {
+      	   sqlQueryBuilder.append(GET_USERS_ACTIVE_FILTER);
+      	   args.add(active);
+      	}
     	
 		try {
 		     return jdbcTemplate.query(sqlQueryBuilder.toString(), rowMapper, args.toArray());
