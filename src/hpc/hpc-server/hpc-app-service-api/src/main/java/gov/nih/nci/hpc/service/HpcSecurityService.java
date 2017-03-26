@@ -47,9 +47,10 @@ public interface HpcSecurityService
      * @param firstName The user first name.
      * @param lastName The user last name. 
      * @param doc The user DOC.
+     * @param active The active indicator.
      * @throws HpcException on service failure.
      */
-    public void updateUser(String nciUserId, String firstName, String lastName, String doc) 
+    public void updateUser(String nciUserId, String firstName, String lastName, String doc, boolean active) 
     		              throws HpcException;
 
     /**
