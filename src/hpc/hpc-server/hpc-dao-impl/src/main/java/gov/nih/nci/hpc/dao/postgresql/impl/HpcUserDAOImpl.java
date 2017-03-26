@@ -205,6 +205,9 @@ public class HpcUserDAOImpl implements HpcUserDAO
         	lastUpdated.setTime(rs.getDate("LAST_UPDATED"));
         	user.setLastUpdated(lastUpdated);
         	
+        	user.setActive(rs.getBoolean("ACTIVE"));
+        	user.setActiveUpdatedBy(rs.getString("ACTIVE_UPDATED_BY"));
+        	
         	user.setNciAccount(nciAccount);
             
             return user;
