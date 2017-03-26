@@ -39,6 +39,15 @@ public interface HpcDataManagementSecurityService
     		           throws HpcException;
     
     /**
+     * Check if a user exists (i.e. the user has a data management account).
+     * 
+     * @param nciUserId The user-id to check.
+     * @return True if the group exists, and false otherwise.
+     * @throws HpcException on service failure.
+     */
+    public boolean userExists(String nciUserId) throws HpcException;
+    
+    /**
      * Delete a user.
      *
      * @param nciUserId The user-id to delete.
