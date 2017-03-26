@@ -45,6 +45,7 @@
 				<xsd:element name="lastName" type="xsd:string" />
 				<xsd:element name="doc" type="xsd:string" />
 				<xsd:element name="userRole" type="xsd:string" />
+				<xsd:element name="active" type="xsd:boolean" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

@@ -221,7 +221,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	userDTO.setLastName(user.getNciAccount().getLastName());
     	userDTO.setDoc(user.getNciAccount().getDoc());
     	userDTO.setUserRole(dataManagementSecurityService.getUserRole(nciUserId).value());
-    	
+    	userDTO.setActive(user.getActive());
     	return userDTO;
     }
     
