@@ -92,6 +92,18 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     }
     
     @Override
+    public boolean userExists(String nciUserId) throws HpcException
+    {
+    	// Input validation.
+    	if(StringUtils.isEmpty(nciUserId)) {	
+    	   throw new HpcException("Null or empty NCI user Id", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	return dataManagementProxy.userExists(dataManagementAuthenticator.getAuthenticatedToken(), nciUserId);
+    }
+    
+    @Override
     public void deleteUser(String nciUserId) throws HpcException
     {
     	// Input validation.
