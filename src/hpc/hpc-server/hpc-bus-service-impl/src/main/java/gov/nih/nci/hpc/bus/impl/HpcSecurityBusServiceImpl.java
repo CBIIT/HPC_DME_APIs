@@ -118,7 +118,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	}
     	if(securityService.getUser(nciUserId) != null) {
     	   throw new HpcException("User already exists: " + nciUserId, 
-    			                  HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
+    			                  HpcRequestRejectReason.USER_ALREADY_EXISTS);	
     	}
     	
     	// Instantiate an NCI account domain object.
@@ -458,6 +458,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     		   boolean ldapAuthentication,
     		   HpcDataManagementAccount dmAccount) throws HpcException
     {
+    	// TODO: Need to refactor authentication.
+    	
 		// Get the HPC user.
 		HpcUser user = null;
 		try {
@@ -477,6 +479,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		   nciAccount.setUserId("Unknown-NCI-User-ID");
 	 	   user.setNciAccount(nciAccount);
 	 	   user.setDataManagementAccount(null);
+	 	   user.setActive(true);
 	    }
 		
 		// If the user was authenticated w/ LDAP, then we use the NCI credentials to access
@@ -495,6 +498,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		// Prepare and return a response DTO.
 		HpcAuthenticationResponseDTO authenticationResponse = new HpcAuthenticationResponseDTO();
 		authenticationResponse.setAuthenticated(ldapAuthentication ? userAuthenticated : true);	
+		if(!user.getActive()) {
+		   authenticationResponse.setAuthenticated(false);
+		}
 
 		HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
 		if(requestInvoker.getDataManagementAuthenticatedToken() == null && dmAccount != null)
