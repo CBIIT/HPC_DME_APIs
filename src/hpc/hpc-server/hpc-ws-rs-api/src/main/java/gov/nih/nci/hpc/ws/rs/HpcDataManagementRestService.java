@@ -206,5 +206,15 @@ public interface HpcDataManagementRestService
 	@Path("/dm/tree/{doc}")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getDataManagementTree(@PathParam("doc") String doc);
+	
+    /**
+     * Get data management model DOCs.
+     *
+     * @return The REST service response.
+     */
+	@GET
+	@Path("/dm/docs")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getDataManagementModelDOCs();
 }
 

@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.bus;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
@@ -171,6 +172,14 @@ public interface HpcDataManagementBusService
      * @throws HpcException on service failure.
      */
 	public HpcDataManagementTreeDTO getDataManagementTree(String doc) throws HpcException;
+
+	/**
+     * Get data management docs.
+     *
+     * @return Data Management doc list DTO.
+     * @throws HpcException on service failure.
+     */
+	public HpcDataManagementDocListDTO getDataManagementDocs() throws HpcException;
 }
 
  

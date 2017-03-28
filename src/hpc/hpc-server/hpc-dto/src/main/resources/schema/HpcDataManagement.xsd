@@ -240,4 +240,11 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
+	<xsd:element name="HpcDataManagementDocListDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="docs" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
 </xsd:schema>

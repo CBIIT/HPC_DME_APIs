@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
@@ -35,6 +36,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -290,6 +294,19 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		return okResponse(docTree, true);
     }
     
+    @Override
+	public Response getDataManagementModelDOCs()
+	{
+    	HpcDataManagementDocListDTO docTree = null;
+		try {
+			 docTree = dataManagementBusService.getDataManagementDocs();
+			 
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+		return okResponse(docTree, true);
+	}
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
