@@ -44,6 +44,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -482,6 +483,13 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 	 	   user.setActive(true);
 	    }
 		
+		if(password != null)
+		{
+			   password = password.replace("=", "\\=");
+			   password = password.replace(";", "\\;");
+			   password = password.replace("&", "\\;");
+			   password = password.replace("@", "\\;");
+		}
 		// If the user was authenticated w/ LDAP, then we use the NCI credentials to access
 		// Data Management (iRODS).
 		if(userAuthenticated) {

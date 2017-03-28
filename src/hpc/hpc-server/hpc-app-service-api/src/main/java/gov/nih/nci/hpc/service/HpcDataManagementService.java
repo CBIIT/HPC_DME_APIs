@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -179,6 +180,14 @@ public interface HpcDataManagementService
      * @throws HpcException on service failure.
      */
     public String getDocBasePath(String docName) throws HpcException;
+
+    /**
+     * Get DOCs
+     * 
+     * @return List of DOCs
+     * @throws HpcException on service failure.
+     */
+    public HashMap<String, String> getDocBasePaths() throws HpcException;
 }
 
  

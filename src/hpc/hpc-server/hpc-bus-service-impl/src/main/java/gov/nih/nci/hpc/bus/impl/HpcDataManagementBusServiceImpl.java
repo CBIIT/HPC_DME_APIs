@@ -30,6 +30,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeEntry;
@@ -52,6 +53,7 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -517,6 +519,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	return dataManagementTree;
     }
+    
+    @Override
+	public HpcDataManagementDocListDTO getDataManagementDocs() throws HpcException
+	{
+    	HashMap<String, String> docBasePaths = dataManagementService.getDocBasePaths();
+    	List<String> docList = new ArrayList<String>();
+    	HpcDataManagementDocListDTO dto = new HpcDataManagementDocListDTO();
+    	for(String key : docBasePaths.keySet())
+    		docList.add(key);
+    	dto.getDocs().addAll(docList);
+    	return dto;
+	}
     
     //---------------------------------------------------------------------//
     // Helper Methods
