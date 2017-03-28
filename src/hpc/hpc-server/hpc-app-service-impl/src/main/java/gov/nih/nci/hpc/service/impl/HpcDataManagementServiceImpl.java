@@ -30,6 +30,7 @@ import gov.nih.nci.hpc.service.HpcDataManagementService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -388,6 +389,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		return null;
     	
     	return docBasePath.get(docName);
+    }
+    
+    @Override
+    public HashMap<String, String> getDocBasePaths() throws HpcException
+    {
+    	return docBasePath;
     }
     
     //---------------------------------------------------------------------//
