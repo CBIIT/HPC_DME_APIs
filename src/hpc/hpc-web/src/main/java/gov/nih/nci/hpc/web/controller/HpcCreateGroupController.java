@@ -55,10 +55,10 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 @Controller
 @EnableAutoConfiguration
-@RequestMapping("/createuser")
+@RequestMapping("/creategroup")
 public class HpcCreateGroupController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.user}")
-	private String userServiceURL;
+	@Value("${gov.nih.nci.hpc.server.group}")
+	private String groupServiceURL;
 	@Value("${gov.nih.nci.hpc.server.docs}")
 	private String docsServiceURL;
 
@@ -75,7 +75,7 @@ public class HpcCreateGroupController extends AbstractHpcController {
 			return "index";
 		}
 		initialize(model, authToken, user);
-		return "createuser";
+		return "creategroup";
 	}
 	
 	private void initialize(Model model, String authToken, HpcUserDTO user)
