@@ -8,6 +8,7 @@ public class HpcCollectionSearchResultDetailed {
 	private String collectionType;
 	private String createdOn;
 	private String permission;
+	private String download;
 
 	public String getPermission() {
 		return permission;
@@ -57,4 +58,11 @@ public class HpcCollectionSearchResultDetailed {
 		this.createdOn = createdOn;
 	}
 
+	public String getDownload() {
+		return download;
+	}
+
+	public void setDownload(String download) {
+		this.download = download;
+	}
 }
