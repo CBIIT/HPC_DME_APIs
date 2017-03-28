@@ -119,6 +119,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     @Override
     public HpcDataManagementAccount getHpcDataManagementAccount(Object irodsAccount) throws HpcException
     {
+    	if(irodsAccount == null) {
+    		return null;
+    	}
     	try
     	{
     		return irodsConnection.getHpcDataManagementAccount((IRODSAccount)irodsAccount);
