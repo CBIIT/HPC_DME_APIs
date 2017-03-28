@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
@@ -66,33 +67,12 @@ public class HpcUserController extends AbstractHpcController {
 	}
 
 	/*
-	 * Action for Dataset registration
+	 * Action for User registration
 	 */
 	@RequestMapping(method = RequestMethod.POST)
 	public String findUsers(@Valid @ModelAttribute("hpcUser") HpcWebUser hpcWebUser, BindingResult bindingResult,
 			Model model, HttpSession session, HttpServletRequest request) {
 		try {
-			String path = (String) session.getAttribute("permissionsPath");
-			String[] actionType = request.getParameterValues("actionType");
-			if (actionType != null && actionType.length > 0 && actionType[0].equals("selected")) {
-				String[] selectedUsers = request.getParameterValues("selectedUsers");
-				StringBuffer buffer = new StringBuffer();
-				for (int i = 0; i < selectedUsers.length; i++) {
-					StringTokenizer tokens = new StringTokenizer(selectedUsers[i], ",");
-					while (tokens.hasMoreTokens()) {
-						buffer.append(tokens.nextToken());
-						if (tokens.hasMoreTokens())
-							buffer.append(";");
-					}
-				}
-				session.setAttribute("selectedUsers", buffer.toString());
-				if (selectedUsers != null && selectedUsers.length > 0)
-					return "redirect:/permissions?assignType=User&path=" + hpcWebUser.getPath()  + "&type="+hpcWebUser.getType();
-			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
-				session.removeAttribute("selectedUsers");
-				return "redirect:/permissions?assignType=User&path=" + hpcWebUser.getPath() + "&type="+hpcWebUser.getType();
-			}
-
 			String userId = null;
 			String firstName = null;
 			String lastName = null;

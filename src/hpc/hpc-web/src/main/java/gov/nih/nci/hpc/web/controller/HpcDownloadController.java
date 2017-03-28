@@ -68,6 +68,8 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 public class HpcDownloadController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.dataObject}")
 	private String dataObjectServiceURL;
+	@Value("${gov.nih.nci.hpc.server.collection}")
+	private String collectionServiceURL;
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
@@ -75,7 +77,9 @@ public class HpcDownloadController extends AbstractHpcController {
 		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 		String downloadFilePath = request.getParameter("path");
+		String downloadType = request.getParameter("type");
 		model.addAttribute("downloadFilePath", downloadFilePath);
+		model.addAttribute("downloadType", downloadType);
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
@@ -87,52 +91,6 @@ public class HpcDownloadController extends AbstractHpcController {
 		return "download";
 	}
 
-	/**
-	 * 
-	 * @RequestMapping(method = RequestMethod.POST, produces =
-	 *                        MediaType.APPLICATION_OCTET_STREAM_VALUE)
-	 * @ResponseBody public Resource
-	 *               download(@Valid @ModelAttribute("hpcDownloadDatafile")
-	 *               HpcDownloadDatafile downloadFile, Model model,
-	 *               BindingResult bindingResult, HttpSession session,
-	 *               HttpServletRequest request, HttpServletResponse response) {
-	 *               try { // String criteria = getCriteria();
-	 * 
-	 *               String authToken = (String)
-	 *               session.getAttribute("hpcUserToken"); String serviceURL =
-	 *               dataObjectServiceURL
-	 *               +downloadFile.getDestinationPath()+"/download";
-	 *               HpcDataObjectDownloadRequestDTO dto = new
-	 *               HpcDataObjectDownloadRequestDTO();
-	 * 
-	 *               WebClient client = HpcClientUtil.getWebClient(serviceURL,
-	 *               sslCertPath, sslCertPassword);
-	 *               client.header("Authorization", "Bearer " + authToken);
-	 * 
-	 *               Response restResponse = client.invoke("POST", dto); if
-	 *               (restResponse.getStatus() == 200) { return new
-	 *               FileSystemResource(new
-	 *               File("C:\\DEV\\temp\\keystore.jks")); } else { ObjectMapper
-	 *               mapper = new ObjectMapper(); AnnotationIntrospectorPair
-	 *               intr = new AnnotationIntrospectorPair( new
-	 *               JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-	 *               new JacksonAnnotationIntrospector() );
-	 *               mapper.setAnnotationIntrospector(intr);
-	 *               mapper.configure(DeserializationFeature.
-	 *               FAIL_ON_UNKNOWN_PROPERTIES, false);
-	 * 
-	 *               MappingJsonFactory factory = new
-	 *               MappingJsonFactory(mapper); JsonParser parser =
-	 *               factory.createParser((InputStream)
-	 *               restResponse.getEntity());
-	 * 
-	 *               HpcExceptionDTO exception =
-	 *               parser.readValueAs(HpcExceptionDTO.class); //return null; }
-	 *               } catch (HttpStatusCodeException e) { e.printStackTrace();
-	 *               } catch (RestClientException e) { e.printStackTrace(); }
-	 *               catch (Exception e) { e.printStackTrace(); } return null; }
-	 */
-
 	@JsonView(Views.Public.class)
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
@@ -142,7 +100,11 @@ public class HpcDownloadController extends AbstractHpcController {
 		AjaxResponseBody result = new AjaxResponseBody();
 		try {
 			String authToken = (String) session.getAttribute("hpcUserToken");
-			String serviceURL = dataObjectServiceURL + downloadFile.getDestinationPath() + "/download";
+			String serviceURL = null;
+			if(downloadFile.getDownloadType().equals("collection"))
+				serviceURL = collectionServiceURL + downloadFile.getDestinationPath() + "/download";
+			else
+				serviceURL = dataObjectServiceURL + downloadFile.getDestinationPath() + "/download";
 			HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
 			boolean asyncDownload = false;
 			if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("async")) {
@@ -181,12 +143,6 @@ public class HpcDownloadController extends AbstractHpcController {
 					result.setMessage("Synchronous download is successful!");
 					return result;
 				}
-
-				// return new FileSystemResource(new
-				// File("C:\\DEV\\temp\\keystore.jks"));
-
-				// return new InputStreamResource ((InputStream)
-				// restResponse.getEntity());
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(

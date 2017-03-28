@@ -42,7 +42,7 @@
 <script src="http://ui-grid.info/docs/grunt-scripts/pdfmake.js"></script>
 <script src="http://ui-grid.info/docs/grunt-scripts/vfs_fonts.js"></script>
 
-<script src="http://ui-grid.info/release/ui-grid.js"></script>
+<script src="http://ui-grid.info/release/4.0.2/ui-grid.js"></script>
 <script src="../bower_components/jquery/dist/jquery.js"></script>
 
 <link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css"
@@ -90,7 +90,7 @@
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h2>
-									<i class="fa fa-list-alt red"></i><strong>Data File &nbsp; <a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?path=' + ${dataObject.getDataObject().getAbsolutePath()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=dataObject&amp;path=' + ${dataObject.getDataObject().getAbsolutePath()}}"><i class="fa fa-users" aria-hidden="true"></i></a></strong>
+									<i class="fa fa-list-alt red"></i><strong>Data File &nbsp; <a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=datafile&amp;path=' + ${dataObject.getDataObject().getAbsolutePath()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=dataObject&amp;path=' + ${dataObject.getDataObject().getAbsolutePath()}}"><i class="fa fa-users" aria-hidden="true"></i></a></strong>
 								</h2>
 							</div>
 								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"

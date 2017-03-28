@@ -65,31 +65,19 @@
 				    paginationPageSize: 25,
 				    treeRowHeaderAlwaysVisible: false,
 					columnDefs : [ {
-						field : 'userId',
+						field : 'groupName',
 						width : 120,
-						displayName : 'User Id'
+						displayName : 'Group Name'
 					}, {
-						field : 'firstName',
-						width : 120,
-						displayName : 'First Name'
-					}, {
-						field : 'lastName',
-						width : 120,
-						displayName : 'Last Name'
-					}, {
-						field : 'doc',
-						width : 120,
-						displayName : 'DOC'
-					},, {
-						field : 'userId',
+						field : 'groupName',
 						width : 120,
 						displayName : 'Edit',
-						cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="editlink" class="btn btn-link btn-sm" href="../updateuser?userId={{COL_FIELD CUSTOM_FILTERS}}" data-target="#edituserModal">Edit &nbsp;<i class="fa fa-address-card" aria-hidden="true"></i></a></div>'
+						cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="editlink" class="btn btn-link btn-sm" href="../updategroup?group={{COL_FIELD CUSTOM_FILTERS}}" data-target="#editgroupModal">Edit &nbsp;<i class="fa fa-address-card" aria-hidden="true"></i></a></div>'
 					},, {
-						field : 'userId',
+						field : 'groupName',
 						width : 120,
 						displayName : 'Delete',
-						cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="deletelink" class="btn btn-link btn-sm" href="../deleteuser?userId={{COL_FIELD CUSTOM_FILTERS}}" data-target="#deleteuserModal">Delete &nbsp; <i class="fa fa-window-close" aria-hidden="true"></i></a></div>'
+						cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="deletelink" class="btn btn-link btn-sm" href="../deletegroup?group={{COL_FIELD CUSTOM_FILTERS}}" data-target="#deletegroupModal">Delete &nbsp; <i class="fa fa-window-close" aria-hidden="true"></i></a></div>'
 					} ],
 					onRegisterApi : function(gridApi) {
 						$scope.grid1Api = gridApi;
@@ -128,7 +116,7 @@
 							<li><i class="fa fa-dashboard"></i><a
 								th:href="@{/dashboard}">Dashboard</a></li>
 							<li><i class="fa fa-list-alt"></i>Admin</li>
-							<li><i class="fa fa-list-alt"></i>User(s)</li>
+							<li><i class="fa fa-list-alt"></i>Group(s)</li>
 						</ol>
 					</div>
 				</div>
@@ -140,12 +128,12 @@
 							<div class="panel-heading">
 								<div class="col-md-3">
 								<h2 align="left">
-									<i class="fa fa-list-alt red"></i><strong>Manage User(s)</strong>
+									<i class="fa fa-list-alt red"></i><strong>Manage Group(s)</strong>
 								</h2>
 								</div>
 								<div class="col-md-3 col-md-offset-6">
 								<h2>
-									<strong> <a data-toggle="modal" id="createuserlink" class="btn btn-link btn-sm" th:href="@{/createuser}" data-target="#createuserModal">Create User &nbsp;<i class="fa fa-user" aria-hidden="true"></i></a></strong>
+									<strong> <a data-toggle="modal" id="creategrouplink" class="btn btn-link btn-sm" th:href="@{/creategroup}" data-target="#creategroupModal">Create Group &nbsp;<i class="fa fa-group" aria-hidden="true"></i></a></strong>
 								</h2>
 								</div>
 							</div>
@@ -155,7 +143,7 @@
 										for="${error}" th:text="${error}"></label>
 								</div>
 							</div>
-								<div class="modal fade" id="createuserModal" tabindex="-1" role="dialog"
+								<div class="modal fade" id="creategroupModal" tabindex="-1" role="dialog"
 									aria-labelledby="myModalLabel" aria-hidden="true">
 									<div class="modal-dialog">
 										<div class="modal-content"></div>
@@ -163,7 +151,7 @@
 									</div>
 									<!-- /.modal-dialog -->
 								</div>								
-								<div class="modal fade" id="edituserModal" tabindex="-1" role="dialog"
+								<div class="modal fade" id="editgroupModal" tabindex="-1" role="dialog"
 									aria-labelledby="editModalLabel" aria-hidden="true">
 									<div class="modal-dialog">
 										<div class="modal-content"></div>
@@ -176,8 +164,8 @@
 								<div class="panel-body">
 									<div class="form-group">
 										<div class="col-md-12 form-group">
-											<form class="form-horizontal" id="userForm"
-												th:object="${hpcWebUser}" th:action="@{/user}"
+											<form class="form-horizontal" id="groupForm"
+												th:object="${hpcWebGroup}" th:action="@{/group}"
 												method="POST">
 												<div class="panel panel-default">
 													<div class="panel-body">
@@ -198,21 +186,10 @@
 																<td>
 																	<div class="form-group">
 																		<div class="col-sm-12 column">
-																			<label for="userId">User Id:</label> <input
+																			<label for="groupName">Group Name:</label> <input
 																				type="text" class="form-control"
-																				th:field="*{nciUserId}" placeholder="Enter UserId" />
-																		</div>
-																		<div class="col-sm-12 column">
-																			<label for="firstName">First Name:</label> <input
-																				type="text" class="form-control"
-																				th:field="*{firstName}"
-																				placeholder="Enter First Name" size="40" />
-																		</div>
-																		<div class="col-sm-12 column">
-																			<label for="lastName">Last Name:</label> <input
-																				type="text" class="form-control"
-																				th:field="*{lastName}" placeholder="Enter Last Name"
-																				size="40" />
+																				th:field="*{groupName}"
+																				placeholder="Enter Group Name" size="40" />
 																		</div>
 																	</div>
 																	<div class="modal-footer">
@@ -274,8 +251,8 @@
 		
 		function cancel() {
 			document.getElementById("actionType").value = "cancel";
-			$('#userForm').attr('action', '/finduser');
-			$("#userForm").submit();
+			$('#groupForm').attr('action', '/findgroup');
+			$("#groupForm").submit();
 		}
 		/*]]>*/
 	</script>
