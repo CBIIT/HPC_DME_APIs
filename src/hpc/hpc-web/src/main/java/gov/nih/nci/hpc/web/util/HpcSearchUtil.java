@@ -46,6 +46,7 @@ public class HpcSearchUtil {
 			for (String result : searchResults) {
 				HpcSearchResult returnResult = new HpcSearchResult();
 				returnResult.setPath(result);
+				returnResult.setDownload(result);
 				returnResults.add(returnResult);
 				returnResult.setPermission(result);
 
@@ -63,6 +64,7 @@ public class HpcSearchUtil {
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
 				returnResult.setCreatedOn(format.format(result.getCollection().getCreatedAt().getTime()));
 				returnResult.setCollectionType(getAttributeValue("collection_type", result.getMetadataEntries()));
+				returnResult.setDownload(result.getCollection().getAbsolutePath());
 				returnResult.setPermission(result.getCollection().getAbsolutePath());
 				returnResults.add(returnResult);
 

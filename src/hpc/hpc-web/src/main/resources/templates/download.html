@@ -29,11 +29,18 @@
 	<div class="modal-body">
 		<form class="form-horizontal" id="downloadForm"
 			th:object="${hpcDownloadDatafile}" method="POST">
+			<div class="pull-left" th:if="${downloadType == 'datafile'}">
 			<p>You may download data file to your local computer
 				(synchronous) or to a Global endpoint location (asynchronous). If
 				you are using asynchronous option, you will need to first give WRITE
 				access on your Globus download location to HPC DME Service account
 				&quot;ncif-hpcdm-svc&quot;</p>
+			</div>
+			<div class="pull-left" th:if="${downloadType == 'collection'}">
+			<p>You may download entire collection to a Global endpoint location (asynchronous).For asynchronous option, you will need to first give WRITE
+				access on your Globus download location to HPC DME Service account
+				&quot;ncif-hpcdm-svc&quot;</p>			
+			</div>
 			<div class="panel panel-default">
 				<div class="panel-body">
 					<table>
@@ -52,12 +59,17 @@
 						<tr>
 							<td>
 								<div class="form-group">
-									<label class="radio-inline"><input type="radio"
+										<div class="pull-left">
+										<label class="radio-inline"><input type="radio"
 										name="searchType" id="searchType" value="async"
-										onChange="display(this)" checked="chekced" />Asynchronous</label> <label
+										onChange="display(this)" checked="chekced" />Asynchronous</label> 
+										</div>
+										<div class="pull-left" th:if="${downloadType == 'datafile'}">
+										<label
 										class="radio-inline"><input type="radio"
 										id="searchType" name="searchType" value="sync"
 										onChange="display(this)" />Synchronous</label>
+										</div>
 								</div>
 								<div class="form-group" id="AsyncDiv" style="display: show">
 									<div class="col-sm-12 column">
@@ -72,7 +84,7 @@
 											placeholder="Enter Globus Endpoint Path" size="40" />
 									</div>
 								</div>
-								<div class="form-group" id="SyncDiv" style="display: none">
+								<div class="form-group" id="SyncDiv" style="display: none" th:if="${downloadType == 'datafile'}">
 									<div class="col-sm-12 column">
 										<label for="downloadFileName">Download file name:</label> <input
 											type="text" class="form-control"
@@ -91,6 +103,8 @@
 					</table>
 					<input type="hidden" name="destinationPath" id="destinationPath"
 						th:value="${downloadFilePath}" />
+					<input type="hidden" name="downloadType" id="destinationPath"
+						th:value="${downloadType}" />
 				</div>
 			</div>
 		</form>

@@ -7,6 +7,7 @@ public class HpcDownloadDatafile {
 	private String destinationPath;
 	private String downloadFileName;
 	private String searchType;
+	private String downloadType;
 
 	public String getSearchType() {
 		return searchType;
@@ -48,4 +49,11 @@ public class HpcDownloadDatafile {
 		this.destinationPath = destinationPath;
 	}
 
+	public String getDownloadType() {
+		return downloadType;
+	}
+
+	public void setDownloadType(String downloadType) {
+		this.downloadType = downloadType;
+	}
 }

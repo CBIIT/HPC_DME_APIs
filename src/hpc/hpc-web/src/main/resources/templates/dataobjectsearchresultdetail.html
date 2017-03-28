@@ -43,7 +43,7 @@
 <script src="http://ui-grid.info/docs/grunt-scripts/pdfmake.js"></script>
 <script src="http://ui-grid.info/docs/grunt-scripts/vfs_fonts.js"></script>
 
-<script src="http://ui-grid.info/release/ui-grid.js"></script>
+<script src="http://ui-grid.info/release/4.0.2/ui-grid.js"></script>
 <script src="../bower_components/jquery/dist/jquery.js"></script>
 
 <link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css"
@@ -105,7 +105,7 @@
 												field : 'download',
 												width : 100,
 												displayName : 'Download',
-												cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>'
+												cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?type=datafile&amp;path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>'
 											},{
 												field : 'permission',
 												width : 100,
