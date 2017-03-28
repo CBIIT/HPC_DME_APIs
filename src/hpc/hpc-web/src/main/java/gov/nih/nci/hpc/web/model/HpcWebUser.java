@@ -23,6 +23,9 @@ public class HpcWebUser {
 	private String nciUserPasswd;
 
 	@JsonView(Views.Public.class)
+	private String userRole;
+	
+	@JsonView(Views.Public.class)
 	private String doc;
 
 	public String getDoc() {
@@ -80,5 +83,12 @@ public class HpcWebUser {
 	public void setType(String type) {
 		this.type = type;
 	}
-	
+
+	public String getUserRole() {
+		return userRole;
+	}
+
+	public void setUserRole(String userRole) {
+		this.userRole = userRole;
+	}
 }
