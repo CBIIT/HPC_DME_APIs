@@ -46,6 +46,10 @@
 							</td>
 						</tr>
 						<tr>
+							<td>&nbsp;
+						</td>
+						</tr>
+						<tr>
 							<td>
 								<div class="form-group">
 									<div class="col-sm-12 column">
@@ -91,6 +95,14 @@
 														th:value="${attrName}" th:text="${attrName}" th:selected="${attrName == userDTO.getUserRole()}">
 														Wireframe</option>
 											</select>																			
+									</div>
+									<div class="col-sm-12 column" th:if="${userDTO.getActive() == true}">
+										<label for="active">Active:</label> 
+											<input type="checkbox" id="active" name="active" checked="checked"/>																			
+									</div>
+									<div class="col-sm-12 column" th:if="${userDTO.getActive() == false}">
+										<label for="active">Active:</label> 
+											<input type="checkbox" id="active" name="active" />																			
 									</div>
 								</div>
 								<div class="modal-footer">

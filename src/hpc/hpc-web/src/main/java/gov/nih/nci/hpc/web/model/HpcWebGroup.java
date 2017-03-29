@@ -8,10 +8,16 @@ public class HpcWebGroup {
 	private String path;
 
 	@JsonView(Views.Public.class)
+	private String source;
+
+	@JsonView(Views.Public.class)
 	private String type;
 	
 	@JsonView(Views.Public.class)
 	private String groupName;
+
+	@JsonView(Views.Public.class)
+	private String groupId;
 
 	public String getGroupName() {
 		return groupName;
@@ -37,4 +43,19 @@ public class HpcWebGroup {
 		this.type = type;
 	}
 
+	public String getSource() {
+		return source;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
+	}
+
+	public String getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(String groupId) {
+		this.groupId = groupId;
+	}
 }

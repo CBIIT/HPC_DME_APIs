@@ -11,6 +11,9 @@ public class HpcWebUser {
 	private String type;
 	
 	@JsonView(Views.Public.class)
+	private String source;
+
+	@JsonView(Views.Public.class)
 	private String nciUserId;
 
 	@JsonView(Views.Public.class)
@@ -27,6 +30,9 @@ public class HpcWebUser {
 	
 	@JsonView(Views.Public.class)
 	private String doc;
+
+	@JsonView(Views.Public.class)
+	private String active;
 
 	public String getDoc() {
 		return doc;
@@ -90,5 +96,21 @@ public class HpcWebUser {
 
 	public void setUserRole(String userRole) {
 		this.userRole = userRole;
+	}
+
+	public String getSource() {
+		return source;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
+	}
+
+	public String getActive() {
+		return active;
+	}
+
+	public void setActive(String active) {
+		this.active = active;
 	}
 }

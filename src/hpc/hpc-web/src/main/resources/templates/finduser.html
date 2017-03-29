@@ -176,8 +176,7 @@
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h2>
-									<i class="fa fa-list-alt red"></i><strong>Manage
-										Permissions - Assign User(s)</strong>
+									<i class="fa fa-list-alt red"></i><strong>Assign User(s)</strong>
 								</h2>
 							</div>
 							<div th:if="${error != null}">
@@ -237,6 +236,7 @@
 																			id="cancelButton" onclick="cancel()">Cancel</button>
 																		<input type="hidden" th:field="*{path}" th:value="${hpcWebUser.getPath()}"/>
 																		<input type="hidden" th:field="*{type}" th:value="${hpcWebUser.getType()}"/>
+																		<input type="hidden" th:field="*{source}" th:value="${hpcWebUser.getSource()}"/>
 																	</div>
 																</td>
 															</tr>
