@@ -82,6 +82,9 @@ public class HpcMetadataValidator
 	List<HpcMetadataValidationRule> collectionMetadataValidationRules = new ArrayList<>();
 	List<HpcMetadataValidationRule> dataObjectMetadataValidationRules = new ArrayList<>();
 	
+	List<String> collectionSystemGeneratedMetadataAttributeNames = new ArrayList<>();
+	List<String> dataObjectSystemGeneratedMetadataAttributeNames = new ArrayList<>();
+	
 	// Set of system generated metadata attributes.
 	Set<String> systemGeneratedMetadataAttributes = new HashSet<>();
 	
@@ -128,6 +131,10 @@ public class HpcMetadataValidator
 	            		        CHECKSUM_ATTRIBUTE);
 	         
 	         systemGeneratedMetadataAttributes.addAll(attributes);
+	         collectionSystemGeneratedMetadataAttributeNames.addAll(
+	        		   namesFromJSON((JSONArray) jsonMetadataValidationRules.get("collectionSystemGeneratedMetadataAttributes")));
+	         dataObjectSystemGeneratedMetadataAttributeNames.addAll(
+	        		   namesFromJSON((JSONArray) jsonMetadataValidationRules.get("dataObjectSystemGeneratedMetadataAttributes")));
 	         
 		} catch(Exception e) {
 			    throw new HpcException("Could not open or parse: " + metadataValidationRulesPath,
@@ -186,7 +193,27 @@ public class HpcMetadataValidator
     {
     	return systemGeneratedMetadataAttributes;
     }
+
+    /**
+     * Return the set of system generated metadata attributes
+     *
+     * @return The List of system generated metadata attributes for a collection.
+     */
+    public List<String> getCollectionSystemGeneratedMetadataAttributeNames()
+    {
+    	return collectionSystemGeneratedMetadataAttributeNames;
+    }
     
+    /**
+     * Return the set of system generated metadata attributes
+     *
+     * @return The List of system generated metadata attributes for an object.
+     */
+    public List<String> getDataObjectSystemGeneratedMetadataAttributeNames()
+    {
+    	return dataObjectSystemGeneratedMetadataAttributeNames;
+    }
+
     /**
      * Return the collection metadata validation rules.
      *
@@ -433,6 +460,27 @@ public class HpcMetadataValidator
     	return validationRules;
     }
     
+    /**
+     * Instantiate list system metadata attribute names from JSON.
+     *
+     * @param jsonSystemMetadataAttributeNamesJSON The validation rules JSON array. 
+     * @return A collection of metadata attribute names
+     * @throws HpcException If failed to parse the JSON.
+     */
+    @SuppressWarnings("unchecked")
+	private List<String> namesFromJSON(JSONArray jsonSystemMetadataAttributeNamesJSON) 
+    		                                             throws HpcException
+    {
+    	List<String> jsonSystemMetadataAttributeNames = new ArrayList<>();
+    	
+    	// Iterate through the rules and map to POJO.
+    	Iterator<String> rulesIterator = jsonSystemMetadataAttributeNamesJSON.iterator();
+    	while(rulesIterator.hasNext()) {
+    		jsonSystemMetadataAttributeNames.add(rulesIterator.next());
+   	  }
+    	
+    	return jsonSystemMetadataAttributeNames;
+    }    
     /**
      * Load the metadata validation rules from file.
      * 

@@ -532,6 +532,18 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     	metadataDAO.refreshViews();
     }
     
+    @Override
+    public List<String> getCollectionSystemMetadataAttributeNames() throws HpcException
+    {
+    	return metadataValidator.getCollectionSystemGeneratedMetadataAttributeNames();
+    }
+
+    @Override
+    public List<String> getDataObjectSystemMetadataAttributeNames() throws HpcException
+    {
+    	return metadataValidator.getDataObjectSystemGeneratedMetadataAttributeNames();
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
