@@ -230,6 +230,25 @@ public interface HpcMetadataService
      * @throws HpcException on service failure.
      */
     public void refreshViews() throws HpcException;
+    
+    /**
+     * Get collection system metadata attribute names.
+     * 
+     * @return A list of system metadata attribute names.
+     * @throws HpcException on service failure.
+     */
+    public List<String> 
+           getCollectionSystemMetadataAttributeNames() throws HpcException;
+
+    /**
+     * Get data object system metadata attribute names.
+     * 
+     * @return A list of system metadata attribute names.
+     * @throws HpcException on service failure.
+     */
+    public List<String> 
+           getDataObjectSystemMetadataAttributeNames() throws HpcException;
+    
 }
 
  
