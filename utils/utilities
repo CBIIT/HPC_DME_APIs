@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+# functions
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Common utilities
+
+
+#Return the HTTP code in the response excluding 100
+#Inputs: <response-header-file>
+function get_http_code {
+    if [ -z "$1" ]
+    then
+        echo "ERROR: using get_http_code"
+        echo "USAGE: get_http_code <http-response-file>"
+        exit
+    fi
+    grep 'HTTP' $1  | grep '[02-9][0-9][0-9]' | sed 's/.*\([0-9][0-9][0-9]\).*/\1/'
+}
+
+
+
+
+#Return a single value for a given attribute in a json file 
+#Inputs:   json-file-name(or input string)  
+#            attribute-name 
+function get_json_value {
+
+  if [ -z "$1" ] || [ -z "$2" ]
+  then
+      echo "ERROR: using get_json_value" >&2
+      echo "USAGE: get_json_value <input-string-or-file> <attribute>" >&2
+      exit
+  fi
+  INPUT="$1"
+  ATTRIBUTE="$2"
+  INPUT=`get_file_value "$INPUT"`
+  echo "$INPUT" | grep "$ATTRIBUTE" | sed "s/.*${ATTRIBUTE}\"[    ]*:[    ]*\"\([^\"]*\)\".*/\1/"
+}
+
+
+#If the input is a filename, return the contents of the file, otherwise return the input.
+#Inputs: <input-string-or-filename>
+function get_file_value {
+    if [ -z "$1" ]
+    then
+        echo "ERROR: using get_file_value" >&2
+        echo "USAGE: get_file_value <input-string-or-filename>"  >&2
+        exit
+    fi
+
+    INPUT="$1"
+    #Check if the input is a file
+    if [ -e "$INPUT" ]
+    then
+        INPUT=`cat $INPUT`
+    fi
+    echo "$INPUT"
+}
+
+
+#Get the username from the config file
+function get_username {
+
+    USER_NAME=$(get_json_value $HPC_DM_UTILS/test-conf username)
+
+    if [ -z "$USER_NAME" ]
+    then 
+        echo "ERROR: Can not retrieve username from $HPC_DM_UTILS/test-conf" >&2
+        exit 
+    fi
+    echo $USER_NAME
+}
+
+
+#Get the server from the config file
+function get_server {
+
+    SERVER_NAME=$(get_json_value $HPC_DM_UTILS/test-conf server)
+
+    if [ -z "$SERVER_NAME" ]
+    then 
+        echo "ERROR: Can not retrieve server from $HPC_DM_UTILS/test-conf" >&2
+        exit 
+    fi
+    echo $SERVER_NAME
+}
+
+#Checks that the response header file has information.
+#Input:   <response_header> The response header of the curl command
+function check_connection {
+
+    if [ -z "$1" ]
+    then
+        echo "ERROR: using check_connection"
+        echo "USAGE: check_connection <response-file>"
+        exit 1
+    fi
+    RESPONSE_HEADER="$1"
+    if [ -e "$RESPONSE_HEADER" ]
+    then 
+        CONT=`cat "$RESPONSE_HEADER"`
+    fi
+    if [ -z "$CONT" ]
+    then
+        echo "ERROR: THE RESPONSE HEADER FILE $RESPONSE_HEADER IS EMPTY, CHECK CONNECTION" 1>&2
+        exit
+    fi
+}
+
+#Verify that a collection or a dataObject  was registered correctly
+#Input  <registration-response-header>
+#Input  <registration-response-message>
+#Input  <path>
+function verify_registration {
+
+    if [ -z "$1" ] || [ -z "$2" ] || [ -z $3 ]
+    then
+        echo "ERROR: using check_registration"
+        echo "USAGE: check_registration <registration-response-header-file> <registration-response-message> <destination-path>" 
+        exit 1
+    fi
+
+    RESPONSE_HEADER="$1"
+    RESPONSE_MSG="$2"
+    DESTINATION_PATH="$3"
+    REG_HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+    if [ "$REG_HTTP_CODE" != "201" ]  && [ "$REG_HTTP_CODE" != "200" ]
+    then
+        echo "FAILED TO REGISTER <$DESTINATION_PATH> , HTTP_CODE = $REG_HTTP_CODE" 1>&2
+        if [ ! -e "$RESPONSE_MSG" ] 
+        then
+          echo "Can not find the response message file $RESPONSE_MSG" >&2
+          return
+        else
+          MESSAGE=$(get_json_value "$RESPONSE_MSG" message)
+          echo "ERROR MESSAGE:$MESSAGE" 1>&2
+          return 
+        fi 
+    fi
+}
+
+
+
+
