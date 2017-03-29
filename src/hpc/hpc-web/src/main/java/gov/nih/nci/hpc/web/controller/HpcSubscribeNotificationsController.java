@@ -193,17 +193,6 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 					pathEntry.setValue(value[0]);
 					entries.add(pathEntry);
 					String counter = paramName.substring("collectionPathAdded".length());
-					// String[] metadata =
-					// request.getParameterValues("metadata"+counter);
-					// if(metadata != null && metadata.length > 0 &&
-					// (metadata[0].equals("true") || metadata[0].equals("on")))
-					// {
-					// HpcEventPayloadEntry metadataEntry = new
-					// HpcEventPayloadEntry();
-					// metadataEntry.setAttribute("UPDATE");
-					// metadataEntry.setValue("METADATA");
-					// entries.add(metadataEntry);
-					// }
 					trigger.getPayloadEntries().addAll(entries);
 					triggers.add(trigger);
 					collectionUpdated = true;
