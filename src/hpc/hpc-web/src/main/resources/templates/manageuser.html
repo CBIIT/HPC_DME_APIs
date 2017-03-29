@@ -85,12 +85,7 @@
 						width : 120,
 						displayName : 'Edit',
 						cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="editlink" class="btn btn-link btn-sm" href="../updateuser?userId={{COL_FIELD CUSTOM_FILTERS}}" data-target="#edituserModal">Edit &nbsp;<i class="fa fa-address-card" aria-hidden="true"></i></a></div>'
-					},, {
-						field : 'userId',
-						width : 120,
-						displayName : 'Delete',
-						cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="deletelink" class="btn btn-link btn-sm" href="../deleteuser?userId={{COL_FIELD CUSTOM_FILTERS}}" data-target="#deleteuserModal">Delete &nbsp; <i class="fa fa-window-close" aria-hidden="true"></i></a></div>'
-					} ],
+					}],
 					onRegisterApi : function(gridApi) {
 						$scope.grid1Api = gridApi;
 					}

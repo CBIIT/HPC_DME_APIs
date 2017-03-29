@@ -68,7 +68,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
     enableFiltering: true,
     paginationPageSize: 25,
     columnDefs: [
-                 { field: 'path', width:300, displayName: 'Path', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="../collection?path={{COL_FIELD CUSTOM_FILTERS}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
+                 { field: 'path', width:300, displayName: 'Path', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="../collection?action=view&amp;path={{COL_FIELD CUSTOM_FILTERS}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
                  { field: 'uuid', width:200, displayName : 'UUID' },
                  { field: 'registeredBy', width:200, displayName : 'Registered by' },
                  { field: 'collectionType', width:200, displayName : 'Collection Type'},

@@ -38,6 +38,8 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroup;
+import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
@@ -61,15 +63,15 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 @Controller
 @EnableAutoConfiguration
-@RequestMapping("/creategroup")
-public class HpcCreateGroupController extends AbstractHpcController {
+@RequestMapping("/updategroup")
+public class HpcUpdateGroupController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.group}")
 	private String groupServiceURL;
 	@Value("${gov.nih.nci.hpc.server.docs}")
 	private String docsServiceURL;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(@RequestBody(required = false) String q,  Model model, BindingResult bindingResult,
+	public String home(@RequestBody(required = false) String q,  @RequestParam String groupName, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		String authToken = (String) session.getAttribute("hpcUserToken");
@@ -80,74 +82,93 @@ public class HpcCreateGroupController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "index";
 		}
-		initialize(model, authToken, user, session);
-		return "creategroup";
+		session.removeAttribute("updategroup");
+		initialize(model, authToken, groupName, session);
+		return "updategroup";
 	}
 	
-	private void initialize(Model model, String authToken, HpcUserDTO user, HttpSession session)
+	private void initialize(Model model, String authToken, String groupName, HttpSession session)
 	{
 		HpcWebGroup webGroup = new HpcWebGroup();
+		webGroup.setGroupName(groupName);
 		model.addAttribute("hpcWebGroup", webGroup);
 		model.addAttribute("assignedNames", new ArrayList<String>());
 		String selectedUsers = (String) session.getAttribute("selectedUsers");
 		model.addAttribute("selectedUsers", selectedUsers);
+		HpcGroupListDTO groupList = HpcClientUtil.getGroups(authToken, groupServiceURL, groupName, sslCertPath, sslCertPassword);
+		if(groupList == null || groupList.getGroups() == null || groupList.getGroups().isEmpty())
+		{
+			model.addAttribute("message", "Group "+ groupName +" not found");
+			return;
+		}
+		HpcGroup group = groupList.getGroups().get(0);
+		model.addAttribute("group", group);
+		session.setAttribute("updategroup", group);
 	}
 
 	/*
 	 * Action for User registration
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public String createGroup(@Valid @ModelAttribute("hpcGroup") HpcWebGroup hpcWebGroup,
+	public String updateGroup(@Valid @ModelAttribute("hpcGroup") HpcWebGroup hpcWebGroup,
 			Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request,
 			HttpServletResponse response) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
-		if (authToken == null) {
-			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
-			bindingResult.addError(error);
-			HpcLogin hpcLogin = new HpcLogin();
-			model.addAttribute("hpcLogin", hpcLogin);
-			return "index";
-		}
-		
 		try {
-			if(hpcWebGroup.getGroupName() == null || hpcWebGroup.getGroupName().trim().length() == 0)
+			if(hpcWebGroup.getGroupId() == null || hpcWebGroup.getGroupId().trim().length() == 0)
 				model.addAttribute("message", "Invald user input");
 			
-			HpcGroupMembersRequestDTO dto = constructRequest(request, hpcWebGroup.getGroupName());
+			HpcGroupMembersRequestDTO dto = constructRequest(request, session, hpcWebGroup.getGroupId());
 			
-			boolean created = HpcClientUtil.createGroup(authToken, groupServiceURL, dto, hpcWebGroup.getGroupName(),
+			boolean created = HpcClientUtil.updateGroup(authToken, groupServiceURL, dto, hpcWebGroup.getGroupId(),
 					sslCertPath, sslCertPassword);
 			if (created)
 			{
-				model.addAttribute("message", "Group "+hpcWebGroup.getGroupName() +" is created");
+				model.addAttribute("message", "Group "+hpcWebGroup.getGroupName() +" is Updated!");
 				session.removeAttribute("selectedUsers");
 			}
 		} catch (Exception e) {
-			model.addAttribute("message", "Failed to create group: " + e.getMessage());
+			model.addAttribute("message", "Failed to update group: " + e.getMessage());
 		}
 		finally
 		{
 			model.addAttribute("hpcWebGroup", hpcWebGroup);
-			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
-			initialize(model, authToken, user, session);
+			initialize(model, authToken, hpcWebGroup.getGroupName(), session);
 		}
-		return "creategroup";
+		return "updategroup";
 	}
 	
-	private HpcGroupMembersRequestDTO constructRequest(HttpServletRequest request, String groupName) {
+	private HpcGroupMembersRequestDTO constructRequest(HttpServletRequest request, HttpSession session, String groupName) {
 		Enumeration<String> params = request.getParameterNames();
 		HpcGroupMembersRequestDTO dto = new HpcGroupMembersRequestDTO();
-		List<String> users = new ArrayList<String>();
+		List<String> addusers = new ArrayList<String>();
+		List<String> deleteusers = new ArrayList<String>();
 		while (params.hasMoreElements()) {
 			String paramName = params.nextElement();
 			if (paramName.startsWith("userId")) {
 				String index = paramName.substring("userId".length());
+				String[] userId = request.getParameterValues("userId" + index);
 				String[] userName = request.getParameterValues("userName" + index);
-					users.add(userName[0]);
+					addusers.add(userName[0]);
 			}
 		}
-		if (users.size() > 0)
-			dto.getAddUserIds().addAll(users);
+		if (addusers.size() > 0)
+			dto.getAddUserIds().addAll(addusers);
+		setRemoveUserId(dto, addusers, session);
 		return dto;
 	}	
+	
+	private void setRemoveUserId(HpcGroupMembersRequestDTO dto, List<String> addUsers, HttpSession session)
+	{
+		HpcGroup group = (HpcGroup) session.getAttribute("updategroup");
+		List<String> removeUserIds = new ArrayList<String>();
+		List<String> users = group.getUserIds();
+		for(String userId : users)
+		{
+			if(!addUsers.contains(userId))
+				removeUserIds.add(userId);
+		}
+		if(removeUserIds.size() > 0)
+			dto.getDeleteUserIds().addAll(removeUserIds);
+	}
 }

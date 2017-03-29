@@ -224,7 +224,7 @@
 													</table>
 												</div>
 												<div class="form-group">
-													<div class="col-sm-offset-2 col-sm-10" align="right">
+													<div class="col-sm-offset-2 col-sm-10" align="right" >
 														<button type="submit" class="btn btn-md btn-primary"
 															id="primaryButton" disabled="disabled">Assign</button>
 													</div>
@@ -264,7 +264,7 @@
 															<input
 																type="text" id="userName" th:value="${selectedUsers}" />&nbsp;&nbsp;&nbsp;
 																<a id="userNamelink" class="btn btn-link btn-sm"
-																th:href="@{'../finduser?path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a>
+																th:href="@{'../finduser?source=permissions&amp;path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a>
 																
 															</td>
 														</tr>
@@ -283,7 +283,7 @@
 															<input
 																type="text" id="userName" th:value="${selectedUsers}" />&nbsp;&nbsp;&nbsp;
 																<a id="userNamelink" class="btn btn-link btn-sm"
-																th:href="@{'../finduser?path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a>
+																th:href="@{'../finduser?source=permission&amp;path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a>
 																
 															</td>
 														</tr>

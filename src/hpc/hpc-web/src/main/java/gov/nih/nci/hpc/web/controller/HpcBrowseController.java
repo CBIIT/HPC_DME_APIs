@@ -21,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -33,6 +34,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeEntry;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcBrowserEntry;
+import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
@@ -58,11 +60,14 @@ public class HpcBrowseController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public String get(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
-		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
-		if (user == null) {
-			model.addAttribute("message", "Invalid user session!");
-			return "hpcLogin";
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		if (user == null || authToken == null) {
+			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
+			bindingResult.addError(error);
+			HpcLogin hpcLogin = new HpcLogin();
+			model.addAttribute("hpcLogin", hpcLogin);
+			return "index";
 		}
 
 		try {
