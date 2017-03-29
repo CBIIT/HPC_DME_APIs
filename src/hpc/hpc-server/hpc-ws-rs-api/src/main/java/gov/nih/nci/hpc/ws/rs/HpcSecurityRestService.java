@@ -86,7 +86,7 @@ public interface HpcSecurityRestService
      * @return The REST service response.
      */
     @GET
-    @Path("/user")
+    @Path("/user/active")
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response getUsers(@QueryParam("nciUserId") String nciUserId,
     		                 @QueryParam("firstName") String firstName,
