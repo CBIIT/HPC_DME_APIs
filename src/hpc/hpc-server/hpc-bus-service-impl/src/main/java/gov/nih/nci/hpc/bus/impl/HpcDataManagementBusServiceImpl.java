@@ -497,6 +497,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	                           metadataService.getDataObjectMetadataValidationRules(doc));
     	dataManagementModel.setDataHierarchy(dataManagementService.getDataHierarchy(doc));
     	dataManagementModel.setBasePath(dataManagementService.getDocBasePath(doc));
+    	dataManagementModel.getCollectionSystemGeneratedMetadataAttributeNames().addAll(metadataService.getCollectionSystemMetadataAttributeNames());
+    	dataManagementModel.getDataObjectSystemGeneratedMetadataAttributeNames().addAll(metadataService.getDataObjectSystemMetadataAttributeNames());
     	
     	return dataManagementModel;
     }
