@@ -486,8 +486,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		{
 			   password = password.replace("=", "\\=");
 			   password = password.replace(";", "\\;");
-			   password = password.replace("&", "\\;");
-			   password = password.replace("@", "\\;");
+			   password = password.replace("&", "\\&");
+			   password = password.replace("@", "\\@");
 		}
 		// If the user was authenticated w/ LDAP, then we use the NCI credentials to access
 		// Data Management (iRODS).

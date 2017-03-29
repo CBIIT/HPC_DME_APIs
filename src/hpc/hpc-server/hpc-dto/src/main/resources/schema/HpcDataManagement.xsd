@@ -205,6 +205,8 @@
 					         minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="dataHierarchy"
 				             type="hpc-domain-datamanagement:HpcDataHierarchy" />
+			    <xsd:element name="collectionSystemGeneratedMetadataAttributeNames" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+			    <xsd:element name="dataObjectSystemGeneratedMetadataAttributeNames" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
