@@ -145,6 +145,7 @@ public class HpcUpdateUserController extends AbstractHpcController {
 			dto.setFirstName(hpcWebUser.getFirstName());
 			dto.setLastName(hpcWebUser.getLastName());
 			dto.setUserRole(hpcWebUser.getUserRole());
+			dto.setActive((hpcWebUser.getActive() != null && hpcWebUser.getActive().equals("on"))?true:false); 
 			
 			boolean created = HpcClientUtil.updateUser(authToken, userServiceURL, dto, hpcWebUser.getNciUserId(),
 					sslCertPath, sslCertPassword);

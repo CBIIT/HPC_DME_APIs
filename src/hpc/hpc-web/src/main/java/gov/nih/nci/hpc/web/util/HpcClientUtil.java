@@ -57,7 +57,9 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
@@ -70,6 +72,7 @@ import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
@@ -105,26 +108,30 @@ public class HpcClientUtil {
 		String token = DatatypeConverter.printBase64Binary((userId + ":" + passwd).getBytes());
 		client.header("Authorization", "Basic " + token);
 		Response restResponse = client.get();
+		try {
 
-		if (restResponse == null || restResponse.getStatus() != 200)
-			return null;
-		MappingJsonFactory factory = new MappingJsonFactory();
-		JsonParser parser;
-		try {
+			if (restResponse.getStatus() != 200) {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				throw new HpcWebException("Authentication failed: " + exception.getMessage());
+			}
+			MappingJsonFactory factory = new MappingJsonFactory();
+			JsonParser parser;
 			parser = factory.createParser((InputStream) restResponse.getEntity());
-		} catch (IllegalStateException | IOException e1) {
-			e1.printStackTrace();
-			throw new HpcWebException("Failed to get auth token: " + e1.getMessage());
-		}
-		try {
 			HpcAuthenticationResponseDTO dto = parser.readValueAs(HpcAuthenticationResponseDTO.class);
 			return dto.getToken();
-		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-			e.printStackTrace();
-			throw new HpcWebException("Failed to get auth token: " + e.getMessage());
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-			throw new HpcWebException("Failed to get auth token: " + e.getMessage());
+		} catch (IllegalStateException e1) {
+			e1.printStackTrace();
+			throw new HpcWebException("Failed to get auth token: " + e1.getMessage());
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to get auth token: " + e.getMessage());
@@ -163,8 +170,8 @@ public class HpcClientUtil {
 		}
 	}
 
-	public static HpcDataManagementDocListDTO getDOCs(String token, String hpcModelURL,
-			String hpcCertPath, String hpcCertPassword) {
+	public static HpcDataManagementDocListDTO getDOCs(String token, String hpcModelURL, String hpcCertPath,
+			String hpcCertPassword) {
 
 		WebClient client = HpcClientUtil.getWebClient(hpcModelURL, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + token);
@@ -198,9 +205,7 @@ public class HpcClientUtil {
 	public static HpcDataManagementTreeDTO getDOCTree(String token, String serviceURL, String docName, boolean list,
 			String hpcCertPath, String hpcCertPassword) {
 		try {
-			WebClient client = HpcClientUtil.getWebClient(
-					serviceURL + "/" + docName , hpcCertPath,
-					hpcCertPassword);
+			WebClient client = HpcClientUtil.getWebClient(serviceURL + "/" + docName, hpcCertPath, hpcCertPassword);
 			client.header("Authorization", "Bearer " + token);
 
 			Response restResponse = client.invoke("GET", null);
@@ -228,7 +233,7 @@ public class HpcClientUtil {
 			throw new HpcWebException("Failed to get tree for: " + docName + " due to: " + e.getMessage());
 		}
 	}
-	
+
 	public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL, String path, boolean list,
 			String hpcCertPath, String hpcCertPassword) {
 		try {
@@ -304,6 +309,8 @@ public class HpcClientUtil {
 
 				HpcUserListDTO users = parser.readValueAs(HpcUserListDTO.class);
 				return users;
+			} else {
+
 			}
 
 		} catch (Exception e) {
@@ -313,7 +320,8 @@ public class HpcClientUtil {
 		return null;
 	}
 
-	public static HpcUserDTO getUser(String token, String hpcUserURL, String userId, String hpcCertPath, String hpcCertPassword) {
+	public static HpcUserDTO getUser(String token, String hpcUserURL, String userId, String hpcCertPath,
+			String hpcCertPassword) {
 		try {
 
 			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + "/" + userId, hpcCertPath, hpcCertPassword);
@@ -333,16 +341,30 @@ public class HpcClientUtil {
 
 				HpcUserDTO users = parser.readValueAs(HpcUserDTO.class);
 				return users;
-			}
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				throw new HpcWebException("Failed to get user: " + exception.getMessage());
+			}
+		} catch (HpcWebException e) {
+			throw e;
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get Users due to: " + e.getMessage());
+			throw new HpcWebException("Failed to get User due to: " + e.getMessage());
 		}
-		return null;
 	}
 
-	public static boolean createUser(String token, String hpcUserURL, HpcUserRequestDTO userDTO, String userId, String hpcCertPath, String hpcCertPassword) {
+	public static boolean createUser(String token, String hpcUserURL, HpcUserRequestDTO userDTO, String userId,
+			String hpcCertPath, String hpcCertPassword) {
 		try {
 			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + "/" + userId, hpcCertPath, hpcCertPassword);
 			client.header("Authorization", "Bearer " + token);
@@ -350,8 +372,7 @@ public class HpcClientUtil {
 			Response restResponse = client.invoke("PUT", userDTO);
 			if (restResponse.getStatus() == 201) {
 				return true;
-			}else
-			{
+			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
 						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -365,13 +386,118 @@ public class HpcClientUtil {
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
 				throw new HpcWebException("Failed to create user: " + exception.getMessage());
 			}
+		} catch (HpcWebException e) {
+			throw e;
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get Users due to: " + e.getMessage());
+			throw new HpcWebException("Failed to create User due to: " + e.getMessage());
 		}
 	}
 
-	public static boolean updateUser(String token, String hpcUserURL, HpcUserRequestDTO userDTO, String userId, String hpcCertPath, String hpcCertPassword) {
+	public static boolean createGroup(String token, String hpcUserURL, HpcGroupMembersRequestDTO groupDTO,
+			String groupName, String hpcCertPath, String hpcCertPassword) {
+		try {
+			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath, hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.invoke("PUT", groupDTO);
+			if (restResponse.getStatus() == 201) {
+				return true;
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				throw new HpcWebException("Failed to create group: " + exception.getMessage());
+			}
+		} 
+		catch(HpcWebException e)
+		{
+			throw e;
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to create group due to: " + e.getMessage());
+		}
+	}
+
+	public static boolean updateGroup(String token, String hpcUserURL, HpcGroupMembersRequestDTO groupDTO,
+			String groupName, String hpcCertPath, String hpcCertPassword) {
+		try {
+			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath, hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.invoke("POST", groupDTO);
+			if (restResponse.getStatus() == 200) {
+				return true;
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				throw new HpcWebException("Failed to update group: " + exception.getMessage());
+			}
+		} 
+		catch(HpcWebException e)
+		{
+			throw e;
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to update group due to: " + e.getMessage());
+		}
+	}
+
+	public static boolean updateCollection(String token, String hpcCollectionURL, HpcCollectionRegistrationDTO collectionDTO,
+			String path, String hpcCertPath, String hpcCertPassword) {
+		try {
+			WebClient client = HpcClientUtil.getWebClient(hpcCollectionURL + path, hpcCertPath, hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.invoke("PUT", collectionDTO);
+			if (restResponse.getStatus() == 200) {
+				return true;
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				throw new HpcWebException("Failed to update group: " + exception.getMessage());
+			}
+		} 
+		catch(HpcWebException e)
+		{
+			throw e;
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to update collection due to: " + e.getMessage());
+		}
+	}
+
+	public static boolean updateUser(String token, String hpcUserURL, HpcUserRequestDTO userDTO, String userId,
+			String hpcCertPath, String hpcCertPassword) {
 		try {
 			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + "/" + userId, hpcCertPath, hpcCertPassword);
 			client.header("Authorization", "Bearer " + token);
@@ -379,8 +505,7 @@ public class HpcClientUtil {
 			Response restResponse = client.invoke("POST", userDTO);
 			if (restResponse.getStatus() == 200) {
 				return true;
-			}else
-			{
+			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
 						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -394,13 +519,19 @@ public class HpcClientUtil {
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
 				throw new HpcWebException("Failed to update user: " + exception.getMessage());
 			}
-		} catch (Exception e) {
+		} 
+		catch(HpcWebException e)
+		{
+			throw e;
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to update user due to: " + e.getMessage());
 		}
 	}
 
-	public static HpcGroupListDTO getGroups(String token, String hpcGroupURL, String groupName, String hpcCertPath, String hpcCertPassword) {
+	public static HpcGroupListDTO getGroups(String token, String hpcGroupURL, String groupName, String hpcCertPath,
+			String hpcCertPassword) {
 		try {
 			String paramsURL = "";
 			if (groupName != null && groupName.trim().length() > 0) {

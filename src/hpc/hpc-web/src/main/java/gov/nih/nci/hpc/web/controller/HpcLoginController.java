@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
@@ -36,7 +37,10 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
+import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
@@ -79,30 +83,24 @@ public class HpcLoginController extends AbstractHpcController {
 			return "index";
 		}
 		try {
-			RestTemplate restTemplate = HpcClientUtil.getRestTemplate(sslCertPath, sslCertPassword);
 			String authToken = HpcClientUtil.getAuthenticationToken(hpcLogin.getUserId(), hpcLogin.getPasswd(),
 					authenticateURL);
-			if (authToken != null) {
-				session.setAttribute("hpcUserToken", authToken);
-				HpcUserDTO user = getUser(hpcLogin.getUserId(), authToken);
-				if (user == null) {
-					model.addAttribute("loginStatus", false);
-					model.addAttribute("loginOutput", "Invalid login");
-					ObjectError error = new ObjectError("hpcLogin", "UserId is not found!");
-					bindingResult.addError(error);
-					model.addAttribute("hpcLogin", hpcLogin);
-					return "index";
-				}
+			session.setAttribute("hpcUserToken", authToken);
+			try {
+//				HpcUserListDTO users = HpcClientUtil.getUsers(authToken, serviceUserURL, hpcLogin.getUserId(), null, null, sslCertPath, sslCertPassword);
+//				if(users == null || users.getUsers() == null || users.getUsers().size() == 0)
+//					throw new HpcWebException("Invlaid User");
+//				
+//				HpcUserDTO user = users.getUsers().get(0);
+				HpcUserDTO user = HpcClientUtil.getUser(authToken, serviceUserURL, hpcLogin.getUserId(), sslCertPath, sslCertPassword);
+				if(user == null)
+					throw new HpcWebException("Invlaid User");
 				session.setAttribute("hpcUser", user);
 				session.setAttribute("hpcUserId", hpcLogin.getUserId());
-				// String token =
-				// DatatypeConverter.printBase64Binary((hpcLogin.getUserId() +
-				// ":" + hpcLogin.getPasswd()).getBytes());
-				// session.setAttribute("userpasstoken", token);
-			} else {
+			} catch (HpcWebException e) {
 				model.addAttribute("loginStatus", false);
 				model.addAttribute("loginOutput", "Invalid login");
-				ObjectError error = new ObjectError("hpcLogin", "UserId is not found!");
+				ObjectError error = new ObjectError("hpcLogin", "Authentication failed. " + e.getMessage());
 				bindingResult.addError(error);
 				model.addAttribute("hpcLogin", hpcLogin);
 				return "index";
@@ -111,7 +109,7 @@ public class HpcLoginController extends AbstractHpcController {
 			e.printStackTrace();
 			model.addAttribute("loginStatus", false);
 			model.addAttribute("loginOutput", "Invalid login" + e.getMessage());
-			ObjectError error = new ObjectError("hpcLogin", "UserId is not found!");
+			ObjectError error = new ObjectError("hpcLogin", "Authentication failed. " + e.getMessage());
 			bindingResult.addError(error);
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "index";
@@ -122,7 +120,7 @@ public class HpcLoginController extends AbstractHpcController {
 		return "dashboard";
 	}
 
-	private HpcUserDTO getUser(String userId, String authToken) throws IOException {
+	private HpcUserDTO getUser(String userId, String authToken) throws IOException, HpcWebException {
 		WebClient client = HpcClientUtil.getWebClient(serviceUserURL + "/" + userId, sslCertPath, sslCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
 
@@ -136,7 +134,18 @@ public class HpcLoginController extends AbstractHpcController {
 			JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 			HpcUserDTO user = parser.readValueAs(HpcUserDTO.class);
 			return user;
+		} else {
+			ObjectMapper mapper = new ObjectMapper();
+			AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+					new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()), new JacksonAnnotationIntrospector());
+			mapper.setAnnotationIntrospector(intr);
+			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+			MappingJsonFactory factory = new MappingJsonFactory(mapper);
+			JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+			HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+			throw new HpcWebException("Failed to find user: " + exception.getMessage());
 		}
-		return null;
 	}
 }

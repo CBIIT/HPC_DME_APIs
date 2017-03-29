@@ -111,12 +111,12 @@
 														<table>
 															<tr>
 																<td>
-																<div th:if="${message != null}">
-																	<div class="alert alert-error">
-																		<a class="close" data-dismiss="alert">×</a> <label
-																			for="${message}" th:text="${message}"></label>
+																	<div th:if="${message != null}">
+																		<div class="alert alert-error">
+																			<a class="close" data-dismiss="alert">×</a> <label
+																				for="${message}" th:text="${message}"></label>
+																		</div>
 																	</div>
-																</div>
 																</td>
 															</tr>
 															<tr>
@@ -124,14 +124,13 @@
 																	<div class="form-group">
 																		<div class="col-sm-12 column">
 																			<label for="groupName">Group Name:</label> <input
-																				type="text" class="form-control"
-																				th:field="*{groupName}"
-																				placeholder="Enter Group Name" size="40" />
+																				type="text" class="form-control" id="groupId"
+																				name="groupId" th:value="${group.getGroupName()}" size="40" />
 																		</div>
 																	</div>
 																	<div class="modal-footer">
 																		<button type="submit" class="btn btn-md btn-primary"
-																			id="primaryButton">Create</button>
+																			id="primaryButton">Update</button>
 																		<button type="button" class="btn btn-primary"
 																			data-dismiss="modal" id="close">Close</button>
 																	</div>
@@ -141,7 +140,7 @@
 																<td>&nbsp;</td>
 															</tr>
 															<tr>
-																<td>Add Users to Group</td>
+																<td>Add/Remove Users to/from Group</td>
 															</tr>
 															<tr>
 																<td>
@@ -159,6 +158,21 @@
 																					<th class="text-center">&nbsp;</th>
 																					<th class="text-center">&nbsp;</th>
 																				</tr>
+																				<tr id='usersRow0'
+																					th:each="userId, iterationStatus : ${group.getUserIds()}"
+																					th:with="index=0">
+																					<td style="white-space: nowrap" align="center"><input
+																						type="checkbox"
+																						th:id="'userId'+${iterationStatus.count}"
+																						th:name="'userId'+${iterationStatus.count}"
+																						checked="checked" /></td>
+																					<td style="white-space: nowrap" align="center"><label
+																						for="${userId}" th:text="${userId}"></label> <input
+																						type="hidden"
+																						th:id="'userName'+${iterationStatus.count}"
+																						th:name="'userName'+${iterationStatus.count}"
+																						th:value="${userId}"/></td>
+																				</tr>
 																			</tbody>
 																		</table>
 																	</div>
@@ -175,7 +189,7 @@
 																					type="text" id="userName"
 																					th:value="${selectedUsers}" />&nbsp;&nbsp;&nbsp; <a
 																					id="userNamelink" class="btn btn-link btn-sm"
-																					th:href="@{/finduser?source=creategroup&amp;path=dummy&amp;type=dummy}">Search</a></td>
+																					th:href="@{'/finduser?source=updategroup&amp;type=group&amp;path='+${group.getGroupName()}}">Search</a></td>
 																			</tr>
 																			<tr id='entryTableRow2' align="center">
 																				<td style="white-space: nowrap" align="right"

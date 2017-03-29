@@ -5,9 +5,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.ui.Model;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
+
+import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.model.HpcLogin;
 
 public abstract class AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.ssl.cert}")
@@ -36,5 +41,4 @@ public abstract class AbstractHpcController {
 		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 		return new HpcResponse("Error occurred", ex.toString());
 	}
-
 }

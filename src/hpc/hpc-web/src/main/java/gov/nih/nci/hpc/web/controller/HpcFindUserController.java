@@ -50,7 +50,7 @@ public class HpcFindUserController extends AbstractHpcController {
 	private String userServiceURL;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(@RequestBody(required = false) String q, @RequestParam String path, @RequestParam String type,  Model model, BindingResult bindingResult,
+	public String home(@RequestBody(required = false) String q, @RequestParam String source, @RequestParam String path, @RequestParam String type,  Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
@@ -63,6 +63,7 @@ public class HpcFindUserController extends AbstractHpcController {
 		HpcWebUser webUser = new HpcWebUser();
 		webUser.setPath(path);
 		webUser.setType(type);
+		webUser.setSource(source);
 		model.addAttribute("hpcWebUser", webUser);
 		session.removeAttribute("selectedGroups");
 		session.removeAttribute("selectedUsers");
@@ -76,7 +77,6 @@ public class HpcFindUserController extends AbstractHpcController {
 	public String findUsers(@Valid @ModelAttribute("hpcUser") HpcWebUser hpcWebUser, BindingResult bindingResult,
 			Model model, HttpSession session, HttpServletRequest request) {
 		try {
-			String path = (String) session.getAttribute("permissionsPath");
 			String[] actionType = request.getParameterValues("actionType");
 			if (actionType != null && actionType.length > 0 && actionType[0].equals("selected")) {
 				String[] selectedUsers = request.getParameterValues("selectedUsers");
@@ -91,10 +91,10 @@ public class HpcFindUserController extends AbstractHpcController {
 				}
 				session.setAttribute("selectedUsers", buffer.toString());
 				if (selectedUsers != null && selectedUsers.length > 0)
-					return "redirect:/permissions?assignType=User&path=" + hpcWebUser.getPath()  + "&type="+hpcWebUser.getType();
+					return "redirect:/"+hpcWebUser.getSource()+"?assignType=User&path=" + hpcWebUser.getPath()  + "&type="+hpcWebUser.getType();
 			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
 				session.removeAttribute("selectedUsers");
-				return "redirect:/permissions?assignType=User&path=" + hpcWebUser.getPath() + "&type="+hpcWebUser.getType();
+				return "redirect:/"+hpcWebUser.getSource()+"?assignType=User&path=" + hpcWebUser.getPath() + "&type="+hpcWebUser.getType();
 			}
 
 			String userId = null;

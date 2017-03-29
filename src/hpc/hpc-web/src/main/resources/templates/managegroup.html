@@ -72,7 +72,7 @@
 						field : 'groupName',
 						width : 120,
 						displayName : 'Edit',
-						cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="editlink" class="btn btn-link btn-sm" href="../updategroup?group={{COL_FIELD CUSTOM_FILTERS}}" data-target="#editgroupModal">Edit &nbsp;<i class="fa fa-address-card" aria-hidden="true"></i></a></div>'
+						cellTemplate : '<div class="ui-grid-cell-contents"><a id="editlink" class="btn btn-link btn-sm" href="../updategroup?groupName={{COL_FIELD CUSTOM_FILTERS}}">Edit &nbsp;<i class="fa fa-address-card" aria-hidden="true"></i></a></div>'
 					},, {
 						field : 'groupName',
 						width : 120,
@@ -133,7 +133,7 @@
 								</div>
 								<div class="col-md-3 col-md-offset-6">
 								<h2>
-									<strong> <a data-toggle="modal" id="creategrouplink" class="btn btn-link btn-sm" th:href="@{/creategroup}" data-target="#creategroupModal">Create Group &nbsp;<i class="fa fa-group" aria-hidden="true"></i></a></strong>
+									<strong> <a  id="creategrouplink" class="btn btn-link btn-sm" th:href="@{/creategroup}">Create Group &nbsp;<i class="fa fa-group" aria-hidden="true"></i></a></strong>
 								</h2>
 								</div>
 							</div>
