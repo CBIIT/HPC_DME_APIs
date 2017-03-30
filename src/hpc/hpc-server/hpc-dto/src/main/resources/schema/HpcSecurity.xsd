@@ -50,11 +50,21 @@
 		</xsd:complexType>
 	</xsd:element>
 	
+	<xsd:complexType name="HpcUserListEntry">
+		<xsd:sequence>
+			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="firstName" type="xsd:string" />
+			<xsd:element name="lastName" type="xsd:string" />
+			<xsd:element name="doc" type="xsd:string" />
+			<xsd:element name="active" type="xsd:boolean" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
 	<!--  list DTO -->
 	<xsd:element name="HpcUserListDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="users" type="hpc-domain-user:HpcNciAccount" 
+				<xsd:element name="users" type="hpc-dto-security:HpcUserListEntry" 
 				             minOccurs="0" maxOccurs="unbounded"/>
 			</xsd:sequence>
 		</xsd:complexType>

@@ -249,10 +249,10 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     }
     
     @Override
-    public List<HpcUser> getUsers(String nciUserId, String firstName, String lastName) 
+    public List<HpcUser> getUsers(String nciUserId, String firstName, String lastName, boolean active) 
                                  throws HpcException
     {
-    	return userDAO.getUsers(nciUserId, firstName, lastName, true);
+    	return userDAO.getUsers(nciUserId, firstName, lastName, active);
     }
                                  
 
