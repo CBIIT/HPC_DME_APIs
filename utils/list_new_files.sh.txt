@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# list all files in a source main directory as well as sub- directories
+# Ex: /test
+SOURCEDIR=/test
+
+# keep track list of the old files .
+LAST=/tmp/last.log
+
+# keep track the list of the current files .
+CURRENT=/tmp/current.log
+
+# first time we create the log file
+touch $LAST
+
+find $SOURCEDIR -type f > $CURRENT
+
+diff $LAST $CURRENT > /dev/null 2>&1
+
+# If there is no difference exit
+if [ $? -eq 0 ]
+then
+    echo "No changes"
+else
+     echo "List of new files"
+    #diff $LAST $CURRENT | grep '^>'
+    diff last current | grep '^>' |awk '{print $2}' > /tmp/list_of_new_files.log
+
+    # Lastly, move CURRENT to LAST
+    mv $CURRENT $LAST
+fi
+
