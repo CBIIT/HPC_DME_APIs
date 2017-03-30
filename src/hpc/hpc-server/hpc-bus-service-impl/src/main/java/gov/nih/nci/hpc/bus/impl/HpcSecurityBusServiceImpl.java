@@ -31,6 +31,7 @@ import gov.nih.nci.hpc.dto.security.HpcGroupMembersResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcSystemAccountDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserListEntry;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
@@ -237,13 +238,22 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     }
     
     @Override
-    public HpcUserListDTO getUsers(String nciUserId, String firstName, String lastName) 
+    public HpcUserListDTO getUsers(String nciUserId, String firstName, String lastName, boolean active) 
                                   throws HpcException
     {
     	// Get the users based on search criteria.
     	HpcUserListDTO users = new HpcUserListDTO();
-    	for(HpcUser user : securityService.getUsers(nciUserId, firstName, lastName)) {
-    	    users.getUsers().add(user.getNciAccount());
+    	for(HpcUser user : securityService.getUsers(nciUserId, firstName, lastName, active)) {
+    		HpcUserListEntry userListEntry = new HpcUserListEntry();
+    		userListEntry.setUserId(user.getNciAccount().getUserId());
+    		userListEntry.setFirstName(user.getNciAccount().getFirstName());
+    		userListEntry.setLastName(user.getNciAccount().getLastName());
+    		userListEntry.setDoc(user.getNciAccount().getDoc());
+    		if(!active) {
+    		   // Set the active flag if the search is for all users.
+    		   userListEntry.setActive(user.getActive());
+    		}
+    	    users.getUsers().add(userListEntry);
     	}
     	
     	return users;

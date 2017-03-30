@@ -69,10 +69,11 @@ public interface HpcSecurityBusService
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
      * @param firstName (Optional) The first name to search for (using case insensitive comparison).
      * @param lastName (Optional) The last name to search for (using case insensitive comparison).
+     * @param active If set to true, only active users are searched. Otherwise, all users (active and inactive) are searched.
      * @return A list of users.
      * @throws HpcException on service failure.
      */
-    public HpcUserListDTO getUsers(String nciUserId, String firstName, String lastName) 
+    public HpcUserListDTO getUsers(String nciUserId, String firstName, String lastName, boolean active) 
     		                      throws HpcException;
     
     /**
