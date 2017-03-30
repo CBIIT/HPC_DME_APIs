@@ -252,7 +252,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     		if(!active) {
     		   // Set the active flag if the search is for all users.
     		   userListEntry.setActive(user.getActive());
-    		}
+    		} 
     	    users.getUsers().add(userListEntry);
     	}
     	
