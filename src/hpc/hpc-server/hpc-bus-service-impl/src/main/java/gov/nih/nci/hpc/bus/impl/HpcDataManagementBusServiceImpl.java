@@ -354,7 +354,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    	}
     	   
 	    } else {
-	    	    if(dataObjectFile != null || dataObjectRegistration.getSource() != null) {
+	    	    if(dataObjectFile != null || (dataObjectRegistration.getSource() != null && dataObjectRegistration.getSource().getFileContainerId() != null && dataObjectRegistration.getSource().getFileId() != null)) {
 	    		   throw new HpcException("Data object cannot be updated. Only updating metadata is allowed.",
 			                              HpcErrorType.REQUEST_REJECTED);
 	    	    }
