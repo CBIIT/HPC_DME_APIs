@@ -110,7 +110,35 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response getUsers(String nciUserId, String firstName, String lastName)
+    public Response getInvoker()
+    {
+		HpcUserDTO user = null;
+		try {
+			 user = securityBusService.getUser("rosenbergea");
+			 
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+		return okResponse(user, true);
+	}
+    
+    @Override
+    public Response getActiveUsers(String nciUserId, String firstName, String lastName)
+    {
+		HpcUserListDTO users = null;
+		try {
+			 users = securityBusService.getUsers(nciUserId, firstName, lastName);
+			 
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+		return okResponse(!users.getUsers().isEmpty() ? users : null, true);
+    }
+    
+    @Override
+    public Response getAllUsers(String nciUserId, String firstName, String lastName)
     {
 		HpcUserListDTO users = null;
 		try {
