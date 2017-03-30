@@ -115,9 +115,40 @@ function dm_register_collection {
     DESTINATION_PATH="$2"
     dm_register $DESCRIPTION $DESTINATION_PATH collection
 
-    RESPONSE_HEADER=${TYPE}-registration-response-header.tmp
-    RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
+    RESPONSE_HEADER=collection-registration-response-header.tmp
+    RESPONSE_MSG=collection-registration-response-message.json.tmp
 
     verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
 
 }
+
+
+#Register a dataObject 
+#Inputs:  <description.json>: The metadata json file for the dataObject 
+#         <destinaton-path>: The destination logical path
+#         [source-file]: The source file for synchronous registratio.
+function dm_register_dataobject {
+
+    USAGE="USAGE: dm_register_dataobject <description.json> <destination-path> [source-file]"
+
+    if [ -z "$1" ] || [ -z "$2" ] 
+    then
+        echo "ERROR: using dm_register_collection" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return
+    fi
+
+    DESCRIPTION="$1"
+    DESTINATION_PATH="$2"
+    SOURCE_FILE="$3"
+    dm_register "$DESCRIPTION" "$DESTINATION_PATH" dataObject "$SOURCE_FILE" 
+
+    RESPONSE_HEADER=dataObject-registration-response-header.tmp
+    RESPONSE_MSG=dataObject-registration-response-message.json.tmp
+
+    verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
+}
+
+
+
