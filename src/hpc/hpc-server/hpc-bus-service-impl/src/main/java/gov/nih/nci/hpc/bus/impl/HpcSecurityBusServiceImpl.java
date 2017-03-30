@@ -211,14 +211,14 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     @Override
     public HpcUserDTO getUser(String nciUserId) throws HpcException
     {
-    	// Input validation.
+    	// nciUserId is optional. If null, get teh request invoker.
     	if(nciUserId == null) {
-    	   throw new HpcException("Null NCI User ID",
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	   HpcRequestInvoker invoker = securityService.getRequestInvoker();
+    	   if(invoker == null) {
+    		  throw new HpcException("Null request invoker", HpcErrorType.UNEXPECTED_ERROR);
+    	   }
+    	   nciUserId = invoker.getNciAccount().getUserId();
     	}
-    	
-    	// Authorize calling this service w/ 'nciUserId'.
-    	securityService.authorizeUserService(nciUserId);
     	
     	// Get the managed data domain object.
     	HpcUser user = securityService.getUser(nciUserId);

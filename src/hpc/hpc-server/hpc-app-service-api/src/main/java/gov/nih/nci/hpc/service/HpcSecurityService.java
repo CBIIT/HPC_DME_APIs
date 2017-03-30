@@ -146,15 +146,6 @@ public interface HpcSecurityService
     public HpcAuthenticationTokenClaims parseAuthenticationToken(String authenticationToken)
     		                                                    throws HpcException;
     
-    /**
-     * Authorize a service request with a user-id as an input parameter.
-     * System admin are authorized to call with any user-id. Other users are only
-     * authorized to invoke with their own user-id.
-     *
-     * @param nciUserId The user-id to authorize.
-     * @throws HpcException If the call is not authorized.
-     */
-    public void authorizeUserService(String nciUserId) throws HpcException;
 }
 
  
