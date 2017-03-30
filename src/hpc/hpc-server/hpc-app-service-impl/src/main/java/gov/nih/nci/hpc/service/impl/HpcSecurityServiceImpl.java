@@ -411,20 +411,6 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	}
     }
     
-    @Override
-    public void authorizeUserService(String nciUserId) throws HpcException
-    {
-	  	// System admins allow to call this service for any user. Regular users allow to call this 
-		// on their own user-id only.
-		HpcRequestInvoker invoker = getRequestInvoker();
-		if(invoker == null || 
-		   (!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN) &&
-		    !invoker.getNciAccount().getUserId().equals(nciUserId))) {
-	 	   throw new HpcException("Unauthorized access request",
-	                  HpcErrorType.UNAUTHORIZED_REQUEST);
-		}
-    }
-
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//

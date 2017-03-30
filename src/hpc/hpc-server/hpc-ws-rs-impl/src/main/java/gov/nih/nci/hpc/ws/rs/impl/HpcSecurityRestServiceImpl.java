@@ -114,7 +114,7 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     {
 		HpcUserDTO user = null;
 		try {
-			 user = securityBusService.getUser("rosenbergea");
+			 user = securityBusService.getUser(null);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);

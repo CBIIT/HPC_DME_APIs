@@ -57,7 +57,7 @@ public interface HpcSecurityBusService
     /**
      * Get a user by its NCI user id.
      *
-     * @param nciUserId The user's NCI user id.
+     * @param nciUserId (Optional) The user's NCI user id. If null, then the invoker user is returned.
      * @return The registered user DTO or null if not found.
      * @throws HpcException on service failure.
      */
