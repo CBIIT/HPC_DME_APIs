@@ -128,7 +128,7 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     {
 		HpcUserListDTO users = null;
 		try {
-			 users = securityBusService.getUsers(nciUserId, firstName, lastName);
+			 users = securityBusService.getUsers(nciUserId, firstName, lastName, true);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -142,7 +142,7 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     {
 		HpcUserListDTO users = null;
 		try {
-			 users = securityBusService.getUsers(nciUserId, firstName, lastName);
+			 users = securityBusService.getUsers(nciUserId, firstName, lastName, false);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
