@@ -90,7 +90,7 @@ public class HpcDocController extends AbstractHpcController {
 			user.setUserId(hpcUser.getNciUserId());
 			user.setFirstName(hpcUser.getFirstName());
 			user.setLastName(hpcUser.getLastName());
-			//userDTO.setNciAccount(user);
+			// userDTO.setNciAccount(user);
 			/*
 			 * Boolean validGlobusCredentials = restTemplate.postForObject(new
 			 * URI(serviceGlobusUserURL), userDTO, Boolean.class);

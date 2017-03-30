@@ -12,7 +12,7 @@ public class HpcWebGroup {
 
 	@JsonView(Views.Public.class)
 	private String type;
-	
+
 	@JsonView(Views.Public.class)
 	private String groupName;
 

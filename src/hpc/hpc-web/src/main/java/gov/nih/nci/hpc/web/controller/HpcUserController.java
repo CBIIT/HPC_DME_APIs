@@ -9,8 +9,6 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import java.util.StringTokenizer;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -25,11 +23,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
-import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
@@ -47,11 +43,13 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 @EnableAutoConfiguration
 @RequestMapping("/user")
 public class HpcUserController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.user}")
-	private String userServiceURL;
+	@Value("${gov.nih.nci.hpc.server.user.all}")
+	private String allUsersServiceURL;
+	@Value("${gov.nih.nci.hpc.server.user.active}")
+	private String activeUsersServiceURL;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(@RequestBody(required = false) String q,  Model model, BindingResult bindingResult,
+	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
@@ -76,16 +74,23 @@ public class HpcUserController extends AbstractHpcController {
 			String userId = null;
 			String firstName = null;
 			String lastName = null;
-			if(hpcWebUser.getNciUserId() != null && hpcWebUser.getNciUserId().trim().length() > 0)
+			if (hpcWebUser.getNciUserId() != null && hpcWebUser.getNciUserId().trim().length() > 0)
 				userId = hpcWebUser.getNciUserId();
-			if(hpcWebUser.getFirstName() != null && hpcWebUser.getFirstName().trim().length() > 0)
+			if (hpcWebUser.getFirstName() != null && hpcWebUser.getFirstName().trim().length() > 0)
 				firstName = hpcWebUser.getFirstName();
-			if(hpcWebUser.getLastName() != null && hpcWebUser.getLastName().trim().length() > 0)
+			if (hpcWebUser.getLastName() != null && hpcWebUser.getLastName().trim().length() > 0)
 				lastName = hpcWebUser.getLastName();
-			
+
+			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			String authToken = (String) session.getAttribute("hpcUserToken");
-			HpcUserListDTO users = HpcClientUtil.getUsers(authToken, userServiceURL, userId,
-					firstName, lastName, sslCertPath, sslCertPassword);
+			String serviceUrl = null;
+			if (user.getUserRole().equals("SYSTEM_ADMIN"))
+				serviceUrl = allUsersServiceURL;
+			else
+				serviceUrl = activeUsersServiceURL;
+
+			HpcUserListDTO users = HpcClientUtil.getUsers(authToken, serviceUrl, userId, firstName, lastName,
+					sslCertPath, sslCertPassword);
 			if (users != null && users.getUsers() != null && users.getUsers().size() > 0)
 				model.addAttribute("searchresults", users.getUsers());
 		} catch (Exception e) {

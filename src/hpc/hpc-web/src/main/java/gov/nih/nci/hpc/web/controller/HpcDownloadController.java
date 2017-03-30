@@ -101,7 +101,7 @@ public class HpcDownloadController extends AbstractHpcController {
 		try {
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			String serviceURL = null;
-			if(downloadFile.getDownloadType().equals("collection"))
+			if (downloadFile.getDownloadType().equals("collection"))
 				serviceURL = collectionServiceURL + downloadFile.getDestinationPath() + "/download";
 			else
 				serviceURL = dataObjectServiceURL + downloadFile.getDestinationPath() + "/download";

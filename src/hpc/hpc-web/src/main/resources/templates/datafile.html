@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" ng-app="myApp">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -47,10 +47,6 @@
 
 <link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css"
 	type="text/css" />
-<script
-	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-<script
-	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 <style>
 /*style.css*/
@@ -60,7 +56,6 @@
 }
 </style>
 </head>
-
 <body ng-controller="MyCtrl">
 
 	<!-- container section start -->
@@ -86,56 +81,46 @@
 				<!--Row start-->
 				<div class="row">
 					<div class="col-lg-9 col-md-12">
-						<a href="javascript:history.back()">Back to Search results</a>
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h2>
-									<i class="fa fa-list-alt red"></i><strong>Data File &nbsp; <a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=datafile&amp;path=' + ${dataObject.getDataObject().getAbsolutePath()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=dataObject&amp;path=' + ${dataObject.getDataObject().getAbsolutePath()}}"><i class="fa fa-users" aria-hidden="true"></i></a></strong>
+								    <i class="fa fa-list-alt red"></i><strong>Data File &nbsp; <a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=datafile&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=hpcDatafile&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-users" aria-hidden="true"></i></a></strong>&nbsp;&nbsp;&nbsp;
+									<a class="btn btn-link btn-sm" th:href="@{'../datafile?action=edit&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-edit" aria-hidden="true"></i></a>
 								</h2>
 							</div>
-								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
-									aria-labelledby="myModalLabel" aria-hidden="true">
-									<div class="modal-dialog">
-										<div class="modal-content"></div>
-										<!-- /.modal-content -->
-									</div>
-									<!-- /.modal-dialog -->
-								</div>								
-							
 							<div th:if="${error != null}">
 								<div class="alert alert-error">
 									<a class="close" data-dismiss="alert">×</a> <label
 										for="${error}" th:text="${error}"></label>
 								</div>
 							</div>
-							<div th:if="${error == null}">
 								<!--panel-body start-->
 								<div class="panel-body">
 									<div class="form-group">
 										<div class="col-md-12 form-group">
 											<label for="Name">Path:</label> <label
-												for="${dataObject.getDataObject().getAbsolutePath()}"
-												th:text="${dataObject.getDataObject().getAbsolutePath()}"></label>
+												for="${hpcDatafile.getDataObject().getAbsolutePath()}"
+												th:text="${hpcDatafile.getDataObject().getAbsolutePath()}"></label>
 										</div>
 										<div class="col-md-12 form-group">
 											<label for="Name">Collection Name:</label> <label
-												for="${dataObject.getDataObject().getCollectionName()}"
-												th:text="${dataObject.getDataObject().getCollectionName()}"></label>
+												for="${hpcDatafile.getDataObject().getCollectionName()}"
+												th:text="${hpcDatafile.getDataObject().getCollectionName()}"></label>
 										</div>
 										<div class="col-md-12 form-group">
 											<label for="Name">Owner:</label> <label
-												for="${dataObject.getDataObject().getDataOwnerName()}"
-												th:text="${dataObject.getDataObject().getDataOwnerName()}"></label>
+												for="${hpcDatafile.getDataObject().getDataOwnerName()}"
+												th:text="${hpcDatafile.getDataObject().getDataOwnerName()}"></label>
 										</div>
 										<div class="col-md-6 form-group">
 											<label for="textbox1">Created on:</label> <label
-												for="${dataObject.getDataObject().getCreatedAt()}"
-												th:text="${#calendars.format(dataObject.getDataObject().getCreatedAt(),'dd MMMM yyyy')}"></label>
+												for="${hpcDatafile.getDataObject().getCreatedAt()}"
+												th:text="${#calendars.format(hpcDatafile.getDataObject().getCreatedAt(),'dd MMMM yyyy')}"></label>
 										</div>
 										<div class="col-md-6 form-group">
 											<label for="textbox1">Last updated on:</label> <label
-												for="${dataObject.getDataObject().getUpdatedAt()}"
-												th:text="${#calendars.format(dataObject.getDataObject().getUpdatedAt(),'dd MMMM yyyy')}"></label>
+												for="${hpcDatafile.getDataObject().getUpdatedAt()}"
+												th:text="${#calendars.format(hpcDatafile.getDataObject().getUpdatedAt(),'dd MMMM yyyy')}"></label>
 										</div>
 									</div>
 								</div>
@@ -144,23 +129,54 @@
 										<i class="fa fa-list-alt red"></i><strong>Metadata</strong>
 									</h2>
 								</div>
+								<div class="panel-body">
+								<form class="form-horizontal" id="datafileForm" th:action="@{/datafile}"
+									th:object="${hpcDatafile}" method="POST">
+								
 								<div class="form-group">
-									<table class="table table-bordered  col-md-12">
+									<table width="100%" class="table table-bordered col-md-9">
 										<thead>
 											<tr>
 												<th>Attribute Name</th>
 												<th>Value</th>
 											</tr>
 										</thead>
-										<tbody>
+										<tbody th:if="${hpcDatafile.getSelfMetadataEntries() != null}">
+											<div th:if="${action == 'edit'}">
+												<input type="hidden" name="action" id="action" value="edit"/>
+												<input type="hidden" name="path" id="action" th:value="${hpcDatafile.getPath()}"/>
 											<tr
-												th:each="metadataItem : ${dataObject.getMetadataEntries().getSelfMetadataEntries()}">
-												<td><label th:text="${metadataItem.getAttribute()}"></label></td>
-												<td><label for="${metadataItem.getAttribute()}"
-													th:text="${metadataItem.getValue()}"></label></td>
+												th:each="metadataItem : ${hpcDatafile.getSelfMetadataEntries()}">
+												<td width="20%"><label th:text="${metadataItem.getAttrName()}"></label></td>
+												<td width="80%" th:unless="${metadataItem.isSystemAttr() == true}"><input type="text" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+													th:value="${metadataItem.getAttrValue()}"></input></td>
+												<td width="80%" th:if="${metadataItem.isSystemAttr() == true}"><label for="${metadataItem.getAttrName()}"
+													th:text="${metadataItem.getAttrValue()}"></label></td>
+											</tr>
+											</div>
+											<div th:if="${action != 'edit'}">
+											<tr
+												th:each="metadataItem : ${hpcDatafile.getSelfMetadataEntries()}">
+												<td width="20%"><label th:text="${metadataItem.getAttrName()}"></label></td>
+												<td width="80%"><label for="${metadataItem.getAttrName()}"
+													th:text="${metadataItem.getAttrValue()}"></label></td>
+											</tr>
+											</div>
+											<tr th:if="${action == 'edit'}">
+											<td width="20%">&nbsp;</td>
+											<td align="right" width="80%">
+												<div class="modal-footer">
+													<button type="submit" class="btn btn-md btn-primary"
+														id="primaryButton">Update</button>
+													<button type="button" class="btn btn-primary"
+														id="cancel" onClick="cancelEdit()">Cancel</button>
+												</div>
+												</td>
 											</tr>
 										</tbody>
 									</table>
+								</div>
+								</form>
 								</div>
 								<div class="panel-heading">
 									<h2>
@@ -179,22 +195,20 @@
 												<th>Value</th>
 											</tr>
 										</thead>
-										<tbody>
+										<tbody th:if="${hpcDatafile.getParentMetadataEntries() != null}">
 											<tr
-												th:each="metadataItem : ${dataObject.getMetadataEntries().getParentMetadataEntries()}">
-												<td><label th:text="${metadataItem.getAttribute()}"></label></td>
-												<td><label for="${metadataItem.getAttribute()}"
-													th:text="${metadataItem.getValue()}"></label></td>
+												th:each="metadataItem : ${hpcDatafile.getParentMetadataEntries()}">
+												<td><label th:text="${metadataItem.getAttrName()}"></label></td>
+												<td><label for="${metadataItem.getAttrName()}"
+													th:text="${metadataItem.getAttrValue()}"></label></td>
 											</tr>
 										</tbody>
 									</table>
-								</div>
-							</div>
+								</div>								
 						</div>
+						<!--/col-->
 
 					</div>
-					<!--/col-->
-
 				</div>
 				<div class="row"></div>
 			</section>
@@ -202,6 +216,7 @@
 		<!--main content end-->
 	</section>
 	<!-- container section start -->
+
 	<!-- javascripts -->
 	<!-- bootstrap -->
 	<script src="js/bootstrap.min.js"></script>
@@ -215,8 +230,14 @@
 
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
-
 	<script type="text/javascript">
+	function cancelEdit()
+	{
+		document.getElementById("action").value = "cancel";
+		$('#userForm').attr('action', '/finduser');
+		$("#userForm").submit();
+	}
+	
 	var toggle = true;
 	function showParentAttrs() {
 		var ele = document.getElementById("parentAttrs");

@@ -12,7 +12,6 @@ package gov.nih.nci.hpc.web.controller;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,25 +28,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.fasterxml.jackson.annotation.JsonView;
-
-import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
-import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
-import gov.nih.nci.hpc.web.model.AjaxResponseBody;
-import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebGroup;
-import gov.nih.nci.hpc.web.model.HpcWebUser;
-import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
@@ -69,7 +54,7 @@ public class HpcCreateGroupController extends AbstractHpcController {
 	private String docsServiceURL;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(@RequestBody(required = false) String q,  Model model, BindingResult bindingResult,
+	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		String authToken = (String) session.getAttribute("hpcUserToken");
@@ -83,9 +68,8 @@ public class HpcCreateGroupController extends AbstractHpcController {
 		initialize(model, authToken, user, session);
 		return "creategroup";
 	}
-	
-	private void initialize(Model model, String authToken, HpcUserDTO user, HttpSession session)
-	{
+
+	private void initialize(Model model, String authToken, HpcUserDTO user, HttpSession session) {
 		HpcWebGroup webGroup = new HpcWebGroup();
 		model.addAttribute("hpcWebGroup", webGroup);
 		model.addAttribute("assignedNames", new ArrayList<String>());
@@ -97,8 +81,8 @@ public class HpcCreateGroupController extends AbstractHpcController {
 	 * Action for User registration
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public String createGroup(@Valid @ModelAttribute("hpcGroup") HpcWebGroup hpcWebGroup,
-			Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request,
+	public String createGroup(@Valid @ModelAttribute("hpcGroup") HpcWebGroup hpcWebGroup, Model model,
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
 			HttpServletResponse response) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		if (authToken == null) {
@@ -108,32 +92,29 @@ public class HpcCreateGroupController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "index";
 		}
-		
+
 		try {
-			if(hpcWebGroup.getGroupName() == null || hpcWebGroup.getGroupName().trim().length() == 0)
+			if (hpcWebGroup.getGroupName() == null || hpcWebGroup.getGroupName().trim().length() == 0)
 				model.addAttribute("message", "Invald user input");
-			
+
 			HpcGroupMembersRequestDTO dto = constructRequest(request, hpcWebGroup.getGroupName());
-			
+
 			boolean created = HpcClientUtil.createGroup(authToken, groupServiceURL, dto, hpcWebGroup.getGroupName(),
 					sslCertPath, sslCertPassword);
-			if (created)
-			{
-				model.addAttribute("message", "Group "+hpcWebGroup.getGroupName() +" is created");
+			if (created) {
+				model.addAttribute("message", "Group " + hpcWebGroup.getGroupName() + " is created");
 				session.removeAttribute("selectedUsers");
 			}
 		} catch (Exception e) {
 			model.addAttribute("message", "Failed to create group: " + e.getMessage());
-		}
-		finally
-		{
+		} finally {
 			model.addAttribute("hpcWebGroup", hpcWebGroup);
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			initialize(model, authToken, user, session);
 		}
 		return "creategroup";
 	}
-	
+
 	private HpcGroupMembersRequestDTO constructRequest(HttpServletRequest request, String groupName) {
 		Enumeration<String> params = request.getParameterNames();
 		HpcGroupMembersRequestDTO dto = new HpcGroupMembersRequestDTO();
@@ -143,11 +124,11 @@ public class HpcCreateGroupController extends AbstractHpcController {
 			if (paramName.startsWith("userId")) {
 				String index = paramName.substring("userId".length());
 				String[] userName = request.getParameterValues("userName" + index);
-					users.add(userName[0]);
+				users.add(userName[0]);
 			}
 		}
 		if (users.size() > 0)
 			dto.getAddUserIds().addAll(users);
 		return dto;
-	}	
+	}
 }
