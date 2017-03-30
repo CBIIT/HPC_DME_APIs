@@ -77,6 +77,17 @@ public interface HpcSecurityRestService
     public Response getUser(@PathParam("nciUserId") String nciUserId);
     
     /**
+     * Get the invoker user.
+     *
+     * @return gov.nih.nci.hpc.dto.security.HpcUserDTO entity.
+     * @return The REST service response.
+     */
+    @GET
+    @Path("/user")
+    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    public Response getInvoker();
+    
+    /**
      * Get users by search criterias. Note: only active users are returned.
      *
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
@@ -88,9 +99,25 @@ public interface HpcSecurityRestService
     @GET
     @Path("/user/active")
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-    public Response getUsers(@QueryParam("nciUserId") String nciUserId,
-    		                 @QueryParam("firstName") String firstName,
-    		                 @QueryParam("lastName") String lastName);
+    public Response getActiveUsers(@QueryParam("nciUserId") String nciUserId,
+    		                       @QueryParam("firstName") String firstName,
+    		                       @QueryParam("lastName") String lastName);
+    
+    /**
+     * Get users by search criterias. Note: All users are returned, both active and inactive
+     *
+     * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
+     * @param firstName (Optional) The first name to search for (using case insensitive comparison).
+     * @param lastName (Optional) The last name to search for (using case insensitive comparison).
+     * @return gov.nih.nci.hpc.dto.security.HpcUserListDTO entity.
+     * @return The REST service response.
+     */
+    @GET
+    @Path("/user/all")
+    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    public Response getAllUsers(@QueryParam("nciUserId") String nciUserId,
+    		                    @QueryParam("firstName") String firstName,
+    		                    @QueryParam("lastName") String lastName);
     
     /**
      * Authenticate a user.
