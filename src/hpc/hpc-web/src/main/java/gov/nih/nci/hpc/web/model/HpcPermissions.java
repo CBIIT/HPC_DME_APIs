@@ -1,7 +1,5 @@
 package gov.nih.nci.hpc.web.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.TreeSet;
 
 public class HpcPermissions {
@@ -18,10 +16,10 @@ public class HpcPermissions {
 		this.assignType = assignType;
 	}
 
-	public boolean isUserType()
-	{
+	public boolean isUserType() {
 		return (assignType == null || assignType.equals("User"));
 	}
+
 	public String getPath() {
 		return path;
 	}
@@ -30,7 +28,6 @@ public class HpcPermissions {
 		this.path = path;
 	}
 
-	
 	public String getType() {
 		return type;
 	}

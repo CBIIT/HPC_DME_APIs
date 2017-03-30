@@ -3,11 +3,11 @@ package gov.nih.nci.hpc.web.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 
-public class HpcCollectionModel {
+public class HpcDatafileModel {
 	private String path;
-	private HpcCollection collection;
+	private HpcDataObject dataObject;
 	private List<HpcMetadataAttrEntry> selfMetadataEntries;
 	private List<HpcMetadataAttrEntry> parentMetadataEntries;
 
@@ -19,12 +19,12 @@ public class HpcCollectionModel {
 		this.path = path;
 	}
 
-	public HpcCollection getCollection() {
-		return collection;
+	public HpcDataObject getDataObject() {
+		return dataObject;
 	}
 
-	public void setCollection(HpcCollection collection) {
-		this.collection = collection;
+	public void setDataObject(HpcDataObject dataObject) {
+		this.dataObject = dataObject;
 	}
 
 	public List<HpcMetadataAttrEntry> getSelfMetadataEntries() {

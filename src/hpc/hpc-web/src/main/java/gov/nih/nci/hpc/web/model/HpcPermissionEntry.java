@@ -1,6 +1,6 @@
 package gov.nih.nci.hpc.web.model;
 
-public class HpcPermissionEntry  implements Comparable<HpcPermissionEntry> {
+public class HpcPermissionEntry implements Comparable<HpcPermissionEntry> {
 	private String name;
 	private HpcPermissionEntryType type;
 	private boolean read;
@@ -46,14 +46,13 @@ public class HpcPermissionEntry  implements Comparable<HpcPermissionEntry> {
 	public void setType(HpcPermissionEntryType type) {
 		this.type = type;
 	}
-	
-	public String getPermission()
-	{
-		if(isRead())
+
+	public String getPermission() {
+		if (isRead())
 			return "READ";
-		else if(isWrite())
+		else if (isWrite())
 			return "WRITE";
-		else if(isOwn())
+		else if (isOwn())
 			return "OWN";
 		else
 			return "NONE";

@@ -9,7 +9,6 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -18,9 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import javax.ws.rs.core.Response;
 
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -32,28 +29,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcCollectionModel;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
-import gov.nih.nci.hpc.web.model.HpcWebGroup;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
@@ -75,9 +61,11 @@ public class HpcCollectionController extends AbstractHpcController {
 	private String hpcModelURL;
 
 	@RequestMapping(method = RequestMethod.GET)
-//	public String home(String path, String action, Model model, HttpSession session) {
-	public String home(@RequestBody(required = false) String body, @RequestParam String path, @RequestParam String action, Model model,
-				BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
+	// public String home(String path, String action, Model model, HttpSession
+	// session) {
+	public String home(@RequestBody(required = false) String body, @RequestParam String path,
+			@RequestParam String action, Model model, BindingResult bindingResult, HttpSession session,
+			HttpServletRequest request) {
 
 		try {
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
@@ -89,18 +77,21 @@ public class HpcCollectionController extends AbstractHpcController {
 				model.addAttribute("hpcLogin", hpcLogin);
 				return "index";
 			}
-			
+
 			if (path == null)
 				return "dashboard";
 
-			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, serviceURL, path, false, sslCertPath, sslCertPassword);
-			if(collections != null && collections.getCollections() != null && collections.getCollections().size() > 0)
-			{
-				HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(), sslCertPath, sslCertPassword);
+			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, serviceURL, path, false,
+					sslCertPath, sslCertPassword);
+			if (collections != null && collections.getCollections() != null
+					&& collections.getCollections().size() > 0) {
+				HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(),
+						sslCertPath, sslCertPassword);
 				HpcCollectionDTO collection = collections.getCollections().get(0);
-				HpcCollectionModel hpcCollection = buildHpcCollection(collection, modelDTO.getCollectionSystemGeneratedMetadataAttributeNames());
+				HpcCollectionModel hpcCollection = buildHpcCollection(collection,
+						modelDTO.getCollectionSystemGeneratedMetadataAttributeNames());
 				model.addAttribute("collection", hpcCollection);
-				if(action != null && action.equals("edit"))
+				if (action != null && action.equals("edit"))
 					model.addAttribute("action", "edit");
 			} else {
 				String message = "Collection not found!";
@@ -115,31 +106,29 @@ public class HpcCollectionController extends AbstractHpcController {
 		model.addAttribute("hpcCollection", new HpcCollectionModel());
 		return "collection";
 	}
-	
-	private HpcCollectionModel buildHpcCollection(HpcCollectionDTO collection, List<String> systemAttrs)
-	{
+
+	private HpcCollectionModel buildHpcCollection(HpcCollectionDTO collection, List<String> systemAttrs) {
 		HpcCollectionModel model = new HpcCollectionModel();
+		systemAttrs.add("collection_type");
 		model.setCollection(collection.getCollection());
-		for(HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries())
-		{
+		for (HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries()) {
 			HpcMetadataAttrEntry attrEntry = new HpcMetadataAttrEntry();
 			attrEntry.setAttrName(entry.getAttribute());
 			attrEntry.setAttrValue(entry.getValue());
 			attrEntry.setAttrUnit(entry.getUnit());
-			if(systemAttrs != null && systemAttrs.contains(entry.getAttribute()))
+			if (systemAttrs != null && systemAttrs.contains(entry.getAttribute()))
 				attrEntry.setSystemAttr(true);
 			else
 				attrEntry.setSystemAttr(false);
 			model.getSelfMetadataEntries().add(attrEntry);
 		}
 
-		for(HpcMetadataEntry entry : collection.getMetadataEntries().getParentMetadataEntries())
-		{
+		for (HpcMetadataEntry entry : collection.getMetadataEntries().getParentMetadataEntries()) {
 			HpcMetadataAttrEntry attrEntry = new HpcMetadataAttrEntry();
 			attrEntry.setAttrName(entry.getAttribute());
 			attrEntry.setAttrValue(entry.getValue());
 			attrEntry.setAttrUnit(entry.getUnit());
-			if(systemAttrs != null && systemAttrs.contains(entry.getAttribute()))
+			if (systemAttrs != null && systemAttrs.contains(entry.getAttribute()))
 				attrEntry.setSystemAttr(true);
 			else
 				attrEntry.setSystemAttr(false);
@@ -147,42 +136,45 @@ public class HpcCollectionController extends AbstractHpcController {
 		}
 		return model;
 	}
+
 	/*
 	 * Action for User registration
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public String updateCollection(@Valid @ModelAttribute("hpcGroup") HpcCollectionModel hpcCollection,
-			Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request,
-			HttpServletResponse response) {
+	public String updateCollection(@Valid @ModelAttribute("hpcGroup") HpcCollectionModel hpcCollection, Model model,
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
+			HttpServletResponse response, final RedirectAttributes redirectAttributes) {
+		String[] action = request.getParameterValues("action");
+		if(action != null && action.length > 0 && action[0].equals("cancel"))
+			return "redirect:/collection?path=" + hpcCollection.getPath() + "&action=view";
+		
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		try {
-			if(hpcCollection.getPath() == null || hpcCollection.getPath().trim().length() == 0)
+			if (hpcCollection.getPath() == null || hpcCollection.getPath().trim().length() == 0)
 				model.addAttribute("error", "Invald collection path");
-			
+
 			HpcCollectionRegistrationDTO registrationDTO = constructRequest(request, session, hpcCollection.getPath());
-			
-			boolean created = HpcClientUtil.updateCollection(authToken, serviceURL, registrationDTO, hpcCollection.getPath(),
-					sslCertPath, sslCertPassword);
-			if (created)
-			{
-				model.addAttribute("error", "Collection "+ hpcCollection.getPath() +" is Updated!");
+
+			boolean created = HpcClientUtil.updateCollection(authToken, serviceURL, registrationDTO,
+					hpcCollection.getPath(), sslCertPath, sslCertPassword);
+			if (created) {
+				model.addAttribute("error", "Collection " + hpcCollection.getPath() + " is Updated!");
 				session.removeAttribute("selectedUsers");
 			}
 		} catch (Exception e) {
-			model.addAttribute("error", "Failed to update collection: " + e.getMessage());
-		}
-		finally
-		{
+			redirectAttributes.addFlashAttribute("error", "Failed to update data file: " + e.getMessage());
+		} finally {
 			model.addAttribute("hpcCollection.getPath()", hpcCollection);
 		}
-		return "redirect:/collection?path="+hpcCollection.getPath()+"&action=view";
+		return "redirect:/collection?path=" + hpcCollection.getPath() + "&action=view";
 	}
-	
-	private HpcCollectionRegistrationDTO constructRequest(HttpServletRequest request, HttpSession session, String path) {
+
+	private HpcCollectionRegistrationDTO constructRequest(HttpServletRequest request, HttpSession session,
+			String path) {
 		Enumeration<String> params = request.getParameterNames();
 		HpcCollectionRegistrationDTO dto = new HpcCollectionRegistrationDTO();
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
-		
+
 		while (params.hasMoreElements()) {
 			String paramName = params.nextElement();
 			if (paramName.startsWith("zAttrStr_")) {
@@ -196,6 +188,6 @@ public class HpcCollectionController extends AbstractHpcController {
 		}
 		dto.getMetadataEntries().addAll(metadataEntries);
 		return dto;
-	}	
-	
+	}
+
 }
