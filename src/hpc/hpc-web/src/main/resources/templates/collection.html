@@ -94,7 +94,6 @@
 										for="${error}" th:text="${error}"></label>
 								</div>
 							</div>
-							<div th:if="${error == null}">
 								<!--panel-body start-->
 								<div class="panel-body">
 									<div class="form-group">
@@ -130,6 +129,7 @@
 										<i class="fa fa-list-alt red"></i><strong>Metadata</strong>
 									</h2>
 								</div>
+								<div class="panel-body">
 								<form class="form-horizontal" id="collectionForm" th:action="@{/collection}"
 									th:object="${hpcCollection}" method="POST">
 								
@@ -163,12 +163,13 @@
 											</tr>
 											</div>
 											<tr th:if="${action == 'edit'}">
+											<td>&nbsp;</td>
 											<td align="right">
 												<div class="modal-footer">
 													<button type="submit" class="btn btn-md btn-primary"
 														id="primaryButton">Update</button>
 													<button type="button" class="btn btn-primary"
-														data-dismiss="modal" id="close">Cancel</button>
+														id="cancel" onClick="cancelEdit()">Cancel</button>
 												</div>
 												</td>
 											</tr>
@@ -176,6 +177,7 @@
 									</table>
 								</div>
 								</form>
+								</div>
 								<div class="panel-heading">
 									<h2>
 										<i class="fa fa-list-alt red"></i> <a class="btn link"
@@ -204,8 +206,6 @@
 									</table>
 								</div>								
 							</div>
-
-						</div>
 						<!--/col-->
 
 					</div>
@@ -231,6 +231,14 @@
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
 	<script type="text/javascript">
+	
+	function cancelEdit()
+	{
+		document.getElementById("action").value = "cancel";
+		$('#userForm').attr('action', '/finduser');
+		$("#userForm").submit();
+	}
+
 	var toggle = true;
 	function showParentAttrs() {
 		var ele = document.getElementById("parentAttrs");

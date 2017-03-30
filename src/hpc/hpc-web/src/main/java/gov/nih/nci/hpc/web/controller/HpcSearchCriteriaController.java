@@ -465,8 +465,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 	private Map<String, String> getHierarchy(String authToken, HpcUserDTO user) {
 		Map<String, String> hierarchiesMap = new HashMap<String, String>();
 		try {
-			HpcDataManagementModelDTO docDTO = HpcClientUtil.getDOCModel(authToken, modelServiceURL,
-					user.getDoc(), sslCertPath, sslCertPassword);
+			HpcDataManagementModelDTO docDTO = HpcClientUtil.getDOCModel(authToken, modelServiceURL, user.getDoc(),
+					sslCertPath, sslCertPassword);
 			HpcDataHierarchy hierarchy = docDTO.getDataHierarchy();
 
 			List<String> hierarchies = new ArrayList<String>();

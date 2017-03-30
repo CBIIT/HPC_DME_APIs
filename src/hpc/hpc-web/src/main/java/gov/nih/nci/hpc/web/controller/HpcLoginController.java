@@ -26,7 +26,6 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -39,7 +38,6 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
@@ -87,13 +85,8 @@ public class HpcLoginController extends AbstractHpcController {
 					authenticateURL);
 			session.setAttribute("hpcUserToken", authToken);
 			try {
-//				HpcUserListDTO users = HpcClientUtil.getUsers(authToken, serviceUserURL, hpcLogin.getUserId(), null, null, sslCertPath, sslCertPassword);
-//				if(users == null || users.getUsers() == null || users.getUsers().size() == 0)
-//					throw new HpcWebException("Invlaid User");
-//				
-//				HpcUserDTO user = users.getUsers().get(0);
-				HpcUserDTO user = HpcClientUtil.getUser(authToken, serviceUserURL, hpcLogin.getUserId(), sslCertPath, sslCertPassword);
-				if(user == null)
+				HpcUserDTO user = HpcClientUtil.getUser(authToken, serviceUserURL, sslCertPath, sslCertPassword);
+				if (user == null)
 					throw new HpcWebException("Invlaid User");
 				session.setAttribute("hpcUser", user);
 				session.setAttribute("hpcUserId", hpcLogin.getUserId());
