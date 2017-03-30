@@ -9,7 +9,7 @@ public class HpcWebUser {
 
 	@JsonView(Views.Public.class)
 	private String type;
-	
+
 	@JsonView(Views.Public.class)
 	private String source;
 
@@ -27,7 +27,7 @@ public class HpcWebUser {
 
 	@JsonView(Views.Public.class)
 	private String userRole;
-	
+
 	@JsonView(Views.Public.class)
 	private String doc;
 

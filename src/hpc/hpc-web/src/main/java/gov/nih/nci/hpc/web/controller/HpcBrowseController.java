@@ -26,10 +26,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeEntry;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
@@ -82,35 +78,37 @@ public class HpcBrowseController extends AbstractHpcController {
 			} else
 				model.addAttribute("message", "No collections found!");
 			return "browse";
-			
-//			HpcDataManagementModelDTO docModel = HpcClientUtil.getDOCModel(authToken, docServiceURL,
-//					user.getNciAccount().getDoc(), sslCertPath, sslCertPassword);
-//			if (docModel == null) {
-//				model.addAttribute("message", "Invalid DOC base path!");
-//				return "browse";
-//			} else {
-//				HpcBrowserEntry browserEntry = new HpcBrowserEntry();
-//				browserEntry.setFolder(true);
-//				browserEntry = populateBrowserEntries(browserEntry, user.getNciAccount().getDoc(), authToken, model);
-//				//browserEntry = trimPath(browserEntry, docModel.getBasePath());
-//				if (browserEntry != null) {
-//					List<HpcBrowserEntry> entries = new ArrayList<HpcBrowserEntry>();
-//					entries.add(browserEntry);
-//					model.addAttribute("browserEntry", entries);
-//				} else
-//					model.addAttribute("message", "No collections found!");
-//				return "browse";
-//			}
+
+			// HpcDataManagementModelDTO docModel =
+			// HpcClientUtil.getDOCModel(authToken, docServiceURL,
+			// user.getNciAccount().getDoc(), sslCertPath, sslCertPassword);
+			// if (docModel == null) {
+			// model.addAttribute("message", "Invalid DOC base path!");
+			// return "browse";
+			// } else {
+			// HpcBrowserEntry browserEntry = new HpcBrowserEntry();
+			// browserEntry.setFolder(true);
+			// browserEntry = populateBrowserEntries(browserEntry,
+			// user.getNciAccount().getDoc(), authToken, model);
+			// //browserEntry = trimPath(browserEntry, docModel.getBasePath());
+			// if (browserEntry != null) {
+			// List<HpcBrowserEntry> entries = new ArrayList<HpcBrowserEntry>();
+			// entries.add(browserEntry);
+			// model.addAttribute("browserEntry", entries);
+			// } else
+			// model.addAttribute("message", "No collections found!");
+			// return "browse";
+			// }
 		} catch (Exception e) {
 			e.printStackTrace();
 			return "browse";
 		}
 	}
 
-	private HpcBrowserEntry populateBrowserEntries(HpcBrowserEntry browserEntry, String doc,
-			String authToken, Model model) {
-		HpcDataManagementTreeDTO tree = HpcClientUtil.getDOCTree(authToken, treeServiceURL, doc, true,
-				sslCertPath, sslCertPassword);
+	private HpcBrowserEntry populateBrowserEntries(HpcBrowserEntry browserEntry, String doc, String authToken,
+			Model model) {
+		HpcDataManagementTreeDTO tree = HpcClientUtil.getDOCTree(authToken, treeServiceURL, doc, true, sslCertPath,
+				sslCertPassword);
 		if (tree == null) {
 			model.addAttribute("message", "No Heirarchy!");
 			return null;
@@ -123,14 +121,12 @@ public class HpcBrowseController extends AbstractHpcController {
 		return browserEntry;
 	}
 
-	private HpcBrowserEntry buildTree(HpcBrowserEntry browseEntry, HpcDataManagementTreeEntry treeEntry)
-	{
-		if(treeEntry == null)
+	private HpcBrowserEntry buildTree(HpcBrowserEntry browseEntry, HpcDataManagementTreeEntry treeEntry) {
+		if (treeEntry == null)
 			return browseEntry;
-		
+
 		List<String> dataObjects = treeEntry.getDataObjects();
-		for(String dataObject : dataObjects)
-		{
+		for (String dataObject : dataObjects) {
 			HpcBrowserEntry entry = new HpcBrowserEntry();
 			entry.setFullPath(dataObject);
 			entry.setName(dataObject);
@@ -138,8 +134,7 @@ public class HpcBrowseController extends AbstractHpcController {
 			browseEntry.getChildren().add(entry);
 		}
 		List<HpcDataManagementTreeEntry> collections = treeEntry.getSubCollections();
-		for(HpcDataManagementTreeEntry collection : collections)
-		{
+		for (HpcDataManagementTreeEntry collection : collections) {
 			HpcBrowserEntry entry = new HpcBrowserEntry();
 			entry.setFullPath(collection.getPath());
 			entry.setFolder(true);

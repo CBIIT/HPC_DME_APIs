@@ -11,7 +11,6 @@ package gov.nih.nci.hpc.web.controller;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,17 +27,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
-import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
 import gov.nih.nci.hpc.web.model.Views;
@@ -63,7 +59,7 @@ public class HpcCreateUserController extends AbstractHpcController {
 	private String docsServiceURL;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(@RequestBody(required = false) String q,  Model model, BindingResult bindingResult,
+	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		String authToken = (String) session.getAttribute("hpcUserToken");
@@ -77,41 +73,34 @@ public class HpcCreateUserController extends AbstractHpcController {
 		initialize(model, authToken, user);
 		return "createuser";
 	}
-	
-	private void initialize(Model model, String authToken, HpcUserDTO user)
-	{
+
+	private void initialize(Model model, String authToken, HpcUserDTO user) {
 		HpcWebUser webUser = new HpcWebUser();
 		model.addAttribute("hpcWebUser", webUser);
 		populateDOCs(model, authToken, user);
 		populateRoles(model, user);
-		
+
 	}
-	private void populateDOCs(Model model, String authToken, HpcUserDTO user)
-	{
+
+	private void populateDOCs(Model model, String authToken, HpcUserDTO user) {
 		List<String> userDOCs = new ArrayList<String>();
-		if(user.getUserRole().equals("SYSTEM_ADMIN"))
-		{
-			HpcDataManagementDocListDTO docs = HpcClientUtil.getDOCs(authToken, docsServiceURL, 
-					sslCertPath, sslCertPassword);
+		if (user.getUserRole().equals("SYSTEM_ADMIN")) {
+			HpcDataManagementDocListDTO docs = HpcClientUtil.getDOCs(authToken, docsServiceURL, sslCertPath,
+					sslCertPassword);
 			model.addAttribute("docs", docs.getDocs());
-		}
-		else
-		{
+		} else {
 			userDOCs.add(user.getDoc());
 			model.addAttribute("docs", userDOCs);
 		}
 	}
 
-	private void populateRoles(Model model, HpcUserDTO user)
-	{
+	private void populateRoles(Model model, HpcUserDTO user) {
 		List<String> roles = new ArrayList<String>();
-		if(user.getUserRole().equals("SYSTEM_ADMIN"))
-		{
+		if (user.getUserRole().equals("SYSTEM_ADMIN")) {
 			roles.add("SYSTEM_ADMIN");
 			roles.add("GROUP_ADMIN");
 			roles.add("USER");
-		}
-		else
+		} else
 			roles.add("USER");
 		model.addAttribute("roles", roles);
 	}
@@ -122,35 +111,33 @@ public class HpcCreateUserController extends AbstractHpcController {
 	@JsonView(Views.Public.class)
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
-	public AjaxResponseBody createUser(@Valid @ModelAttribute("hpcUser") HpcWebUser hpcWebUser,
-			Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request,
+	public AjaxResponseBody createUser(@Valid @ModelAttribute("hpcUser") HpcWebUser hpcWebUser, Model model,
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
 			HttpServletResponse response) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		AjaxResponseBody result = new AjaxResponseBody();
-		
+
 		try {
-			if(hpcWebUser.getNciUserId() == null || hpcWebUser.getNciUserId().trim().length() == 0 
-					|| hpcWebUser.getFirstName() == null || hpcWebUser.getFirstName().trim().length() == 0 
+			if (hpcWebUser.getNciUserId() == null || hpcWebUser.getNciUserId().trim().length() == 0
+					|| hpcWebUser.getFirstName() == null || hpcWebUser.getFirstName().trim().length() == 0
 					|| hpcWebUser.getLastName() == null && hpcWebUser.getLastName().trim().length() == 0
 					|| hpcWebUser.getDoc() == null && hpcWebUser.getDoc().trim().length() == 0
 					|| hpcWebUser.getUserRole() == null && hpcWebUser.getUserRole().trim().length() == 0)
 				model.addAttribute("message", "Invald user input");
-			
+
 			HpcUserRequestDTO dto = new HpcUserRequestDTO();
 			dto.setDoc(hpcWebUser.getDoc());
 			dto.setFirstName(hpcWebUser.getFirstName());
 			dto.setLastName(hpcWebUser.getLastName());
 			dto.setUserRole(hpcWebUser.getUserRole());
-			
+
 			boolean created = HpcClientUtil.createUser(authToken, userServiceURL, dto, hpcWebUser.getNciUserId(),
 					sslCertPath, sslCertPassword);
 			if (created)
 				result.setMessage("User account created");
 		} catch (Exception e) {
 			result.setMessage("Failed to create user: " + e.getMessage());
-		}
-		finally
-		{
+		} finally {
 			model.addAttribute("hpcWebUser", hpcWebUser);
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			initialize(model, authToken, user);

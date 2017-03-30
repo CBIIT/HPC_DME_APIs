@@ -46,12 +46,15 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 @EnableAutoConfiguration
 @RequestMapping("/finduser")
 public class HpcFindUserController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.user}")
-	private String userServiceURL;
+	@Value("${gov.nih.nci.hpc.server.user.all}")
+	private String allUsersServiceURL;
+	@Value("${gov.nih.nci.hpc.server.user.active}")
+	private String activeUsersServiceURL;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(@RequestBody(required = false) String q, @RequestParam String source, @RequestParam String path, @RequestParam String type,  Model model, BindingResult bindingResult,
-			HttpSession session, HttpServletRequest request) {
+	public String home(@RequestBody(required = false) String q, @RequestParam String source, @RequestParam String path,
+			@RequestParam String type, Model model, BindingResult bindingResult, HttpSession session,
+			HttpServletRequest request) {
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
@@ -77,6 +80,9 @@ public class HpcFindUserController extends AbstractHpcController {
 	public String findUsers(@Valid @ModelAttribute("hpcUser") HpcWebUser hpcWebUser, BindingResult bindingResult,
 			Model model, HttpSession session, HttpServletRequest request) {
 		try {
+			String authToken = (String) session.getAttribute("hpcUserToken");
+			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+
 			String[] actionType = request.getParameterValues("actionType");
 			if (actionType != null && actionType.length > 0 && actionType[0].equals("selected")) {
 				String[] selectedUsers = request.getParameterValues("selectedUsers");
@@ -91,25 +97,32 @@ public class HpcFindUserController extends AbstractHpcController {
 				}
 				session.setAttribute("selectedUsers", buffer.toString());
 				if (selectedUsers != null && selectedUsers.length > 0)
-					return "redirect:/"+hpcWebUser.getSource()+"?assignType=User&path=" + hpcWebUser.getPath()  + "&type="+hpcWebUser.getType();
+					return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&path=" + hpcWebUser.getPath()
+							+ "&type=" + hpcWebUser.getType();
 			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
 				session.removeAttribute("selectedUsers");
-				return "redirect:/"+hpcWebUser.getSource()+"?assignType=User&path=" + hpcWebUser.getPath() + "&type="+hpcWebUser.getType();
+				return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&path=" + hpcWebUser.getPath()
+						+ "&type=" + hpcWebUser.getType();
 			}
 
 			String userId = null;
 			String firstName = null;
 			String lastName = null;
-			if(hpcWebUser.getNciUserId() != null && hpcWebUser.getNciUserId().trim().length() > 0)
+			if (hpcWebUser.getNciUserId() != null && hpcWebUser.getNciUserId().trim().length() > 0)
 				userId = hpcWebUser.getNciUserId();
-			if(hpcWebUser.getFirstName() != null && hpcWebUser.getFirstName().trim().length() > 0)
+			if (hpcWebUser.getFirstName() != null && hpcWebUser.getFirstName().trim().length() > 0)
 				firstName = hpcWebUser.getFirstName();
-			if(hpcWebUser.getLastName() != null && hpcWebUser.getLastName().trim().length() > 0)
+			if (hpcWebUser.getLastName() != null && hpcWebUser.getLastName().trim().length() > 0)
 				lastName = hpcWebUser.getLastName();
-			
-			String authToken = (String) session.getAttribute("hpcUserToken");
-			HpcUserListDTO users = HpcClientUtil.getUsers(authToken, userServiceURL, userId,
-					firstName, lastName, sslCertPath, sslCertPassword);
+
+			String serviceUrl = null;
+			if (user.getUserRole().equals("SYSTEM_ADMIN"))
+				serviceUrl = allUsersServiceURL;
+			else
+				serviceUrl = activeUsersServiceURL;
+
+			HpcUserListDTO users = HpcClientUtil.getUsers(authToken, serviceUrl, userId, firstName, lastName,
+					sslCertPath, sslCertPassword);
 			if (users != null && users.getUsers() != null && users.getUsers().size() > 0)
 				model.addAttribute("searchresults", users.getUsers());
 		} catch (Exception e) {
