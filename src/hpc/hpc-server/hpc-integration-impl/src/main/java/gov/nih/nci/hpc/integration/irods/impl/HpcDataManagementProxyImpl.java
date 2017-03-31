@@ -558,6 +558,24 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
+    public HpcSubjectPermission getCollectionPermissionForUser(Object authenticatedToken,
+                                                               String path, String userId) 
+                                                              throws HpcException
+    {
+    	try {
+    		 return toHpcSubjectPermission(
+    				  authenticatedToken,
+    				  irodsConnection.getCollectionAO(authenticatedToken).getPermissionForUserName(
+    				                  (getAbsolutePath(path)), userId));
+    	     
+    	} catch(Exception e) {
+                throw new HpcException("Failed to get collection permission for user: " + 
+    	                               e.getMessage(),
+                		               HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+    	}
+    }
+
+    @Override
     public void setCollectionPermission(Object authenticatedToken, String path,
                                         HpcSubjectPermission permissionRequest) 
                                        throws HpcException
@@ -602,7 +620,25 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     				                  listPermissionsForDataObject(getAbsolutePath(path)));
     	     
     	} catch(Exception e) {
-                throw new HpcException("Failed to get collection permissions: " + 
+                throw new HpcException("Failed to get data object permissions: " + 
+    	                               e.getMessage(),
+                		               HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+    	}
+    }
+
+    @Override
+    public HpcSubjectPermission getDataObjectPermissionForUser(Object authenticatedToken,
+                                                               String path, String userId) 
+                                                              throws HpcException
+    {
+    	try {
+    		 return toHpcSubjectPermission(
+    				  authenticatedToken,
+    				  irodsConnection.getDataObjectAO(authenticatedToken).getPermissionForDataObjectForUserName(
+    				                  (getAbsolutePath(path)), userId));
+    	     
+    	} catch(Exception e) {
+                throw new HpcException("Failed to get data object permission for user: " + 
     	                               e.getMessage(),
                 		               HpcErrorType.DATA_MANAGEMENT_ERROR, e);
     	}
@@ -1110,29 +1146,35 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	
     	List<HpcSubjectPermission> hpcSubjectPermissions = new ArrayList<>();
     	for(UserFilePermission irodsUserPermission : irodsUserPermissions) {
-    		HpcSubjectPermission hpcSubjectPermission = new HpcSubjectPermission();
-    		hpcSubjectPermission.setPermission(irodsUserPermission.getFilePermissionEnum().toString());
-    		hpcSubjectPermission.setSubject(irodsUserPermission.getUserName());
-    		// The IRODS user-type determines the HPC subject-type.
-    		if(irodsUserPermission.getUserType().equals(UserTypeEnum.RODS_GROUP)) {
-    		   if(!groupExists(authenticatedToken, irodsUserPermission.getUserName())) {
-    			  // For collections, IRODS return individual user-id as groups (RODS_GROUP).
-        		  // This is possibly a defect in the Jargon API or the IRODS security schema.
-        		  // As a workaround, we confirm the 'subject' is a group
-    			  continue;
-    		   }
-    		   hpcSubjectPermission.setSubjectType(HpcSubjectType.GROUP);
-    		   
-    		} else {
-    			    hpcSubjectPermission.setSubjectType(HpcSubjectType.USER);
-    		}
-    		
-    		hpcSubjectPermissions.add(hpcSubjectPermission);
+    		HpcSubjectPermission hpcSubjectPermission = toHpcSubjectPermission(authenticatedToken, irodsUserPermission);
+    		if(hpcSubjectPermission != null)
+    			hpcSubjectPermissions.add(hpcSubjectPermission);
     	}
     	
     	return hpcSubjectPermissions;
     }
-    
+
+    private HpcSubjectPermission toHpcSubjectPermission(Object authenticatedToken, UserFilePermission irodsUserPermission)
+            throws HpcException
+    {
+		HpcSubjectPermission hpcSubjectPermission = new HpcSubjectPermission();
+		hpcSubjectPermission.setPermission(irodsUserPermission.getFilePermissionEnum().toString());
+		hpcSubjectPermission.setSubject(irodsUserPermission.getUserName());
+		// The IRODS user-type determines the HPC subject-type.
+		if(irodsUserPermission.getUserType().equals(UserTypeEnum.RODS_GROUP)) {
+		   if(!groupExists(authenticatedToken, irodsUserPermission.getUserName())) {
+			  // For collections, IRODS return individual user-id as groups (RODS_GROUP).
+    		  // This is possibly a defect in the Jargon API or the IRODS security schema.
+    		  // As a workaround, we confirm the 'subject' is a group
+			  return null;
+		   }
+		   hpcSubjectPermission.setSubjectType(HpcSubjectType.GROUP);
+		   
+		} else {
+			    hpcSubjectPermission.setSubjectType(HpcSubjectType.USER);
+		}
+    	return hpcSubjectPermission;
+    }
     /**
      * Convert a list of iRODS user groups to HPC group names.
      *
