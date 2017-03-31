@@ -7,15 +7,16 @@ Common command line utilities to access the API.
 
 I-Edit the following configuration files in this directory:
 
-  1- ./curl-conf
-
-     Add in a separate line all the parameters you would like to add in the REST request. 
-     Please keep the current authorization line.
-
-  2- ./test-conf
+  1- ./test-conf
 
     - Edit the top level folder where collections will be registered "base-folder"
     - Edit the server name. 
+
+  2- ./curl-conf
+
+     If your are fimiliar with curl, add in a separate line all the arguments you would like to send with the REST request. 
+     Otherwise, leave the file unchanged.
+
 
 
 II- Define the environment variable HPC_DM_UTILS and let it point to the directory where this README.md is located.
