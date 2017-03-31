@@ -114,6 +114,19 @@ public interface HpcDataManagementRestService
 	public Response getCollectionPermissions(@PathParam("path") String path);
 	
     /**
+     * Get a collection's permission for userId.
+     *
+     * @param path The collection path.
+     * @param userId
+     * @return The REST service response.
+     */
+	@GET
+	@Path("/collection/{path:.*}/acl/user/{userId:.*}")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getCollectionPermissionForUser(@PathParam("path") String path, 
+												   @PathParam("userId") String userId);
+
+    /**
      * Data object registration.
      *
      * @param path The data object path.
@@ -184,6 +197,19 @@ public interface HpcDataManagementRestService
 	@Path("/dataObject/{path:.*}/acl")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getDataObjectPermissions(@PathParam("path") String path);
+	
+    /**
+     * Get a data object's permission for userId.
+     *
+     * @param path The data object path.
+     * @param userId
+     * @return The REST service response.
+     */
+	@GET
+	@Path("/dataObject/{path:.*}/acl/user/{userId:.*}")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getDataObjectPermissionForUser(@PathParam("path") String path, 
+													@PathParam("userId") String userId);
 	
     /**
      * Get data management model (metadata validation rules and hierarchy definition) configured for a DOC.

@@ -84,6 +84,16 @@ public interface HpcDataManagementService
     public List<HpcSubjectPermission> getCollectionPermissions(String path) throws HpcException;
     
     /**
+     * Get collection permissions for userId. 
+     *
+     * @param path The collection path.
+     * @return permission on the collection.
+     * @return userId
+     * @throws HpcException on service failure.
+     */
+    public HpcSubjectPermission getCollectionPermissionForUser(String path, String userId) throws HpcException;
+
+    /**
      * Set data object permission for a subject (user or group). 
      *
      * @param path The data object path.
@@ -102,6 +112,16 @@ public interface HpcDataManagementService
      */
     public List<HpcSubjectPermission> getDataObjectPermissions(String path) throws HpcException;
     
+    /**
+     * Get data object permission by userId. 
+     *
+     * @param path The data object path.
+     * @return permissions on the data object.
+     * @return userId
+     * @throws HpcException on service failure.
+     */
+    public HpcSubjectPermission getDataObjectPermissionForUser(String path, String userId) throws HpcException;
+
     /**
      * Assign system account as an additional owner of an entity.
      *

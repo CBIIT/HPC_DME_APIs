@@ -250,6 +250,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
 
     @Override
+    public HpcSubjectPermission getCollectionPermissionForUser(String path, String userId) throws HpcException
+    {
+    	return dataManagementProxy.getCollectionPermissionForUser(dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
+    }
+
+    @Override
     public void setDataObjectPermission(String path, HpcSubjectPermission subjectPermission) 
                                        throws HpcException
     {
@@ -266,6 +272,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	return dataManagementProxy.getDataObjectPermissions(dataManagementAuthenticator.getAuthenticatedToken(), path);
     }
     
+    @Override
+    public HpcSubjectPermission getDataObjectPermissionForUser(String path, String userId) throws HpcException
+    {
+    	return dataManagementProxy.getDataObjectPermissionForUser(dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
+    }
+
     @Override
     public void assignSystemAccountPermission(String path) throws HpcException
     {

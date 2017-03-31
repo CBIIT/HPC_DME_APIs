@@ -27,6 +27,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
@@ -177,6 +178,20 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
+    public Response getCollectionPermissionForUser(String path, String userId)
+    {
+    	HpcUserPermissionDTO hpcUserPermissionDTO = null;
+		try {
+			hpcUserPermissionDTO = dataManagementBusService.getCollectionPermissionForUser(toAbsolutePath(path), userId);
+			 
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+		return okResponse(hpcUserPermissionDTO, true);
+    }
+
+    @Override
     public Response registerDataObject(String path, 
     		                           HpcDataObjectRegistrationDTO dataObjectRegistration,
     		                           InputStream dataObjectInputStream)
@@ -263,6 +278,19 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		return okResponse(entityPermissions, true);
     }
     
+    public Response getDataObjectPermissionForUser(String path, String userId)
+    {
+    	HpcUserPermissionDTO hpcUserPermissionDTO = null;
+		try {
+			hpcUserPermissionDTO = dataManagementBusService.getDataObjectPermissionForUser(toAbsolutePath(path), userId);
+			 
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+		return okResponse(hpcUserPermissionDTO, true);
+    }
+
     @Override
     public Response getDataManagementModel(String doc)
     {
