@@ -16,7 +16,7 @@ source $HPC_DM_UTILS/utilities
 #Generate an authentication token
 function dm_generate_token {
 
-    LOG_FILE=$HPC_DM_TEST/utils/log
+    LOG_FILE=$HPC_DM_UTILS/utils/log
     rm $LOG_FILE 2>/dev/null
 
     SERVER=$(get_server)
@@ -154,9 +154,12 @@ function dm_register_dataobject {
 #There is no metadata for folder and they will be automatically created.
 #The files metadata is the list of attributes/values pair that are returned by the 
 #function "get_json-file"
-#Inputs: <source-folder>    The source folder on the file system
+#Inputs: Globus endpoint
+#        Source path on Globus endpoint
+#        Destination logical path on Archive.
+#<source-folder>    The source folder on the file system
 #        <destination-path> The destination logical path
-function dm_sync_folder  {
+function dm_sync_globus_endpoint  {
 
     USAGE="USAGE: dm_sync_folder <source-folder> <destination-path>"
 
