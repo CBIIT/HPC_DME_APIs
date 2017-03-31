@@ -126,6 +126,15 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
+	<xsd:element name="HpcUserPermissionDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="permission" type="xsd:string" /> 
+				<xsd:element name="userId" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
 	<xsd:complexType name="HpcUserPermissionResponseDTO">
 		<xsd:sequence>
 			<xsd:element name="userId" type="xsd:string" />
