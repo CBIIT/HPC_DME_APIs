@@ -26,7 +26,9 @@ function dm_generate_token {
 
     if [ -z $TOKEN ]
     then
-        echo "Error: no token found in $LOG_FILE " >&2
+        echo "ERROR: no token found in $LOG_FILE " >&2
+        MESSAGE=$(get_json_value $LOG_FILE message)
+        echo "ERROR MESSAGE: $MESSAGE"   
         return 
     else  
       CONFIG_STRING=$(cat "$HPC_DM_UTILS/curl-conf" | sed "s/Bearer.*/Bearer $TOKEN\"/")
