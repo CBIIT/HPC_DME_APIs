@@ -33,6 +33,7 @@ function dm_generate_token {
     else  
       CONFIG_STRING=$(cat "$HPC_DM_UTILS/curl-conf" | sed "s/Bearer.*/Bearer $TOKEN\"/")
       echo "$CONFIG_STRING" > $HPC_DM_UTILS/curl-conf
+      rm $LOG_FILE 2>/dev/null
     fi
 }
 
@@ -76,6 +77,9 @@ function dm_register {
     
     RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
     RESPONSE_HEADER=${TYPE}-registration-response-header.tmp
+
+    rm $RESPONSE_MSG 2>/dev/null 
+    rm $RESPONSE_HEADER 2>/dev/null 
 
     CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/${DESTINATION_PATH}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
    
