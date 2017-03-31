@@ -16,7 +16,7 @@ source $HPC_DM_UTILS/utilities
 #Generate an authentication token
 function dm_generate_token {
 
-    LOG_FILE=$HPC_DM_UTILS/utils/log
+    LOG_FILE=$HPC_DM_UTILS/log
     rm $LOG_FILE 2>/dev/null
 
     SERVER=$(get_server)
