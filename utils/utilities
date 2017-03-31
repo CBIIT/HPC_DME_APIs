@@ -145,5 +145,95 @@ function verify_registration {
 }
 
 
+#Get the json description of a file with automatic collection creation  
+#Inputs:  <json-attributes> : A string with the json attributes 
+function get_json_description {
+
+
+    USAGE="USAGE: get_json_description <json-attributes>"
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR: using get_json_description" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return
+    fi
+
+    ATTRIBUTES="$1"
+    ALL_ATTRIBUTES="{ \"metadataEntries\": [ $ATTRIBUTES ], \"createParentCollections\": true, \"parentCollectionMetadataEntries\": [ { \"collection_type\", \"value\": \"Folder\" } ] }"
+
+    echo "$ALL_ATTRIBUTES"
+}
+
+#Get the metadata for a file
+#Inputs:  <file> : The file path 
+function get_file_attributes {
+
+    USAGE="USAGE: get_file_attributes <file>"
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR: using get_file_attributes" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return
+    fi
+ 
+    FILE_PATH="$1"
+
+    FILE_NAME=$(basename $FILE_PATH)
+
+    echo "{\"attribute\":\"basename\",\"value\":\"$FILE_NAME\"}"
+}
+
+
+# list all files in a source main directory as well as sub- directories
+#Inputs: <source directory>  The directory to be synced with the Archive
+function list_new_files {
+
+    USAGE="USAGE: list_new_files <src-directory>"
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR: using list_new_files" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return
+    fi
+ 
+
+
+    SOURCEDIR="$1"
+    
+    # keep track list of the old files .
+    #GZ: How does that keep track of different source directories?
+    LAST=/tmp/last.log
+    
+    # keep track the list of the current files .
+    CURRENT=/tmp/current.log
+    
+    # first time we create the log file
+    touch $LAST
+    
+    find $SOURCEDIR -type f > $CURRENT
+    
+    diff $LAST $CURRENT > /dev/null 2>&1
+    
+    # If there is no difference exit
+    if [ $? -eq 0 ]
+    then
+        echo "No changes"
+    else
+         echo "List of new files"
+        #diff $LAST $CURRENT | grep '^>'
+        diff last current | grep '^>' |awk '{print $2}' > /tmp/list_of_new_files.log
+    
+        # Lastly, move CURRENT to LAST
+        mv $CURRENT $LAST
+    fi
+}
+    
+
 
 

@@ -150,5 +150,49 @@ function dm_register_dataobject {
     verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
 }
 
+#Sync a folder in the current file system with a logical path in the Archive
+#There is no metadata for folder and they will be automatically created.
+#The files metadata is the list of attributes/values pair that are returned by the 
+#function "get_json-file"
+#Inputs: <source-folder>    The source folder on the file system
+#        <destination-path> The destination logical path
+function dm_sync_folder  {
+
+    USAGE="USAGE: dm_sync_folder <source-folder> <destination-path>"
+
+    if [ -z "$1" ] || [ -z "$2" ] 
+    then
+        echo "ERROR: using dm_register_collection" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return
+    fi
+
+
+    RESPONSE_HEADER=dataObject-registration-response-header.tmp
+    RESPONSE_MSG=dataObject-registration-response-message.json.tmp
+
+
+    FILE_LIST="./test.txt /TEST_Archive/test.txt"
+
+    while read -r  NEW_FILE 
+    do 
+
+      SRC_PATH=$(echo $NEW_FILE | cut -d' ' -f1)
+      DST_PATH=$(echo $NEW_FILE | cut -d' ' -f2)
+
+      FILE_ATTRIBUTES=$(get_file_attributes $SRC_PATH)      
+      DESC_JSON=$(get_json_description $FILE_ATTRIBUTES)
+      echo $DESC_JSON >  temp.json
+      echo "dm_register_dataobject  temp.json $DST_PATH $SRC_PATH"
+      echo "verify_registration  $REPONSE_HEADER $RESPONSE_MSG $DST_PATH"
+
+      rm $RESPONSE_HEADER 2>/dev/null
+      rm $RESPONSE_MSG 2>/dev/null
+
+    done <<< "$FILE_LIST"
+
+}
+
 
 
