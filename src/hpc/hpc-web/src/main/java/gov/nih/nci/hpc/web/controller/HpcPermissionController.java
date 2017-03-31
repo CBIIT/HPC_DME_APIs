@@ -47,9 +47,12 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.model.HpcCollectionModel;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcPermissionEntry;
 import gov.nih.nci.hpc.web.model.HpcPermissionEntryType;
@@ -83,6 +86,7 @@ public class HpcPermissionController extends AbstractHpcController {
 			@RequestParam String assignType, Model model, BindingResult bindingResult, HttpSession session,
 			HttpServletRequest request) {
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		String userId = (String) session.getAttribute("hpcUserId");
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		session.removeAttribute("permissions");
 		if (user == null) {
@@ -104,6 +108,12 @@ public class HpcPermissionController extends AbstractHpcController {
 		String selectedGroups = (String) session.getAttribute("selectedGroups");
 		model.addAttribute("selectedGroups", selectedGroups);
 		populatePermissions(model, path, type, assignType, authToken, session);
+		HpcUserPermissionDTO userPermission = HpcClientUtil.getPermissionForUser(authToken, path, userId,
+				(type != null && type.equals("collection")) ? serverCollectionURL : serverDataObjectURL, sslCertPath,
+				sslCertPassword);
+		model.addAttribute("ownpermission",
+				(userPermission != null && userPermission.getPermission().equalsIgnoreCase("OWN")) ? true : false);
+
 		return "permission";
 	}
 

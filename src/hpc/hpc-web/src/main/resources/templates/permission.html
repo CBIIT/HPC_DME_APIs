@@ -176,13 +176,13 @@
 																		<input type="radio"
 																			th:id="'permission_own'+${iterationStatus.count}"
 																			th:name="'permission'+${iterationStatus.count}"
-																			value="own" onClick="enableSave()" />
+																			value="own" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
 																	</div>
 																	<div th:if="${permission.isOwn()} == true">
 																		<input type="radio" checked="checked"
 																			th:id="'permission_own'+${iterationStatus.count}"
 																			th:name="'permission'+${iterationStatus.count}"
-																			value="own" onClick="enableSave()" />
+																			value="own" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
 																	</div>
 																</td>
 																<td style="white-space: nowrap" align="center">
@@ -190,13 +190,13 @@
 																		<input type="radio"
 																			th:id="'permission_read'+${iterationStatus.count}"
 																			th:name="'permission'+${iterationStatus.count}"
-																			value="read" onClick="enableSave()" />
+																			value="read" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
 																	</div>
 																	<div th:if="${permission.isRead()} == true">
 																		<input type="radio" checked="checked"
 																			th:id="'permission_read'+${iterationStatus.count}"
 																			th:name="'permission'+${iterationStatus.count}"
-																			value="read" onClick="enableSave()" />
+																			value="read" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
 																	</div>
 																</td>
 																<td style="white-space: nowrap" align="center">
@@ -204,20 +204,20 @@
 																		<input type="radio"
 																			th:id="'permission_write'+${iterationStatus.count}"
 																			th:name="'permission'+${iterationStatus.count}"
-																			value="write" onClick="enableSave()" />
+																			value="write" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
 																	</div>
 																	<div th:if="${permission.isWrite()} == true">
 																		<input type="radio" checked="checked"
 																			th:id="'permission_write'+${iterationStatus.count}"
 																			th:name="'permission'+${iterationStatus.count}"
-																			value="write" onClick="enableSave()" />
+																			value="write" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
 																	</div>
 																</td>
 																<td style="white-space: nowrap" align="center">
 																		<input type="radio"
 																			th:id="'permission_none'+${iterationStatus.count}"
 																			th:name="'permission'+${iterationStatus.count}"
-																			value="none" onClick="enableSave()" />
+																			value="none" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
 																</td>
 															</tr>
 														</tbody>
@@ -229,7 +229,7 @@
 															id="primaryButton" disabled="disabled">Assign</button>
 													</div>
 												</div>
-												<div class="form-group">
+												<div class="form-group" th:if="${ownpermission == true}">
 													<table class="table table-hover" id="entryTable">
 														<tr id='entryTableRow0' align="center">
 															<td style="white-space: nowrap" align="right"><label
