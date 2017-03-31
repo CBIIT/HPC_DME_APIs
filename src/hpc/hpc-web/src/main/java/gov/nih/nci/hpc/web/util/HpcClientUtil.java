@@ -70,6 +70,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
@@ -806,6 +807,38 @@ public class HpcClientUtil {
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
+		}
+	}
+
+	public static HpcUserPermissionDTO getPermissionForUser(String token, String path, String userId, String hpcServiceURL, String hpcCertPath,
+			String hpcCertPassword) {
+
+		WebClient client = HpcClientUtil.getWebClient(hpcServiceURL + path + "/acl/user/" + userId, hpcCertPath, hpcCertPassword);
+		
+		client.header("Authorization", "Bearer " + token);
+
+		Response restResponse = client.get();
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
+		MappingJsonFactory factory = new MappingJsonFactory();
+		JsonParser parser;
+		try {
+			parser = factory.createParser((InputStream) restResponse.getEntity());
+		} catch (IllegalStateException | IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get permission due to: " + e.getMessage());
+		}
+		try {
+			return parser.readValueAs(HpcUserPermissionDTO.class);
+		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get permission due to: " + e.getMessage());
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get permission due to: " + e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get permission due to: " + e.getMessage());
 		}
 	}
 

@@ -52,6 +52,7 @@
 <script th:inline="javascript">
 	/*<![CDATA[*/
 	var results = "[[${searchresults}]]";
+	var type = "[[${session.hpcUser.userRole}]]";
 	/*]]>*/
 </script>
 
@@ -88,6 +89,8 @@
 					}],
 					onRegisterApi : function(gridApi) {
 						$scope.grid1Api = gridApi;
+						if (type != "'SYSTEM_ADMIN'")
+					        $scope.gridOptions1.columnDefs[4].visible = false;
 					}
 				};
 				$scope.gridOptions1.data = results;
