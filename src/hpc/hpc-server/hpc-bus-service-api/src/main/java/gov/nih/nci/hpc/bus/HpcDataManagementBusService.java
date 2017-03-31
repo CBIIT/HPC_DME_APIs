@@ -22,6 +22,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.io.File;
@@ -95,6 +96,16 @@ public interface HpcDataManagementBusService
 	public HpcEntityPermissionsDTO getCollectionPermissions(String path) throws HpcException;
     
     /**
+     * Get collection permission for user.
+     *
+     * @param path The path of the collection.
+     * @param userId
+     * @return permission on the collection.
+     * @throws HpcException on service failure.
+     */
+    public HpcUserPermissionDTO getCollectionPermissionForUser(String path, String userId) throws HpcException;
+	
+    /**
      * Register a Data object.
      *
      * @param path The data object's path.
@@ -154,6 +165,16 @@ public interface HpcDataManagementBusService
      * @throws HpcException on service failure.
      */
 	public HpcEntityPermissionsDTO getDataObjectPermissions(String path) throws HpcException;
+	
+    /**
+     * Get data object permission for user.
+     *
+     * @param path The path of the data object.
+     * @param userId
+     * @return permission on the data object.
+     * @throws HpcException on service failure.
+     */
+    public HpcUserPermissionDTO getDataObjectPermissionForUser(String path, String userId) throws HpcException;
 	
     /**
      * Get the Data Management Model (Metadata validation rules and hierarchy definition) for a DOC.

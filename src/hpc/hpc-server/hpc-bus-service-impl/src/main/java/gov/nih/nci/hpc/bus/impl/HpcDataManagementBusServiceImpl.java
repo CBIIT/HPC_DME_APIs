@@ -43,6 +43,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -282,6 +283,27 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
+    public HpcUserPermissionDTO getCollectionPermissionForUser(String path, String userId) throws HpcException
+    {
+    	// Input validation.
+    	if(path == null) {
+    	   throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	if(userId == null) {
+     	   throw new HpcException("Null userId", HpcErrorType.INVALID_REQUEST_INPUT);	
+     	}
+
+    	// Validate the collection exists.
+    	if(dataManagementService.getCollection(path, false) == null) {
+      	   return null;
+      	}
+    	HpcSubjectPermission permission = dataManagementService.getCollectionPermissionForUser(path, userId);
+    	
+    	return toUserPermissionDTO(permission);
+    }
+
+    @Override
     public boolean registerDataObject(String path,
     		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
     		                          File dataObjectFile)  
@@ -480,6 +502,27 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       	}
     	
     	return toEntityPermissionsDTO(dataManagementService.getDataObjectPermissions(path));
+    }
+    
+    @Override
+    public HpcUserPermissionDTO getDataObjectPermissionForUser(String path, String userId) throws HpcException
+    {
+    	// Input validation.
+    	if(path == null) {
+    	   throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	if(userId == null) {
+     	   throw new HpcException("Null userId", HpcErrorType.INVALID_REQUEST_INPUT);	
+     	}
+
+    	// Validate the collection exists.
+    	if(dataManagementService.getDataObject(path) == null) {
+      	   return null;
+      	}
+    	HpcSubjectPermission permission = dataManagementService.getDataObjectPermissionForUser(path, userId);
+    	
+    	return toUserPermissionDTO(permission);
     }
     
     @Override
@@ -942,6 +985,24 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 	
     /** 
+     * Construct entity permissions DTO out of a list of subject permissions.
+     * 
+     * @param subjectPermissions A list of subject permissions.
+     * @return Entity permissions DTO
+     */
+	private HpcUserPermissionDTO toUserPermissionDTO(HpcSubjectPermission subjectPermission)
+	{
+		if(subjectPermission == null) {
+		   return null;
+		}
+		
+		HpcUserPermissionDTO userPermission = new HpcUserPermissionDTO();
+			   userPermission.setPermission(subjectPermission.getPermission());
+			   userPermission.setUserId(subjectPermission.getSubject());
+		
+		return userPermission;
+	}
+	/** 
      * Get the data management tree for a given collection path.
      * 
      * @param path The collection to get the tree for.
