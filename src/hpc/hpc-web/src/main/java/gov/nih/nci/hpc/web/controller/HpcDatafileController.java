@@ -158,7 +158,7 @@ public class HpcDatafileController extends AbstractHpcController {
 			boolean updated = HpcClientUtil.updateDatafile(authToken, serviceURL, registrationDTO,
 					hpcDatafile.getPath(), sslCertPath, sslCertPassword);
 			if (updated) {
-				model.addAttribute("error", "Data file " + hpcDatafile.getPath() + " is Updated!");
+				redirectAttributes.addFlashAttribute("error", "Data file " + hpcDatafile.getPath() + " is Updated!");
 				session.removeAttribute("selectedUsers");
 			}
 		} catch (Exception e) {

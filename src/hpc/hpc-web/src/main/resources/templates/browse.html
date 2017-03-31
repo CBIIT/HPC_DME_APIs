@@ -163,9 +163,9 @@ $('#tree1').bind(
         // The clicked node is 'event.node'
         var node = event.node;
         if(node.folder)
-        	location.href = "collection?path="+node.fullPath;
+        	location.href = "collection?action=view&path="+node.fullPath;
         else
-        	location.href = "datafile?path="+node.fullPath;
+        	location.href = "datafile?action=view&path="+node.fullPath;
     }
 );
 /*]]>*/

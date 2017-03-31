@@ -84,8 +84,8 @@
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h2>
-									<i class="fa fa-list-alt red"></i><strong>Collection</strong>&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-users" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;
-									<a class="btn btn-link btn-sm" th:href="@{'../collection?action=edit&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-edit" aria-hidden="true"></i></a>
+									<div th:if="${userpermission == true}"><i class="fa fa-list-alt red"></i><strong>Collection</strong>&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-users" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../collection?action=edit&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-edit" aria-hidden="true"></i></a></div>
+									<div th:unless="${userpermission == true}"><i class="fa fa-list-alt red"></i><strong>Collection</strong>&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>
 								</h2>
 							</div>
 							<div th:if="${error != null}">
