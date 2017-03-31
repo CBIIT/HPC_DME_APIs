@@ -578,8 +578,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	// Download the data object using the appropriate data transfer proxy.
     	HpcDataObjectDownloadResponse downloadResponse =  
     	   dataTransferProxies.get(dataTransferType).
-  	    		   downloadDataObject(getAuthenticatedToken(dataTransferType), 
-  	                                  downloadRequest);	
+  	    		       downloadDataObject(getAuthenticatedToken(dataTransferType), 
+  	                                      downloadRequest);	
 
     	// Perform second hop download if needed.
     	return secondHopDownloadRequest != null ? 
