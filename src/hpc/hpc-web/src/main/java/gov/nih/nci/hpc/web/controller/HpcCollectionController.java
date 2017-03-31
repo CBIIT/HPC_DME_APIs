@@ -36,6 +36,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcCollectionModel;
 import gov.nih.nci.hpc.web.model.HpcLogin;
@@ -69,6 +70,7 @@ public class HpcCollectionController extends AbstractHpcController {
 
 		try {
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+			String userId = (String) session.getAttribute("hpcUserId");
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			if (user == null || authToken == null) {
 				ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
@@ -87,12 +89,20 @@ public class HpcCollectionController extends AbstractHpcController {
 					&& collections.getCollections().size() > 0) {
 				HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(),
 						sslCertPath, sslCertPassword);
+				HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId, serviceURL, sslCertPath, sslCertPassword);
 				HpcCollectionDTO collection = collections.getCollections().get(0);
 				HpcCollectionModel hpcCollection = buildHpcCollection(collection,
 						modelDTO.getCollectionSystemGeneratedMetadataAttributeNames());
 				model.addAttribute("collection", hpcCollection);
+				model.addAttribute("userpermission", (permission == null || permission.getPermission().equalsIgnoreCase("none") || permission.getPermission().equalsIgnoreCase("read")) ? false: true);
 				if (action != null && action.equals("edit"))
-					model.addAttribute("action", "edit");
+					if(permission == null || permission.getPermission().equalsIgnoreCase("none") || permission.getPermission().equalsIgnoreCase("read"))
+					{
+						model.addAttribute("error", "No edit permission. Please contact collection owner for write access.");
+						model.addAttribute("action", "view");
+					}
+					else
+						model.addAttribute("action", "edit");
 			} else {
 				String message = "Collection not found!";
 				model.addAttribute("error", message);
@@ -155,10 +165,10 @@ public class HpcCollectionController extends AbstractHpcController {
 
 			HpcCollectionRegistrationDTO registrationDTO = constructRequest(request, session, hpcCollection.getPath());
 
-			boolean created = HpcClientUtil.updateCollection(authToken, serviceURL, registrationDTO,
+			boolean updated = HpcClientUtil.updateCollection(authToken, serviceURL, registrationDTO,
 					hpcCollection.getPath(), sslCertPath, sslCertPassword);
-			if (created) {
-				model.addAttribute("error", "Collection " + hpcCollection.getPath() + " is Updated!");
+			if (updated) {
+				redirectAttributes.addFlashAttribute("error", "Collection " + hpcCollection.getPath() + " is Updated!");
 				session.removeAttribute("selectedUsers");
 			}
 		} catch (Exception e) {
