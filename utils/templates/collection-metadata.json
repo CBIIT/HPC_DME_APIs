@@ -1,0 +1,13 @@
+{
+    "metadataEntries": [
+        {
+         "attribute": "project",
+         "value": "my-project-name"
+        },
+        {
+         "attribute": "collection_type",
+         "value": "Folder"
+        }
+    ]
+}
+
