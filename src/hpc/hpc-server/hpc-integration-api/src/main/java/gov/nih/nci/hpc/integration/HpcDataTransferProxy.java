@@ -55,12 +55,14 @@ public interface HpcDataTransferProxy
      * @param authenticatedToken An authenticated token.
      * @param uploadRequest The data upload request
      * @param metadataEntries (Optional) a list of metadata to attach to the physical file storage.
+     * @param progressListener (Optional) a progress listener for async notification on transfer completion.
      * @return A data object upload response.
      * @throws HpcException on data transfer system failure.
      */
     public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
     		                                            HpcDataObjectUploadRequest uploadRequest,
-    		                                            List<HpcMetadataEntry> metadataEntries) 
+    		                                            List<HpcMetadataEntry> metadataEntries,
+    		                                            HpcDataTransferProgressListener progressListener) 
     		                                           throws HpcException;
     
     /**
@@ -68,11 +70,13 @@ public interface HpcDataTransferProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param downloadRequest The data object download request.
+     * @param progressListener (Optional) a progress listener for async notification on transfer completion.
      * @return A data object download response.
      * @throws HpcException on data transfer system failure.
      */
     public HpcDataObjectDownloadResponse downloadDataObject(Object authenticatedToken,
-    		                                                HpcDataObjectDownloadRequest downloadRequest) 
+    		                                                HpcDataObjectDownloadRequest downloadRequest,
+    		                                                HpcDataTransferProgressListener progressListener) 
     		                                               throws HpcException;
     
     /**
