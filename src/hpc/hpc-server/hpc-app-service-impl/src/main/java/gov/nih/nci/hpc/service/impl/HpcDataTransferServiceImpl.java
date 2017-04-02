@@ -28,6 +28,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 
@@ -334,35 +335,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     }
     
     /**
-     * Create a download request for a 2nd hop download from local file (as Globus endpoint)
-     * to caller's Globus endpoint destination.
-     * 
-     * @param destinationLocation The caller's destination.
-     * @param dataTransferType The data transfer type to create the request
-     * @param path The data object logical path.
-     * @return Data object download request.
-     * @throws HpcException If it failed to obtain an authentication token.
-     */
-    private HpcDataObjectDownloadRequest toSecondHopDownloadRequest(HpcFileLocation destinationLocation,
-    		                                                        HpcDataTransferType dataTransferType,
-    		                                                        String path)
-    		                                                       throws HpcException
-    {
-    	// Create a source location.
-    	HpcFileLocation sourceLocation = 
-    	   dataTransferProxies.get(dataTransferType).getDownloadSourceLocation(path);
-    	                        
-    	// Create and return a download request, from the local GLOBUS endpoint, to the caller's
-    	// destination.
-    	HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
-    	downloadRequest.setArchiveLocation(sourceLocation);
-    	downloadRequest.setDestinationLocation(destinationLocation);
-    	downloadRequest.setDataTransferType(dataTransferType);
-    	
-    	return downloadRequest;
-    }
-    
-    /**
      * Calculate download destination location.
      * 
      * @param destinationLocation The destination location requested by the caller..
@@ -458,38 +430,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     {
     	return createFile(downloadDirectory + "/" + UUID.randomUUID().toString());
   	}
-    
-    /**
-     * Create and store an entry in the DB to cleanup download file after 2nd hop async
-     * transfer is complete. 
-     * 
-     * @param dataTransferRequestId The data transfer request ID.
-     * @param dataTransferType The data transfer type.
-     * @param filePath The download file path to remove.
-     */
-    private void saveDataObjectDownloadCleanup(String dataTransferRequestId, 
-    		                                   HpcDataTransferType dataTransferType,
-    		                                   String filePath)
-    {
-    	HpcDataObjectDownloadCleanup dataObjectDownloadCleanup = new HpcDataObjectDownloadCleanup();
-    	dataObjectDownloadCleanup.setDataTransferRequestId(dataTransferRequestId);
-    	dataObjectDownloadCleanup.setDataTransferType(dataTransferType);
-    	dataObjectDownloadCleanup.setFilePath(filePath);
-    	
-    	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
-    	if(invoker != null && invoker.getNciAccount() != null) {
-    	   dataObjectDownloadCleanup.setUserId(invoker.getNciAccount().getUserId());
-    	} else {
-    		    dataObjectDownloadCleanup.setUserId("Unknown");
-    	}
-    	
-    	try {
-    		 dataObjectDownloadCleanupDAO.upsert(dataObjectDownloadCleanup);
-    		 
-    	} catch(HpcException e) {
-    		    logger.error("Failed to persist Data Object Download Cleanup record", e);
-    	}
-    }
    
     /**
      * Upload a data object file.
@@ -529,7 +469,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
   	    		   uploadDataObject(getAuthenticatedToken(dataTransferType), 
   	    		                    uploadRequest, 
   	    		                    generateMetadata(uploadRequest.getPath(),
-  	    		                    		         uploadRequest.getUserId()));
+  	    		                    		         uploadRequest.getUserId()), 
+  	    		                    null);
     }
     
     /**
@@ -553,64 +494,25 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
     	
     	// if data is in an archive with S3 data-transfer, and the requested
-    	// destination is a GLOBUS endpoint, then we need to perform a 2nd hop. i.e. store 
+    	// destination is a GLOBUS endpoint, then we need to perform a 2 hop download. i.e. store 
     	// the data to a local GLOBUS endpoint, and submit a transfer request to the caller's 
-    	// destination.
-    	HpcDataObjectDownloadRequest secondHopDownloadRequest = null;
+    	// GLOBUS destination. Both first and second hop downloads are performed asynchronously.
+    	HpcSecondHopDownload secondHopDownload = null;
     	if(dataTransferType.equals(HpcDataTransferType.S_3) && destinationLocation != null) {
-    	   // 2nd Hop needed. Create a request.
-    	   secondHopDownloadRequest =
-    			 toSecondHopDownloadRequest(
-    			   calculateDownloadDestinationFileLocation(downloadRequest.getDestinationLocation(), 
-    			  		                                    HpcDataTransferType.GLOBUS,
-    			  		                                    downloadRequest.getArchiveLocation().getFileId()),
-    			   HpcDataTransferType.GLOBUS,
-    			   downloadRequest.getArchiveLocation().getFileId());
-    	   
+    	   secondHopDownload = new HpcSecondHopDownload(downloadRequest);
+
     	   // Set the first hop file destination to be the source file of the second hop.
-    	   downloadRequest.setDestinationFile(
-    			   createFile(
-    			         dataTransferProxies.get(HpcDataTransferType.GLOBUS).
-	                         getFilePath(secondHopDownloadRequest.getArchiveLocation().getFileId(), 
-	                        		     false)));
+    	   downloadRequest.setDestinationFile(secondHopDownload.getSourceFile());
     	}
     	
     	// Download the data object using the appropriate data transfer proxy.
     	HpcDataObjectDownloadResponse downloadResponse =  
     	   dataTransferProxies.get(dataTransferType).
   	    		       downloadDataObject(getAuthenticatedToken(dataTransferType), 
-  	                                      downloadRequest);	
+  	                                      downloadRequest, secondHopDownload);	
 
-    	// Perform second hop download if needed.
-    	return secondHopDownloadRequest != null ? 
-    	             secondHopDownload(secondHopDownloadRequest, 
-    			                       downloadRequest.getDestinationFile().getAbsolutePath()) :
-    		         downloadResponse;
+    	return secondHopDownload == null ? downloadResponse : secondHopDownload.getDownloadResponse();
     }
-    
-    /**
-     * Perform a second hop download.
-     *
-     * @param secondHopDownloadRequest The download request
-     * @param filePath The file to remove after download completed.
-     * @return A download response.
-     * @throws HpcException on service failure.
-     */    
-	private HpcDataObjectDownloadResponse 
-	        secondHopDownload(HpcDataObjectDownloadRequest secondHopDownloadRequest,
-			                  String filePath) throws HpcException
-	{
-	   // Perform 2nd hop download.
-	   HpcDataObjectDownloadResponse secondHopDownloadResponse = 
-		    	                     downloadDataObject(secondHopDownloadRequest);
-		
-	   // Create an entry to cleanup the file after the async download completes.
-	   saveDataObjectDownloadCleanup(secondHopDownloadResponse.getDataTransferRequestId(), 
-			                         secondHopDownloadRequest.getDataTransferType(),
-				                     filePath);
-		
-	   return secondHopDownloadResponse;
-	}
 	
     /**
      * Validate upload source file location.
@@ -701,5 +603,162 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		
 		return pathAttributes;
     }
+    
+	// Second hop download.
+	private class HpcSecondHopDownload implements HpcDataTransferProgressListener
+	{
+	    //---------------------------------------------------------------------//
+	    // Instance members
+	    //---------------------------------------------------------------------//
+		
+		// The second hop download request.
+    	HpcDataObjectDownloadRequest secondHopDownloadRequest = null;
+    	
+    	// The second hop download's source file.
+    	File sourceFile = null;
+	
+		//---------------------------------------------------------------------//
+	    // Constructors
+	    //---------------------------------------------------------------------//
+    	
+		public HpcSecondHopDownload(HpcDataObjectDownloadRequest firstHopDownloadRequest) throws HpcException
+		{
+			// Create the 2nd hop download request.
+			secondHopDownloadRequest =
+ 		          toSecondHopDownloadRequest(
+ 			        calculateDownloadDestinationFileLocation(firstHopDownloadRequest.getDestinationLocation(), 
+ 				  	                                         HpcDataTransferType.GLOBUS,
+ 				  	                                         firstHopDownloadRequest.getArchiveLocation().getFileId()),
+ 			        HpcDataTransferType.GLOBUS,
+ 			        firstHopDownloadRequest.getArchiveLocation().getFileId());
+			
+			// Create the source file for the second hop download
+			sourceFile = createFile(
+			             dataTransferProxies.get(HpcDataTransferType.GLOBUS).
+	                         getFilePath(secondHopDownloadRequest.getArchiveLocation().getFileId(), 
+	                        		     false));
+		}
+		
+		//---------------------------------------------------------------------//
+	    // Methods
+	    //---------------------------------------------------------------------//
+		
+	    /**
+	     * Get the second hop download source file.
+	     * 
+	     * @return The second hop source file.
+	     */
+		public File getSourceFile()
+		{
+			return sourceFile;
+		}
+		
+	    /**
+	     * Get the second hop download response.
+	     * 
+	     * @return The second hop download response. Note: 
+	     */
+		public HpcDataObjectDownloadResponse getDownloadResponse()
+		{
+			HpcDataObjectDownloadResponse downloadResponse = new HpcDataObjectDownloadResponse();
+			downloadResponse.setDataTransferRequestId("N/A" );
+			downloadResponse.setDestinationLocation(secondHopDownloadRequest.getDestinationLocation());
+			return downloadResponse;
+		}
+		
+		//---------------------------------------------------------------------//
+	    // HpcDataTransferProgressListener Interface Implementation
+	    //---------------------------------------------------------------------//  
+		
+		@Override public void transferCompleted()
+		{
+			// This callback method is called when the first hop download completed.
+			try {
+				   // Perform 2nd hop async download.
+				   HpcDataObjectDownloadResponse secondHopDownloadResponse = 
+					    	                     downloadDataObject(secondHopDownloadRequest);
+					
+				   // Create an entry to cleanup the source file after the 2nd hop async download completes.
+				   saveDataObjectDownloadCleanup(secondHopDownloadResponse.getDataTransferRequestId(), 
+						                         secondHopDownloadRequest.getDataTransferType(),
+						                         sourceFile.getAbsolutePath());
+			        
+			} catch(HpcException e) {
+			        transferFailed();
+			}
+		}
+		
+		// This callback method is called when the first hop download failed.
+	    @Override
+	    public void transferFailed()
+	    {
+		
+	    }
+	    
+	    //---------------------------------------------------------------------//
+	    // Helper Methods
+	    //---------------------------------------------------------------------//  
+	    
+	    /**
+	     * Create a download request for a 2nd hop download from local file (as Globus endpoint)
+	     * to caller's Globus endpoint destination.
+	     * 
+	     * @param destinationLocation The caller's destination.
+	     * @param dataTransferType The data transfer type to create the request
+	     * @param path The data object logical path.
+	     * @return Data object download request.
+	     * @throws HpcException If it failed to obtain an authentication token.
+	     */
+	    private HpcDataObjectDownloadRequest toSecondHopDownloadRequest(HpcFileLocation destinationLocation,
+	    		                                                        HpcDataTransferType dataTransferType,
+	    		                                                        String path)
+	    		                                                       throws HpcException
+	    {
+	    	// Create a source location.
+	    	HpcFileLocation sourceLocation = 
+	    	   dataTransferProxies.get(dataTransferType).getDownloadSourceLocation(path);
+	    	                        
+	    	// Create and return a download request, from the local GLOBUS endpoint, to the caller's
+	    	// destination.
+	    	HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
+	    	downloadRequest.setArchiveLocation(sourceLocation);
+	    	downloadRequest.setDestinationLocation(destinationLocation);
+	    	downloadRequest.setDataTransferType(dataTransferType);
+	    	
+	    	return downloadRequest;
+	    }
+	    
+	    /**
+	     * Create and store an entry in the DB to cleanup download file after 2nd hop async
+	     * transfer is complete. 
+	     * 
+	     * @param dataTransferRequestId The data transfer request ID.
+	     * @param dataTransferType The data transfer type.
+	     * @param filePath The download file path to remove.
+	     */
+	    private void saveDataObjectDownloadCleanup(String dataTransferRequestId, 
+	    		                                   HpcDataTransferType dataTransferType,
+	    		                                   String filePath)
+	    {
+	    	HpcDataObjectDownloadCleanup dataObjectDownloadCleanup = new HpcDataObjectDownloadCleanup();
+	    	dataObjectDownloadCleanup.setDataTransferRequestId(dataTransferRequestId);
+	    	dataObjectDownloadCleanup.setDataTransferType(dataTransferType);
+	    	dataObjectDownloadCleanup.setFilePath(filePath);
+	    	
+	    	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+	    	if(invoker != null && invoker.getNciAccount() != null) {
+	    	   dataObjectDownloadCleanup.setUserId(invoker.getNciAccount().getUserId());
+	    	} else {
+	    		    dataObjectDownloadCleanup.setUserId("Unknown");
+	    	}
+	    	
+	    	try {
+	    		 dataObjectDownloadCleanupDAO.upsert(dataObjectDownloadCleanup);
+	    		 
+	    	} catch(HpcException e) {
+	    		    logger.error("Failed to persist Data Object Download Cleanup record", e);
+	    	}
+	    }
+	}
 }
  
