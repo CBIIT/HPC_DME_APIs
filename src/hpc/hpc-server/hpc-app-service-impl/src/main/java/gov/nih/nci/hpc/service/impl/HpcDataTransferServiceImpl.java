@@ -31,6 +31,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
+import gov.nih.nci.hpc.service.HpcEventService;
 
 import java.io.File;
 import java.io.IOException;
@@ -79,6 +80,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	// Data object download cleanup DAO.
 	@Autowired
 	private HpcDataObjectDownloadCleanupDAO dataObjectDownloadCleanupDAO = null;
+	
+	// Event service
+	@Autowired
+	private HpcEventService eventService = null;
 	
 	// The download directory
 	private String downloadDirectory = null;
@@ -505,20 +510,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	   downloadRequest.setDestinationFile(secondHopDownload.getSourceFile());
     	}
     	
-    	if(secondHopDownload != null) {
-    	   logger.error("ERAN: Submitting 1st hop");
-    	}
-    	
     	// Download the data object using the appropriate data transfer proxy.
     	HpcDataObjectDownloadResponse downloadResponse =  
     	   dataTransferProxies.get(dataTransferType).
   	    		       downloadDataObject(getAuthenticatedToken(dataTransferType), 
   	                                      downloadRequest, secondHopDownload);	
 
-    	if(secondHopDownload != null) {
-    	   logger.error("ERAN: 1st hop submitted - Service done");
-    	}
-    	
     	return secondHopDownload == null ? downloadResponse : secondHopDownload.getDownloadResponse();
     }
 	
@@ -624,6 +621,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	
     	// The second hop download's source file.
     	File sourceFile = null;
+    	
+    	// The invoker user ID>
+    	String userId = null;
 	
 		//---------------------------------------------------------------------//
 	    // Constructors
@@ -631,6 +631,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	
 		public HpcSecondHopDownload(HpcDataObjectDownloadRequest firstHopDownloadRequest) throws HpcException
 		{
+	       	// Get the service invoker.
+	       	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+	       	if(invoker == null) {
+	       	   throw new HpcException("Unknown service invoker", 
+			                          HpcErrorType.UNEXPECTED_ERROR);
+	       	}
+	       	userId = invoker.getNciAccount().getUserId();
+	       	
 			// Create the 2nd hop download request.
 			secondHopDownloadRequest =
  		          toSecondHopDownloadRequest(
@@ -680,22 +688,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		
 		@Override public void transferCompleted()
 		{
-			logger.error("ERAN: 1st hop done");
 			// This callback method is called when the first hop download completed.
 			try {
 				   // Perform 2nd hop async download.
 				   HpcDataObjectDownloadResponse secondHopDownloadResponse = 
 					    	                     downloadDataObject(secondHopDownloadRequest);
 					
-				   logger.error("ERAN: 2nd hop submitted");
 				   // Create an entry to cleanup the source file after the 2nd hop async download completes.
 				   saveDataObjectDownloadCleanup(secondHopDownloadResponse.getDataTransferRequestId(), 
 						                         secondHopDownloadRequest.getDataTransferType(),
 						                         sourceFile.getAbsolutePath());
 				   
-				   logger.error("ERAN: file: " + sourceFile.getAbsolutePath());
-			        
 			} catch(HpcException e) {
+				    logger.error("Failed to perform 2nd hop download", e);
 			        transferFailed();
 			}
 		}
@@ -704,7 +709,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    @Override
 	    public void transferFailed()
 	    {
-		
+	    	try {
+	    		 eventService.addDataTransferDownloadFailedEvent(
+	    				         userId, 
+                                 getDownloadResponse().getDataTransferRequestId());
+	    		 
+	    	} catch(HpcException e) {
+	    		    logger.error("Failed to add data transfer download failed event", e);
+	    	}
 	    }
 	    
 	    //---------------------------------------------------------------------//
@@ -756,13 +768,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    	dataObjectDownloadCleanup.setDataTransferRequestId(dataTransferRequestId);
 	    	dataObjectDownloadCleanup.setDataTransferType(dataTransferType);
 	    	dataObjectDownloadCleanup.setFilePath(filePath);
-	    	
-	    	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
-	    	if(invoker != null && invoker.getNciAccount() != null) {
-	    	   dataObjectDownloadCleanup.setUserId(invoker.getNciAccount().getUserId());
-	    	} else {
-	    		    dataObjectDownloadCleanup.setUserId("Unknown");
-	    	}
+	    	dataObjectDownloadCleanup.setUserId(userId);
 	    	
 	    	try {
 	    		 dataObjectDownloadCleanupDAO.upsert(dataObjectDownloadCleanup);
