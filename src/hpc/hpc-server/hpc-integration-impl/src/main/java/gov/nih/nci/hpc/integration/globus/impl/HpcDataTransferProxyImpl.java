@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 
 import java.util.Calendar;
@@ -112,9 +113,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     @Override
     public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
     		                                            HpcDataObjectUploadRequest uploadRequest,
-    		                                            List<HpcMetadataEntry> metadataEntries) 
+    		                                            List<HpcMetadataEntry> metadataEntries,
+    		                                            HpcDataTransferProgressListener progressListener) 
     		                                           throws HpcException
     {
+    	// Progress listener not supported.
+    	if(progressListener != null) {
+    	   throw new HpcException("Globus data transfer doesn't support progress listener", 
+    			                  HpcErrorType.UNEXPECTED_ERROR);
+    	}
+    	
     	JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 
     	// Calculate the archive destination.
@@ -146,9 +154,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     @Override
     public HpcDataObjectDownloadResponse 
               downloadDataObject(Object authenticatedToken,
-    		                     HpcDataObjectDownloadRequest downloadRequest) 
+    		                     HpcDataObjectDownloadRequest downloadRequest,
+    		                     HpcDataTransferProgressListener progressListener) 
     		                    throws HpcException
     {
+    	// Progress listener not supported.
+    	if(progressListener != null) {
+    	   throw new HpcException("Globus data transfer doesn't support progress listener", 
+    			                  HpcErrorType.UNEXPECTED_ERROR);
+    	}
+    	
     	HpcDataObjectDownloadResponse response = new HpcDataObjectDownloadResponse();
     	
     	// Submit a request to Globus to transfer the data.
