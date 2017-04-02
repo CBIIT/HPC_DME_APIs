@@ -76,7 +76,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	@Autowired
 	private HpcSystemAccountLocator systemAccountLocator = null;
 	
-	// Data object download cleanup DAO
+	// Data object download cleanup DAO.
 	@Autowired
 	private HpcDataObjectDownloadCleanupDAO dataObjectDownloadCleanupDAO = null;
 	
@@ -505,7 +505,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	   downloadRequest.setDestinationFile(secondHopDownload.getSourceFile());
     	}
     	
-    	logger.error("ERAN: Submitting 1st hop");
+    	if(secondHopDownload != null) {
+    	   logger.error("ERAN: Submitting 1st hop");
+    	}
     	
     	// Download the data object using the appropriate data transfer proxy.
     	HpcDataObjectDownloadResponse downloadResponse =  
@@ -513,7 +515,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
   	    		       downloadDataObject(getAuthenticatedToken(dataTransferType), 
   	                                      downloadRequest, secondHopDownload);	
 
-    	logger.error("ERAN: 1st hop submitted - Service done");
+    	if(secondHopDownload != null) {
+    	   logger.error("ERAN: 1st hop submitted - Service done");
+    	}
+    	
     	return secondHopDownload == null ? downloadResponse : secondHopDownload.getDownloadResponse();
     }
 	
