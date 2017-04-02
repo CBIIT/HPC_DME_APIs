@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 
 import java.util.List;
@@ -83,7 +84,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     @Override
     public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
     		                                            HpcDataObjectUploadRequest uploadRequest,
-    		                                            List<HpcMetadataEntry> metadataEntries) 
+    		                                            List<HpcMetadataEntry> metadataEntries,
+    		                                            HpcDataTransferProgressListener progressListener) 
     		                                           throws HpcException
    {
        	// Calculate the archive destination.
@@ -113,7 +115,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	UploadResult s3UploadResult = null;
     	try {
     	     s3Upload = s3Connection.getTransferManager(authenticatedToken).upload(request);
-    	     s3UploadResult = s3Upload.waitForUploadResult();
+    		 if(progressListener == null) {
+    			// Upload synchronously.
+    			s3UploadResult = s3Upload.waitForUploadResult();
+    		 } else {
+    			     // Upload asynchronously
+    			     s3Upload.addProgressListener(new HpcS3ProgressListener(progressListener));
+    		 }
         	
         } catch(AmazonClientException ace) {
         	    throw new HpcException("Failed to upload file via S3", 
@@ -141,7 +149,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     @Override
     public HpcDataObjectDownloadResponse 
               downloadDataObject(Object authenticatedToken,
-    		                     HpcDataObjectDownloadRequest downloadRequest) 
+    		                     HpcDataObjectDownloadRequest downloadRequest,
+    		                     HpcDataTransferProgressListener progressListener) 
     		                    throws HpcException
     {
     	// Create a S3 download request.
@@ -154,8 +163,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	try {
     		 s3Download = s3Connection.getTransferManager(authenticatedToken).
     				        download(request, downloadRequest.getDestinationFile());
-    		 s3Download.waitForCompletion(); 
-    			             
+    		 if(progressListener == null) {
+    			// Download synchronously.
+    		    s3Download.waitForCompletion(); 
+    		 } else {
+    			     // Download asynchronously.
+    			     s3Download.addProgressListener(new HpcS3ProgressListener(progressListener));
+    		 }
+    		    
         } catch(AmazonClientException ace) {
     	        throw new HpcException("Failed to download file via S3", 
     	    	     	               HpcErrorType.DATA_TRANSFER_ERROR, ace);
