@@ -505,12 +505,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	   downloadRequest.setDestinationFile(secondHopDownload.getSourceFile());
     	}
     	
+    	logger.error("ERAN: Submitting 1st hop");
+    	
     	// Download the data object using the appropriate data transfer proxy.
     	HpcDataObjectDownloadResponse downloadResponse =  
     	   dataTransferProxies.get(dataTransferType).
   	    		       downloadDataObject(getAuthenticatedToken(dataTransferType), 
   	                                      downloadRequest, secondHopDownload);	
 
+    	logger.error("ERAN: 1st hop submitted - Service done");
     	return secondHopDownload == null ? downloadResponse : secondHopDownload.getDownloadResponse();
     }
 	
@@ -672,16 +675,20 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		
 		@Override public void transferCompleted()
 		{
+			logger.error("ERAN: 1st hop done");
 			// This callback method is called when the first hop download completed.
 			try {
 				   // Perform 2nd hop async download.
 				   HpcDataObjectDownloadResponse secondHopDownloadResponse = 
 					    	                     downloadDataObject(secondHopDownloadRequest);
 					
+				   logger.error("ERAN: 2nd hop submitted");
 				   // Create an entry to cleanup the source file after the 2nd hop async download completes.
 				   saveDataObjectDownloadCleanup(secondHopDownloadResponse.getDataTransferRequestId(), 
 						                         secondHopDownloadRequest.getDataTransferType(),
 						                         sourceFile.getAbsolutePath());
+				   
+				   logger.error("ERAN: file: " + sourceFile.getAbsolutePath());
 			        
 			} catch(HpcException e) {
 			        transferFailed();
