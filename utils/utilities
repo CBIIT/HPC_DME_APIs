@@ -267,6 +267,36 @@ function list_new_files {
     fi
 }
     
+# Returns a list all files in a globus endpoint and path with  their 
+# corresponding asychronous registration json file as shown in 
+# HPC_DM_UTIlS/templates/dataobject-async-metadata.json
+#Inputs: <globus-endpoint> The globus endpoint UUID 
+#        <globus-path>     The directory path within the globus endpoint
+function list_globus_files {
+
+    USAGE="USAGE: list_globus_files <globus-endpoint> <globus-path>"
+
+    if [ "$#" -ne 2 ]
+    then
+        echo "ERROR: using list_globus_files" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return
+    fi
+
+    #Generate a globus token
+
+    #Get all files with the specified /endpoint/path
+
+    #The the metadata of every file (name, path, timestamp)
+
+    #Generate the corresponding registration.json for every file
+
+    #Retrun a csv list (separate lines) with the files to be registered.
+
+}
+
+
 
 
 
