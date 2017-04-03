@@ -82,6 +82,10 @@ public class HpcEventServiceImpl implements HpcEventService
 	
 	@Autowired
     private HpcDataManagementProxy dataManagementProxy = null;
+	
+	// An indicator whether a collection update notification should be sent to the invoker.
+	// By default the invoker is not notified for changes they initiated, but this is handy for testing.
+	boolean invokerCollectionUpdateNotification = false;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -92,11 +96,26 @@ public class HpcEventServiceImpl implements HpcEventService
 
     /**
      * Constructor for Spring Dependency Injection.
+     * 
+     * @param invokerCollectionUpdateNotification If set to true, the invoker of collection update will get notified
+     *                                            for updates they initiated.
      *
      */
-    private HpcEventServiceImpl()
+    private HpcEventServiceImpl(boolean invokerCollectionUpdateNotification)
     {
+    	this.invokerCollectionUpdateNotification = invokerCollectionUpdateNotification;
     }
+    
+    /**
+     * Default Constructor.
+     * 
+     * @throws HpcException Constructor is disabled.
+     */
+	private HpcEventServiceImpl() throws HpcException
+    {
+    	throw new HpcException("Default Constructor disabled",
+    			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    }   
     
     //---------------------------------------------------------------------//
     // Methods
@@ -420,8 +439,11 @@ public class HpcEventServiceImpl implements HpcEventService
                                                                    updateDescriptionPayloadValue)); 
 		}
 		
-		// Exclude the invoker from the list. (No need to notify the invoker of a collection update they requested).
-		userIds.remove(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
+		// If configured to - Exclude the invoker from the list. 
+		// (No need to notify the invoker of a collection update they requested).
+		if(!invokerCollectionUpdateNotification) {
+		   userIds.remove(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
+		}
 		
 		return userIds;
     }
