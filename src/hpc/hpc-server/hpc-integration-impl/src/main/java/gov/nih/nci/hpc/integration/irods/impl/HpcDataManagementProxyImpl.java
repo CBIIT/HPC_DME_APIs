@@ -845,13 +845,13 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		 
     	} catch(Throwable t) {
     		    throw new HpcException("Failed to create directory: " + 
-    	                               irodsFile.getPath(),
+    		    		               getRelativePath(irodsFile.getPath()),
                                        HpcErrorType.INVALID_REQUEST_INPUT , t);
     	}
     	
     	if(!directoriesCreated) {
     	   throw new HpcException("Failed to create directory (possibly insufficient permission on path): " + 
-                                  irodsFile.getPath(),
+    			                  getRelativePath(irodsFile.getPath()),
                                   HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     }
