@@ -76,6 +76,23 @@ function get_username {
     echo $USER_NAME
 }
 
+#Get the globus username from the globus config file
+function get_globus_user {
+
+    CONFIG_FILE=$HPC_DM_UTILS/globus-conf 
+    ATTRIBUTE="globus-user"
+    USER_NAME=$(get_json_value $CONFIG_FILE $ATTRIBUTE)
+
+    if [ -z "$USER_NAME" ]
+    then 
+        echo "ERROR: Can not retrieve $ATTRIBUTE from $CONFIG_FILE" >&2
+        exit 
+    fi
+    echo $USER_NAME
+}
+
+
+
 
 #Get the server from the config file
 function get_server {
@@ -89,6 +106,22 @@ function get_server {
     fi
     echo $SERVER_NAME
 }
+
+
+#Get the globus server from the globus config file
+function get_globus_server {
+
+    SERVER_NAME=$(get_json_value $HPC_DM_UTILS/globus-conf server)
+
+    if [ -z "$SERVER_NAME" ]
+    then 
+        echo "ERROR: Can not retrieve server from $HPC_DM_UTILS/globus-conf" >&2
+        exit 
+    fi
+    echo $SERVER_NAME
+}
+
+
 
 #Checks that the response header file has information.
 #Input:   <response_header> The response header of the curl command
