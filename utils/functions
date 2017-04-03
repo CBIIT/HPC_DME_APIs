@@ -13,7 +13,7 @@
 
 source $HPC_DM_UTILS/utilities
 
-#Generate an authentication token
+#Generate a DM API authentication token
 function dm_generate_token {
 
     LOG_FILE=$HPC_DM_UTILS/log
@@ -36,6 +36,32 @@ function dm_generate_token {
       rm $LOG_FILE 2>/dev/null
     fi
 }
+
+#Generate a Globus authentication token
+function dm_globus_generate_token {
+
+    LOG_FILE=$HPC_DM_UTILS/log-globus
+    rm $LOG_FILE 2>/dev/null
+
+    SERVER=$(get_globus_server)
+    GLOBUS_USER=$(get_globus_user)
+    
+    curl -u $GLOBUS_USER ${SERVER}/goauth/token?grant_type=client_credentials -s  >  $LOG_FILE
+    TOKEN=$(get_json_value $LOG_FILE access_token)
+
+    if [ -z $TOKEN ]
+    then
+        echo "ERROR: no token found in $LOG_FILE " >&2
+        MESSAGE=$(get_json_value $LOG_FILE message)
+        echo "ERROR MESSAGE: $MESSAGE"   
+        return 
+    else  
+        GLOBUS_CONFIG=$(cat "$HPC_DM_UTILS/curl-globus" | sed "s@Bearer.*@Bearer $TOKEN\"@")
+        echo "$GLOBUS_CONFIG" > $HPC_DM_UTILS/curl-globus
+        rm $LOG_FILE 2>/dev/null
+    fi
+}
+
 
 
 
