@@ -109,6 +109,8 @@
           <value>userIds</value>
           <value>groupPermissions</value>
           <value>userPermissions</value>
+          <value>deleteGroupMemberResponses</value>
+          <value>addGroupMemberResponses</value>
     </util:list>
 
 	<!-- JSON Provider -->
