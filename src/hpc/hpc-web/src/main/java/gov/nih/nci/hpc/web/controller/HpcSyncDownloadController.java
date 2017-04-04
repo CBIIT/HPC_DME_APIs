@@ -69,8 +69,6 @@ public class HpcSyncDownloadController extends AbstractHpcController {
 			Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request,
 			HttpServletResponse response) {
 		try {
-			// String criteria = getCriteria();
-
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			String serviceURL = dataObjectServiceURL + downloadFile.getDestinationPath() + "/download";
 			HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
@@ -83,8 +81,6 @@ public class HpcSyncDownloadController extends AbstractHpcController {
 				response.setContentType("application/octet-stream");
 				response.setHeader("Content-Disposition", "attachment; filename=" + downloadFile.getDownloadFileName());
 				IOUtils.copy((InputStream) restResponse.getEntity(), response.getOutputStream());
-				// return new FileSystemResource(new
-				// File("C:\\DEV\\temp\\keystore.jks"));
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -96,15 +92,24 @@ public class HpcSyncDownloadController extends AbstractHpcController {
 				MappingJsonFactory factory = new MappingJsonFactory(mapper);
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
-				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				System.out.println("Error: " + exception.getMessage());
-				// return null;
+				try
+				{
+					HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+					model.addAttribute("message", "Failed to download: "+exception.getMessage());
+				}
+				catch(Exception e)
+				{
+					model.addAttribute("message", "Failed to download: "+e.getMessage());
+				}
 			}
 		} catch (HttpStatusCodeException e) {
+			model.addAttribute("message", "Failed to download: "+e.getMessage());
 			e.printStackTrace();
 		} catch (RestClientException e) {
+			model.addAttribute("message", "Failed to download: "+e.getMessage());
 			e.printStackTrace();
 		} catch (Exception e) {
+			model.addAttribute("message", "Failed to download: "+e.getMessage());
 			e.printStackTrace();
 		}
 		return null;

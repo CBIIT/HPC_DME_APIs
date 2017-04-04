@@ -32,11 +32,12 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM Project Search controller
+ * Group home controller. Support search Group and display results.
+ * 
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDataRegistrationController.java
+ * @version $Id: HpcGroupController.java
  */
 
 @Controller
@@ -57,17 +58,33 @@ public class HpcGroupController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "index";
 		}
+		
+		String returnToHome = request.getParameter("return");
 		HpcWebGroup webGroup = new HpcWebGroup();
 		model.addAttribute("hpcWebGroup", webGroup);
+		session.removeAttribute("selectedUsers");
+		if (returnToHome != null) {
+			String groupName = (String) session.getAttribute("groupName");
+			if (groupName != null) {
+				webGroup.setGroupName(groupName);
+				populateSearch(webGroup, bindingResult, model, session, request);
+			}
+		}
 		return "managegroup";
 	}
 
 	/*
-	 * Action for User registration
+	 * Action for group search
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public String findUsers(@Valid @ModelAttribute("hpcUser") HpcWebGroup hpcWebGroup, BindingResult bindingResult,
+	public String findGroups(@Valid @ModelAttribute("hpcGroup") HpcWebGroup hpcWebGroup, BindingResult bindingResult,
 			Model model, HttpSession session, HttpServletRequest request) {
+		model.addAttribute("hpcWebGroup", hpcWebGroup);
+		return populateSearch(hpcWebGroup, bindingResult, model, session, request);
+	}
+
+	private String populateSearch(HpcWebGroup hpcWebGroup, BindingResult bindingResult, Model model,
+			HttpSession session, HttpServletRequest request) {
 		try {
 			String groupName = null;
 			if (hpcWebGroup.getGroupName() != null && hpcWebGroup.getGroupName().trim().length() > 0)
@@ -76,8 +93,10 @@ public class HpcGroupController extends AbstractHpcController {
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			HpcGroupListDTO groups = HpcClientUtil.getGroups(authToken, groupServiceURL, groupName, sslCertPath,
 					sslCertPassword);
-			if (groups != null && groups.getGroups() != null && groups.getGroups().size() > 0)
+			if (groups != null && groups.getGroups() != null && groups.getGroups().size() > 0) {
+				session.setAttribute("groupName", hpcWebGroup.getGroupName());
 				model.addAttribute("searchresults", groups.getGroups());
+			}
 		} catch (Exception e) {
 			ObjectError error = new ObjectError("hpcDatasetSearch", "Failed to search by name: " + e.getMessage());
 			bindingResult.addError(error);

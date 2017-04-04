@@ -111,8 +111,8 @@
 														<table>
 															<tr>
 																<td>
-																	<div th:if="${message != null}">
-																		<div class="alert alert-error">
+																	<div th:if="${messages != null}">
+																		<div class="alert alert-error" th:each="message: ${messages}">
 																			<a class="close" data-dismiss="alert">×</a> <label
 																				for="${message}" th:text="${message}"></label>
 																		</div>
@@ -130,10 +130,13 @@
 																	</div>
 																	<div class="modal-footer">
 																		<button type="submit" class="btn btn-md btn-primary"
-																			id="primaryButton">Update</button>
-																		<button type="button" class="btn btn-primary"
-																			data-dismiss="modal" id="close">Close</button>
+																			id="primaryButton" onClick="deleteGroup()">Delete</button>
+																		<button type="submit" class="btn btn-md btn-primary"
+																			id="primaryButton" onClick="updateGroup()">Update</button>
+																		<button type="submit" class="btn btn-primary"
+																			data-dismiss="modal" id="close" onClick="cancel()">Cancel</button>
 																	</div>
+																	<input type="hidden" name="actionType" id="actionType"/>
 																</td>
 															</tr>
 															<tr>
@@ -154,10 +157,12 @@
 																				</tr>
 																			</thead>
 																			<tbody>
-																				<tr>
+																			<!-- 
+																				<tr th:if="${group.getUserIds().size()} == 0">
 																					<th class="text-center">&nbsp;</th>
 																					<th class="text-center">&nbsp;</th>
 																				</tr>
+																				 -->
 																				<tr id='usersRow0'
 																					th:each="userId, iterationStatus : ${group.getUserIds()}"
 																					th:with="index=0">
@@ -238,7 +243,26 @@
 
 	<script type="text/javascript">
 	//<![CDATA[
-		function enableSave() {
+	           
+	    function updateGroup()
+	    {
+			document.getElementById("actionType").value = "update";
+			$("#groupForm").submit();
+	    }
+	    
+	    function deleteGroup()
+	    {
+			document.getElementById("actionType").value = "delete";
+			$("#groupForm").submit();
+	    }
+	    
+	    function cancel()
+	    {
+			document.getElementById("actionType").value = "cancel";
+			$("#groupForm").submit();
+	    }
+
+	    function enableSave() {
 			$('#primaryButton').removeClass('disabled');
 			$('#primaryButton').prop('disabled', false);
 		}
@@ -248,8 +272,11 @@
 			rowId++;
 			var userNames;
 			var table = document.getElementById("usersTable");
-			var rows = table.getElementsByTagName("tbody")[0]
-					.getElementsByTagName("tr").length;
+			var rows = 0;
+			if(table.getElementsByTagName("tbody")[0]
+					.getElementsByTagName("tr"))
+				rows = table.getElementsByTagName("tbody")[0]
+						.getElementsByTagName("tr").length;
 			var userName = document.getElementById("userName");
 			if(userName != null && userName != "")
 				userNames = userName.value.split(";");
@@ -274,8 +301,9 @@
 				alert("Invalid entry. User name is missing");
 				return false;
 			}
-			table.deleteRow(1);
-			rows = 0;			
+			//table.deleteRow(1);
+			rows = table.getElementsByTagName("tbody")[0]
+			.getElementsByTagName("tr").length;
 			for(var i=0;i<userNames.length;i++)
 			{
 				if(userNames[i] == "")
@@ -291,7 +319,7 @@
 				
 				cell0.innerHTML = '<input type="checkbox" name="userId'
 				+ (rows) + '" id="userId'
-				+ (rows) + '" value="' + (userNames[i]) + '" checked="checked" />';
+				+ (rows) + '" checked="checked" />';
 
 				cell1.innerHTML = '<label id="userName' + (rows)
 							+ '">' + (userNames[i]) + '</label>'
