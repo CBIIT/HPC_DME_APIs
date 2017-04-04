@@ -47,6 +47,10 @@
 
 <link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css"
 	type="text/css" />
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 <style>
 /*style.css*/
@@ -84,7 +88,7 @@
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h2>
-								    <i class="fa fa-list-alt red"></i><strong>Data File &nbsp; <a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=datafile&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=hpcDatafile&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-users" aria-hidden="true"></i></a></strong>&nbsp;&nbsp;&nbsp;
+								    <i class="fa fa-list-alt red"></i><strong>Data File &nbsp; <a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=datafile&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=dataObject&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-users" aria-hidden="true"></i></a></strong>&nbsp;&nbsp;&nbsp;
 									<a class="btn btn-link btn-sm" th:href="@{'../datafile?action=edit&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-edit" aria-hidden="true"></i></a>
 								</h2>
 							</div>
@@ -130,6 +134,14 @@
 									</h2>
 								</div>
 								<div class="panel-body">
+								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
+									aria-labelledby="myModalLabel" aria-hidden="true">
+									<div class="modal-dialog">
+										<div class="modal-content"></div>
+										<!-- /.modal-content -->
+									</div>
+									<!-- /.modal-dialog -->
+								</div>								
 								<form class="form-horizontal" id="datafileForm" th:action="@{/datafile}"
 									th:object="${hpcDatafile}" method="POST">
 								

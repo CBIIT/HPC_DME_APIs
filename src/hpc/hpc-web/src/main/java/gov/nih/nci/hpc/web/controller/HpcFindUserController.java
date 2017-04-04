@@ -97,7 +97,11 @@ public class HpcFindUserController extends AbstractHpcController {
 				}
 				session.setAttribute("selectedUsers", buffer.toString());
 				if (selectedUsers != null && selectedUsers.length > 0)
-					return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&path=" + hpcWebUser.getPath()
+					if(hpcWebUser.getType() != null && hpcWebUser.getType().equals("group"))
+						return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&groupName=" + hpcWebUser.getPath()
+							+ "&type=" + hpcWebUser.getType();
+					else
+						return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&path=" + hpcWebUser.getPath()
 							+ "&type=" + hpcWebUser.getType();
 			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
 				session.removeAttribute("selectedUsers");

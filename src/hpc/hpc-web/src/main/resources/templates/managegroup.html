@@ -66,19 +66,14 @@
 				    treeRowHeaderAlwaysVisible: false,
 					columnDefs : [ {
 						field : 'groupName',
-						width : 120,
+						width : 400,
 						displayName : 'Group Name'
 					}, {
 						field : 'groupName',
 						width : 120,
 						displayName : 'Edit',
 						cellTemplate : '<div class="ui-grid-cell-contents"><a id="editlink" class="btn btn-link btn-sm" href="../updategroup?groupName={{COL_FIELD CUSTOM_FILTERS}}">Edit &nbsp;<i class="fa fa-address-card" aria-hidden="true"></i></a></div>'
-					},, {
-						field : 'groupName',
-						width : 120,
-						displayName : 'Delete',
-						cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="deletelink" class="btn btn-link btn-sm" href="../deletegroup?group={{COL_FIELD CUSTOM_FILTERS}}" data-target="#deletegroupModal">Delete &nbsp; <i class="fa fa-window-close" aria-hidden="true"></i></a></div>'
-					} ],
+					}],
 					onRegisterApi : function(gridApi) {
 						$scope.grid1Api = gridApi;
 					}
@@ -184,19 +179,15 @@
 															</tr>
 															<tr>
 																<td>
-																	<div class="form-group">
-																		<div class="col-sm-12 column">
+																	<div class="form-inline">
+																		<div class="col-sm-12 form-inline">
 																			<label for="groupName">Group Name:</label> <input
 																				type="text" class="form-control"
 																				th:field="*{groupName}"
 																				placeholder="Enter Group Name" size="40" />
-																		</div>
-																	</div>
-																	<div class="modal-footer">
-																		<button type="submit" class="btn btn-md btn-primary"
+																				<button type="submit" class="btn btn-md btn-primary"
 																			id="primaryButton" onClick="prepareAndSubmit()">Search</button>
-																		<button type="cancel" class="btn btn-md btn-primary"
-																			id="cancelButton" onclick="cancel()">Cancel</button>
+																		</div>
 																	</div>
 																</td>
 															</tr>
