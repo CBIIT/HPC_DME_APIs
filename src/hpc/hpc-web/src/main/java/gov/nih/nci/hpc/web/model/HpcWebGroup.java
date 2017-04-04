@@ -19,6 +19,9 @@ public class HpcWebGroup {
 	@JsonView(Views.Public.class)
 	private String groupId;
 
+	@JsonView(Views.Public.class)
+	private String actionType;
+
 	public String getGroupName() {
 		return groupName;
 	}
@@ -57,5 +60,13 @@ public class HpcWebGroup {
 
 	public void setGroupId(String groupId) {
 		this.groupId = groupId;
+	}
+
+	public String getActionType() {
+		return actionType;
+	}
+
+	public void setActionType(String actionType) {
+		this.actionType = actionType;
 	}
 }

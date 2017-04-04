@@ -79,6 +79,7 @@ import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroupMembersResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
@@ -475,15 +476,27 @@ public class HpcClientUtil {
 		}
 	}
 
-	public static boolean createGroup(String token, String hpcUserURL, HpcGroupMembersRequestDTO groupDTO,
+	public static HpcGroupMembersResponseDTO createGroup(String token, String hpcUserURL, HpcGroupMembersRequestDTO groupDTO,
 			String groupName, String hpcCertPath, String hpcCertPassword) {
+		HpcGroupMembersResponseDTO response = null;
 		try {
 			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath, hpcCertPassword);
 			client.header("Authorization", "Bearer " + token);
 
 			Response restResponse = client.invoke("PUT", groupDTO);
 			if (restResponse.getStatus() == 201) {
-				return true;
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				response = parser.readValueAs(HpcGroupMembersResponseDTO.class);
+				
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -507,17 +520,29 @@ public class HpcClientUtil {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to create group due to: " + e.getMessage());
 		}
+		return response;
 	}
 
-	public static boolean updateGroup(String token, String hpcUserURL, HpcGroupMembersRequestDTO groupDTO,
+	public static HpcGroupMembersResponseDTO updateGroup(String token, String hpcUserURL, HpcGroupMembersRequestDTO groupDTO,
 			String groupName, String hpcCertPath, String hpcCertPassword) {
+		HpcGroupMembersResponseDTO response = null;
 		try {
 			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath, hpcCertPassword);
 			client.header("Authorization", "Bearer " + token);
-
 			Response restResponse = client.invoke("POST", groupDTO);
 			if (restResponse.getStatus() == 200) {
-				return true;
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				response = parser.readValueAs(HpcGroupMembersResponseDTO.class);
+				
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -540,6 +565,41 @@ public class HpcClientUtil {
 		catch (Exception e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to update group due to: " + e.getMessage());
+		}
+		return response;
+	}
+
+	public static boolean deleteGroup(String token, String hpcUserURL,
+			String groupName, String hpcCertPath, String hpcCertPassword) {
+		HpcGroupMembersResponseDTO response = null;
+		try {
+			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath, hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+			Response restResponse = client.invoke("DELETE", null);
+			if (restResponse.getStatus() == 200) {
+				return true;
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				throw new HpcWebException("Failed to delete group: " + exception.getMessage());
+			}
+		} 
+		catch(HpcWebException e)
+		{
+			throw e;
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to delete group due to: " + e.getMessage());
 		}
 	}
 
