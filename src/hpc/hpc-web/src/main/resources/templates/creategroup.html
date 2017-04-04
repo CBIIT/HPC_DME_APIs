@@ -111,12 +111,12 @@
 														<table>
 															<tr>
 																<td>
-																<div th:if="${message != null}">
-																	<div class="alert alert-error">
-																		<a class="close" data-dismiss="alert">×</a> <label
-																			for="${message}" th:text="${message}"></label>
+																	<div th:if="${messages != null}">
+																		<div class="alert alert-error" th:each="message: ${messages}">
+																			<a class="close" data-dismiss="alert">×</a> <label
+																				for="${message}" th:text="${message}"></label>
+																		</div>
 																	</div>
-																</div>
 																</td>
 															</tr>
 															<tr>
@@ -132,9 +132,10 @@
 																	<div class="modal-footer">
 																		<button type="submit" class="btn btn-md btn-primary"
 																			id="primaryButton">Create</button>
-																		<button type="button" class="btn btn-primary"
-																			data-dismiss="modal" id="close">Close</button>
+																		<button type="submit" class="btn btn-primary"
+																			data-dismiss="modal" id="cancel" onClick="cancel()">Cancel</button>
 																	</div>
+																	<input type="hidden" name="actionType" id="actionType"/>
 																</td>
 															</tr>
 															<tr>
@@ -155,10 +156,12 @@
 																				</tr>
 																			</thead>
 																			<tbody>
+																			<!-- 
 																				<tr>
 																					<th class="text-center">&nbsp;</th>
 																					<th class="text-center">&nbsp;</th>
 																				</tr>
+																			-->
 																			</tbody>
 																		</table>
 																	</div>
@@ -224,6 +227,12 @@
 
 	<script type="text/javascript">
 	//<![CDATA[
+	           
+	    function cancel()
+	    {
+			document.getElementById("actionType").value = "cancel";
+			$("#groupForm").submit();
+	    }
 		function enableSave() {
 			$('#primaryButton').removeClass('disabled');
 			$('#primaryButton').prop('disabled', false);
@@ -234,8 +243,11 @@
 			rowId++;
 			var userNames;
 			var table = document.getElementById("usersTable");
-			var rows = table.getElementsByTagName("tbody")[0]
-					.getElementsByTagName("tr").length;
+			var rows = 0;
+			if(table.getElementsByTagName("tbody")[0]
+					.getElementsByTagName("tr"))
+				rows = table.getElementsByTagName("tbody")[0]
+						.getElementsByTagName("tr").length;
 			var userName = document.getElementById("userName");
 			if(userName != null && userName != "")
 				userNames = userName.value.split(";");
@@ -277,7 +289,7 @@
 				
 				cell0.innerHTML = '<input type="checkbox" name="userId'
 				+ (rows) + '" id="userId'
-				+ (rows) + '" value="' + (userNames[i]) + '" checked="checked" />';
+				+ (rows) + '" checked="checked" />';
 
 				cell1.innerHTML = '<label id="userName' + (rows)
 							+ '">' + (userNames[i]) + '</label>'

@@ -120,29 +120,9 @@ public class HpcDownloadController extends AbstractHpcController {
 
 			Response restResponse = client.invoke("POST", dto);
 			if (restResponse.getStatus() == 200) {
-				if (asyncDownload) {
-					result.setCode("200");
-					result.setMessage("Asynchronous download request is submitted successfully!");
-					return result;
-				} else {
-					response.setContentType("application/octet-stream");
-					response.setHeader("Content-Disposition",
-							String.format("inline; filename=" + downloadFile.getDownloadFileName()));
-					InputStream stream = (InputStream) restResponse.getEntity();
-					OutputStream outStream = response.getOutputStream();
-					int len = 0;
-					byte[] buffer = new byte[4096];
-					while ((len = stream.read(buffer)) != -1) {
-						outStream.write(buffer, 0, len);
-					}
-					// FileCopyUtils.copy(stream, response.getOutputStream());
-					outStream.flush();
-					stream.close();
-					outStream.close();
-					result.setCode("200");
-					result.setMessage("Synchronous download is successful!");
-					return result;
-				}
+				result.setCode("200");
+				result.setMessage("Asynchronous download request is submitted successfully!");
+				return result;
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
