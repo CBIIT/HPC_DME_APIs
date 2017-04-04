@@ -133,11 +133,19 @@ public class HpcDownloadController extends AbstractHpcController {
 
 				MappingJsonFactory factory = new MappingJsonFactory(mapper);
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-
-				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				result.setCode("400");
-				result.setMessage("Download request is not successfull: " + exception.getMessage());
-				return result;
+				try
+				{
+					HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+					result.setCode("400");
+					result.setMessage("Download request is not successfull: " + exception.getMessage());
+					return result;
+				}
+				catch(Exception e)
+				{
+					result.setCode("400");
+					result.setMessage("Download request is not successfull: " + e.getMessage());
+					return result;
+				}
 			}
 		} catch (HttpStatusCodeException e) {
 			result.setCode("400");
