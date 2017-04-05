@@ -10,7 +10,7 @@ public class HpcCollectionModel {
 	private HpcCollection collection;
 	private List<HpcMetadataAttrEntry> selfMetadataEntries;
 	private List<HpcMetadataAttrEntry> parentMetadataEntries;
-
+	
 	public String getPath() {
 		return path;
 	}
@@ -46,5 +46,4 @@ public class HpcCollectionModel {
 	public void setParentMetadataEntries(List<HpcMetadataAttrEntry> parentMetadataEntries) {
 		this.parentMetadataEntries = parentMetadataEntries;
 	}
-
 }

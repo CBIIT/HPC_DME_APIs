@@ -47,6 +47,10 @@
 
 <link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css"
 	type="text/css" />
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 <style>
 /*style.css*/
@@ -84,7 +88,8 @@
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h2>
-									<div th:if="${userpermission == true}"><i class="fa fa-list-alt red"></i><strong>Collection</strong>&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-users" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../collection?action=edit&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-edit" aria-hidden="true"></i></a></div>
+ 																		
+ 									<div th:if="${userpermission == true}"><i class="fa fa-list-alt red"></i><strong>Collection</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-users" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../collection?action=edit&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-edit" aria-hidden="true"></i></a></div>
 									<div th:unless="${userpermission == true}"><i class="fa fa-list-alt red"></i><strong>Collection</strong>&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>
 								</h2>
 							</div>
@@ -96,6 +101,15 @@
 							</div>
 								<!--panel-body start-->
 								<div class="panel-body">
+								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
+									aria-labelledby="myModalLabel" aria-hidden="true">
+									<div class="modal-dialog">
+										<div class="modal-content"></div>
+										<!-- /.modal-content -->
+									</div>
+									<!-- /.modal-dialog -->
+								</div>								
+								
 									<div class="form-group">
 										<div class="col-md-12 form-group">
 											<label for="Name">Path:</label> <label
@@ -168,9 +182,10 @@
 												<div class="modal-footer">
 													<button type="submit" class="btn btn-md btn-primary"
 														id="primaryButton">Update</button>
-													<button type="button" class="btn btn-primary"
+													<button type="submit" class="btn btn-primary"
 														id="cancel" onClick="cancelEdit()">Cancel</button>
 												</div>
+												<input type="hidden" name="actionType" id="actionType"/>
 												</td>
 											</tr>
 										</tbody>
@@ -232,12 +247,11 @@
 	<script src="js/scripts.js"></script>
 	<script type="text/javascript">
 	
-	function cancelEdit()
-	{
+    function cancelEdit()
+    {
 		document.getElementById("action").value = "cancel";
-		$('#userForm').attr('action', '/finduser');
-		$("#userForm").submit();
-	}
+		$("#collectionForm").submit();
+    }
 
 	var toggle = true;
 	function showParentAttrs() {
