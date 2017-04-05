@@ -106,6 +106,7 @@
           <value>subCollections</value>
           <value>nciAccounts</value>
           <value>groups</value>
+          <value>users</value>
           <value>userIds</value>
           <value>groupPermissions</value>
           <value>userPermissions</value>
