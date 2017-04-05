@@ -236,7 +236,7 @@
 	}
 	return s
     }
-
+    
     CSV.reset = function () {
         CSV.state = null;
         CSV.token = null;
