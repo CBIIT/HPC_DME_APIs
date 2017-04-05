@@ -985,10 +985,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 	
     /** 
-     * Construct entity permissions DTO out of a list of subject permissions.
+     * Construct user permission DTO out of subject permission.
      * 
-     * @param subjectPermissions A list of subject permissions.
-     * @return Entity permissions DTO
+     * @param subjectPermission A subject permission.
+     * @return user permission DTO.
      */
 	private HpcUserPermissionDTO toUserPermissionDTO(HpcSubjectPermission subjectPermission)
 	{
