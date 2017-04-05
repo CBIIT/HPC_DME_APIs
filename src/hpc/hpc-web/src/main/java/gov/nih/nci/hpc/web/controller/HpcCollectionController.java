@@ -121,6 +121,9 @@ public class HpcCollectionController extends AbstractHpcController {
 		HpcCollectionModel model = new HpcCollectionModel();
 		systemAttrs.add("collection_type");
 		model.setCollection(collection.getCollection());
+		if(collection.getMetadataEntries() == null)
+			return model;
+		
 		for (HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries()) {
 			HpcMetadataAttrEntry attrEntry = new HpcMetadataAttrEntry();
 			attrEntry.setAttrName(entry.getAttribute());
