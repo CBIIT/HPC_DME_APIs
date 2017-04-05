@@ -81,6 +81,7 @@ public class HpcSyncDownloadController extends AbstractHpcController {
 				response.setContentType("application/octet-stream");
 				response.setHeader("Content-Disposition", "attachment; filename=" + downloadFile.getDownloadFileName());
 				IOUtils.copy((InputStream) restResponse.getEntity(), response.getOutputStream());
+				model.addAttribute("message", "Download completed successfully!");
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
