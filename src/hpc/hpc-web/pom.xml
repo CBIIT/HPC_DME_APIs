@@ -5,7 +5,7 @@
 
 	<groupId>gov.nih.nci.hpc</groupId>
 	<artifactId>hpc-web</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>war</packaging>
 
 	<name>hpc-web</name>
@@ -100,6 +100,12 @@
     <artifactId>jersey-json</artifactId>
     <version>1.19</version>
 </dependency>
+<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+<dependency>
+    <groupId>com.google.code.gson</groupId>
+    <artifactId>gson</artifactId>
+    <version>2.8.0</version>
+</dependency>
 <dependency>
 	<groupId>javax.ws.rs</groupId>
 	<artifactId>javax.ws.rs-api</artifactId>
@@ -132,10 +138,12 @@
 	
 	<build>
 		<plugins>
+		<!-- 
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+		-->
 		</plugins>
 	</build>
 
