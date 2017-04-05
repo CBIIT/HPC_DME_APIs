@@ -99,7 +99,7 @@ public interface HpcDataManagementBusService
      * Get collection permission for user.
      *
      * @param path The path of the collection.
-     * @param userId
+     * @param userId The user to get permissions for.
      * @return permission on the collection.
      * @throws HpcException on service failure.
      */
