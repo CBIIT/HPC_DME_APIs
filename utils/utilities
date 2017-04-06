@@ -296,6 +296,63 @@ function list_globus_files {
 
 }
 
+#Prints the error "message" attribute in a json file to stderr
+#Input <response-file> [response-code]
+function print_error_message {
+
+    USAGE="print_error_message <respone-file>"
+
+    if [ "$#" -lt 1 ] 
+    then
+        echo "ERROR: using print_error_message" >&2
+        echo "recieved $@" 
+        echo "$USAGE" >&2
+        return
+    fi
+
+    RESPONSE_CODE="$2"
+    
+    if [ ! -z "$RESPONSE_CODE" ] && [ "$2" -ne 204 ]
+    then
+      ERROR_MSG=$(get_json_value $1 message) >&2
+      echo "ERROR_MESSAGE:\"$ERROR_MSG\"" >&2
+      return
+    else
+      echo "ERROR_MESSAGE:\"no content\"" >&2
+      return
+    fi
+}
+
+#Format json output
+#Input: <json-file>
+function print_json_message {
+
+    USAGE="print_json_message <json-string-or-file>"
+
+    if [ "$#" -lt 1 ] 
+    then
+        echo "ERROR: using print_json_message" >&2
+        echo "recieved $@" 
+        echo "$USAGE" >&2
+        return
+    fi
+
+    JSON_MESSAGE="$1"
+    if [ ! -e "$JSON_MESSAGE" ]
+    then
+      echo "ERROR: Can not fin the file:\"$JSON_MESSAGE\"" >&2
+      return 
+    fi 
+    #Check if python json formatter is present
+    echo "{}" | python -m json.tool > /dev/null
+    if [ $? -eq 0 ]
+    then 
+      cat "$RESPONSE_MSG" | python -m json.tool
+    else
+      cat "$RESPONSE_MSG"
+      echo 
+    fi
+}
 
 
 

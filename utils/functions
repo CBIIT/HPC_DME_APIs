@@ -29,7 +29,7 @@ function dm_generate_token {
         echo "ERROR: no token found in $LOG_FILE " >&2
         MESSAGE=$(get_json_value $LOG_FILE message)
         echo "ERROR MESSAGE: $MESSAGE"   
-        return 
+        return
     else  
       CONFIG_STRING=$(cat "$HPC_DM_UTILS/curl-conf" | sed "s/Bearer.*/Bearer $TOKEN\"/")
       echo "$CONFIG_STRING" > $HPC_DM_UTILS/curl-conf
@@ -230,4 +230,147 @@ function dm_sync_globus_endpoint  {
 }
 
 
+#Get an item (collection or dataObject) from the archive
+#Inputs: <item-path> (should have a prefix of "dataObject" or "collection:)
+#      : [response-message-filename]
+#      : [response-header-filename]
+function dm_get_item {
+
+    USAGE="dm_get_item  <item-path> [response-message-filename] [response-header-filename]"
+
+    if [ "$#" -lt 1 ] 
+    then
+        echo "ERROR: using dm_get_item" >&2
+        echo "$USAGE" >&2
+        return
+    fi
+    ITEM_PATH="$1"
+
+    if [ ! -z "$2" ]
+    then
+      RESONSE_MSG="$2"
+    else
+      RESPONSE_MSG=get-item-response-message.json.tmp
+    fi 
+
+    if [ ! -z "$3" ]
+    then
+      RESONSE_HEADER="$3"
+    else
+      RESPONSE_HEADER=get-item-response-header.tmp
+    fi 
+
+    CONFIG="--config $HPC_DM_UTILS/curl-conf"
+        
+    SERVER=$(get_server)
+
+    TOTAL_PATH="$ITEM_PATH"
+    TOTAL_PATH=$(echo "$TOTAL_PATH" | sed "s#\/\/*#\/#g")
+   
+    curl -G -X GET "$SERVER/$TOTAL_PATH"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    check_connection $RESPONSE_HEADER
+}
+
+
+#Get the metadata of a dataobject from the archive
+#Inputs: <dataObject-path> 
+#      : [response-message-filename]
+#      : [response-header-filename]
+function dm_get_dataobject {
+
+    USAGE="dm_get_item_dataobject  <dataobject-path> [response-message-filename] [response-header-filename]"
+
+    if [ "$#" -lt 1 ] 
+    then
+        echo "ERROR: using get_dataobject" >&2
+        echo "recieved $0 $@" 
+        echo "$USAGE" >&2
+        return
+    fi
+    ITEM_PATH="$1"
+
+    if [ ! -z "$2" ]
+    then
+      RESONSE_MSG="$2"
+    else
+      RESPONSE_MSG=get-item-response-message.json.tmp
+    fi 
+
+    if [ ! -z "$3" ]
+    then
+      RESONSE_HEADER="$3"
+    else
+      RESPONSE_HEADER=get-item-response-header.tmp
+    fi 
+
+    dm_get_item dataObject/$ITEM_PATH  "$RESPONSE_MSG" "$RESPONSE_HEADER"
+
+    RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
+    if [ "$RESPONSE_CODE" -ne 200 ]
+    then
+      echo "ERROR getting \"$ITEM_PATH\" " >&2
+      echo "ERROR_CODE:\"$RESPONSE_CODE\"" >&2
+      print_error_message "$RESPONSE_MSG" "$REPONSE_CODE"
+      return
+    else 
+     
+      #Check if the user needs the response header file 
+      if [ -z "$3" ]
+      then 
+        rm "$RESPONSE_HEADER" 2> /dev/null
+      fi
+
+      if [ -z "$2" ]
+      then
+        print_json_message "$RESPONSE_MSG"    
+        rm $RESPONSE_MSG 2> /dev/null 
+      fi
+    fi
+}
+
+
+#Get the metadata of a collection from the archive
+#Inputs: <collection-path> 
+#      : [response-message-filename]
+#      : [response-header-filename]
+function dm_get_collection {
+
+    USAGE="dm_get_collection  <collection-path> [response-message-filename] [response-header-filename]"
+
+    if [ "$#" -lt 1 ] 
+    then
+        echo "ERROR: using get_collection" >&2
+        echo "recieved $0 $@" 
+        echo "$USAGE" >&2
+        return
+    fi
+    ITEM_PATH="$1"
+
+    RESPONSE_MSG=${2-get-item-response-message.json.tmp}
+    RESPONSE_HEADER=${3-get-item-response-header.tmp}
+
+    dm_get_item collection/$ITEM_PATH  "$RESPONSE_MSG" "$RESPONSE_HEADER"
+
+    RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
+    if [ "$RESPONSE_CODE" -ne 200 ]
+    then
+      echo "ERROR getting \"$ITEM_PATH\" " >&2
+      echo "ERROR_CODE:\"$RESPONSE_CODE\"" >&2
+      print_error_message "$RESPONSE_MSG" "$REPONSE_CODE"
+      return
+    else 
+     
+      #Check if the user needs the response header file 
+      if [ -z "$3" ]
+      then 
+        rm "$RESPONSE_HEADER" 2> /dev/null
+      fi
+
+      if [ -z "$2" ]
+      then
+        print_json_message "$RESPONSE_MSG"    
+        rm $RESPONSE_MSG 2> /dev/null 
+      fi
+    fi
+}
 
