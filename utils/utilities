@@ -236,35 +236,55 @@ function list_new_files {
     fi
  
 
+    # list all files in a source main directory as well as sub- directories
+    # Ex: /test
 
     SOURCEDIR="$1"
     
     # keep track list of the old files .
-    #GZ: How does that keep track of different source directories?
-    LAST=/tmp/last.log
+    #LAST=/tmp/last.log
+    export LAST=""
+    
+    if [ "$LAST" = "" ]; then
+    
+      # first time we create the log file
+      touch /tmp/last_files.log
+      export LAST=/tmp/last_files.log
+    else
+      echo $LAST is not set
+    fi
+    
     
     # keep track the list of the current files .
     CURRENT=/tmp/current.log
     
-    # first time we create the log file
-    touch $LAST
-    
+    # list all files
     find $SOURCEDIR -type f > $CURRENT
     
+    # list new file list
     diff $LAST $CURRENT > /dev/null 2>&1
     
     # If there is no difference exit
     if [ $? -eq 0 ]
     then
-        echo "No changes"
+      echo "No changes"
     else
-         echo "List of new files"
-        #diff $LAST $CURRENT | grep '^>'
-        diff last current | grep '^>' |awk '{print $2}' > /tmp/list_of_new_files.log
+      echo "List of new files"
+      diff $LAST $CURRENT | grep '^>' |awk '{print $2}' > /tmp/new_file_list
+      # diff last current | grep '^>' |awk '{print $2}'
     
-        # Lastly, move CURRENT to LAST
-        mv $CURRENT $LAST
+      # Lastly, move CURRENT to LAST
+      mv $CURRENT $LAST
+      echo '{''"'newfilelist'"'':' '{' > /tmp/new_fil_list.json
+ 
+      while read LINE; do
+        echo $LINE
+        echo '"filepath"'':' '"'$LINE'"' >> /tmp/new_fil_list.json
+      done < /tmp/new_file_list
     fi
+    echo '}''}' >>/tmp/new_fil_list.json
+    
+    
 }
     
 # Returns a list all files in a globus endpoint and path with  their 
