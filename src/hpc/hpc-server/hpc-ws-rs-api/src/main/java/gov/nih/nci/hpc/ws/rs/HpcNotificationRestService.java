@@ -48,7 +48,7 @@ public interface HpcNotificationRestService
     /**
      * Get Notification Subscriptions.
      *
-     * @return The REST service response.
+     * @return The REST service response w/ HpcNotificationSubscriptionListDTO entity.
      */
 	@GET
     @Path("/notification")
@@ -61,7 +61,7 @@ public interface HpcNotificationRestService
      * @param page The requested results page.
      * @param totalCount If set to true, return the total count of collections matching the query
      *                   regardless of the limit on returned entities.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcNotificationDeliveryReceiptListDTO entity.
      */
 	@GET
     @Path("/notification/deliveryReceipts")
@@ -73,7 +73,7 @@ public interface HpcNotificationRestService
      * Get Notification Delivery Receipt.
      *
      * @param eventId The requested delivery receipt event Id.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcNotificationDeliveryReceiptListDTO entity.
      */
 	@GET
     @Path("/notification/deliveryReceipt")
