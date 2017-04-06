@@ -35,7 +35,7 @@ public interface HpcReportRestService
 	 * Generate report.
 	 *
 	 * @param reportDTO The report DTO. 
-	 * @return The REST service response.
+	 * @return The REST service response w/ HpcReportsDTO entity.
 	 */
 	@POST
 	@Path("/report")
