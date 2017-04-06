@@ -63,7 +63,8 @@ public interface HpcDataManagementRestService
      *
      * @param path The collection path.
      * @param list An indicator to list sub-collections and data-objects.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcCollectionListDTO entity.
+     * @see gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO
      */
 	@GET
 	@Path("/collection/{path:.*}")
@@ -77,7 +78,7 @@ public interface HpcDataManagementRestService
      * @param path The collection path.
      * @param downloadRequest The download request.
      * @param mc The message context.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcDownloadResponseListDTO entity.
      */
 	@POST
 	@Path("/collection/{path:.*}/download")
@@ -93,7 +94,7 @@ public interface HpcDataManagementRestService
      *
      * @param path The collection path.
      * @param collectionPermissionsRequest Request to set collection permissions.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcEntityPermissionsResponseDTO entity.
      */
 	@POST
 	@Path("/collection/{path:.*}/acl")
@@ -106,7 +107,7 @@ public interface HpcDataManagementRestService
      * Get a collection's permissions.
      *
      * @param path The collection path.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcEntityPermissionsDTO entity.
      */
 	@GET
 	@Path("/collection/{path:.*}/acl")
@@ -118,7 +119,7 @@ public interface HpcDataManagementRestService
      *
      * @param path The collection path.
      * @param userId
-     * @return The REST service response.
+     * @return The REST service response w/ HpcUserPermissionDTO entity.
      */
 	@GET
 	@Path("/collection/{path:.*}/acl/user/{userId:.*}")
@@ -149,7 +150,7 @@ public interface HpcDataManagementRestService
      * Get a data object.
      *
      * @param path The data object path.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcDataObjectListDTO entity.
      */
 	@GET
 	@Path("/dataObject/{path:.*}")
@@ -162,7 +163,7 @@ public interface HpcDataManagementRestService
      * @param path The data object path.
      * @param downloadRequest The download request.
      * @param mc The message context.
-     * @return The REST service response.
+     * @return The REST service response w/ either a file attached or HpcDownloadResponseDTO entity.
      */
 	@POST
 	@Path("/dataObject/{path:.*}/download")
@@ -178,7 +179,7 @@ public interface HpcDataManagementRestService
      *
      * @param path The data object path.
      * @param dataObjectPermissionsRequest Request to set data object permissions.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcEntityPermissionsResponseDTO entity.
      */
 	@POST
 	@Path("/dataObject/{path:.*}/acl")
@@ -191,7 +192,7 @@ public interface HpcDataManagementRestService
      * Get a data object's permissions.
      *
      * @param path The data object path.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcEntityPermissionsDTO entity.
      */
 	@GET
 	@Path("/dataObject/{path:.*}/acl")
@@ -202,8 +203,8 @@ public interface HpcDataManagementRestService
      * Get a data object's permission for userId.
      *
      * @param path The data object path.
-     * @param userId
-     * @return The REST service response.
+     * @param userId The userId to get the permission for.
+     * @return The REST service response w/ HpcUserPermissionDTO entity.
      */
 	@GET
 	@Path("/dataObject/{path:.*}/acl/user/{userId:.*}")
@@ -215,7 +216,7 @@ public interface HpcDataManagementRestService
      * Get data management model (metadata validation rules and hierarchy definition) configured for a DOC.
      *
      * @param doc The DOC to get the model for.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcDataManagementModelDTO entity.
      */
 	@GET
 	@Path("/dm/model/{doc}")
@@ -226,7 +227,7 @@ public interface HpcDataManagementRestService
      * Get data management tree (collections and data objects) from a DOC base path.
      *
      * @param doc The DOC to get the tree for.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcDataManagementTreeDTO entity.
      */
 	@GET
 	@Path("/dm/tree/{doc}")
@@ -236,7 +237,7 @@ public interface HpcDataManagementRestService
     /**
      * Get data management model DOCs.
      *
-     * @return The REST service response.
+     * @return The REST service response w/ HpcDataManagementDocListDTO entity.
      */
 	@GET
 	@Path("/dm/docs")

@@ -68,8 +68,7 @@ public interface HpcSecurityRestService
      * Get a user by NCI user id.
      *
      * @param nciUserId The registered user ID.
-     * @return gov.nih.nci.hpc.dto.security.HpcUserDTO entity.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcUserDTO entity.
      */
     @GET
     @Path("/user/{nciUserId}")
@@ -79,8 +78,7 @@ public interface HpcSecurityRestService
     /**
      * Get the invoker user.
      *
-     * @return gov.nih.nci.hpc.dto.security.HpcUserDTO entity.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcUserDTO entity.
      */
     @GET
     @Path("/user")
@@ -93,8 +91,7 @@ public interface HpcSecurityRestService
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
      * @param firstName (Optional) The first name to search for (using case insensitive comparison).
      * @param lastName (Optional) The last name to search for (using case insensitive comparison).
-     * @return gov.nih.nci.hpc.dto.security.HpcUserListDTO entity.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcUserListDTO entity.
      */
     @GET
     @Path("/user/active")
@@ -109,8 +106,7 @@ public interface HpcSecurityRestService
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
      * @param firstName (Optional) The first name to search for (using case insensitive comparison).
      * @param lastName (Optional) The last name to search for (using case insensitive comparison).
-     * @return gov.nih.nci.hpc.dto.security.HpcUserListDTO entity.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcUserListDTO entity.
      */
     @GET
     @Path("/user/all")
@@ -122,7 +118,7 @@ public interface HpcSecurityRestService
     /**
      * Authenticate a user.
      *
-     * @return gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO entity.
+     * @return The REST service response w/ HpcAuthenticationResponseDTO entity.
      */
     @GET
     @Path("/authenticate")
@@ -134,7 +130,7 @@ public interface HpcSecurityRestService
      *
      * @param groupName The group name.
      * @param groupMembersRequest (Optional) request to add users to the registered group.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcGroupMembersResponseDTO entity.
      */
 	@PUT
 	@Path("/group/{groupName}")
@@ -148,7 +144,7 @@ public interface HpcSecurityRestService
      *
      * @param groupName The group name.
      * @param groupMembersRequest Request to add/remove users to/from a group.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcGroupMembersResponseDTO entity.
      */
 	@POST
 	@Path("/group/{groupName}")
@@ -161,7 +157,7 @@ public interface HpcSecurityRestService
      * Get a group by name.
      *
      * @param groupName The group name
-     * @return The REST service response.
+     * @return The REST service response w/ HpcGroupMembersDTO entity.
      */
     @GET
     @Path("/group/{groupName}")
@@ -173,7 +169,7 @@ public interface HpcSecurityRestService
      *
      * @param groupSearchCriteria (Optional) The group search criteria (In the form of SQL 'LIKE', using case sensitive matching).
      *                            If null - then all groups are returned.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcGroupListDTO entity.
      */
     @GET
     @Path("/group")

@@ -40,7 +40,7 @@ public interface HpcDataSearchRestService
      * Get collections by compound metadata query..
      *
      * @param compoundMetadataQueryDTO A compund metadata query DTO.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcCollectionListDTO entity.
      */
 	@POST
 	@Path("/collection/query")
@@ -56,7 +56,7 @@ public interface HpcDataSearchRestService
      * @param page The requested results page.
      * @param totalCount If set to true, return the total count of collections matching the query
      *                   regardless of the limit on returned entities.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcCollectionListDTO entity.
      */
 	@GET
 	@Path("/collection/query/{queryName}")
@@ -70,7 +70,7 @@ public interface HpcDataSearchRestService
      * Get data objects by compound metadata query.
      *
      * @param compoundMetadataQueryDTO A compund metadata query DTO.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcDataObjectListDTO entity.
      */
 	@POST
 	@Path("/dataObject/query")
@@ -86,7 +86,7 @@ public interface HpcDataSearchRestService
      * @param page The requested results page.
      * @param totalCount If set to true, return the total count of collections matching the query
      *                   regardless of the limit on returned entities.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcDataObjectListDTO entity.
      */
 	@GET
 	@Path("/dataObject/query/{queryName}")
@@ -136,7 +136,7 @@ public interface HpcDataSearchRestService
      * Get a named query.
      *
      * @param queryName The query name.
-     * @return The REST service response.
+     * @return The REST service response w/ HpcNamedCompoundMetadataQueryDTO entity. 
      */
     @GET
     @Path("/query/{queryName}")
@@ -146,7 +146,7 @@ public interface HpcDataSearchRestService
     /**
      * Get all saved queries for a user.
      *
-     * @return The REST service response.
+     * @return The REST service response w/ HpcNamedCompoundMetadataQueryListDTO entity.
      */
     @GET
     @Path("/query")
@@ -157,7 +157,7 @@ public interface HpcDataSearchRestService
    * Get a list of metadata attributes currently registered.
    *
    * @param levelLabel Filter the results by level label (Optional).
-   * @return The REST service response.
+   * @return The REST service response w/ HpcMetadataAttributesListDTO entity.
    */
 	@GET
 	@Path("/metadataAttributes")
