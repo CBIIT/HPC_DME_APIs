@@ -39,14 +39,14 @@ public interface HpcDataSearchRestService
     /**
      * Get collections by compound metadata query..
      *
-     * @param compoundMetadataQueryDTO A compund metadata query DTO.
+     * @param compoundMetadataQuery A compund metadata query DTO.
      * @return The REST service response w/ HpcCollectionListDTO entity.
      */
 	@POST
 	@Path("/collection/query")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
+	public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQuery);
 	
     /**
      * Get collections by named query.
@@ -69,14 +69,14 @@ public interface HpcDataSearchRestService
     /**
      * Get data objects by compound metadata query.
      *
-     * @param compoundMetadataQueryDTO A compund metadata query DTO.
+     * @param compoundMetadataQuery A compund metadata query DTO.
      * @return The REST service response w/ HpcDataObjectListDTO entity.
      */
 	@POST
 	@Path("/dataObject/query")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
+	public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQuery);
 	
     /**
      * Get data objects by named query.
@@ -100,27 +100,27 @@ public interface HpcDataSearchRestService
      * Add a new named query.
      *
      * @param queryName The query name.
-     * @param compoundMetadataQueryDTO The compound metadata query DTO.
+     * @param compoundMetadataQuery The compound metadata query DTO.
      * @return The REST service response.
      */
     @PUT
     @Path("/query/{queryName}")
     @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response addQuery(@PathParam("queryName") String queryName,
-    		                 HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
+    		                 HpcCompoundMetadataQueryDTO compoundMetadataQuery);
     
     /**
      * Update a named query.
      *
      * @param queryName The query name.
-     * @param compoundMetadataQueryDTO The compound metadata query DTO.
+     * @param compoundMetadataQuery The compound metadata query DTO.
      * @return The REST service response.
      */
     @POST
     @Path("/query/{queryName}")
     @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response updateQuery(@PathParam("queryName") String queryName,
-    		                    HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO);
+    		                    HpcCompoundMetadataQueryDTO compoundMetadataQuery);
     
     /**
      * Delete a named query.

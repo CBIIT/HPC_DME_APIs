@@ -237,16 +237,16 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistrationDTO)
+    public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistration)
     {
 		try {
-			 securityBusService.registerSystemAccount(systemAccountRegistrationDTO);
+			 securityBusService.registerSystemAccount(systemAccountRegistration);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
 		}
 		
-		return createdResponse(systemAccountRegistrationDTO.getAccount().getIntegratedSystem().value());    	
+		return createdResponse(systemAccountRegistration.getAccount().getIntegratedSystem().value());    	
     }
 }
 

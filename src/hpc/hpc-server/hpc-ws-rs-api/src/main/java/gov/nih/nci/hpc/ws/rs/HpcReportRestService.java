@@ -34,12 +34,12 @@ public interface HpcReportRestService
 	/**
 	 * Generate report.
 	 *
-	 * @param reportDTO The report DTO. 
+	 * @param reportRequest The report request DTO. 
 	 * @return The REST service response w/ HpcReportsDTO entity.
 	 */
 	@POST
 	@Path("/report")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response generateReport(HpcReportRequestDTO reportDTO);
+	public Response generateReport(HpcReportRequestDTO reportRequest);
 }

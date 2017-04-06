@@ -60,11 +60,11 @@ public class HpcReportRestServiceImpl extends HpcRestServiceImpl implements HpcR
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public Response generateReport(HpcReportRequestDTO reportDTO) 
+	public Response generateReport(HpcReportRequestDTO reportRequest) 
 	{
 		HpcReportsDTO report = null;
 		try {
-			 report = reportBusService.generateReport(reportDTO);
+			 report = reportBusService.generateReport(reportRequest);
 
 		} catch(HpcException e) {
 			    return errorResponse(e);

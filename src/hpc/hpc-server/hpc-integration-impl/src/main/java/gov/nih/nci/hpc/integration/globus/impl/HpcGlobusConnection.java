@@ -100,7 +100,7 @@ public class HpcGlobusConnection
 		        return null;
 		    
 		} catch(Exception e) {
-    	        throw new HpcException("Failed to authenticate Globus Account: " +
+    	        throw new HpcException("[GLOBUS] Failed to authenticate account: " +
     	        		               dataTransferAccount.getUsername(),
     	    		                   HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
@@ -133,7 +133,7 @@ public class HpcGlobusConnection
 		        return null;
 		    
 		} catch(Exception e) {
-    	        throw new HpcException("Failed to authenticate Globus Account: " +
+    	        throw new HpcException("[GLOBUS] Failed to authenticate account: " +
     	        		               username,
     	    		                   HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}

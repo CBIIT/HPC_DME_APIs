@@ -124,7 +124,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		 }
         	
         } catch(AmazonClientException ace) {
-        	    throw new HpcException("Failed to upload file via S3", 
+        	    throw new HpcException("[S3] Failed to upload file.", 
         	    		               HpcErrorType.DATA_TRANSFER_ERROR, ace);
         	    
         } catch(InterruptedException ie) {
@@ -172,7 +172,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		 }
     		    
         } catch(AmazonClientException ace) {
-    	        throw new HpcException("Failed to download file via S3", 
+    	        throw new HpcException("[S3] Failed to download file.", 
     	    	     	               HpcErrorType.DATA_TRANSFER_ERROR, ace);
     	    
         } catch(InterruptedException ie) {
