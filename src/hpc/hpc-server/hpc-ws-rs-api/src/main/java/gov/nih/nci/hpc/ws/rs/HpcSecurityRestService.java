@@ -189,12 +189,12 @@ public interface HpcSecurityRestService
     /**
      * Register system account.
      *
-     * @param systemAccountRegistrationDTO The system account DTO to register.
+     * @param systemAccountRegistration The system account DTO to register.
      * @return The REST service response.
      */
     @PUT
     @Path("/systemAccount")
     @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-    public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistrationDTO);
+    public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistration);
 }
 
