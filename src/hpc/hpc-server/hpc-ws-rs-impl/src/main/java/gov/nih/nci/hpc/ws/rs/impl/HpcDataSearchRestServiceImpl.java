@@ -73,11 +73,11 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//  
 	
     @Override
-    public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+    public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQuery)
     {
     	HpcCollectionListDTO collections = null;
 		try {
-			 collections = dataSearchBusService.getCollections(compoundMetadataQueryDTO);
+			 collections = dataSearchBusService.getCollections(compoundMetadataQuery);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -105,11 +105,11 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+    public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQuery)
     {
     	HpcDataObjectListDTO dataObjects = null;
 		try {
-			 dataObjects = dataSearchBusService.getDataObjects(compoundMetadataQueryDTO);
+			 dataObjects = dataSearchBusService.getDataObjects(compoundMetadataQuery);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -138,10 +138,10 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     
     @Override
     public Response addQuery(String queryName,
-    		                 HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+    		                 HpcCompoundMetadataQueryDTO compoundMetadataQuery)
     {
 		try {
-			 dataSearchBusService.addQuery(queryName, compoundMetadataQueryDTO);
+			 dataSearchBusService.addQuery(queryName, compoundMetadataQuery);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -152,10 +152,10 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     
     @Override
     public Response updateQuery(String queryName,
-    		                    HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+    		                    HpcCompoundMetadataQueryDTO compoundMetadataQuery)
     {
 		try {
-			 dataSearchBusService.updateQuery(queryName, compoundMetadataQueryDTO);
+			 dataSearchBusService.updateQuery(queryName, compoundMetadataQuery);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
