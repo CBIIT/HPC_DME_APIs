@@ -278,6 +278,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		return okResponse(entityPermissions, true);
     }
     
+    @Override
     public Response getDataObjectPermissionForUser(String path, String userId)
     {
     	HpcUserPermissionDTO hpcUserPermissionDTO = null;
