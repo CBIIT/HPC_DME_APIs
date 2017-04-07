@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -79,6 +80,18 @@ public class HpcDownloadController extends AbstractHpcController {
 		String downloadFilePath = request.getParameter("path");
 		String downloadType = request.getParameter("type");
 		model.addAttribute("downloadFilePath", downloadFilePath);
+		if(downloadFilePath != null)
+		{
+			String fileName = downloadFilePath;
+			int index = downloadFilePath.lastIndexOf("/");
+			
+			if(index == -1)
+				index = downloadFilePath.lastIndexOf("//");
+			
+			if(index != -1)
+				 fileName = downloadFilePath.substring(index+1);
+			model.addAttribute("downloadFilePathName", fileName);
+		}
 		model.addAttribute("downloadType", downloadType);
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
