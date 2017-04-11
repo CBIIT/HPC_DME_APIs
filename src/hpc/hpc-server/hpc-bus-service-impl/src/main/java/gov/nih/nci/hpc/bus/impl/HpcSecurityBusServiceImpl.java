@@ -145,9 +145,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     				                 "'iadmin moduser' command to change the user's role to GROUP_ADMIN",
     				                 HpcRequestRejectReason.API_NOT_SUPPORTED);
     	   }
-    			           
+    			   
     	   // Create the data management (IRODS) account.
-    	   dataManagementSecurityService.addUser(nciAccount, role);
+    	   createDataManagementAccount(nciAccount, role);
     	}
     	
     	boolean registrationCompleted = false;
@@ -163,7 +163,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     		       }
     	}
     }
-    
+
     @Override
     public void updateUser(String nciUserId, HpcUserRequestDTO userUpdateRequest) 
                           throws HpcException
@@ -339,7 +339,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		   throw new HpcException("Delete users is invalid in group registration request", 
 				                  HpcErrorType.INVALID_REQUEST_INPUT);	
 		}
-		
+		//Workaround for Group Admin to create a Group
+		setSystemRequestInvoker();
 		// Add the group.
 		dataManagementSecurityService.addGroup(groupName);
 		
@@ -363,7 +364,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		if(!dataManagementSecurityService.groupExists(groupName)) {
 		   throw new HpcException("Group doesn't exist: " + groupName, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		
+		//Workaround for Group Admin to update a Group
+		setSystemRequestInvoker();
 		// Add/Delete group members.
 		return updateGroupMembers(groupName, groupMembersRequest);		
     }
@@ -423,6 +425,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		if(groupName == null) {
 		   throw new HpcException("Null group name", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
+		//Workaround for Group Admin to update a Group
+		setSystemRequestInvoker();
 		
     	// Delete the group.
         dataManagementSecurityService.deleteGroup(groupName);
@@ -666,6 +670,41 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 					
 		}
     }
+    
+    /**
+     * Create a data management account (i.e. add a user account to iRODS).
+     * 
+     * @param nciAccount The NCI account to create the account for.
+     * @param role The user role to assign to the new account.
+     * @throws HpcException on service failure.
+     */
+	private void createDataManagementAccount(HpcNciAccount nciAccount, HpcUserRole role) 
+			                                throws HpcException
+	{
+		// When using the command line, a group-admin user can create a user account. It is not supported
+		// by the Jargon API. As a workaround, if the invoker is a group-admin then we create the account using
+		// an HPC-DM system account. This workaround should be removed once the Jargon API allows greoup-admin to create
+		// accounts.
+		setSystemRequestInvoker();
+	 	
+	    // Create the data management (IRODS) account.
+ 	    dataManagementSecurityService.addUser(nciAccount, role);
+	}
+
+	private void setSystemRequestInvoker() throws HpcException
+	{
+		// When using the command line, a group-admin user can create a user account. It is not supported
+		// by the Jargon API. As a workaround, if the invoker is a group-admin then we create the account using
+		// an HPC-DM system account. This workaround should be removed once the Jargon API allows greoup-admin to create
+		// accounts.
+		HpcRequestInvoker invoker = securityService.getRequestInvoker();
+		if(invoker == null) {
+	 	   throw new HpcException("Null request invoker", HpcErrorType.UNEXPECTED_ERROR);
+		}
+		if(invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
+	 	   securityService.setSystemRequestInvoker();
+		}
+	}
 }
 
  

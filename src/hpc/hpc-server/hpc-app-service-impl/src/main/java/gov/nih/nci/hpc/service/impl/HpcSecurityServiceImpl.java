@@ -182,7 +182,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	user.setNciAccount(nciAccount);
     	user.setCreated(Calendar.getInstance());
     	user.setActive(true);
-    	user.setActiveUpdatedBy(invoker.getNciAccount().getUserId());
+    	user.setActiveUpdatedBy(invoker.getNciAccount() == null ? invoker.getDataManagementAccount().getUsername() : invoker.getNciAccount().getUserId());
 
     	// Persist to the DB.
     	upsert(user);
