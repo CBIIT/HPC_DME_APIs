@@ -116,6 +116,7 @@ public class HpcUpdateGroupController extends AbstractHpcController {
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
 			HttpServletResponse response, final RedirectAttributes redirectAttributes) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
+		List<String> messages = new ArrayList<String>();
 		try {
 			if (hpcWebGroup.getActionType() == null || hpcWebGroup.getActionType().trim().length() == 0 || hpcWebGroup.getActionType().endsWith("cancel"))
 			{
@@ -128,16 +129,22 @@ public class HpcUpdateGroupController extends AbstractHpcController {
 							sslCertPath, sslCertPassword);
 					if (deleted)
 					{
-						model.addAttribute("message", "Successfully deleted group: " + hpcWebGroup.getGroupId());
+						messages.add("Successfully deleted group: " + hpcWebGroup.getGroupId());
+						model.addAttribute("messages", messages);
 						redirectAttributes.addFlashAttribute("return", "true");
 						return "redirect:group?return=true";
 					}
 				} catch (HpcWebException e) {
-					model.addAttribute("message", "Failed to delete group: " + e.getMessage());
+					messages.add("Failed to delete group: " + e.getMessage());
+					model.addAttribute("messages", messages);
 				}
 			} else if (hpcWebGroup.getActionType().endsWith("update")) {
 				if (hpcWebGroup.getGroupId() == null || hpcWebGroup.getGroupId().trim().length() == 0)
-					model.addAttribute("message", "Invald user input");
+				{
+					messages.add("Invald user input");
+					model.addAttribute("messages", messages);
+					return "updategroup";
+				}
 
 				HpcGroupMembersRequestDTO dto = constructRequest(request, session, hpcWebGroup.getGroupId());
 
@@ -148,7 +155,8 @@ public class HpcUpdateGroupController extends AbstractHpcController {
 					session.removeAttribute("selectedUsers");
 			}
 		} catch (Exception e) {
-			model.addAttribute("message", "Failed to update group: " + e.getMessage());
+			messages.add(e.getMessage());
+			model.addAttribute("messages", messages);
 		} finally {
 			model.addAttribute("hpcWebGroup", hpcWebGroup);
 			initialize(model, authToken, hpcWebGroup.getGroupName(), session);

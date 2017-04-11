@@ -252,8 +252,10 @@
 	    
 	    function deleteGroup()
 	    {
-			document.getElementById("actionType").value = "delete";
-			$("#groupForm").submit();
+	    	if (confirm("Are you sure to delete?") == true) {
+				document.getElementById("actionType").value = "delete";
+				$("#groupForm").submit();
+	    	}
 	    }
 	    
 	    function cancel()
