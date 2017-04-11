@@ -332,15 +332,17 @@ function print_error_message {
 
     RESPONSE_CODE="$2"
     
-    if [ ! -z "$RESPONSE_CODE" ] && [ "$2" -ne 204 ]
+    if [ ! -z "$RESPONSE_CODE" ] && [ "$RESPONSE_CODE" -ne 204 ]
     then
       ERROR_MSG=$(get_json_value $1 message) >&2
+      echo "ERROR_CODE:$RESPONSE_CODE" >&2
       echo "ERROR_MESSAGE:\"$ERROR_MSG\"" >&2
-      return
-    else
+      return 1
+    elif [ "$RESPONSE_CODE" -eq 204  ]
+    then
       echo "ERROR_MESSAGE:\"no content\"" >&2
-      return
-    fi
+      return 1
+    fi 
 }
 
 #Format json output
@@ -373,6 +375,40 @@ function print_json_message {
       echo 
     fi
 }
+
+
+#Check if a dataObject exists
+#Input: <logical-path> 
+function check_data_object  {
+
+    USAGE="check_data_object <dataobject-path>"
+
+    if [ "$#" -lt 1 ] 
+    then
+        echo "ERROR: using $0" >&2
+        echo "recieved $@" 
+        echo "$USAGE" >&2
+        return
+    fi
+
+    DATAOBJECT_PATH="$1"
+    RESPONSE_HEADER="dxget-response-header.tmp"
+    RESPONSE_MSG="dxget-response-message.tmp"
+ 
+    dm_get_item   dataObject/$DATAOBJECT_PATH  "$RESPONSE_MSG" "$RESPONSE_HEADER"
+
+    CODE=$(get_http_code $RESPONSE_HEADER) 
+    if [ "$CODE" -eq 200 ]
+    then
+      return 0
+    elif [ "$CODE" -eq 204 ]
+    then 
+      return 1
+    else
+      return 2 
+    fi 
+}
+
 
 
 
