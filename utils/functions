@@ -289,19 +289,9 @@ function dm_get_dataobject {
     fi
     ITEM_PATH="$1"
 
-    if [ ! -z "$2" ]
-    then
-      RESONSE_MSG="$2"
-    else
-      RESPONSE_MSG=get-item-response-message.json.tmp
-    fi 
 
-    if [ ! -z "$3" ]
-    then
-      RESONSE_HEADER="$3"
-    else
-      RESPONSE_HEADER=get-item-response-header.tmp
-    fi 
+    RESPONSE_MSG=${2-get-item-response-message.json.tmp}
+    RESPONSE_HEADER=${3-get-item-response-header.tmp}
 
     dm_get_item dataObject/$ITEM_PATH  "$RESPONSE_MSG" "$RESPONSE_HEADER"
 
@@ -311,7 +301,7 @@ function dm_get_dataobject {
       echo "ERROR getting \"$ITEM_PATH\" " >&2
       echo "ERROR_CODE:\"$RESPONSE_CODE\"" >&2
       print_error_message "$RESPONSE_MSG" "$REPONSE_CODE"
-      return
+      return 1
     else 
      
       #Check if the user needs the response header file 
@@ -325,7 +315,9 @@ function dm_get_dataobject {
         print_json_message "$RESPONSE_MSG"    
         rm $RESPONSE_MSG 2> /dev/null 
       fi
+      return 0
     fi
+    return 1
 }
 
 
@@ -339,7 +331,7 @@ function dm_get_collection {
 
     if [ "$#" -lt 1 ] 
     then
-        echo "ERROR: using get_collection" >&2
+        echo "ERROR: using dm_get_collection" >&2
         echo "recieved $0 $@" 
         echo "$USAGE" >&2
         return
@@ -373,4 +365,67 @@ function dm_get_collection {
       fi
     fi
 }
+
+
+
+#Download a dataObject synchronously 
+#Inputs: logic-path 
+#        destination-file
+function dm_download_dataobject_sync {
+
+
+    USAGE="USAGE:dm_download_dataobject_sync <logic-path> <destination-file>"
+
+    if [ "$#" -lt 2 ] 
+    then
+        echo "ERROR: using dm_downlaod_dataobject_sync" >&2
+        echo "recieved $@" 
+        echo "$USAGE" >&2
+        return 1
+    fi
+
+    RESPONSE_HEADER=download-dataobject-response-header.tmp
+
+   
+    OBJECT_PATH="$1"
+    DESTINATION_PATH="$2"
+
+    if [ -d "$DESTINATION_PATH"  ]
+    then
+      
+        #Download the file with the same file name 
+        FILE_NAME=$(basename "$OBJECT_PATH")
+        if [ "$?" -ne 0 ]
+        then
+          echo "ERROR:Can not retrieve the file name from \"$OBJECT_PATH\"" >&2
+          return 1
+        fi
+
+        DESTINATION_PATH=$DESTINATION_PATH/${FILE_NAME}
+    fi
+
+
+    SERVER=$(get_server)
+    
+    CONFIG="--config $HPC_DM_UTILS/curl-conf"
+
+    TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json"
+
+    curl -H "Content-Type: application/json" -d @$TEMPLATE -X POST ${SERVER}/dataObject/$OBJECT_PATH/download  $CONFIG -H "Accept: application/json" -D $RESPONSE_HEADER -o $DESTINATION_PATH -s 2> curl-status 
+    check_connection $RESPONSE_HEADER
+
+
+    CODE=$(get_http_code "$RESPONSE_HEADER") 
+
+    if [ "$CODE" -ne 200 ]
+    then 
+      #In this case the destination path file will contain the error code
+      print_error_message "$DESTINATION_PATH" "$CODE" 
+    else
+      rm $RESPONSE_HEADER 2> /dev/null
+    fi
+}
+
+
+
 
