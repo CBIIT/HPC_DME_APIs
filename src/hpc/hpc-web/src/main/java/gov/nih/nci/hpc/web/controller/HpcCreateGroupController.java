@@ -89,6 +89,7 @@ public class HpcCreateGroupController extends AbstractHpcController {
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
 			HttpServletResponse response, final RedirectAttributes redirectAttributes) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
+		List<String> messages = new ArrayList<String>();
 		if (authToken == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
 			bindingResult.addError(error);
@@ -106,8 +107,9 @@ public class HpcCreateGroupController extends AbstractHpcController {
 			
 			if (hpcWebGroup.getGroupName() == null || hpcWebGroup.getGroupName().trim().length() == 0)
 				model.addAttribute("message", "Invald user input");
-
-			HpcGroupMembersRequestDTO dto = constructRequest(request, hpcWebGroup.getGroupName());
+			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+			String userId = (String) session.getAttribute("hpcUserId");
+			HpcGroupMembersRequestDTO dto = constructRequest(request, user.getUserRole(), userId, hpcWebGroup.getGroupName());
 
 			HpcGroupMembersResponseDTO createResponse = HpcClientUtil.createGroup(authToken, groupServiceURL, dto, hpcWebGroup.getGroupName(),
 					sslCertPath, sslCertPassword);
@@ -115,7 +117,8 @@ public class HpcCreateGroupController extends AbstractHpcController {
 			if(success)
 				session.removeAttribute("selectedUsers");
 		} catch (Exception e) {
-			model.addAttribute("message", "Failed to create group: " + e.getMessage());
+			messages.add(e.getMessage());
+			model.addAttribute("messages", messages);
 		} finally {
 			model.addAttribute("hpcWebGroup", hpcWebGroup);
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
@@ -160,7 +163,7 @@ public class HpcCreateGroupController extends AbstractHpcController {
 		return success;
 	}
 	
-	private HpcGroupMembersRequestDTO constructRequest(HttpServletRequest request,
+	private HpcGroupMembersRequestDTO constructRequest(HttpServletRequest request, String userRole, String roleUserId, 
 			String groupName) {
 		Enumeration<String> params = request.getParameterNames();
 		HpcGroupMembersRequestDTO dto = new HpcGroupMembersRequestDTO();
@@ -176,6 +179,9 @@ public class HpcCreateGroupController extends AbstractHpcController {
 					submittedUsers.add(userName[0]);
 			}
 		}
+		
+		if(userRole.equals("GROUP_ADMIN"))
+			addusers.add(roleUserId);
 		if (addusers.size() > 0)
 			dto.getAddUserIds().addAll(addusers);
 		return dto;
