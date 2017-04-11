@@ -66,9 +66,9 @@ public class HpcUserDAOImpl implements HpcUserDAO
     
 	private static final String GET_USERS_USER_ID_FILTER = " and lower(\"USER_ID\") = lower(?) ";
     
-	private static final String GET_USERS_FIRST_NAME_FILTER = " and lower(\"FIRST_NAME\") = lower(?) ";
+	private static final String GET_USERS_FIRST_NAME_FILTER = " and lower(\"FIRST_NAME\") like lower(?) ";
     
-	private static final String GET_USERS_LAST_NAME_FILTER = " and lower(\"LAST_NAME\") = lower(?) ";
+	private static final String GET_USERS_LAST_NAME_FILTER = " and lower(\"LAST_NAME\") like lower(?) ";
 	
 	private static final String GET_USERS_ACTIVE_FILTER = " and \"ACTIVE\" = true ";
 	
