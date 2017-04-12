@@ -18,13 +18,10 @@ $HPC_DM_TEST/test-user-groups/utils/runtest
 
 
 #Verify that the user registration went through
-verify_registration  group-registration-response-header.tmp
+verify_registration  group-update-response-header.tmp
 
-#Verify that the group registration went through
-
-GROUP_RESPONSE_HEADER=original_group_registration.tmp
-mv group-registration-response-header.tmp  $GROUP_RESPONSE_HEADER 
-verify_registration $GROUP_RESPONSE_HEADER 
+GROUP_RESPONSE_HEADER=original_group_update.tmp
+mv group-update-response-header.tmp  $GROUP_RESPONSE_HEADER 
 
 #Get the new user ID
 if ! [ -e new-user-id.tmp ] 
@@ -49,13 +46,12 @@ NEW_GROUP=$(cat new-group-id.tmp)
 
 INPUT_TEMPLATE=$(cat input-template.json)
 DELETED_USER=$(echo "$INPUT_TEMPLATE" | sed "s/dxtest-delete-user/$NEW_USER/")
-GROUP=$(echo "$DELETED_USER" | sed "s/dxtest-group/$NEW_GROUP/")
-echo "$GROUP" > input.json.tmp
+echo "$DELETED_USER" > input.json.tmp
 
-RESPONSE_MSG=group-registration-response-message.json.tmp
-RESPONSE_HEADER=group-registration-response-header.tmp
+RESPONSE_MSG=group-update-response-message.json.tmp
+RESPONSE_HEADER=group-update-response-header.tmp
 
-register_group "input.json.tmp" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+update_group "input.json.tmp" $NEW_GROUP "$RESPONSE_HEADER" "$RESPONSE_MSG"
 
 verify_registration  $RESPONSE_HEADER 
 
@@ -70,6 +66,6 @@ USER_RESPONSE=$(echo "$SEPARATE_LINES" | grep "\"userId\"")
 #Make sure the user is added "result true"
 if ! [[ "$USER_RESPONSE" ==  *"\"result\":true"*  ]] 
 then
-    echo "ERROR: The user was not added correctly"
+    echo "ERROR: The user was not removed correctly"
     exit
 fi
