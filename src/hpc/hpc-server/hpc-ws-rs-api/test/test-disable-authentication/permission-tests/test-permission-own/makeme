@@ -27,4 +27,4 @@ cp $RESPONSE_MSG project-response-message.json.tmp   2>/dev/null
 
 
 #Give dice_user_group_admin  a "READ" permission for the project 
-update_single_permission "$PROJECT_PATH" dice_user_group_admin OWN 
+update_single_permission "collection/$PROJECT_PATH" dice_user_group_admin OWN 

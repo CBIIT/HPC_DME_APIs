@@ -27,7 +27,7 @@ cp $RESPONSE_MSG project-response-message.json.tmp   2>/dev/null
 
 
 #Give dice_user a "READ" permission for the project 
-update_single_permission "$PROJECT_PATH" dice_user READ
+update_single_permission "collection/$PROJECT_PATH" dice_user READ
 
 #Register a child folder 
 FOLDER_PATH=$PROJECT_PATH/folder_path
