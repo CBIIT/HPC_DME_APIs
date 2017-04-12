@@ -27,4 +27,4 @@ cp $RESPONSE_MSG project-response-message.json.tmp   2>/dev/null
 
 
 #Give dice_user a "WRITE" permission for the project 
-update_single_permission "$PROJECT_PATH" dice_user WRITE 
+update_single_permission "colleciton/$PROJECT_PATH" dice_user WRITE 
