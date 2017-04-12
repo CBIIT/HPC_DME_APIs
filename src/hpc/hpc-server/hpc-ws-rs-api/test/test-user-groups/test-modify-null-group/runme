@@ -17,13 +17,18 @@ source $HPC_DM_TEST/utils/functions
 $HPC_DM_TEST/test-user-groups/utils/runtest
 
 
-#register_group_from_template
-
-
+#Check that the group registration went through 
 RESPONSE_MSG=group-registration-response-message.json.tmp
 RESPONSE_HEADER=group-registration-response-header.tmp
 
-register_group input.json $RESPONSE_HEADER $RESPONSE_MSG 
+verify_registration $RESPONSE_HEADER
+
+
+RESPONSE_MSG=group-update-response-message.json.tmp
+RESPONSE_HEADER=group-update-response-header.tmp
+group_name=$(cat new-group-id.tmp)
+
+update_group input.json "$group_name" $RESPONSE_HEADER $RESPONSE_MSG 
 
 HTTP_CODE=$(get_http_code $RESPONSE_HEADER)
 echo $HTTP_CODE >&2
