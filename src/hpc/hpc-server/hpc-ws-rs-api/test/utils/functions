@@ -473,7 +473,7 @@ function update_uid {
     fi
     INPUT_FILE="$1"
     OUTPUT_FILE="$2"
-    USERID=`get_username $HPC_DM_TEST/utils/config` $RESPONSE_HEADER $RESPONSE_MSG
+    USERID=`get_username $HPC_DM_TEST/utils/config` 
     ENDPOINT=$(get_json_value $HPC_DM_TEST/utils/test-configuration globus-shared-endpoint-uid)
     OUT=`cat "$INPUT_FILE" | sed "s/dxtestuid/$USERID/"`
     OUT=`echo "$OUT" | sed "s/globus-shared-endpoint-uid/$ENDPOINT/"`
@@ -525,7 +525,7 @@ function verify_globus_file {
     PARENT_DIR=$(dirname "$FILE_PATH") 
 
     #Sleep a bit for Globus to be updated
-    sleep 3
+    sleep 10 
     curl --config $GLOBUS_CREDENTIALS  "https://transfer.api.globusonline.org/v0.10/operation/endpoint/$ENDPOINT_ID/ls?path=$PARENT_DIR" -s > directory-list.tmp
     #echo "curl --config $GLOBUS_CREDENTIALS  \"https://transfer.api.globusonline.org/v0.10/operation/endpoint/$ENDPOINT_ID/ls?path=$PARENT_DIR\" -s > directory-list.tmp"
     #curl --config $GLOBUS_CREDENTIALS  -H "Authorization : Bearer $TOKEN" "https://transfer.api.globusonline.org/v0.10/operation/endpoint/$ENDPOINT_ID/ls?path=$PARENT_DIR" -s > directory-list.tmp
@@ -701,25 +701,60 @@ function update_existing_user {
 
 
 
+#Update an existing  group
+#Inputs: registration-input.json 
+#      : group-name
+#      : response-header
+#      : response-msg
+function update_group {
+
+    USAGE="update_group  <input.json> <group-name> <response-header> <response-msg>"
+
+    if [ "$#" -lt 4 ] 
+    then
+        echo "ERROR: using update_group" >&2
+        echo "$USAGE" >&2
+        exit 1
+    fi
+
+    INPUT_FILE="$1"
+    GROUP_NAME="$2"
+    RESPONSE_HEADER="$3"
+    RESPONSE_MSG="$4"
+
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+    curl -H "Content-Type: application/json" -d @"$INPUT_FILE" -X POST ${SERVER}/group/$GROUP_NAME  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
+    check_connection $RESPONSE_HEADER
+
+}
+
+
+
+
+
 #Register a new group
-#Inputs: registration-input.json
+#Inputs: registration-input.json 
+#      : group-name
 #      : response-header
 #      : response-msg
 function register_group {
 
-    if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] 
+    USAGE="register_group  <input.json> <group-name> <response-header> <response-msg>"
+
+    if [ "$#" -lt 4 ] 
     then
-        echo "ERROR: using register_group"
-        echo "USAGE: register_group  <input.json> <response-header> <response-msg>"
-        exit
+        echo "ERROR: using register_group" >&2
+        echo "$USAGE" >&2
+        exit 1
     fi
 
     INPUT_FILE="$1"
-    RESPONSE_HEADER="$2"
-    RESPONSE_MSG="$3"
+    GROUP_NAME="$2"
+    RESPONSE_HEADER="$3"
+    RESPONSE_MSG="$4"
 
     SERVER=`cat $HPC_DM_TEST/utils/server`
-    echo curl -H "Content-Type: application/json" -d @"$INPUT_FILE" -X POST ${SERVER}/group  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
+    curl -H "Content-Type: application/json" -d @"$INPUT_FILE" -X PUT ${SERVER}/group/$GROUP_NAME  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
     check_connection $RESPONSE_HEADER
 
 }
@@ -727,18 +762,19 @@ function register_group {
 #Create a new group from template
 function register_group_from_template {
 
+    sleep 1
     SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
     NEW_GROUP=group-$SUFFIX
-    INPUT_TEMPLATE=$(cat $HPC_DM_TEST/utils/templates/register-new-group-template.json)
+    INPUT_TEMPLATE=$HPC_DM_TEST/utils/templates/register-new-group-template.json
     
     ADDED_GROUP=$(echo "$INPUT_TEMPLATE" | sed "s/dxtest-group/$NEW_GROUP/")
 
-    echo "$ADDED_GROUP" > input.json.tmp
+    cp $INPUT_TEMPLATE input.json.tmp
     echo "$NEW_GROUP" > new-group-id.tmp
 
     RESPONSE_MSG=group-registration-response-message.json.tmp
     RESPONSE_HEADER=group-registration-response-header.tmp
-    register_group  "input.json.tmp" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+    register_group  "input.json.tmp" "$NEW_GROUP" "$RESPONSE_HEADER" "$RESPONSE_MSG"
 }
 
 #Add user to group
@@ -758,14 +794,13 @@ function add_user_to_group {
 
     INPUT_TEMPLATE=$(cat $HPC_DM_TEST/utils/templates/add-user-to-group-template.json)
     ADDED_USER=$(echo "$INPUT_TEMPLATE" | sed "s/dxtest-new-user/$USER_ID/")
-    ADDED_GROUP=$(echo "$ADDED_USER" | sed "s/dxtest-group/$GROUP_ID/")
 
-    echo "$ADDED_GROUP" > input.json.tmp
+    echo "$ADDED_USER" > input.json.tmp
 
-    RESPONSE_MSG=group-registration-response-message.json.tmp
-    RESPONSE_HEADER=group-registration-response-header.tmp
+    RESPONSE_MSG=group-update-response-message.json.tmp
+    RESPONSE_HEADER=group-update-response-header.tmp
 
-    register_group "input.json.tmp" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+    update_group "input.json.tmp" "$GROUP_ID" "$RESPONSE_HEADER" "$RESPONSE_MSG"
 }
 
 #Register a new user and a group from template:
@@ -937,6 +972,7 @@ function download_async {
         exit
     fi
 
+
     if [ -z $RESPONSE_HEADER ] 
     then
         RESPONSE_HEADER=download-response-header.tmp
@@ -962,6 +998,7 @@ function download_async {
     ITEM_NAME=$(basename $ITEM_PATH)
     TEMP=input-temp.json.tmp
 
+    
     #Update the globus endpoint
     update_uid "$TEMPLATE" "$TEMP"
 
@@ -1420,40 +1457,50 @@ function get_item {
 
 #Update the premission using an input json file
 #Inputs: <premission-file> The file that describes the premission
+#        <path> The path of the collection or dataObject (should include the type as prefix)
 #        [response-header] The file where the response header will be written
 #        [response-message] The file where the response message will be witten
 # If the variable ACTING_USER is set, this will be used as the acting user 
 
 function update_permission {
 
-    USAGE="USAGE: update_permission <permission-file> [response-header-file] [response-message-file]"
+    USAGE="USAGE: update_permission <permission-file> <[dataObjecg|collection]path>[response-header-file] [response-message-file]"
 
-    if [ -z "$1" ]
+    if [ "$#" -lt 2 ]
     then
-        echo "ERROR: using update_permission"
+        echo "ERROR: using update_permission" >&2
         echo "$USAGE" >&2
         exit
     fi
 
+    PERMISSION_FILE="$1"
+    ITEM_PATH="$2"
 
-    if [ -z "$2" ]
-    then
-        RESPONSE_HEADER="permission-response-header.tmp"
-    else
-        RESPONSE_HEADER="$2"
+    #Make sure the path include collection or dataObject
+    if [[ "$ITEM_PATH" != "dataObject"* ]] && [[ "$ITEM_PATH" !=  "collection"* ]]
+    then 
+        echo "ERROR: update permission" >&2
+        echo "PATH \"$ITEM_PATH\" does not contain the prefix \"collection\" or \"dataObject\"" >&2
+        exit 1
     fi
 
     if [ -z "$3" ]
     then
+        RESPONSE_HEADER="permission-response-header.tmp"
+    else
+        RESPONSE_HEADER="$3"
+    fi
+
+    if [ -z "$4" ]
+    then
         RESPONSE_MSG="permission-response-message.json.tmp"
     else    
-        RESPONSE_MSG="$3"
+        RESPONSE_MSG="$4"
     fi
         
     CONFIG=$(get_curl_config) 
-    PERMISSION_FILE="$1"
     SERVER=`cat $HPC_DM_TEST/utils/server`
-    curl -H "Content-Type: application/json" -d @$PERMISSION_FILE -X POST ${SERVER}/acl  $CONFIG  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -H "Content-Type: application/json" -d @$PERMISSION_FILE -X POST ${SERVER}/$ITEM_PATH/acl  $CONFIG  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     check_connection $RESPONSE_HEADER
 }
 
@@ -1501,13 +1548,13 @@ function update_single_permission {
     USER_ID="$2"
     NEW_PERMISSION="$3"
        
-    UPDATED_PATH=$(cat $HPC_DM_TEST/utils/templates/permission-update-template.json | sed "s#dxcollectionpath#$PERMISSION_PATH#")
-    UPDATED_USER=$(echo "$UPDATED_PATH" | sed "s#dxnewuserid#$USER_ID#")
+    #UPDATED_PATH=$(cat $HPC_DM_TEST/utils/templates/permission-update-template.json | sed "s#dxcollectionpath#$PERMISSION_PATH#")
+    UPDATED_USER=$(cat $HPC_DM_TEST/utils/templates/permission-update-template.json | sed "s#dxnewuserid#$USER_ID#")
     UPDATED_PERMISSION=$(echo "$UPDATED_USER" | sed "s#dxnewpermission#$NEW_PERMISSION#")
     echo "$UPDATED_PERMISSION" > permission.json.tmp
     
     #Submit the request to change permission
-    update_permission "permission.json.tmp" 
+    update_permission "permission.json.tmp" "$PERMISSION_PATH" 
     
 }
 
