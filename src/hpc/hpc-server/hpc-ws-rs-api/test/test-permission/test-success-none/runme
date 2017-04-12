@@ -19,4 +19,4 @@ $HPC_DM_TEST/test-permission/utils/runtest
 
 
 #Check correct behavior
-check_correct_behavior
+check_correct_behavior 

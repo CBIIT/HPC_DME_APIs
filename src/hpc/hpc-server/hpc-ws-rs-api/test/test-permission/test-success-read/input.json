@@ -1,13 +1,8 @@
 {
-    "entityPermissionRequests": [
-        {
-            "path": "dxcollectionpath",
             "userPermissions": [
                 {
                         "userId": "dxnewuserid",
                         "permission": "READ"
                 }
             ]
-        }
-    ]
 }
