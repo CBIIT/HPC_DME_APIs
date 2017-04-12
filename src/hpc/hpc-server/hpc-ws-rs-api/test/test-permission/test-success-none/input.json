@@ -1,6 +1,4 @@
 {
-    "entityPermissionRequests": [
-        {
             "path": "dxcollectionpath",
             "userPermissions": [
                 {
@@ -8,6 +6,4 @@
                         "permission": "NONE"
                 }
             ]
-        }
-    ]
 }

@@ -1,1 +1,1 @@
-InvalidUserException
+Failed to set collection permission. Invalid group: dxtestuser
