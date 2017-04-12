@@ -40,4 +40,4 @@ cp $RESPONSE_HEADER folder-response-header.tmp
 cp $RESPONSE_MSG folder-response-message.json.tmp   2>/dev/null
 
 #Give dice_user a "READ" permission for the dataset
-update_single_permission "$FOLDER_PATH" dice_user READ
+update_single_permission "collection/$FOLDER_PATH" dice_user READ

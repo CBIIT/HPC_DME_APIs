@@ -38,7 +38,7 @@ get_http_code "$RESPONSE_HEADER"
 
 
 #Give Read permission to dice_user. The command will be executed by dice_user_group_admin
-update_single_permission "$PROJECT_PATH" dice_user READ
+update_single_permission "collection/$PROJECT_PATH" dice_user READ
 
 
 
