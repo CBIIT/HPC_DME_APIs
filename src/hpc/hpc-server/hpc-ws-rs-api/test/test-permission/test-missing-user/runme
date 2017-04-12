@@ -25,15 +25,11 @@ verify_registration  collection-registration-response-header.tmp
 
 #Update the input template with the new collection and user values  
 COLLECTION_PATH=$(cat registered-project-path.tmp)
-NEW_USER_ID="dxtestuser"
-UPDATED_PATH=$(cat input.json | sed "s#dxcollectionpath#$COLLECTION_PATH#")
-UPDATED_USER=$(echo "$UPDATED_PATH" | sed "s#dxnewuserid#$NEW_USER_ID#")
-echo "$UPDATED_USER" > input.json.tmp
 
 #Submit the request to change permission
 RESPONSE_HEADER=permission-response-header.tmp
 RESPONSE_MSG=permission-response-message.json.tmp 
-update_permission "input.json.tmp" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+update_permission "input.json" "collection/$COLLECTION_PATH" "$RESPONSE_HEADER" "$RESPONSE_MSG"
  
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 

@@ -53,19 +53,21 @@ function check_correct_behavior {
 
     #Verify the collection registration went through
     verify_registration  collection-registration-response-header.tmp
-    
+   
     #Update the input template with the new collection and user values  
     COLLECTION_PATH=$(cat registered-project-path.tmp)
     NEW_USER_ID=$(cat new-user-id.tmp)
-    UPDATED_PATH=$(cat input.json | sed "s#dxcollectionpath#$COLLECTION_PATH#")
-    UPDATED_USER=$(echo "$UPDATED_PATH" | sed "s#dxnewuserid#$NEW_USER_ID#")
+    UPDATED_USER=$(cat  input.json | sed "s#dxnewuserid#$NEW_USER_ID#")
     echo "$UPDATED_USER" > input.json.tmp
     
-    #Submit the request to change permission
+#    #Submit the request to change permission
     RESPONSE_HEADER=permission-response-header.tmp
     RESPONSE_MSG=permission-response-message.json.tmp 
-    update_permission "input.json.tmp" "$RESPONSE_HEADER" "$RESPONSE_MSG"
-    
+    update_permission "input.json.tmp" "collection/$COLLECTION_PATH" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+
+
+#    update_single_permission "collection/$COLLECTION_PATH" "$NEW_USER_ID" "$NEW_PERMISSION" 
+
     HTTP_CODE=`get_http_code $RESPONSE_HEADER`
     echo $HTTP_CODE
    
