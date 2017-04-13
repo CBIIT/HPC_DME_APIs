@@ -79,9 +79,18 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 	
+	<xsd:simpleType name="HpcPermission">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="OWN" />
+			<xsd:enumeration value="READ" />
+			<xsd:enumeration value="WRITE" />
+			<xsd:enumeration value="NONE" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
 	<xsd:complexType name="HpcSubjectPermission">
 		<xsd:sequence>
-			<xsd:element name="permission" type="xsd:string" /> 
+			<xsd:element name="permission" type="hpc-domain-datamanagement:HpcPermission" /> 
 			<xsd:element name="subject" type="xsd:string" />
 			<xsd:element name="subjectType" type="hpc-domain-datamanagement:HpcSubjectType" />
 		</xsd:sequence>
@@ -89,14 +98,14 @@
 	
 	<xsd:complexType name="HpcUserPermission">
 		<xsd:sequence>
-			<xsd:element name="permission" type="xsd:string" /> 
+			<xsd:element name="permission" type="hpc-domain-datamanagement:HpcPermission" /> 
 			<xsd:element name="userId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
-		<xsd:complexType name="HpcGroupPermission">
+	<xsd:complexType name="HpcGroupPermission">
 		<xsd:sequence>
-			<xsd:element name="permission" type="xsd:string" /> 
+			<xsd:element name="permission" type="hpc-domain-datamanagement:HpcPermission" /> 
 			<xsd:element name="groupName" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>

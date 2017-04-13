@@ -14,13 +14,22 @@
         },
     	{  
          "eventType" : "DATA_TRANSFER_UPLOAD_ARCHIVED",
-         "subjectFormat" : "HPC Data Object Registration Completed Successfully",
-         "subjectArguments" : [],
-         "textFormat" : "Your data registration completed successfully. \nData path: %1$s",
+         "subjectFormat" : "HPC Data Transfer Upload Request Completed at %1$s",
+         "subjectArguments" : [
+         	{  
+             "payloadEntryAttribute" : "DATA_TRANSFER_COMPLETED",
+             "index" : "0"
+			}
+		 ],
+         "textFormat" : "Your upload request is completed.\nSource path: %1$s\nTarget path: %2$s",
          "textArguments" : [
          	{  
-             "payloadEntryAttribute" : "DATA_OBJECT_PATH",
+             "payloadEntryAttribute" : "SOURCE_LOCATION",
              "index" : "0"
+			}
+         	{  
+             "payloadEntryAttribute" : "DATA_OBJECT_PATH",
+             "index" : "1"
 			}
          ]
         },
@@ -38,15 +47,24 @@
         },
         {  
          "eventType" : "DATA_TRANSFER_DOWNLOAD_COMPLETED",
-         "subjectFormat" : "HPC Data Transfer Download Request Completed: [%1$s]",
+         "subjectFormat" : "HPC Data Transfer Download Request Completed at %1$s",
          "subjectArguments" : [
          	{  
-             "payloadEntryAttribute" : "DATA_TRANSFER_REQUEST_ID",
+             "payloadEntryAttribute" : "DATA_TRANSFER_COMPLETED",
              "index" : "0"
             }
          ],
-         "textFormat" : "Your download request completed.",
-         "textArguments" : []
+         "textFormat" : "Your download request is completed.\nSource path: %1$s\nTarget path: %2$s",
+         "textArguments" : [
+         	{  
+             "payloadEntryAttribute" : "DATA_OBJECT_PATH",
+             "index" : "0"
+			}
+         	{  
+             "payloadEntryAttribute" : "DESTINATION_LOCATION",
+             "index" : "1"
+			}
+         ]
         },
         {  
          "eventType" : "DATA_TRANSFER_DOWNLOAD_FAILED",

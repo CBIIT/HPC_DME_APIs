@@ -117,6 +117,8 @@
 			<xsd:element name="archiveLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="dataTransferStatus" type="hpc-domain-datatransfer:HpcDataTransferUploadStatus" />
 			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
+			<xsd:element name="dataTransferStarted" type="xsd:dateTime" />
+			<xsd:element name="dataTransferCompleted" type="xsd:dateTime" />
 		</xsd:sequence>
 	</xsd:complexType>
 	

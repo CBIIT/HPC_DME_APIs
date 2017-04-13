@@ -134,6 +134,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	
 
     	// Submit a request to Globus to transfer the data.
+    	Calendar dataTransferStarted = Calendar.getInstance();
     	String requestId = transferData(client,
     			                        uploadRequest.getSourceLocation(),
     			                        archiveDestinationLocation);
@@ -143,6 +144,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	uploadResponse.setArchiveLocation(archiveDestinationLocation);
     	uploadResponse.setDataTransferRequestId(requestId);
     	uploadResponse.setDataTransferType(HpcDataTransferType.GLOBUS);
+    	uploadResponse.setDataTransferStarted(dataTransferStarted);
+    	uploadResponse.setDataTransferCompleted(null);
     	if(baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
     	   uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE);
     	} else {

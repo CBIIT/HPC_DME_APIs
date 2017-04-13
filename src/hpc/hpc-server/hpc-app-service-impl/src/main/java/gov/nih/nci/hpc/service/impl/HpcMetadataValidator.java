@@ -53,26 +53,18 @@ public class HpcMetadataValidator
 	public static final String REGISTRAR_ID_ATTRIBUTE = "registered_by";
 	public static final String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
 	public static final String REGISTRAR_DOC_ATTRIBUTE = "registered_by_doc";
-	public static final String SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
-                               "source_file_container_id"; 
-	public static final String SOURCE_LOCATION_FILE_ID_ATTRIBUTE = 
-                               "source_file_id"; 
-	public static final String ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = 
-			                   "archive_file_container_id"; 
-	public static final String ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE = 
-			                   "archive_file_id"; 
-	public static final String DATA_TRANSFER_REQUEST_ID_ATTRIBUTE = 
-                               "data_transfer_request_id";
-	public static final String DATA_TRANSFER_STATUS_ATTRIBUTE = 
-                               "data_transfer_status";
-	public static final String DATA_TRANSFER_TYPE_ATTRIBUTE = 
-                               "data_transfer_type";
-	public static final String SOURCE_FILE_SIZE_ATTRIBUTE = 
-                               "source_file_size";
-	public static final String CALLER_OBJECT_ID_ATTRIBUTE = 
-                               "archive_caller_object_id";
-	public static final String CHECKSUM_ATTRIBUTE =
-                               "checksum";
+	public static final String SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = "source_file_container_id"; 
+	public static final String SOURCE_LOCATION_FILE_ID_ATTRIBUTE = "source_file_id"; 
+	public static final String ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = "archive_file_container_id"; 
+	public static final String ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE = "archive_file_id"; 
+	public static final String DATA_TRANSFER_REQUEST_ID_ATTRIBUTE = "data_transfer_request_id";
+	public static final String DATA_TRANSFER_STATUS_ATTRIBUTE = "data_transfer_status";
+	public static final String DATA_TRANSFER_TYPE_ATTRIBUTE = "data_transfer_type";
+	public static final String DATA_TRANSFER_STARTED_ATTRIBUTE = "data_transfer_started";
+	public static final String DATA_TRANSFER_COMPLETED_ATTRIBUTE = "data_transfer_completed";
+	public static final String SOURCE_FILE_SIZE_ATTRIBUTE = "source_file_size";
+	public static final String CALLER_OBJECT_ID_ATTRIBUTE = "archive_caller_object_id";
+	public static final String CHECKSUM_ATTRIBUTE = "checksum";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -127,6 +119,7 @@ public class HpcMetadataValidator
 	            		        SOURCE_LOCATION_FILE_ID_ATTRIBUTE, ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE,
 	            		        ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE, DATA_TRANSFER_REQUEST_ID_ATTRIBUTE,
 	            		        DATA_TRANSFER_STATUS_ATTRIBUTE, DATA_TRANSFER_TYPE_ATTRIBUTE,
+	            		        DATA_TRANSFER_STARTED_ATTRIBUTE, DATA_TRANSFER_COMPLETED_ATTRIBUTE, 
 	            		        SOURCE_FILE_SIZE_ATTRIBUTE, CALLER_OBJECT_ID_ATTRIBUTE, 
 	            		        CHECKSUM_ATTRIBUTE);
 	         
