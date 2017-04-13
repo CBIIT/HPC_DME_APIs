@@ -67,37 +67,35 @@ public interface HpcSecurityBusService
      * Get users by search criterias. Note: only active users are returned.
      *
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
-     * @param firstName (Optional) The first name to search for (using case insensitive comparison).
-     * @param lastName (Optional) The last name to search for (using case insensitive comparison).
+     * @param firstNamePattern (Optional) The first-name pattern to search for (In the form of SQL 'LIKE' pattern, 
+     *                         using case insensitive matching).
+     * @param lastNamePattern (Optional) The last-name pattern to search for (In the form of SQL 'LIKE' pattern, 
+     *                        using case insensitive matching).
      * @param active If set to true, only active users are searched. Otherwise, all users (active and inactive) are searched.
      * @return A list of users.
      * @throws HpcException on service failure.
      */
-    public HpcUserListDTO getUsers(String nciUserId, String firstName, String lastName, boolean active) 
+    public HpcUserListDTO getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, String doc, boolean active) 
     		                      throws HpcException;
     
     /**
      * Authenticate user.
      *
-     * @param userName The user's name.
+     * @param nciUserId The user's ID.
      * @param password The user's password.
      * @param ldapAuthentication Perform LDAP authentication indicator.
-     * @return Authentication Response DTO.
-     * @throws HpcException on service failure.
+     * @throws HpcException If user authentication failed.
      */
-    public HpcAuthenticationResponseDTO 
-           authenticate(String userName, String password, 
-        		        boolean ldapAuthentication) throws HpcException;  
+    public void authenticate(String nciUserId, String password, boolean ldapAuthentication) 
+    		                throws HpcException;  
     
     /**
      * Authenticate user.
      *
      * @param authenticationToken An Authentication token.
-     * @return HpcAuthenticationResponseDTO.
-     * @throws HpcException on service failure.
+     * @throws HpcException If user authentication failed.
      */
-    public HpcAuthenticationResponseDTO authenticate(String authenticationToken) 
-    		                                         throws HpcException;  
+    public void authenticate(String authenticationToken) throws HpcException;  
     
     /**
      * Get the authentication response for the current request invoker.
@@ -143,12 +141,12 @@ public interface HpcSecurityBusService
     /**
      * Get groups by search criteria.
      *
-     * @param groupSearchCriteria (Optional) The group search criteria (In the form of SQL 'LIKE', using case sensitive matching).
-     *                            If not provided, then all groups are returned.
+     * @param groupPattern (Optional) The group pattern to search for (In the form of SQL 'LIKE' pattern, 
+     *                     using case sensitive matching). If not provided, then all groups are returned.
      * @return A list of groups and their members.
      * @throws HpcException on service failure.
      */
-    public HpcGroupListDTO getGroups(String groupSearchCriteria) throws HpcException;
+    public HpcGroupListDTO getGroups(String groupPattern) throws HpcException;
     
     /**
      * Delete a group.

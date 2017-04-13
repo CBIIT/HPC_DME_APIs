@@ -89,31 +89,39 @@ public interface HpcSecurityRestService
      * Get users by search criterias. Note: only active users are returned.
      *
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
-     * @param firstName (Optional) The first name to search for (using case insensitive comparison).
-     * @param lastName (Optional) The last name to search for (using case insensitive comparison).
+     * @param firstNamePattern (Optional) The first-name pattern to search for (In the form of SQL 'LIKE' pattern, 
+     *                         using case insensitive matching).
+     * @param lastNamePattern (Optional) The last-name pattern to search for (In the form of SQL 'LIKE' pattern, 
+     *                        using case insensitive matching).
+     * @param doc User DOC                       
      * @return The REST service response w/ HpcUserListDTO entity.
      */
     @GET
     @Path("/user/active")
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response getActiveUsers(@QueryParam("nciUserId") String nciUserId,
-    		                       @QueryParam("firstName") String firstName,
-    		                       @QueryParam("lastName") String lastName);
+    		                       @QueryParam("firstNamePattern") String firstNamePattern,
+    		                       @QueryParam("lastNamePattern") String lastNamePattern,
+    		                       @QueryParam("doc") String doc);
     
     /**
      * Get users by search criterias. Note: All users are returned, both active and inactive
      *
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
-     * @param firstName (Optional) The first name to search for (using case insensitive comparison).
-     * @param lastName (Optional) The last name to search for (using case insensitive comparison).
+     * @param firstNamePattern (Optional) The first-name pattern to search for (In the form of SQL 'LIKE' pattern, 
+     *                         using case insensitive matching).
+     * @param lastNamePattern (Optional) The last-name pattern to search for (In the form of SQL 'LIKE' pattern, 
+     *                        using case insensitive matching).
+     * @param doc User DOC 
      * @return The REST service response w/ HpcUserListDTO entity.
      */
     @GET
     @Path("/user/all")
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response getAllUsers(@QueryParam("nciUserId") String nciUserId,
-    		                    @QueryParam("firstName") String firstName,
-    		                    @QueryParam("lastName") String lastName);
+    		                    @QueryParam("firstNamePattern") String firstNamePattern,
+    		                    @QueryParam("lastNamePattern") String lastNamePattern,
+    		                    @QueryParam("doc") String doc);
     
     /**
      * Authenticate a user.
@@ -167,14 +175,14 @@ public interface HpcSecurityRestService
     /**
      * Get groups by search criteria.
      *
-     * @param groupSearchCriteria (Optional) The group search criteria (In the form of SQL 'LIKE', using case sensitive matching).
-     *                            If null - then all groups are returned.
+     * @param groupPattern (Optional) The group pattern to search for (In the form of SQL 'LIKE' pattern, 
+     *                     using case sensitive matching). If null - then all groups are returned.
      * @return The REST service response w/ HpcGroupListDTO entity.
      */
     @GET
     @Path("/group")
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-    public Response getGroups(@QueryParam("groupSearchCriteria") String groupSearchCriteria);
+    public Response getGroups(@QueryParam("groupPattern") String groupPattern);
     
     /**
      * Delete a group.

@@ -11,9 +11,14 @@
 package gov.nih.nci.hpc.integration.irods.impl;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccountProperty;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 
 import org.irods.jargon.core.connection.AuthScheme;
 import org.irods.jargon.core.connection.IRODSAccount;
@@ -41,6 +46,19 @@ import org.slf4j.LoggerFactory;
 
 public class HpcIRODSConnection
 { 
+	//---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//
+	
+	private static final String DEFAULT_STORAGE_RESOURCE_PROPERTY = "DEFAULT_STORAGE_RESOURCE"; 
+	private static final String HOME_DIRECTORY_PROPERTY = "HOME_DIRECTORY"; 
+	private static final String HOST_PROPERTY = "HOST"; 
+	private static final String PROXY_NAME_PROPERTY = "PROXY_NAME"; 
+	private static final String PROXY_ZONE_PROPERTY = "PROXY_ZONE"; 
+	private static final String ZONE_PROPERTY = "ZONE"; 
+	private static final String PORT_PROPERTY = "PORT"; 
+	private static final String AUTHENTICATION_SCHEME_PROPERTY = "AUTHENTICATION_SCHEME"; 
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -257,19 +275,30 @@ public class HpcIRODSConnection
      * @return An authenticated IRODSAccount object, or null if authentication failed.
      * @throws HpcException on iRODS failure.
      */
-    public IRODSAccount authenticate(HpcIntegratedSystemAccount dataManagementAccount,
-    		                         boolean ldapAuthenticated)
+    public IRODSAccount authenticate(HpcIntegratedSystemAccount dataManagementAccount)
     		                        throws HpcException
     {
-    	// Set the Authentication Scheme. PAM if the caller was authenticated via LDAP, 
-    	// or STANDARD otherwise.
-    	AuthScheme authScheme = ldapAuthenticated ? AuthScheme.PAM : AuthScheme.STANDARD;
-    	
+    	IRODSAccount irodsAccount = null;
     	try {
-	    	 AuthResponse authResponse = irodsFileSystem.getIRODSAccessObjectFactory().
-	    				                      authenticateIRODSAccount(toIrodsAccount(dataManagementAccount,
-	    				                    		                   authScheme));
-	         return authResponse != null ? authResponse.getAuthenticatedIRODSAccount() : null;
+    		 if(!dataManagementAccount.getProperties().isEmpty()) {
+    			// The data management account is already authenticated. Return an iRODS account.
+    			 irodsAccount = toAuthenticatedIrodsAccount(dataManagementAccount);
+    			 
+    		 } else {
+    			     // Authenticate the data management account.
+	    	         AuthResponse authResponse = 
+	    	             irodsFileSystem.getIRODSAccessObjectFactory().
+	    			  	                    authenticateIRODSAccount(toUnauthenticatedIrodsAccount(dataManagementAccount,
+	    				                   		                                                   AuthScheme.PAM));
+	    	         if(authResponse != null) {
+	    		        irodsAccount = authResponse.getAuthenticatedIRODSAccount();
+	    		
+	    		        // Update the HPC data management account with iRODS accounts properties
+	    		        dataManagementAccount.getProperties().addAll(getIrodsAccountProperties(irodsAccount));
+	    	         } 
+    		 }
+    		 
+    		 return irodsAccount;
 	         
     	} catch(AuthenticationException ae) {
     		    logger.info("iRODS authentication failed: " + dataManagementAccount.getUsername(), ae);
@@ -281,33 +310,6 @@ public class HpcIRODSConnection
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
     	}
     }  
-    
-    public HpcDataManagementAccount getHpcDataManagementAccount(IRODSAccount  irodsAccount)
-    {
-    	HpcDataManagementAccount account = new HpcDataManagementAccount();
-    	account.setDefaultStorageResource(irodsAccount.getDefaultStorageResource());
-    	account.setHomeDirectory(irodsAccount.getHomeDirectory());
-    	account.setHost(irodsAccount.getHost());
-    	account.setPassword(irodsAccount.getPassword());
-    	account.setProxyName(irodsAccount.getProxyName());
-    	account.setProxyZone(irodsAccount.getProxyZone());
-    	account.setUserName(irodsAccount.getUserName());
-    	account.setUserZone(irodsAccount.getZone());
-    	account.setPort(irodsAccount.getPort());
-    	account.setAuthenticationScheme(irodsAccount.getAuthenticationScheme().getTextValue());
-    	return account;
-    }
-
-    public IRODSAccount getIRODSAccount(HpcDataManagementAccount irodsAccount) throws JargonException
-    {
-    	IRODSAccount account = IRODSAccount.instance(irodsAccount.getHost(), irodsAccount.getPort(),
-    			irodsAccount.getUserName(), irodsAccount.getPassword(),
-    			irodsAccount.getHomeDirectory(), irodsAccount.getUserZone(),
-    			irodsAccount.getDefaultStorageResource(),
-    	    	AuthScheme.findTypeByString(irodsAccount.getAuthenticationScheme())); 
-    	
-    	return account;
-    }
     
     /**
      * Close iRODS connection of an account.
@@ -357,9 +359,9 @@ public class HpcIRODSConnection
      * @return An iRODS account.
      * @throws HpcException on iRODS failure.
      */
-    private IRODSAccount toIrodsAccount(HpcIntegratedSystemAccount dataManagementAccount,
-    		                            AuthScheme authScheme) 
-    		                           throws HpcException
+    private IRODSAccount toUnauthenticatedIrodsAccount(HpcIntegratedSystemAccount dataManagementAccount,
+    		                                           AuthScheme authScheme) 
+    		                                          throws HpcException
     {
     	try {
     		IRODSAccount irodsAccount = 
@@ -375,6 +377,28 @@ public class HpcIRODSConnection
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
     	}
+    }
+    
+    /**
+     * Instantiate an IRODSAccount from HpcIntegratedSystemAccount.
+     * 
+     * @param dataManagementAccount The Data Management account.
+     * @return An iRODS account.
+     * @throws HpcException on iRODS failure.
+     */
+    private IRODSAccount toAuthenticatedIrodsAccount(HpcIntegratedSystemAccount dataManagementAccount) 
+    		                                         throws JargonException
+    {
+    	Map<String, String> properties = new Hashtable<>();
+    	for(HpcIntegratedSystemAccountProperty property : dataManagementAccount.getProperties()) {
+    		properties.put(property.getName(), property.getValue());
+    	}
+    	
+    	return IRODSAccount.instance(properties.get(HOST_PROPERTY), Integer.valueOf(properties.get(PORT_PROPERTY)),
+    		                         dataManagementAccount.getUsername(), dataManagementAccount.getPassword(),
+    		                         properties.get(HOME_DIRECTORY_PROPERTY), properties.get(ZONE_PROPERTY),
+    		                         properties.get(DEFAULT_STORAGE_RESOURCE_PROPERTY),
+    	    	                     AuthScheme.findTypeByString(properties.get(AUTHENTICATION_SCHEME_PROPERTY))); 
     }
     
     /**
@@ -394,6 +418,59 @@ public class HpcIRODSConnection
     	}
     	
     	return (IRODSAccount) authenticatedToken;
+    }
+    
+    /**
+     * Get iRODS Account properties
+     * 
+     * @param irodsAccount An iRODS account.
+     * @return An list of account properties
+     */
+    private List<HpcIntegratedSystemAccountProperty> getIrodsAccountProperties(IRODSAccount irodsAccount)
+    {
+    	List<HpcIntegratedSystemAccountProperty> properties = new ArrayList<>();
+    	
+    	HpcIntegratedSystemAccountProperty defaultStorageResource = new HpcIntegratedSystemAccountProperty();
+    	defaultStorageResource.setName(DEFAULT_STORAGE_RESOURCE_PROPERTY);
+    	defaultStorageResource.setValue(irodsAccount.getDefaultStorageResource());
+    	properties.add(defaultStorageResource);
+    	
+    	HpcIntegratedSystemAccountProperty homeDirectory = new HpcIntegratedSystemAccountProperty();
+    	homeDirectory.setName(HOME_DIRECTORY_PROPERTY);
+    	homeDirectory.setValue(irodsAccount.getHomeDirectory());
+    	properties.add(homeDirectory);
+    	
+    	HpcIntegratedSystemAccountProperty host = new HpcIntegratedSystemAccountProperty();
+    	host.setName(HOST_PROPERTY);
+    	host.setValue(irodsAccount.getHost());
+    	properties.add(host);
+    	
+    	HpcIntegratedSystemAccountProperty proxyName = new HpcIntegratedSystemAccountProperty();
+    	proxyName.setName(PROXY_NAME_PROPERTY);
+    	proxyName.setValue(irodsAccount.getProxyName());
+    	properties.add(proxyName);
+    	
+    	HpcIntegratedSystemAccountProperty proxyZone = new HpcIntegratedSystemAccountProperty();
+    	proxyZone.setName(PROXY_ZONE_PROPERTY);
+    	proxyZone.setValue(irodsAccount.getProxyZone());
+    	properties.add(proxyZone);
+    	
+    	HpcIntegratedSystemAccountProperty zone = new HpcIntegratedSystemAccountProperty();
+    	zone.setName(ZONE_PROPERTY);
+    	zone.setValue(irodsAccount.getZone());
+    	properties.add(zone);
+    	
+    	HpcIntegratedSystemAccountProperty port = new HpcIntegratedSystemAccountProperty();
+    	port.setName(PORT_PROPERTY);
+    	port.setValue(String.valueOf(irodsAccount.getPort()));
+    	properties.add(port);
+    	
+    	HpcIntegratedSystemAccountProperty authenticationScheme = new HpcIntegratedSystemAccountProperty();
+    	authenticationScheme.setName(AUTHENTICATION_SCHEME_PROPERTY);
+    	authenticationScheme.setValue(irodsAccount.getAuthenticationScheme().getTextValue());
+    	properties.add(authenticationScheme);
+    	
+    	return properties;
     }
 }
 

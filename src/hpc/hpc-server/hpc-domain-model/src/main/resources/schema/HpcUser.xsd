@@ -30,7 +30,7 @@
 			<xsd:sequence>
 				<xsd:element name="nciAccount" type="hpc-domain-user:HpcNciAccount" />
 				<xsd:element name="dataManagementAccount"
-					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
+					         type="hpc-domain-user:HpcIntegratedSystemAccount" /> <!-- TODO REMOVE -->
 				<xsd:element name="active" type="xsd:boolean" />
 				<xsd:element name="activeUpdatedBy" type="xsd:string" />
 				<xsd:element name="created" type="xsd:dateTime" />
@@ -56,8 +56,9 @@
 				<xsd:element name="dataManagementAccount"
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 				<xsd:element name="dataManagementAuthenticatedToken" type="xsd:anyType" />
-				<xsd:element name="ldapAuthenticated" type="xsd:boolean" />
-				<xsd:element name="authenticationToken" type="xsd:string" />
+				<xsd:element name="ldapAuthenticated" type="xsd:boolean" /> <!-- TODO: REMOVE -->
+				<xsd:element name="authenticationType" type="hpc-domain-user:HpcAuthenticationType" />
+				<xsd:element name="authenticationToken" type="xsd:string" /> <!--  TODO REMOVE -->
 				<xsd:element name="userRole" type="hpc-domain-user:HpcUserRole" />
 			</xsd:sequence>
 		</xsd:complexType>
@@ -66,15 +67,14 @@
 	<xsd:element name="HpcAuthenticationTokenClaims">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="userName" type="xsd:string" />
-				<xsd:element name="password" type="xsd:string" />
-				<xsd:element name="ldapAuthentication" type="xsd:boolean" />
-				<xsd:element name="userAuthenticated" type="xsd:boolean" />
-				<xsd:element name="dataManagementAccount" type="hpc-domain-model:HpcDataManagementAccount" />
+				<xsd:element name="userId" type="xsd:string" />
+				<xsd:element name="dataManagementAccount"
+					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
 
+<!--  TODO REMOVE -->
 	<xsd:complexType name="HpcDataManagementAccount">
 		<xsd:sequence>
 			<xsd:element name="host" type="xsd:string" />

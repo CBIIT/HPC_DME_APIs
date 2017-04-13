@@ -13,7 +13,6 @@ package gov.nih.nci.hpc.service.impl;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
-import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -220,29 +219,17 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     }
     
     @Override
-    public List<String> getGroups(String groupSearchCriteria) throws HpcException
+    public List<String> getGroups(String groupPattern) throws HpcException
     {
     	// Input validation.
-    	if(StringUtils.isEmpty(groupSearchCriteria)) {	
+    	if(StringUtils.isEmpty(groupPattern)) {	
     	   throw new HpcException("Null or empty group search criteria", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
     	return dataManagementProxy.getGroups(dataManagementAuthenticator.getAuthenticatedToken(), 
-    			                             groupSearchCriteria);      	
+    			                             groupPattern);      	
     }
-    
-    @Override
-    public HpcDataManagementAccount getHpcDataManagementAccount(Object irodsAccount) throws HpcException
-    {
-   		return dataManagementProxy.getHpcDataManagementAccount(irodsAccount);
-    }
-    
-    @Override
-    public Object getProxyManagementAccount(HpcDataManagementAccount irodsAccount) throws HpcException
-    {
-   		return dataManagementProxy.getProxyManagementAccount(irodsAccount);
-    }  
     
     //---------------------------------------------------------------------//
     // Helper Methods

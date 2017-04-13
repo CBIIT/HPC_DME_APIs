@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
@@ -141,6 +142,8 @@ public interface HpcMetadataService
      * @param checksum (Optional) The data checksum.
      * @param dataTransferStatus The data transfer upload status.
      * @param dataTransferType The data transfer type.
+     * @param dataTransferStarted The time data transfer started.
+     * @param dataTransferCompleted (Optional) The time data transfer completed.
      * @param sourceSize (Optional) The data source size in bytes.
      * @param callerObjectId (Optional) The caller object ID.
      * @throws HpcException on service failure.
@@ -152,6 +155,8 @@ public interface HpcMetadataService
     		                                           String checksum,
     		                                           HpcDataTransferUploadStatus dataTransferStatus,
     		                                           HpcDataTransferType dataTransferType,
+    		                                           Calendar dataTransferStarted,
+    		                                           Calendar dataTransferCompleted,
     		                                           Long sourceSize, String callerObjectId) 
     		                                          throws HpcException; 
     
@@ -174,6 +179,7 @@ public interface HpcMetadataService
      * @param checksum (Optional) The data checksum.
      * @param dataTransferStatus (Optional) The data transfer upload status.
      * @param dataTransferType (Optional) The data transfer type.
+     * @param dataTransferCompleted (Optional) The time data transfer completed.
      * @throws HpcException on service failure.
      */
     public void updateDataObjectSystemGeneratedMetadata(String path, 
@@ -181,8 +187,9 @@ public interface HpcMetadataService
     		                                            String dataTransferRequestId,
     		                                            String checksum,
     		                                            HpcDataTransferUploadStatus dataTransferStatus,
-    		                                            HpcDataTransferType dataTransferType) 
-    		                                          throws HpcException; 
+    		                                            HpcDataTransferType dataTransferType,
+    		                                            Calendar dataTransferCompleted) 
+    		                                           throws HpcException; 
     
     /**
      * Update a data object's metadata.
