@@ -46,6 +46,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
@@ -112,7 +113,7 @@ public class HpcPermissionController extends AbstractHpcController {
 				(type != null && type.equals("collection")) ? serverCollectionURL : serverDataObjectURL, sslCertPath,
 				sslCertPassword);
 		model.addAttribute("ownpermission",
-				(userPermission != null && userPermission.getPermission().equalsIgnoreCase("OWN")) ? true : false);
+				(userPermission != null && userPermission.getPermission().equals(HpcPermission.OWN)) ? true : false);
 
 		return "permission";
 	}
@@ -317,13 +318,13 @@ public class HpcPermissionController extends AbstractHpcController {
 
 					String[] permission = request.getParameterValues("permission" + index);
 					if (permission[0].equals("own"))
-						userPermission.setPermission("OWN");
+						userPermission.setPermission(HpcPermission.OWN);
 					else if (permission[0].equals("read"))
-						userPermission.setPermission("READ");
+						userPermission.setPermission(HpcPermission.READ);
 					else if (permission[0].equals("write"))
-						userPermission.setPermission("WRITE");
+						userPermission.setPermission(HpcPermission.WRITE);
 					else if (permission[0].equals("none"))
-						userPermission.setPermission("NONE");
+						userPermission.setPermission(HpcPermission.NONE);
 					userPermissions.add(userPermission);
 				} else {
 					HpcGroupPermission groupPermission = new HpcGroupPermission();
@@ -331,13 +332,13 @@ public class HpcPermissionController extends AbstractHpcController {
 
 					String[] permission = request.getParameterValues("permission" + index);
 					if (permission[0].equals("own"))
-						groupPermission.setPermission("OWN");
+						groupPermission.setPermission(HpcPermission.OWN);
 					else if (permission[0].equals("read"))
-						groupPermission.setPermission("READ");
+						groupPermission.setPermission(HpcPermission.READ);
 					else if (permission[0].equals("write"))
-						groupPermission.setPermission("WRITE");
+						groupPermission.setPermission(HpcPermission.WRITE);
 					else if (permission[0].equals("none"))
-						groupPermission.setPermission("NONE");
+						groupPermission.setPermission(HpcPermission.NONE);
 					groupPermissions.add(groupPermission);
 				}
 			}

@@ -45,12 +45,14 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import gov.nih.nci.hpc.domain.report.HpcReportType;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportEntryDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportRequestDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportsDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcReportRequest;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
@@ -70,7 +72,12 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 public class HpcReportsController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.report}")
 	private String serviceURL;
+	@Value("${gov.nih.nci.hpc.server.user.active}")
+	private String activeUsersServiceURL;
+	@Value("${gov.nih.nci.hpc.server.docs}")
+	private String docsServiceURL;
 
+	
 	@Autowired
 	private Environment env;
 
@@ -96,6 +103,18 @@ public class HpcReportsController extends AbstractHpcController {
 		model.addAttribute("userRole", user.getUserRole());
 		model.addAttribute("userDOC", user.getDoc());
 		model.addAttribute("reportRequest", new HpcReportRequest());
+		HpcUserListDTO users = HpcClientUtil.getUsers(authToken, activeUsersServiceURL, null, null, null, user.getUserRole().equals("SYSTEM_ADMIN") ? null:user.getDoc(), sslCertPath, sslCertPassword);
+		model.addAttribute("docUsers", users.getUsers());
+		List<String> docs = new ArrayList<String>();
+		if(user.getUserRole().equals("GROUP_ADMIN"))
+			docs.add(user.getDoc());
+		else if(user.getUserRole().equals("SYSTEM_ADMIN"))
+		{
+			HpcDataManagementDocListDTO dto = HpcClientUtil.getDOCs(authToken, docsServiceURL, sslCertPath, sslCertPassword);
+			if(dto != null)
+				docs.addAll(dto.getDocs());
+		}
+		model.addAttribute("docs", docs);
 		return "reports";
 	}
 

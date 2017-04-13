@@ -89,7 +89,7 @@ public class HpcUserController extends AbstractHpcController {
 			else
 				serviceUrl = activeUsersServiceURL;
 
-			HpcUserListDTO users = HpcClientUtil.getUsers(authToken, serviceUrl, userId, firstName, lastName,
+			HpcUserListDTO users = HpcClientUtil.getUsers(authToken, serviceUrl, userId, firstName, lastName, null,
 					sslCertPath, sslCertPassword);
 			if (users != null && users.getUsers() != null && users.getUsers().size() > 0)
 				model.addAttribute("searchresults", users.getUsers());

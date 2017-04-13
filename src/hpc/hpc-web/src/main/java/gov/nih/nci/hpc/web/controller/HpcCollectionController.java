@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
@@ -94,9 +95,9 @@ public class HpcCollectionController extends AbstractHpcController {
 				HpcCollectionModel hpcCollection = buildHpcCollection(collection,
 						modelDTO.getCollectionSystemGeneratedMetadataAttributeNames());
 				model.addAttribute("collection", hpcCollection);
-				model.addAttribute("userpermission", (permission == null || permission.getPermission().equalsIgnoreCase("none") || permission.getPermission().equalsIgnoreCase("read")) ? false: true);
+				model.addAttribute("userpermission", (permission == null || permission.getPermission().equals(HpcPermission.NONE) || permission.getPermission().equals(HpcPermission.READ)) ? false: true);
 				if (action != null && action.equals("edit"))
-					if(permission == null || permission.getPermission().equalsIgnoreCase("none") || permission.getPermission().equalsIgnoreCase("read"))
+					if(permission == null || permission.getPermission().equals(HpcPermission.NONE) || permission.getPermission().equals(HpcPermission.READ))
 					{
 						model.addAttribute("error", "No edit permission. Please contact collection owner for write access.");
 						model.addAttribute("action", "view");
