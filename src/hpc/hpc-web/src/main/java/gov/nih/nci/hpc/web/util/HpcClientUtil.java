@@ -310,7 +310,7 @@ public class HpcClientUtil {
 	}
 	
 	public static HpcUserListDTO getUsers(String token, String hpcUserURL, String userId, String firstName,
-			String lastName, String hpcCertPath, String hpcCertPassword) {
+			String lastName, String doc, String hpcCertPath, String hpcCertPassword) {
 		try {
 			boolean first = true;
 			String paramsURL = "";
@@ -320,17 +320,25 @@ public class HpcClientUtil {
 			}
 			if (firstName != null && firstName.trim().length() > 0) {
 				if (first) {
-					paramsURL = "?firstName=" + URLEncoder.encode(firstName);
+					paramsURL = "?firstNamePattern=" + URLEncoder.encode(firstName);
 					first = false;
 				} else
-					paramsURL = paramsURL + "&firstName=" + URLEncoder.encode(firstName);
+					paramsURL = paramsURL + "&firstNamePattern=" + URLEncoder.encode(firstName);
 			}
 			if (lastName != null && lastName.trim().length() > 0) {
 				if (first) {
-					paramsURL = "?lastName=" + URLEncoder.encode(lastName);
+					paramsURL = "?lastNamePattern=" + URLEncoder.encode(lastName);
 					first = false;
 				} else
-					paramsURL = paramsURL + "&lastName=" + URLEncoder.encode(lastName);
+					paramsURL = paramsURL + "&lastNamePattern=" + URLEncoder.encode(lastName);
+			}
+
+			if (doc != null && doc.trim().length() > 0) {
+				if (first) {
+					paramsURL = "?doc=" + URLEncoder.encode(doc);
+					first = false;
+				} else
+					paramsURL = paramsURL + "&doc=" + URLEncoder.encode(doc);
 			}
 
 			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + paramsURL, hpcCertPath, hpcCertPassword);

@@ -118,22 +118,30 @@
 						<div class="form-group" style="display: none" id="docList">
 							<label class="control-label col-sm-2" for="level">DOC:</label>
 							<div class="col-sm-6">
-								<select name="doc" class="form-control">
-									<option value="-1">----Select----</option>
-									<option value="FNLCR">FNLCR</option>
-								</select>
+											<select size="1"
+												id="doc" name="doc" class="form-control"
+												th:required="required">
+													<option value="-1">----Select----</option>
+													<option
+														th:each="entry : ${docs}"
+														th:value="${entry}" th:text="${entry}">
+														Wireframe</option>
+											</select>
 							</div>
 							<label class="control-label col-sm-4" for="level">&nbsp;</label>
 						</div>
 						<div class="form-group" style="display: none" id="userList">
 							<label class="control-label col-sm-2" for="level">Users:</label>
 							<div class="col-sm-6">
-								<select name="user" class="form-control">
-									<option value="-1">----Select----</option>
-									<option value="konkapv">Prasad Konka</option>
-									<option value="luz6">Zhengwu Lu</option>
-									<option value="zakigf">George Zaki</option>
-								</select>
+											<select size="1"
+												id="user" name="user" class="form-control"
+												th:required="required">
+													<option value="-1">----Select----</option>
+													<option
+														th:each="entry : ${docUsers}"
+														th:value="${entry.getUserId()}" th:text="${entry.getFirstName() + ' ' + entry.getLastName()}">
+														Wireframe</option>
+											</select>
 							</div>
 							<label class="control-label col-sm-4" for="level">&nbsp;</label>
 						</div>

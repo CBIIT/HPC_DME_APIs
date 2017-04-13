@@ -31,11 +31,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcCollectionModel;
 import gov.nih.nci.hpc.web.model.HpcDatafileModel;
@@ -70,6 +72,7 @@ public class HpcDatafileController extends AbstractHpcController {
 
 		try {
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+			String userId = (String) session.getAttribute("hpcUserId");
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			if (user == null || authToken == null) {
 				ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
@@ -94,6 +97,8 @@ public class HpcDatafileController extends AbstractHpcController {
 				model.addAttribute("hpcDatafile", hpcDatafile);
 				if (action != null && action.equals("edit"))
 					model.addAttribute("action", "edit");
+				HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId, serviceURL, sslCertPath, sslCertPassword);
+				model.addAttribute("userpermission", (permission == null || permission.getPermission().equals(HpcPermission.NONE) || permission.getPermission().equals(HpcPermission.READ)) ? false: true);
 			} else {
 				String message = "Data file not found!";
 				model.addAttribute("error", message);
