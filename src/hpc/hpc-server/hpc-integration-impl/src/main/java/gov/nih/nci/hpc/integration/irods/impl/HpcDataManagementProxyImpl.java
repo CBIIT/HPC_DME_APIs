@@ -14,13 +14,13 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
-import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -33,7 +33,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
-import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.DataNotFoundException;
 import org.irods.jargon.core.exception.DuplicateDataException;
 import org.irods.jargon.core.exception.InvalidGroupException;
@@ -108,43 +107,10 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     //---------------------------------------------------------------------//  
     
     @Override
-    public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount,
-    		                   boolean ldapAuthenticated) 
+    public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount) 
 		                      throws HpcException
     {
-    	return irodsConnection.authenticate(dataManagementAccount, 
-    			                            ldapAuthenticated);
-    }
-    
-    @Override
-    public HpcDataManagementAccount getHpcDataManagementAccount(Object irodsAccount) throws HpcException
-    {
-    	if(irodsAccount == null) {
-    		return null;
-    	}
-    	try
-    	{
-    		return irodsConnection.getHpcDataManagementAccount((IRODSAccount)irodsAccount);
-    	} catch (ClassCastException e)
-    	{
-	        throw new HpcException("Failed to get Data management account from IRODSAccount: " + 
-                    e.getMessage(),
-                    HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-    	}
-    	
-    }
-    
-    @Override
-    public Object getProxyManagementAccount(HpcDataManagementAccount irodsAccount) throws HpcException
-    {
-    	try
-    	{
-    		return irodsConnection.getIRODSAccount(irodsAccount);
-		} catch(JargonException e) {
-		        throw new HpcException("Failed to get iRODS account: " + 
-		                               e.getMessage(),
-		                               HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-		} 
+    	return irodsConnection.authenticate(dataManagementAccount);
     }
     
     @Override
@@ -868,20 +834,10 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	try {
     		 return AVUQueryOperatorEnum.valueOf(operator);
     		 
-    	} catch(Throwable t) {
-    		    StringBuffer operatorValues = new StringBuffer();
-    		    operatorValues.append("[ ");
-    		    for(AVUQueryOperatorEnum value : AVUQueryOperatorEnum.values()) {
-    		    	operatorValues.append(value + " | ");
-    		    }
-    		    operatorValues.replace(operatorValues.length() - 2, operatorValues.length(), "]");
-    		    
-//    		    throw new HpcException("Invalid query operator: " + operator +
-//    		    		               ". Valid values: " + operatorValues,
-//                                       HpcErrorType.INVALID_REQUEST_INPUT , t);
+    	} catch(Exception e) {
     		    throw new HpcException("Invalid query operator: " + operator +
  		               ". Valid values: EQUAL,NOT_EQUAL,LESS_THAN,GREATER_THAN,LESS_OR_EQUAL, LIKE",
-                        HpcErrorType.INVALID_REQUEST_INPUT , t);
+                        HpcErrorType.INVALID_REQUEST_INPUT , e);
 
     	}
     }
@@ -1050,7 +1006,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	    	    // Current Jargon API doesn't support GROUP_ADMIN. This is a workaround 
     	    	    return HpcUserRole.GROUP_ADMIN;
     	       default:
-    	    	    return HpcUserRole.NOT_REGISTERED;
+    	    	    return HpcUserRole.NONE;
     	}
     }
     
@@ -1066,7 +1022,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	       case SYSTEM_ADMIN:
     		        return UserTypeEnum.RODS_ADMIN;
     	       case USER:
-    	    	    return UserTypeEnum.RODS_USER;
     	       case GROUP_ADMIN: 
     	    	    // Current Jargon API doesn't support GROUP_ADMIN. This is a workaround.
     	    	    return UserTypeEnum.RODS_USER;
@@ -1147,25 +1102,32 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	List<HpcSubjectPermission> hpcSubjectPermissions = new ArrayList<>();
     	for(UserFilePermission irodsUserPermission : irodsUserPermissions) {
     		HpcSubjectPermission hpcSubjectPermission = toHpcSubjectPermission(authenticatedToken, irodsUserPermission);
-    		if(hpcSubjectPermission != null)
-    			hpcSubjectPermissions.add(hpcSubjectPermission);
+    		if(hpcSubjectPermission != null) {
+    		   hpcSubjectPermissions.add(hpcSubjectPermission);
+    		}
     	}
     	
     	return hpcSubjectPermissions;
     }
 
+    /**
+     * Convert an iRODS user file permission to HPC subject permission
+     *
+     * @param irodsUserPermissions The iRODS user permissions.
+     * @return A list of HPC subject permissions.
+     */
     private HpcSubjectPermission toHpcSubjectPermission(Object authenticatedToken, UserFilePermission irodsUserPermission)
-            throws HpcException
+                                                       throws HpcException
     {
 		HpcSubjectPermission hpcSubjectPermission = new HpcSubjectPermission();
-		hpcSubjectPermission.setPermission(irodsUserPermission.getFilePermissionEnum().toString());
+		hpcSubjectPermission.setPermission(toHpcPermission(irodsUserPermission.getFilePermissionEnum()));
 		hpcSubjectPermission.setSubject(irodsUserPermission.getUserName());
 		// The IRODS user-type determines the HPC subject-type.
 		if(irodsUserPermission.getUserType().equals(UserTypeEnum.RODS_GROUP)) {
 		   if(!groupExists(authenticatedToken, irodsUserPermission.getUserName())) {
 			  // For collections, IRODS return individual user-id as groups (RODS_GROUP).
     		  // This is possibly a defect in the Jargon API or the IRODS security schema.
-    		  // As a workaround, we confirm the 'subject' is a group
+    		  // As a workaround, we confirm the 'subject' is a group.
 			  return null;
 		   }
 		   hpcSubjectPermission.setSubjectType(HpcSubjectType.GROUP);
@@ -1175,6 +1137,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		}
     	return hpcSubjectPermission;
     }
+    
     /**
      * Convert a list of iRODS user groups to HPC group names.
      *
@@ -1216,22 +1179,51 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     /**
-     * Convert HPC permission string to irods permission enum.
+     * Convert HPC permission enum to irods permission enum.
      *
-     * @param permission The HPC permission string.
+     * @param permission The HPC permission enum.
      * @return The IRODS file permission enum.
      * @throws HpcException if failed to map the input string to an enum value.
      */
-    private FilePermissionEnum toIRODSFilePermissionEnum(String permission) throws HpcException
+    private FilePermissionEnum toIRODSFilePermissionEnum(HpcPermission permission) throws HpcException
     {
-		try {
-			 return FilePermissionEnum.valueOf(permission);
-			 
-		} catch(Throwable t) {
-			    throw new HpcException("Invalid permission: " + permission + " . Valid values are " +
-			    		               Arrays.asList(FilePermissionEnum.values()),
-			    		               HpcErrorType.INVALID_REQUEST_INPUT, t);
-		}
+    	switch(permission) {
+	           case OWN:
+		            return FilePermissionEnum.OWN;
+	           case READ:
+	    	        return FilePermissionEnum.READ;
+	           case WRITE: 
+	    	        return FilePermissionEnum.WRITE;
+	           case NONE: 
+	    	        return FilePermissionEnum.NONE;
+	       default:
+	    	    throw new HpcException("Permission value not supported: " + permission.toString(),
+	    	    		               HpcErrorType.UNEXPECTED_ERROR);
+    	}
+	}
+    
+    /**
+     * Convert irods permission enum to Hpc permission enum.
+     *
+     * @param iRodsPermission The iRODS permission.
+     * @return The HPC permission enum.
+     * @throws HpcException if failed to map the enums
+     */
+    private  HpcPermission toHpcPermission(FilePermissionEnum iRodsPermission) throws HpcException
+    {
+    	switch(iRodsPermission) {
+               case OWN:
+	                return HpcPermission.OWN;
+               case READ:
+ 	                return HpcPermission.READ;
+               case WRITE: 
+ 	                return HpcPermission.WRITE;
+               case NONE: 
+ 	                return HpcPermission.NONE;
+               default:
+ 	                 throw new HpcException("iRODS permission not supported: " + iRodsPermission.toString(),
+ 	    		                            HpcErrorType.UNEXPECTED_ERROR);
+    	}
     }
 }
 

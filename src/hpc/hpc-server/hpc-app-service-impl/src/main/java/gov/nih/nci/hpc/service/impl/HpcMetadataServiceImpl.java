@@ -19,6 +19,8 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CHECKSUM_ATTRIBU
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_REQUEST_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_TYPE_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STARTED_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_COMPLETED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_DOC_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_ID_ATTRIBUTE;
@@ -40,7 +42,11 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,6 +96,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
 	// Metadata DAO.
 	@Autowired
 	private HpcMetadataDAO metadataDAO = null;
+	
+	// Date formatter to format metadata entries of type Calendar (like data transfer start/completion time). 
+	private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 	
     // The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -215,14 +224,14 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     	archiveLocation.setFileContainerId(metadataMap.get(ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE));
     	archiveLocation.setFileId(metadataMap.get(ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE));
     	if(archiveLocation.getFileContainerId() != null || archiveLocation.getFileId() != null) {
-    		systemGeneratedMetadata.setArchiveLocation(archiveLocation);
+    	   systemGeneratedMetadata.setArchiveLocation(archiveLocation);
     	}
     	
     	HpcFileLocation sourceLocation = new HpcFileLocation();
     	sourceLocation.setFileContainerId(metadataMap.get(SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE));
     	sourceLocation.setFileId(metadataMap.get(SOURCE_LOCATION_FILE_ID_ATTRIBUTE));
     	if(sourceLocation.getFileContainerId() != null || sourceLocation.getFileId() != null) {
-    		systemGeneratedMetadata.setSourceLocation(sourceLocation);
+    	   systemGeneratedMetadata.setSourceLocation(sourceLocation);
     	}
     	
     	systemGeneratedMetadata.setDataTransferRequestId(metadataMap.get(DATA_TRANSFER_REQUEST_ID_ATTRIBUTE));
@@ -250,6 +259,13 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     			    systemGeneratedMetadata.setDataTransferType(null);
     		}
     	}
+    	
+    	if(metadataMap.get(DATA_TRANSFER_STARTED_ATTRIBUTE) != null) {
+    	   systemGeneratedMetadata.setDataTransferStarted(toCalendar(metadataMap.get(DATA_TRANSFER_STARTED_ATTRIBUTE)));
+    	}
+    	if(metadataMap.get(DATA_TRANSFER_COMPLETED_ATTRIBUTE) != null) {
+     	   systemGeneratedMetadata.setDataTransferCompleted(toCalendar(metadataMap.get(DATA_TRANSFER_COMPLETED_ATTRIBUTE)));
+     	}
     	
     	systemGeneratedMetadata.setSourceSize(
     		  metadataMap.get(SOURCE_FILE_SIZE_ATTRIBUTE) != null ?
@@ -317,11 +333,14 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     		                                           String checksum,
     		                                           HpcDataTransferUploadStatus dataTransferStatus,
     		                                           HpcDataTransferType dataTransferType,
+    		                                           Calendar dataTransferStarted,
+    		                                           Calendar dataTransferCompleted,
     		                                           Long sourceSize, String callerObjectId) 
                                                       throws HpcException
     {
        	// Input validation.
-       	if(path == null || dataTransferStatus == null || dataTransferType == null) {
+       	if(path == null || dataTransferStatus == null || dataTransferType == null || 
+       	   dataTransferStarted == null) {
        	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
 		                          HpcErrorType.INVALID_REQUEST_INPUT);	
        	}
@@ -380,6 +399,17 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        			         toMetadataEntry(DATA_TRANSFER_TYPE_ATTRIBUTE, 
        		                             dataTransferType.value()));
        	
+       	// Create the Data Transfer Started metadata.
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(DATA_TRANSFER_STARTED_ATTRIBUTE, 
+       			        		         dateFormat.format(dataTransferStarted.getTime())));
+       	
+       	// Create the Data Transfer Completed metadata.
+       	addMetadataEntry(metadataEntries,
+       			         toMetadataEntry(DATA_TRANSFER_COMPLETED_ATTRIBUTE, 
+       			        		         dataTransferCompleted != null ? 
+       			        		        	 dateFormat.format(dataTransferCompleted.getTime()) : null));
+       	
        	// Create the Source File Size metadata.
        	addMetadataEntry(metadataEntries,
        			         toMetadataEntry(SOURCE_FILE_SIZE_ATTRIBUTE, 
@@ -416,7 +446,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
                                                         String dataTransferRequestId,
                                                         String checksum,
                                                         HpcDataTransferUploadStatus dataTransferStatus,
-                                                        HpcDataTransferType dataTransferType) 
+                                                        HpcDataTransferType dataTransferType,
+                                                        Calendar dataTransferCompleted) 
                                                         throws HpcException
 	{
        	// Input validation.
@@ -465,6 +496,13 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	   addMetadataEntry(metadataEntries,
        		                toMetadataEntry(DATA_TRANSFER_TYPE_ATTRIBUTE, 
        		  	                            dataTransferType.value()));
+       	}
+       	
+       	if(dataTransferCompleted != null) {
+           // Update the Data Transfer Completed metadata.
+           addMetadataEntry(metadataEntries,
+             		        toMetadataEntry(DATA_TRANSFER_COMPLETED_ATTRIBUTE, 
+           			            	        dateFormat.format(dataTransferCompleted.getTime())));
        	}
        	
        	if(!metadataEntries.isEmpty()) {
@@ -691,5 +729,25 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
 			      break;
 		   }
 	   }
+    }
+    
+    /**
+     * Instantiate a Calendar object from string.
+     *
+     * @param calendarStr The calendar as a string.
+     * @return The Calendar instance.
+     */
+    private Calendar toCalendar(String calendarStr) 
+    {
+    	Calendar cal = Calendar.getInstance();
+    	try {
+     	     cal.setTime(dateFormat.parse(calendarStr));
+     	     
+    	} catch(ParseException e) {
+    		    logger.error("Failed to parse calendar string: " + calendarStr);
+    		    return null;
+    	}
+    	
+    	return cal;
     }
 }

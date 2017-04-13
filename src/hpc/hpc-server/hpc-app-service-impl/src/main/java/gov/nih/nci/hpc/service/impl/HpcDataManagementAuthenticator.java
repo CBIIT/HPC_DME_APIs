@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
@@ -72,14 +73,15 @@ public class HpcDataManagementAuthenticator
     	}
     	
     	// No authenticated token found in the request token. Authenticate the invoker.
-    	if(invoker.getDataManagementAccount() == null) {
-    		throw new HpcException("Unknown data management account",
-                                   HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
+    	HpcIntegratedSystemAccount dataManagementAccount = invoker.getDataManagementAccount();
+    	if(dataManagementAccount == null) {
+    	   throw new HpcException("Unknown data management account",
+                                  HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
     	}
     	
-    	// Authenticate w/ data management
-    	Object token = dataManagementProxy.authenticate(invoker.getDataManagementAccount(),
-    			                                        invoker.getLdapAuthenticated());
+    	// Authenticate w/ data management.
+    	dataManagementAccount.getProperties().clear();
+    	Object token = dataManagementProxy.authenticate(dataManagementAccount);
     	if(token == null) {
     	   throw new HpcException("Invalid data management account credentials",
                                   HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);

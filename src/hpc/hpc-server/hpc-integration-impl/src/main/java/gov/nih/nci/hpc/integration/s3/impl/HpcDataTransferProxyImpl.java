@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 
+import java.util.Calendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,11 +114,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	// Upload the data.
     	Upload s3Upload = null;
     	UploadResult s3UploadResult = null;
+    	Calendar dataTransferStarted = Calendar.getInstance();
+    	Calendar dataTransferCompleted = null;
     	try {
     	     s3Upload = s3Connection.getTransferManager(authenticatedToken).upload(request);
     		 if(progressListener == null) {
     			// Upload synchronously.
     			s3UploadResult = s3Upload.waitForUploadResult();
+    			dataTransferCompleted = Calendar.getInstance();
     		 } else {
     			     // Upload asynchronously
     			     s3Upload.addProgressListener(new HpcS3ProgressListener(progressListener));
@@ -135,6 +139,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
     	uploadResponse.setArchiveLocation(archiveDestinationLocation);
     	uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
+    	uploadResponse.setDataTransferStarted(dataTransferStarted);
+    	uploadResponse.setDataTransferCompleted(dataTransferCompleted);
     	uploadResponse.setDataTransferRequestId(String.valueOf(s3Upload.hashCode()));
     	uploadResponse.setChecksum(s3UploadResult != null ? s3UploadResult.getETag() : "Unknown");
     	if(baseArchiveDestination.getType().equals(HpcArchiveType.ARCHIVE)) {

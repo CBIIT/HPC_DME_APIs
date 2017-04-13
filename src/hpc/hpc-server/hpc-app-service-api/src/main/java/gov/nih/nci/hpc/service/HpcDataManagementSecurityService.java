@@ -10,7 +10,6 @@
 
 package gov.nih.nci.hpc.service;
 
-import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -132,28 +131,11 @@ public interface HpcDataManagementSecurityService
     /**
      * Get groups by search criteria.
      *
-     * @param groupSearchCriteria The group search criteria (In the form of SQL 'LIKE', using case sensitive matching).
+     * @param groupPattern The group pattern to search for (In the form of SQL 'LIKE', using case sensitive matching).
      * @return A list of groups names matching the criteria.
      * @throws HpcException on service failure.
      */
-    public List<String> getGroups(String groupSearchCriteria) throws HpcException;
-    
-    /**
-     * Create HPC data management account from proxy account object. 
-     * This is to cache proxy data management account for better performance
-     * @param proxyAccount The proxy account.
-     * @return HpcDataManagementAccount to tokenize 
-     * @throws HpcException on service failure.
-     */
-    public HpcDataManagementAccount getHpcDataManagementAccount(Object proxyAccount) throws HpcException;
-    
-    /**
-     * Create Proxy data management account from cached HPC data management account 
-     * @param managementAccount The management account.
-     * @return Tokenized account
-     * @throws HpcException on service failure.
-     */
-    public Object getProxyManagementAccount(HpcDataManagementAccount managementAccount) throws HpcException;
+    public List<String> getGroups(String groupPattern) throws HpcException;
 }
 
  

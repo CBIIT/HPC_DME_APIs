@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.service.impl;
 import gov.nih.nci.hpc.dao.HpcEventDAO;
 import gov.nih.nci.hpc.dao.HpcNotificationDAO;
 import gov.nih.nci.hpc.dao.HpcReportsDAO;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
@@ -26,6 +27,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcEventService;
 
+import java.text.DateFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -65,6 +67,9 @@ public class HpcEventServiceImpl implements HpcEventService
 	public static final String COLLECTION_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE = "Sub collection registerd";
 	public static final String DATA_OBJECT_REGISTRATION_PAYLOAD_VALUE = "DATA_OBJECT_REGISTRATION";
 	public static final String DATA_OBJECT_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE = "Data object registered";
+	public static final String SOURCE_LOCATION_PAYLOAD_ATTRIBUTE = "SOURCE_LOCATION";
+	public static final String DESTINATION_LOCATION_PAYLOAD_ATTRIBUTE = "DESTINATION_LOCATION";
+	public static final String DATA_TRANSFER_COMPLETED_PAYLOAD_ATTRIBUTE = "DATA_TRANSFER_COMPLETED";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -86,6 +91,9 @@ public class HpcEventServiceImpl implements HpcEventService
 	// An indicator whether a collection update notification should be sent to the invoker.
 	// By default the invoker is not notified for changes they initiated, but this is handy for testing.
 	boolean invokerCollectionUpdateNotification = false;
+	
+	// Date formatter to format event payload of type Calendar.
+	private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -156,10 +164,11 @@ public class HpcEventServiceImpl implements HpcEventService
     
     @Override
     public void addDataTransferDownloadCompletedEvent(
-    		       String userId, String dataTransferRequestId) throws HpcException
+    		       String userId, String dataTransferRequestId, HpcFileLocation destinationLocation, 
+                   Calendar dataTransferCompleted) throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_DOWNLOAD_COMPLETED,
-    			             dataTransferRequestId, null, null);
+    			             dataTransferRequestId, null, null, dataTransferCompleted, null, destinationLocation);
     }
     
     @Override
@@ -167,7 +176,7 @@ public class HpcEventServiceImpl implements HpcEventService
     		       String userId, String dataTransferRequestId) throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_DOWNLOAD_FAILED,
-	                         dataTransferRequestId, null, null);
+	                         dataTransferRequestId, null, null, null, null, null);
     }
     
     @Override
@@ -175,15 +184,16 @@ public class HpcEventServiceImpl implements HpcEventService
     		                                                throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE,
-                             null, path, null);
+                             null, path, null, null, null, null);
     }
     
     @Override
-    public void addDataTransferUploadArchivedEvent(String userId, String path, String checksum) 
+    public void addDataTransferUploadArchivedEvent(String userId, String path, String checksum, 
+    		                                       HpcFileLocation sourceLocation, Calendar dataTransferCompleted) 
     		                                      throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_ARCHIVED,
-                             null, path, checksum);
+                             null, path, checksum, dataTransferCompleted, sourceLocation, null);
     }
     
     @Override
@@ -191,7 +201,7 @@ public class HpcEventServiceImpl implements HpcEventService
     		                                    throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_FAILED,
-                             null, path, null);
+                             null, path, null, null, null, null);
     }
     
     @Override
@@ -323,11 +333,15 @@ public class HpcEventServiceImpl implements HpcEventService
      * @param dataTransferRequestId (Optional) The data transfer request ID.
      * @param path (Optional) The data object path.
      * @param checksum (Optional) The data checksum.
+     * @param dataTransferCompleted (Optional) The time the data upload completed.
+     * @param sourceLocation (Optional) The data transfer source location.
+     * @param destinationLocation (Optional) The data transfer destination location.
      * @throws HpcException on service failure.
      */
-    private void addDataTransferEvent(String userId, HpcEventType eventType, 
-    		                          String dataTransferRequestId, String path,
-    		                          String checksum) throws HpcException
+    private void addDataTransferEvent(String userId, HpcEventType eventType, String dataTransferRequestId, 
+    		                          String path, String checksum, Calendar dataTransferCompleted,
+    		                          HpcFileLocation sourceLocation, HpcFileLocation destinationLocation) 
+    		                         throws HpcException
 	{
 		// Input Validation.
 		if(userId == null || eventType == null) {
@@ -349,6 +363,21 @@ public class HpcEventServiceImpl implements HpcEventService
 		}
 		if(checksum != null) {
 		   event.getPayloadEntries().add(toPayloadEntry(CHECKSUM_PAYLOAD_ATTRIBUTE, checksum));
+		}
+		
+		if(dataTransferCompleted != null) {
+			   event.getPayloadEntries().add(toPayloadEntry(DATA_TRANSFER_COMPLETED_PAYLOAD_ATTRIBUTE, 
+	                                                        dateFormat.format(dataTransferCompleted.getTime())));
+		}
+		
+		if(sourceLocation != null) {
+		   event.getPayloadEntries().add(toPayloadEntry(SOURCE_LOCATION_PAYLOAD_ATTRIBUTE, 
+				                                        toString(sourceLocation)));
+	    }
+		
+		if(destinationLocation != null) {
+		   event.getPayloadEntries().add(toPayloadEntry(DESTINATION_LOCATION_PAYLOAD_ATTRIBUTE, 
+					                                    toString(destinationLocation)));
 		}
 	
 		// Persist to DB.
@@ -467,6 +496,25 @@ public class HpcEventServiceImpl implements HpcEventService
     	payloadEntries.add(toPayloadEntry(COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE, 
                                           updateDescriptionPayloadValue));
     	return payloadEntries;
+    }
+    
+    /**
+     * Generate a string from HpcFileLocation object.
+     * 
+     * @param fileLocation The object to generate a string for.
+     * @return A string representation of the file location.
+     */
+    private String toString(HpcFileLocation fileLocation)
+    {
+	   StringBuilder fileLocationStr = new StringBuilder();
+	   if(fileLocation.getFileContainerId() != null) {
+		  fileLocationStr.append(fileLocation.getFileContainerId() + "#"); 
+	   }
+	   if(fileLocation.getFileId() != null) {
+		  fileLocationStr.append(fileLocation.getFileId()); 
+	   }
+	   
+	   return fileLocationStr.toString();
     }
 }
 

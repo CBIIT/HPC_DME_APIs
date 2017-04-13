@@ -10,7 +10,6 @@
 
 package gov.nih.nci.hpc.ws.rs.test;
 
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.when;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -230,7 +229,7 @@ public abstract class HpcRestServiceTest extends Assert
     	MockitoAnnotations.initMocks(this);
     	
     	// Mock the IRODS authentication method.
-    	when(dataManagementProxyMock.authenticate(anyObject(), anyBoolean())).thenReturn(new String("Authenticated"));
+    	when(dataManagementProxyMock.authenticate(anyObject())).thenReturn(new String("Authenticated"));
     }
 }
 

@@ -47,13 +47,16 @@ public interface HpcUserDAO
      * Get users by search criterias.
      *
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
-     * @param firstName (Optional) The first name to search for (using case insensitive comparison).
-     * @param lastName (Optional) The last name to search for (using case insensitive comparison).
+     * @param firstNamePattern (Optional) The first-name pattern to search for (In the form of SQL 'LIKE' pattern, 
+     *                         using case insensitive matching).
+     * @param lastNamePattern (Optional) The last-name pattern to search for (In the form of SQL 'LIKE' pattern, 
+     *                        using case insensitive matching).
+     * @param doc User DOC                       
      * @param active If set to true, only active users are searched. Otherwise, all users (active and inactive) are searched.
      * @return A list of users.
      * @throws HpcException on service failure.
      */
-    public List<HpcUser> getUsers(String nciUserId, String firstName, String lastName, boolean active) 
+    public List<HpcUser> getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, String doc, boolean active) 
     		                     throws HpcException;
 }
 

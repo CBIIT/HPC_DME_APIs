@@ -12,7 +12,6 @@ package gov.nih.nci.hpc.ws.rs.interceptor;
 
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.exception.HpcAuthenticationException;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -106,13 +105,10 @@ public class HpcAuthenticationInterceptor
     {
     	// Authenticate the caller (if configured to do so) and populate the request context.
         try {
-        	 HpcAuthenticationResponseDTO authenticationResponse = authenticate(message);
-             if(!authenticationResponse.getAuthenticated()) {
-                throw new HpcAuthenticationException("Invalid NCI user credentials or token"); 
-             }
+        	 authenticate(message);
              
              // Set a security context with the user's role.
-             HpcSecurityContext sc = new HpcSecurityContext(authenticationResponse.getUserRole().value());
+             HpcSecurityContext sc = new HpcSecurityContext(securityBusService.getAuthenticationResponse().getUserRole().value());
              message.put(SecurityContext.class, sc);
 
         } catch(HpcException e) {
@@ -122,7 +118,7 @@ public class HpcAuthenticationInterceptor
     	        throw ex;
         	    
         } catch(Exception e) {
-   	            throw new HpcAuthenticationException("LDAP authentication failed", e);
+   	            throw new HpcAuthenticationException("Authentication failed", e);
         }
     }
     
@@ -137,32 +133,30 @@ public class HpcAuthenticationInterceptor
      * @return HpcAuthenticationResponseDTO.
      * @throws HpcException on unsupported authorization type request.
      */
-    private HpcAuthenticationResponseDTO authenticate(Message message) throws HpcException
+    private void authenticate(Message message) throws HpcException
     {
 		String[] authorization = getAuthorization(message);
     	String authorizationType = authorization[0];
     	
     	// Authenticate the caller (if configured to do so) and populate the request context.
         if(authorizationType.equals(BASIC_AUTHORIZATION)) {
-           return authenticate(message.get(AuthorizationPolicy.class));
+           authenticate(message.get(AuthorizationPolicy.class));
         } 
 
         if(authorizationType.equals(TOKEN_AUTHORIZATION)) {
-           return authenticate(authorization[1]);
+           authenticate(authorization[1]);
         } 
         
-        throw new HpcAuthenticationException("Invalid Authorization Type: " + authorizationType); 
+        //throw new HpcAuthenticationException("Invalid Authorization Type: " + authorizationType); 
     }
     
     /**
      * Perform a basic authentication w/ user-name and password.
      * 
      * @param policy The policy holding user name anf password.
-     * @return HpcAuthenticationResponseDTO.
-     * @throws HpcException on service failure.
+     * @throws HpcException on authentication failure.
      */
-    private HpcAuthenticationResponseDTO authenticate(AuthorizationPolicy policy) 
-    		                                         throws HpcException
+    private void authenticate(AuthorizationPolicy policy) throws HpcException
     {
     	String userName = null, password = null;
     	if(policy != null) {
@@ -170,19 +164,18 @@ public class HpcAuthenticationInterceptor
     	   password = policy.getPassword();
     	}
     	
-    	return securityBusService.authenticate(userName, password, ldapAuthentication);
+    	securityBusService.authenticate(userName, password, ldapAuthentication);
     }
     
     /**
      * Perform a token authentication (JWT).
      * 
      * @param token The JWT token.
-     * @return HpcAuthenticationResponseDTO.
-     * @throws HpcException on service failure.
+     * @throws HpcException on authentication failure.
      */
-    private HpcAuthenticationResponseDTO authenticate(String token) throws HpcException
+    private void authenticate(String token) throws HpcException
     {
-    	return securityBusService.authenticate(token);
+    	securityBusService.authenticate(token);
     }
     
     /**
