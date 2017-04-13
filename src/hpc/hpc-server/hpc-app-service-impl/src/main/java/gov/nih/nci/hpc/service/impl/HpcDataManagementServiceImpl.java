@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -48,13 +49,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class HpcDataManagementServiceImpl implements HpcDataManagementService
 {   
-    //---------------------------------------------------------------------//
-    // Constants
-    //---------------------------------------------------------------------//
-	
-	// Data Management permissions.
-	private static final String OWN_PERMISSION = "OWN"; 
-	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -289,7 +283,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
         HpcSubjectPermission permissionRequest = new HpcSubjectPermission();
-        permissionRequest.setPermission(OWN_PERMISSION);
+        permissionRequest.setPermission(HpcPermission.OWN);
         permissionRequest.setSubject(dataManagementAccount.getUsername());
             
         // Determine if it's a collection or data object.

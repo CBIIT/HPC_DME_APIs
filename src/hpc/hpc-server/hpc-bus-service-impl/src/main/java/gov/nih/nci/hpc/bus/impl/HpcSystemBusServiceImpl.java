@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadCleanup;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
@@ -142,12 +143,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		        		               systemGeneratedMetadata.getDataTransferType(),
     		        		               systemGeneratedMetadata.getDataTransferRequestId());
     			 
+    			 Calendar dataTransferCompleted = null;
     			 switch(dataTransferStatus) {
-    			        case ARCHIVED:
-    			        case IN_TEMPORARY_ARCHIVE:
-    			             // Data transfer completed successfully into Archive. 
-    			             // Update the system metadata and add an event.
-    	     			     setDataTransferUploadStatus(path, dataTransferStatus);
+    		            case ARCHIVED:
+    		            	 // Data object is archived. Update data transfer status and completion time.
+    		            	 dataTransferCompleted = Calendar.getInstance();
+	     			         metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, 
+	     			    		                                                     dataTransferStatus, null, 
+	     			    		                                                     dataTransferCompleted);
+	    		             break;
+
+    		            case IN_TEMPORARY_ARCHIVE:
+    			             // Data object is in temp archive. Update data transfer status.
+    	     			     metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, 
+    	     			    		                                                 dataTransferStatus, null, null);
     	    		         break;
 	   	    		         
     			        case FAILED:
@@ -163,7 +172,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			 
     			 // Data transfer upload completed (successfully or failed). Add an event.
     			 addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
-		                                    dataTransferStatus, null);
+		                                    dataTransferStatus, null, systemGeneratedMetadata.getSourceLocation(), 
+		                                    dataTransferCompleted);
     		     
     		} catch(HpcException e) {
     			    logger.error("Failed to process data transfer upload update:" + path, e);
@@ -216,12 +226,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  			    			               uploadResponse.getDataTransferRequestId(), 
  			    			               uploadResponse.getChecksum(), 
  			    			               uploadResponse.getDataTransferStatus(),
- 			    			               uploadResponse.getDataTransferType()); 
+ 			    			               uploadResponse.getDataTransferType(),
+ 			    			               uploadResponse.getDataTransferCompleted()); 
  			     
  			     // Data transfer upload completed (successfully or failed). Add an event.
     			 addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
     					                    uploadResponse.getDataTransferStatus(),
-    					                    uploadResponse.getChecksum());
+    					                    uploadResponse.getChecksum(), 
+    					                    systemGeneratedMetadata.getSourceLocation(),
+    					                    uploadResponse.getDataTransferCompleted());
  			     
     		} catch(HpcException e) {
     			    logger.error("Failed to transfer data from temporary archive:" + path, e);
@@ -469,8 +482,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		// If timeout occurred, move the status to unknown.
 		if(!checkTimeout || isDataTransferStatusCheckTimedOut(dataObject)) {
 			try {
-				 setDataTransferUploadStatus(dataObject.getAbsolutePath(), 
-    	                                     HpcDataTransferUploadStatus.UNKNOWN);
+				 metadataService.updateDataObjectSystemGeneratedMetadata(dataObject.getAbsolutePath(), null, null, null, 
+						                                                 HpcDataTransferUploadStatus.UNKNOWN, null, null);
+
 			} catch(Exception ex) {
 				    logger.error("failed to set data transfer status to unknown: " + 
 				    		     dataObject.getAbsolutePath(), ex);
@@ -481,34 +495,25 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	}
 	
     /** 
-     * Set data transfer upload status of a data object.
-     * 
-     * @param path The data object path.
-     * @param dataTransferStatus The data transfer status.
-     * @throws HpcException on service failure.
-     */
-	private void setDataTransferUploadStatus(String path, HpcDataTransferUploadStatus dataTransferStatus)
-	                                        throws HpcException
-	{
-		metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, dataTransferStatus, null);
-	}
-	
-    /** 
      * add data transfer upload event.
      * 
      * @param userId The user ID.
      * @param path The data object path.
      * @param dataTransferStatus The data transfer upload status.
      * @param checksum (Optional) The data checksum.
+     * @param sourceLocation (Optional) The data transfer source location.
+     * @param dataTransferCompleted (Optional) The time the data upload completed.
      */
 	private void addDataTransferUploadEvent(String userId, String path,
 			                                HpcDataTransferUploadStatus dataTransferStatus,
-			                                String checksum) 
+			                                String checksum, HpcFileLocation sourceLocation, 
+			                                Calendar dataTransferCompleted) 
 	{
 		try {
 			 switch(dataTransferStatus) {
 			        case ARCHIVED: 
-		                 eventService.addDataTransferUploadArchivedEvent(userId, path, checksum);
+		                 eventService.addDataTransferUploadArchivedEvent(userId, path, checksum, 
+		                		                                         sourceLocation, dataTransferCompleted);
 		                 break;
 		                 
 			        case IN_TEMPORARY_ARCHIVE: 
@@ -541,7 +546,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		try {
 			 switch(dataTransferStatus) {
 			        case COMPLETED: 
-		                 eventService.addDataTransferDownloadCompletedEvent(userId, dataTransferRequestId);
+			        	 // TODO: Add destination location and data transfer completed data.
+		                 eventService.addDataTransferDownloadCompletedEvent(userId, dataTransferRequestId, null, null);
 		                 break;
 		                 
 			        case FAILED: 

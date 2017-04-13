@@ -124,11 +124,11 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response getActiveUsers(String nciUserId, String firstName, String lastName)
+    public Response getActiveUsers(String nciUserId, String firstNamePattern, String lastNamePattern, String doc)
     {
 		HpcUserListDTO users = null;
 		try {
-			 users = securityBusService.getUsers(nciUserId, firstName, lastName, true);
+			 users = securityBusService.getUsers(nciUserId, firstNamePattern, lastNamePattern, doc, true);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -138,11 +138,11 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getAllUsers(String nciUserId, String firstName, String lastName)
+    public Response getAllUsers(String nciUserId, String firstName, String lastName, String doc)
     {
 		HpcUserListDTO users = null;
 		try {
-			 users = securityBusService.getUsers(nciUserId, firstName, lastName, false);
+			 users = securityBusService.getUsers(nciUserId, firstName, lastName, doc, false);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -210,11 +210,11 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getGroups(String groupSearchCriteria)
+    public Response getGroups(String groupPattern)
     {
     	HpcGroupListDTO groups = null;
 		try {
-			 groups = securityBusService.getGroups(groupSearchCriteria);
+			 groups = securityBusService.getGroups(groupPattern);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);

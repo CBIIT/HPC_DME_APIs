@@ -66,9 +66,11 @@ public class HpcUserDAOImpl implements HpcUserDAO
     
 	private static final String GET_USERS_USER_ID_FILTER = " and lower(\"USER_ID\") = lower(?) ";
     
-	private static final String GET_USERS_FIRST_NAME_FILTER = " and lower(\"FIRST_NAME\") like lower(?) ";
+	private static final String GET_USERS_FIRST_NAME_PATTERN_FILTER = " and lower(\"FIRST_NAME\") like lower(?) ";
     
-	private static final String GET_USERS_LAST_NAME_FILTER = " and lower(\"LAST_NAME\") like lower(?) ";
+	private static final String GET_USERS_LAST_NAME_PATTERN_FILTER = " and lower(\"LAST_NAME\") like lower(?) ";
+	
+	private static final String GET_USERS_DOC_FILTER = " and lower(\"DOC\") = lower(?) ";
 	
 	private static final String GET_USERS_ACTIVE_FILTER = " and \"ACTIVE\" = true ";
 	
@@ -147,7 +149,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		}
 	}
 	
-	public List<HpcUser> getUsers(String nciUserId, String firstName, String lastName, boolean active) 
+	public List<HpcUser> getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, String doc, boolean active) 
                                  throws HpcException
     {
 		// Build the query based on provided search criteria.
@@ -161,14 +163,18 @@ public class HpcUserDAOImpl implements HpcUserDAO
     	   sqlQueryBuilder.append(GET_USERS_USER_ID_FILTER);
     	   args.add(nciUserId);
     	}
-    	if(firstName != null) {
-     	   sqlQueryBuilder.append(GET_USERS_FIRST_NAME_FILTER);
-     	   args.add(firstName);
+    	if(firstNamePattern != null) {
+     	   sqlQueryBuilder.append(GET_USERS_FIRST_NAME_PATTERN_FILTER);
+     	   args.add(firstNamePattern);
      	}
-    	if(lastName != null) {
-     	   sqlQueryBuilder.append(GET_USERS_LAST_NAME_FILTER);
-     	   args.add(lastName);
+    	if(lastNamePattern != null) {
+     	   sqlQueryBuilder.append(GET_USERS_LAST_NAME_PATTERN_FILTER);
+     	   args.add(lastNamePattern);
      	}
+    	if(doc != null) {
+      	   sqlQueryBuilder.append(GET_USERS_DOC_FILTER);
+      	   args.add(doc);
+      	}
     	if(active) {
       	   sqlQueryBuilder.append(GET_USERS_ACTIVE_FILTER);
       	}

@@ -16,7 +16,6 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
-import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -40,34 +39,12 @@ public interface HpcDataManagementProxy
      * Authenticate the invoker w/ the data management system.
      *
      * @param dataManagementAccount The Data Management account to authenticate.
-     * @param ldapAuthenticated An indicator if the user was authenticated via LDAP. 
-     *                          This determines the authentication scheme to use w/ Data Management. 
      * @return An authenticated token, to be used in subsequent calls to data management.
      *         It returns null if the account is not authenticated.
      * @throws HpcException on data management system failure.
      */
-    public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount,
-    		                   boolean ldapAuthenticated) 
+    public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount) 
     		                  throws HpcException;
-
-    /**
-     * Create HPC data management account from proxy account object. 
-     * This is to cache proxy data management account for better performance.
-     * 
-     * @param proxyAccount The tokenized account.
-     * @return A data management account
-     * @throws HpcException on data management system failure.
-     */
-    public HpcDataManagementAccount getHpcDataManagementAccount(Object proxyAccount) throws HpcException;
-    
-    /**
-     * Create Proxy data management account from cached HPC data management account.
-     * 
-     * @param datamanagementAccount Data Management Account.
-     * @return Tokenized account.
-     * @throws HpcException on data management system failure.
-     */
-    public Object getProxyManagementAccount(HpcDataManagementAccount datamanagementAccount) throws HpcException;
     
     /**
      * Close iRODS connection of an account.

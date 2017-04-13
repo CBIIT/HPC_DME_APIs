@@ -10,10 +10,12 @@
 
 package gov.nih.nci.hpc.service;
 
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -56,9 +58,13 @@ public interface HpcEventService
      *
      * @param userId The user ID.
      * @param dataTransferRequestId The data transfer request ID.
+     * @param destinationLocation The data transfer destination location.
+     * @param dataTransferCompleted The time the data download completed.
      * @throws HpcException on service failure.
      */
-    public void addDataTransferDownloadCompletedEvent(String userId, String dataTransferRequestId) 
+    public void addDataTransferDownloadCompletedEvent(String userId, String dataTransferRequestId,
+    		                                          HpcFileLocation destinationLocation, 
+    		                                          Calendar dataTransferCompleted) 
     		                                         throws HpcException;
     
     /**
@@ -87,9 +93,12 @@ public interface HpcEventService
      * @param userId The user ID.
      * @param path The data object path.
      * @param checksum (Optional) The data checksum.
+     * @param sourceLocation The data transfer source location.
+     * @param dataTransferCompleted The time the data upload completed.
      * @throws HpcException on service failure.
      */
-    public void addDataTransferUploadArchivedEvent(String userId, String path, String checksum) 
+    public void addDataTransferUploadArchivedEvent(String userId, String path, String checksum,
+    		                                       HpcFileLocation sourceLocation, Calendar dataTransferCompleted) 
                                                   throws HpcException;
     
     /**

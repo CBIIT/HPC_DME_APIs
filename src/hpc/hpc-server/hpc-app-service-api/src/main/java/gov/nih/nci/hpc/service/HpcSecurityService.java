@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -66,13 +67,16 @@ public interface HpcSecurityService
      * Get users by search criterias. Note: only active users are returned.
      *
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
-     * @param firstName (Optional) The first name to search for (using case insensitive comparison).
-     * @param lastName (Optional) The last name to search for (using case insensitive comparison). 
+     * @param firstNamePattern (Optional) The first-name pattern to search for (In the form of SQL 'LIKE' pattern, 
+     *                         using case insensitive matching).
+     * @param lastNamePattern (Optional) The last-name pattern to search for (In the form of SQL 'LIKE' pattern, 
+     *                        using case insensitive matching).
      * @param active If set to true, only active users are searched. Otherwise, all users (active and inactive) are searched.
+     * @param doc User DOC
      * @return A list of users.
      * @throws HpcException on service failure.
      */
-    public List<HpcUser> getUsers(String nciUserId, String firstName, String lastName, boolean active) 
+    public List<HpcUser> getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, String doc, boolean active) 
     		                     throws HpcException;
     
     /**
@@ -94,10 +98,14 @@ public interface HpcSecurityService
     /**
      * Set the service call invoker in the request context.
      *
-     * @param user The HPC user to set as the invoker.
-     * @param ldapAuthenticated An indicator whether the user was authenticated via LDAP.
+     * @param nciAccount The invoker's (HPC user) NCI account.
+     * @param authenticationType The method the user was authenticated.
+     * @param dataManagementAccount The data management account to be used when invoking data management actions on behalf
+     *                              of the invoker.
+     * @throws HpcException on service failure.
      */
-    public void setRequestInvoker(HpcUser user, boolean ldapAuthenticated);
+    public void setRequestInvoker(HpcNciAccount nciAccount, HpcAuthenticationType authenticationType,
+    		                      HpcIntegratedSystemAccount dataManagementAccount) throws HpcException;
     
     /**
      * Set the service call invoker in the request context using system account.

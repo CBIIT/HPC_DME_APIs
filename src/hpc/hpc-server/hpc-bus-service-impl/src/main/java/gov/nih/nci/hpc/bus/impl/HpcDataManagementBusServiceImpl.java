@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
@@ -54,6 +55,7 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -359,6 +361,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			    			                   uploadResponse.getChecksum(), 
 			    			                   uploadResponse.getDataTransferStatus(),
 			    			                   uploadResponse.getDataTransferType(),
+			    			                   uploadResponse.getDataTransferStarted(),
+			    			                   uploadResponse.getDataTransferCompleted(),
 			    			                   getSourceSize(source, uploadResponse.getDataTransferType(),
 				                                             dataObjectFile), 
 			    			                   dataObjectRegistration.getCallerObjectId()); 
@@ -663,8 +667,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		Set<String> userIds = new HashSet<String>(); 
 		for(HpcUserPermission userPermissionRequest : entityPermissionsRequest.getUserPermissions()) {
 			String userId = userPermissionRequest.getUserId();
-			String permission = userPermissionRequest.getPermission();
-			if(userId == null || userId.isEmpty()) { 
+			HpcPermission permission = userPermissionRequest.getPermission();
+			if(StringUtils.isEmpty(userId)) { 
 			   throw new HpcException("Null or empty userId in a permission request",
                                       HpcErrorType.INVALID_REQUEST_INPUT);	
 			}
@@ -676,8 +680,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    	   throw new HpcException("User not found: " + userId, 
 	    			                  HpcRequestRejectReason.INVALID_NCI_ACCOUNT);	
 	    	}
-			if(permission == null || permission.isEmpty()) { 
-			   throw new HpcException("Null or empty permission in a permission request",
+			if(permission == null) { 
+			   throw new HpcException("Null or empty permission in a permission request. Valid values are [" +
+     			                       Arrays.asList(HpcPermission.values()) + "]",
                                        HpcErrorType.INVALID_REQUEST_INPUT);	
 			}
 		}
@@ -686,8 +691,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		Set<String> groupNames = new HashSet<String>(); 
 		for(HpcGroupPermission groupPermissionRequest : entityPermissionsRequest.getGroupPermissions()) {
 			String groupName = groupPermissionRequest.getGroupName();
-			String permission = groupPermissionRequest.getPermission();
-			if(groupName == null || groupName.isEmpty()) { 
+			HpcPermission permission = groupPermissionRequest.getPermission();
+			if(StringUtils.isEmpty(groupName)) { 
 			   throw new HpcException("Null or empty group name in a permission request",
                                       HpcErrorType.INVALID_REQUEST_INPUT);	
 			}
@@ -695,9 +700,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			   throw new HpcException("Duplicate group name in a permission request: " + groupName,
                                       HpcErrorType.INVALID_REQUEST_INPUT);	 
 			}
-			if(permission == null || permission.isEmpty()) { 
-			   throw new HpcException("Null or empty permission in a permission request",
-                                       HpcErrorType.INVALID_REQUEST_INPUT);	
+			if(permission == null) { 
+			   throw new HpcException("Null or empty permission in a permission request. Valid values are [" +
+		                              Arrays.asList(HpcPermission.values()) + "]",
+                                      HpcErrorType.INVALID_REQUEST_INPUT);	
 			}
 		}
     }
