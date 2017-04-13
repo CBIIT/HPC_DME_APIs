@@ -18,11 +18,12 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
-import gov.nih.nci.hpc.domain.model.HpcDataManagementAccount;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccountProperty;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -41,6 +42,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,11 +65,23 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	
     // Authentication Token claim attributes.
 	private static final String TOKEN_SUBJECT = "HPCAuthenticationToken";
+	private static final String USER_ID_TOKEN_CLAIM = "UserName";
+	private static final String DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM = "DataManagementAccount";
+	
+	// JSON attributes. Used to create a JSON out of HpcIntegratedSystemAccount object.
+	private static final String INTEGRATED_SYSTEM_JSON_ATTRIBUTE = "integratedSystem";
+	private static final String USER_NAME_JSON_ATTRIBUTE = "username";
+	private static final String PASSWORD_JSON_ATTRIBUTE = "password";
+	private static final String PROPERTIES_JSON_ATTRIBUTE = "properties";
+	
+	// TODO REMOVE
+	/*
 	private static final String TOKEN_USER_NAME = "UserName";
 	private static final String TOKEN_PASSWORD = "Password";
 	private static final String TOKEN_LDAP_AUTHENTICATION = "LDAPAuthentication";
 	private static final String TOKEN_USER_AUTHENTICATED = "UserAuthenticated";
 	
+	// TODO REMOVE
 	private static final String TOKEN_DM_HOST = "Host";
 	private static final String TOKEN_DM_PORT = "Port";
 	private static final String TOKEN_DM_USER_ZONE = "UserZone";
@@ -76,6 +92,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	private static final String TOKEN_DM_DEFAULT_RESC_STORAGE = "DefaultStorageResource";
 	private static final String TOKEN_DM_HOME_DIRECTORY = "HomeDirectory";
 	private static final String TOKEN_DM_AUTH_SCHEME = "AuthenticationScheme";
+	*/
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -99,6 +116,10 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	// System Accounts locator.
 	@Autowired
 	private HpcSystemAccountLocator systemAccountLocator = null;
+	
+    // The Data Management Authenticator.
+	@Autowired
+    private HpcDataManagementAuthenticator dataManagementAuthenticator = null;
 	
 	// DOC base paths.
 	@Autowired
@@ -249,10 +270,10 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     }
     
     @Override
-    public List<HpcUser> getUsers(String nciUserId, String firstName, String lastName, boolean active) 
+    public List<HpcUser> getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, boolean active) 
                                  throws HpcException
     {
-    	return userDAO.getUsers(nciUserId, firstName, lastName, active);
+    	return userDAO.getUsers(nciUserId, firstNamePattern, lastNamePattern, active);
     }
                                  
 
@@ -265,7 +286,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
-    	return dataManagementProxy.getUserRole(getAuthenticatedToken(), nciUserId);
+    	return dataManagementProxy.getUserRole(dataManagementAuthenticator.getAuthenticatedToken(), nciUserId);
     }
 
     @Override
@@ -275,16 +296,20 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     }
 
     @Override
-    public void setRequestInvoker(HpcUser user, boolean ldapAuthenticated)
+    public void setRequestInvoker(HpcNciAccount nciAccount, HpcAuthenticationType authenticationType,
+                                  HpcIntegratedSystemAccount dataManagementAccount) throws 
+                                 HpcException
     {
-    	HpcRequestInvoker invoker = new HpcRequestInvoker();
-    	if(user != null) {
-    	   invoker.setNciAccount(user.getNciAccount());
-    	   invoker.setDataManagementAccount(user.getDataManagementAccount());
-    	   invoker.setDataManagementAuthenticatedToken(null);
-    	   invoker.setLdapAuthenticated(ldapAuthenticated);
+    	// Input validation.
+    	if(nciAccount == null || authenticationType == null || dataManagementAccount == null) {
+    	   throw new HpcException("Failed to set request invoker", HpcErrorType.UNEXPECTED_ERROR);
     	}
-
+    	
+    	HpcRequestInvoker invoker = new HpcRequestInvoker();
+    	invoker.setNciAccount(nciAccount);
+    	invoker.setDataManagementAccount(dataManagementAccount);
+    	invoker.setAuthenticationType(authenticationType);
+    	
     	HpcRequestContext.setRequestInvoker(invoker);
     }
     
@@ -346,6 +371,9 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     {
     	// Prepare the Claims Map.
     	Map<String, Object> claims = new HashMap<>();
+    	claims.put(USER_ID_TOKEN_CLAIM, authenticationTokenClaims.getUserId());
+    	claims.put(DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM, toJSON(authenticationTokenClaims.getDataManagementAccount()));
+    	/*
     	claims.put(TOKEN_USER_NAME, authenticationTokenClaims.getUserName());
     	claims.put(TOKEN_PASSWORD, authenticationTokenClaims.getPassword());
     	claims.put(TOKEN_LDAP_AUTHENTICATION, authenticationTokenClaims.getLdapAuthentication());
@@ -361,7 +389,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	claims.put(TOKEN_DM_PASSWORD, authenticationTokenClaims.getDataManagementAccount().getPassword());
     	claims.put(TOKEN_DM_DEFAULT_RESC_STORAGE, authenticationTokenClaims.getDataManagementAccount().getDefaultStorageResource());
     	claims.put(TOKEN_DM_HOME_DIRECTORY, authenticationTokenClaims.getDataManagementAccount().getHomeDirectory());
-    	
+    	*/
     	// Calculate the expiration date.
     	Calendar tokenExpiration = Calendar.getInstance();
     	tokenExpiration.add(Calendar.MINUTE, authenticationTokenExpirationPeriod);
@@ -378,10 +406,16 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     {
     	try {
     	     Jws<Claims> jwsClaims = Jwts.parser().setSigningKey(authenticationTokenSignatureKey).
-    	    		                            parseClaimsJws(authenticationToken);
+    	    		                               parseClaimsJws(authenticationToken);
     	     
     	     // Extract the claims.
     	     HpcAuthenticationTokenClaims tokenClaims = new HpcAuthenticationTokenClaims();
+    	     tokenClaims.setUserId(jwsClaims.getBody().get(USER_ID_TOKEN_CLAIM, String.class));
+    	     tokenClaims.setDataManagementAccount(fromJSON(jwsClaims.getBody().get(DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM, 
+    	    		                                                               String.class)));
+    	     
+    	     // TODO REMOVE
+    	     /*
     	     tokenClaims.setUserName(jwsClaims.getBody().get(TOKEN_USER_NAME, String.class));
     	     tokenClaims.setPassword(jwsClaims.getBody().get(TOKEN_PASSWORD, String.class));
     	     tokenClaims.setLdapAuthentication(jwsClaims.getBody().get(TOKEN_LDAP_AUTHENTICATION, Boolean.class));
@@ -398,7 +432,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	     account.setPassword(jwsClaims.getBody().get(TOKEN_DM_PASSWORD, String.class));
     	     account.setDefaultStorageResource(jwsClaims.getBody().get(TOKEN_DM_DEFAULT_RESC_STORAGE, String.class));
     	     account.setHomeDirectory(jwsClaims.getBody().get(TOKEN_DM_HOME_DIRECTORY, String.class));
-    	     tokenClaims.setDataManagementAccount(account);
+    	     tokenClaims.setDataManagementAccount(account);*/
     	     return tokenClaims;
 
     	} catch(SignatureException se) {
@@ -427,42 +461,73 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	userDAO.upsertUser(user);
     }
     
-    /**
-     * Get the data management authenticated token from the request context.
-     * If it's not in the context, get a token by authenticating.
-     *
-     * @return A data management authenticated token.
-     * @throws HpcException If it failed to obtain an authentication token.
+    /** 
+     * Convert an integrated-system account to a JSON string
+     * 
+     * @param integratedSystemAccount The integrated system account.
+     * @return A JSON representation of integrated system account.
      */
-    private Object getAuthenticatedToken() throws HpcException
-    {
-    	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
-    	if(invoker == null) {
-	       throw new HpcException("Unknown user",
-			                      HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
-    	}
-    	
-    	if(invoker.getDataManagementAuthenticatedToken() != null) {
-    	   return invoker.getDataManagementAuthenticatedToken();
-    	}
-    	
-    	// No authenticated token found in the request token. Authenticate the invoker.
-    	if(invoker.getDataManagementAccount() == null) {
-    		throw new HpcException("Unknown data management account",
-                                   HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
-    	}
-    	
-    	// Authenticate w/ data management
-    	Object token = dataManagementProxy.authenticate(invoker.getDataManagementAccount(),
-    			                                        invoker.getLdapAuthenticated());
-    	if(token == null) {
-    	   throw new HpcException("Invalid data management account credentials",
-                                  HpcRequestRejectReason.INVALID_DATA_MANAGEMENT_ACCOUNT);
-    	}
-    	
-    	// Store token on the request context.
-    	invoker.setDataManagementAuthenticatedToken(token);
-    	return token;
-    }    
+	@SuppressWarnings("unchecked")
+	private String toJSON(HpcIntegratedSystemAccount integratedSystemAccount)
+	{
+		if(integratedSystemAccount == null) {
+		   return "";
+		}
+		
+		JSONObject jsonIntegratedSystemAccount = new JSONObject();
+		jsonIntegratedSystemAccount.put(INTEGRATED_SYSTEM_JSON_ATTRIBUTE,
+				                        integratedSystemAccount.getIntegratedSystem().value());
+		jsonIntegratedSystemAccount.put(USER_NAME_JSON_ATTRIBUTE,
+                                        integratedSystemAccount.getUsername());
+		jsonIntegratedSystemAccount.put(PASSWORD_JSON_ATTRIBUTE,
+                                        integratedSystemAccount.getPassword());
+		JSONObject jsonIntegratedSystemAccountProperties = new JSONObject();
+		for(HpcIntegratedSystemAccountProperty property : integratedSystemAccount.getProperties()) {
+			jsonIntegratedSystemAccountProperties.put(property.getName(), property.getValue());
+		}
+		jsonIntegratedSystemAccount.put(PROPERTIES_JSON_ATTRIBUTE, jsonIntegratedSystemAccountProperties);
+		
+		return jsonIntegratedSystemAccount.toJSONString();
+	}
+	
+    /** 
+     * Convert JSON string to HpcIntegratedSystemAccount.
+     * 
+     * @param jsonIntegratedSystemAccountStr The integrated system account JSON String.
+     * @return An integrated system account object
+     */
+	private HpcIntegratedSystemAccount fromJSON(String jsonIntegratedSystemAccountStr)
+	{
+		if(StringUtils.isEmpty(jsonIntegratedSystemAccountStr)) {
+		   return null;
+		}
+		
+		// Parse the JSON string.
+		JSONObject jsonIntegratedSystemAccount = null;
+		try {
+			 jsonIntegratedSystemAccount = (JSONObject) (new JSONParser().parse(jsonIntegratedSystemAccountStr));
+			 
+		} catch(ParseException e) {
+			    return null;
+		}
+		
+		// Instantiate the integrated system account object.
+		HpcIntegratedSystemAccount integratedSystemAccount = new HpcIntegratedSystemAccount();
+		integratedSystemAccount.setIntegratedSystem(HpcIntegratedSystem.fromValue(
+				                   jsonIntegratedSystemAccount.get(INTEGRATED_SYSTEM_JSON_ATTRIBUTE).toString()));
+		integratedSystemAccount.setUsername(jsonIntegratedSystemAccount.get(USER_NAME_JSON_ATTRIBUTE).toString());
+		integratedSystemAccount.setPassword(jsonIntegratedSystemAccount.get(PASSWORD_JSON_ATTRIBUTE).toString());
+		
+		// Map account properties from JSON.
+		JSONObject jsonProperties = (JSONObject) jsonIntegratedSystemAccount.get(PROPERTIES_JSON_ATTRIBUTE);
+		for(Object propertyName : jsonProperties.keySet()) {
+			HpcIntegratedSystemAccountProperty property = new HpcIntegratedSystemAccountProperty();
+			property.setName(propertyName.toString());
+			property.setValue(jsonProperties.get(propertyName).toString());
+			integratedSystemAccount.getProperties().add(property);
+		}
+
+		return integratedSystemAccount;
+	}	
 }
 
