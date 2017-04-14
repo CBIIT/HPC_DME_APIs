@@ -153,11 +153,11 @@ public class HpcPermissionController extends AbstractHpcController {
 				HpcPermissionEntry entry = new HpcPermissionEntry();
 				entry.setName(permission.getUserId());
 				entry.setType(HpcPermissionEntryType.USER);
-				if (permission.getPermission().equals("READ"))
+				if (permission.getPermission().equals(HpcPermission.READ))
 					entry.setRead(true);
-				else if (permission.getPermission().equals("WRITE"))
+				else if (permission.getPermission().equals(HpcPermission.WRITE))
 					entry.setWrite(true);
-				else if (permission.getPermission().equals("OWN"))
+				else if (permission.getPermission().equals(HpcPermission.OWN))
 					entry.setOwn(true);
 
 				permissions.getEntries().add(entry);
@@ -170,11 +170,11 @@ public class HpcPermissionController extends AbstractHpcController {
 				HpcPermissionEntry entry = new HpcPermissionEntry();
 				entry.setName(permission.getGroupName());
 				entry.setType(HpcPermissionEntryType.GROUP);
-				if (permission.getPermission().equals("READ"))
+				if (permission.getPermission().equals(HpcPermission.READ))
 					entry.setRead(true);
-				else if (permission.getPermission().equals("WRITE"))
+				else if (permission.getPermission().equals(HpcPermission.WRITE))
 					entry.setWrite(true);
-				else if (permission.getPermission().equals("OWN"))
+				else if (permission.getPermission().equals(HpcPermission.OWN))
 					entry.setOwn(true);
 
 				permissions.getEntries().add(entry);
