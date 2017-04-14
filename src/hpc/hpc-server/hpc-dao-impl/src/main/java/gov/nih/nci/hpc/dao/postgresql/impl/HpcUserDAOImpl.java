@@ -149,6 +149,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		}
 	}
 	
+	@Override
 	public List<HpcUser> getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, String doc, boolean active) 
                                  throws HpcException
     {
