@@ -141,13 +141,11 @@ public class HpcAuthenticationInterceptor
     	// Authenticate the caller (if configured to do so) and populate the request context.
         if(authorizationType.equals(BASIC_AUTHORIZATION)) {
            authenticate(message.get(AuthorizationPolicy.class));
-        } 
-
-        if(authorizationType.equals(TOKEN_AUTHORIZATION)) {
-           authenticate(authorization[1]);
-        } 
-        
-        //throw new HpcAuthenticationException("Invalid Authorization Type: " + authorizationType); 
+        } else if(authorizationType.equals(TOKEN_AUTHORIZATION)) {
+                  authenticate(authorization[1]);
+        } else {
+                throw new HpcAuthenticationException("Invalid Authorization Type: " + authorizationType); 
+        }
     }
     
     /**
