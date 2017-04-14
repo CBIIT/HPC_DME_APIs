@@ -98,7 +98,7 @@ public class HpcDatafileController extends AbstractHpcController {
 				if (action != null && action.equals("edit"))
 					model.addAttribute("action", "edit");
 				HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId, serviceURL, sslCertPath, sslCertPassword);
-				model.addAttribute("userpermission", (permission == null || permission.getPermission().equals(HpcPermission.NONE) || permission.getPermission().equals(HpcPermission.READ)) ? false: true);
+				model.addAttribute("userpermission", permission.getPermission().toString());
 			} else {
 				String message = "Data file not found!";
 				model.addAttribute("error", message);
