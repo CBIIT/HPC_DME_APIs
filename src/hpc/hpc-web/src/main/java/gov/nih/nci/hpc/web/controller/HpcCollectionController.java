@@ -95,7 +95,7 @@ public class HpcCollectionController extends AbstractHpcController {
 				HpcCollectionModel hpcCollection = buildHpcCollection(collection,
 						modelDTO.getCollectionSystemGeneratedMetadataAttributeNames());
 				model.addAttribute("collection", hpcCollection);
-				model.addAttribute("userpermission", (permission == null || permission.getPermission().equals(HpcPermission.NONE) || permission.getPermission().equals(HpcPermission.READ)) ? false: true);
+				model.addAttribute("userpermission", permission.getPermission().toString());
 				if (action != null && action.equals("edit"))
 					if(permission == null || permission.getPermission().equals(HpcPermission.NONE) || permission.getPermission().equals(HpcPermission.READ))
 					{
