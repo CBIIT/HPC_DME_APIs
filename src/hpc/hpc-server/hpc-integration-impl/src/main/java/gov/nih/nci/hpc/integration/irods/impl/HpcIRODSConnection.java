@@ -305,7 +305,7 @@ public class HpcIRODSConnection
     		    return null;
     		    
     	} catch(JargonException e) {
-		        throw new HpcException("Failed authenticate an iRODS account: " + 
+		        throw new HpcException("Failed to authenticate an iRODS account: " + 
                                        e.getMessage(),
                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
     	}
