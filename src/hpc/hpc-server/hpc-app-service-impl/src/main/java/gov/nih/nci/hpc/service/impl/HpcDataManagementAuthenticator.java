@@ -80,7 +80,10 @@ public class HpcDataManagementAuthenticator
     	}
     	
     	// Authenticate w/ data management.
+    	
+    	// TODO - workaround to login w/ Token - Test and fix this.
     	dataManagementAccount.getProperties().clear();
+    	
     	Object token = dataManagementProxy.authenticate(dataManagementAccount);
     	if(token == null) {
     	   throw new HpcException("Invalid data management account credentials",
