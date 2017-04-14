@@ -103,9 +103,16 @@ public class HpcUpdateGroupController extends AbstractHpcController {
 			model.addAttribute("message", "Group " + groupName + " not found");
 			return;
 		}
-		HpcGroup group = groupList.getGroups().get(0);
-		model.addAttribute("group", group);
-		session.setAttribute("updategroup", group);
+		
+		for(HpcGroup group : groupList.getGroups())
+		{
+			if(group.getGroupName().equals(groupName))
+			{
+				model.addAttribute("group", group);
+				session.setAttribute("updategroup", group);
+				break;
+			}
+		}
 	}
 
 	/*
