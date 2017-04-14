@@ -4,6 +4,7 @@ import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 
@@ -103,7 +104,7 @@ public class HPCPermissions extends HPCBatchClient {
 						pathPermission = new ArrayList<HpcUserPermission>();
 					HpcUserPermission userPermission = new HpcUserPermission();
 					userPermission.setUserId(ruserId);
-					userPermission.setPermission(permission);
+					userPermission.setPermission(HpcPermission.fromValue(permission));
 					pathPermission.add(userPermission);
 					userPermissions.put(path, pathPermission);
 				}
@@ -114,7 +115,7 @@ public class HPCPermissions extends HPCBatchClient {
 						pathPermission = new ArrayList<HpcGroupPermission>();
 					HpcGroupPermission groupPermission = new HpcGroupPermission();
 					groupPermission.setGroupName(ruserId);
-					groupPermission.setPermission(permission);
+					groupPermission.setPermission(HpcPermission.fromValue(permission));
 					pathPermission.add(groupPermission);
 					groupPermissions.put(path, pathPermission);
 				}
