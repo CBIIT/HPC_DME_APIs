@@ -168,7 +168,6 @@ public class HpcCreateGroupController extends AbstractHpcController {
 		Enumeration<String> params = request.getParameterNames();
 		HpcGroupMembersRequestDTO dto = new HpcGroupMembersRequestDTO();
 		List<String> addusers = new ArrayList<String>();
-		List<String> submittedUsers = new ArrayList<String>();
 		while (params.hasMoreElements()) {
 			String paramName = params.nextElement();
 			if (paramName.startsWith("userId")) {
@@ -176,12 +175,12 @@ public class HpcCreateGroupController extends AbstractHpcController {
 				String[] userId = request.getParameterValues("userId" + index);
 				String[] userName = request.getParameterValues("userName" + index);
 				if(userId != null && userId[0].equalsIgnoreCase("on"))
-					submittedUsers.add(userName[0]);
+					addusers.add(userName[0]);
 			}
 		}
 		
-		if(userRole.equals("GROUP_ADMIN"))
-			addusers.add(roleUserId);
+//		if(userRole.equals("GROUP_ADMIN"))
+//			addusers.add(roleUserId);
 		if (addusers.size() > 0)
 			dto.getAddUserIds().addAll(addusers);
 		return dto;
