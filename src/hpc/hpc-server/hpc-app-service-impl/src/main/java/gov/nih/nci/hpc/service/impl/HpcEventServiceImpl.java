@@ -508,7 +508,7 @@ public class HpcEventServiceImpl implements HpcEventService
     {
 	   StringBuilder fileLocationStr = new StringBuilder();
 	   if(fileLocation.getFileContainerId() != null) {
-		  fileLocationStr.append(fileLocation.getFileContainerId() + "#"); 
+		  fileLocationStr.append(fileLocation.getFileContainerId() + ":"); 
 	   }
 	   if(fileLocation.getFileId() != null) {
 		  fileLocationStr.append(fileLocation.getFileId()); 
