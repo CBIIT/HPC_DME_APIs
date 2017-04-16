@@ -450,7 +450,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Download the data object.
     	HpcDataObjectDownloadResponse downloadResponse = 
-    		   dataTransferService.downloadDataObject(metadata.getArchiveLocation(), 
+    		   dataTransferService.downloadDataObject(path, metadata.getArchiveLocation(), 
                                                       downloadRequest.getDestination(),
                                                       metadata.getDataTransferType());
     	

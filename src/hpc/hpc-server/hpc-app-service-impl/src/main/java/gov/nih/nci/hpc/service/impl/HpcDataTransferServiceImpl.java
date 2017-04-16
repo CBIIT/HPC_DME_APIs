@@ -168,6 +168,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     
     @Override
 	public HpcDataObjectDownloadResponse downloadDataObject(
+			                                     String path,
                                                  HpcFileLocation archiveLocation, 
                                                  HpcFileLocation destinationLocation,
                                                  HpcDataTransferType dataTransferType) 
@@ -177,6 +178,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	downloadRequest.setDataTransferType(dataTransferType);
     	downloadRequest.setArchiveLocation(archiveLocation);
     	downloadRequest.setDestinationLocation(destinationLocation);
+    	downloadRequest.setPath(path);
     	
     	// Create a data object file to download the data if a destination was not provided.
     	if(destinationLocation == null) {
@@ -286,8 +288,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		}
 		
 		// Delete the download file.
-		if(!FileUtils.deleteQuietly(new File(dataObjectDownloadCleanup.getFilePath()))) {
-		   logger.error("Failed to delete file: " + dataObjectDownloadCleanup.getFilePath());
+		if(!FileUtils.deleteQuietly(new File(dataObjectDownloadCleanup.getDownloadFilePath()))) {
+		   logger.error("Failed to delete file: " + dataObjectDownloadCleanup.getDownloadFilePath());
 		}
 		
 		// Cleanup the DB record.
@@ -622,7 +624,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	// The second hop download's source file.
     	File sourceFile = null;
     	
-    	// The invoker user ID>
+    	// The invoker user ID.
     	String userId = null;
 	
 		//---------------------------------------------------------------------//
@@ -697,7 +699,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 				   // Create an entry to cleanup the source file after the 2nd hop async download completes.
 				   saveDataObjectDownloadCleanup(secondHopDownloadResponse.getDataTransferRequestId(), 
 						                         secondHopDownloadRequest.getDataTransferType(),
-						                         sourceFile.getAbsolutePath());
+						                         sourceFile.getAbsolutePath(), secondHopDownloadRequest.getPath(),
+						                         secondHopDownloadRequest.getDestinationLocation());
 				   
 			} catch(HpcException e) {
 				    logger.error("Failed to perform 2nd hop download", e);
@@ -748,6 +751,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    	downloadRequest.setArchiveLocation(sourceLocation);
 	    	downloadRequest.setDestinationLocation(destinationLocation);
 	    	downloadRequest.setDataTransferType(dataTransferType);
+	    	downloadRequest.setPath(downloadRequest.getPath());
 	    	
 	    	return downloadRequest;
 	    }
@@ -758,17 +762,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	     * 
 	     * @param dataTransferRequestId The data transfer request ID.
 	     * @param dataTransferType The data transfer type.
-	     * @param filePath The download file path to remove.
+	     * @param downloadFilePath The download file path to remove.
+	     * @param path The data object path.
+	     * @param destinationLocation The download destination path.
 	     */
 	    private void saveDataObjectDownloadCleanup(String dataTransferRequestId, 
 	    		                                   HpcDataTransferType dataTransferType,
-	    		                                   String filePath)
+	    		                                   String downloadFilePath, String path,
+	    		                                   HpcFileLocation destinationLocation)
 	    {
 	    	HpcDataObjectDownloadCleanup dataObjectDownloadCleanup = new HpcDataObjectDownloadCleanup();
 	    	dataObjectDownloadCleanup.setDataTransferRequestId(dataTransferRequestId);
 	    	dataObjectDownloadCleanup.setDataTransferType(dataTransferType);
-	    	dataObjectDownloadCleanup.setFilePath(filePath);
+	    	dataObjectDownloadCleanup.setDownloadFilePath(downloadFilePath);
 	    	dataObjectDownloadCleanup.setUserId(userId);
+	    	dataObjectDownloadCleanup.setPath(path);
+	    	dataObjectDownloadCleanup.setDestinationLocation(destinationLocation);
 	    	
 	    	try {
 	    		 dataObjectDownloadCleanupDAO.upsert(dataObjectDownloadCleanup);
