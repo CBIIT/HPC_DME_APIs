@@ -648,7 +648,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
  				  	                                         HpcDataTransferType.GLOBUS,
  				  	                                         firstHopDownloadRequest.getArchiveLocation().getFileId()),
  			        HpcDataTransferType.GLOBUS,
- 			        firstHopDownloadRequest.getArchiveLocation().getFileId());
+ 			        firstHopDownloadRequest.getPath());
 			
 			// Create the source file for the second hop download
 			sourceFile = createFile(
@@ -751,7 +751,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    	downloadRequest.setArchiveLocation(sourceLocation);
 	    	downloadRequest.setDestinationLocation(destinationLocation);
 	    	downloadRequest.setDataTransferType(dataTransferType);
-	    	downloadRequest.setPath(downloadRequest.getPath());
+	    	downloadRequest.setPath(path);
 	    	
 	    	return downloadRequest;
 	    }
