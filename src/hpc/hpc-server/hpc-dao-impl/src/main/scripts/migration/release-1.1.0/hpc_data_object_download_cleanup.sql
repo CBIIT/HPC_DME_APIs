@@ -9,7 +9,7 @@
 --
 --
 -- @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
--- @version $Id$
+-- @version $Id: hpc_data_object_download_cleanup.sql 2283 2017-04-16 10:20:49Z rosenbergea $
 --
 
 DROP TABLE IF EXISTS public."HPC_DATA_OBJECT_DOWNLOAD_CLEANUP";
