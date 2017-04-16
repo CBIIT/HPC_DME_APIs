@@ -29,4 +29,4 @@ WITH (
   OIDS=FALSE
 );
 ALTER TABLE public."HPC_DATA_OBJECT_DOWNLOAD_CLEANUP"
-  OWNER TO ncif_hpcdm_db;
+  OWNER TO postgres;
