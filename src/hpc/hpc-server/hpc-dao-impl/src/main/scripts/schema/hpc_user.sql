@@ -28,5 +28,3 @@ CREATE TABLE public."HPC_USER"
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE public."HPC_USER"
-  OWNER TO postgres;
