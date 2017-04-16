@@ -57,12 +57,13 @@ public interface HpcEventService
      * Add a data transfer download completed event.
      *
      * @param userId The user ID.
+     * @param path The data object path.
      * @param dataTransferRequestId The data transfer request ID.
      * @param destinationLocation The data transfer destination location.
      * @param dataTransferCompleted The time the data download completed.
      * @throws HpcException on service failure.
      */
-    public void addDataTransferDownloadCompletedEvent(String userId, String dataTransferRequestId,
+    public void addDataTransferDownloadCompletedEvent(String userId, String path, String dataTransferRequestId,
     		                                          HpcFileLocation destinationLocation, 
     		                                          Calendar dataTransferCompleted) 
     		                                         throws HpcException;
