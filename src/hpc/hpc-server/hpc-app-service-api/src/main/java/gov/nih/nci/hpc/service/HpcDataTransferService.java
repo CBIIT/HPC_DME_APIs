@@ -39,7 +39,7 @@ public interface HpcDataTransferService
      * 
      * @param sourceLocation The source for data transfer.
      * @param sourceFile The source file.
-     * @param path The registration path.
+     * @param path The data object registration path.
      * @param userId The user-id who requested the data upload.
      * @param callerObjectId The caller's provided data object ID.
      * @return A data object upload response.
@@ -54,6 +54,7 @@ public interface HpcDataTransferService
     /** 
      * Download a data object file.
      * 
+     * @param path The data object path.
      * @param archiveLocation The archive file location.
      * @param destinationLocation The user requested file destination.
      * @param dataTransferType The data transfer type.
@@ -61,6 +62,7 @@ public interface HpcDataTransferService
      * @throws HpcException on service failure.
      */
 	public HpcDataObjectDownloadResponse downloadDataObject(
+			                                     String path,
 			                                     HpcFileLocation archiveLocation, 
 			                                     HpcFileLocation destinationLocation,
 			                                     HpcDataTransferType dataTransferType) 
