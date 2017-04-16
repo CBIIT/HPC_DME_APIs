@@ -262,9 +262,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		// Cleanup the file if the transfer is no longer in-progress, and add an event.
     		if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
     		   dataTransferService.cleanupDataObjectDownloadFile(dataObjectDownloadCleanup);
-    		   addDataTransferDownloadEvent(dataObjectDownloadCleanup.getUserId(), 
+    		   addDataTransferDownloadEvent(dataObjectDownloadCleanup.getUserId(), dataObjectDownloadCleanup.getPath(),
     				                        dataObjectDownloadCleanup.getDataTransferRequestId(),
-    				                        dataTransferDownloadStatus);
+    				                        dataTransferDownloadStatus, dataObjectDownloadCleanup.getDestinationLocation(),
+    				                        Calendar.getInstance());
     		}
     	}
     }
@@ -537,17 +538,22 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * add data transfer download event.
      * 
      * @param userId The user ID.
+     * @param path The data object path.
      * @param dataTransferRequestId The data transfer request ID.
      * @param dataTransferStatus The data transfer download status.
+     * @param destinationLocation The download destination location.
+     * @param dataTransferCompleted The download completion time.
      */
-	private void addDataTransferDownloadEvent(String userId, String dataTransferRequestId,
-			                                  HpcDataTransferDownloadStatus dataTransferStatus) 
+	private void addDataTransferDownloadEvent(String userId, String path, String dataTransferRequestId,
+			                                  HpcDataTransferDownloadStatus dataTransferStatus,
+			                                  HpcFileLocation destinationLocation, 
+			                                  Calendar dataTransferCompleted) 
 	{
 		try {
 			 switch(dataTransferStatus) {
 			        case COMPLETED: 
-			        	 // TODO: Add destination location and data transfer completed data.
-		                 eventService.addDataTransferDownloadCompletedEvent(userId, dataTransferRequestId, null, null);
+		                 eventService.addDataTransferDownloadCompletedEvent(userId, path, dataTransferRequestId, 
+		                		                                            destinationLocation, dataTransferCompleted);
 		                 break;
 		                 
 			        case FAILED: 

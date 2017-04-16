@@ -124,6 +124,7 @@
 	
 	<xsd:complexType name="HpcDataObjectDownloadRequest">
 		<xsd:sequence>
+			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="archiveLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
@@ -142,9 +143,11 @@
 	<xsd:complexType name="HpcDataObjectDownloadCleanup">
 		<xsd:sequence>
 			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
 			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
-			<xsd:element name="filePath" type="xsd:string" />
+			<xsd:element name="downloadFilePath" type="xsd:string" />
+			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 		</xsd:sequence>
 	</xsd:complexType>
 	

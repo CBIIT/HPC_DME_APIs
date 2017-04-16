@@ -164,11 +164,11 @@ public class HpcEventServiceImpl implements HpcEventService
     
     @Override
     public void addDataTransferDownloadCompletedEvent(
-    		       String userId, String dataTransferRequestId, HpcFileLocation destinationLocation, 
+    		       String userId, String path, String dataTransferRequestId, HpcFileLocation destinationLocation, 
                    Calendar dataTransferCompleted) throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_DOWNLOAD_COMPLETED,
-    			             dataTransferRequestId, null, null, dataTransferCompleted, null, destinationLocation);
+    			             dataTransferRequestId, path, null, dataTransferCompleted, null, destinationLocation);
     }
     
     @Override

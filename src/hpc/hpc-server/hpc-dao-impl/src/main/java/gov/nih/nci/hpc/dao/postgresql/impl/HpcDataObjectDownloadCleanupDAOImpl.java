@@ -13,11 +13,14 @@ package gov.nih.nci.hpc.dao.postgresql.impl;
 import gov.nih.nci.hpc.dao.HpcDataObjectDownloadCleanupDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadCleanup;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,15 +47,19 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
     // SQL Queries.
 	public static final String UPSERT_SQL = 
 		   "insert into public.\"HPC_DATA_OBJECT_DOWNLOAD_CLEANUP\" ( " +
-                    "\"USER_ID\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", \"FILE_PATH\") " +
-                    "values (?, ?, ?, ?) " +
+                    "\"USER_ID\", \"PATH\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", \"DOWNLOAD_FILE_PATH\"," +
+                    "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\") " +
+                    "values (?, ?, ?, ?, ?, ?, ?) " +
            "on conflict(\"DATA_TRANSFER_REQUEST_ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
-                                                     "\"DATA_TRANSFER_REQUEST_ID\"=excluded.\"DATA_TRANSFER_REQUEST_ID\", " + 
-                                                     "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\", " +
-                                                     "\"FILE_PATH\"=excluded.\"FILE_PATH\"";
+                        "\"PATH\"=excluded.\"PATH\", " + 
+                        "\"DATA_TRANSFER_REQUEST_ID\"=excluded.\"DATA_TRANSFER_REQUEST_ID\", " + 
+                        "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\", " +
+                        "\"DOWNLOAD_FILE_PATH\"=excluded.\"DOWNLOAD_FILE_PATH\", " +
+                        "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " +
+                        "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\"";
 	
 	public static final String DELETE_SQL = 
-			   "delete from public.\"HPC_DATA_OBJECT_DOWNLOAD_CLEANUP\" where " +
+		   "delete from public.\"HPC_DATA_OBJECT_DOWNLOAD_CLEANUP\" where " +
 	                    "\"DATA_TRANSFER_REQUEST_ID\" = ?";
 
 	public static final String GET_ALL_SQL = 
@@ -93,12 +100,16 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
 	public void upsert(HpcDataObjectDownloadCleanup dataObjectDownloadCleanup) 
 			          throws HpcException
     {
+		
 		try {
 		     jdbcTemplate.update(UPSERT_SQL,
 		    		             dataObjectDownloadCleanup.getUserId(),
+		    		             dataObjectDownloadCleanup.getPath(),
 		    		             dataObjectDownloadCleanup.getDataTransferRequestId(),
 		    		             dataObjectDownloadCleanup.getDataTransferType().value(),
-		    		             dataObjectDownloadCleanup.getFilePath());
+		    		             dataObjectDownloadCleanup.getDownloadFilePath(),
+		    		             dataObjectDownloadCleanup.getDestinationLocation().getFileContainerId(),
+		    		             dataObjectDownloadCleanup.getDestinationLocation().getFileId());
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a data object download cleanup: " + e.getMessage(),
@@ -147,10 +158,17 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
 		{
 			HpcDataObjectDownloadCleanup dataObjectDownloadCleanup = new HpcDataObjectDownloadCleanup();
 			dataObjectDownloadCleanup.setUserId(rs.getString("USER_ID"));
+			dataObjectDownloadCleanup.setPath(rs.getString("PATH"));
 			dataObjectDownloadCleanup.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
 			dataObjectDownloadCleanup.setDataTransferType(
 					  HpcDataTransferType.fromValue(rs.getString(("DATA_TRANSFER_TYPE"))));
-			dataObjectDownloadCleanup.setFilePath(rs.getString("FILE_PATH"));
+			dataObjectDownloadCleanup.setDownloadFilePath(rs.getString("DOWNLOAD_FILE_PATH"));
+			HpcFileLocation destinationLocation = new HpcFileLocation();
+			destinationLocation.setFileContainerId(rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID"));
+			destinationLocation.setFileId(rs.getString("DESTINATION_LOCATION_FILE__ID"));
+			dataObjectDownloadCleanup.setDestinationLocation(destinationLocation);
+			Calendar dataTransferCompleted = new GregorianCalendar();
+			dataTransferCompleted.setTime(rs.getDate("DATA_TRANSFER_COMPLETED"));
             
             return dataObjectDownloadCleanup;
 		}
