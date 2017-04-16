@@ -33,8 +33,8 @@
 	      <prop key="hpc.integration.globus.globusURL">www.globusonline.org</prop>
 	      
 	      <prop key="hpc.integration.globus.archive.endpoint">nihfnlcr#gridftp1</prop>
-		  <prop key="hpc.integration.globus.archive.path">/mnt/IRODsTest</prop>
-		  <prop key="hpc.integration.globus.archive.directory">/mnt/IRODsTest</prop>
+		  <prop key="hpc.integration.globus.archive.path">/mnt/IRODsTest/FNL_SF_Archive</prop>
+		  <prop key="hpc.integration.globus.archive.directory">/mnt/IRODsTest/FNL_SF_Archive</prop>
 		  <prop key="hpc.integration.globus.archive.type">TEMPORARY_ARCHIVE</prop>
 		  
 		  <prop key="hpc.integration.globus.download.endpoint">nihfnlcr#gridftp1</prop>
