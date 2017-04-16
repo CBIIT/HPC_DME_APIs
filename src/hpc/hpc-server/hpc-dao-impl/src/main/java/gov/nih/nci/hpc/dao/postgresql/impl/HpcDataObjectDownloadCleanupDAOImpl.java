@@ -19,8 +19,6 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -165,10 +163,8 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
 			dataObjectDownloadCleanup.setDownloadFilePath(rs.getString("DOWNLOAD_FILE_PATH"));
 			HpcFileLocation destinationLocation = new HpcFileLocation();
 			destinationLocation.setFileContainerId(rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID"));
-			destinationLocation.setFileId(rs.getString("DESTINATION_LOCATION_FILE__ID"));
+			destinationLocation.setFileId(rs.getString("DESTINATION_LOCATION_FILE_ID"));
 			dataObjectDownloadCleanup.setDestinationLocation(destinationLocation);
-			Calendar dataTransferCompleted = new GregorianCalendar();
-			dataTransferCompleted.setTime(rs.getDate("DATA_TRANSFER_COMPLETED"));
             
             return dataObjectDownloadCleanup;
 		}
