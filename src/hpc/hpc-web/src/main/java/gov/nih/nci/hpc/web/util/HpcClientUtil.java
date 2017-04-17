@@ -723,7 +723,7 @@ public class HpcClientUtil {
 		try {
 			String paramsURL = "";
 			if (groupName != null && groupName.trim().length() > 0) {
-				paramsURL = "?groupSearchCriteria=" + URLEncoder.encode(groupName);
+				paramsURL = "?groupPattern=" + URLEncoder.encode(groupName);
 			}
 
 			WebClient client = HpcClientUtil.getWebClient(hpcGroupURL + paramsURL, hpcCertPath, hpcCertPassword);
