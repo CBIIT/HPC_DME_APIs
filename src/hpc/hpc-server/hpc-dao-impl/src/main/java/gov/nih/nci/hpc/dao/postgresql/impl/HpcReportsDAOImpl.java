@@ -291,7 +291,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			totalSize = jdbcTemplate.queryForObject(SUM_OF_DATA_BY_USER_DATE_SQL, userDateArgs, Long.class);
 		
 		if(totalSize != null)
-			return totalSize.toString();
+		{
+			Long longValue = new Long(totalSize);
+			return humanReadableByteCount(longValue, false);
+		}
 		else return "0";
 
 	}
@@ -313,7 +316,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			largestSize = jdbcTemplate.queryForObject(LARGEST_FILE_BY_USER_DATE_SQL, userDateArgs, Long.class);
 		
 		if(largestSize != null)
-			return largestSize.toString();
+		{
+			Long longValue = new Long(largestSize);
+			return humanReadableByteCount(longValue, false);
+		}
 		else return "0";
 	}
 
@@ -334,7 +340,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			averageSize = jdbcTemplate.queryForObject(AVERAGE_FILE_BY_USER_DATE_SQL, userDateArgs, Long.class);
 		
 		if(averageSize != null)
-			return averageSize.toString();
+		{
+			Long longValue = new Long(averageSize);
+			return humanReadableByteCount(longValue, false);
+		}
 		else return "0";
 	}
 
@@ -480,15 +489,23 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		//Total Users
 		Date fromDate = null;
 		Date toDate = null;
+		Long fromDateLong = null;
+		Long toDateLong = null;
 		if(criteria.getFromDate() != null && criteria.getToDate() != null)
 		{
 			fromDate = criteria.getFromDate().getTime();
 			toDate = criteria.getToDate().getTime();
+			fromDateLong = criteria.getFromDate().getTime().getTime();
+			toDateLong = criteria.getToDate().getTime().getTime();
 		}
+		
 		Date[] dateArgs = new Date[2];
 		dateArgs[0] = fromDate;
 		dateArgs[1] = toDate;
-
+		Long[] dateLongArgs = new Long[2];
+		dateLongArgs[0] = fromDateLong;
+		dateLongArgs[1] = toDateLong;
+		
 		String[] docArg = new String[1];
 		if(criteria.getDocs() != null && criteria.getDocs().size()>0)
 			docArg[0] = criteria.getDocs().get(0);
@@ -591,7 +608,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		filesizedocArgs[0] = lower;
 		filesizedocArgs[1] = upper;
 		if(criteria.getDocs() != null && criteria.getDocs().size()>0)
-			filesizedateArgs[2] = criteria.getDocs().get(0);
+			filesizedocArgs[2] = criteria.getDocs().get(0);
 
 		Object[] filesizedocDateArgs = new Object[5];
 		filesizedocDateArgs[0] = lower;
@@ -848,6 +865,24 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
             return report;
 		}
 	}
+	
+	private static final String[] SI_UNITS = { "B", "kB", "MB", "GB", "TB", "PB", "EB" };
+	private static final String[] BINARY_UNITS = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB" };
+
+	public static String humanReadableByteCount(final long bytes, final boolean useSIUnits)
+	{
+	    final String[] units = useSIUnits ? SI_UNITS : BINARY_UNITS;
+	    final int base = useSIUnits ? 1000 : 1024;
+
+	    // When using the smallest unit no decimal point is needed, because it's the exact number.
+	    if (bytes < base) {
+	        return bytes + " " + units[0];
+	    }
+
+	    final int exponent = (int) (Math.log(bytes) / Math.log(base));
+	    final String unit = units[exponent];
+	    return String.format("%.1f %s", bytes / Math.pow(base, exponent), unit);
+	}	
 }
 
  
