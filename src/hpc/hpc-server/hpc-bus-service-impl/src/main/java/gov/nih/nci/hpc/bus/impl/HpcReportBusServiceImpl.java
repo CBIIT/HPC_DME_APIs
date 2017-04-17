@@ -12,16 +12,19 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcReportBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportEntry;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
+import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.report.HpcReportDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportEntryDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportRequestDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcReportService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -49,6 +52,9 @@ public class HpcReportBusServiceImpl implements HpcReportBusService
 	@Autowired
 	private HpcReportService reportService = null;
 
+	@Autowired
+    private HpcSecurityService securityService = null;
+
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
@@ -71,6 +77,23 @@ public class HpcReportBusServiceImpl implements HpcReportBusService
 
 	@Override
 	public HpcReportsDTO generateReport(HpcReportRequestDTO criteriaDTO) throws HpcException {
+		HpcRequestInvoker invoker = securityService.getRequestInvoker();
+	 	if(invoker == null) {
+	 	   throw new HpcException("Null request invoker", HpcErrorType.UNEXPECTED_ERROR);
+	 	}
+		
+	 	if(invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN) || invoker.getUserRole().equals(HpcUserRole.USER)) {
+	 		if(criteriaDTO.getDoc() != null)
+	 		{
+	 			for(String doc : criteriaDTO.getDoc())
+	 			{
+	 				if(!doc.equals(invoker.getNciAccount().getDoc()))
+	 					throw new HpcException("Unauthorized access to DOC report for: "+ criteriaDTO.getDoc(), HpcErrorType.UNAUTHORIZED_REQUEST);
+	 			}
+	 		}
+		 	   
+	 	}
+		
 		if (criteriaDTO == null)
 			throw new HpcException("Invalid criteria to generate report", HpcErrorType.INVALID_REQUEST_INPUT);
 
@@ -134,8 +157,8 @@ public class HpcReportBusServiceImpl implements HpcReportBusService
 		try {
 			if(criteriaDTO.getFromDate() != null && criteriaDTO.getToDate() != null)
 			{
-				SimpleDateFormat fromFormat = new SimpleDateFormat("mm/dd/yyyy");
-				SimpleDateFormat toFormat = new SimpleDateFormat("mm/dd/yyyy");
+				SimpleDateFormat fromFormat = new SimpleDateFormat("M/dd/yyyy");
+				SimpleDateFormat toFormat = new SimpleDateFormat("M/dd/yyyy");
 				fromFormat.parse(criteriaDTO.getFromDate());
 				fromcal = fromFormat.getCalendar();
 				criteria.setFromDate(fromcal);

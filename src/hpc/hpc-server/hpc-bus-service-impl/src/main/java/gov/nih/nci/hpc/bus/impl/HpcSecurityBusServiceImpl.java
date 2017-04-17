@@ -369,6 +369,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		   throw new HpcException("Delete users is invalid in group registration request", 
 				                  HpcErrorType.INVALID_REQUEST_INPUT);	
 		}
+		updateRequestInvokerForGroupAdmin();
 		
 		// Add the group.
 		dataManagementSecurityService.addGroup(groupName);
@@ -393,7 +394,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		   throw new HpcException("Null or empty requests to add/delete members to group", 
 				                  HpcErrorType.INVALID_REQUEST_INPUT);	
 		}
-		
+		updateRequestInvokerForGroupAdmin();		
 		// Add/Delete group members.
 		return updateGroupMembers(groupName, groupMembersRequest);		
     }
@@ -452,7 +453,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		if(groupName == null) {
 		   throw new HpcException("Null group name", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		
+		updateRequestInvokerForGroupAdmin();		
     	// Delete the group.
         dataManagementSecurityService.deleteGroup(groupName);
 	}
@@ -461,6 +462,17 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     // Helper Methods
     //---------------------------------------------------------------------//
     
+	private void updateRequestInvokerForGroupAdmin() throws HpcException
+	{
+		HpcRequestInvoker invoker = securityService.getRequestInvoker();
+	 	if(invoker == null) {
+	 	   throw new HpcException("Null request invoker", HpcErrorType.UNEXPECTED_ERROR);
+	 	}
+		
+	 	if(invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
+		 	   securityService.setSystemRequestInvoker();
+	 	}
+	}
     /**
      * Convert a user role from string to enum.
      * 
