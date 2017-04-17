@@ -113,7 +113,7 @@ public class HpcCreateGroupController extends AbstractHpcController {
 
 			HpcGroupMembersResponseDTO createResponse = HpcClientUtil.createGroup(authToken, groupServiceURL, dto, hpcWebGroup.getGroupName(),
 					sslCertPath, sslCertPassword);
-			boolean success = constructReponseMessages(createResponse, model);
+			boolean success = constructReponseMessages(hpcWebGroup.getGroupName(), createResponse, model);
 			if(success)
 				session.removeAttribute("selectedUsers");
 		} catch (Exception e) {
@@ -127,12 +127,13 @@ public class HpcCreateGroupController extends AbstractHpcController {
 		return "creategroup";
 	}
 
-	private boolean constructReponseMessages(HpcGroupMembersResponseDTO updateResponse, Model model)
+	private boolean constructReponseMessages(String groupName, HpcGroupMembersResponseDTO updateResponse, Model model)
 	{
 		if(updateResponse == null)
 			return false;
 		List<String> messages = new ArrayList<String>();
 		boolean success = true;
+		messages.add("Created " + groupName + " successfully!");
 		if(updateResponse.getAddGroupMemberResponses() != null)
 		{
 			for(HpcGroupMemberResponse response : updateResponse.getAddGroupMemberResponses())

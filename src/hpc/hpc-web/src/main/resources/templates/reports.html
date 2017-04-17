@@ -124,7 +124,7 @@
 													<option value="-1">----Select----</option>
 													<option
 														th:each="entry : ${docs}"
-														th:value="${entry}" th:text="${entry}">
+														th:value="${entry}" th:text="${entry}" th:selected="${entry == session.hpcUser.getDoc()}">
 														Wireframe</option>
 											</select>
 							</div>
