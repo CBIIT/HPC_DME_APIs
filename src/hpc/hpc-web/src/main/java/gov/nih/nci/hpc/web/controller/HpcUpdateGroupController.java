@@ -97,20 +97,23 @@ public class HpcUpdateGroupController extends AbstractHpcController {
 		model.addAttribute("assignedNames", new ArrayList<String>());
 		String selectedUsers = (String) session.getAttribute("selectedUsers");
 		model.addAttribute("selectedUsers", selectedUsers);
-		HpcGroupListDTO groupList = HpcClientUtil.getGroups(authToken, groupServiceURL, groupName, sslCertPath,
-				sslCertPassword);
-		if (groupList == null || groupList.getGroups() == null || groupList.getGroups().isEmpty()) {
-			model.addAttribute("message", "Group " + groupName + " not found");
-			return;
-		}
-		
-		for(HpcGroup group : groupList.getGroups())
+		if(groupName != null && groupName.length() > 0)
 		{
-			if(group.getGroupName().equals(groupName))
+			HpcGroupListDTO groupList = HpcClientUtil.getGroups(authToken, groupServiceURL, groupName, sslCertPath,
+					sslCertPassword);
+			if (groupList == null || groupList.getGroups() == null || groupList.getGroups().isEmpty()) {
+				model.addAttribute("message", "Group " + groupName + " not found");
+				return;
+			}
+			
+			for(HpcGroup group : groupList.getGroups())
 			{
-				model.addAttribute("group", group);
-				session.setAttribute("updategroup", group);
-				break;
+				if(group.getGroupName().equals(groupName))
+				{
+					model.addAttribute("group", group);
+					session.setAttribute("updategroup", group);
+					break;
+				}
 			}
 		}
 	}
@@ -140,6 +143,8 @@ public class HpcUpdateGroupController extends AbstractHpcController {
 						model.addAttribute("messages", messages);
 						//redirectAttributes.addFlashAttribute("return", "true");
 						//return "redirect:group?return=true";
+						hpcWebGroup.setGroupName("");
+						model.addAttribute("hpcWebGroup", hpcWebGroup);
 						return "updategroup";
 					}
 				} catch (HpcWebException e) {
