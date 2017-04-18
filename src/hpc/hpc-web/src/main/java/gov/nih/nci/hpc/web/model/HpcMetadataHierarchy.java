@@ -8,11 +8,30 @@ import java.util.TreeSet;
 
 public class HpcMetadataHierarchy {
 	private Map<String, String> levels;
+	private List<String> collectionLevels;
+	private List<String> dataobjectLevels;
 	private List<String> allAttributes;
 	private List<String> collectionAttrs;
 	private List<String> dataobjectAttrs;
 	private TreeSet<String> collectionAttrsSet;
 	private TreeSet<String> dataobjectAttrsSet;
+
+	
+	public List<String> getCollectionLevels() {
+		return collectionLevels;
+	}
+
+	public void setCollectionLevels(List<String> collectionLevels) {
+		this.collectionLevels = collectionLevels;
+	}
+
+	public List<String> getDataobjectLevels() {
+		return dataobjectLevels;
+	}
+
+	public void setDataobjectLevels(List<String> dataobjectLevels) {
+		this.dataobjectLevels = dataobjectLevels;
+	}
 
 	public TreeSet<String> getCollectionAttrsSet() {
 		if (collectionAttrsSet == null)
