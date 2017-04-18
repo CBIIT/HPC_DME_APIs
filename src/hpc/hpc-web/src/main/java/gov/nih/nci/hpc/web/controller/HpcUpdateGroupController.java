@@ -138,8 +138,9 @@ public class HpcUpdateGroupController extends AbstractHpcController {
 					{
 						messages.add("Successfully deleted group: " + hpcWebGroup.getGroupId());
 						model.addAttribute("messages", messages);
-						redirectAttributes.addFlashAttribute("return", "true");
-						return "redirect:group?return=true";
+						//redirectAttributes.addFlashAttribute("return", "true");
+						//return "redirect:group?return=true";
+						return "updategroup";
 					}
 				} catch (HpcWebException e) {
 					messages.add("Failed to delete group: " + e.getMessage());
