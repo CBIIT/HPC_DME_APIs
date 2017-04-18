@@ -131,21 +131,23 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		   
 	private static final String USER_ACCESS_SQL = 
 			"select access.object_id from public.\"r_objt_access\" access, " +
-			"public.\"r_user_main\" account where account.user_name = ? and access.user_id = account.user_id" +
+			"public.\"r_user_main\" account where account.user_name = ? and access.user_id = account.user_id";// +
+	/*
 		    " union " +
 		    "select access.object_id from public.\"r_objt_access\" access, " +
 		    "public.\"r_user_group\" user_group where access.user_id = user_group.group_user_id and " +
 		    "user_group.group_user_id in (select user_group.group_user_id from public.\"r_user_group\" user_group, " +
-		    "public.\"r_user_main\" account where account.user_name = ? and account.user_id = user_group.user_id)";
+		    "public.\"r_user_main\" account where account.user_name = ? and account.user_id = user_group.user_id)";*/
 	
 	private static final String USER_ACCESS_ARRAY_SQL = 
 			"select array_agg(access.object_id) from public.\"r_objt_access\" access, " +
-			"public.\"r_user_main\" account where account.user_name = ? and access.user_id = account.user_id" +
+			"public.\"r_user_main\" account where account.user_name = ? and access.user_id = account.user_id";// +
+	/*
 			" union " +
 		    "select array_agg(access.object_id) from public.\"r_objt_access\" access, " +
 		    "public.\"r_user_group\" user_group where access.user_id = user_group.group_user_id and " +
 		    "user_group.group_user_id in (select user_group.group_user_id from public.\"r_user_group\" user_group, " +
-		    "public.\"r_user_main\" account where account.user_name = ? and account.user_id = user_group.user_id)";
+		    "public.\"r_user_main\" account where account.user_name = ? and account.user_id = user_group.user_id)";*/
 	
 	private static final String LIMIT_OFFSET_SQL = " order by object_path limit ? offset ?";
 	
