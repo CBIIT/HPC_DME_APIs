@@ -125,14 +125,14 @@
 																		<div class="col-sm-12 column">
 																			<label for="groupName">Group Name:</label> <input
 																				type="text" class="form-control" id="groupId"
-																				name="groupId" th:value="${group.getGroupName()}" size="40" />
+																				name="groupId" th:value="${group != null ? group.getGroupName() : ''}" size="40" />
 																		</div>
 																	</div>
 																	<div class="modal-footer">
 																		<button type="submit" class="btn btn-md btn-primary"
-																			id="primaryButton" onClick="deleteGroup()">Delete</button>
+																			id="primaryButton" onClick="deleteGroup()" th:disabled="${group != null} ?'false' : 'disabled'">Delete</button>
 																		<button type="submit" class="btn btn-md btn-primary"
-																			id="primaryButton" onClick="updateGroup()">Update</button>
+																			id="primaryButton" onClick="updateGroup()" th:disabled="${group != null} ?'false' : 'disabled'">Update</button>
 																		<button type="submit" class="btn btn-primary"
 																			data-dismiss="modal" id="close" onClick="cancel()">Cancel</button>
 																	</div>
@@ -142,10 +142,10 @@
 															<tr>
 																<td>&nbsp;</td>
 															</tr>
-															<tr>
+															<tr th:if="${group != null}">
 																<td>Add/Remove Users to/from Group</td>
 															</tr>
-															<tr>
+															<tr th:if="${group != null}">
 																<td>
 																	<div class="form-group">
 																		<table class="table table-bordered table-hover"
@@ -183,7 +183,7 @@
 																	</div>
 																</td>
 															</tr>
-															<tr>
+															<tr th:if="${group != null}">
 																<td>
 																	<div class="form-group">
 																		<table class="table table-hover" id="entryTable">
