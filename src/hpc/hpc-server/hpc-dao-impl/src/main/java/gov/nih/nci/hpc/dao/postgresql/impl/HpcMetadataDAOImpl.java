@@ -490,7 +490,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     	sqlQueryBuilder.append(" intersect ");
     	sqlQueryBuilder.append(USER_ACCESS_SQL + ")");
     	args.add(dataManagementUsername);
-    	args.add(dataManagementUsername);
+    	//args.add(dataManagementUsername);
     	
     	if(offset != null && limit != null) {
     	   sqlQueryBuilder.append(LIMIT_OFFSET_SQL);
@@ -684,7 +684,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     	StringBuilder sqlQueryBuilder = new StringBuilder();
     	List<Object> args = new ArrayList<>();
     	args.add(dataManagementUsername);
-    	args.add(dataManagementUsername);
+    	//args.add(dataManagementUsername);
     	
     	sqlQueryBuilder.append(query);
     	
