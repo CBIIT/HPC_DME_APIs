@@ -125,7 +125,10 @@ public class HpcReportsController extends AbstractHpcController {
 			HpcReportRequestDTO requestDTO = new HpcReportRequestDTO();
 			requestDTO.setType(HpcReportType.fromValue(reportRequest.getReportType()));
 			if (reportRequest.getDoc() != null && !reportRequest.getDoc().equals("-1"))
-				requestDTO.getDoc().add(reportRequest.getDoc());
+			{
+				if(requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC) || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
+					requestDTO.getDoc().add(reportRequest.getDoc());
+			}
 			if (reportRequest.getUser() != null && !reportRequest.getUser().equals("-1"))
 				requestDTO.getUser().add(reportRequest.getUser());
 			if (reportRequest.getFromDate() != null && !reportRequest.getFromDate().isEmpty())

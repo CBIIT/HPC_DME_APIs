@@ -50,6 +50,8 @@
     var attributes = [[${hierarchy.getAllAttributes()}]];
     var collattributes = [[${hierarchy.getCollectionAttrsSet()}]];
     var dataattributes = [[${hierarchy.getDataobjectAttrsSet()}]];
+    var collectionLevels = [[${hierarchy.getCollectionLevels()}]];
+    var dataobjectLevels = [[${hierarchy.getDataobjectLevels()}]];
 /*]]>*/
 </script>
 
@@ -130,8 +132,8 @@
 												onChange="populateLevelAttributes(this.value, this.id)">
 													<option value="-1">----Select----</option>
 													<option
-														th:each="entry : ${hierarchy.getLevels().entrySet()}"
-														th:value="${entry.key}" th:text="${entry.value}">
+														th:each="entry : ${hierarchy.getCollectionLevels()}"
+														th:value="${entry}" th:text="${entry}">
 														Wireframe</option>
 											</select></td>
 											<td style="white-space: nowrap"><select size="1"
@@ -409,9 +411,11 @@ function resetRows()
 	        break;
 	    }
 	}	
+	
     for(var i=1;i<rows;i++)
     {
     	var namesEle = document.getElementById('attrName'+i);
+       	var levelsEle = document.getElementById('level1');
     	if (namesEle != null)
     	{
     		if(type == "collection")
@@ -424,6 +428,15 @@ function resetRows()
     			}
         	    $('#attrName'+(i)).empty();
         	    $('#attrName'+(i)).append(attrOptions);
+
+        	    var levelOptions="<option value='-1'>----Select----</option>";
+    			for(var j=0;j<collectionLevels.length;j++)
+    			{
+    				var attr = collectionLevels[j];
+    				levelOptions = levelOptions + "<option value='"+attr+"'>"+attr+"</option>"
+    			}
+        	    $('#level'+(i)).empty();
+        	    $('#level'+(i)).append(levelOptions);
     		}
     		else
     		{
@@ -435,6 +448,15 @@ function resetRows()
     			}
         	    $('#attrName'+(i)).empty();
         	    $('#attrName'+(i)).append(attrOptions);
+
+        	    var levelOptions="<option value='-1'>----Select----</option>";
+    			for(var j=0;j<dataobjectLevels.length;j++)
+    			{
+    				var attr = dataobjectLevels[j];
+    				levelOptions = levelOptions + "<option value='"+attr+"'>"+attr+"</option>"
+    			}
+        	    $('#level'+(i)).empty();
+        	    $('#level'+(i)).append(levelOptions);
     		}
     		namesEle.selectedIndex = 0;
     	}

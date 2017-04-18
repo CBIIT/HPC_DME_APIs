@@ -416,6 +416,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 
 		HpcMetadataHierarchy dataHierarchy = new HpcMetadataHierarchy();
 		Map<String, String> hierarchy = new HashMap<String, String>();
+		List<String> collectionLevels = new ArrayList<String>();
+		List<String> dataobjectLevels = new ArrayList<String>();
 
 		List<String> attrs = new ArrayList<String>();
 
@@ -427,7 +429,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				if (label == null)
 					continue;
 				// label = "Data file";
-				hierarchy.put(label, label);
+				collectionLevels.add(label);
 				dataHierarchy.getCollectionAttrsSet().addAll(levelAttrs.getMetadataAttributes());
 				for (String name : levelAttrs.getMetadataAttributes())
 					attrs.add(label + ":collection:" + name);
@@ -440,15 +442,15 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				if (label == null)
 					continue;
 
-				hierarchy.put(label, label);
+				dataobjectLevels.add(label);
 				dataHierarchy.getDataobjectAttrsSet().addAll(levelAttrs.getMetadataAttributes());
 				for (String name : levelAttrs.getMetadataAttributes())
 					attrs.add(label + ":datafile:" + name);
 			}
 		}
 
-		// hierarchy.put(("datafile"), "Data file");
-		dataHierarchy.setLevels(hierarchy);
+		dataHierarchy.setCollectionLevels(collectionLevels);
+		dataHierarchy.setDataobjectLevels(dataobjectLevels);
 		dataHierarchy.setAllAttributes(attrs);
 		model.addAttribute("hierarchy", dataHierarchy);
 		session.setAttribute("hierarchy", dataHierarchy);
