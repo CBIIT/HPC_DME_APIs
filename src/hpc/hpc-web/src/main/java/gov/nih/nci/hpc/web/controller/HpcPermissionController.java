@@ -206,7 +206,8 @@ public class HpcPermissionController extends AbstractHpcController {
 
 			Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
 			if (restResponse.getStatus() == 200) {
-				model.addAttribute("updateStatus", "Updated successfully");
+				redirectAttrs.addFlashAttribute("updateStatus", "Updated successfully");
+				return "redirect:/permissions?assignType=User&type=collection&path=" + permissionsRequest.getPath();
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
