@@ -134,18 +134,18 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			"public.\"r_user_main\" account where account.user_name = ? and access.user_id = account.user_id" +
 		    " union " +
 		    "select access.object_id from public.\"r_objt_access\" access, " +
-		    "public.\"r_user_main\" account, public.\"r_user_group\" group " +
-		    "where account.user_name = ? and account.user_id = group.user_id and " +
-		    "access.user_id = group.group_user_id";
+		    "public.\"r_user_main\" account, public.\"r_user_group\" user_group " +
+		    "where account.user_name = ? and account.user_id = user_group.user_id and " +
+		    "access.user_id = user_group.group_user_id";
 	
 	private static final String USER_ACCESS_ARRAY_SQL = 
 			"select array_agg(access.object_id) from public.\"r_objt_access\" access, " +
 			"public.\"r_user_main\" account where account.user_name = ? and access.user_id = account.user_id" +
 			" union " +
 		    "select array_agg(access.object_id) from public.\"r_objt_access\" access, " +
-		    "public.\"r_user_main\" account, public.\"r_user_group\" group " +
-		    "where account.user_name = ? and account.user_id = group.user_id and " +
-		    "access.user_id = group.group_user_id";
+		    "public.\"r_user_main\" account, public.\"r_user_group\" user_group " +
+		    "where account.user_name = ? and account.user_id = user_group.user_id and " +
+		    "access.user_id = user_group.group_user_id";
 	
 	private static final String LIMIT_OFFSET_SQL = " order by object_path limit ? offset ?";
 	
