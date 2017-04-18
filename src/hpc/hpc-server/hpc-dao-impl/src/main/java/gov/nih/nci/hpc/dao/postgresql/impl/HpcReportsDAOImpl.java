@@ -74,28 +74,28 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 
 	//USAGE_SUMMARY_DATE_RANGE
 	private static final String SUM_OF_DATA_BY_DATE_SQL = 
-			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, r_objt_metamap b, r_data_main c where a.meta_attr_name = 'source_file_size' and b.meta_id=a.meta_id and b.object_id=c.data_id and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ?";
+			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, r_objt_metamap b, r_data_main c where a.meta_attr_name = 'source_file_size' and b.meta_id=a.meta_id and b.object_id=c.data_id and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String LARGEST_FILE_BY_DATE_SQL = 
-			"SELECT max(to_number(meta_attr_value, '9999999999999999999')) maxSize FROM public.r_meta_main where meta_attr_name = 'source_file_size' and to_timestamp(CAST(create_ts as double precision)) BETWEEN ? AND ?";
+			"SELECT max(to_number(meta_attr_value, '9999999999999999999')) maxSize FROM public.r_meta_main where meta_attr_name = 'source_file_size' and CAST(create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String AVERAGE_FILE_BY_DATE_SQL = 
-			"SELECT avg(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, r_objt_metamap b, r_data_main c where a.meta_attr_name = 'source_file_size' and b.meta_id=a.meta_id and b.object_id=c.data_id and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ?";
+			"SELECT avg(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, r_objt_metamap b, r_data_main c where a.meta_attr_name = 'source_file_size' and b.meta_id=a.meta_id and b.object_id=c.data_id and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String TOTAL_NUM_OF_USERS_BY_DATE_SQL = 
 	"SELECT count(*) totalUsers FROM public.\"HPC_USER\" where \"CREATED\" BETWEEN ? and ?";
 	
 	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_DATE_SQL = 
-			"SELECT count(*) totalObjs FROM public.r_data_main  where to_timestamp(CAST(create_ts as double precision)) BETWEEN ? AND ?";
+			"SELECT count(*) totalObjs FROM public.r_data_main  where CAST(create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_AND_DATE_SQL = 
-			"select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_meta_main a, r_coll_main b, r_objt_metamap c where b.coll_id=c.object_id and c.meta_id=a.meta_id and a.meta_attr_name='collection_type' and to_timestamp(CAST(b.create_ts as double precision)) BETWEEN ? AND ? group by a.meta_attr_value";
+			"select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_meta_main a, r_coll_main b, r_objt_metamap c where b.coll_id=c.object_id and c.meta_id=a.meta_id and a.meta_attr_name='collection_type' and CAST(b.create_ts as double precision) BETWEEN ? AND ? group by a.meta_attr_value";
 
 	private static final String TOTAL_NUM_OF_META_ATTRS_BY_DATE_SQL = 
-			"SELECT count(*) totalAttrs FROM public.r_meta_main where to_timestamp(CAST(create_ts as double precision)) BETWEEN ? AND ?";
+			"SELECT count(*) totalAttrs FROM public.r_meta_main where CAST(create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String FILE_SIZE_RANGE_BY_DATE_SQL = 
-			"SELECT count(*) FROM public.r_meta_main a, r_objt_metamap b, r_data_main c  where a.meta_attr_name = 'source_file_size' and b.meta_id=a.meta_id and b.object_id=c.data_id and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ? and to_number(meta_attr_value, '9999999999999999999') BETWEEN ? AND ?";
+			"SELECT count(*) FROM public.r_meta_main a, r_objt_metamap b, r_data_main c  where a.meta_attr_name = 'source_file_size' and b.meta_id=a.meta_id and b.object_id=c.data_id and CAST(a.create_ts as double precision)BETWEEN ? AND ? and to_number(meta_attr_value, '9999999999999999999') BETWEEN ? AND ?";
 
 	//USAGE_SUMMARY_BY_DOC
 	private static final String SUM_OF_DATA_BY_DOC_SQL = 
@@ -133,36 +133,36 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 	private static final String SUM_OF_DATA_BY_DOC_DATE_SQL = 
 			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name = 'source_file_size' and b.object_id = c.data_id and b.object_id in " +
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by_doc' and b.object_id=c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id = c.data_id " +
-			"and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ?)";
+			") and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String LARGEST_FILE_BY_DOC_DATE_SQL = 
 			"SELECT max(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name = 'source_file_size' and b.object_id in " +
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ?)";
+			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String AVERAGE_FILE_BY_DOC_DATE_SQL = 
 			"SELECT avg(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name = 'source_file_size' and b.object_id = c.data_id and b.object_id in " +
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by_doc' and b.object_id=c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id = c.data_id " +
-			"and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ?)";
+			") and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String TOTAL_NUM_OF_USERS_BY_DOC_DATE_SQL = 
 			"SELECT count(*) totalUsers FROM public.\"HPC_USER\" where \"DOC\"=? and \"CREATED\" BETWEEN ?  AND ?";
 
 	
 	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_DOC_DATE_SQL = 
-			"SELECT count(distinct c.data_id) totalObjs FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where c.data_id = b.object_id and a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ? "; 
+			"SELECT count(distinct c.data_id) totalObjs FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where c.data_id = b.object_id and a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id and CAST(c.create_ts as double precision) BETWEEN ? AND ? "; 
 
 	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_DOC_DATE_SQL = 
 			"select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_meta_main a, r_coll_main b, r_objt_metamap c where b.coll_id=c.object_id and c.meta_id=a.meta_id and a.meta_attr_name='collection_type' and b.coll_id in"+
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c where c.coll_id=b.object_id and a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ? ) "+
+			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c where c.coll_id=b.object_id and a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id and CAST(b.create_ts as double precision) BETWEEN ? AND ? ) "+
 			"group by a.meta_attr_value";
 
 	private static final String TOTAL_NUM_OF_META_ATTRS_BY_DOC_DATE_SQL = 
 			"SELECT count(a.meta_id) totalAttrs FROM public.r_meta_main a, public.r_objt_metamap b  where a.meta_id = b.meta_id and b.object_id in "+
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ?) ";
+			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(a.create_ts as double precision) BETWEEN ? AND ? ";
 
 	private static final String FILE_SIZE_RANGE_BY_DOC_DATE_SQL = 
 			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and b.object_id = c.data_id and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and b.object_id in " +
-					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c  where a.meta_attr_name='registered_by_doc' and b.object_id = c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ?)";
+					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c  where a.meta_attr_name='registered_by_doc' and b.object_id = c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
 	
 	//USAGE_SUMMARY_BY_USER
 	private static final String SUM_OF_DATA_BY_USER_SQL = 
@@ -196,31 +196,31 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 	//USAGE_SUMMARY_BY_USER_BY_DATE_RANGE
 	private static final String SUM_OF_DATA_BY_USER_DATE_SQL = 
 			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name = 'source_file_size' and b.object_id=c.data_id and b.object_id  in " +
-			"(select b.object_id from public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id=c.data_id and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ?)";
+			"(select b.object_id from public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id=c.data_id) and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String LARGEST_FILE_BY_USER_DATE_SQL = 
 			"SELECT max(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name = 'source_file_size' and b.object_id in " +
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ?)";
+			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String AVERAGE_FILE_BY_USER_DATE_SQL = 
 			"SELECT avg(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name = 'source_file_size' and b.object_id=c.data_id and b.object_id  in " +
-			"(select b.object_id from public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id=c.data_id and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ?)";
+			"(select b.object_id from public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id=c.data_id) and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_USER_DATE_SQL = 
-			"SELECT count(distinct c.data_id) totalObjs FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where c.data_id = b.object_id and a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ? "; 
+			"SELECT count(distinct c.data_id) totalObjs FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where c.data_id = b.object_id and a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id and CAST(c.create_ts as double precision) BETWEEN ? AND ? "; 
 
 	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_USER_DATE_SQL = 
 			"select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_meta_main a, r_coll_main b, r_objt_metamap c where b.coll_id=c.object_id and c.meta_id=a.meta_id and a.meta_attr_name='collection_type' and b.coll_id in"+
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c where c.coll_id=b.object_id and a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ? ) "+
+			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c where c.coll_id=b.object_id and a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(b.create_ts as double precision) BETWEEN ? AND ?  "+
 			"group by a.meta_attr_value";
 
 	private static final String TOTAL_NUM_OF_META_ATTRS_BY_USER_DATE_SQL = 
 			"SELECT count(a.meta_id) totalAttrs FROM public.r_meta_main a, public.r_objt_metamap b  where a.meta_id = b.meta_id and b.object_id in "+
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ?) ";
+			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String FILE_SIZE_RANGE_BY_USER_DATE_SQL = 
 			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and b.object_id = c.data_id and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and b.object_id in " +
-					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by' and a.meta_attr_value=? and b.object_id = c.data_id and a.meta_id=b.meta_id and to_timestamp(CAST(a.create_ts as double precision)) BETWEEN ? AND ?)";
+					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by' and a.meta_attr_value=? and b.object_id = c.data_id and a.meta_id=b.meta_id ) and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
 	
 	private static final String USERS_SQL = "select \"USER_ID\" from public.\"HPC_USER\"";
 	
@@ -274,7 +274,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		else return "0";
 	}
 	
-	private String getTotalDataSize(HpcReportCriteria criteria, Date[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
+	private String getTotalDataSize(HpcReportCriteria criteria, Long[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
 	{
 		Long totalSize = null;
 		if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
@@ -299,7 +299,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 
 	}
 
-	private String getLargestSize(HpcReportCriteria criteria, Date[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
+	private String getLargestSize(HpcReportCriteria criteria, Long[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
 	{
 		Long largestSize = null;
 		if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
@@ -323,7 +323,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		else return "0";
 	}
 
-	private String getAverageSize(HpcReportCriteria criteria, Date[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
+	private String getAverageSize(HpcReportCriteria criteria, Long[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
 	{
 		Long averageSize = null;
 		if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
@@ -347,7 +347,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		else return "0";
 	}
 
-	private String getTotalDataObjSize(HpcReportCriteria criteria, Date[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
+	private String getTotalDataObjSize(HpcReportCriteria criteria, Long[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
 	{
 		Long dataSize = null;
 		if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
@@ -368,7 +368,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		else return "0";
 	}
 
-	private List<Map<String, Object>> getTotalCollectionsSize(HpcReportCriteria criteria, Date[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
+	private List<Map<String, Object>> getTotalCollectionsSize(HpcReportCriteria criteria, Long[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
 	{
 		List<Map<String, Object>> list = null;
 		if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
@@ -386,7 +386,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		return list;
 	}
 
-	private String getTotalMetaAttrCount(HpcReportCriteria criteria, Date[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
+	private String getTotalMetaAttrCount(HpcReportCriteria criteria, Long[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs)
 	{
 		Long metaAttrCount = null;
 		if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
@@ -491,31 +491,38 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		Date toDate = null;
 		Long fromDateLong = null;
 		Long toDateLong = null;
+		Long[] dateLongArgs = new Long[2];
+		Date[] dateArgs = new Date[2];
 		if(criteria.getFromDate() != null && criteria.getToDate() != null)
 		{
 			fromDate = criteria.getFromDate().getTime();
 			toDate = criteria.getToDate().getTime();
-			fromDateLong = criteria.getFromDate().getTime().getTime();
-			toDateLong = criteria.getToDate().getTime().getTime();
+			fromDateLong = criteria.getFromDate().getTime().getTime() / 1000;
+			toDateLong = criteria.getToDate().getTime().getTime() / 1000;
+			dateArgs[0] = fromDate;
+			dateArgs[1] = toDate;
+			dateLongArgs[0] = fromDateLong;
+			dateLongArgs[1] = toDateLong;
 		}
-		
-		Date[] dateArgs = new Date[2];
-		dateArgs[0] = fromDate;
-		dateArgs[1] = toDate;
-		Long[] dateLongArgs = new Long[2];
-		dateLongArgs[0] = fromDateLong;
-		dateLongArgs[1] = toDateLong;
 		
 		String[] docArg = new String[1];
 		if(criteria.getDocs() != null && criteria.getDocs().size()>0)
 			docArg[0] = criteria.getDocs().get(0);
+
+		Object[] docDateUsersArgs = new Object[3];
+		if(criteria.getDocs() != null && criteria.getDocs().size()>0)
+		{
+			docDateUsersArgs[0] = criteria.getDocs().get(0);
+			docDateUsersArgs[1] = fromDate;
+			docDateUsersArgs[2] = toDate;
+		}
 		
 		Object[] docDateArgs = new Object[3];
 		if(criteria.getDocs() != null && criteria.getDocs().size()>0)
 		{
 			docDateArgs[0] = criteria.getDocs().get(0);
-			docDateArgs[1] = fromDate;
-			docDateArgs[2] = toDate;
+			docDateArgs[1] = fromDateLong;
+			docDateArgs[2] = toDateLong;
 		}
 		
 		String[] userArg = new String[1];
@@ -526,38 +533,38 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		if(criteria.getUsers() != null && criteria.getUsers().size()>0)
 		{
 			userDateArgs[0] = criteria.getUsers().get(0);
-			userDateArgs[1] = fromDate;
-			userDateArgs[2] = toDate;
+			userDateArgs[1] = fromDateLong;
+			userDateArgs[2] = toDateLong;
 		}
 		
 		//TOTAL_NUM_OF_REGISTERED_USERS
 		HpcReportEntry userSizeEntry = new HpcReportEntry();
 		userSizeEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUM_OF_REGISTERED_USERS);
-		userSizeEntry.setValue(getUsersSize(criteria, dateArgs, docArg, docDateArgs));
+		userSizeEntry.setValue(getUsersSize(criteria, dateArgs, docArg, docDateUsersArgs));
 
 		
 		//Total Size - TOTAL_DATA_SIZE
 		HpcReportEntry sizeEntry = new HpcReportEntry();
 		sizeEntry.setAttribute(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
-		sizeEntry.setValue(getTotalDataSize(criteria, dateArgs, docArg, docDateArgs, userArg, userDateArgs));
+		sizeEntry.setValue(getTotalDataSize(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs));
 		
 		//Largest file - LARGEST_FILE_SIZE
 		HpcReportEntry largestFileSizeEntry = new HpcReportEntry();
 		largestFileSizeEntry.setAttribute(HpcReportEntryAttribute.LARGEST_FILE_SIZE);
-		largestFileSizeEntry.setValue(getLargestSize(criteria, dateArgs, docArg, docDateArgs, userArg, userDateArgs));
+		largestFileSizeEntry.setValue(getLargestSize(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs));
 		
 		//Average file - AVERAGE_FILE_SIZE
 		HpcReportEntry averageFileSizeEntry = new HpcReportEntry();
 		averageFileSizeEntry.setAttribute(HpcReportEntryAttribute.AVERAGE_FILE_SIZE);
-		averageFileSizeEntry.setValue(getAverageSize(criteria, dateArgs, docArg, docDateArgs, userArg, userDateArgs));
+		averageFileSizeEntry.setValue(getAverageSize(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs));
 
 		//Total number of data objects - TOTAL_NUM_OF_DATA_OBJECTS
 		HpcReportEntry numOfDataObjEntry = new HpcReportEntry();
 		numOfDataObjEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS);
-		numOfDataObjEntry.setValue(getTotalDataObjSize(criteria, dateArgs, docArg, docDateArgs, userArg, userDateArgs));
+		numOfDataObjEntry.setValue(getTotalDataObjSize(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs));
 
 		//Total number of collections - TOTAL_NUM_OF_COLLECTIONS
-		List<Map<String, Object>> list = getTotalCollectionsSize(criteria, dateArgs, docArg, docDateArgs, userArg, userDateArgs);
+		List<Map<String, Object>> list = getTotalCollectionsSize(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs);
 		StringBuffer str = new StringBuffer();
         str.append("[");
         if(list != null)
@@ -588,7 +595,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		//Total Meta attributes Size - TOTAL_NUMBER_OF_META_ATTRS
 		HpcReportEntry metasizeEntry = new HpcReportEntry();
 		metasizeEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUMBER_OF_META_ATTRS);
-		metasizeEntry.setValue(getTotalMetaAttrCount(criteria, dateArgs, docArg, docDateArgs, userArg, userDateArgs));
+		metasizeEntry.setValue(getTotalMetaAttrCount(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs));
 		
 		//Distribution of files - FILE_SIZE_BELOW_1_MB
 		Long lower = Long.valueOf(0);
@@ -599,8 +606,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		fileSizeArgs[1] = upper;
 
 		Object[] filesizedateArgs = new Object[4];
-		filesizedateArgs[0] = fromDate;
-		filesizedateArgs[1] = toDate;
+		filesizedateArgs[0] = fromDateLong;
+		filesizedateArgs[1] = toDateLong;
 		filesizedateArgs[2] = lower;
 		filesizedateArgs[3] = upper;
 
@@ -615,8 +622,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		filesizedocDateArgs[1] = upper;
 		if(criteria.getDocs() != null && criteria.getDocs().size()>0)
 			filesizedocDateArgs[2] = criteria.getDocs().get(0);
-		filesizedocDateArgs[3] = fromDate;
-		filesizedocDateArgs[4] = toDate;
+		filesizedocDateArgs[3] = fromDateLong;
+		filesizedocDateArgs[4] = toDateLong;
 
 		Object[] filesizeuserArgs = new Object[3];
 		filesizeuserArgs[0] = lower;
@@ -629,8 +636,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		filesizeuserDateArgs[1] = upper;
 		if(criteria.getUsers() != null && criteria.getUsers().size()>0)
 			filesizeuserDateArgs[2] = criteria.getUsers().get(0);
-		filesizeuserDateArgs[3] = fromDate;
-		filesizeuserDateArgs[4] = toDate;
+		filesizeuserDateArgs[3] = fromDateLong;
+		filesizeuserDateArgs[4] = toDateLong;
 		
 		HpcReportEntry oneMBEntry = new HpcReportEntry();
 		oneMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_BELOW_1_MB);
@@ -647,8 +654,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		filesizedocArgs[0] = lower;
 		filesizedocArgs[1] = upper;
 
-		filesizedocArgs[0] = lower;
-		filesizedocArgs[1] = upper;
+		filesizedocDateArgs[0] = lower;
+		filesizedocDateArgs[1] = upper;
 
 		filesizeuserArgs[0] = lower;
 		filesizeuserArgs[1] = upper;
@@ -671,8 +678,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		filesizedocArgs[0] = lower;
 		filesizedocArgs[1] = upper;
 
-		filesizedocArgs[0] = lower;
-		filesizedocArgs[1] = upper;
+		filesizedocDateArgs[0] = lower;
+		filesizedocDateArgs[1] = upper;
 
 		filesizeuserArgs[0] = lower;
 		filesizeuserArgs[1] = upper;
@@ -695,8 +702,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		filesizedocArgs[0] = lower;
 		filesizedocArgs[1] = upper;
 
-		filesizedocArgs[0] = lower;
-		filesizedocArgs[1] = upper;
+		filesizedocDateArgs[0] = lower;
+		filesizedocDateArgs[1] = upper;
 
 		filesizeuserArgs[0] = lower;
 		filesizeuserArgs[1] = upper;
@@ -718,8 +725,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		filesizedocArgs[0] = lower;
 		filesizedocArgs[1] = upper;
 
-		filesizedocArgs[0] = lower;
-		filesizedocArgs[1] = upper;
+		filesizedocDateArgs[0] = lower;
+		filesizedocDateArgs[1] = upper;
 
 		filesizeuserArgs[0] = lower;
 		filesizeuserArgs[1] = upper;
@@ -741,8 +748,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		filesizedocArgs[0] = lower;
 		filesizedocArgs[1] = upper;
 
-		filesizedocArgs[0] = lower;
-		filesizedocArgs[1] = upper;
+		filesizedocDateArgs[0] = lower;
+		filesizedocDateArgs[1] = upper;
 
 		filesizeuserArgs[0] = lower;
 		filesizeuserArgs[1] = upper;
@@ -764,8 +771,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		filesizedocArgs[0] = lower;
 		filesizedocArgs[1] = upper;
 
-		filesizedocArgs[0] = lower;
-		filesizedocArgs[1] = upper;
+		filesizedocDateArgs[0] = lower;
+		filesizedocDateArgs[1] = upper;
 
 		filesizeuserArgs[0] = lower;
 		filesizeuserArgs[1] = upper;
@@ -787,8 +794,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		filesizedocArgs[0] = lower;
 		filesizedocArgs[1] = upper;
 
-		filesizedocArgs[0] = lower;
-		filesizedocArgs[1] = upper;
+		filesizedocDateArgs[0] = lower;
+		filesizedocDateArgs[1] = upper;
 
 		filesizeuserArgs[0] = lower;
 		filesizeuserArgs[1] = upper;
