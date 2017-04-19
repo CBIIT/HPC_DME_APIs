@@ -26,6 +26,7 @@ import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
+import gov.nih.nci.hpc.util.HpcUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -745,12 +746,12 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	}
 
 	@Override
-    public List<String> getGroups(Object authenticatedToken, String groupSearchCriteria) 
+    public List<String> getGroups(Object authenticatedToken, String groupPattern) 
     		                     throws HpcException
     {
     	try {
     		 String where = RodsGenQueryEnum.COL_USER_GROUP_NAME.getName() + " " + 
-                            "LIKE '" + groupSearchCriteria + "' and " +
+                            "LIKE '" + HpcUtils.toSqlLikePattern(groupPattern) + "' and " +
 			                RodsGenQueryEnum.COL_USER_TYPE.getName() + " = '" + 
                             UserTypeEnum.RODS_GROUP.getTextValue() + "'";
     		

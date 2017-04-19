@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.util.HpcUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -166,11 +167,11 @@ public class HpcUserDAOImpl implements HpcUserDAO
     	}
     	if(firstNamePattern != null) {
      	   sqlQueryBuilder.append(GET_USERS_FIRST_NAME_PATTERN_FILTER);
-     	   args.add(firstNamePattern);
+     	   args.add(HpcUtils.toSqlLikePattern(firstNamePattern));
      	}
     	if(lastNamePattern != null) {
      	   sqlQueryBuilder.append(GET_USERS_LAST_NAME_PATTERN_FILTER);
-     	   args.add(lastNamePattern);
+     	   args.add(HpcUtils.toSqlLikePattern(lastNamePattern));
      	}
     	if(doc != null) {
       	   sqlQueryBuilder.append(GET_USERS_DOC_FILTER);
