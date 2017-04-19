@@ -50,10 +50,10 @@ public class HpcUtils
     	}
     	
         String sqlLikePattern = hpcPattern;
-        sqlLikePattern = sqlLikePattern.replace("*", "%");
-        sqlLikePattern = sqlLikePattern.replace("?", "_");
         sqlLikePattern = sqlLikePattern.replace("%", "\\%");
         sqlLikePattern = sqlLikePattern.replace("_", "\\_");
+        sqlLikePattern = sqlLikePattern.replace("*", "%");
+        sqlLikePattern = sqlLikePattern.replace("?", "_");
         
         return sqlLikePattern;
     } 
