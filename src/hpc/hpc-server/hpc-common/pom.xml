@@ -34,7 +34,8 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package>
-							gov.nih.nci.hpc.exception
+							gov.nih.nci.hpc.exception,
+							gov.nih.nci.hpc.util
 						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>
