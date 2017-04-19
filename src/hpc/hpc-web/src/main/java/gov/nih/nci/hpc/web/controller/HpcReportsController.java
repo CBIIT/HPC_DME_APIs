@@ -106,7 +106,7 @@ public class HpcReportsController extends AbstractHpcController {
 		HpcUserListDTO users = HpcClientUtil.getUsers(authToken, activeUsersServiceURL, null, null, null, user.getUserRole().equals("SYSTEM_ADMIN") ? null:user.getDoc(), sslCertPath, sslCertPassword);
 		model.addAttribute("docUsers", users.getUsers());
 		List<String> docs = new ArrayList<String>();
-		if(user.getUserRole().equals("GROUP_ADMIN"))
+		if(user.getUserRole().equals("GROUP_ADMIN") || user.getUserRole().equals("USER"))
 			docs.add(user.getDoc());
 		else if(user.getUserRole().equals("SYSTEM_ADMIN"))
 		{
