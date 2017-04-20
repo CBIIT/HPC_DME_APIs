@@ -38,7 +38,8 @@ public class HpcUtils
     //---------------------------------------------------------------------//
 	
     /**
-     * Convert an HPC-DM pattern to SQL 'LIKE' pattern
+     * Convert an HPC-DM pattern to SQL 'LIKE' pattern.
+     * HPC-DM pattern supports '*' for any characters sequence and '?' for any character. 
      *
      * @param hpcPattern The HPC pattern to convert.
      * @return The converted SQL LIKE pattern.

@@ -89,11 +89,11 @@ public interface HpcSecurityRestService
      * Get users by search criterias. Note: only active users are returned.
      *
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
-     * @param firstNamePattern (Optional) The first-name pattern to search for (In the form of SQL 'LIKE' pattern, 
-     *                         using case insensitive matching).
-     * @param lastNamePattern (Optional) The last-name pattern to search for (In the form of SQL 'LIKE' pattern, 
-     *                        using case insensitive matching).
-     * @param doc User DOC                       
+     * @param firstNamePattern (Optional) The first-name pattern to search for (using case insensitive matching).
+     *                                    Pattern supports '*' for any characters sequence and '?' for any character.
+     * @param lastNamePattern (Optional) The last-name pattern to search for (using case insensitive matching).
+     *                                   Pattern supports '*' for any characters sequence and '?' for any character.
+     * @param doc User DOC.                      
      * @return The REST service response w/ HpcUserListDTO entity.
      */
     @GET
@@ -108,10 +108,10 @@ public interface HpcSecurityRestService
      * Get users by search criterias. Note: All users are returned, both active and inactive
      *
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
-     * @param firstNamePattern (Optional) The first-name pattern to search for (In the form of SQL 'LIKE' pattern, 
-     *                         using case insensitive matching).
-     * @param lastNamePattern (Optional) The last-name pattern to search for (In the form of SQL 'LIKE' pattern, 
-     *                        using case insensitive matching).
+     * @param firstNamePattern (Optional) The first-name pattern to search for (using case insensitive matching).
+     *                                    Pattern supports '*' for any characters sequence and '?' for any character.
+     * @param lastNamePattern (Optional) The last-name pattern to search for (using case insensitive matching).
+     *                                   Pattern supports '*' for any characters sequence and '?' for any character.
      * @param doc User DOC 
      * @return The REST service response w/ HpcUserListDTO entity.
      */
@@ -175,8 +175,9 @@ public interface HpcSecurityRestService
     /**
      * Get groups by search criteria.
      *
-     * @param groupPattern (Optional) The group pattern to search for (In the form of SQL 'LIKE' pattern, 
-     *                     using case sensitive matching). If null - then all groups are returned.
+     * @param groupPattern (Optional) The group pattern to search for (using case sensitive matching).
+     *                                Pattern supports '*' for any characters sequence and '?' for any character.
+     *                                If null - then all groups are returned.
      * @return The REST service response w/ HpcGroupListDTO entity.
      */
     @GET
