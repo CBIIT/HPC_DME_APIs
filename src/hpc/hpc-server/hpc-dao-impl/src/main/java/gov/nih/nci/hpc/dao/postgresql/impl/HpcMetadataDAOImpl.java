@@ -62,7 +62,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	
 	private static final String GET_COLLECTION_IDS_LIKE_SQL = 
 			"select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection " +
-		    "where collection.meta_attr_name = ? and collection.meta_attr_value like ?";
+		    "where collection.meta_attr_name = ? and lower(collection.meta_attr_value) like lower(?)";
 	
 	private static final String GET_COLLECTION_IDS_NUM_LESS_THAN_SQL = 
 		    "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection " +
@@ -90,7 +90,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	
 	private static final String GET_DATA_OBJECT_IDS_LIKE_SQL = 
 			"select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject " +
-		    "where dataObject.meta_attr_name = ? and dataObject.meta_attr_value like ?";
+		    "where dataObject.meta_attr_name = ? and lower(dataObject.meta_attr_value) like lower(?)";
 	
 	private static final String GET_DATA_OBJECT_IDS_NUM_LESS_THAN_SQL = 
 		    "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject " +
