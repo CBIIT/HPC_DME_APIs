@@ -745,11 +745,11 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     /**
      * Instantiate a data management account object from NCI account credentials.
      * 
-     * @param nciUserId The NCI user ID to be updated
-     * @param userUpdateRequest The user update request.
-     * @throws HpcException If the user update request is invalid.
+     * @param nciUserId The NCI user ID.
+     * @param password The NCI user's password.
+     * @return A data management account with the user's credentials.
      */
-	HpcIntegratedSystemAccount toDataManagementAccount(String nciUserId, String password)
+	private HpcIntegratedSystemAccount toDataManagementAccount(String nciUserId, String password)
 	{
         // Instantiate a Data Management account.
         HpcIntegratedSystemAccount dataManagementAccount = new HpcIntegratedSystemAccount();

@@ -130,8 +130,7 @@ public class HpcAuthenticationInterceptor
      * Authenticate the caller.
      * 
      * @param message The RS message.
-     * @return HpcAuthenticationResponseDTO.
-     * @throws HpcException on unsupported authorization type request.
+     * @throws HpcException If the caller is not authenticated.
      */
     private void authenticate(Message message) throws HpcException
     {

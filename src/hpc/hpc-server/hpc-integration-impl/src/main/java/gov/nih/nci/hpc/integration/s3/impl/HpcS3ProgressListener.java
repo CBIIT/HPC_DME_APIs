@@ -43,6 +43,7 @@ public class HpcS3ProgressListener implements ProgressListener
      * Constructor.
      * 
      * @param progressListener The HPC progress listener.
+     * @throws HpcException if no progress listener provided.
      */
     public HpcS3ProgressListener(HpcDataTransferProgressListener progressListener)
                                 throws HpcException

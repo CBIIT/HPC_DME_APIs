@@ -421,7 +421,8 @@ public interface HpcDataManagementProxy
      * Get user groups by search criteria.
      * 
      * @param authenticatedToken An authenticated token.
-     * @param groupPattern The group pattern to search for (In the form of SQL 'LIKE', using case sensitive matching).
+     * @param groupPattern The group pattern to search for (using case insensitive matching).
+     *                     Pattern supports '*' for any characters sequence and '?' for any character.
      * @return A list of group names.
      * @throws HpcException on data management system failure.
      */
