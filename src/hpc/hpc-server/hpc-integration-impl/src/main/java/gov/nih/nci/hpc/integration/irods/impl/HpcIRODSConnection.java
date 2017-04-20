@@ -270,8 +270,6 @@ public class HpcIRODSConnection
      * Authenticate an account.
      *
      * @param dataManagementAccount A data management account to authenticate.
-     * @param ldapAuthenticated An indicator if the user was authenticated via LDAP. 
-     *                          This determines the authentication scheme to use w/ Data Management. 
      * @return An authenticated IRODSAccount object, or null if authentication failed.
      * @throws HpcException on iRODS failure.
      */
@@ -282,7 +280,7 @@ public class HpcIRODSConnection
     	try {
     		 if(!dataManagementAccount.getProperties().isEmpty()) {
     			// The data management account is already authenticated. Return an iRODS account.
-    			 irodsAccount = toAuthenticatedIrodsAccount(dataManagementAccount);
+    			irodsAccount = toAuthenticatedIrodsAccount(dataManagementAccount);
     			 
     		 } else {
     			     // Authenticate the data management account.
@@ -384,10 +382,10 @@ public class HpcIRODSConnection
      * 
      * @param dataManagementAccount The Data Management account.
      * @return An iRODS account.
-     * @throws HpcException on iRODS failure.
+     * @throws JargonException on iRODS failure.
      */
     private IRODSAccount toAuthenticatedIrodsAccount(HpcIntegratedSystemAccount dataManagementAccount) 
-    		                                         throws JargonException
+    		                                        throws JargonException
     {
     	Map<String, String> properties = new Hashtable<>();
     	for(HpcIntegratedSystemAccountProperty property : dataManagementAccount.getProperties()) {

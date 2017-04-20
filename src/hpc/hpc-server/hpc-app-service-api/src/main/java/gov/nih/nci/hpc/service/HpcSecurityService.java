@@ -67,10 +67,10 @@ public interface HpcSecurityService
      * Get users by search criterias. Note: only active users are returned.
      *
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
-     * @param firstNamePattern (Optional) The first-name pattern to search for (In the form of SQL 'LIKE' pattern, 
-     *                         using case insensitive matching).
-     * @param lastNamePattern (Optional) The last-name pattern to search for (In the form of SQL 'LIKE' pattern, 
-     *                        using case insensitive matching).
+     * @param firstNamePattern (Optional) The first-name pattern to search for (using case insensitive matching).
+     *                                    Pattern supports '*' for any characters sequence and '?' for any character.
+     * @param lastNamePattern (Optional) The last-name pattern to search for (using case insensitive matching).
+     *                                   Pattern supports '*' for any characters sequence and '?' for any character.
      * @param active If set to true, only active users are searched. Otherwise, all users (active and inactive) are searched.
      * @param doc User DOC
      * @return A list of users.

@@ -533,7 +533,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     		 return toHpcSubjectPermission(
     				  authenticatedToken,
     				  irodsConnection.getCollectionAO(authenticatedToken).getPermissionForUserName(
-    				                  (getAbsolutePath(path)), userId), false);
+    				                     getAbsolutePath(path), userId), false);
     	     
     	} catch(Exception e) {
                 throw new HpcException("Failed to get collection permission for user: " + 
@@ -1089,8 +1089,10 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     /**
      * Convert a list of iRODS user permission to list of HPC entity permission.
      *
+     * @param authenticatedToken An authenticated token.
      * @param irodsUserPermissions The iRODS user permissions.
      * @return A list of HPC subject permissions.
+     * @throws HpcException on data management system failure.
      */
     private List<HpcSubjectPermission> 
             toHpcSubjectPermissions(Object authenticatedToken, List<UserFilePermission> irodsUserPermissions)
@@ -1102,7 +1104,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     	
     	List<HpcSubjectPermission> hpcSubjectPermissions = new ArrayList<>();
     	for(UserFilePermission irodsUserPermission : irodsUserPermissions) {
-    		HpcSubjectPermission hpcSubjectPermission = toHpcSubjectPermission(authenticatedToken, irodsUserPermission);
+    		HpcSubjectPermission hpcSubjectPermission = toHpcSubjectPermission(authenticatedToken, irodsUserPermission, true);
     		if(hpcSubjectPermission != null) {
     		   hpcSubjectPermissions.add(hpcSubjectPermission);
     		}
@@ -1114,23 +1116,17 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     /**
      * Convert an iRODS user file permission to HPC subject permission
      *
-     * @param irodsUserPermissions The iRODS user permissions.
-     * @return A list of HPC subject permissions.
+     * @param authenticatedToken An authenticated token.
+     * @param irodsUserPermission The iRODS user permission.
+     * @param checkGroup If set to true, exclude individual user-ids that are returned as groups.
+     * @return An HPC subject permission.
+     * @throws HpcException on data management system failure.
      */
-    private HpcSubjectPermission toHpcSubjectPermission(Object authenticatedToken, UserFilePermission irodsUserPermission)
-                                                       throws HpcException
-    {
-    	return toHpcSubjectPermission(authenticatedToken, irodsUserPermission, true);
-    }
-
-    /**
-     * Convert an iRODS user file permission to HPC subject permission
-     *
-     * @param irodsUserPermissions The iRODS user permissions.
-     * @return A list of HPC subject permissions.
-     */
-    private HpcSubjectPermission toHpcSubjectPermission(Object authenticatedToken, UserFilePermission irodsUserPermission, boolean checkGroup)
-                                                       throws HpcException
+    private HpcSubjectPermission 
+            toHpcSubjectPermission(Object authenticatedToken, 
+            		               UserFilePermission irodsUserPermission, 
+            		               boolean checkGroup)
+                                  throws HpcException
     {
 		HpcSubjectPermission hpcSubjectPermission = new HpcSubjectPermission();
 		hpcSubjectPermission.setPermission(toHpcPermission(irodsUserPermission.getFilePermissionEnum()));
