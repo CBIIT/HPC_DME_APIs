@@ -79,7 +79,7 @@ function dm_register {
         echo "ERROR: using dm_register" >&2
         echo "Received: $@" >&2
         echo "$USAGE" >&2
-        return
+        return 1
     fi
 
 
@@ -89,7 +89,7 @@ function dm_register {
         if [ ! -e "$DATAOBJECT_FILE" ]
         then 
             echo "ERROR: The data-object-file:$DATAOBJECT_FILE does not exist " >&2
-            return
+            return 1
         fi
     fi
         
@@ -99,6 +99,12 @@ function dm_register {
     USERID=$(get_username)
     SERVER=$(get_server)
 
+
+    if [ ! -e "$DESCRIPTION" ]
+    then
+      echo "ERROR: Can not access the \"$DESCRIPTION\" file" >&2
+      return 1
+    fi
     CONFIG="--config $HPC_DM_UTILS/curl-conf"
     
     RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
@@ -123,7 +129,7 @@ function dm_register {
            curl -H "Content-Type: application/json" -d @$DESCRIPTION $CURL_FLAGS  -H "Accept: application/json" 2>curl-status
     else
         echo "ERROR: Unsupported registration type:$TYPE"
-        return 
+        return 1
     fi
     check_connection $RESPONSE_HEADER
 }
@@ -146,6 +152,10 @@ function dm_register_collection {
     DESCRIPTION="$1"
     DESTINATION_PATH="$2"
     dm_register $DESCRIPTION $DESTINATION_PATH collection
+    if [ "$?" -eq  1 ]
+    then
+      return 1
+    fi
 
     RESPONSE_HEADER=collection-registration-response-header.tmp
     RESPONSE_MSG=collection-registration-response-message.json.tmp
@@ -175,6 +185,10 @@ function dm_register_dataobject {
     DESTINATION_PATH="$2"
     SOURCE_FILE="$3"
     dm_register "$DESCRIPTION" "$DESTINATION_PATH" dataObject "$SOURCE_FILE" 
+    if [ "$?" -eq  1 ]
+    then
+      return 1
+    fi
 
     RESPONSE_HEADER=dataObject-registration-response-header.tmp
     RESPONSE_MSG=dataObject-registration-response-message.json.tmp
