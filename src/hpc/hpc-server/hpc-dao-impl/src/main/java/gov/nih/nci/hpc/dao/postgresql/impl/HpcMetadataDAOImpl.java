@@ -20,7 +20,6 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.util.HpcUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -534,9 +533,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			// Append the SQL query representing the requested metadata query operator and its arguments.
 			sqlQueryBuilder.append(sqlQuery);
 			args.add(metadataQuery.getAttribute());
-			args.add(metadataQuery.getOperator().equals(HpcMetadataQueryOperator.LIKE) ?    
-					 HpcUtils.toSqlLikePattern(metadataQuery.getValue()) : 
-				     metadataQuery.getValue());
+			args.add(metadataQuery.getValue());
 			
 			// Add a filter for level. 
 			HpcMetadataQueryLevelFilter levelFilter = metadataQuery.getLevelFilter() != null ?

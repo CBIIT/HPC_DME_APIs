@@ -274,21 +274,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
         setRequestInvoker(nciUserId, 
         		          ldapAuthentication ? HpcAuthenticationType.LDAP : HpcAuthenticationType.NONE,
         		          toDataManagementAccount(nciUserId, password));
-    		
-        // TODO REMOVE
-    	// LDAP authentication.
-    	//boolean userAuthenticated = ldapAuthentication ? 
-    		//	    securityService.authenticate(nciUserId, password) : false;
-//    	// Generate an authentication token.
-//        HpcAuthenticationTokenClaims authenticationTokenClaims = new HpcAuthenticationTokenClaims();
-//        authenticationTokenClaims.setUserName(userName);
-//        authenticationTokenClaims.setPassword(password);
-//        authenticationTokenClaims.setUserAuthenticated(userAuthenticated);
-//        authenticationTokenClaims.setLdapAuthentication(ldapAuthentication);
-//    	String authenticatioToken = securityService.createAuthenticationToken(authenticationTokenClaims);
-    	
-        // Set the request invoker.
-    	//return setRequestInvokerr(nciUserId, password, userAuthenticated, ldapAuthentication, null);    
     }
     
     @Override
@@ -523,108 +508,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		securityService.getRequestInvoker().setUserRole(
 				           dataManagementSecurityService.getUserRole(dataManagementAccount.getUsername()));
     }
-    
-    /**
-     * Set the Request invoker and return an authentication request DTO
-     * 
-     * @param userName The user name.
-     * @param password The password.
-     * @param userAuthenticated User authenticated indicator.
-     * @param ldapAuthentication LDAP authenticated user indicator.
-     * @param dmAccount The data management account.
-     * @return The Authentication Response DTO.
-     * @throws HpcException on service failure.
-     */
-    // TODO REMOVE
-    /*
-    private HpcAuthenticationResponseDTO setRequestInvokerr(
-    		   String userName, String password,
-    		   boolean userAuthenticated,
-    		   boolean ldapAuthentication,
-    		   HpcDataManagementAccount dmAccount) throws HpcException
-    {
-    	// TODO: Need to refactor authentication.
-    	
-		// Get the HPC user.
-		HpcUser user = null;
-		try {
-		     user = securityService.getUser(userName);
-			
-		} catch(HpcException e) {
-			    logger.error("Failed to get user: " +  userName);
-		}
-		
-		if(user == null) {
-		   // This is a request from a user that is not registered with HPC.
-		   logger.info("Service call for a user that is not registered with HPC. NCI User-id: " + 
-		               userName);
-		
-		   user = new HpcUser();
-		   HpcNciAccount nciAccount = new HpcNciAccount();
-		   nciAccount.setUserId("Unknown-NCI-User-ID");
-	 	   user.setNciAccount(nciAccount);
-	 	   user.setDataManagementAccount(null);
-	 	   user.setActive(true);
-	    }
-		
-		if(password != null)
-		{
-			   password = password.replace("=", "\\=");
-			   password = password.replace(";", "\\;");
-			   password = password.replace("&", "\\&");
-			   password = password.replace("@", "\\@");
-		}
-		// If the user was authenticated w/ LDAP, then we use the NCI credentials to access
-		// Data Management (iRODS).
-		if(userAuthenticated) {
-		   HpcIntegratedSystemAccount dataManagementAccount = new HpcIntegratedSystemAccount();
-		   dataManagementAccount.setIntegratedSystem(HpcIntegratedSystem.IRODS);
-		   dataManagementAccount.setUsername(userName);
-		   dataManagementAccount.setPassword(password);
-		   user.setDataManagementAccount(dataManagementAccount);
-		}
-		
-		// Populate the request invoker context with the HPC user data.
-		//securityService.setRequestInvoker(user, userAuthenticated);
-		
-		// Prepare and return a response DTO.
-		HpcAuthenticationResponseDTO authenticationResponse = new HpcAuthenticationResponseDTO();
-		authenticationResponse.setAuthenticated(ldapAuthentication ? userAuthenticated : true);	
-		if(!user.getActive()) {
-		   authenticationResponse.setAuthenticated(false);
-		}
-
-		HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
-		if(requestInvoker.getDataManagementAuthenticatedToken() == null && dmAccount != null)
-			requestInvoker.setDataManagementAuthenticatedToken(dataManagementSecurityService.getProxyManagementAccount(dmAccount));
-		
-		//authenticationResponse.setUserRole(
-			//	      authenticationResponse.getAuthenticated() && user.getDataManagementAccount() != null ? 
-				//    		  dataManagementSecurityService.getUserRole(user.getDataManagementAccount().getUsername()) : 
-				  //    HpcUserRole.NOT_REGISTERED);
-		
-    	// Generate an authentication token.
-        HpcAuthenticationTokenClaims authenticationTokenClaims = new HpcAuthenticationTokenClaims();
-        authenticationTokenClaims.setUserName(userName);
-        authenticationTokenClaims.setPassword(password);
-        authenticationTokenClaims.setUserAuthenticated(userAuthenticated);
-        authenticationTokenClaims.setLdapAuthentication(ldapAuthentication);
-        if(dmAccount == null)
-        	dmAccount = dataManagementSecurityService.getHpcDataManagementAccount(requestInvoker.getDataManagementAuthenticatedToken());
-        authenticationTokenClaims.setDataManagementAccount(dmAccount);
-        String authenticationToken = securityService.createAuthenticationToken(authenticationTokenClaims);
-
-    	authenticationResponse.setToken(authenticationToken);
-		
-    	// Update the request invoker instance.
-		
-		requestInvoker.setAuthenticationToken(authenticationToken);
-		requestInvoker.setUserRole(authenticationResponse.getUserRole());
-		if(requestInvoker.getDataManagementAuthenticatedToken() == null)
-			requestInvoker.setDataManagementAuthenticatedToken(dataManagementSecurityService.getProxyManagementAccount(dmAccount));
-		
-		return authenticationResponse;
-    }  */
     
     /**
      * Update group members of a group.

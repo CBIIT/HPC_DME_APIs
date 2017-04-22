@@ -422,7 +422,7 @@ public interface HpcDataManagementProxy
      * 
      * @param authenticatedToken An authenticated token.
      * @param groupPattern The group pattern to search for (using case insensitive matching).
-     *                     Pattern supports '*' for any characters sequence and '?' for any character.
+     *                     SQL LIKE wildcards ('%', '_') are supported. 
      * @return A list of group names.
      * @throws HpcException on data management system failure.
      */
