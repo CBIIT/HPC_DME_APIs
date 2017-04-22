@@ -74,26 +74,6 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	private static final String PASSWORD_JSON_ATTRIBUTE = "password";
 	private static final String PROPERTIES_JSON_ATTRIBUTE = "properties";
 	
-	// TODO REMOVE
-	/*
-	private static final String TOKEN_USER_NAME = "UserName";
-	private static final String TOKEN_PASSWORD = "Password";
-	private static final String TOKEN_LDAP_AUTHENTICATION = "LDAPAuthentication";
-	private static final String TOKEN_USER_AUTHENTICATED = "UserAuthenticated";
-	
-	// TODO REMOVE
-	private static final String TOKEN_DM_HOST = "Host";
-	private static final String TOKEN_DM_PORT = "Port";
-	private static final String TOKEN_DM_USER_ZONE = "UserZone";
-	private static final String TOKEN_DM_USER_NAME = "UserName";
-	private static final String TOKEN_DM_PROXY_ZONE = "ProxyZone";
-	private static final String TOKEN_DM_PROXY_NAME = "ProxyName";
-	private static final String TOKEN_DM_PASSWORD = "DM_Password";
-	private static final String TOKEN_DM_DEFAULT_RESC_STORAGE = "DefaultStorageResource";
-	private static final String TOKEN_DM_HOME_DIRECTORY = "HomeDirectory";
-	private static final String TOKEN_DM_AUTH_SCHEME = "AuthenticationScheme";
-	*/
-	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -413,26 +393,6 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	     tokenClaims.setUserId(jwsClaims.getBody().get(USER_ID_TOKEN_CLAIM, String.class));
     	     tokenClaims.setDataManagementAccount(fromJSON(jwsClaims.getBody().get(DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM, 
     	    		                                                               String.class)));
-    	     
-    	     // TODO REMOVE
-    	     /*
-    	     tokenClaims.setUserName(jwsClaims.getBody().get(TOKEN_USER_NAME, String.class));
-    	     tokenClaims.setPassword(jwsClaims.getBody().get(TOKEN_PASSWORD, String.class));
-    	     tokenClaims.setLdapAuthentication(jwsClaims.getBody().get(TOKEN_LDAP_AUTHENTICATION, Boolean.class));
-    	     tokenClaims.setUserAuthenticated(jwsClaims.getBody().get(TOKEN_USER_AUTHENTICATED, Boolean.class));
-    	     
-    	     HpcDataManagementAccount account = new HpcDataManagementAccount();
-    	     account.setAuthenticationScheme(jwsClaims.getBody().get(TOKEN_DM_AUTH_SCHEME, String.class));
-    	     account.setHost(jwsClaims.getBody().get(TOKEN_DM_HOST, String.class));
-    	     account.setPort(jwsClaims.getBody().get(TOKEN_DM_PORT, Integer.class));
-    	     account.setUserZone(jwsClaims.getBody().get(TOKEN_DM_USER_ZONE, String.class));
-    	     account.setUserName(jwsClaims.getBody().get(TOKEN_DM_USER_NAME, String.class));
-    	     account.setProxyZone(jwsClaims.getBody().get(TOKEN_DM_PROXY_ZONE, String.class));
-    	     account.setProxyName(jwsClaims.getBody().get(TOKEN_DM_PROXY_NAME, String.class));
-    	     account.setPassword(jwsClaims.getBody().get(TOKEN_DM_PASSWORD, String.class));
-    	     account.setDefaultStorageResource(jwsClaims.getBody().get(TOKEN_DM_DEFAULT_RESC_STORAGE, String.class));
-    	     account.setHomeDirectory(jwsClaims.getBody().get(TOKEN_DM_HOME_DIRECTORY, String.class));
-    	     tokenClaims.setDataManagementAccount(account);*/
     	     return tokenClaims;
 
     	} catch(SignatureException se) {
