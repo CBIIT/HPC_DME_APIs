@@ -17,6 +17,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryAttributeMatch;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
@@ -381,10 +382,17 @@ public class HpcDomainValidator
     	HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
     	validationResult.setValid(false);
     	
-	    if(isEmpty(metadataQuery.getAttribute())) {
+    	HpcMetadataQueryAttributeMatch attribueMatch = metadataQuery.getAttributeMatch();
+	    if((attribueMatch == null || attribueMatch.equals(HpcMetadataQueryAttributeMatch.EXACT)) &&
+	       isEmpty(metadataQuery.getAttribute())) {
 		   validationResult.setMessage("Null metadata attribute in query [" + metadataQuery + "]");
 		   return validationResult;
 	    }
+	    if((attribueMatch != null && attribueMatch.equals(HpcMetadataQueryAttributeMatch.ANY)) &&
+	 	   !isEmpty(metadataQuery.getAttribute())) {
+	 	   validationResult.setMessage("Metadata attribute in not empty w/ match any attribute in query [" + metadataQuery + "]");
+	 	   return validationResult;
+	 	}
 	    if(isEmpty(metadataQuery.getValue())) {
 		   validationResult.setMessage("Null metadata value in query [" + metadataQuery + "]");
 		   return validationResult;        		   

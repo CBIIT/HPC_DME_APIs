@@ -51,6 +51,9 @@
 		<jxb:bindings node="//xsd:simpleType[@name='HpcMetadataQueryOperator']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator"/>
         </jxb:bindings>
+        <jxb:bindings node="//xsd:simpleType[@name='HpcMetadataQueryAttributeMatch']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryAttributeMatch"/>
+        </jxb:bindings>
 		<jxb:bindings node="//xsd:simpleType[@name='HpcCompoundMetadataQueryOperator']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator"/>
         </jxb:bindings>
