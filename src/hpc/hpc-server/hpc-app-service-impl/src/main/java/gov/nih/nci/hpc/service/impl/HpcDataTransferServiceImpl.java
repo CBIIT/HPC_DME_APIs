@@ -762,7 +762,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	     * 
 	     * @param dataTransferRequestId The data transfer request ID.
 	     * @param dataTransferType The data transfer type.
-	     * @param downloadFilePath The download file path to remove.
+	     * @param downloadFilePath The download file path to delete after download is complete.
 	     * @param path The data object path.
 	     * @param destinationLocation The download destination path.
 	     */

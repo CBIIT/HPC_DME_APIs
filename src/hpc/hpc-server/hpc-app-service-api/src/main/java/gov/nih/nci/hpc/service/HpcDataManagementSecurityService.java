@@ -132,7 +132,7 @@ public interface HpcDataManagementSecurityService
      * Get groups by search criteria.
      *
      * @param groupPattern The group pattern to search for (using case sensitive matching).
-     *                     Pattern supports '*' for any characters sequence and '?' for any character.
+     *                     SQL LIKE wildcards ('%', '_') are supported. 
      * @return A list of groups names matching the criteria.
      * @throws HpcException on service failure.
      */
