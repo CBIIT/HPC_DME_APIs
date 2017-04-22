@@ -90,9 +90,9 @@ public interface HpcSecurityRestService
      *
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
      * @param firstNamePattern (Optional) The first-name pattern to search for (using case insensitive matching).
-     *                                    Pattern supports '*' for any characters sequence and '?' for any character.
+     *                                    SQL LIKE wildcards ('%', '_') are supported. 
      * @param lastNamePattern (Optional) The last-name pattern to search for (using case insensitive matching).
-     *                                   Pattern supports '*' for any characters sequence and '?' for any character.
+     *                                   SQL LIKE wildcards ('%', '_') are supported. 
      * @param doc User DOC.                      
      * @return The REST service response w/ HpcUserListDTO entity.
      */
@@ -109,9 +109,9 @@ public interface HpcSecurityRestService
      *
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
      * @param firstNamePattern (Optional) The first-name pattern to search for (using case insensitive matching).
-     *                                    Pattern supports '*' for any characters sequence and '?' for any character.
+     *                                    SQL LIKE wildcards ('%', '_') are supported. 
      * @param lastNamePattern (Optional) The last-name pattern to search for (using case insensitive matching).
-     *                                   Pattern supports '*' for any characters sequence and '?' for any character.
+     *                                   SQL LIKE wildcards ('%', '_') are supported. 
      * @param doc User DOC 
      * @return The REST service response w/ HpcUserListDTO entity.
      */
@@ -176,7 +176,7 @@ public interface HpcSecurityRestService
      * Get groups by search criteria.
      *
      * @param groupPattern (Optional) The group pattern to search for (using case sensitive matching).
-     *                                Pattern supports '*' for any characters sequence and '?' for any character.
+     *                                SQL LIKE wildcards ('%', '_') are supported. 
      *                                If null - then all groups are returned.
      * @return The REST service response w/ HpcGroupListDTO entity.
      */

@@ -48,9 +48,9 @@ public interface HpcUserDAO
      *
      * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).
      * @param firstNamePattern (Optional) The first-name pattern to search for (using case sensitive matching).
-     *                                    Pattern supports '*' for any characters sequence and '?' for any character.
+     *                                    SQL LIKE wildcards ('%', '_') are supported. 
      * @param lastNamePattern (Optional) The last-name pattern to search for (using case sensitive matching).
-     *                                   Pattern supports '*' for any characters sequence and '?' for any character.
+     *                                   SQL LIKE wildcards ('%', '_') are supported. 
      * @param doc User DOC                       
      * @param active If set to true, only active users are searched. Otherwise, all users (active and inactive) are searched.
      * @return A list of users.
