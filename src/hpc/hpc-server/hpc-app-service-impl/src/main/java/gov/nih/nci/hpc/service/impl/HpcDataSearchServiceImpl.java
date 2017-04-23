@@ -214,8 +214,13 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     @Override
     public void deleteQuery(String nciUserId, String queryName) throws HpcException
     {
-    	userNamedQueryDAO.deleteQuery(nciUserId, queryName);
+    	// Input validation.
+    	if(getQuery(nciUserId, queryName) == null) {
+    	   throw new HpcException("Query doesn't exist: " + queryName, 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
     	
+    	userNamedQueryDAO.deleteQuery(nciUserId, queryName);
     }
 
     @Override
