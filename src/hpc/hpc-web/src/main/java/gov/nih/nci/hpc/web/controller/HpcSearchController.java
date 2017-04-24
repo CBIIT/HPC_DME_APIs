@@ -90,7 +90,7 @@ public class HpcSearchController extends AbstractHpcController {
 			WebClient client = HpcClientUtil.getWebClient(requestURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
 
-			Response restResponse = client.invoke("GET", serviceURL);
+			Response restResponse = client.invoke("GET", null);
 			if (restResponse.getStatus() == 200) {
 				HpcSearch search = new HpcSearch();
 				search.setSearchType(query.getNamedCompoundQuery().getCompoundQueryType().value());
