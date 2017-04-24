@@ -561,6 +561,17 @@ function validateAndSubmit()
 				}
 				valid = true;
 			}
+			else
+			{
+				var attrOperValue = document.getElementsByName("operator"+suffix)[0].value;	
+				var attrValueValue = document.getElementsByName("attrValue"+suffix)[0].value;
+				if(attrOperValue == "-1" || attrValueValue == null || attrValueValue.trim().length == 0)
+				{
+					alert("Invalid Valid criteria. Please enter operator and value");
+					return false;
+				}
+				valid = true;
+			}
 		}
 	}
 	if(!valid)
