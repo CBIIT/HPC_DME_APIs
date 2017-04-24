@@ -22,7 +22,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 import javax.ws.rs.core.Response;
 
-import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -42,6 +42,9 @@ public class HpcRegisterCollectionTest extends HpcRestServiceTest
 	
 	// Path attributes mocking a path that doesn't exist.
 	private static HpcPathAttributes pathNotExist = new HpcPathAttributes();
+	
+	// Path attributes mocking a path that doesn't exist.
+	private static HpcPathAttributes pathExistsAsFile = new HpcPathAttributes();
 	
     //---------------------------------------------------------------------//
     // Unit Tests
@@ -84,14 +87,13 @@ public class HpcRegisterCollectionTest extends HpcRestServiceTest
     }
     
     /**
-     * Test: Invalid collection path in registration request. Path equals to DOC base path
+     * Test: Invalid collection path in registration request. Path equals to DOC base path.
      * Expected: [400] Invalid collection path: /UnitTest. 
      */
     @Test
-    public void testInvalidCollectionPath() throws HpcException 
+    public void testInvalidCollectionPathDOC() throws HpcException 
     {
     	// Mock Integration / DAO services.
-    	when(dataManagementProxyMock.getPathAttributes(anyObject(), eq("/UnitTest"))).thenReturn(pathNotExist);
     	when(dataManagementProxyMock.getRelativePath(eq("/UnitTest"))).thenReturn("/UnitTest");
     	
     	// Invoke the service.
@@ -107,6 +109,51 @@ public class HpcRegisterCollectionTest extends HpcRestServiceTest
     	assertEquals(EXCEPTION_MSG, "Invalid collection path: /UnitTest", exceptionDTO.getMessage());
     }
     
+    /**
+     * Test: Invalid collection path in registration request. Path equals to root.
+     * Expected: [400] Invalid collection path: /. 
+     */
+    @Test
+    public void testInvalidCollectionPathRoot() throws HpcException 
+    {
+    	// Mock Integration / DAO services.
+    	when(dataManagementProxyMock.getRelativePath(eq("/"))).thenReturn("/");
+    	
+    	// Invoke the service.
+    	HpcCollectionRegistrationDTO collectionRegistrationRequest = 
+    	   createCollectionRegistrationRequest("ParentColllection", "text-val", null);
+    	Response response = dataManagementClient.registerCollection("/", collectionRegistrationRequest);
+
+    	// Assert expected result.
+    	assertEquals(HTTP_STATUS_CODE_MSG, 400, response.getStatus());
+    	HpcExceptionDTO exceptionDTO = response.readEntity(HpcExceptionDTO.class);
+    	assertEquals(HpcErrorType.INVALID_REQUEST_INPUT, exceptionDTO.getErrorType());
+    	assertEquals(EXCEPTION_MSG, "Invalid collection path: /", exceptionDTO.getMessage());
+    }
+    
+    /**
+     * Test: Invalid collection path in registration request. Path exists as a file.
+     * Expected: [400] Invalid collection path: /. 
+     */
+    @Test
+    public void testInvalidCollectionPathExistsAsFile() throws HpcException 
+    {
+    	// Mock Integration / DAO services.
+    	when(dataManagementProxyMock.getPathAttributes(anyObject(), eq("/UnitTest/file"))).thenReturn(pathExistsAsFile);
+    	when(dataManagementProxyMock.getRelativePath(eq("/UnitTest/file"))).thenReturn("/UnitTest/file");
+    	
+    	// Invoke the service.
+    	HpcCollectionRegistrationDTO collectionRegistrationRequest = 
+    	   createCollectionRegistrationRequest("ParentColllection", "text-val", null);
+    	Response response = dataManagementClient.registerCollection("/UnitTest/file", collectionRegistrationRequest);
+
+    	// Assert expected result.
+    	assertEquals(HTTP_STATUS_CODE_MSG, 400, response.getStatus());
+    	HpcExceptionDTO exceptionDTO = response.readEntity(HpcExceptionDTO.class);
+    	assertEquals(HpcErrorType.INVALID_REQUEST_INPUT, exceptionDTO.getErrorType());
+    	assertEquals(EXCEPTION_MSG, "Path already exists as a file: /UnitTest/file", exceptionDTO.getMessage());
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
@@ -114,13 +161,18 @@ public class HpcRegisterCollectionTest extends HpcRestServiceTest
     /**
      * Init static path attributes used in mocking.
      */
-    @AfterClass
+    @BeforeClass
     public static void initPathAttributes()  
     {
     	pathNotExist.setExists(false);
     	pathNotExist.setIsAccessible(true);
     	pathNotExist.setIsDirectory(false);
     	pathNotExist.setIsFile(false);
+    	
+    	pathExistsAsFile.setExists(true);
+    	pathExistsAsFile.setIsAccessible(true);
+    	pathExistsAsFile.setIsDirectory(false);
+    	pathExistsAsFile.setIsFile(true);
     }
     
     /** 

@@ -152,9 +152,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	                              HpcErrorType.INVALID_REQUEST_INPUT); 
     	}
     	
-    	// Validate the path is not root
+    	// Validate the path is not root.
     	if(relativePath.equals("/")) {
-    	   throw new HpcException("Invalid path: " + path, 
+    	   throw new HpcException("Invalid collection path: " + path, 
 	                              HpcErrorType.INVALID_REQUEST_INPUT); 
     	}
     	
@@ -172,7 +172,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	   }
     	}
     	
-    	//  Validate the parent directory exists.
+    	// Validate the parent directory exists.
     	if(!dataManagementProxy.isPathParentDirectory(authenticatedToken, path)) {
     		throw new HpcException("Invalid collection path. Parent directory doesn't exist: " + path, 
                                    HpcRequestRejectReason.INVALID_DATA_OBJECT_PATH);
