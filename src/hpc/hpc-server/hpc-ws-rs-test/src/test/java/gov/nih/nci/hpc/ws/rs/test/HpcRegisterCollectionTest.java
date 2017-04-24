@@ -85,7 +85,7 @@ public class HpcRegisterCollectionTest extends HpcRestServiceTest
     
     /**
      * Test: Invalid collection path in registration request. Path equals to DOC base path
-     * Expected: [400] . 
+     * Expected: [400] Invalid collection path: /UnitTest. 
      */
     @Test
     public void testInvalidCollectionPath() throws HpcException 
