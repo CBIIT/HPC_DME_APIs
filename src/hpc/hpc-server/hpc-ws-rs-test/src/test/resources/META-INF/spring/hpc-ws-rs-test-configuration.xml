@@ -26,13 +26,16 @@
 		<constructor-arg value="src/test/resources/dataHierarchyDefinitions.json" />
 	</bean>
 	<bean id="hpcDocBasePath" class="gov.nih.nci.hpc.service.impl.HpcDocBasePath">
-		<constructor-arg value="UNIT_TEST=/UnitTest" index="0" />
+		<property name="docBasePath" value="UNIT_TEST=/UnitTest" />
 	</bean>
 	<bean id="hpcDataManagementAuthenticator" class="gov.nih.nci.hpc.service.impl.HpcDataManagementAuthenticator" />
 	<bean id="hpcSystemAccountLocator" class="gov.nih.nci.hpc.service.impl.HpcSystemAccountLocator" />
-	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl" />
-	<bean id="hpcEventService" class="gov.nih.nci.hpc.service.impl.HpcEventServiceImpl" />
-	
+	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl" >
+		<constructor-arg value="rods rodsadmin" />
+	</bean>
+	<bean id="hpcEventService" class="gov.nih.nci.hpc.service.impl.HpcEventServiceImpl" >
+		<constructor-arg value="false" />
+	</bean>
 	<!--  HPC Business Services Beans -->
 	<bean id="hpcDataManagementBusService" class="gov.nih.nci.hpc.bus.impl.HpcDataManagementBusServiceImpl" />
 	<util:map id="hpcDataTransferProxies" 
