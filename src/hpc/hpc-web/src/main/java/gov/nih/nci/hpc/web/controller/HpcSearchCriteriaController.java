@@ -50,6 +50,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryAttributeMatch;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
@@ -343,7 +344,10 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			String level = search.getLevel()[i];
 			if (!attrName.isEmpty() && !attrValue.isEmpty() && !operator.isEmpty()) {
 				HpcMetadataQuery criteria = new HpcMetadataQuery();
-				criteria.setAttribute(attrName);
+				if(attrName.equals("-1"))
+					criteria.setAttributeMatch(HpcMetadataQueryAttributeMatch.ANY);
+				else
+					criteria.setAttribute(attrName);
 				criteria.setValue(attrValue);
 				criteria.setOperator(HpcMetadataQueryOperator.fromValue(operator));
 				if (level != null && !level.equals("-1")) {
