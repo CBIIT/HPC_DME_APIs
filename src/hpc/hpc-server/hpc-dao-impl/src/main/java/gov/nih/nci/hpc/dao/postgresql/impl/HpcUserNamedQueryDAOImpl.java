@@ -335,8 +335,8 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 	private HpcMetadataQuery metadataQueryFromJSON(JSONObject jsonMetadataQuery) 
     {
     	HpcMetadataQuery metadataQuery = new HpcMetadataQuery();
-		
-    	metadataQuery.setAttribute(jsonMetadataQuery.get("attribute").toString());
+		if(jsonMetadataQuery.get("attribute") != null)
+			metadataQuery.setAttribute(jsonMetadataQuery.get("attribute").toString());
     	metadataQuery.setOperator(HpcMetadataQueryOperator.fromValue(
     			                  jsonMetadataQuery.get("operator").toString()));
     	metadataQuery.setValue(jsonMetadataQuery.get("value").toString());
