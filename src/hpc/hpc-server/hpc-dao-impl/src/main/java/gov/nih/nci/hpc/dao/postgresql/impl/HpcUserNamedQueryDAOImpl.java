@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryAttributeMatch;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
@@ -245,12 +246,18 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 		JSONArray jsonQueries = new JSONArray();
 		for(HpcMetadataQuery nestedQuery : compoundMetadataQuery.getQueries()) {
 			JSONObject jsonQuery = new JSONObject();
-			jsonQuery.put("attribute", nestedQuery.getAttribute());
+			if(nestedQuery.getAttribute() != null) {
+			   jsonQuery.put("attribute", nestedQuery.getAttribute());
+			}
 			jsonQuery.put("operator", nestedQuery.getOperator().value());
 			jsonQuery.put("value", nestedQuery.getValue());
 			if(nestedQuery.getLevelFilter() != null) {
 			   jsonQuery.put("level", nestedQuery.getLevelFilter().getLevel());
+			   jsonQuery.put("levelLabel", nestedQuery.getLevelFilter().getLabel());
 			   jsonQuery.put("levelOperator", nestedQuery.getLevelFilter().getOperator().value());
+			}
+			if(nestedQuery.getAttributeMatch() != null) {
+			   jsonQuery.put("attributeMatch", nestedQuery.getAttributeMatch().value());
 			}
 			
 			jsonQueries.add(jsonQuery);
@@ -335,19 +342,33 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 	private HpcMetadataQuery metadataQueryFromJSON(JSONObject jsonMetadataQuery) 
     {
     	HpcMetadataQuery metadataQuery = new HpcMetadataQuery();
-		if(jsonMetadataQuery.get("attribute") != null)
-			metadataQuery.setAttribute(jsonMetadataQuery.get("attribute").toString());
+		
+    	Object attribute = jsonMetadataQuery.get("attribute");
+    	if(attribute != null) {
+    	   metadataQuery.setAttribute(attribute.toString());
+    	}
     	metadataQuery.setOperator(HpcMetadataQueryOperator.fromValue(
     			                  jsonMetadataQuery.get("operator").toString()));
     	metadataQuery.setValue(jsonMetadataQuery.get("value").toString());
     	Object level = jsonMetadataQuery.get("level");
+    	Object levelLabel = jsonMetadataQuery.get("levelLabel");
     	Object levelOperator = jsonMetadataQuery.get("levelOperator");
-    	if(level != null && levelOperator != null) {
+    	if((level != null || levelLabel != null) && levelOperator != null) {
     	   HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
-    	   levelFilter.setLevel(Integer.valueOf(level.toString()));
+    	   if(level != null) {
+    	      levelFilter.setLevel(Integer.valueOf(level.toString()));
+    	   }
+    	   if(levelLabel != null) {
+    		  levelFilter.setLabel(levelLabel.toString()); 
+    	   }
     	   levelFilter.setOperator(HpcMetadataQueryOperator.fromValue(
     			                   jsonMetadataQuery.get("levelOperator").toString()));
     	   metadataQuery.setLevelFilter(levelFilter);
+    	}
+    	
+    	Object attributeMatch = jsonMetadataQuery.get("attributeMatch");
+    	if(attributeMatch != null) {
+    		metadataQuery.setAttributeMatch(HpcMetadataQueryAttributeMatch.fromValue(attributeMatch.toString()));	
     	}
     	
     	return metadataQuery;
