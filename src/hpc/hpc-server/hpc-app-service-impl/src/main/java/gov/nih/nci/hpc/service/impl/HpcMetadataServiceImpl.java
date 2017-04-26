@@ -641,7 +641,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     private void addMetadataEntry(List<HpcMetadataEntry> metadataEntries,
     		                      HpcMetadataEntry entry)
     {
-    	if(entry.getAttribute() != null && entry.getValue() != null) {
+    	if(entry.getAttribute() != null && (entry.getValue() != null && !entry.getValue().isEmpty())) {
     	   metadataEntries.add(entry);
     	}
     }
