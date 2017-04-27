@@ -1,12 +1,11 @@
+/*******************************************************************************
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc.
+ *  
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
+ ******************************************************************************/
 package gov.nih.nci.hpc.cli;
-
-import gov.nih.nci.hpc.cli.util.Constants;
-import gov.nih.nci.hpc.cli.util.HpcClientUtil;
-import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
-import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 
 import java.io.File;
 import java.io.FileReader;
@@ -18,10 +17,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -36,6 +34,14 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import gov.nih.nci.hpc.cli.util.Constants;
+import gov.nih.nci.hpc.cli.util.HpcClientUtil;
+import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
+import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
+
 @Component
 public class HPCPermissions extends HPCBatchClient {
 	@Autowired
@@ -45,9 +51,9 @@ public class HPCPermissions extends HPCBatchClient {
 		super();
 	}
 
-	protected void initializeLog()
-	{
-		logFile = logDir + File.separator + "putPermissions_errorLog" + new SimpleDateFormat("yyyyMMddhhmm'.txt'").format(new Date());
+	protected void initializeLog() {
+		logFile = logDir + File.separator + "putPermissions_errorLog"
+				+ new SimpleDateFormat("yyyyMMddhhmm'.txt'").format(new Date());
 		logRecordsFile = logDir + File.separator + "putPermissions_errorRecords"
 				+ new SimpleDateFormat("yyyyMMddhhmm'.csv'").format(new Date());
 		File file1 = new File(logFile);
@@ -68,9 +74,9 @@ public class HPCPermissions extends HPCBatchClient {
 			System.out.println("Failed to initialize Batch process: " + e.getMessage());
 			e.printStackTrace();
 		}
-		
-	}	
-	
+
+	}
+
 	protected boolean processFile(String fileName, String userId, String password) {
 		boolean success = true;
 		FileReader fileReader = null;
@@ -90,88 +96,54 @@ public class HPCPermissions extends HPCBatchClient {
 			// the header
 			Map<String, List<HpcUserPermission>> userPermissions = new HashMap<String, List<HpcUserPermission>>();
 			Map<String, List<HpcGroupPermission>> groupPermissions = new HashMap<String, List<HpcGroupPermission>>();
-			String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath, hpcCertPassword);
+			Map<String, CSVRecord> records = new HashMap<String, CSVRecord>();
+			Map<String, String> pathTypes = new HashMap<String, String>();
+			String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath,
+					hpcCertPassword);
 			for (int i = 0; i < csvRecords.size(); i++) {
 				CSVRecord record = csvRecords.get(i);
 				String path = record.get(Constants.PATH);
 				String ruserId = record.get(Constants.USER_ID);
+				String type = record.get(Constants.TYPE);
 				String rGroupId = record.get(Constants.GROUP_ID);
 				String permission = record.get(Constants.PERMISSION);
-				if(ruserId != null && !ruserId.isEmpty())
-				{
+				pathTypes.put(path, type);
+				records.put(path, record);
+				if (ruserId != null && !ruserId.isEmpty()) {
 					List<HpcUserPermission> pathPermission = userPermissions.get(path);
 					if (pathPermission == null)
 						pathPermission = new ArrayList<HpcUserPermission>();
 					HpcUserPermission userPermission = new HpcUserPermission();
 					userPermission.setUserId(ruserId);
-					userPermission.setPermission(HpcPermission.fromValue(permission));
+					userPermission.setPermission(HpcPermission.valueOf(permission));
 					pathPermission.add(userPermission);
 					userPermissions.put(path, pathPermission);
 				}
-				if(rGroupId != null && !rGroupId.isEmpty())
-				{
+				if (rGroupId != null && !rGroupId.isEmpty()) {
 					List<HpcGroupPermission> pathPermission = groupPermissions.get(path);
 					if (pathPermission == null)
 						pathPermission = new ArrayList<HpcGroupPermission>();
 					HpcGroupPermission groupPermission = new HpcGroupPermission();
-					groupPermission.setGroupName(ruserId);
-					groupPermission.setPermission(HpcPermission.fromValue(permission));
+					groupPermission.setGroupName(rGroupId);
+					groupPermission.setPermission(HpcPermission.valueOf(permission));
 					pathPermission.add(groupPermission);
 					groupPermissions.put(path, pathPermission);
 				}
-				List<HpcEntityPermissionsDTO> dtos = new ArrayList<HpcEntityPermissionsDTO>();
-				HpcEntityPermissionsDTO hpcPermissionDTO = new HpcEntityPermissionsDTO();
-				if(userPermissions.get(path) != null && userPermissions.get(path).size() > 0)
-					hpcPermissionDTO.getUserPermissions().addAll(userPermissions.get(path));
-				if(groupPermissions.get(path) != null && groupPermissions.get(path).size() > 0)
-					hpcPermissionDTO.getGroupPermissions().addAll(groupPermissions.get(path));
-				dtos.add(hpcPermissionDTO);
-				//System.out.println(dtos);
-				RestTemplate restTemplate = HpcClientUtil.getRestTemplate(hpcCertPath, hpcCertPassword);
-				HttpHeaders headers = new HttpHeaders();
-				String token = DatatypeConverter.printBase64Binary((userId + ":" + password).getBytes());
-				//headers.add("Authorization", "Basic " + token);
-				headers.add("Authorization", "Bearer " + authToken);
-				List<MediaType> mediaTypeList = new ArrayList<MediaType>();
-				mediaTypeList.add(MediaType.APPLICATION_JSON);
-				headers.setAccept(mediaTypeList);
-				HttpEntity<?> entity = new HttpEntity<Object>(dtos, headers);
-				try {
-					//HttpEntity<HpcEntityPermissionResponseListDTO> response = restTemplate.postForEntity(hpcServerURL + "/acl", entity, HpcEntityPermissionResponseListDTO.class);
-					restTemplate.postForEntity(hpcServerURL + "/collection" + path + "/acl", entity, null);
-				} catch (HttpStatusCodeException e) {
-					success = false;
-					String message = "Failed to process record due to: " + e.getMessage();
-					//System.out.println(message);
-					addErrorToLog(message, i + 1);
-					StringWriter sw = new StringWriter();
-					e.printStackTrace(new PrintWriter(sw));
-					String exceptionAsString = sw.toString();
-					addErrorToLog(exceptionAsString, i + 1);
-					addRecordToLog(record, headersMap);
-
-				} catch (RestClientException e) {
-					success = false;
-					String message = "Failed to process record due to: " + e.getMessage();
-					//System.out.println(message);
-					addErrorToLog(message, i + 1);
-					StringWriter sw = new StringWriter();
-					e.printStackTrace(new PrintWriter(sw));
-					String exceptionAsString = sw.toString();
-					addErrorToLog(exceptionAsString, i + 1);
-					addRecordToLog(record, headersMap);
-				} catch (Exception e) {
-					success = false;
-					String message = "Failed to process record due to: " + e.getMessage();
-					//System.out.println(message);
-					addErrorToLog(message, i + 1);
-					StringWriter sw = new StringWriter();
-					e.printStackTrace(new PrintWriter(sw));
-					String exceptionAsString = sw.toString();
-					addErrorToLog(exceptionAsString, i + 1);
-					addRecordToLog(record, headersMap);
-				}
 			}
+			Iterator permissionsIterator = userPermissions.keySet().iterator();
+			while (permissionsIterator.hasNext()) {
+				String path = (String) permissionsIterator.next();
+				updatePermissions(pathTypes.get(path), path, authToken, userPermissions.get(path),
+						groupPermissions.get(path), records.get(path), headersMap);
+				groupPermissions.remove(path);
+			}
+			Iterator groupPermissionsIterator = groupPermissions.keySet().iterator();
+			while (groupPermissionsIterator.hasNext()) {
+				String path = (String) groupPermissionsIterator.next();
+				updatePermissions(pathTypes.get(path), path, authToken, null, groupPermissions.get(path),
+						records.get(path), headersMap);
+			}
+
 		} catch (Exception e) {
 			System.out.println("Cannot read the input file");
 			e.printStackTrace();
@@ -186,6 +158,61 @@ public class HPCPermissions extends HPCBatchClient {
 		}
 		return success;
 
+	}
+
+	private boolean updatePermissions(String type, String path, String authToken,
+			List<HpcUserPermission> userPermissions, List<HpcGroupPermission> groupPermissions, CSVRecord record,
+			Map<String, Integer> headersMap) throws IOException {
+		boolean success = true;
+		HpcEntityPermissionsDTO dto = new HpcEntityPermissionsDTO();
+		if (userPermissions != null && userPermissions.size() > 0)
+			dto.getUserPermissions().addAll(userPermissions);
+		if (groupPermissions != null && groupPermissions.size() > 0)
+			dto.getGroupPermissions().addAll(groupPermissions);
+		RestTemplate restTemplate = HpcClientUtil.getRestTemplate(hpcCertPath, hpcCertPassword);
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Authorization", "Bearer " + authToken);
+		List<MediaType> mediaTypeList = new ArrayList<MediaType>();
+		mediaTypeList.add(MediaType.APPLICATION_JSON);
+		headers.setAccept(mediaTypeList);
+		HttpEntity<?> entity = new HttpEntity<Object>(dto, headers);
+		try {
+			String url = hpcServerURL + (type.equalsIgnoreCase("collection") ? "/collection" : "/dataObject") + path
+					+ "/acl";
+			restTemplate.postForEntity(url, entity, null);
+		} catch (HttpStatusCodeException e) {
+			success = false;
+			String message = "Failed to process record due to: " + e.getMessage();
+			// System.out.println(message);
+			addErrorToLog(path, message);
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String exceptionAsString = sw.toString();
+			addErrorToLog(path, exceptionAsString);
+			addRecordToLog(record, headersMap);
+
+		} catch (RestClientException e) {
+			success = false;
+			String message = "Failed to process record due to: " + e.getMessage();
+			// System.out.println(message);
+			addErrorToLog(path, message);
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String exceptionAsString = sw.toString();
+			addErrorToLog(path, exceptionAsString);
+			addRecordToLog(record, headersMap);
+		} catch (Exception e) {
+			success = false;
+			String message = "Failed to process record due to: " + e.getMessage();
+			// System.out.println(message);
+			addErrorToLog(path, message);
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String exceptionAsString = sw.toString();
+			addErrorToLog(path, exceptionAsString);
+			addRecordToLog(record, headersMap);
+		}
+		return success;
 	}
 
 }

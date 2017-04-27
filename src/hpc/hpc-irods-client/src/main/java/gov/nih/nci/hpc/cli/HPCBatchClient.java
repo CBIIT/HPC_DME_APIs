@@ -1,17 +1,20 @@
+/*******************************************************************************
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc.
+ *  
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
+ ******************************************************************************/
 package gov.nih.nci.hpc.cli;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +45,7 @@ public abstract class HPCBatchClient {
 
 	}
 
-	protected void preprocess()
-	{
+	protected void preprocess() {
 		hpcServerURL = configProperties.getProperty("hpc.server.url");
 		hpcDataService = configProperties.getProperty("hpc.dataobject.service");
 		hpcCertPath = configProperties.getProperty("hpc.ssl.keystore.path");
@@ -51,51 +53,44 @@ public abstract class HPCBatchClient {
 		logDir = configProperties.getProperty("hpc.error-log.dir");
 		loginFile = configProperties.getProperty("hpc.login.credentials");
 		hpcCollectionService = configProperties.getProperty("hpc.collection.service");
-		try
-		{
+		try {
 			String threadStr = configProperties.getProperty("hpc.job.thread.count");
 			threadCount = Integer.parseInt(threadStr);
-		}
-		catch(Exception e)
-		{
+		} catch (Exception e) {
 			threadCount = 3;
 		}
-		
+
 		initializeLog();
 	}
-	
+
 	protected abstract void initializeLog();
-	
+
 	public String process(String fileName) {
 		preprocess();
 		BufferedReader bufferedReader = null;
 		try {
 			String userId = null;
 			String password = null;
-			if(loginFile == null)
-			{
+			if (loginFile == null) {
 				jline.console.ConsoleReader reader = new jline.console.ConsoleReader();
 				reader.setExpandEvents(false);
 				System.out.println("Enter NCI Login UserId:");
 				userId = reader.readLine();
-	
+
 				System.out.println("Enter NCI Login password:");
 				password = reader.readLine(new Character('*'));
 				System.out.println("Initiating batch process as NCI Login UserId:" + userId);
-			}
-			else
-			{
+			} else {
 				bufferedReader = new BufferedReader(new FileReader(loginFile));
 				String line = bufferedReader.readLine();
-				if(line.indexOf(":") == -1)
-					return "Invalid Login credentials in "+loginFile;
-				else
-				{
-					userId = line.substring(0,  line.indexOf(":"));
-					password = line.substring(line.indexOf(":")+1);
+				if (line.indexOf(":") == -1)
+					return "Invalid Login credentials in " + loginFile;
+				else {
+					userId = line.substring(0, line.indexOf(":"));
+					password = line.substring(line.indexOf(":") + 1);
 				}
 			}
-			
+
 			boolean success = processFile(fileName, userId, password);
 			if (success)
 				return "Batch process Successful";
@@ -105,8 +100,7 @@ public abstract class HPCBatchClient {
 			e.printStackTrace();
 			return "Failed to run batch registration";
 		} finally {
-			if(bufferedReader != null)
-			{
+			if (bufferedReader != null) {
 				try {
 					bufferedReader.close();
 				} catch (IOException e) {
@@ -144,6 +138,11 @@ public abstract class HPCBatchClient {
 
 	protected void addErrorToLog(String error, int recordLineNumber) throws IOException {
 		fileLogWriter.write(recordLineNumber + ": " + error);
+		fileLogWriter.write("\n");
+	}
+
+	protected void addErrorToLog(String path, String error) throws IOException {
+		fileLogWriter.write(path + ": " + error);
 		fileLogWriter.write("\n");
 	}
 

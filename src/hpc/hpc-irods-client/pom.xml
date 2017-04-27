@@ -167,6 +167,26 @@
 		     <artifactId>jaxb-api</artifactId>
 		     <version>2.2.11</version>
 		 </dependency>
+		<dependency>
+			<groupId>org.globusonline</groupId>
+			<artifactId>java_nexus_client</artifactId>
+			<version>0.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.globusonline</groupId>
+			<artifactId>TransferAPIClient</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpkix-jdk15on</artifactId>
+			<version>1.52</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on</artifactId>
+			<version>1.52</version>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc.
+ *  
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
+ ******************************************************************************/
 package gov.nih.nci.hpc.cli;
 
 /*
@@ -37,51 +44,62 @@ import org.easybatch.core.job.JobReportFormatter;
  */
 public class HpcJobReportFormatter implements JobReportFormatter<String> {
 
-    @Override
-    public String formatReport(JobReport jobReport) {
-        final StringBuilder sb = new StringBuilder("Job Report:");
-        sb.append(LINE_SEPARATOR).append("===========");
+	@Override
+	public String formatReport(JobReport jobReport) {
+		final StringBuilder sb = new StringBuilder("Job Report:");
+		sb.append(LINE_SEPARATOR).append("===========");
 
-        /*
-         * Job status
-         */
-        sb.append(LINE_SEPARATOR).append("Status: ").append(jobReport.getStatus());
+		/*
+		 * Job status
+		 */
+		sb.append(LINE_SEPARATOR).append("Status: ").append(jobReport.getStatus());
 
-        /*
-         * Job parameters
-         */
-        JobParameters parameters = jobReport.getParameters();
-        sb.append(LINE_SEPARATOR).append("Parameters:");
-        sb.append(LINE_SEPARATOR).append("\tName = ").append(parameters.getName());
-        sb.append(LINE_SEPARATOR).append("\tExecution Id = ").append(parameters.getExecutionId());
-//        sb.append(LINE_SEPARATOR).append("\tData source = ").append(parameters.getDataSource());
-//        sb.append(LINE_SEPARATOR).append("\tSkip = ").append(parameters.getSkip());
-//        sb.append(LINE_SEPARATOR).append("\tLimit = ").append(jobReport.getFormattedLimit());
-//        sb.append(LINE_SEPARATOR).append("\tTimeout = ").append(jobReport.getFormattedTimeout());
-//        sb.append(LINE_SEPARATOR).append("\tStrict mode = ").append(parameters.isStrictMode());
-//        sb.append(LINE_SEPARATOR).append("\tSilent mode = ").append(parameters.isSilentMode());
-//        sb.append(LINE_SEPARATOR).append("\tKeep alive = ").append(parameters.isKeepAlive());
-//        sb.append(LINE_SEPARATOR).append("\tJmx mode = ").append(parameters.isJmxMode());
+		/*
+		 * Job parameters
+		 */
+		JobParameters parameters = jobReport.getParameters();
+		sb.append(LINE_SEPARATOR).append("Parameters:");
+		sb.append(LINE_SEPARATOR).append("\tName = ").append(parameters.getName());
+		sb.append(LINE_SEPARATOR).append("\tExecution Id = ").append(parameters.getExecutionId());
+		// sb.append(LINE_SEPARATOR).append("\tData source =
+		// ").append(parameters.getDataSource());
+		// sb.append(LINE_SEPARATOR).append("\tSkip =
+		// ").append(parameters.getSkip());
+		// sb.append(LINE_SEPARATOR).append("\tLimit =
+		// ").append(jobReport.getFormattedLimit());
+		// sb.append(LINE_SEPARATOR).append("\tTimeout =
+		// ").append(jobReport.getFormattedTimeout());
+		// sb.append(LINE_SEPARATOR).append("\tStrict mode =
+		// ").append(parameters.isStrictMode());
+		// sb.append(LINE_SEPARATOR).append("\tSilent mode =
+		// ").append(parameters.isSilentMode());
+		// sb.append(LINE_SEPARATOR).append("\tKeep alive =
+		// ").append(parameters.isKeepAlive());
+		// sb.append(LINE_SEPARATOR).append("\tJmx mode =
+		// ").append(parameters.isJmxMode());
 
-        /*
-         * Job metrics
-         */
-        sb.append(LINE_SEPARATOR).append("Metrics:");
-        sb.append(LINE_SEPARATOR).append("\tStart time = ").append(jobReport.getFormattedStartTime());
-        sb.append(LINE_SEPARATOR).append("\tEnd time = ").append(jobReport.getFormattedEndTime());
-        sb.append(LINE_SEPARATOR).append("\tDuration = ").append(jobReport.getFormattedDuration());
-        sb.append(LINE_SEPARATOR).append("\tTotal count = ").append(jobReport.getFormattedTotalCount());
-        sb.append(LINE_SEPARATOR).append("\tSkipped count = ").append(jobReport.getFormattedSkippedCount());
-        //sb.append(LINE_SEPARATOR).append("\tFiltered count = ").append(jobReport.getFormattedFilteredCount());
-        sb.append(LINE_SEPARATOR).append("\tError count = ").append(jobReport.getFormattedErrorCount());
-        sb.append(LINE_SEPARATOR).append("\tSuccess count = ").append(jobReport.getFormattedSuccessCount());
-        sb.append(LINE_SEPARATOR).append("\tRecord processing time average = ").append(jobReport.getFormattedRecordProcessingTimeAverage());
+		/*
+		 * Job metrics
+		 */
+		sb.append(LINE_SEPARATOR).append("Metrics:");
+		sb.append(LINE_SEPARATOR).append("\tStart time = ").append(jobReport.getFormattedStartTime());
+		sb.append(LINE_SEPARATOR).append("\tEnd time = ").append(jobReport.getFormattedEndTime());
+		sb.append(LINE_SEPARATOR).append("\tDuration = ").append(jobReport.getFormattedDuration());
+		sb.append(LINE_SEPARATOR).append("\tTotal count = ").append(jobReport.getFormattedTotalCount());
+		sb.append(LINE_SEPARATOR).append("\tSkipped count = ").append(jobReport.getFormattedSkippedCount());
+		// sb.append(LINE_SEPARATOR).append("\tFiltered count =
+		// ").append(jobReport.getFormattedFilteredCount());
+		sb.append(LINE_SEPARATOR).append("\tError count = ").append(jobReport.getFormattedErrorCount());
+		sb.append(LINE_SEPARATOR).append("\tSuccess count = ").append(jobReport.getFormattedSuccessCount());
+		sb.append(LINE_SEPARATOR).append("\tRecord processing time average = ")
+				.append(jobReport.getFormattedRecordProcessingTimeAverage());
 
-        /*
-         * Job result (if any)
-         */
-        //sb.append(LINE_SEPARATOR).append("Result: ").append(jobReport.getFormattedResult());
+		/*
+		 * Job result (if any)
+		 */
+		// sb.append(LINE_SEPARATOR).append("Result:
+		// ").append(jobReport.getFormattedResult());
 
-        return sb.toString();
-    }
+		return sb.toString();
+	}
 }

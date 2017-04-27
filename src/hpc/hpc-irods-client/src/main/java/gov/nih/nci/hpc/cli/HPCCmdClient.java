@@ -1,19 +1,18 @@
+/*******************************************************************************
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc.
+ *  
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
+ ******************************************************************************/
 package gov.nih.nci.hpc.cli;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +23,8 @@ public abstract class HPCCmdClient {
 	@Autowired
 	protected HpcConfigProperties configProperties;
 	protected String hpcServerURL;
+	protected String globusNexusURL;
+	protected String globusURL;
 	protected String hpcCertPath;
 	protected String hpcCertPassword;
 	protected String hpcDataService;
@@ -32,6 +33,7 @@ public abstract class HPCCmdClient {
 	protected FileWriter fileLogWriter = null;
 	protected FileWriter fileRecordWriter = null;
 	protected String loginFile = null;
+	protected String globusLoginFile = null;
 	protected String logFile = null;
 	protected String logRecordsFile = null;
 	protected boolean headerAdded = false;
@@ -40,51 +42,50 @@ public abstract class HPCCmdClient {
 
 	}
 
-	protected void preprocess()
-	{
+	protected void preprocess() {
+		hpcServerURL = configProperties.getProperty("hpc.server.url");
+		globusNexusURL = configProperties.getProperty("globus.nexus.url");
+		globusURL = configProperties.getProperty("globus.url");
 		hpcServerURL = configProperties.getProperty("hpc.server.url");
 		hpcDataService = configProperties.getProperty("hpc.dataobject.service");
 		hpcCertPath = configProperties.getProperty("hpc.ssl.keystore.path");
 		hpcCertPassword = configProperties.getProperty("hpc.ssl.keystore.password");
 		logDir = configProperties.getProperty("hpc.error-log.dir");
 		loginFile = configProperties.getProperty("hpc.login.credentials");
+		globusLoginFile = configProperties.getProperty("hpc.globus.login.credentials");
 		hpcCollectionService = configProperties.getProperty("hpc.collection.service");
-		
+
 		initializeLog();
 	}
-	
+
 	protected abstract void initializeLog();
-	
-	public String process(String cmd, String criteria, String outputFile, String format, String detail) {
+
+	public String process(String cmd, Map<String, String> criteria, String outputFile, String format, String detail) {
 		preprocess();
 		BufferedReader bufferedReader = null;
 		try {
 			String userId = null;
 			String password = null;
-			if(loginFile == null)
-			{
+			if (loginFile == null) {
 				jline.console.ConsoleReader reader = new jline.console.ConsoleReader();
 				reader.setExpandEvents(false);
 				System.out.println("Enter NCI Login UserId:");
 				userId = reader.readLine();
-	
+
 				System.out.println("Enter NCI Login password:");
 				password = reader.readLine(new Character('*'));
-			}
-			else
-			{
+			} else {
 				bufferedReader = new BufferedReader(new FileReader(loginFile));
 				String line = bufferedReader.readLine();
-				if(line.indexOf(":") == -1)
-					return "Invalid Login credentials in "+loginFile;
-				else
-				{
-					userId = line.substring(0,  line.indexOf(":"));
-					password = line.substring(line.indexOf(":")+1);
+				if (line.indexOf(":") == -1)
+					return "Invalid Login credentials in " + loginFile;
+				else {
+					userId = line.substring(0, line.indexOf(":"));
+					password = line.substring(line.indexOf(":") + 1);
 				}
 			}
 			boolean success = processCmd(cmd, criteria, outputFile, format, detail, userId, password);
-				
+
 			if (success)
 				return "Cmd process Successful";
 			else
@@ -93,8 +94,7 @@ public abstract class HPCCmdClient {
 			e.printStackTrace();
 			return "Failed to run command";
 		} finally {
-			if(bufferedReader != null)
-			{
+			if (bufferedReader != null) {
 				try {
 					bufferedReader.close();
 				} catch (IOException e) {
@@ -106,7 +106,8 @@ public abstract class HPCCmdClient {
 		}
 	}
 
-	protected abstract boolean processCmd(String cmd, String criteria, String outputFile, String format, String detail, String userId, String password);
+	protected abstract boolean processCmd(String cmd, Map<String, String> criteria, String outputFile, String format,
+			String detail, String userId, String password);
 
 	protected void postProcess() {
 		try {
