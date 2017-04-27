@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc.
+ *  
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
+ ******************************************************************************/
 package gov.nih.nci.hpc.cli.util;
 
 import java.io.FileInputStream;
@@ -115,7 +122,8 @@ public class HpcClientUtil {
 		return client;
 	}
 
-	public static String getAuthenticationToken(String userId, String passwd, String hpcServerURL, String hpcCertPath, String hpcCertPassword) {
+	public static String getAuthenticationToken(String userId, String passwd, String hpcServerURL, String hpcCertPath,
+			String hpcCertPassword) {
 
 		WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/authenticate", hpcCertPath, hpcCertPassword);
 		String token = DatatypeConverter.printBase64Binary((userId + ":" + passwd).getBytes());

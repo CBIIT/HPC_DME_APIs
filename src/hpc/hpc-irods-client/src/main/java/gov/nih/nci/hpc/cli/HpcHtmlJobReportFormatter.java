@@ -1,4 +1,14 @@
+/*******************************************************************************
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc.
+ *  
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
+ ******************************************************************************/
 package gov.nih.nci.hpc.cli;
+
+import java.io.StringWriter;
+import java.util.Properties;
 
 /*
  * The MIT License
@@ -31,9 +41,6 @@ import org.apache.velocity.context.Context;
 import org.easybatch.core.job.JobReport;
 import org.easybatch.core.job.JobReportFormatter;
 
-import java.io.StringWriter;
-import java.util.Properties;
-
 /**
  * Format a report into HTML format.
  *
@@ -41,31 +48,32 @@ import java.util.Properties;
  */
 public class HpcHtmlJobReportFormatter implements JobReportFormatter<String> {
 
-    /**
-     * The template engine to render reports.
-     */
-    private VelocityEngine velocityEngine;
+	/**
+	 * The template engine to render reports.
+	 */
+	private VelocityEngine velocityEngine;
 
-    public HpcHtmlJobReportFormatter() {
-        Properties properties = new Properties();
-        properties.put("resource.loader", "class");
-        properties.put("class.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
-        velocityEngine = new VelocityEngine(properties);
-        velocityEngine.init();
-    }
+	public HpcHtmlJobReportFormatter() {
+		Properties properties = new Properties();
+		properties.put("resource.loader", "class");
+		properties.put("class.resource.loader.class",
+				"org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+		velocityEngine = new VelocityEngine(properties);
+		velocityEngine.init();
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String formatReport(final JobReport jobReport) {
-        Template template = velocityEngine.getTemplate("templates/HtmlReport.vm");
-        StringWriter stringWriter = new StringWriter();
-        Context context = new VelocityContext();
-        context.put("report", jobReport);
-        context.put("properties", jobReport.getParameters().getSystemProperties().entrySet());
-        template.merge(context, stringWriter);
-        return stringWriter.toString();
-    }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String formatReport(final JobReport jobReport) {
+		Template template = velocityEngine.getTemplate("templates/HtmlReport.vm");
+		StringWriter stringWriter = new StringWriter();
+		Context context = new VelocityContext();
+		context.put("report", jobReport);
+		context.put("properties", jobReport.getParameters().getSystemProperties().entrySet());
+		template.merge(context, stringWriter);
+		return stringWriter.toString();
+	}
 
 }

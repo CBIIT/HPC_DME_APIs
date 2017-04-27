@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc.
+ *  
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
+ ******************************************************************************/
 /*
  * Copyright 2011-2012 the original author or authors.
  * 
@@ -33,5 +40,5 @@ public class HpcHistoryFileNameProvider extends DefaultHistoryFileNameProvider {
 	public String getProviderName() {
 		return "HPC logfile";
 	}
-	
+
 }

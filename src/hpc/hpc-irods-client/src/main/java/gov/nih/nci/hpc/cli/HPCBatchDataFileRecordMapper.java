@@ -1,28 +1,26 @@
+/*******************************************************************************
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc.
+ *  
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
+ ******************************************************************************/
 package gov.nih.nci.hpc.cli;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang.StringUtils;
-import org.apache.cxf.jaxrs.client.WebClient;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.easybatch.core.mapper.RecordMappingException;
 import org.easybatch.core.record.GenericRecord;
 import org.easybatch.extensions.apache.common.csv.ApacheCommonCsvRecord;
 import org.easybatch.extensions.apache.common.csv.ApacheCommonCsvRecordMapper;
 
 import gov.nih.nci.hpc.cli.domain.HPCDataObject;
-import gov.nih.nci.hpc.cli.util.HpcClientUtil;
+import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
@@ -40,7 +38,8 @@ public class HPCBatchDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
 	private String errorRecordsFile;
 
 	public HPCBatchDataFileRecordMapper(Class recordClass, Map<String, Integer> headersMap, String basePath,
-			String hpcCertPath, String hpcCertPassword, String userId, String password, String authToken, String logFile, String errorRecordsFile) {
+			String hpcCertPath, String hpcCertPassword, String userId, String password, String authToken,
+			String logFile, String errorRecordsFile) {
 		super(recordClass);
 		this.headersMap = headersMap;
 		this.basePath = basePath;
@@ -54,16 +53,21 @@ public class HPCBatchDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
 	}
 
 	@Override
-    public GenericRecord processRecord(final ApacheCommonCsvRecord record) throws RecordMappingException {
-        CSVRecord csvRecord = record.getPayload();
-        String objectPath = null;
-		List<HpcMetadataEntry> listOfhpcCollection = new ArrayList<HpcMetadataEntry>();
+	public GenericRecord processRecord(final ApacheCommonCsvRecord record) throws RecordMappingException {
+		CSVRecord csvRecord = record.getPayload();
+		String objectPath = null;
+		List<HpcMetadataEntry> metadataAttributes = new ArrayList<HpcMetadataEntry>();
+		List<HpcMetadataEntry> parentMetadataAttributes = new ArrayList<HpcMetadataEntry>();
+		boolean createParentCollection = false;
 		HpcFileLocation source = new HpcFileLocation();
 		for (Entry<String, Integer> entry : headersMap.entrySet()) {
 			String cellVal = csvRecord.get(entry.getKey());
 			HpcMetadataEntry hpcMetadataEntry = new HpcMetadataEntry();
 			hpcMetadataEntry.setAttribute(entry.getKey());
 			hpcMetadataEntry.setValue(cellVal);
+			if (entry.getKey().equals(Constants.CREATE_PARENT_COLLECTION))
+				createParentCollection = entry.getKey().equalsIgnoreCase("true");
+
 			if (entry.getKey().equals("fileContainerId")) {
 				source.setFileContainerId(cellVal);
 				continue;
@@ -74,10 +78,14 @@ public class HPCBatchDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
 				objectPath = cellVal;
 				continue;
 			}
-			if (StringUtils.isNotBlank(cellVal))
-				listOfhpcCollection.add(hpcMetadataEntry);
+			if (StringUtils.isNotBlank(cellVal)) {
+				if (entry.getKey().startsWith(Constants.PARENT_COLLECTION_PREFIX))
+					parentMetadataAttributes.add(hpcMetadataEntry);
+				else
+					metadataAttributes.add(hpcMetadataEntry);
+			}
 		}
-		
+
 		HPCDataObject dataObject = new HPCDataObject();
 		dataObject.setAuthToken(authToken);
 		dataObject.setBasePath(basePath);
@@ -89,17 +97,17 @@ public class HPCBatchDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
 		dataObject.setErrorRecordsFile(errorRecordsFile);
 		dataObject.setHeadersMap(headersMap);
 		dataObject.setCsvRecord(csvRecord);
-		
-		HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationDTO();
-//		if (!objectPath.startsWith("/"))
-//			objectPath = "/" + objectPath;
 		dataObject.setObjectPath(objectPath);
+
+		HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationDTO();
 
 		hpcDataObjectRegistrationDTO.setSource(source);
 		hpcDataObjectRegistrationDTO.setCallerObjectId("/");
-		hpcDataObjectRegistrationDTO.getMetadataEntries().addAll(listOfhpcCollection);   
+		hpcDataObjectRegistrationDTO.getMetadataEntries().addAll(metadataAttributes);
 		dataObject.setDto(hpcDataObjectRegistrationDTO);
-        return new GenericRecord(record.getHeader(), dataObject);
-    }
-
+		hpcDataObjectRegistrationDTO.setCreateParentCollections(createParentCollection);
+		if (!parentMetadataAttributes.isEmpty())
+			hpcDataObjectRegistrationDTO.getParentCollectionMetadataEntries().addAll(parentMetadataAttributes);
+		return new GenericRecord(record.getHeader(), dataObject);
+	}
 }
