@@ -1,4 +1,17 @@
+/*******************************************************************************
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc.
+ *  
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
+ ******************************************************************************/
 package gov.nih.nci.hpc.cli;
+
+import static org.easybatch.core.util.Utils.LINE_SEPARATOR;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /*
  * The MIT License
@@ -27,13 +40,6 @@ package gov.nih.nci.hpc.cli;
 import org.easybatch.core.job.JobReport;
 import org.easybatch.core.job.JobResult;
 import org.easybatch.core.job.JobStatus;
-import org.easybatch.tools.reporting.JobReportMerger;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import static org.easybatch.core.util.Utils.LINE_SEPARATOR;
 
 /**
  * A report merger that generates a merged report defined as follows:
@@ -46,122 +52,124 @@ import static org.easybatch.core.util.Utils.LINE_SEPARATOR;
  * <li>The total error records is the sum of total error records</li>
  * <li>The total success records is the sum of total success records</li>
  * <li>The final job result is a list of all job results</li>
- * <li>The final data source name is the concatenation (one per line) of data sources names</li>
- * <li>The final status is {@link JobStatus#COMPLETED} (if all partials are completed)
- * or {@link JobStatus#ABORTED} (if one of partials has been aborted) or {@link JobStatus#FAILED} (if one of partials has failed).</li>
+ * <li>The final data source name is the concatenation (one per line) of data
+ * sources names</li>
+ * <li>The final status is {@link JobStatus#COMPLETED} (if all partials are
+ * completed) or {@link JobStatus#ABORTED} (if one of partials has been aborted)
+ * or {@link JobStatus#FAILED} (if one of partials has failed).</li>
  * </ul>
  *
  * @author Mahmoud Ben Hassine (mahmoud@benhassine.fr)
  */
-public class HPCJobReportMerger{
+public class HPCJobReportMerger {
 
-    /**
-     * Merge multiple reports into a consolidated one.
-     *
-     * @param jobReports reports to merge
-     * @return a merged report
-     */
-    public JobReport mergerReports(List<JobReport> jobReports) {
+	/**
+	 * Merge multiple reports into a consolidated one.
+	 *
+	 * @param jobReports
+	 *            reports to merge
+	 * @return a merged report
+	 */
+	public JobReport mergerReports(List<JobReport> jobReports) {
 
-        List<Long> startTimes = new ArrayList<>();
-        List<Long> endTimes = new ArrayList<>();
-        List<Object> results = new ArrayList<>();
-        List<String> dataSources = new ArrayList<>();
-        long totalRecords = 0;
-        long errorRecords = 0;
+		List<Long> startTimes = new ArrayList<>();
+		List<Long> endTimes = new ArrayList<>();
+		List<Object> results = new ArrayList<>();
+		List<String> dataSources = new ArrayList<>();
+		long totalRecords = 0;
+		long errorRecords = 0;
 
-        JobReport finalJobReport = new JobReport();
-        finalJobReport.setStatus(JobStatus.COMPLETED);
-        		
-        for (JobReport jobReport : jobReports) {
-            startTimes.add(jobReport.getMetrics().getStartTime());
-            endTimes.add(jobReport.getMetrics().getEndTime());
-        	if(jobReport.getParameters().getName().equals("master-job"))
-        		totalRecords += jobReport.getMetrics().getTotalCount();
-            calculateSkippedRecords(finalJobReport, jobReport);
-            //calculateFilteredRecords(finalJobReport, jobReport);
-        	if(!jobReport.getParameters().getName().equals("master-job"))
-        	{
-        		errorRecords += jobReport.getMetrics().getErrorCount();
-        		calculateErrorRecords(finalJobReport, jobReport);
-        	}
-        	
-            //calculateSuccessRecords(finalJobReport, jobReport);
-            addJobResult(results, jobReport);
-            setStatus(finalJobReport, jobReport);
-            dataSources.add(jobReport.getParameters().getDataSource());
-        }
-    	calculateSuccessRecords(finalJobReport, totalRecords, errorRecords);
+		JobReport finalJobReport = new JobReport();
+		finalJobReport.setStatus(JobStatus.COMPLETED);
 
-        //merge results
-        finalJobReport.getMetrics().setStartTime(Collections.min(startTimes));
-        finalJobReport.getMetrics().setEndTime(Collections.max(endTimes));
-        finalJobReport.getMetrics().setTotalCount(totalRecords);
+		for (JobReport jobReport : jobReports) {
+			startTimes.add(jobReport.getMetrics().getStartTime());
+			endTimes.add(jobReport.getMetrics().getEndTime());
+			if (jobReport.getParameters().getName().equals("master-job"))
+				totalRecords += jobReport.getMetrics().getTotalCount();
+			calculateSkippedRecords(finalJobReport, jobReport);
+			// calculateFilteredRecords(finalJobReport, jobReport);
+			if (!jobReport.getParameters().getName().equals("master-job")) {
+				errorRecords += jobReport.getMetrics().getErrorCount();
+				calculateErrorRecords(finalJobReport, jobReport);
+			}
 
-        mergeResults(results, finalJobReport);
+			// calculateSuccessRecords(finalJobReport, jobReport);
+			addJobResult(results, jobReport);
+			setStatus(finalJobReport, jobReport);
+			dataSources.add(jobReport.getParameters().getDataSource());
+		}
+		calculateSuccessRecords(finalJobReport, totalRecords, errorRecords);
 
-        mergeDataSources(dataSources, finalJobReport);
+		// merge results
+		finalJobReport.getMetrics().setStartTime(Collections.min(startTimes));
+		finalJobReport.getMetrics().setEndTime(Collections.max(endTimes));
+		finalJobReport.getMetrics().setTotalCount(totalRecords);
 
-        return finalJobReport;
-    }
+		mergeResults(results, finalJobReport);
 
-    private void mergeDataSources(List<String> dataSources, JobReport finalJobReport) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String dataSource : dataSources) {
-            stringBuilder.append(dataSource).append(LINE_SEPARATOR);
+		mergeDataSources(dataSources, finalJobReport);
 
-        }
-        finalJobReport.getParameters().setDataSource(stringBuilder.toString());
-    }
+		return finalJobReport;
+	}
 
-    private void mergeResults(List<Object> results, JobReport finalJobReport) {
-        if (!results.isEmpty()) {
-            finalJobReport.setJobResult(new JobResult(results));
-        }
-    }
+	private void mergeDataSources(List<String> dataSources, JobReport finalJobReport) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String dataSource : dataSources) {
+			stringBuilder.append(dataSource).append(LINE_SEPARATOR);
 
-    private void setStatus(JobReport finalJobReport, JobReport jobReport) {
-        if (JobStatus.ABORTED.equals(jobReport.getStatus())) {
-            finalJobReport.setStatus(JobStatus.ABORTED);
-        }
-        if (JobStatus.FAILED.equals(jobReport.getStatus()) || jobReport.getMetrics().getErrorCount() != 0) {
-            finalJobReport.setStatus(JobStatus.FAILED);
-        }
-    }
+		}
+		finalJobReport.getParameters().setDataSource(stringBuilder.toString());
+	}
 
-    private void addJobResult(List<Object> results, JobReport jobReport) {
-        if (jobReport.getResult() != null) {
-            results.add(jobReport.getResult());
-        }
-    }
+	private void mergeResults(List<Object> results, JobReport finalJobReport) {
+		if (!results.isEmpty()) {
+			finalJobReport.setJobResult(new JobResult(results));
+		}
+	}
 
-    private void calculateSuccessRecords(JobReport finalJobReport, JobReport jobReport) {
-        for (int i = 0; i < (jobReport.getMetrics().getSuccessCount() - jobReport.getMetrics().getErrorCount()); i++) {
-            finalJobReport.getMetrics().incrementSuccessCount();
-        }
-    }
+	private void setStatus(JobReport finalJobReport, JobReport jobReport) {
+		if (JobStatus.ABORTED.equals(jobReport.getStatus())) {
+			finalJobReport.setStatus(JobStatus.ABORTED);
+		}
+		if (JobStatus.FAILED.equals(jobReport.getStatus()) || jobReport.getMetrics().getErrorCount() != 0) {
+			finalJobReport.setStatus(JobStatus.FAILED);
+		}
+	}
 
-    private void calculateSuccessRecords(JobReport finalJobReport, long total, long error) {
-        for (int i = 0; i < (total - error); i++) {
-            finalJobReport.getMetrics().incrementSuccessCount();
-        }
-    }
+	private void addJobResult(List<Object> results, JobReport jobReport) {
+		if (jobReport.getResult() != null) {
+			results.add(jobReport.getResult());
+		}
+	}
 
-    private void calculateErrorRecords(JobReport finalJobReport, JobReport jobReport) {
-        for (int i = 0; i < jobReport.getMetrics().getErrorCount(); i++) {
-            finalJobReport.getMetrics().incrementErrorCount();
-        }
-    }
+	private void calculateSuccessRecords(JobReport finalJobReport, JobReport jobReport) {
+		for (int i = 0; i < (jobReport.getMetrics().getSuccessCount() - jobReport.getMetrics().getErrorCount()); i++) {
+			finalJobReport.getMetrics().incrementSuccessCount();
+		}
+	}
 
-    private void calculateFilteredRecords(JobReport finalJobReport, JobReport jobReport) {
-        for (int i = 0; i < jobReport.getMetrics().getFilteredCount(); i++) {
-            finalJobReport.getMetrics().incrementFilteredCount();
-        }
-    }
+	private void calculateSuccessRecords(JobReport finalJobReport, long total, long error) {
+		for (int i = 0; i < (total - error); i++) {
+			finalJobReport.getMetrics().incrementSuccessCount();
+		}
+	}
 
-    private void calculateSkippedRecords(JobReport finalJobReport, JobReport jobReport) {
-        for (int i = 0; i < jobReport.getMetrics().getSkippedCount(); i++) {
-            finalJobReport.getMetrics().incrementSkippedCount();
-        }
-    }
+	private void calculateErrorRecords(JobReport finalJobReport, JobReport jobReport) {
+		for (int i = 0; i < jobReport.getMetrics().getErrorCount(); i++) {
+			finalJobReport.getMetrics().incrementErrorCount();
+		}
+	}
+
+	private void calculateFilteredRecords(JobReport finalJobReport, JobReport jobReport) {
+		for (int i = 0; i < jobReport.getMetrics().getFilteredCount(); i++) {
+			finalJobReport.getMetrics().incrementFilteredCount();
+		}
+	}
+
+	private void calculateSkippedRecords(JobReport finalJobReport, JobReport jobReport) {
+		for (int i = 0; i < jobReport.getMetrics().getSkippedCount(); i++) {
+			finalJobReport.getMetrics().incrementSkippedCount();
+		}
+	}
 }

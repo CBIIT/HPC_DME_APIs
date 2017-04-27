@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc.
+ *  
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
+ ******************************************************************************/
 /*
  * Copyright 2011-2012 the original author or authors.
  * 
@@ -23,14 +30,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class HpcBannerProvider extends DefaultBannerProvider  {
+public class HpcBannerProvider extends DefaultBannerProvider {
 
 	public String getBanner() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("=======================================" + OsUtils.LINE_SEPARATOR);
-		buf.append("*                                     *"+ OsUtils.LINE_SEPARATOR);
-		buf.append("*            HPC Console              *" +OsUtils.LINE_SEPARATOR);
-		buf.append("*                                     *"+ OsUtils.LINE_SEPARATOR);
+		buf.append("*                                     *" + OsUtils.LINE_SEPARATOR);
+		buf.append("*            HPC Console              *" + OsUtils.LINE_SEPARATOR);
+		buf.append("*                                     *" + OsUtils.LINE_SEPARATOR);
 		buf.append("=======================================" + OsUtils.LINE_SEPARATOR);
 		buf.append("Version:" + this.getVersion());
 		return buf.toString();
@@ -43,7 +50,7 @@ public class HpcBannerProvider extends DefaultBannerProvider  {
 	public String getWelcomeMessage() {
 		return "Welcome to HPC CLI";
 	}
-	
+
 	@Override
 	public String getProviderName() {
 		return "HPC Console";

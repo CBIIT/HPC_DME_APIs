@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc.
+ *  
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
+ ******************************************************************************/
 /*
  * Copyright 2011-2012 the original author or authors.
  * 
@@ -19,13 +26,14 @@ import java.io.IOException;
 
 import org.springframework.shell.Bootstrap;
 
-
 public class Main {
 
 	/**
-	 * Main class that delegates to Spring Shell's Bootstrap class in order to simplify debugging inside an IDE
+	 * Main class that delegates to Spring Shell's Bootstrap class in order to
+	 * simplify debugging inside an IDE
+	 * 
 	 * @param args
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
 		Bootstrap.main(args);

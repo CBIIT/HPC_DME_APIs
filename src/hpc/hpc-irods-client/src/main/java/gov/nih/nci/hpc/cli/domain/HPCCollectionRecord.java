@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc.
+ *  
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
+ ******************************************************************************/
 package gov.nih.nci.hpc.cli.domain;
 
 import java.util.Map;
@@ -8,7 +15,7 @@ public class HPCCollectionRecord {
 	private String collectionParentName;
 	private String createdAt;
 	private String modifiedAt;
-	
+
 	private Map<String, gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry> metadataAttrs;
 
 	public String getCollectionId() {
@@ -58,6 +65,5 @@ public class HPCCollectionRecord {
 	public void setMetadataAttrs(Map<String, gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry> metadataAttrs) {
 		this.metadataAttrs = metadataAttrs;
 	}
-	
-	
+
 }

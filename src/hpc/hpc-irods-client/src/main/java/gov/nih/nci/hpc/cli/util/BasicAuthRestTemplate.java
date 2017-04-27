@@ -1,4 +1,12 @@
+/*******************************************************************************
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc.
+ *  
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
+ ******************************************************************************/
 package gov.nih.nci.hpc.cli.util;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -13,7 +21,7 @@ import org.springframework.http.client.InterceptingClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 public class BasicAuthRestTemplate extends RestTemplate {
-	
+
 	public BasicAuthRestTemplate(String username, String password) {
 		addAuthentication(username, password);
 	}
@@ -23,14 +31,11 @@ public class BasicAuthRestTemplate extends RestTemplate {
 			return;
 		}
 		List<ClientHttpRequestInterceptor> interceptors = Collections
-				.<ClientHttpRequestInterceptor> singletonList(
-						new BasicAuthorizationInterceptor(username, password));
-		setRequestFactory(new InterceptingClientHttpRequestFactory(getRequestFactory(),
-				interceptors));
+				.<ClientHttpRequestInterceptor> singletonList(new BasicAuthorizationInterceptor(username, password));
+		setRequestFactory(new InterceptingClientHttpRequestFactory(getRequestFactory(), interceptors));
 	}
 
-	private static class BasicAuthorizationInterceptor implements
-			ClientHttpRequestInterceptor {
+	private static class BasicAuthorizationInterceptor implements ClientHttpRequestInterceptor {
 
 		private final String username;
 
@@ -40,16 +45,16 @@ public class BasicAuthRestTemplate extends RestTemplate {
 			this.username = username;
 			this.password = (password == null ? "" : password);
 		}
-		
+
 		@Override
-		public ClientHttpResponse intercept(HttpRequest request, byte[] body,
-				ClientHttpRequestExecution execution) throws IOException {
-			String token =DatatypeConverter.printBase64Binary((this.username + ":" + this.password).getBytes());
-			//byte[] token = Base64.getEncoder().encode(
-				//	(this.username + ":" + this.password).getBytes());
+		public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
+				throws IOException {
+			String token = DatatypeConverter.printBase64Binary((this.username + ":" + this.password).getBytes());
+			// byte[] token = Base64.getEncoder().encode(
+			// (this.username + ":" + this.password).getBytes());
 			request.getHeaders().add("Authorization", "Basic " + token);
-			return execution.execute(request, body);			
+			return execution.execute(request, body);
 		}
 	}
-	
+
 }
