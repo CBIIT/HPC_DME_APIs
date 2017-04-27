@@ -1,13 +1,11 @@
+/*******************************************************************************
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc.
+ *  
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
+ ******************************************************************************/
 package gov.nih.nci.hpc.cli;
-
-import gov.nih.nci.hpc.cli.domain.HPCDataFileRecord;
-import gov.nih.nci.hpc.cli.util.CsvFileWriter;
-import gov.nih.nci.hpc.cli.util.HpcClientUtil;
-import gov.nih.nci.hpc.cli.util.HpcCmdException;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
-import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +36,15 @@ import org.springframework.web.client.RestClientException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.google.gson.Gson;
+
+import gov.nih.nci.hpc.cli.domain.HPCDataFileRecord;
+import gov.nih.nci.hpc.cli.util.CsvFileWriter;
+import gov.nih.nci.hpc.cli.util.HpcClientUtil;
+import gov.nih.nci.hpc.cli.util.HpcCmdException;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
 
 @Component
 public class HPCCmdDatafile extends HPCCmdClient {
@@ -91,8 +99,8 @@ public class HPCCmdDatafile extends HPCCmdClient {
 		}
 	}
 
-	protected boolean processCmd(String cmd, String criteria, String outputFile, String format, String detail,
-			String userId, String password) {
+	protected boolean processCmd(String cmd, Map<String, String> criteria, String outputFile, String format,
+			String detail, String userId, String password) {
 		boolean success = true;
 
 		try {
@@ -103,38 +111,42 @@ public class HPCCmdDatafile extends HPCCmdClient {
 				return false;
 			}
 
-			HpcCompoundMetadataQueryDTO criteriaClause = null;
-			try
-			{
-				criteriaClause = buildCriteria(criteria);
-			}
-			catch(Exception e)
-			{
-				createErrorLog();
-				success = false;
-				String message = "Failed to parse criteria input file: " + criteria + " Error: " + e.getMessage();
-				addErrorToLog(message, cmd);
-				StringWriter sw = new StringWriter();
-				e.printStackTrace(new PrintWriter(sw));
-				String exceptionAsString = sw.toString();
-				addErrorToLog(exceptionAsString, cmd);
-				return false;
-			}
-
-			if (cmd.equals("getDatafile"))
-				serviceURL = serviceURL + criteria;
-			else if (cmd.equals("getDatafiles")) {
-				serviceURL = serviceURL + "/query";
-			}
-
-			System.out.println("Executing: " + serviceURL);
 			try {
-				String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath, hpcCertPassword);
+				String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath,
+						hpcCertPassword);
 
-				WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
-				client.header("Authorization", "Bearer " + authToken);
+				Response restResponse = null;
+				if (cmd.equals("getDatafile")) {
+					Iterator iterator = criteria.keySet().iterator();
+					String path = (String) iterator.next();
+					serviceURL = serviceURL + path;
+					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
+					client.header("Authorization", "Bearer " + authToken);
+					restResponse = client.get();
+				} else if (cmd.equals("getDatafiles")) {
+					serviceURL = serviceURL + "/query";
+					HpcCompoundMetadataQueryDTO criteriaClause = null;
+					try {
+						criteriaClause = buildCriteria(criteria);
+					} catch (Exception e) {
+						createErrorLog();
+						success = false;
+						String message = "Failed to parse criteria input file: " + criteria + " Error: "
+								+ e.getMessage();
+						addErrorToLog(message, cmd);
+						StringWriter sw = new StringWriter();
+						e.printStackTrace(new PrintWriter(sw));
+						String exceptionAsString = sw.toString();
+						addErrorToLog(exceptionAsString, cmd);
+						return false;
+					}
+					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
+					client.header("Authorization", "Bearer " + authToken);
+					restResponse = client.post(criteriaClause);
+				}
 
-				Response restResponse = client.post(criteriaClause);
+				System.out.println("Executing: " + serviceURL);
+
 				if (restResponse.getStatus() != 204) {
 					MappingJsonFactory factory = new MappingJsonFactory();
 					createRecordsLog(outputFile, format);
@@ -202,10 +214,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 					}
 
 				}
-				else
-				{
-					System.out.println("No matching results found");
-				}
+
 				logRecordsFile = null;
 			} catch (HpcCmdException e) {
 				createErrorLog();
@@ -245,14 +254,16 @@ public class HPCCmdDatafile extends HPCCmdClient {
 		return success;
 	}
 
-	private HpcCompoundMetadataQueryDTO buildCriteria(String fileName) throws UnsupportedEncodingException, FileNotFoundException {
-		
+	private HpcCompoundMetadataQueryDTO buildCriteria(Map<String, String> criteria)
+			throws UnsupportedEncodingException, FileNotFoundException {
+		Iterator iterator = criteria.keySet().iterator();
+		String fileName = (String) iterator.next();
 		BufferedReader reader = new BufferedReader(new FileReader(fileName));
 		Gson gson = new Gson();
 		HpcCompoundMetadataQueryDTO dto = gson.fromJson(reader, HpcCompoundMetadataQueryDTO.class);
 		return dto;
 	}
-	
+
 	private String[] getHeader(List<HpcDataObjectDTO> dtoObjects) {
 		List<String> header = new ArrayList<String>();
 		header.add("dataFileId");

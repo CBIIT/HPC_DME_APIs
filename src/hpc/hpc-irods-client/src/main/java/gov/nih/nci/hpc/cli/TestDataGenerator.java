@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc.
+ *  
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
+ ******************************************************************************/
 package gov.nih.nci.hpc.cli;
 
 import java.io.BufferedWriter;
@@ -6,7 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class TestDataGenerator {
-	
+
 	private static final String DATASET_PART1 = "Dataset,/FNL_SF_Archive/ProjectX1/";
 	private static final String DATASET_PART_SEQUENCE_1 = "Dataset";
 	private static final String DATASET_PART_SEQUENCE_2 = "Dataset";
@@ -19,7 +26,7 @@ public class TestDataGenerator {
 	private static final String DATAFILE_PART_SEQUENCE_3 = "";
 	private static final String DATAFILE_PART_SEQUENCE_4 = "data file description";
 	private static final String DATAFILE_PART2 = "samples/output.dat,konkapv,FNLCR,FNLCR,12/24/2013,FNLCR,PHI Not Present,PII Not Present,Not Encrypted,Not Compressed,CCR,The dataset is missing BAM file.,FastQ,FlowCell ID 1,Run_ID 1,2/20/2010,Illumina-MiSeq,Exome,Library ID 1,Illumina TrueSeq,Illumina TrueSeq,Illumina TrueSeq,Raw ,125bp,custom value1";
-	
+
 	public TestDataGenerator() {
 
 	}
@@ -40,12 +47,13 @@ public class TestDataGenerator {
 			int startIndex = Integer.parseInt(start);
 			FileWriter fw = new FileWriter(file.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);
-			for(int i=startIndex;i<count;i++)
-			{
-				if(type.equals("collection"))
-					content = DATASET_PART1 + DATASET_PART_SEQUENCE_1 + i +"," + DATASET_PART_SEQUENCE_2 + i + "," + DATASET_PART_SEQUENCE_3 + i + "," + DATASET_PART2;
+			for (int i = startIndex; i < count; i++) {
+				if (type.equals("collection"))
+					content = DATASET_PART1 + DATASET_PART_SEQUENCE_1 + i + "," + DATASET_PART_SEQUENCE_2 + i + ","
+							+ DATASET_PART_SEQUENCE_3 + i + "," + DATASET_PART2;
 				else
-					content = DATAFILE_PART1 + DATAFILE_PART_SEQUENCE_1 + DATAFILE_PART_SEQUENCE_2 + i + "," + DATAFILE_PART_SEQUENCE_3 + i + "," + DATAFILE_PART_SEQUENCE_4 + i + "," + DATAFILE_PART2;
+					content = DATAFILE_PART1 + DATAFILE_PART_SEQUENCE_1 + DATAFILE_PART_SEQUENCE_2 + i + ","
+							+ DATAFILE_PART_SEQUENCE_3 + i + "," + DATAFILE_PART_SEQUENCE_4 + i + "," + DATAFILE_PART2;
 				bw.write(content);
 				bw.newLine();
 				bw.flush();

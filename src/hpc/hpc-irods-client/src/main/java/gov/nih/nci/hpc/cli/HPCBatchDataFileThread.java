@@ -1,9 +1,15 @@
+/*******************************************************************************
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc.
+ *  
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
+ ******************************************************************************/
 package gov.nih.nci.hpc.cli;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -18,7 +24,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
 
-import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -67,7 +72,7 @@ public class HPCBatchDataFileThread implements Runnable {
 		this.hpcCertPassword = hpcCertPassword;
 		this.userId = userId;
 		this.password = password;
-		
+
 		System.out.println("Creating " + threadName);
 	}
 
@@ -113,7 +118,7 @@ public class HPCBatchDataFileThread implements Runnable {
 		if (hpcDataObjectRegistrationDTO.getSource().getFileContainerId() == null) {
 			if (hpcDataObjectRegistrationDTO.getSource().getFileId() == null) {
 				addErrorToLog("Invalid or missing file source location ", recordId);
-//				success = false;
+				// success = false;
 				processedRecordFlag = false;
 				addRecordToLog(record, headersMap);
 				return;
@@ -128,13 +133,13 @@ public class HPCBatchDataFileThread implements Runnable {
 					hpcDataObjectRegistrationDTO.setSource(null);
 				} catch (FileNotFoundException e) {
 					addErrorToLog("Invalid or missing file source location ", recordId);
-//					success = false;
+					// success = false;
 					processedRecordFlag = false;
 					addRecordToLog(record, headersMap);
 					return;
 				} catch (IOException e) {
 					addErrorToLog("Invalid or missing file source location ", recordId);
-//					success = false;
+					// success = false;
 					processedRecordFlag = false;
 					addRecordToLog(record, headersMap);
 					return;
@@ -180,20 +185,20 @@ public class HPCBatchDataFileThread implements Runnable {
 						buffer.append(" Request reject reason:" + response.getRequestRejectReason().value());
 
 					addErrorToLog(buffer.toString(), recordId);
-//					success = false;
+					// success = false;
 					processedRecordFlag = false;
 					addRecordToLog(record, headersMap);
 				} else {
 					addErrorToLog(
 							"Failed to process record due to unknown error. Return code: " + restResponse.getStatus(),
 							recordId);
-//					success = false;
+					// success = false;
 					processedRecordFlag = false;
 					addRecordToLog(record, headersMap);
 				}
 			}
 		} catch (HpcBatchException e) {
-//			success = false;
+			// success = false;
 			processedRecordFlag = false;
 			String message = "Failed to process record due to: " + e.getMessage();
 			// System.out.println(message);
@@ -204,7 +209,7 @@ public class HPCBatchDataFileThread implements Runnable {
 			addErrorToLog(exceptionAsString, recordId);
 			addRecordToLog(record, headersMap);
 		} catch (RestClientException e) {
-//			success = false;
+			// success = false;
 			processedRecordFlag = false;
 			String message = "Failed to process record due to: " + e.getMessage();
 			// System.out.println(message);
@@ -215,7 +220,7 @@ public class HPCBatchDataFileThread implements Runnable {
 			addErrorToLog(exceptionAsString, recordId);
 			addRecordToLog(record, headersMap);
 		} catch (Exception e) {
-//			success = false;
+			// success = false;
 			processedRecordFlag = false;
 			String message = "Failed to process record due to: " + e.getMessage();
 			// System.out.println(message);
@@ -244,7 +249,7 @@ public class HPCBatchDataFileThread implements Runnable {
 		HpcLogWriter.getInstance().WriteLog(fileLogWriter, recordLineNumber + " : " + error);
 	}
 
-	protected void addRecordToLog(CSVRecord record, Map<String, Integer> headers){
+	protected void addRecordToLog(CSVRecord record, Map<String, Integer> headers) {
 		HpcCSVFileWriter.getInstance().writeRecord(csvFilePrinter, record, headers);
 	}
 

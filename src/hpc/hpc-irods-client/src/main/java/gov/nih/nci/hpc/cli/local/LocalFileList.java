@@ -5,23 +5,19 @@
  * Distributed under the OSI-approved BSD 3-Clause License.
  * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
  ******************************************************************************/
-package gov.nih.nci.hpc.cli.util;
+package gov.nih.nci.hpc.cli.local;
 
-public class HpcCmdException extends RuntimeException {
+import java.util.List;
 
-	public HpcCmdException() {
-		super();
+public class LocalFileList {
+	private List<LocalFile> DATA;
+
+	public List<LocalFile> getDATA() {
+		return DATA;
 	}
 
-	public HpcCmdException(String message) {
-		super(message);
+	public void setDATA(List<LocalFile> dATA) {
+		DATA = dATA;
 	}
 
-	public HpcCmdException(String message, Throwable e) {
-		super(message, e);
-	}
-
-	public HpcCmdException(Throwable e) {
-		super(e);
-	}
 }
