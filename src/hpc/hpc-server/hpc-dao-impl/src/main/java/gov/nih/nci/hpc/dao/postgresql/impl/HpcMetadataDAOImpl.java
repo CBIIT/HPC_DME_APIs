@@ -150,7 +150,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			"account.user_name = ?))";
 	
 	private static final String USER_ACCESS_ARRAY_SQL = 
-			"select array_agg(access.object_id) from " + USER_ACCESS_SQL + " as t";
+			"select array_agg(object_id) from " + USER_ACCESS_SQL + " as t";
 	
 	private static final String LIMIT_OFFSET_SQL = " order by object_path limit ? offset ?";
 	
