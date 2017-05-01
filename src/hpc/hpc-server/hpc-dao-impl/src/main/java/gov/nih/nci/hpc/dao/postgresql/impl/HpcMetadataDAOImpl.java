@@ -135,12 +135,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String COLLECTION_LEVEL_LABEL_LIKE_FILTER = " and collection.level_label like ?";
 		   
 	private static final String USER_ACCESS_SQL = 
-			//"select distinct access.object_id from public.\"r_objt_access\" access, public.\"r_user_group\" user_group, " +
-			//"public.\"r_user_main\" account where (account.user_name = ? and access.user_id = account.user_id) or " +
-			//"(access.user_id = user_group.group_user_id and user_group.group_user_id in " + 
-			//"(select user_group.group_user_id from public.\"r_user_group\" user_group, " +
-		    //"public.\"r_user_main\" account where account.user_name = ? and account.user_id = user_group.user_id))";
-	
 			"(select distinct access.object_id from public.\"r_objt_access\" access join public.\"r_user_main\" account " +
 			"using (user_id) where account.user_name = ? union " +
 			"select distinct access.object_id from public.\"r_objt_access\" access join " +
