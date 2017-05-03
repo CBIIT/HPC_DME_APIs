@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
@@ -63,6 +64,8 @@ public class HpcLoginController extends AbstractHpcController {
 	private String collectionURL;
 	@Value("${gov.nih.nci.hpc.server.query}")
 	private String queryURL;
+	@Value("${gov.nih.nci.hpc.server.model}")
+	private String hpcModelURL;
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(Model model) {
@@ -90,6 +93,10 @@ public class HpcLoginController extends AbstractHpcController {
 					throw new HpcWebException("Invlaid User");
 				session.setAttribute("hpcUser", user);
 				session.setAttribute("hpcUserId", hpcLogin.getUserId());
+				HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(),
+						sslCertPath, sslCertPassword);
+				if(modelDTO != null)
+					session.setAttribute("userDOCModel", modelDTO);
 			} catch (HpcWebException e) {
 				model.addAttribute("loginStatus", false);
 				model.addAttribute("loginOutput", "Invalid login");

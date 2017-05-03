@@ -10,13 +10,57 @@ public class HpcBrowserEntry {
 	private String name;
 
 	@JsonView(Views.Public.class)
+	private String id;
+
+	@JsonView(Views.Public.class)
 	private String fullPath;
+
+	@JsonView(Views.Public.class)
+	private String selectedNodePath;
+
+	@JsonView(Views.Public.class)
+	private String selectedNodeId;
 
 	@JsonView(Views.Public.class)
 	private List<HpcBrowserEntry> children;
 
 	@JsonView(Views.Public.class)
-	private boolean isFolder;
+	private boolean isCollection;
+
+	@JsonView(Views.Public.class)
+	private boolean populated;
+	
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getSelectedNodeId() {
+		return selectedNodeId;
+	}
+
+	public void setSelectedNodeId(String selectedNodeId) {
+		this.selectedNodeId = selectedNodeId;
+	}
+
+	public boolean isPopulated() {
+		return populated;
+	}
+
+	public void setPopulated(boolean populated) {
+		this.populated = populated;
+	}
+
+	public String getSelectedNodePath() {
+		return selectedNodePath;
+	}
+
+	public void setSelectedNodePath(String selectedNodePath) {
+		this.selectedNodePath = selectedNodePath;
+	}
 
 	public String getName() {
 		return name;
@@ -36,12 +80,12 @@ public class HpcBrowserEntry {
 		this.children = children;
 	}
 
-	public boolean isFolder() {
-		return isFolder;
+	public boolean isCollection() {
+		return isCollection;
 	}
 
-	public void setFolder(boolean isFolder) {
-		this.isFolder = isFolder;
+	public void setCollection(boolean isCollection) {
+		this.isCollection = isCollection;
 	}
 
 	public String getFullPath() {

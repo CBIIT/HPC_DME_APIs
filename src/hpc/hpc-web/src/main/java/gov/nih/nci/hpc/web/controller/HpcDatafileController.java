@@ -88,7 +88,9 @@ public class HpcDatafileController extends AbstractHpcController {
 			HpcDataObjectListDTO datafiles = HpcClientUtil.getDatafiles(authToken, serviceURL, path, false, sslCertPath,
 					sslCertPassword);
 			if (datafiles != null && datafiles.getDataObjects() != null && datafiles.getDataObjects().size() > 0) {
-				HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(),
+				HpcDataManagementModelDTO modelDTO =  (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+				if(modelDTO == null)
+					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(),
 						sslCertPath, sslCertPassword);
 				HpcDataObjectDTO dataFile = datafiles.getDataObjects().get(0);
 				HpcDatafileModel hpcDatafile = buildHpcDataObject(dataFile,
