@@ -211,6 +211,26 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
+    public HpcCollectionDTO getCollectionChildren(String path) throws HpcException
+    {
+    	// Input validation.
+    	if(path == null) {
+    	   throw new HpcException("Null collection path",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	HpcCollection collection = dataManagementService.getCollectionChildren(path);
+    	if(collection == null) {
+      	   return null;
+      	}
+     	
+     	HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
+     	collectionDTO.setCollection(collection);
+     	
+     	return collectionDTO;
+    }
+    
+    @Override
     public HpcDownloadResponseListDTO downloadCollection(String path,
                                                          HpcDownloadRequestDTO downloadRequest)
                                                         throws HpcException

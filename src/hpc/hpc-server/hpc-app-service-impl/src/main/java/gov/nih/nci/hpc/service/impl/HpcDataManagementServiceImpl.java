@@ -337,6 +337,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
+    public HpcCollection getCollectionChildren(String path) throws HpcException
+    {
+    	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
+   	   return dataManagementProxy.getCollectionChildren(authenticatedToken, path);
+    }
+
+    @Override
     public HpcDataObject getDataObject(String path) throws HpcException
     {
     	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
