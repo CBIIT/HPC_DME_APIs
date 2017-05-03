@@ -463,19 +463,22 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 	private void populateHierarchy(HttpSession session, Model model, String authToken, HpcUserDTO user) {
 		try {
 			if (session.getAttribute("hierarchies") == null)
-				session.setAttribute("hierarchies", getHierarchy(authToken, user));
+				session.setAttribute("hierarchies", getHierarchy(authToken, user, session));
 			model.addAttribute("doc", user.getDoc());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	private Map<String, String> getHierarchy(String authToken, HpcUserDTO user) {
+	private Map<String, String> getHierarchy(String authToken, HpcUserDTO user, HttpSession session) {
 		Map<String, String> hierarchiesMap = new HashMap<String, String>();
 		try {
-			HpcDataManagementModelDTO docDTO = HpcClientUtil.getDOCModel(authToken, modelServiceURL, user.getDoc(),
+			HpcDataManagementModelDTO modelDTO =  (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+			if(modelDTO == null)
+				modelDTO = HpcClientUtil.getDOCModel(authToken, modelServiceURL, user.getDoc(),
 					sslCertPath, sslCertPassword);
-			HpcDataHierarchy hierarchy = docDTO.getDataHierarchy();
+			
+			HpcDataHierarchy hierarchy = modelDTO.getDataHierarchy();
 
 			List<String> hierarchies = new ArrayList<String>();
 			getHierarchies(hierarchy, hierarchies);
