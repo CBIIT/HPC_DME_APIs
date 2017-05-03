@@ -154,6 +154,15 @@ public interface HpcDataManagementService
     public HpcCollection getCollection(String path, boolean list) throws HpcException;
     
     /**
+     * Get collection children by its path. No collection metadata is returned
+     *
+     * @param path The collection's path.
+     * @return A collection.
+     * @throws HpcException on service failure.
+     */
+    public HpcCollection getCollectionChildren(String path) throws HpcException;
+
+    /**
      * Get data object by its path.
      *
      * @param path The data object's path.

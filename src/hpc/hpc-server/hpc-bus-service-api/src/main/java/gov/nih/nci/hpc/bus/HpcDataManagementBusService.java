@@ -62,6 +62,16 @@ public interface HpcDataManagementBusService
     public HpcCollectionDTO getCollection(String path, Boolean list) throws HpcException;
     
     /**
+     * Get Collection children. NO collection metadata will be returned
+     *
+     * @param path The collection's path.
+     * @param list An indicator to list sub-collections and data-objects.
+     * @return A Collection DTO.
+     * @throws HpcException on service failure.
+     */
+    public HpcCollectionDTO getCollectionChildren(String path) throws HpcException;
+
+    /**
      * Download a collection tree.
      *
      * @param path The collection path.

@@ -339,7 +339,28 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
                                         HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 		} 
     }
-    
+
+    @Override
+    public HpcCollection getCollectionChildren(Object authenticatedToken, String path) 
+    		                          throws HpcException
+    {
+    	try {
+    		Collection collection = irodsConnection.getCollectionAO(authenticatedToken).findByAbsolutePath(getAbsolutePath(path));
+    		if(collection == null)
+    			throw new HpcException("Invalid Collection path", HpcErrorType.DATA_MANAGEMENT_ERROR);
+    		
+             return toHpcCollection(collection,
+            		                irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken).
+            		                                          listDataObjectsAndCollectionsUnderPath(getAbsolutePath(path))
+            		                );
+             
+		} catch(Exception e) {
+	            throw new HpcException("Failed to get Collection: " + path + ". " +
+                                        e.getMessage(),
+                                        HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		} 
+    }
+
     @Override
     public List<HpcMetadataEntry> getCollectionMetadata(Object authenticatedToken, 
    		                                                String path) 
