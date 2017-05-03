@@ -54,8 +54,10 @@ public class HpcCollectionModel {
 	        @Override
 	        public int compare(HpcMetadataAttrEntry entry1, HpcMetadataAttrEntry entry2)
 	        {
-
-	            return  entry1.getAttrName().compareTo(entry2.getAttrName());
+	        	if(entry1.getAttrName() != null && entry2.getAttrName() != null)
+	        		return  entry1.getAttrName().compareTo(entry2.getAttrName());
+	        	else 
+	        		return -1;
 	        }
 	    });		
 		return parentMetadataEntries;
