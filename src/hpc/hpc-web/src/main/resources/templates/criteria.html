@@ -139,7 +139,7 @@
 											<td style="white-space: nowrap"><select size="1"
 												id="attrName1" name="attrName" class="form-control"
 												th:required="required">
-													<option value="-1">----Select----</option>
+													<option value="ANY">ANY</option>
 													<option
 														th:each="attrName : ${hierarchy.getCollectionAttrsSet()}"
 														th:value="${attrName}" th:text="${attrName}">
