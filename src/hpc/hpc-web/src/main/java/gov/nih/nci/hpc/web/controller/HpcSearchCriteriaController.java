@@ -344,7 +344,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			String level = search.getLevel()[i];
 			if (!attrName.isEmpty() && !attrValue.isEmpty() && !operator.isEmpty()) {
 				HpcMetadataQuery criteria = new HpcMetadataQuery();
-				if(attrName.equals("-1"))
+				if(attrName.equals("-1") || attrName.equals("ANY"))
 					criteria.setAttributeMatch(HpcMetadataQueryAttributeMatch.ANY);
 				else
 					criteria.setAttribute(attrName);
