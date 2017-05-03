@@ -45,6 +45,7 @@
 
 <script src="js/ui-grid/4.0.2/ui-grid.js"></script>
 <script src="../bower_components/jquery/dist/jquery.js"></script>
+<!--https://mbraak.github.io/jqTree -->
 <script src="js/tree.jquery.js"></script>
 <link rel="stylesheet" href="css/ui-grid.css"
 	type="text/css" />
@@ -53,7 +54,7 @@
 /*<![CDATA[*/
     var start = "[";
     var end = "]";
-    var data = [[${browserEntry}]];
+    var data = [[${browserEntryList}]];
 /*]]>*/
 </script>
 	
@@ -64,6 +65,29 @@
 .gridStyle {
 	border: 1px solid rgb(212, 212, 212);
 	height: 300px
+}
+
+.loader {
+  border: 10px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 10px solid blue;
+  border-right: 10px solid green;
+  border-bottom: 10px solid red;
+  border-left: 10px solid pink;
+  width: 10px;
+  height: 10px;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>
 </head>
@@ -123,13 +147,19 @@
 		</section>
 		<!--main content end-->
 	</section>
+	<form class="form-horizontal" id="browseForm"
+	    th:action="@{/browse}"
+		method="POST">
+		<input type="hidden" id="selectedNodePath" name="selectedNodePath"/>
+		<input type="hidden" id="selectedNodeId" name="selectedNodeId"/>
+	</form>
+	
 	<!-- container section start -->
 
 	<!-- javascripts -->
 	<!-- bootstrap -->
 	<script src="js/bootstrap.min.js"></script>
 
-	<script src="js/jquery-ui-1.10.4.min.js"></script>
 	<script src="js/jquery.scrollTo.min.js"></script>
 	<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
 	<script src="assets/jquery-knob/js/jquery.knob.js"></script>
@@ -148,8 +178,11 @@ $(function() {
         data: data,
         saveState: true,
         onCreateLi: function(node, $li) {
-            if (node.isFolder) {
+            if (node.collection) {
                 $li.find('.jqtree-title').before('<span class="folder-icon"></span>');
+               // $li.find('.jqtree-title').after('<span id="' + ("processingIcon"+node.id) + '" style="display:inline; visibility:hidden"><img class="manImg" width="40" height="40" src="img/spinner.gif"></img></span>');
+                //$li.find('.jqtree-title').after('<span id="' + ("processingIcon"+node.id) + '" style="display:inline; visibility:hidden" class="loader"></span>');
+                $li.find('.jqtree-title').after('<div id="' + ("processingIcon"+node.id) + '" style="display:inline-block; visibility:hidden" class="loader"></div>');
             }
         }        
     });
@@ -161,11 +194,33 @@ $('#tree1').bind(
     function(event) {
         // The clicked node is 'event.node'
         var node = event.node;
-        if(node.folder)
+        if(node.collection)
         	location.href = "collection?action=view&path="+node.fullPath;
         else
         	location.href = "datafile?action=view&path="+node.fullPath;
     }
+);
+
+/*
+    $('#tree1').tree({
+    	onLoading: function (is_loading, node, $el) {
+    		alert("is_loading " + is_loading);
+    		document.getElementById("selectedNodeId").value = node.id;
+    		$("#browseForm").submit();
+        }        
+    });
+*/
+
+
+$('#tree1').bind('tree.open', function (e,data) {  
+	document.getElementById("selectedNodePath").value = e.node.fullPath;
+	var node = e.node;
+	//$('#tree1').tree('closeNode', node, false);
+	//	var nodeId = $("#tree1").tree('getSelectedNode').toString();
+    document.getElementById("processingIcon"+node.id).style.visibility = "visible";
+	document.getElementById("selectedNodeId").value = node.id;
+	$("#browseForm").submit();
+}
 );
 /*]]>*/
 </script>
