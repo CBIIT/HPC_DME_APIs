@@ -72,7 +72,20 @@ public interface HpcDataManagementRestService
 	public Response getCollection(@PathParam("path") String path,
 			                      @QueryParam("list") Boolean list);
 	
+	
     /**
+     * Get a collection children. Collection metadata will not be returned
+     *
+     * @param path The collection path.
+     * @return The REST service response w/ HpcCollectionListDTO entity.
+     * @see gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO
+     */
+	@GET
+	@Path("/collection/{path:.*}/children")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getCollectionChildren(@PathParam("path") String path);
+
+	/**
      * Download a collection.
      *
      * @param path The collection path.

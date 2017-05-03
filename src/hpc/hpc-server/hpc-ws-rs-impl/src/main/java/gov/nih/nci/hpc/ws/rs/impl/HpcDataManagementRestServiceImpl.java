@@ -129,6 +129,23 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		
 		return okResponse(!collections.getCollections().isEmpty() ? collections : null , true);
     }
+
+    @Override
+    public Response getCollectionChildren(String path)
+    {	
+    	HpcCollectionListDTO collections = new HpcCollectionListDTO();
+		try {
+			 HpcCollectionDTO collection = dataManagementBusService.getCollectionChildren(toAbsolutePath(path));
+			 if(collection != null) {
+				collections.getCollections().add(collection);
+			 }
+			 
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+		return okResponse(!collections.getCollections().isEmpty() ? collections : null , true);
+    }
     
     @Override
 	public Response downloadCollection(String path,
