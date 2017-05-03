@@ -240,12 +240,23 @@ public class HpcClientUtil {
 			throw new HpcWebException("Failed to get tree for: " + docName + " due to: " + e.getMessage());
 		}
 	}
-
 	public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL, String path, boolean list,
 			String hpcCertPath, String hpcCertPassword) {
+		return getCollection(token, hpcCollectionlURL, path, false, list, hpcCertPath, hpcCertPassword);
+	}
+	public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL, String path, boolean children, boolean list,
+			String hpcCertPath, String hpcCertPassword) {
 		try {
+			String serviceURL = hpcCollectionlURL;
+			if(children)
+				serviceURL = serviceURL + path + "/children";
+			else if(list)
+				serviceURL = serviceURL + path + "?list=true";
+			else
+				serviceURL = serviceURL + path + "?list=false";
+			
 			WebClient client = HpcClientUtil.getWebClient(
-					hpcCollectionlURL + "/" + path + (list ? "?list=true" : "?list=false"), hpcCertPath,
+					serviceURL, hpcCertPath,
 					hpcCertPassword);
 			client.header("Authorization", "Bearer " + token);
 
@@ -358,8 +369,6 @@ public class HpcClientUtil {
 
 				HpcUserListDTO users = parser.readValueAs(HpcUserListDTO.class);
 				return users;
-			} else {
-
 			}
 
 		} catch (Exception e) {

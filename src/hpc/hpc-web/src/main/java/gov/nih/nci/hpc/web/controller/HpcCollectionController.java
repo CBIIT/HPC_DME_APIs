@@ -88,7 +88,9 @@ public class HpcCollectionController extends AbstractHpcController {
 					sslCertPath, sslCertPassword);
 			if (collections != null && collections.getCollections() != null
 					&& collections.getCollections().size() > 0) {
-				HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(),
+				HpcDataManagementModelDTO modelDTO =  (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+				if(modelDTO == null)
+					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(),
 						sslCertPath, sslCertPassword);
 				HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId, serviceURL, sslCertPath, sslCertPassword);
 				HpcCollectionDTO collection = collections.getCollections().get(0);
