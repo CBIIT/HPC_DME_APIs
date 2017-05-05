@@ -14,7 +14,7 @@
 <!-- bootstrap theme -->
 <link href="css/bootstrap-theme.css" rel="stylesheet" />
 <!--external css-->
-<link href="css/datepicker.css" rel="stylesheet" />
+<link href="css/bootstrap-datepicker.css" rel="stylesheet" />
 <!-- font icon -->
 <link href="css/elegant-icons-style.css" rel="stylesheet" />
 <link href="css/font-awesome.min.css" rel="stylesheet" />
@@ -96,7 +96,7 @@
 							<label class="control-label col-sm-2" for="level">Report
 								type:</label>
 							<div class="col-sm-6">
-								<select name="reportType" class="form-control"
+								<select name="reportType" id="reportType" class="form-control"
 									onchange="show(this)">
 									<option value="-1">----Select----</option>
 
@@ -148,19 +148,35 @@
 						<div class="form-group" style="display: none" id="fromDateDiv">
 							<label class="control-label col-sm-2" for="level">From
 								Date:</label>
+<div class="input-group date col-sm-6" data-provide="datepicker">
+    <input type="text" class="form-control" id="fromDate" name="fromDate"/>
+    <div class="input-group-addon">
+        <span class="glyphicon glyphicon-th"></span>
+    </div>
+</div>								
+<!-- 
 							<div class="col-sm-6">
 								<input type="text" class="form-control" id="fromDate"
 									name="fromDate"></input>
 							</div>
+ -->							
 							<label class="control-label col-sm-4" for="level">&nbsp;</label>
 						</div>
 						<div class="form-group" style="display: none" id="toDateDiv">
 							<label class="control-label col-sm-2" for="level">To
 								Date:</label>
+<div class="input-group date col-sm-6" data-provide="datepicker">
+    <input type="text" class="form-control" id="toDate" name="toDate"/>
+    <div class="input-group-addon">
+        <span class="glyphicon glyphicon-th"></span>
+    </div>
+</div>								
+<!-- 
 							<div class="col-sm-6">
 								<input type="text" class="form-control" id="toDate"
 									name="toDate"></input>
 							</div>
+ -->							
 							<label class="control-label col-sm-4" for="level">&nbsp;</label>
 						</div>
 
@@ -275,12 +291,20 @@
 
 	<script>
   $('#fromDate').datepicker({
-	    format: 'mm/dd/yyyy'
+	    format: 'mm/dd/yyyy',
+	    defaultDate: 'now',
+        autoclose: true	    
 	});
  
+  $('#fromDate').datepicker('setDate', new Date());
+  
   $('#toDate').datepicker({
-	    format: 'mm/dd/yyyy'
+	    format: 'mm/dd/yyyy',
+	    defaultDate: 'now',
+        autoclose: true	    
 	});  
+  $('#toDate').datepicker('setDate', new Date());
+  
   //knob
       $(function() {
         $(".knob").knob({
@@ -363,7 +387,16 @@
       function validateAndSubmit()
       {
     	  var reportType = document.getElementById("reportType").value;
+    	  var fromDateVal = document.getElementById("fromDate").value;
+    	  var toDateVal = document.getElementById("toDate").value;
+    	  var fromDate = new Date(fromDateVal);
+    	  var toDate = new Date(toDateVal);
     	  
+    	  if(fromDate.valueOf() > toDate.valueOf())
+    	  {
+    		  alert("Invalid date range");
+    		  return false;
+    	  }
     	  if(reportType == "-1")
     	  {
     		  alert("Please select report type");
