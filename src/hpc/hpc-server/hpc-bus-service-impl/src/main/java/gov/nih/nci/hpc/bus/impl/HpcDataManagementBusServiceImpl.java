@@ -257,7 +257,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	HpcDownloadResponseListDTO downloadResponseList =  
     	   downloadDataObjects(collection, downloadRequest.getDestination());
     	if(downloadResponseList.getDownloadReceipts().isEmpty()) {
-    	   throw new HpcException("Collection doesn't contain any data objects: " + path,
+    	   throw new HpcException("Collection doesn't contain any data object: " + path,
                                   HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
