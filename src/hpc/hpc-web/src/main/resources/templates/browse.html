@@ -180,15 +180,12 @@ $(function() {
         saveState: true,
         onCreateLi: function(node, $li) {
             if (node.collection) {
-            	alert("yes1 "+node.fullPath);
-            	alert("yes2 "+basePathName);
-            	if(node.fullPath == basePathName)
-            		{
-            		alert("closing");
-            		    $('#tree1').tree('closeNode', node);
+//            	if(node.fullPath == basePathName)
+//            		{
+//            		    $('#tree1').tree('closeNode', node);
 //	            	    $li.addClass('data-jstree');
 //	            	    $li.attr('opened', 'false');
-            		}
+//            		}
                 $li.find('.jqtree-title').before('<span class="folder-icon"></span>');
                // $li.find('.jqtree-title').after('<span id="' + ("processingIcon"+node.id) + '" style="display:inline; visibility:hidden"><img class="manImg" width="40" height="40" src="img/spinner.gif"></img></span>');
                 //$li.find('.jqtree-title').after('<span id="' + ("processingIcon"+node.id) + '" style="display:inline; visibility:hidden" class="loader"></span>');
