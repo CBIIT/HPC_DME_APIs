@@ -70,6 +70,7 @@ public class HpcEventServiceImpl implements HpcEventService
 	public static final String SOURCE_LOCATION_PAYLOAD_ATTRIBUTE = "SOURCE_LOCATION";
 	public static final String DESTINATION_LOCATION_PAYLOAD_ATTRIBUTE = "DESTINATION_LOCATION";
 	public static final String DATA_TRANSFER_COMPLETED_PAYLOAD_ATTRIBUTE = "DATA_TRANSFER_COMPLETED";
+	public static final String ERROR_MESSAGE_PAYLOAD_ATTRIBUTE = "ERROR_MESSAGE";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -167,16 +168,19 @@ public class HpcEventServiceImpl implements HpcEventService
     		       String userId, String path, String dataTransferRequestId, HpcFileLocation destinationLocation, 
                    Calendar dataTransferCompleted) throws HpcException
     {
-    	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_DOWNLOAD_COMPLETED,
-    			             dataTransferRequestId, path, null, dataTransferCompleted, null, destinationLocation);
+    	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_DOWNLOAD_COMPLETED, dataTransferRequestId, 
+    			             path, null, dataTransferCompleted, null, destinationLocation, null);
     }
     
     @Override
-    public void addDataTransferDownloadFailedEvent(
-    		       String userId, String dataTransferRequestId) throws HpcException
+    public void addDataTransferDownloadFailedEvent(String userId, String path, String dataTransferRequestId,
+                                                   HpcFileLocation destinationLocation, 
+                                                   Calendar dataTransferCompleted, String errorMessage) 
+                                                  throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_DOWNLOAD_FAILED,
-	                         dataTransferRequestId, null, null, null, null, null);
+    			             dataTransferRequestId, path, null, dataTransferCompleted, null, destinationLocation, 
+    			             errorMessage);
     }
     
     @Override
@@ -184,7 +188,7 @@ public class HpcEventServiceImpl implements HpcEventService
     		                                                throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE,
-                             null, path, null, null, null, null);
+                             null, path, null, null, null, null, null);
     }
     
     @Override
@@ -192,16 +196,17 @@ public class HpcEventServiceImpl implements HpcEventService
     		                                       HpcFileLocation sourceLocation, Calendar dataTransferCompleted) 
     		                                      throws HpcException
     {
-    	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_ARCHIVED,
-                             null, path, checksum, dataTransferCompleted, sourceLocation, null);
+    	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_ARCHIVED, null, path, checksum, 
+    			             dataTransferCompleted, sourceLocation, null, null);
     }
     
     @Override
-    public void addDataTransferUploadFailedEvent(String userId, String path) 
+    public void addDataTransferUploadFailedEvent(String userId, String path, HpcFileLocation sourceLocation, 
+                                                 Calendar dataTransferCompleted, String errorMessage) 
     		                                    throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_FAILED,
-                             null, path, null, null, null, null);
+                             null, path, null, dataTransferCompleted, sourceLocation, null, errorMessage);
     }
     
     @Override
@@ -336,11 +341,13 @@ public class HpcEventServiceImpl implements HpcEventService
      * @param dataTransferCompleted (Optional) The time the data upload completed.
      * @param sourceLocation (Optional) The data transfer source location.
      * @param destinationLocation (Optional) The data transfer destination location.
+     * @param errorMessage (Optional) An error message.
      * @throws HpcException on service failure.
      */
     private void addDataTransferEvent(String userId, HpcEventType eventType, String dataTransferRequestId, 
     		                          String path, String checksum, Calendar dataTransferCompleted,
-    		                          HpcFileLocation sourceLocation, HpcFileLocation destinationLocation) 
+    		                          HpcFileLocation sourceLocation, HpcFileLocation destinationLocation,
+    		                          String errorMessage) 
     		                         throws HpcException
 	{
 		// Input Validation.
@@ -364,20 +371,20 @@ public class HpcEventServiceImpl implements HpcEventService
 		if(checksum != null) {
 		   event.getPayloadEntries().add(toPayloadEntry(CHECKSUM_PAYLOAD_ATTRIBUTE, checksum));
 		}
-		
 		if(dataTransferCompleted != null) {
-			   event.getPayloadEntries().add(toPayloadEntry(DATA_TRANSFER_COMPLETED_PAYLOAD_ATTRIBUTE, 
-	                                                        dateFormat.format(dataTransferCompleted.getTime())));
+		   event.getPayloadEntries().add(toPayloadEntry(DATA_TRANSFER_COMPLETED_PAYLOAD_ATTRIBUTE, 
+	                                                    dateFormat.format(dataTransferCompleted.getTime())));
 		}
-		
 		if(sourceLocation != null) {
 		   event.getPayloadEntries().add(toPayloadEntry(SOURCE_LOCATION_PAYLOAD_ATTRIBUTE, 
 				                                        toString(sourceLocation)));
 	    }
-		
 		if(destinationLocation != null) {
 		   event.getPayloadEntries().add(toPayloadEntry(DESTINATION_LOCATION_PAYLOAD_ATTRIBUTE, 
 					                                    toString(destinationLocation)));
+		}
+		if(errorMessage != null) {
+		   event.getPayloadEntries().add(toPayloadEntry(ERROR_MESSAGE_PAYLOAD_ATTRIBUTE, errorMessage));
 		}
 	
 		// Persist to DB.

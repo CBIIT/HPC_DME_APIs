@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadCleanup;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
@@ -173,7 +174,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			 // Data transfer upload completed (successfully or failed). Add an event.
     			 addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
 		                                    dataTransferStatus, null, systemGeneratedMetadata.getSourceLocation(), 
-		                                    dataTransferCompleted);
+		                                    dataTransferCompleted, systemGeneratedMetadata.getDataTransferType());
     		     
     		} catch(HpcException e) {
     			    logger.error("Failed to process data transfer upload update:" + path, e);
@@ -234,7 +235,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     					                    uploadResponse.getDataTransferStatus(),
     					                    uploadResponse.getChecksum(), 
     					                    systemGeneratedMetadata.getSourceLocation(),
-    					                    uploadResponse.getDataTransferCompleted());
+    					                    uploadResponse.getDataTransferCompleted(),
+    					                    uploadResponse.getDataTransferType());
  			     
     		} catch(HpcException e) {
     			    logger.error("Failed to transfer data from temporary archive:" + path, e);
@@ -265,7 +267,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		   addDataTransferDownloadEvent(dataObjectDownloadCleanup.getUserId(), dataObjectDownloadCleanup.getPath(),
     				                        dataObjectDownloadCleanup.getDataTransferRequestId(),
     				                        dataTransferDownloadStatus, dataObjectDownloadCleanup.getDestinationLocation(),
-    				                        Calendar.getInstance());
+    				                        Calendar.getInstance(), dataObjectDownloadCleanup.getDataTransferType());
     		}
     	}
     }
@@ -504,11 +506,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * @param checksum (Optional) The data checksum.
      * @param sourceLocation (Optional) The data transfer source location.
      * @param dataTransferCompleted (Optional) The time the data upload completed.
+     * @param dataTransferType The type of data transfer used to upload (Globus, S3, etc).
      */
 	private void addDataTransferUploadEvent(String userId, String path,
 			                                HpcDataTransferUploadStatus dataTransferStatus,
 			                                String checksum, HpcFileLocation sourceLocation, 
-			                                Calendar dataTransferCompleted) 
+			                                Calendar dataTransferCompleted, 
+			                                HpcDataTransferType dataTransferType) 
 	{
 		try {
 			 switch(dataTransferStatus) {
@@ -522,7 +526,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		                 break;
 		                 
 			        case FAILED: 
-		                 eventService.addDataTransferUploadFailedEvent(userId, path);
+		                 eventService.addDataTransferUploadFailedEvent(userId, path, sourceLocation, 
+		                		                                       dataTransferCompleted,
+		                		                                       dataTransferType.value() + " failure");
 		                 break;
 		                 
 		            default: 
@@ -543,21 +549,28 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * @param dataTransferStatus The data transfer download status.
      * @param destinationLocation The download destination location.
      * @param dataTransferCompleted The download completion time.
+     * @param dataTransferType The type of data transfer used to download (Globus, S3, etc).
      */
 	private void addDataTransferDownloadEvent(String userId, String path, String dataTransferRequestId,
 			                                  HpcDataTransferDownloadStatus dataTransferStatus,
 			                                  HpcFileLocation destinationLocation, 
-			                                  Calendar dataTransferCompleted) 
+			                                  Calendar dataTransferCompleted,
+			                                  HpcDataTransferType dataTransferType) 
 	{
 		try {
 			 switch(dataTransferStatus) {
 			        case COMPLETED: 
 		                 eventService.addDataTransferDownloadCompletedEvent(userId, path, dataTransferRequestId, 
 		                		                                            destinationLocation, dataTransferCompleted);
+		                 eventService.addDataTransferDownloadFailedEvent(userId, path, dataTransferRequestId,
+                                 destinationLocation, dataTransferCompleted,
+                                 dataTransferType.value() + " failure");
 		                 break;
 		                 
 			        case FAILED: 
-		                 eventService.addDataTransferDownloadFailedEvent(userId, dataTransferRequestId);
+		                 eventService.addDataTransferDownloadFailedEvent(userId, path, dataTransferRequestId,
+		                		                                         destinationLocation, dataTransferCompleted,
+		                		                                         dataTransferType.value() + " failure");
 		                 break;
 		                 
 		            default: 

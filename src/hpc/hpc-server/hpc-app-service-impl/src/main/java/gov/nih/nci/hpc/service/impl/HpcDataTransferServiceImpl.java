@@ -36,6 +36,7 @@ import gov.nih.nci.hpc.service.HpcEventService;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -626,6 +627,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	
     	// The invoker user ID.
     	String userId = null;
+    	
+    	// The data object path.
+    	String path = null;
 	
 		//---------------------------------------------------------------------//
 	    // Constructors
@@ -640,6 +644,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 			                          HpcErrorType.UNEXPECTED_ERROR);
 	       	}
 	       	userId = invoker.getNciAccount().getUserId();
+	       	path = firstHopDownloadRequest.getPath();
 	       	
 			// Create the 2nd hop download request.
 			secondHopDownloadRequest =
@@ -714,8 +719,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    {
 	    	try {
 	    		 eventService.addDataTransferDownloadFailedEvent(
-	    				         userId, 
-                                 getDownloadResponse().getDataTransferRequestId());
+	    				         userId, path, null, secondHopDownloadRequest.getDestinationLocation(),
+	    				         Calendar.getInstance(), "Failed to get data from archive via S3");
 	    		 
 	    	} catch(HpcException e) {
 	    		    logger.error("Failed to add data transfer download failed event", e);
