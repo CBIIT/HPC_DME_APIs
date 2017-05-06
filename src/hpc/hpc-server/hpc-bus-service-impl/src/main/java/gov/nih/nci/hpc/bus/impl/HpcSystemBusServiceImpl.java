@@ -562,9 +562,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 			        case COMPLETED: 
 		                 eventService.addDataTransferDownloadCompletedEvent(userId, path, dataTransferRequestId, 
 		                		                                            destinationLocation, dataTransferCompleted);
-		                 eventService.addDataTransferDownloadFailedEvent(userId, path, dataTransferRequestId,
-                                 destinationLocation, dataTransferCompleted,
-                                 dataTransferType.value() + " failure");
 		                 break;
 		                 
 			        case FAILED: 
