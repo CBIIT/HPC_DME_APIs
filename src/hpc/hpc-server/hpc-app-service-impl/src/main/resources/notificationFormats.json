@@ -35,13 +35,22 @@
         },
         {  
          "eventType" : "DATA_TRANSFER_UPLOAD_FAILED",
-         "subjectFormat" : "HPC Data Object Registration Failed",
-         "subjectArguments" : [],
-         "textFormat" : "Your data registration failed. \nData path: %1$s",
+         "subjectFormat" : "HPC Data Transfer Upload Request Failed at %1$s",
+         "subjectArguments" : [
+         	{  
+             "payloadEntryAttribute" : "DATA_TRANSFER_COMPLETED",
+             "index" : "0"
+			}
+		 ],
+         "textFormat" : "Your data registration failed. \nData path: %1$s \nReason for failure: %2$s",
          "textArguments" : [
          	{  
              "payloadEntryAttribute" : "DATA_OBJECT_PATH",
              "index" : "0"
+			},
+			{  
+             "payloadEntryAttribute" : "ERROR_MESSAGE",
+             "index" : "1"
 			}
          ]
         },
@@ -68,15 +77,28 @@
         },
         {  
          "eventType" : "DATA_TRANSFER_DOWNLOAD_FAILED",
-         "subjectFormat" : "HPC Data Transfer Download Request Failed: [%1$s]",
+         "subjectFormat" : "HPC Data Transfer Download Request Failed at %1$s",
          "subjectArguments" : [
          	{  
-             "payloadEntryAttribute" : "DATA_TRANSFER_REQUEST_ID",
+             "payloadEntryAttribute" : "DATA_TRANSFER_COMPLETED",
              "index" : "0"
-            }
-         ],
-         "textFormat" : "Your download request failed.",
-         "textArguments" : []
+			}
+		 ],
+         "textFormat" : "Your download request failed.\nSource path: %1$s\nTarget path: %2$s\nReason for failure: %3$s",
+            "textArguments" : [
+         	{  
+             "payloadEntryAttribute" : "DATA_OBJECT_PATH",
+             "index" : "0"
+			}
+         	{  
+             "payloadEntryAttribute" : "DESTINATION_LOCATION",
+             "index" : "1"
+			},
+			{  
+             "payloadEntryAttribute" : "ERROR_MESSAGE",
+             "index" : "2"
+			}
+         ]
         },
         {  
          "eventType" : "USAGE_SUMMARY_REPORT",

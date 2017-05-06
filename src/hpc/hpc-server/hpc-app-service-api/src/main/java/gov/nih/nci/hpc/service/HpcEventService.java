@@ -72,10 +72,16 @@ public interface HpcEventService
      * Add a data transfer download failed event.
      *
      * @param userId The user ID.
+     * @param path The data object path.
      * @param dataTransferRequestId The data transfer request ID.
+     * @param destinationLocation The data transfer destination location.
+     * @param dataTransferCompleted The time the data download failed.
+     * @param errorMessage The download failed error message.
      * @throws HpcException on service failure.
      */
-    public void addDataTransferDownloadFailedEvent(String userId, String dataTransferRequestId) 
+    public void addDataTransferDownloadFailedEvent(String userId, String path, String dataTransferRequestId,
+                                                   HpcFileLocation destinationLocation, 
+                                                   Calendar dataTransferCompleted, String errorMessage) 
     		                                      throws HpcException;
     
     /**
@@ -107,9 +113,13 @@ public interface HpcEventService
      *
      * @param userId The user ID.
      * @param path The data object path.
+     * @param sourceLocation The data transfer source location.
+     * @param dataTransferCompleted The time the data upload completed.
+     * @param errorMessage the upload failed error message.
      * @throws HpcException on service failure.
      */
-    public void addDataTransferUploadFailedEvent(String userId, String path) 
+    public void addDataTransferUploadFailedEvent(String userId, String path, HpcFileLocation sourceLocation, 
+    		                                     Calendar dataTransferCompleted, String errorMessage) 
                                                 throws HpcException;
 
     /**
