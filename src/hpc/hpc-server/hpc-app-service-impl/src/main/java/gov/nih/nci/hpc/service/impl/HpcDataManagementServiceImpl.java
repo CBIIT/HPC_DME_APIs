@@ -444,7 +444,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	for(HpcMetadataEntry metadataEntry : 
     		dataManagementProxy.getCollectionMetadata(
-    				               dataManagementAuthenticator.getAuthenticatedToken(), path)) {
+    				               dataManagementAuthenticator.getAuthenticatedToken(), path, null)) {
     		if(metadataEntry.getAttribute().equals(HpcMetadataValidator.COLLECTION_TYPE_ATTRIBUTE)) {
     		   return metadataEntry.getValue();
     		}
