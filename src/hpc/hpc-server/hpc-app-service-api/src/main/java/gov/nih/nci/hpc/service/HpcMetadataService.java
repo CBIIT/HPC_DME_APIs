@@ -104,12 +104,10 @@ public interface HpcMetadataService
      * Get metadata of a collection.
      *
      * @param path The collection's path.
-     * @param lastUpdated (Optional) If not null, this calendar will be set with the time the last metadata update occurred.
      * @return The collection's metadata entries.
      * @throws HpcException on service failure.
      */
-    public HpcMetadataEntries getCollectionMetadataEntries(String path, Calendar lastUpdated) 
-    		                                              throws HpcException;
+    public HpcMetadataEntries getCollectionMetadataEntries(String path) throws HpcException;
     
     /**
      * Add metadata to a data object.
@@ -208,12 +206,10 @@ public interface HpcMetadataService
      * Get metadata of a data object.
      *
      * @param path The data object's path.
-     * @param lastUpdated (Optional) If not null, this calendar will be set with the time the last metadata update occurred.
      * @return HpcMetadataEntries The data object's metadata entries.
      * @throws HpcException on service failure.
      */
-    public HpcMetadataEntries getDataObjectMetadataEntries(String path, Calendar lastUpdated) 
-    		                                              throws HpcException;
+    public HpcMetadataEntries getDataObjectMetadataEntries(String path) throws HpcException;
     
     /**
      * Get collection metadata validation rules for a DOC.
