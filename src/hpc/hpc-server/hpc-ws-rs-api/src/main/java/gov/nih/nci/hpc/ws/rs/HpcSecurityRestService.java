@@ -175,7 +175,7 @@ public interface HpcSecurityRestService
     /**
      * Get groups by search criteria.
      *
-     * @param groupPattern (Optional) The group pattern to search for (using case sensitive matching).
+     * @param groupPattern (Optional) The group pattern to search for (using case insensitive matching).
      *                                SQL LIKE wildcards ('%', '_') are supported. 
      *                                If null - then all groups are returned.
      * @return The REST service response w/ HpcGroupListDTO entity.
