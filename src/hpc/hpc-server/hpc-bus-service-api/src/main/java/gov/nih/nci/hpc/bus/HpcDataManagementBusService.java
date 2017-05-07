@@ -65,7 +65,6 @@ public interface HpcDataManagementBusService
      * Get Collection children. NO collection metadata will be returned
      *
      * @param path The collection's path.
-     * @param list An indicator to list sub-collections and data-objects.
      * @return A Collection DTO.
      * @throws HpcException on service failure.
      */
@@ -180,7 +179,7 @@ public interface HpcDataManagementBusService
      * Get data object permission for user.
      *
      * @param path The path of the data object.
-     * @param userId
+     * @param userId The user ID to get permission for.
      * @return permission on the data object.
      * @throws HpcException on service failure.
      */
