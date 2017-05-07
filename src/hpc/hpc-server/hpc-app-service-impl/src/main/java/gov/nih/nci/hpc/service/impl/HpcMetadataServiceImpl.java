@@ -157,7 +157,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	// Validate collection type is not in the update request.
        	List<HpcMetadataEntry> existingMetadataEntries = dataManagementProxy.getCollectionMetadata(
                                                              dataManagementAuthenticator.getAuthenticatedToken(),
-                                                             path, null);
+                                                             path);
        	validateCollectionTypeUpdate(existingMetadataEntries, metadataEntries);
        	
        	// Validate Metadata.
@@ -204,7 +204,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     	
     	return toSystemGeneratedMetadata(dataManagementProxy.getCollectionMetadata(
                                              dataManagementAuthenticator.getAuthenticatedToken(),
-                                             path, null));
+                                             path));
 	}
     
     @Override
@@ -289,15 +289,14 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     }
     
     @Override
-    public HpcMetadataEntries getCollectionMetadataEntries(String path, Calendar lastUpdated) 
-    		                                               throws HpcException
+    public HpcMetadataEntries getCollectionMetadataEntries(String path) throws HpcException
     {
     	HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
     	
     	// Get the metadata associated with the collection itself.
     	metadataEntries.getSelfMetadataEntries().addAll(
     			dataManagementProxy.getCollectionMetadata(
-    					               dataManagementAuthenticator.getAuthenticatedToken(), path, lastUpdated));
+    					               dataManagementAuthenticator.getAuthenticatedToken(), path));
     	
     	// Get the hierarchical metadata.
     	metadataEntries.getParentMetadataEntries().addAll(
@@ -438,7 +437,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     	
     	return toSystemGeneratedMetadata(dataManagementProxy.getDataObjectMetadata(
     			                             dataManagementAuthenticator.getAuthenticatedToken(),
-                                             path, null));
+                                             path));
 	}
     
     @Override
@@ -526,7 +525,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	// Validate Metadata.
        	metadataValidator.validateDataObjectMetadata(dataManagementProxy.getDataObjectMetadata(
        			                                         dataManagementAuthenticator.getAuthenticatedToken(),
-                                                         path, null),
+                                                         path),
        			                                     metadataEntries);
        	
        	// Update Metadata.
@@ -535,15 +534,14 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     }
     
     @Override
-    public HpcMetadataEntries getDataObjectMetadataEntries(String path, Calendar lastUpdated) 
-    		                                              throws HpcException
+    public HpcMetadataEntries getDataObjectMetadataEntries(String path) throws HpcException
     {
     	HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
     	
     	// Get the metadata associated with the data object itself.
     	metadataEntries.getSelfMetadataEntries().addAll(
     			dataManagementProxy.getDataObjectMetadata(
-    					               dataManagementAuthenticator.getAuthenticatedToken(), path, lastUpdated));
+    					               dataManagementAuthenticator.getAuthenticatedToken(), path));
     	
     	// Get the hierarchical metadata.
     	metadataEntries.getParentMetadataEntries().addAll(
