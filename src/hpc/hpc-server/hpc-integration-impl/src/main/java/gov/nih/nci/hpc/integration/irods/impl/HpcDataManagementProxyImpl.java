@@ -920,12 +920,14 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		       metadataEntries.add(metadataEntry);
 		       
 		       // Keep track of the most recent updated metadata entry
+		       logger.error("ERAN: irods md date: " + irodsMetadataEntry.getModifiedAt());
 		       if(calcLastUpdated == null || calcLastUpdated.before(irodsMetadataEntry.getModifiedAt())) {
 		    	  calcLastUpdated = irodsMetadataEntry.getModifiedAt();
 		       } 
 		   }
 		   
-		   if(lastUpdated != null) {
+		   logger.error("ERAN: calc date: " + calcLastUpdated);
+		   if(lastUpdated != null && calcLastUpdated != null) {
 			  lastUpdated.setTime(calcLastUpdated);
 		   }
 	    }
