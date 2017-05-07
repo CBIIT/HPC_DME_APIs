@@ -195,10 +195,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       	   return null;
       	}
      	
-     	// Get the metadata. Note that we set the collection's last modified date to the time the last
-    	// metadata update occurred.
+     	// Get the metadata.
      	HpcMetadataEntries metadataEntries = 
-     	   metadataService.getCollectionMetadataEntries(collection.getAbsolutePath(), collection.getModifiedAt());
+     	   metadataService.getCollectionMetadataEntries(collection.getAbsolutePath());
  		
      	HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
      	collectionDTO.setCollection(collection);
@@ -434,11 +433,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       	   return null;
       	}
     	
-    	// Get the metadata for this data object. Note that we set the data-object's last modified date 
-    	// to the time the last metadata update occurred.
+    	// Get the metadata for this data object. 
     	HpcMetadataEntries metadataEntries = 
-    		               metadataService.getDataObjectMetadataEntries(dataObject.getAbsolutePath(), 
-    		            		                                        dataObject.getUpdatedAt());
+    		               metadataService.getDataObjectMetadataEntries(dataObject.getAbsolutePath());
     	String transferPercentCompletion = getDataTransferUploadPercentCompletion(
 		               metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries()));
     		

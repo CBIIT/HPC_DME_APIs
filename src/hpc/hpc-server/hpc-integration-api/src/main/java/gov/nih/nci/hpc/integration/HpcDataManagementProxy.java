@@ -21,7 +21,6 @@ import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import java.util.Calendar;
 import java.util.List;
 
 
@@ -188,12 +187,10 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param path The collection path.
-     * @param lastUpdated (Optional) If not null, this calendar will be set with the time the last metadata update occurred.
      * @return List of metadata entries.
      * @throws HpcException on data management system failure.
      */
-    public List<HpcMetadataEntry> getCollectionMetadata(Object authenticatedToken, 
-   		                                                String path, Calendar lastUpdated) 
+    public List<HpcMetadataEntry> getCollectionMetadata(Object authenticatedToken, String path) 
    		                                               throws HpcException;
     
     /**
@@ -224,12 +221,10 @@ public interface HpcDataManagementProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param path The data object path.
-     * @param lastUpdated (Optional) If not null, this calendar will be set with the time the last metadata update occurred.
      * @return List of metadata entries.
      * @throws HpcException on data management system failure.
      */
-    public List<HpcMetadataEntry> getDataObjectMetadata(Object authenticatedToken, 
-   		                                                String path, Calendar lastUpdated) 
+    public List<HpcMetadataEntry> getDataObjectMetadata(Object authenticatedToken, String path) 
    		                                               throws HpcException;   
     
     /**

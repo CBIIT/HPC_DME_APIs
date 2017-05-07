@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import org.irods.jargon.core.exception.DataNotFoundException;
@@ -363,13 +362,12 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
 
     @Override
-    public List<HpcMetadataEntry> getCollectionMetadata(Object authenticatedToken, 
-   		                                                String path, Calendar lastUpdated) 
+    public List<HpcMetadataEntry> getCollectionMetadata(Object authenticatedToken, String path) 
    		                                               throws HpcException
     {
 		try {
 			 return toHpcMetadata(irodsConnection.getCollectionAO(authenticatedToken).
-					              findMetadataValuesForCollection(getAbsolutePath(path)), lastUpdated);
+					              findMetadataValuesForCollection(getAbsolutePath(path)));
 
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get metadata of a collection: " + path + ". " +
@@ -425,13 +423,12 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public List<HpcMetadataEntry> getDataObjectMetadata(Object authenticatedToken, 
-   		                                                String path, Calendar lastUpdated) 
+    public List<HpcMetadataEntry> getDataObjectMetadata(Object authenticatedToken, String path) 
    		                                               throws HpcException
     {
 		try {
 			 return toHpcMetadata(irodsConnection.getDataObjectAO(authenticatedToken).
-					              findMetadataValuesForDataObject(getAbsolutePath(path)), lastUpdated);
+					              findMetadataValuesForDataObject(getAbsolutePath(path)));
 	
 		} catch(Exception e) {
 	            throw new HpcException("Failed to get metadata of a data object: " + path + ". " + 
@@ -902,14 +899,11 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
      * Convert iRODS metadata results to HPC metadata domain objects.
      *
      * @param irodsMetadataEntries The iRODS metadata entries.
-     * @param lastUpdated (Optional) If not null, this calendar will be set with the time the last metadata update occurred.
      * @return A list of metadata entries.
      */
-    private List<HpcMetadataEntry> toHpcMetadata(List<MetaDataAndDomainData> irodsMetadataEntries,
-    		                                     Calendar lastUpdated)
+    private List<HpcMetadataEntry> toHpcMetadata(List<MetaDataAndDomainData> irodsMetadataEntries)
     {
     	List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
-    	Date calcLastUpdated = null;
 	    if(irodsMetadataEntries != null) {
 		   for(MetaDataAndDomainData irodsMetadataEntry : irodsMetadataEntries) {
 		       HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
@@ -918,17 +912,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 		       String unit = irodsMetadataEntry.getAvuUnit();
 		       metadataEntry.setUnit(unit != null && !unit.isEmpty() ? unit : null);
 		       metadataEntries.add(metadataEntry);
-		       
-		       // Keep track of the most recent updated metadata entry
-		       logger.error("ERAN: irods md date: " + irodsMetadataEntry.getModifiedAt());
-		       if(calcLastUpdated == null || calcLastUpdated.before(irodsMetadataEntry.getModifiedAt())) {
-		    	  calcLastUpdated = irodsMetadataEntry.getModifiedAt();
-		       } 
-		   }
-		   
-		   logger.error("ERAN: calc date: " + calcLastUpdated);
-		   if(lastUpdated != null && calcLastUpdated != null) {
-			  lastUpdated.setTime(calcLastUpdated);
 		   }
 	    }
 	    
