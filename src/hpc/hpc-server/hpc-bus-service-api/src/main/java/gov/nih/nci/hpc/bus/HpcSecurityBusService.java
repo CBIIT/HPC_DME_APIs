@@ -141,7 +141,7 @@ public interface HpcSecurityBusService
     /**
      * Get groups by search criteria.
      *
-     * @param groupPattern (Optional) The group pattern to search for (using case sensitive matching).
+     * @param groupPattern (Optional) The group pattern to search for (using case insensitive matching).
      *                                SQL LIKE wildcards ('%', '_') are supported. 
      *                                If not provided, then all groups are returned.
      * @return A list of groups and their members.
