@@ -29,7 +29,7 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id:$
+ * @version $Id$
  */
 
 public class HpcGroupDAOImpl implements HpcGroupDAO
@@ -39,7 +39,8 @@ public class HpcGroupDAOImpl implements HpcGroupDAO
     //---------------------------------------------------------------------//    
     
     // SQL Queries.
-	private static final String GET_GROUPS_SQL = "select user_name from public.r_user_main where user_type_name = 'rodsgroup'";
+	private static final String GET_GROUPS_SQL = "select user_name from public.r_user_main where " +
+                                                 "user_type_name = 'rodsgroup' and user_name <> 'rodsadmin'";
     
 	private static final String GET_GROUPS_GROUP_NAME_PATTERN_FILTER = " and lower(user_name) like lower(?) ";
 	
