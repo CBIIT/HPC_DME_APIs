@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
+import gov.nih.nci.hpc.dao.HpcGroupDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
@@ -50,6 +51,10 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     // The Data Management Authenticator.
 	@Autowired
     private HpcDataManagementAuthenticator dataManagementAuthenticator = null;
+	
+    // The Group DAO instance.
+	@Autowired
+    private HpcGroupDAO groupDAO = null;
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -227,8 +232,9 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
-    	return dataManagementProxy.getGroups(dataManagementAuthenticator.getAuthenticatedToken(), 
-    			                             groupPattern);      	
+    	// Note: The Jargon API doesn't support case insensitive query. To workaround, we query the iRODS DB.
+    	// Once the Jargon API is enhanced to support case insensitive search, it needs to be used and the DAO retired.
+    	return groupDAO.getGroups(groupPattern);      	
     }
     
     //---------------------------------------------------------------------//
