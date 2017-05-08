@@ -35,13 +35,10 @@ RESPONSE_MSG=permission-response-message.json.tmp
 update_permission "input.json.tmp" "collection/$COLLECTION_PATH" "$RESPONSE_HEADER" "$RESPONSE_MSG"
  
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
-echo $HTTP_CODE
+echo $HTTP_CODE >&2
 
-MESSAGE=$(cat "$RESPONSE_MSG")
-EXPECTED_ERROR="InvalidUserException"
-if [[ "$MESSAGE" == *$EXPECTED_ERROR*  ]]
-then
-    echo $EXPECTED_ERROR 1>&2
-fi
+get_json_value $RESPONSE_MSG errorType >&2
+get_json_value $RESPONSE_MSG requestRejectReason >&2
+get_json_value $RESPONSE_MSG message >&2
 
 
