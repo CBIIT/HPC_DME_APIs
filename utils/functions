@@ -14,15 +14,15 @@
 source $HPC_DM_UTILS/utilities
 
 #Generate a DM API authentication token
-function dm_generate_token {
+function dm_generate_token () {
 
-    LOG_FILE=$HPC_DM_UTILS/log
+    local LOG_FILE=$HPC_DM_UTILS/log
     rm $LOG_FILE 2>/dev/null
 
-    SERVER=$(get_server)
+    local SERVER=$(get_server)
     
     curl -k -u `get_username` ${SERVER}/authenticate >  $LOG_FILE
-    TOKEN=$(get_json_value $LOG_FILE token)
+    local TOKEN=$(get_json_value $LOG_FILE token)
 
     if [ -z $TOKEN ]
     then
@@ -31,7 +31,7 @@ function dm_generate_token {
         echo "ERROR MESSAGE: $MESSAGE"   
         return
     else  
-      CONFIG_STRING=$(cat "$HPC_DM_UTILS/curl-conf" | sed "s/Bearer.*/Bearer $TOKEN\"/")
+      local CONFIG_STRING=$(cat "$HPC_DM_UTILS/curl-conf" | sed "s/Bearer.*/Bearer $TOKEN\"/")
       echo "$CONFIG_STRING" > $HPC_DM_UTILS/curl-conf
       rm $LOG_FILE 2>/dev/null
     fi
@@ -40,23 +40,23 @@ function dm_generate_token {
 #Generate a Globus authentication token
 function dm_globus_generate_token {
 
-    LOG_FILE=$HPC_DM_UTILS/log-globus
+    local LOG_FILE=$HPC_DM_UTILS/log-globus
     rm $LOG_FILE 2>/dev/null
 
-    SERVER=$(get_globus_server)
-    GLOBUS_USER=$(get_globus_user)
+    local SERVER=$(get_globus_server)
+    local GLOBUS_USER=$(get_globus_user)
     
     curl -u $GLOBUS_USER ${SERVER}/goauth/token?grant_type=client_credentials -s  >  $LOG_FILE
-    TOKEN=$(get_json_value $LOG_FILE access_token)
+    local TOKEN=$(get_json_value $LOG_FILE access_token)
 
     if [ -z $TOKEN ]
     then
         echo "ERROR: no token found in $LOG_FILE " >&2
-        MESSAGE=$(get_json_value $LOG_FILE message)
+        local MESSAGE=$(get_json_value $LOG_FILE message)
         echo "ERROR MESSAGE: $MESSAGE"   
         return 
     else  
-        GLOBUS_CONFIG=$(cat "$HPC_DM_UTILS/curl-globus" | sed "s@Bearer.*@Bearer $TOKEN\"@")
+        local GLOBUS_CONFIG=$(cat "$HPC_DM_UTILS/curl-globus" | sed "s@Bearer.*@Bearer $TOKEN\"@")
         echo "$GLOBUS_CONFIG" > $HPC_DM_UTILS/curl-globus
         rm $LOG_FILE 2>/dev/null
     fi
@@ -70,9 +70,9 @@ function dm_globus_generate_token {
 #         <destinaton-path>: The logical path of the destination
 #         <type>: dataObjet or collection 
 #         [data-object-file] : For synchronous dataObject registration only
-function dm_register {
+function dm_register () {
 
-    USAGE="USAGE: dm_register <description.json> <destination-path> <colleciton|dataObject> [data-object-file]"
+    local USAGE="USAGE: dm_register <description.json> <destination-path> <colleciton|dataObject> [data-object-file]"
 
     if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
     then
@@ -85,30 +85,31 @@ function dm_register {
 
     if [ ! -z "$4" ]
     then
-        DATAOBJECT_FILE="$4"
+        local DATAOBJECT_FILE="$4"
         if [ ! -e "$DATAOBJECT_FILE" ]
         then 
             echo "ERROR: The data-object-file:$DATAOBJECT_FILE does not exist " >&2
             return
         fi
     fi
-        
-    DESCRIPTION="$1"
-    DESTINATION_PATH="$2"
-    TYPE="$3"
-    USERID=$(get_username)
-    SERVER=$(get_server)
 
-    CONFIG="--config $HPC_DM_UTILS/curl-conf"
+        
+    local DESCRIPTION="$1"
+    local DESTINATION_PATH="$2"
+    local TYPE="$3"
+    local USERID=$(get_username)
+    local SERVER=$(get_server)
+
+    local CONFIG="--config $HPC_DM_UTILS/curl-conf"
     
-    RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
-    RESPONSE_HEADER=${TYPE}-registration-response-header.tmp
+    local RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
+    local RESPONSE_HEADER=${TYPE}-registration-response-header.tmp
 
     rm $RESPONSE_MSG 2>/dev/null 
     rm $RESPONSE_HEADER 2>/dev/null 
 
-    CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/${DESTINATION_PATH}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
-   
+    local CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/${DESTINATION_PATH}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+  
     if [ "$TYPE" == "dataObject" ]
     then
         if [ -z "$DATAOBJECT_FILE" ]
@@ -133,7 +134,7 @@ function dm_register {
 #         <destinaton-path>: The destination logical path
 function dm_register_collection {
 
-    USAGE="USAGE: dm_register_collection <description.json> <destination-path>"
+    local USAGE="USAGE: dm_register_collection <description.json> <destination-path>"
 
     if [ -z "$1" ] || [ -z "$2" ] 
     then
@@ -143,12 +144,12 @@ function dm_register_collection {
         return
     fi
 
-    DESCRIPTION="$1"
-    DESTINATION_PATH="$2"
+    local DESCRIPTION="$1"
+    local DESTINATION_PATH="$2"
     dm_register $DESCRIPTION $DESTINATION_PATH collection
 
-    RESPONSE_HEADER=collection-registration-response-header.tmp
-    RESPONSE_MSG=collection-registration-response-message.json.tmp
+    local RESPONSE_HEADER=collection-registration-response-header.tmp
+    local RESPONSE_MSG=collection-registration-response-message.json.tmp
 
     verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
 
@@ -161,7 +162,7 @@ function dm_register_collection {
 #         [source-file]: The source file for synchronous registratio.
 function dm_register_dataobject {
 
-    USAGE="USAGE: dm_register_dataobject <description.json> <destination-path> [source-file]"
+    local USAGE="USAGE: dm_register_dataobject <description.json> <destination-path> [source-file]"
 
     if [ -z "$1" ] || [ -z "$2" ] 
     then
@@ -171,13 +172,13 @@ function dm_register_dataobject {
         return
     fi
 
-    DESCRIPTION="$1"
-    DESTINATION_PATH="$2"
-    SOURCE_FILE="$3"
-    dm_register "$DESCRIPTION" "$DESTINATION_PATH" dataObject "$SOURCE_FILE" 
+    local DESCRIPTION="$1"
+    local DESTINATION_PATH="$2"
+    local SOURCE_FILE=$3
+    dm_register "$DESCRIPTION" "$DESTINATION_PATH" dataObject $SOURCE_FILE 
 
-    RESPONSE_HEADER=dataObject-registration-response-header.tmp
-    RESPONSE_MSG=dataObject-registration-response-message.json.tmp
+    local RESPONSE_HEADER=dataObject-registration-response-header.tmp
+    local RESPONSE_MSG=dataObject-registration-response-message.json.tmp
 
     verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
 }
@@ -193,7 +194,7 @@ function dm_register_dataobject {
 #        <destination-path> The destination logical path
 function dm_sync_globus_endpoint  {
 
-    USAGE="USAGE: dm_sync_folder <source-folder> <destination-path>"
+    local USAGE="USAGE: dm_sync_folder <source-folder> <destination-path>"
 
     if [ -z "$1" ] || [ -z "$2" ] 
     then
@@ -204,20 +205,20 @@ function dm_sync_globus_endpoint  {
     fi
 
 
-    RESPONSE_HEADER=dataObject-registration-response-header.tmp
-    RESPONSE_MSG=dataObject-registration-response-message.json.tmp
+    local RESPONSE_HEADER=dataObject-registration-response-header.tmp
+    local RESPONSE_MSG=dataObject-registration-response-message.json.tmp
 
 
-    FILE_LIST="./test.txt /TEST_Archive/test.txt"
+    local FILE_LIST="./test.txt /TEST_Archive/test.txt"
 
     while read -r  NEW_FILE 
     do 
 
-      SRC_PATH=$(echo $NEW_FILE | cut -d' ' -f1)
-      DST_PATH=$(echo $NEW_FILE | cut -d' ' -f2)
+      local SRC_PATH=$(echo $NEW_FILE | cut -d' ' -f1)
+      local DST_PATH=$(echo $NEW_FILE | cut -d' ' -f2)
 
-      FILE_ATTRIBUTES=$(get_file_attributes $SRC_PATH)      
-      DESC_JSON=$(get_json_description $FILE_ATTRIBUTES)
+      local FILE_ATTRIBUTES=$(get_file_attributes $SRC_PATH)      
+      local DESC_JSON=$(get_json_description $FILE_ATTRIBUTES)
       echo $DESC_JSON >  temp.json
       echo "dm_register_dataobject  temp.json $DST_PATH $SRC_PATH"
       echo "verify_registration  $REPONSE_HEADER $RESPONSE_MSG $DST_PATH"
@@ -236,7 +237,7 @@ function dm_sync_globus_endpoint  {
 #      : [response-header-filename]
 function dm_get_item {
 
-    USAGE="dm_get_item  <item-path> [response-message-filename] [response-header-filename]"
+    local USAGE="dm_get_item  <item-path> [response-message-filename] [response-header-filename]"
 
     if [ "$#" -lt 1 ] 
     then
@@ -244,28 +245,28 @@ function dm_get_item {
         echo "$USAGE" >&2
         return
     fi
-    ITEM_PATH="$1"
+    local ITEM_PATH="$1"
 
     if [ ! -z "$2" ]
     then
-      RESONSE_MSG="$2"
+      local RESONSE_MSG="$2"
     else
-      RESPONSE_MSG=get-item-response-message.json.tmp
+      local RESPONSE_MSG=get-item-response-message.json.tmp
     fi 
 
     if [ ! -z "$3" ]
     then
-      RESONSE_HEADER="$3"
+      local RESONSE_HEADER="$3"
     else
-      RESPONSE_HEADER=get-item-response-header.tmp
+      local RESPONSE_HEADER=get-item-response-header.tmp
     fi 
 
-    CONFIG="--config $HPC_DM_UTILS/curl-conf"
+    local CONFIG="--config $HPC_DM_UTILS/curl-conf"
         
-    SERVER=$(get_server)
+    local SERVER=$(get_server)
 
-    TOTAL_PATH="$ITEM_PATH"
-    TOTAL_PATH=$(echo "$TOTAL_PATH" | sed "s#\/\/*#\/#g")
+    local TOTAL_PATH="$ITEM_PATH"
+    local TOTAL_PATH=$(echo "$TOTAL_PATH" | sed "s#\/\/*#\/#g")
    
     curl -G -X GET "$SERVER/$TOTAL_PATH"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     check_connection $RESPONSE_HEADER
@@ -278,7 +279,7 @@ function dm_get_item {
 #      : [response-header-filename]
 function dm_get_dataobject {
 
-    USAGE="dm_get_item_dataobject  <dataobject-path> [response-message-filename] [response-header-filename]"
+    local USAGE="dm_get_item_dataobject  <dataobject-path> [response-message-filename] [response-header-filename]"
 
     if [ "$#" -lt 1 ] 
     then
@@ -287,15 +288,15 @@ function dm_get_dataobject {
         echo "$USAGE" >&2
         return
     fi
-    ITEM_PATH="$1"
+    local ITEM_PATH="$1"
 
 
-    RESPONSE_MSG=${2-get-item-response-message.json.tmp}
-    RESPONSE_HEADER=${3-get-item-response-header.tmp}
+    local RESPONSE_MSG=${2-get-item-response-message.json.tmp}
+    local RESPONSE_HEADER=${3-get-item-response-header.tmp}
 
     dm_get_item dataObject/$ITEM_PATH  "$RESPONSE_MSG" "$RESPONSE_HEADER"
 
-    RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
+    local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
     if [ "$RESPONSE_CODE" -ne 200 ]
     then
       echo "ERROR getting \"$ITEM_PATH\" " >&2
@@ -327,7 +328,7 @@ function dm_get_dataobject {
 #      : [response-header-filename]
 function dm_get_collection {
 
-    USAGE="dm_get_collection  <collection-path> [response-message-filename] [response-header-filename]"
+    local USAGE="dm_get_collection  <collection-path> [response-message-filename] [response-header-filename]"
 
     if [ "$#" -lt 1 ] 
     then
@@ -336,14 +337,14 @@ function dm_get_collection {
         echo "$USAGE" >&2
         return
     fi
-    ITEM_PATH="$1"
+    local ITEM_PATH="$1"
 
-    RESPONSE_MSG=${2-get-item-response-message.json.tmp}
-    RESPONSE_HEADER=${3-get-item-response-header.tmp}
+    local RESPONSE_MSG=${2-get-item-response-message.json.tmp}
+    local RESPONSE_HEADER=${3-get-item-response-header.tmp}
 
     dm_get_item collection/$ITEM_PATH  "$RESPONSE_MSG" "$RESPONSE_HEADER"
 
-    RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
+    local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
     if [ "$RESPONSE_CODE" -ne 200 ]
     then
       echo "ERROR getting \"$ITEM_PATH\" " >&2
@@ -374,7 +375,7 @@ function dm_get_collection {
 function dm_download_dataobject_sync {
 
 
-    USAGE="USAGE:dm_download_dataobject_sync <logic-path> <destination-file>"
+    local USAGE="USAGE:dm_download_dataobject_sync <logic-path> <destination-file>"
 
     if [ "$#" -lt 2 ] 
     then
@@ -384,38 +385,38 @@ function dm_download_dataobject_sync {
         return 1
     fi
 
-    RESPONSE_HEADER=download-dataobject-response-header.tmp
+    local RESPONSE_HEADER=download-dataobject-response-header.tmp
 
    
-    OBJECT_PATH="$1"
-    DESTINATION_PATH="$2"
+    local OBJECT_PATH="$1"
+    local DESTINATION_PATH="$2"
 
     if [ -d "$DESTINATION_PATH"  ]
     then
       
         #Download the file with the same file name 
-        FILE_NAME=$(basename "$OBJECT_PATH")
+        local FILE_NAME=$(basename "$OBJECT_PATH")
         if [ "$?" -ne 0 ]
         then
           echo "ERROR:Can not retrieve the file name from \"$OBJECT_PATH\"" >&2
           return 1
         fi
 
-        DESTINATION_PATH=$DESTINATION_PATH/${FILE_NAME}
+        local DESTINATION_PATH=$DESTINATION_PATH/${FILE_NAME}
     fi
 
 
-    SERVER=$(get_server)
+    local SERVER=$(get_server)
     
-    CONFIG="--config $HPC_DM_UTILS/curl-conf"
+    local CONFIG="--config $HPC_DM_UTILS/curl-conf"
 
-    TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json"
+    local TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json"
 
     curl -H "Content-Type: application/json" -d @$TEMPLATE -X POST ${SERVER}/dataObject/$OBJECT_PATH/download  $CONFIG -H "Accept: application/json" -D $RESPONSE_HEADER -o $DESTINATION_PATH -s 2> curl-status 
     check_connection $RESPONSE_HEADER
 
 
-    CODE=$(get_http_code "$RESPONSE_HEADER") 
+    local CODE=$(get_http_code "$RESPONSE_HEADER") 
 
     if [ "$CODE" -ne 200 ]
     then 
