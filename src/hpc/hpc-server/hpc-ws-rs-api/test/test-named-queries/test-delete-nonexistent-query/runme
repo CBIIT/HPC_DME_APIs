@@ -13,8 +13,14 @@
 #import common functions
 source $HPC_DM_TEST/utils/functions
 
+RESPONSE_MSG="delete-query-response-message.json.tmp"
 
 delete_query "dxtestlkj;lkj;ljk;lkj;lkjl;j-nonexistent-query-id"
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
-echo $HTTP_CODE 
+echo $HTTP_CODE >&2
+
+ERROR_MSG=$(get_json_value $RESPONSE_MSG message)
+
+echo $ERROR_MSG >&2
+
