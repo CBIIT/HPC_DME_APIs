@@ -333,7 +333,7 @@ function populateLevelAttributes(level, id)
 	}	
 	var row = id.substring(5);
 	
-	var attrOptions="<option value='-1'>----Select----</option>";
+	var attrOptions="<option value='ANY'>ANY</option>";
 
 	if(level == "-1")
 	{
@@ -420,7 +420,7 @@ function resetRows()
     	{
     		if(type == "collection")
     		{
-    			var attrOptions="<option value='-1'>----Select----</option>";
+    			var attrOptions="<option value='ANY'>ANY</option>";
     			for(var j=0;j<collattributes.length;j++)
     			{
     				var attr = collattributes[j];
@@ -440,7 +440,7 @@ function resetRows()
     		}
     		else
     		{
-    			var attrOptions="<option value='-1'>----Select----</option>";
+    			var attrOptions="<option value='ANY'>ANY</option>";
     			for(var k=0;k<dataattributes.length;k++)
     			{
     				var attr = dataattributes[k];
@@ -490,7 +490,7 @@ function addRow() {
     var cell5 = row.insertCell(5);
     cell0.innerHTML = '<label id="rowId'+ (rowId) +'">A'+ (rowId) + '</label><input type="hidden" id="rowId'+ (rowId) +'" name="rowId" value="A'+ (rowId) +'"/>';
     cell1.innerHTML = '<select id="level'+(rows+1)+'" name="level" class="form-control" th:required="required" onChange="populateLevelAttributes(this.value, this.id)"></select>';
-    cell2.innerHTML = '<select id="attrName'+(rows+1)+'" name="attrName" class="form-control" th:required="required"> <option value="-1">----Select----</option></select>';
+    cell2.innerHTML = '<select id="attrName'+(rows+1)+'" name="attrName" class="form-control" th:required="required"> <option value="ANY">ANY</option></select>';
     cell3.innerHTML = '<select id="operator'+(rows+1)+'" name="operator" class="form-control" th:required="required"> <option value="-1">----Select----</option> <option value="1">=</option><option value="2">!=</option><option value="3">&lt;</option><option value="4">&gt;</option></select>';
     cell4.innerHTML = '<input type="text" id="attrValue'+(rows+1)+'" name="attrValue" placeholder="Value" class="form-control"/>';
    	cell5.innerHTML = '<a id="deleteAttr" onClick="deleteRow(\''+(row.id)+'\')" class="pull-right btn btn-default"><i class="fa fa-times" aria-hidden="true"></i></a>';
