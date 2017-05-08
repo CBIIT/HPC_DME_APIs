@@ -91,7 +91,6 @@ public class HpcAuthenticationTestInterceptor
     	
     	HpcUser user = new HpcUser();
     	user.setNciAccount(nciAccount);
-    	user.setDataManagementAccount(dataManagementAccount);
     	
     	try {
     	     securityService.setRequestInvoker(user.getNciAccount(), HpcAuthenticationType.LDAP, dataManagementAccount);

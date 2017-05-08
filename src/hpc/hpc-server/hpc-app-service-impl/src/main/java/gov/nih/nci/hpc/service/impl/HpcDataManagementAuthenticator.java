@@ -10,6 +10,8 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -36,6 +38,9 @@ public class HpcDataManagementAuthenticator
     // The Data Management Proxy instance.
 	@Autowired
     private HpcDataManagementProxy dataManagementProxy = null;
+	
+    // The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -82,7 +87,8 @@ public class HpcDataManagementAuthenticator
     	// Authenticate w/ data management.
     	
     	// TODO - workaround to login w/ Token - Test and fix this.
-    	dataManagementAccount.getProperties().clear();
+    	//dataManagementAccount.getProperties().clear();
+    	logger.error("ERAN: DM account props: " + dataManagementAccount.getProperties());
     	
     	Object token = dataManagementProxy.authenticate(dataManagementAccount);
     	if(token == null) {
