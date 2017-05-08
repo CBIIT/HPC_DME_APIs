@@ -82,9 +82,7 @@ public class HpcDomainValidator
      */
     public static boolean isValidUser(HpcUser user) 
     {
-    	if(user == null || 
-    	   !isValidNciAccount(user.getNciAccount()) ||
-    	   !isValidIntegratedSystemAccount(user.getDataManagementAccount())) {
+    	if(user == null || !isValidNciAccount(user.getNciAccount())) {
     	   logger.info("Invalid User: " + user);
     	   return false;
     	}

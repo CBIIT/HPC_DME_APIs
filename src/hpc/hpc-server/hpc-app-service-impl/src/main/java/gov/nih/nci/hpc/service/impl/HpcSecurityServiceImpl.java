@@ -307,7 +307,6 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	invoker.setNciAccount(null);
     	invoker.setDataManagementAccount(dataManagementAccount);
     	invoker.setDataManagementAuthenticatedToken(null);
-    	invoker.setLdapAuthenticated(false);
 
     	HpcRequestContext.setRequestInvoker(invoker);
     }
@@ -353,23 +352,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	Map<String, Object> claims = new HashMap<>();
     	claims.put(USER_ID_TOKEN_CLAIM, authenticationTokenClaims.getUserId());
     	claims.put(DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM, toJSON(authenticationTokenClaims.getDataManagementAccount()));
-    	/*
-    	claims.put(TOKEN_USER_NAME, authenticationTokenClaims.getUserName());
-    	claims.put(TOKEN_PASSWORD, authenticationTokenClaims.getPassword());
-    	claims.put(TOKEN_LDAP_AUTHENTICATION, authenticationTokenClaims.getLdapAuthentication());
-    	claims.put(TOKEN_USER_AUTHENTICATED, authenticationTokenClaims.getUserAuthenticated());
-    	
-    	claims.put(TOKEN_DM_AUTH_SCHEME, authenticationTokenClaims.getDataManagementAccount().getAuthenticationScheme());
-    	claims.put(TOKEN_DM_HOST, authenticationTokenClaims.getDataManagementAccount().getHost());
-    	claims.put(TOKEN_DM_PORT, authenticationTokenClaims.getDataManagementAccount().getPort());
-    	claims.put(TOKEN_DM_USER_ZONE, authenticationTokenClaims.getDataManagementAccount().getUserZone());
-    	claims.put(TOKEN_DM_USER_NAME, authenticationTokenClaims.getDataManagementAccount().getUserName());
-    	claims.put(TOKEN_DM_PROXY_ZONE, authenticationTokenClaims.getDataManagementAccount().getProxyZone());
-    	claims.put(TOKEN_DM_PROXY_NAME, authenticationTokenClaims.getDataManagementAccount().getProxyName());
-    	claims.put(TOKEN_DM_PASSWORD, authenticationTokenClaims.getDataManagementAccount().getPassword());
-    	claims.put(TOKEN_DM_DEFAULT_RESC_STORAGE, authenticationTokenClaims.getDataManagementAccount().getDefaultStorageResource());
-    	claims.put(TOKEN_DM_HOME_DIRECTORY, authenticationTokenClaims.getDataManagementAccount().getHomeDirectory());
-    	*/
+
     	// Calculate the expiration date.
     	Calendar tokenExpiration = Calendar.getInstance();
     	tokenExpiration.add(Calendar.MINUTE, authenticationTokenExpirationPeriod);
