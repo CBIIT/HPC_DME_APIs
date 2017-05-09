@@ -256,7 +256,7 @@ function dm_get_item {
     then
         echo "ERROR: using dm_get_item" >&2
         echo "$USAGE" >&2
-        return
+        return 1
     fi
     ITEM_PATH="$1"
 
@@ -308,6 +308,10 @@ function dm_get_dataobject {
     RESPONSE_HEADER=${3-get-item-response-header.tmp}
 
     dm_get_item dataObject/$ITEM_PATH  "$RESPONSE_MSG" "$RESPONSE_HEADER"
+    if [ "$?" -eq 1 ]
+    then
+      return 1
+    fi
 
     RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
     if [ "$RESPONSE_CODE" -ne 200 ]
@@ -356,6 +360,12 @@ function dm_get_collection {
     RESPONSE_HEADER=${3-get-item-response-header.tmp}
 
     dm_get_item collection/$ITEM_PATH  "$RESPONSE_MSG" "$RESPONSE_HEADER"
+    if [ "$?" -eq 1 ]
+    then
+      return 1
+    fi
+
+
 
     RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
     if [ "$RESPONSE_CODE" -ne 200 ]
