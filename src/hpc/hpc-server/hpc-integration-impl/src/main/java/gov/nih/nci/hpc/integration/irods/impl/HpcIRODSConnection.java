@@ -281,7 +281,6 @@ public class HpcIRODSConnection
     		 if(!dataManagementAccount.getProperties().isEmpty()) {
     			// The data management account is already authenticated. Return an iRODS account.
     			irodsAccount = toAuthenticatedIrodsAccount(dataManagementAccount);
-    			logger.error("ERAN get props: " + dataManagementAccount.getProperties());
     			 
     		 } else {
     			     // Authenticate the data management account.
@@ -294,7 +293,6 @@ public class HpcIRODSConnection
 	    		
 	    		        // Update the HPC data management account with iRODS accounts properties
 	    		        dataManagementAccount.getProperties().addAll(getIrodsAccountProperties(irodsAccount));
-	    		        logger.error("ERAN set props: " + dataManagementAccount.getProperties());
 	    	         } 
     		 }
     		 
@@ -393,7 +391,8 @@ public class HpcIRODSConnection
     	for(HpcIntegratedSystemAccountProperty property : dataManagementAccount.getProperties()) {
     		properties.put(property.getName(), property.getValue());
     	}
-    	
+
+    	logger.error("ERAN : UN/PWD: " + dataManagementAccount.getUsername() + " " + dataManagementAccount.getPassword());
     	return IRODSAccount.instance(properties.get(HOST_PROPERTY), Integer.valueOf(properties.get(PORT_PROPERTY)),
     		                         dataManagementAccount.getUsername(), dataManagementAccount.getPassword(),
     		                         properties.get(HOME_DIRECTORY_PROPERTY), properties.get(ZONE_PROPERTY),
