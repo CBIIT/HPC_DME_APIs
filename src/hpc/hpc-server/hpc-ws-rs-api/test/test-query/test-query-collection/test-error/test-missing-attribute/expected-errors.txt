@@ -1,2 +1,2 @@
 400
-Invalid compound metadata query: Null metadata attribute in query [<null>,FNLCR,EQUAL,<null>]
+Invalid compound metadata query: Null metadata attribute in query

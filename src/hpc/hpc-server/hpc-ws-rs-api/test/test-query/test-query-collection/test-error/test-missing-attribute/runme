@@ -25,5 +25,6 @@ echo $HTTP_CODE   >&2
 
 ATTRIBUTE="\"name\""
 
-get_json_value response-message.json message  >&2
+expected_message="Invalid compound metadata query: Null metadata attribute in query"
+get_json_value response-message.json message | sed "s/^$expected_message.*/$expected_message/"  >&2
 
