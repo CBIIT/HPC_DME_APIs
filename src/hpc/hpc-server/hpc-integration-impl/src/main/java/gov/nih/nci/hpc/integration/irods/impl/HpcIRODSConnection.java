@@ -397,7 +397,7 @@ public class HpcIRODSConnection
     		                         dataManagementAccount.getUsername(), dataManagementAccount.getPassword(),
     		                         properties.get(HOME_DIRECTORY_PROPERTY), properties.get(ZONE_PROPERTY),
     		                         properties.get(DEFAULT_STORAGE_RESOURCE_PROPERTY),
-    	    	                     AuthScheme.findTypeByString(properties.get(AUTHENTICATION_SCHEME_PROPERTY))); 
+    	    	                     AuthScheme.PAM); 
     }
     
     /**
