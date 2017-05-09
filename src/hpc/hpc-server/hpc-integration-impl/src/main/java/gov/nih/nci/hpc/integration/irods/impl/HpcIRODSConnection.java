@@ -57,7 +57,6 @@ public class HpcIRODSConnection
 	private static final String PROXY_ZONE_PROPERTY = "PROXY_ZONE"; 
 	private static final String ZONE_PROPERTY = "ZONE"; 
 	private static final String PORT_PROPERTY = "PORT"; 
-	private static final String AUTHENTICATION_SCHEME_PROPERTY = "AUTHENTICATION_SCHEME"; 
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -392,7 +391,6 @@ public class HpcIRODSConnection
     		properties.put(property.getName(), property.getValue());
     	}
 
-    	logger.error("ERAN : UN/PWD: " + dataManagementAccount.getUsername() + " " + dataManagementAccount.getPassword());
     	return IRODSAccount.instance(properties.get(HOST_PROPERTY), Integer.valueOf(properties.get(PORT_PROPERTY)),
     		                         dataManagementAccount.getUsername(), dataManagementAccount.getPassword(),
     		                         properties.get(HOME_DIRECTORY_PROPERTY), properties.get(ZONE_PROPERTY),
@@ -463,11 +461,6 @@ public class HpcIRODSConnection
     	port.setName(PORT_PROPERTY);
     	port.setValue(String.valueOf(irodsAccount.getPort()));
     	properties.add(port);
-    	
-    	HpcIntegratedSystemAccountProperty authenticationScheme = new HpcIntegratedSystemAccountProperty();
-    	authenticationScheme.setName(AUTHENTICATION_SCHEME_PROPERTY);
-    	authenticationScheme.setValue(irodsAccount.getAuthenticationScheme().getTextValue());
-    	properties.add(authenticationScheme);
     	
     	return properties;
     }
