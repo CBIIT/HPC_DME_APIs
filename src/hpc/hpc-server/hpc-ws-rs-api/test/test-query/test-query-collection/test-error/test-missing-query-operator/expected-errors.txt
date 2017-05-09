@@ -1,2 +1,2 @@
 400
-Invalid compound metadata query: Null operator in query [pi_doc,FNLCR,<null>,<null>].
+Invalid compound metadata query: Null operator in query
