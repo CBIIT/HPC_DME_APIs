@@ -389,8 +389,51 @@
     	  var reportType = document.getElementById("reportType").value;
     	  var fromDateVal = document.getElementById("fromDate").value;
     	  var toDateVal = document.getElementById("toDate").value;
+      	  var docListValue = document.getElementById("docList").value;
+    	  var userListValue = document.getElementById("userList").value;
+    	  
     	  var fromDate = new Date(fromDateVal);
     	  var toDate = new Date(toDateVal);
+	      	if(reportType == "USAGE_SUMMARY")
+	      	{
+	    		document.getElementById("doc").value = "-1";
+	      		document.getElementById("user").value = "-1";
+          	  	document.getElementById("fromDate").value = null;
+        	  	document.getElementById("toDate").value = null;
+	      	}
+	      	else if(reportType == "USAGE_SUMMARY_BY_DATE_RANGE")
+          	{
+        		document.getElementById("doc").value = "-1";
+          		document.getElementById("user").value = "-1";
+          	}
+          	else if(reportType == "USAGE_SUMMARY_BY_DOC")
+          	{
+          	  	document.getElementById("fromDate").value = null;
+        	  	document.getElementById("toDate").value = null;
+          		document.getElementById("user").value = "-1";
+        	  	if(document.getElementById("doc").value == "-1")
+        	  		alert("Please select a DOC");
+          	}
+          	else if(reportType == "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE")
+          	{
+          		document.getElementById("user").value = "-1";
+        	  	if(document.getElementById("doc").value == "-1")
+        	  		alert("Please select a DOC");
+          	}
+          	else if(reportType == "USAGE_SUMMARY_BY_USER")
+          	{
+        		document.getElementById("doc").value = "-1";
+          	  	document.getElementById("fromDate").value = null;
+        	  	document.getElementById("toDate").value = null;
+        	  	if(document.getElementById("user").value == "-1")
+        	  		alert("Please select a user");
+          	}
+          	else if(reportType == "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE")
+          	{
+        	  	if(document.getElementById("user").value == "-1")
+        	  		alert("Please select a user");
+        		document.getElementById("doc").value = "-1";
+          	}
     	  
     	  if(fromDate.valueOf() > toDate.valueOf())
     	  {
