@@ -24,7 +24,7 @@ HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 echo $HTTP_CODE   >&2
 
 ATTRIBUTE="\"name\""
-EXPECTED_MSG="Invalid compound metadata query: Null metadata value in query \[pi_doc,<null>,EQUAL,<null>\]"
+EXPECTED_MSG="Invalid compound metadata query: Null metadata value in query"
 
 get_json_value response-message.json message | sed "s/$EXPECTED_MSG.*/$EXPECTED_MSG/" >&2
 

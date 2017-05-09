@@ -1,2 +1,2 @@
 400
-Invalid compound metadata query: Null metadata value in query [pi_doc,<null>,EQUAL,<null>]
+Invalid compound metadata query: Null metadata value in query
