@@ -10,6 +10,7 @@
 package gov.nih.nci.hpc.web.controller;
 
 import java.io.InputStream;
+import java.net.URLEncoder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -121,7 +122,7 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			}
 
 			String authToken = (String) session.getAttribute("hpcUserToken");
-			String serviceURL = queryServiceURL + "/" + search.getCriteriaName();
+			String serviceURL = queryServiceURL + "/" + URLEncoder.encode(search.getCriteriaName());
 
 			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
