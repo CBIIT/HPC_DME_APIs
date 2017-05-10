@@ -4,6 +4,10 @@ Users:
 dice_user_group_admin
 dice_user_sys_admin
 dice_user
+
+Groups:
+dice_user_group_admin_group [dice_user_group_admin]
+dice_user_group [dice_user]
  
 Password:
 N/A - LDAP Authenticated
@@ -35,7 +39,7 @@ Objects /$BASE_DIR/dice_project4/dice_object_[1-101]
 Access:
 dice_user_group_admin (WRITE)
 dice_user_sys_admin (OWN)
-dice_user (NO ACCESS
+dice_user (NO ACCESS)
 
 
 
@@ -58,6 +62,3 @@ dice_user (WRITE)
 
 
 
-Collection path: /$BASE_DIR/dice_project_3
-Access:
-dice_user_sys_admin (OWN)
