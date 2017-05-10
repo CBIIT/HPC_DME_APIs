@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +73,7 @@ public class HpcSavedSearchListController extends AbstractHpcController {
 				SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 				for (HpcNamedCompoundMetadataQuery query : queries.getNamedCompoundQueries()) {
 					HpcNamedQuery namedQuery = new HpcNamedQuery();
-					namedQuery.setSearchName(query.getName());
+					namedQuery.setSearchName(URLEncoder.encode(query.getName()));
 					namedQuery.setSearchType(query.getCompoundQueryType().value());
 					namedQuery.setCreatedOn(format.format(query.getCreated().getTime()));
 					result.add(namedQuery);
