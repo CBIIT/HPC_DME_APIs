@@ -21,6 +21,8 @@ import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataSearchRestService;
 
+import java.net.URLDecoder;
+
 import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -141,7 +143,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     		                 HpcCompoundMetadataQueryDTO compoundMetadataQuery)
     {
 		try {
-			 dataSearchBusService.addQuery(queryName, compoundMetadataQuery);
+			 dataSearchBusService.addQuery(URLDecoder.decode(queryName), compoundMetadataQuery);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -155,7 +157,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     		                    HpcCompoundMetadataQueryDTO compoundMetadataQuery)
     {
 		try {
-			 dataSearchBusService.updateQuery(queryName, compoundMetadataQuery);
+			 dataSearchBusService.updateQuery(URLDecoder.decode(queryName), compoundMetadataQuery);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -168,7 +170,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     public Response deleteQuery(String queryName)
     {
 		try {
-			 dataSearchBusService.deleteQuery(queryName);
+			 dataSearchBusService.deleteQuery(URLDecoder.decode(queryName));
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -182,7 +184,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     {
     	HpcNamedCompoundMetadataQueryDTO query = null;
 		try {
-			 query = dataSearchBusService.getQuery(queryName);
+			 query = dataSearchBusService.getQuery(URLDecoder.decode(queryName));
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
