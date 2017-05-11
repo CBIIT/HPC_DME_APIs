@@ -43,6 +43,7 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
+import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
@@ -99,9 +100,9 @@ public class HpcSaveSearchController extends AbstractHpcController {
 				compoundQuery = (HpcCompoundMetadataQueryDTO) session.getAttribute("compoundQuery");
 
 			if (compoundQuery == null) {
-				HpcNamedCompoundMetadataQueryDTO namedCompoundQuery = null;
+				HpcNamedCompoundMetadataQuery namedCompoundQuery = null;
 				if (session.getAttribute("namedCompoundQuery") != null)
-					namedCompoundQuery = (HpcNamedCompoundMetadataQueryDTO) session.getAttribute("namedCompoundQuery");
+					namedCompoundQuery = (HpcNamedCompoundMetadataQuery) session.getAttribute("namedCompoundQuery");
 
 				if (namedCompoundQuery == null) {
 					result.setCode("400");
@@ -109,10 +110,10 @@ public class HpcSaveSearchController extends AbstractHpcController {
 					return result;
 				}
 				compoundQuery = new HpcCompoundMetadataQueryDTO();
-				compoundQuery.setCompoundQuery(namedCompoundQuery.getNamedCompoundQuery().getCompoundQuery());
-				compoundQuery.setCompoundQueryType(namedCompoundQuery.getNamedCompoundQuery().getCompoundQueryType());
-				compoundQuery.setDetailedResponse(namedCompoundQuery.getNamedCompoundQuery().getDetailedResponse());
-				compoundQuery.setTotalCount(namedCompoundQuery.getNamedCompoundQuery().getTotalCount());
+				compoundQuery.setCompoundQuery(namedCompoundQuery.getCompoundQuery());
+				compoundQuery.setCompoundQueryType(namedCompoundQuery.getCompoundQueryType());
+				compoundQuery.setDetailedResponse(namedCompoundQuery.getDetailedResponse());
+				compoundQuery.setTotalCount(namedCompoundQuery.getTotalCount());
 			}
 
 			if (search.getCriteriaName() == null || search.getCriteriaName().isEmpty()) {
