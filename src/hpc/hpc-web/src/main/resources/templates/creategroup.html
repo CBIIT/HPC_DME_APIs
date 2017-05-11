@@ -131,7 +131,7 @@
 																	</div>
 																	<div class="modal-footer">
 																		<button type="submit" class="btn btn-md btn-primary"
-																			id="primaryButton">Create</button>
+																			id="primaryButton" onClick="return validate()">Create</button>
 																		<button type="submit" class="btn btn-primary"
 																			data-dismiss="modal" id="cancel" onClick="cancel()">Cancel</button>
 																	</div>
@@ -227,7 +227,17 @@
 
 	<script type="text/javascript">
 	//<![CDATA[
-	           
+	       
+	    function validate()
+	    {
+	    	var groupName = document.getElementById("groupName").value;
+	    	if(groupName == null || hasWhiteSpace(groupName))
+	    	{
+	    		alert("Invalid group name. Space is not allowed")
+	    		return false;
+	    	}
+	    }
+	    
 	    function cancel()
 	    {
 			document.getElementById("actionType").value = "cancel";
@@ -302,6 +312,11 @@
 			document.getElementById("userName").value="";
 			return false;
 		}
+		
+		function hasWhiteSpace(s) {
+			  return s.indexOf(' ') >= 0;
+		}
+		
 		/*]]>*/
 	</script>
 

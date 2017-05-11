@@ -497,7 +497,7 @@ public class HpcClientUtil {
 			String groupName, String hpcCertPath, String hpcCertPassword) {
 		HpcGroupMembersResponseDTO response = null;
 		try {
-			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath, hpcCertPassword);
+			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + "/" + URLEncoder.encode(groupName), hpcCertPath, hpcCertPassword);
 			client.header("Authorization", "Bearer " + token);
 
 			Response restResponse = client.invoke("PUT", groupDTO);

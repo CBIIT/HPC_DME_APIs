@@ -124,8 +124,9 @@
 																	<div class="form-group">
 																		<div class="col-sm-12 column">
 																			<label for="groupName">Group Name:</label> <input
-																				type="text" class="form-control" id="groupId"
-																				name="groupId" th:value="${group != null ? group.getGroupName() : ''}" size="40" />
+																				type="text" class="form-control" id="groupName"
+																				name="groupName" th:value="${group != null ? group.getGroupName() : ''}" size="40" th:disabled="disabled" />
+																				<input type="hidden" id="groupId" name="groupId" th:value="${group != null ? group.getGroupName() : ''}"/>
 																		</div>
 																	</div>
 																	<div class="modal-footer">
