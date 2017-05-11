@@ -47,13 +47,21 @@
 		</div>
 	</form>
 
-	<script>
+	<script th:inline="javascript">
+	/*<![CDATA[*/
  $(function() {
 //twitter bootstrap script
  var $form = $('#saveCriteriaForm');
  $('#saveCriteriaForm').on('submit', function(e){	 
 	 e.preventDefault();
 	 var ele = document.getElementById("message");
+	 var searchName = document.getElementById("criteriaName").value;
+	 if(checkForSpecialChar(searchName))
+		 {
+		 	alert ("Name has special characters. Only _ and - are allowed.");
+		 	return false;
+		 }
+		 	
 	 $.ajax({
      type: "POST",
 	 url: "/savesearch",
@@ -72,6 +80,20 @@
 	 
  });
 });
+
+ function hasWhiteSpace(s) {
+		  return s.indexOf(' ') >= 0;
+ }
+
+ var specialChars = " <>@!#$%^&*()+[]{}?:;|'\"\\,./~`=";
+ var checkForSpecialChar = function(string){
+  for(i = 0; i < specialChars.length;i++){
+    if(string.indexOf(specialChars[i]) > -1){
+        return true
+     }
+  }
+  return false;
+ }
  
  $(function() {
 	//twitter bootstrap script
@@ -79,6 +101,7 @@
 		 $('#myModal-event').modal('hide');
 	 });
  });
+ /*]]>*/
 </script>
 
 </body>
