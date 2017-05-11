@@ -23,6 +23,8 @@ import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcSecurityRestService;
 
+import java.net.URLDecoder;
+
 import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -171,7 +173,7 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 	{
     	HpcGroupMembersResponseDTO groupMembersResponse = null;
 		try {
-			 groupMembersResponse = securityBusService.registerGroup(groupName, groupMembersRequest);
+			 groupMembersResponse = securityBusService.registerGroup(URLDecoder.decode(groupName), groupMembersRequest);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -186,7 +188,7 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     {
     	HpcGroupMembersResponseDTO groupMembersResponse = null;
 		try {
-			 groupMembersResponse = securityBusService.updateGroup(groupName, groupMembersRequest);
+			 groupMembersResponse = securityBusService.updateGroup(URLDecoder.decode(groupName), groupMembersRequest);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -200,7 +202,7 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     {
     	HpcGroupMembersDTO groupMembers = null;
 		try {
-			 groupMembers = securityBusService.getGroup(groupName);
+			 groupMembers = securityBusService.getGroup(URLDecoder.decode(groupName));
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -227,7 +229,7 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     public Response deleteGroup(String groupName)
     {
 		try {
-			 securityBusService.deleteGroup(groupName);
+			 securityBusService.deleteGroup(URLDecoder.decode(groupName));
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
