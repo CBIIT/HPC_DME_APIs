@@ -19,8 +19,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -45,10 +43,6 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
     // SQL Queries.
 	private static final String GET_DOC_CONFIGURATIONS_SQL = 
 			                    "select * from public.\"HPC_DOC_CONFIGURATION\"";
-	
-    // The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -115,16 +109,13 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
 	}
 	
     /**
-     * Verify connection to DB. Since this DAO is called at the time the server starts,
-     * we are making a DB connection test after this DAO was constructed to ensure DB credentials
-     * are configured properly.
+     * Verify connection to DB. Called by Spring as init-method.
      * 
      * @throws HpcException If it failed to connect to the database.
      */
 	@SuppressWarnings("unused")
 	private void dbConnect() throws HpcException
     {
-		logger.error("ERAN: DB CONNECT");
     	try {
     	     jdbcTemplate.getDataSource().getConnection();
     	     

@@ -82,22 +82,16 @@ public class HpcDocConfigurationLocator extends HashMap<String, HpcDocConfigurat
 		return basePaths;
     }
 	
-	//---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//
-
 	/**
-     * Load the DOC configurations from the DB. Called by sprint init-method.
+     * Load the DOC configurations from the DB. Called by spring as init-method.
      *
      * @param docBasePaths The base paths in a config-string format.
      * @throws HpcException On configuration error.
      */
-	@SuppressWarnings("unused")
-	private void reload() throws HpcException
+	public void reload() throws HpcException
     {
     	clear();
     	basePaths.clear();
-    	logger.error("ERAN: init doc config");
     	
     	for(HpcDocConfiguration docConfiguration : docConfigurationDAO.getDocConfigurations()) {
     		// Ensure the base path is in the form of a relative path.
