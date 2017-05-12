@@ -16,6 +16,6 @@
 The dataObject is already registered as part of the server setup.
 Collection path:/FNL_SF_Archive/dice_project_1/dice_object_1
 
-Search for the dataObject using the "EQUAL" comparator using an attribute from dice_object_1. 
+Search for the dataObject using the "EQUAL" comparator using an attribute from dice_object_1 and dice_object_2
 
-dice_user should have have permission to read this dataObject 
+dice_user should not have permission to read dice_object_1 but it can read dice_object_2  
