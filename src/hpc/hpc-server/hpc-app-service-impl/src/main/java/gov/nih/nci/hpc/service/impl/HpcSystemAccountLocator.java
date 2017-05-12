@@ -63,7 +63,7 @@ public class HpcSystemAccountLocator
     //---------------------------------------------------------------------//
     
     /**
-     * Reload the system accounts from DB.
+     * Reload the system accounts from DB. Called by Spring as init-method.
      * 
      * @throws HpcException on service failure.
      */
