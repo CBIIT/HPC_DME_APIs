@@ -22,6 +22,10 @@ query_by_metadata dataObject input.json dice_user
 ATTRIBUTE="\"name\""
 
 #Check that the collection is not returned 
-
 VALUE="dice test data file 1"
 RES=$(check_non_existance "$RESPONSE_HEADER" "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" )
+
+
+VALUE="dice test data file 2"
+check_existance "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" TRUE
+
