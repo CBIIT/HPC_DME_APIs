@@ -54,6 +54,7 @@
 	<bean id="hpcMetadataDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcMetadataDAOImpl" />
 	<bean id="hpcUserNamedQueryDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserNamedQueryDAOImpl" />
 	<bean id="hpcGroupDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcGroupDAOImpl" />
-	<bean id="hpcDocConfigurationDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDocConfigurationDAOImpl" />
+	<bean id="hpcDocConfigurationDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDocConfigurationDAOImpl" 
+	      init-method="dbConnect"/>
 
 </beans>

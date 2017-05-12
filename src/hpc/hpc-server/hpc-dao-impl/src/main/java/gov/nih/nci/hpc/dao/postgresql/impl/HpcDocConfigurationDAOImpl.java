@@ -19,8 +19,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,7 +121,7 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
      * 
      * @throws HpcException If it failed to connect to the database.
      */
-	@PostConstruct
+	@SuppressWarnings("unused")
 	private void dbConnect() throws HpcException
     {
 		logger.error("ERAN: DB CONNECT");
