@@ -19,8 +19,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,13 +73,27 @@ public class HpcDocConfigurationLocator extends HashMap<String, HpcDocConfigurat
     //---------------------------------------------------------------------//
 
 	/**
-     * Load the DOC configurations from the DB.
+     * Get all the DOC base paths.
+     *
+     * @return A list of all DOC base paths.
+     */
+	public Set<String> getBasePaths() 
+    {
+		return basePaths;
+    }
+	
+	//---------------------------------------------------------------------//
+    // Helper Methods
+    //---------------------------------------------------------------------//
+
+	/**
+     * Load the DOC configurations from the DB. Called by sprint init-method.
      *
      * @param docBasePaths The base paths in a config-string format.
      * @throws HpcException On configuration error.
      */
-    @PostConstruct
-	public void initialize() throws HpcException
+	@SuppressWarnings("unused")
+	private void reload() throws HpcException
     {
     	clear();
     	basePaths.clear();
@@ -96,16 +108,6 @@ public class HpcDocConfigurationLocator extends HashMap<String, HpcDocConfigurat
     	}
     	
     	logger.info("DOC Configurations: " + toString());
-    }
-    
-	/**
-     * Get all the DOC base paths.
-     *
-     * @return A list of all DOC base paths.
-     */
-	public Set<String> getBasePaths() 
-    {
-		return basePaths;
     }
 }
 
