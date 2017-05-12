@@ -28,6 +28,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
@@ -56,7 +57,6 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -560,8 +560,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     public HpcDataManagementModelDTO getDataManagementModel(String doc) throws HpcException
     {
     	// Input validation.
-    	if(doc == null || doc.isEmpty()) {
+    	if(StringUtils.isEmpty(doc)) {
     	   throw new HpcException("Null or empty DOC", HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	HpcDocConfiguration docConfiguration = dataManagementService.getDocConfiguration(doc);
+    	if(docConfiguration == null) {
+    	   throw new HpcException("DOC not supported: " + doc, HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
     	HpcDataManagementModelDTO dataManagementModel = new HpcDataManagementModelDTO();
@@ -570,7 +575,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	dataManagementModel.getDataObjectMetadataValidationRules().addAll(
 	                           metadataService.getDataObjectMetadataValidationRules(doc));
     	dataManagementModel.setDataHierarchy(dataManagementService.getDataHierarchy(doc));
-    	dataManagementModel.setBasePath(dataManagementService.getDocBasePath(doc));
+    	dataManagementModel.setBasePath(docConfiguration.getBasePath());
     	dataManagementModel.getCollectionSystemGeneratedMetadataAttributeNames().addAll(metadataService.getCollectionSystemMetadataAttributeNames());
     	dataManagementModel.getDataObjectSystemGeneratedMetadataAttributeNames().addAll(metadataService.getDataObjectSystemMetadataAttributeNames());
     	
@@ -581,17 +586,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     public HpcDataManagementTreeDTO getDataManagementTree(String doc) throws HpcException
     {
     	// Input validation.
-    	if(doc == null || doc.isEmpty()) {
+    	if(StringUtils.isEmpty(doc)) {
     	   throw new HpcException("Null or empty DOC", HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	String docBasePath = dataManagementService.getDocBasePath(doc);
-    	if(docBasePath == null) {
-    	   return null;
+    	HpcDocConfiguration docConfiguration = dataManagementService.getDocConfiguration(doc);
+    	if(docConfiguration == null) {
+    	   throw new HpcException("DOC not supported: " + doc, HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
     	HpcDataManagementTreeDTO dataManagementTree = new HpcDataManagementTreeDTO();
-    	dataManagementTree.setBasePath(getCollectionTree(docBasePath));
+    	dataManagementTree.setBasePath(getCollectionTree(docConfiguration.getBasePath()));
     	
     	return dataManagementTree;
     }
@@ -599,12 +604,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     @Override
 	public HpcDataManagementDocListDTO getDataManagementDocs() throws HpcException
 	{
-    	HashMap<String, String> docBasePaths = dataManagementService.getDocBasePaths();
-    	List<String> docList = new ArrayList<String>();
     	HpcDataManagementDocListDTO dto = new HpcDataManagementDocListDTO();
-    	for(String key : docBasePaths.keySet())
-    		docList.add(key);
-    	dto.getDocs().addAll(docList);
+    	dto.getDocs().addAll(dataManagementService.getDocs());
     	return dto;
 	}
     

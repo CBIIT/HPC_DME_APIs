@@ -26,7 +26,6 @@
 		<prop key="hpc.service.metadataValidationRulesPath">${karaf.base}/etc/hpc-server/metadataValidationRules.json</prop>
 		<prop key="hpc.service.dataHierarchyDefinitionsPath">${karaf.base}/etc/hpc-server/dataHierarchyDefinitions.json</prop>
 		<prop key="hpc.service.dataTransfer.downloadDirectory">${karaf.base}/data/tmp/S3</prop>
-		<prop key="hpc.service.docBasePath">FNLCR=/FNL_SF_Archive CCBR=/CCBR_SF_Archive</prop>
 		<prop key="hpc.service.security.authenticationTokenSignatureKey">hpc-token-signature-key</prop>
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriod">120</prop>
 		<prop key="hpc.service.notification.formatsPath">${karaf.base}/etc/hpc-server/notificationFormats.json</prop>
@@ -82,7 +81,9 @@
 	<osgi:reference id="hpcMetadataDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcMetadataDAO" />	
 	<osgi:reference id="hpcUserNamedQueryDAO" 
-	                interface="gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO" />		                 
+	                interface="gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO" />		
+	<osgi:reference id="hpcDocConfigurationDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcDocConfigurationDAO" />                 
 	<osgi:reference id="hpcGlobusDataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
 		            bean-name="hpcGlobusDataTransferProxy"/>

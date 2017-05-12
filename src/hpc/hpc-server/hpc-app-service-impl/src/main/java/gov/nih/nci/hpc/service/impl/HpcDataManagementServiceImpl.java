@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -31,9 +32,9 @@ import gov.nih.nci.hpc.service.HpcDataManagementService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,9 +70,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	@Autowired
 	private HpcDataHierarchyValidator dataHierarchyValidator = null;
 	
-	// DOC base paths.
+	// DOC configuration locator.
 	@Autowired
-	private HpcDocBasePath docBasePath = null;
+	private HpcDocConfigurationLocator docConfigurationLocator = null;
 	
 	// Prepared query to get data objects that have their data transfer in-progress to archive.
 	private List<HpcMetadataQuery> dataTransferInProgressToArchiveQuery = new ArrayList<>();
@@ -147,7 +148,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
     	String relativePath = dataManagementProxy.getRelativePath(path);
     	// Validate the path is not a DOC base path.
-    	if(docBasePath.containsValue(relativePath)) {
+    	if(docConfigurationLocator.getBasePaths().contains(relativePath)) {
     	   throw new HpcException("Invalid collection path: " + path, 
 	                              HpcErrorType.INVALID_REQUEST_INPUT); 
     	}
@@ -396,18 +397,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public String getDocBasePath(String docName) throws HpcException
+    public HpcDocConfiguration getDocConfiguration(String doc)
     {
-    	if(docName == null || docName.isEmpty())
-    		return null;
+    	if(StringUtils.isEmpty(doc)) {
+    	   return null;
+    	}
     	
-    	return docBasePath.get(docName);
+    	return docConfigurationLocator.get(doc);
     }
     
     @Override
-    public HashMap<String, String> getDocBasePaths() throws HpcException
+    public List<String> getDocs()
     {
-    	return docBasePath;
+    	return new ArrayList<String>(docConfigurationLocator.keySet());
     }
     
     //---------------------------------------------------------------------//

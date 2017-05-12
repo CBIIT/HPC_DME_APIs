@@ -225,24 +225,6 @@ public class HpcUserDAOImpl implements HpcUserDAO
             return user;
 		}
 	}
-	
-    /**
-     * Verify connection to DB. (Invoked by spring init-method).
-     * 
-     * @throws HpcException If it failed to connect to the database.
-     */
-	@SuppressWarnings("unused")
-	private void dbConnect() throws HpcException
-    {
-    	try {
-    	     jdbcTemplate.getDataSource().getConnection();
-    	     
-    	} catch(Exception e) {
-    		    throw new HpcException(
-    		    		     "Failed to connect to PostgreSQL DB. Check credentials config", 
-    		    		     HpcErrorType.DATABASE_ERROR, e);
-    	}
-    } 
 }
 
  

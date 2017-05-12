@@ -119,6 +119,15 @@
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
+								<xsdOption>
+									<xsd>xjc-build/schema/HpcDataManagement.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.domain.model</packagename>
+									<bindingFile>xjc-build/schema/hpc-domain-datamanagement-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:simple</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
 							</xsdOptions>
 						</configuration>
 					</execution>
