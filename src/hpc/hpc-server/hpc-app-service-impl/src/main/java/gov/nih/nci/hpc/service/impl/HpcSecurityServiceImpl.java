@@ -103,7 +103,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	
 	// DOC base paths.
 	@Autowired
-	private HpcDocBasePath docBasePath = null;
+	private HpcDocConfigurationLocator docBasePath = null;
 
 	// The authentication token signature key.
 	private String authenticationTokenSignatureKey = null;

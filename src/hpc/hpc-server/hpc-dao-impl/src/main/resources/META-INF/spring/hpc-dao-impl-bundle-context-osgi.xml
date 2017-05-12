@@ -45,5 +45,6 @@
 	<osgi:service ref="hpcMetadataDAO" interface="gov.nih.nci.hpc.dao.HpcMetadataDAO" />
 	<osgi:service ref="hpcUserNamedQueryDAO" interface="gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO" />
 	<osgi:service ref="hpcGroupDAO" interface="gov.nih.nci.hpc.dao.HpcGroupDAO" />
+	<osgi:service ref="hpcDocConfigurationDAO" interface="gov.nih.nci.hpc.dao.HpcDocConfigurationDAO" />
 
 </beans>
