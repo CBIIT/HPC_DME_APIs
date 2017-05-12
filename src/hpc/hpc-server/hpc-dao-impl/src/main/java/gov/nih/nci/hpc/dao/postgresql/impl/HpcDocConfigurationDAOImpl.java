@@ -21,6 +21,8 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -45,6 +47,10 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
     // SQL Queries.
 	private static final String GET_DOC_CONFIGURATIONS_SQL = 
 			                    "select * from public.\"HPC_DOC_CONFIGURATION\"";
+	
+    // The logger instance.
+	private final Logger logger = 
+			             LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -120,6 +126,7 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
 	@PostConstruct
 	private void dbConnect() throws HpcException
     {
+		logger.error("ERAN: DB CONNECT");
     	try {
     	     jdbcTemplate.getDataSource().getConnection();
     	     

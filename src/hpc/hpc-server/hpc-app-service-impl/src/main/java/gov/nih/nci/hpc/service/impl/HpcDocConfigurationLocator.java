@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
- * HPC DOC configuration loctor. A map for supported DOC to their configuration.
+ * HPC DOC configuration locator. A map for supported DOC to their configuration.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
@@ -85,6 +85,7 @@ public class HpcDocConfigurationLocator extends HashMap<String, HpcDocConfigurat
     {
     	clear();
     	basePaths.clear();
+    	logger.error("ERAN: init doc config");
     	
     	for(HpcDocConfiguration docConfiguration : docConfigurationDAO.getDocConfigurations()) {
     		// Ensure the base path is in the form of a relative path.
