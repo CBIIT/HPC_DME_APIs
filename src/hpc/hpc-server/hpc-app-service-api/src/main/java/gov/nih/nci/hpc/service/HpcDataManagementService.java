@@ -13,9 +13,9 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
+import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -202,21 +202,19 @@ public interface HpcDataManagementService
     public void closeConnection();
     
     /**
-     * Get DOC base path
+     * Get DOC configuration.
      * 
-     * @param docName DOC name.
-     * @return DOC base path.
-     * @throws HpcException on service failure.
+     * @param doc The DOC to get the configuration for
+     * @return DOC configuration.
      */
-    public String getDocBasePath(String docName) throws HpcException;
+    public HpcDocConfiguration getDocConfiguration(String doc);
 
     /**
-     * Get DOCs
+     * Get a list of all DOCs supported by the system.
      * 
-     * @return List of DOCs
-     * @throws HpcException on service failure.
+     * @return List of DOCs.
      */
-    public HashMap<String, String> getDocBasePaths() throws HpcException;
+    public List<String> getDocs();
 }
 
  
