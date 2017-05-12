@@ -11,14 +11,19 @@
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
 import gov.nih.nci.hpc.dao.HpcDocConfigurationDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.List;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -103,6 +108,12 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
 			HpcDocConfiguration docConfiguration = new HpcDocConfiguration();
 			docConfiguration.setDoc(rs.getString("DOC"));
 			docConfiguration.setBasePath(rs.getString("BASE_PATH"));
+			try {
+			     docConfiguration.setDataHierarchy(getDataHierarchyFromJSONStr(rs.getString("DATA_HIERARCHY")));
+			     
+			} catch(HpcException e) {
+				    throw new SQLException(e);
+			}
 
 			return docConfiguration;
 		}
@@ -125,6 +136,64 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
     		    		     HpcErrorType.DATABASE_ERROR, e);
     	}
     } 
+	
+    /**
+     * Instantiate a data hierarchy from a string.
+     * 
+     * @param dataHierarchyJSONStr The data hierarchy JSON string.
+     * @return HpcDataHierarchy
+     * @throws HpcException If failed to parse JSON.
+     */
+	private HpcDataHierarchy getDataHierarchyFromJSONStr(String dataHierarchyJSONStr) 
+			                                            throws HpcException
+    {
+		if(dataHierarchyJSONStr == null) {
+		   return null;
+		}
+		
+		try {
+	         return dataHierarchyFromJSON((JSONObject) new JSONParser().parse(dataHierarchyJSONStr));
+	         
+		} catch(Exception e) {
+		        throw new HpcException("Failed to parse data hierarchy JSON: " + dataHierarchyJSONStr,
+                                       HpcErrorType.DATABASE_ERROR, e);
+		}
+    }
+	
+    /**
+     * Instantiate a HpcDataHierarchy from JSON object.
+     *
+     * @param jsonDataHierarchy The data hierarchy JSON object. 
+     * @return HpcDataHierarchy
+     * 
+     * @throws HpcException If failed to parse the JSON.
+     */
+    @SuppressWarnings("unchecked")
+	private HpcDataHierarchy dataHierarchyFromJSON(JSONObject jsonDataHierarchy) 
+    		                                      throws HpcException
+    {
+		HpcDataHierarchy dataHierarchy = new HpcDataHierarchy();
+		
+		if(!jsonDataHierarchy.containsKey("collectionType") ||
+		   !jsonDataHierarchy.containsKey("isDataObjectContainer")) {
+ 	       throw new HpcException("Invalid Data Hierarchy Definition: " + jsonDataHierarchy,
+ 	                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
+		}
+		
+		dataHierarchy.setCollectionType((String)jsonDataHierarchy.get("collectionType"));
+		dataHierarchy.setIsDataObjectContainer((Boolean)jsonDataHierarchy.get("isDataObjectContainer"));
+    	
+    	// Iterate through the sub collections.
+	    JSONArray jsonSubCollections = (JSONArray) jsonDataHierarchy.get("subCollections");
+  	    if(jsonSubCollections != null) {
+		   Iterator<JSONObject> subCollectionsIterator = jsonSubCollections.iterator();
+	       while(subCollectionsIterator.hasNext()) {
+	    	     dataHierarchy.getSubCollectionsHierarchies().add(dataHierarchyFromJSON(subCollectionsIterator.next()));
+	       }
+  	    }
+  	    
+  	    return dataHierarchy;
+    }
 }
 
  
