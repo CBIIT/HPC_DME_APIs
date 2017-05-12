@@ -44,6 +44,12 @@
    		{
    		 "attribute": "attr4",
       	 "value": "attr4"
-   		}
+   		},
+        { 
+         "attribute":"common_project1_project2_attribute",
+         "value":"common_value"
+        }
+
+
 	]
 }
