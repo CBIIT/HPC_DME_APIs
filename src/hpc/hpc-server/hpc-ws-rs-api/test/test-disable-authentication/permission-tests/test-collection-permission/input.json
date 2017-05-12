@@ -3,8 +3,8 @@
         "operator": "AND",
         "queries":[
             {
-                "attribute":"description",
-                "value":"description sub1",
+                "attribute":"common_project1_project2_attribute",
+                "value":"common_value",
                 "operator":"EQUAL"
             }
         ]

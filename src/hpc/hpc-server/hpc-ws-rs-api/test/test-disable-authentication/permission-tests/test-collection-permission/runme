@@ -21,10 +21,18 @@ RESPONSE_MSG=response-message.json
 query_by_metadata collection input.json dice_user
 
 ATTRIBUTE="\"name\""
-
-#Check that the collection is not returned 
-
 VALUE="prasad project1 sub1"
-
 check_non_existance  "$RESPONSE_HEADER" "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE"
-#RES=$(check_non_existance  "$RESPONSE_HEADER" "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE")
+VALUE="dice test project 1"
+check_non_existance  "$RESPONSE_HEADER" "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE"
+
+
+VALUE="dice test project 2"
+check_existance  "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" "TRUE"
+VALUE="prasad project2 sub2"
+check_existance  "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" "TRUE"
+
+
+
+
+
