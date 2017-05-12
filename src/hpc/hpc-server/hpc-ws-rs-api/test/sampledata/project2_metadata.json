@@ -47,6 +47,10 @@
         { 
          "attribute":"original_date_created",
          "value":"System-Date-project2"
+        },
+        { 
+         "attribute":"common_project1_project2_attribute",
+         "value":"common_value"
         }
 
 	]

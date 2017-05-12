@@ -104,7 +104,7 @@ register_verify $BASE_FOLDER/project2_sub2_object1_metadata.json "$(get_basefold
 register_verify $BASE_FOLDER/project2_sub2_object2_metadata.json "$(get_basefolder)/dice_project2/sub2/object2" dataObject $OBJECT_FILE 
 
 #Add more than 100 objects in project 4 to test the pagination
-for i in `seq  3 101`
+for i in `seq  1 101`
 do 
     register_verify $BASE_FOLDER/project4_datafile.json "$(get_basefolder)/dice_project4/dice_object_$i" dataObject dummy-file.txt
 done
