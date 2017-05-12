@@ -3,8 +3,8 @@
         "operator": "AND",
         "queries":[
             {
-                "attribute":"name",
-                "value":"dice test data file 1",
+                "attribute":"common_object1_object2_attribute",
+                "value":"common_value",
                 "operator":"EQUAL"
             }
         ]
