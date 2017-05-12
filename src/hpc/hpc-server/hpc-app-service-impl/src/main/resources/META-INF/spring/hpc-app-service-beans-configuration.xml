@@ -92,9 +92,7 @@
 	</util:map>
 	
 	<!--  The DOC to base path map -->
-	<bean id="hpcDocBasePath" class="gov.nih.nci.hpc.service.impl.HpcDocBasePath">
-		<property name="docBasePath" value="${hpc.service.docBasePath}" />
-	</bean>
+	<bean id="hpcDocConfigurationLocator" class="gov.nih.nci.hpc.service.impl.HpcDocConfigurationLocator" />
 	
 	<!-- HPC Application Services Beans -->
 	<bean id="hpcSecurityService" class="gov.nih.nci.hpc.service.impl.HpcSecurityServiceImpl">

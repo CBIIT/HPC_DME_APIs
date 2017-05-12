@@ -1,5 +1,5 @@
 /**
- * HpcDocBasePath.java
+ * HpcDocConfigurationLocator.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,12 +10,16 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.dao.HpcDocConfigurationDAO;
+import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,24 +27,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
- * HPC DOC base path. A map for supported DOC to their data management base path
+ * HPC DOC configuration loctor. A map for supported DOC to their configuration.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  * @version $Id$
  */
 
-public class HpcDocBasePath extends HashMap<String, String> 
+public class HpcDocConfigurationLocator extends HashMap<String, HpcDocConfiguration> 
 {        
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 	
-	private static final long serialVersionUID = -5080812833698352085L;
-	
-    // The Data Management Proxy instance.
+	private static final long serialVersionUID = -2233828633688868458L;
+
+	// The Data Management Proxy instance.
 	@Autowired
     private HpcDataManagementProxy dataManagementProxy = null;
+	
+    // The DOC Configuration DAO instance.
+	@Autowired
+    private HpcDocConfigurationDAO docConfigurationDAO = null;
+	
+	// A set of all DOC base path (to allow quick search)
+	private Set<String> basePaths = new HashSet<>();
 	
     // The logger instance.
 	private final Logger logger = 
@@ -54,34 +65,46 @@ public class HpcDocBasePath extends HashMap<String, String>
      * Default constructor for Spring Dependency Injection.
      *
      */
-    private HpcDocBasePath()
+    private HpcDocConfigurationLocator()
     {
     	super();
     }
     
 	//---------------------------------------------------------------------//
-    // Helper Methods
+    // Methods
     //---------------------------------------------------------------------//
 
 	/**
-     * Initialize the DOC base paths map. Called by Spring Dependency Injection.
+     * Load the DOC configurations from the DB.
      *
      * @param docBasePaths The base paths in a config-string format.
      * @throws HpcException On configuration error.
      */
-	public void setDocBasePath(String docBasePaths) throws HpcException
+    @PostConstruct
+	public void initialize() throws HpcException
     {
-    	for(String docBasePath : Arrays.asList(docBasePaths.split("\\s+"))) {
-    		String[] splitDocBasePath = docBasePath.split("=");
-    		if(splitDocBasePath.length != 2) {
-    		   throw new HpcException("Invalid DOC base path configuration: " + docBasePaths,
-			                          HpcErrorType.SPRING_CONFIGURATION_ERROR);
-    		}
+    	clear();
+    	basePaths.clear();
+    	
+    	for(HpcDocConfiguration docConfiguration : docConfigurationDAO.getDocConfigurations()) {
+    		// Ensure the base path is in the form of a relative path.
+    		docConfiguration.setBasePath(dataManagementProxy.getRelativePath(docConfiguration.getBasePath()));
     		
-    		put(splitDocBasePath[0], dataManagementProxy.getRelativePath(splitDocBasePath[1]));
+    		put(docConfiguration.getDoc(), docConfiguration);
+    		basePaths.add(docConfiguration.getBasePath());
     	}
     	
-    	logger.info("Supported DOC: " + toString());
+    	logger.info("DOC Configurations: " + toString());
+    }
+    
+	/**
+     * Get all the DOC base paths.
+     *
+     * @return A list of all DOC base paths.
+     */
+	public Set<String> getBasePaths() 
+    {
+		return basePaths;
     }
 }
 
