@@ -10,7 +10,6 @@
 package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
-import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
@@ -170,15 +169,6 @@ public interface HpcDataManagementService
      * @throws HpcException on service failure.
      */
     public HpcDataObject getDataObject(String path) throws HpcException;
-    
-    /**
-     * Get data hierarchy of a DOC.
-     * 
-     * @param doc The DOC.
-     * @return The DOC's data hierarchy.
-     * @throws HpcException on service failure.
-     */
-    public HpcDataHierarchy getDataHierarchy(String doc) throws HpcException;
     
     /**
      * Get data objects that have their data transfer in-progress.

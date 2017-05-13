@@ -24,7 +24,6 @@
 	<!-- HPC Application Services OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		<prop key="hpc.service.metadataValidationRulesPath">${karaf.base}/etc/hpc-server/metadataValidationRules.json</prop>
-		<prop key="hpc.service.dataHierarchyDefinitionsPath">${karaf.base}/etc/hpc-server/dataHierarchyDefinitions.json</prop>
 		<prop key="hpc.service.dataTransfer.downloadDirectory">${karaf.base}/data/tmp/S3</prop>
 		<prop key="hpc.service.security.authenticationTokenSignatureKey">hpc-token-signature-key</prop>
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriod">120</prop>
