@@ -12,21 +12,13 @@ package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import java.io.FileReader;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -43,67 +35,22 @@ public class HpcDataHierarchyValidator
     // Instance members
     //---------------------------------------------------------------------//
 
-	// Data Hierarchy .definitions per DOC.
-	Map<String, HpcDataHierarchy> dataHierarchyDefinitions = new HashMap<>();
-
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	// DOC configuration locator.
+	@Autowired
+	private HpcDocConfigurationLocator docConfigurationLocator = null;
 	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
 	
     /**
-     * Default Constructor.
+     * Constructor for Spring Dependency Injection.
      * 
      * @throws HpcException Constructor is disabled.
      */
-    @SuppressWarnings("unused")
-	private HpcDataHierarchyValidator() throws HpcException
+	private HpcDataHierarchyValidator()
     {
-    	throw new HpcException("Constructor Disabled",
-                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }  
-    
-    /**
-     * Constructor for Spring Dependency Injection.
-     * 
-     * @param dataHierarchyDefinitionsPath The path to the data hierarchy definitions JSON.
-     * @throws HpcException If the data hierarchy definition is invalid.
-     */
-    @SuppressWarnings("unchecked")
-    public HpcDataHierarchyValidator(String dataHierarchyDefinitionsPath) throws HpcException
-    {
-    	// Load the data hierarchy definitions from the JSON config file.
-    	JSONArray jsonDataHierarchyDefinitions = 
-	     		      getDataHierarchyDefinitionsJSON(dataHierarchyDefinitionsPath);
-    	if(jsonDataHierarchyDefinitions == null) {
-       	   throw new HpcException("No data hierarchy definitions found",
-                                  HpcErrorType.SPRING_CONFIGURATION_ERROR); 
-        }
-    	
-		Iterator<JSONObject> dataHierarchyIterator = jsonDataHierarchyDefinitions.iterator();
-	    while(dataHierarchyIterator.hasNext()) {
-	          JSONObject jsonDataHierarchy = dataHierarchyIterator.next();
-	          
-	          // Map Data Hierarchy JSON to a domain object.
-	          HpcDataHierarchy dataHierarchy = dataHierarchyFromJSON(jsonDataHierarchy);
-	          
-	          // Associate data hierarchy to DOC 
-	          JSONArray jsonDOC = (JSONArray) jsonDataHierarchy.get("DOC");
-	    	  if(jsonDOC != null) {
-		    	 Iterator<String> docIterator = jsonDOC.iterator();
-		    	 while(docIterator.hasNext()) {
-		    		   dataHierarchyDefinitions.put(docIterator.next(), dataHierarchy);
-		    	 }
-		    	 
-	    	  } else {
-	    		      throw new HpcException("Invalid Data Hierarchy Definition: " + jsonDataHierarchy,
-                                             HpcErrorType.SPRING_CONFIGURATION_ERROR);
-	    	  }
-	    }
-	    
-	    logger.info("Data Hierarchy Definitions: " + dataHierarchyDefinitions);
-    }	
     
     //---------------------------------------------------------------------//
     // Methods
@@ -123,7 +70,12 @@ public class HpcDataHierarchyValidator
     		                      boolean dataObjectRegistration) 
     		                     throws HpcException
     {
-    	HpcDataHierarchy dataHierarchy = getDataHierarchy(doc);
+    	HpcDocConfiguration docConfiguration = docConfigurationLocator.get(doc);
+    	if(docConfiguration == null) {
+    	   throw new HpcException("Unsupported DOC: " + doc, HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	HpcDataHierarchy dataHierarchy = docConfiguration.getDataHierarchy();
   		if(dataHierarchy == null) {
     	   // No hierarchy definition found for the DOC, so validation is not needed.
     	   return;
@@ -159,76 +111,6 @@ public class HpcDataHierarchyValidator
     	}
     }
     
-    /**
-     * Get a data hierarchy for a DOC.
-     *
-     * @param doc The DOC.
-     * @return HpcDataHierarchy
-     */
-    public HpcDataHierarchy getDataHierarchy(String doc) 
-    {
-    	return dataHierarchyDefinitions.get(doc);
-    }
-    
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-    
-    /**
-     * Instantiate a HpcDataHierarchy from JSON.
-     *
-     * @param jsonDataHierarchy The data hierarchy JSON object. 
-     * @return HpcDataHierarchy
-     * 
-     * @throws HpcException If failed to parse the JSON.
-     */
-    @SuppressWarnings("unchecked")
-	private HpcDataHierarchy dataHierarchyFromJSON(JSONObject jsonDataHierarchy) 
-    		                                      throws HpcException
-    {
-		HpcDataHierarchy dataHierarchy = new HpcDataHierarchy();
-		
-		if(!jsonDataHierarchy.containsKey("collectionType") ||
-		   !jsonDataHierarchy.containsKey("isDataObjectContainer")) {
- 	       throw new HpcException("Invalid Data Hierarchy Definition: " + jsonDataHierarchy,
- 	                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
-		}
-		
-		dataHierarchy.setCollectionType((String)jsonDataHierarchy.get("collectionType"));
-		dataHierarchy.setIsDataObjectContainer((Boolean)jsonDataHierarchy.get("isDataObjectContainer"));
-    	
-    	// Iterate through the sub collections.
-	    JSONArray jsonSubCollections = (JSONArray) jsonDataHierarchy.get("subCollections");
-  	    if(jsonSubCollections != null) {
-		   Iterator<JSONObject> subCollectionsIterator = jsonSubCollections.iterator();
-	       while(subCollectionsIterator.hasNext()) {
-	    	     dataHierarchy.getSubCollectionsHierarchies().add(dataHierarchyFromJSON(subCollectionsIterator.next()));
-	       }
-  	    }
-  	    
-  	    return dataHierarchy;
-    }
-    	
-    /**
-     * Load the data hierarchy definitions from file.
-     * 
-     * @param dataHierarchyDefinitionsPath The path to the data hierarchy definitions JSON.
-     * @return a JSON object with the data hierarchy definitions
-     * @throws HpcException If failed to open or parse JSON.
-     */
-	private JSONArray getDataHierarchyDefinitionsJSON(String dataHierarchyDefinitionsPath) 
-			                                         throws HpcException
-    {
-		try {
-	         FileReader reader = new FileReader(dataHierarchyDefinitionsPath);
-	         return (JSONArray) ((JSONObject) new JSONParser().parse(reader)).get("HpcDataHierarchyDefinitions");
-	         
-		} catch(Exception e) {
-		        throw new HpcException("Could not open or parse: " + dataHierarchyDefinitionsPath,
-                                       HpcErrorType.SPRING_CONFIGURATION_ERROR, e);
-		}
-    }
-	
     /**
      * Return a string from path types.
      * 
