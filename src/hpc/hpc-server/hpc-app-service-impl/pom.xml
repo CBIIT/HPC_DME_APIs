@@ -67,11 +67,6 @@
 									<type>json</type>
 									<classifier>notificationFormats</classifier>
 								</artifact>
-								<artifact>
-									<file>src/main/resources/dataHierarchyDefinitions.json</file>
-									<type>json</type>
-									<classifier>dataHierarchyDefinitions</classifier>
-								</artifact>
 							</artifacts>
 						</configuration>
 					</execution>
