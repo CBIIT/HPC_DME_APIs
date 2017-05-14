@@ -252,10 +252,9 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
     		
 	    	  if(!jsonMetadataValidationRule.containsKey("attribute") ||
 	    		 !jsonMetadataValidationRule.containsKey("mandatory") ||
-	    		 !jsonMetadataValidationRule.containsKey("ruleEnabled") ||
-	    		 !jsonMetadataValidationRule.containsKey("docs")) {
+	    		 !jsonMetadataValidationRule.containsKey("ruleEnabled")) {
 	    		 throw new HpcException("Invalid rule JSON object: " + jsonMetadataValidationRule,
-	    		                        HpcErrorType.SPRING_CONFIGURATION_ERROR);	
+	    		                        HpcErrorType.DATABASE_ERROR);	
 	    	  }
 	    			
 	    	  // JSON -> POJO.
@@ -265,14 +264,6 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
 	    	  metadataValidationRule.setRuleEnabled((Boolean) jsonMetadataValidationRule.get("ruleEnabled"));
 	    	  metadataValidationRule.setDefaultValue((String) jsonMetadataValidationRule.get("defaultValue"));
 	    	  metadataValidationRule.setDefaultUnit((String) jsonMetadataValidationRule.get("defaultUnit"));
-	    	  
-	    	  JSONArray jsonDOC = (JSONArray) jsonMetadataValidationRule.get("docs");
-	    	  if(jsonDOC != null) {
-		    	 Iterator<String> docIterator = jsonDOC.iterator();
-		    	 while(docIterator.hasNext()) {
-		    	   	   metadataValidationRule.getDocs().add(docIterator.next());
-		    	 }
-	    	  }
 	    	  
 	    	  JSONArray jsonCollectionTypes = (JSONArray) jsonMetadataValidationRule.get("collectionTypes");
 	    	  if(jsonCollectionTypes != null) {
