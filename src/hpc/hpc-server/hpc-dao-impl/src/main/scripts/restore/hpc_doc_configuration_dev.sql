@@ -39,7 +39,7 @@ VALUES('FNLCR', '/FNL_SF_Archive',
       	 ]
     	}',
        '{
-		 "collectionMetadataValidationRules": [{
+		 "metadataValidationRules": [{
 				"attribute": "collection_type",
 				"mandatory": true,
 				"validValues": [
@@ -300,8 +300,10 @@ VALUES('FNLCR', '/FNL_SF_Archive',
 				],
 				"ruleEnabled": true
 			}
-		 ],
-		 "dataObjectMetadataValidationRules": [{
+		 ]
+		}',
+	   '{
+		 "metadataValidationRules": [{
 				"attribute": "object_name",
 				"mandatory": true,
 				"ruleEnabled": true
@@ -382,7 +384,7 @@ VALUES('FNLCR', '/FNL_SF_Archive',
 		 ]
 	    }');
 
-INSERT INTO public."HPC_DOC_CONFIGURATION" VALUES('CCBR', '/CCBR_SF_Archive', NULL, NULL);
+INSERT INTO public."HPC_DOC_CONFIGURATION" VALUES('CCBR', '/CCBR_SF_Archive', NULL, NULL, NULL);
 
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
 VALUES('DUMMY', '/TEST_Archive',
@@ -405,7 +407,7 @@ VALUES('DUMMY', '/TEST_Archive',
       	 ]
         }',
        '{
-		 "collectionMetadataValidationRules": [{
+		 "metadataValidationRules": [{
 				"attribute": "collection_type",
 				"mandatory": true,
 				"validValues": [
@@ -726,8 +728,10 @@ VALUES('DUMMY', '/TEST_Archive',
 				],
 				"ruleEnabled": true
 			}
-		 ],
-		 "dataObjectMetadataValidationRules": [{
+		 ]
+	    }',
+	   '{
+		 "metadataValidationRules": [{
 				"attribute": "name",
 				"mandatory": true,
 				"ruleEnabled": true
@@ -903,7 +907,7 @@ VALUES('DUMMY', '/TEST_Archive',
 		 ]
 	    }');
 
-INSERT INTO public."HPC_DOC_CONFIGURATION" VALUES('CCR-LEEMAX', '/CCR_LEEMAX_Archive', NULL, NULL);
+INSERT INTO public."HPC_DOC_CONFIGURATION" VALUES('CCR-LEEMAX', '/CCR_LEEMAX_Archive', NULL, NULL, NULL);
 
-INSERT INTO public."HPC_DOC_CONFIGURATION" VALUES('HiTIF', '/HiTIF_Archive', NULL, NULL);
+INSERT INTO public."HPC_DOC_CONFIGURATION" VALUES('HiTIF', '/HiTIF_Archive', NULL, NULL, NULL);
 
