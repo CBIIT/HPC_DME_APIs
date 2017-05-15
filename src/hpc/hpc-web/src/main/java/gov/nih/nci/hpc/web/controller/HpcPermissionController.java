@@ -81,6 +81,8 @@ public class HpcPermissionController extends AbstractHpcController {
 	private String serverCollectionURL;
 	@Value("${gov.nih.nci.hpc.server.dataObject}")
 	private String serverDataObjectURL;
+	@Value("${hpc.serviceaccount}")
+	private String serviceAccount;
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String body, @RequestParam String path, @RequestParam String type,
@@ -148,7 +150,7 @@ public class HpcPermissionController extends AbstractHpcController {
 		if (permissionsDTO != null) {
 			List<HpcUserPermission> userPermissions = permissionsDTO.getUserPermissions();
 			for (HpcUserPermission permission : userPermissions) {
-				if (permission.getUserId().equals("rods") || permission.getUserId().equals("ncif-hpcdm-svc"))
+				if (permission.getUserId().equals("rods") || permission.getUserId().equals(serviceAccount))
 					continue;
 				HpcPermissionEntry entry = new HpcPermissionEntry();
 				entry.setName(permission.getUserId());
