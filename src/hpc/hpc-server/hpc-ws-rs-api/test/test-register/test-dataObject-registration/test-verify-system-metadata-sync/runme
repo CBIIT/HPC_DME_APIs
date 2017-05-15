@@ -43,7 +43,8 @@ PROJECT_PATH=`cat registered-project-path.tmp`
 DATAOBJECT_PATH="${PROJECT_PATH}/object-${SUFFIX}.txt"
 
 #Register the collection 
-curl_register input.json  "$DATAOBJECT_PATH" dataObject 
+echo "hello" > object.tmp
+curl_register input.json  "$DATAOBJECT_PATH" dataObject object.tmp
 
 #Check the returned code is 201
 REG_HTTP_CODE=`get_http_code dataObject-registration-response-header.tmp`
@@ -60,9 +61,7 @@ echo $REG_HTTP_CODE
 RESPONSE_HEADER=response-header
 RESPONSE_MSG=response-message.json
 
-#Make sure the transfer is complete
-async_sleep
-
+#
 #Get the registered dataObject by path
 get_item "dataObject/${DATAOBJECT_PATH}" "$RESPONSE_HEADER" "$RESPONSE_MSG"
 
