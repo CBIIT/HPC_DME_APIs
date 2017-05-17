@@ -58,11 +58,6 @@
 						<configuration>
 							<artifacts>
 								<artifact>
-									<file>src/main/resources/metadataValidationRules.json</file>
-									<type>json</type>
-									<classifier>metadataValidationRules</classifier>
-								</artifact>
-								<artifact>
 									<file>src/main/resources/notificationFormats.json</file>
 									<type>json</type>
 									<classifier>notificationFormats</classifier>

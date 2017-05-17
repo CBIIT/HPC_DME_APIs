@@ -63,7 +63,6 @@
 		
 		<!-- Config files -->
 		<configfile finalname="/etc/gov.nih.nci.hpc.cfg" override="false">mvn:${project.groupId}/hpc-features/${project.version}/properties/hpc-server</configfile>
-		<configfile finalname="/etc/hpc-server/metadataValidationRules.json" override="false">mvn:${project.groupId}/hpc-app-service-impl/${project.version}/json/metadataValidationRules</configfile>
 		<configfile finalname="/etc/hpc-server/notificationFormats.json" override="false">mvn:${project.groupId}/hpc-app-service-impl/${project.version}/json/notificationFormats</configfile>
 
 		<!-- Server Bundles -->

@@ -15,7 +15,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -40,10 +39,12 @@ public interface HpcMetadataService
      *
      * @param path The collection path.
      * @param metadataEntries The metadata entries to add.
+     * @param doc The DOC to apply validation rules. Metadata validation rules are DOC specific.
      * @throws HpcException on service failure.
      */
     public void addMetadataToCollection(String path, 
-    		                            List<HpcMetadataEntry> metadataEntries) 
+    		                            List<HpcMetadataEntry> metadataEntries,
+    		                            String doc) 
     		                           throws HpcException; 
     
     /**
@@ -51,10 +52,12 @@ public interface HpcMetadataService
      *
      * @param path The collection path.
      * @param metadataEntries The metadata entries to update.
+     * @param doc The DOC to apply validation rules. Metadata validation rules are DOC specific.
      * @throws HpcException on service failure.
      */
     public void updateCollectionMetadata(String path, 
-    		                             List<HpcMetadataEntry> metadataEntries) 
+    		                             List<HpcMetadataEntry> metadataEntries,
+    		                             String doc) 
     		                            throws HpcException; 
     
     /**
@@ -114,10 +117,12 @@ public interface HpcMetadataService
      *
      * @param path The data object path.
      * @param metadataEntries The metadata entries to add.
+     * @param doc The DOC to apply validation rules. Metadata validation rules are DOC specific.
      * @throws HpcException on service failure.
      */ 
     public void addMetadataToDataObject(String path, 
-    		                            List<HpcMetadataEntry> metadataEntries) 
+    		                            List<HpcMetadataEntry> metadataEntries,
+    		                            String doc) 
     		                           throws HpcException; 
     
     /**
@@ -196,10 +201,12 @@ public interface HpcMetadataService
      *
      * @param path The data object path.
      * @param metadataEntries The metadata entries to update.
+     * @param doc The DOC to apply validation rules. Metadata validation rules are DOC specific.
      * @throws HpcException on service failure.
      */
     public void updateDataObjectMetadata(String path, 
-    		                             List<HpcMetadataEntry> metadataEntries) 
+    		                             List<HpcMetadataEntry> metadataEntries,
+    		                             String doc) 
     		                            throws HpcException; 
     
     /**
@@ -210,26 +217,6 @@ public interface HpcMetadataService
      * @throws HpcException on service failure.
      */
     public HpcMetadataEntries getDataObjectMetadataEntries(String path) throws HpcException;
-    
-    /**
-     * Get collection metadata validation rules for a DOC.
-     * 
-     * @param doc The DOC.
-     * @return A list of HpcMetadataValidationRule.
-     * @throws HpcException on service failure.
-     */
-    public List<HpcMetadataValidationRule> 
-           getCollectionMetadataValidationRules(String doc) throws HpcException;
-    
-    /**
-     * Get data object metadata validation rules for a DOC.
-     * 
-     * @param doc The DOC.
-     * @return A list of HpcMetadataValidationRule
-     * @throws HpcException on service failure.
-     */
-    public List<HpcMetadataValidationRule> 
-           getDataObjectMetadataValidationRules(String doc) throws HpcException;
     
     /**
      * Refresh all metadata materialized views.
