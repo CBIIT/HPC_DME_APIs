@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -72,7 +73,7 @@ public class HpcDataHierarchyValidator
     {
     	HpcDocConfiguration docConfiguration = docConfigurationLocator.get(doc);
     	if(docConfiguration == null) {
-    	   throw new HpcException("Unsupported DOC: " + doc, HpcErrorType.INVALID_REQUEST_INPUT);
+    	   throw new HpcException("Invalid DOC: " + doc, HpcRequestRejectReason.INVALID_DOC);
     	}
     	
     	HpcDataHierarchy dataHierarchy = docConfiguration.getDataHierarchy();
