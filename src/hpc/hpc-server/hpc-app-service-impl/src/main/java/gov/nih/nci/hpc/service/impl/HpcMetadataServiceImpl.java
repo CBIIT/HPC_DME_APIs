@@ -16,11 +16,11 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CALLER_OBJECT_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CHECKSUM_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_COMPLETED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_REQUEST_ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STARTED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_TYPE_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STARTED_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_COMPLETED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_DOC_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_ID_ATTRIBUTE;
@@ -35,7 +35,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -126,7 +125,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
 
     @Override
     public void addMetadataToCollection(String path, 
-    		                            List<HpcMetadataEntry> metadataEntries) 
+    		                            List<HpcMetadataEntry> metadataEntries,
+    		                            String doc) 
     		                           throws HpcException
     {
        	// Input validation.
@@ -136,7 +136,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	}	
        	
        	// Validate Metadata.
-       	metadataValidator.validateCollectionMetadata(null, metadataEntries);
+       	metadataValidator.validateCollectionMetadata(doc, null, metadataEntries);
        	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToCollection(dataManagementAuthenticator.getAuthenticatedToken(),
@@ -145,7 +145,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     
     @Override
     public void updateCollectionMetadata(String path, 
-    		                             List<HpcMetadataEntry> metadataEntries) 
+    		                             List<HpcMetadataEntry> metadataEntries,
+    		                             String doc) 
     		                            throws HpcException
     {
        	// Input validation.
@@ -161,7 +162,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	validateCollectionTypeUpdate(existingMetadataEntries, metadataEntries);
        	
        	// Validate Metadata.
-       	metadataValidator.validateCollectionMetadata(existingMetadataEntries,
+       	metadataValidator.validateCollectionMetadata(doc, existingMetadataEntries,
        			                                     metadataEntries);
        	
        	// Add Metadata to the DM system.
@@ -307,7 +308,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     
     @Override
     public void addMetadataToDataObject(String path, 
-    		                            List<HpcMetadataEntry> metadataEntries) 
+    		                            List<HpcMetadataEntry> metadataEntries,
+    		                            String doc) 
     		                           throws HpcException
     {
        	// Input validation.
@@ -317,7 +319,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	}	
        	
        	// Validate Metadata.
-       	metadataValidator.validateDataObjectMetadata(null, metadataEntries);
+       	metadataValidator.validateDataObjectMetadata(doc, null, metadataEntries);
        	
        	
        	// Add Metadata to the DM system.
@@ -513,7 +515,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     
     @Override
     public void updateDataObjectMetadata(String path, 
-    		                             List<HpcMetadataEntry> metadataEntries) 
+    		                             List<HpcMetadataEntry> metadataEntries, 
+    		                             String doc) 
     		                            throws HpcException
     {
        	// Input validation.
@@ -523,7 +526,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	}	
        	
        	// Validate Metadata.
-       	metadataValidator.validateDataObjectMetadata(dataManagementProxy.getDataObjectMetadata(
+       	metadataValidator.validateDataObjectMetadata(doc,
+       			                                     dataManagementProxy.getDataObjectMetadata(
        			                                         dataManagementAuthenticator.getAuthenticatedToken(),
                                                          path),
        			                                     metadataEntries);
@@ -548,20 +552,6 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     			metadataDAO.getDataObjectMetadata(dataManagementProxy.getAbsolutePath(path), 2));
     	
     	return metadataEntries;
-    }
-    
-    @Override
-    public List<HpcMetadataValidationRule> 
-           getCollectionMetadataValidationRules(String doc) throws HpcException
-    {
-    	return rulesForDOC(metadataValidator.getCollectionMetadataValidationRules(), doc);
-    }
-    
-    @Override
-    public List<HpcMetadataValidationRule> 
-           getDataObjectMetadataValidationRules(String doc) throws HpcException
-    {
-    	return rulesForDOC(metadataValidator.getDataObjectMetadataValidationRules(), doc);
     }
     
     @Override
@@ -672,27 +662,6 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     private HpcMetadataEntry toMetadataEntry(String attribute, Long value)
     {
     	return toMetadataEntry(attribute, value != null ? String.valueOf(value) : null);
-    }
-    
-    /**
-     * Filter a list of metadata validation rules by DOC.
-     *
-     * @param rules The list of rules to filter.
-     * @param doc The DOC to filter for.
-     * @return List of HpcMetadataValidationRule
-     */
-    private List<HpcMetadataValidationRule> rulesForDOC(List<HpcMetadataValidationRule> rules,
-    		                                            String doc) 
-    {
-    	List<HpcMetadataValidationRule> docRules = new ArrayList<>();
-    	for(HpcMetadataValidationRule rule : rules) {
-    		if(rule.getDocs() == null || rule.getDocs().isEmpty() ||
-    		   rule.getDocs().contains(doc)) {
-    		   docRules.add(rule);
-    		}
-    	}
-    	
-    	return docRules;
     }
     
     /**

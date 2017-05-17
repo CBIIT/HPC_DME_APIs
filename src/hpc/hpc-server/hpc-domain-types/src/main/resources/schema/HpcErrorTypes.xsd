@@ -53,6 +53,7 @@
 			<xsd:enumeration value="INVALID_DATA_MANAGEMENT_ACCOUNT" />
 			<xsd:enumeration value="DATA_OBJECT_PATH_ALREADY_EXISTS" />
 			<xsd:enumeration value="INVALID_DATA_OBJECT_PATH" />
+			<xsd:enumeration value="INVALID_DOC" />
 			<xsd:enumeration value="FILE_NOT_FOUND" />
 			<xsd:enumeration value="FILE_NOT_ARCHIVED" />
 			

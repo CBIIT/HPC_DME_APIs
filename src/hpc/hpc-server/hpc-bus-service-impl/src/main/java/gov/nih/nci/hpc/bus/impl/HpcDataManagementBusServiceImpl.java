@@ -30,6 +30,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
@@ -152,13 +153,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		    dataManagementService.assignSystemAccountPermission(path);
     		    
     		    // Add user provided metadata.
-    	        metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries());
+    		    String doc = securityService.getRequestInvoker().getNciAccount().getDoc();
+    	        metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries(), doc);
     	        
     	        // Generate system metadata and attach to the collection.
        	        metadataService.addSystemGeneratedMetadataToCollection(path);
        	        
        	        // Validate the collection hierarchy.
-       	        String doc = metadataService.getCollectionSystemGeneratedMetadata(path).getRegistrarDOC();
        	        dataManagementService.validateHierarchy(path, doc, false);
        	        
        	        // Add collection update event.
@@ -174,7 +175,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	       }
        	   
     	} else {
-    		    metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries());
+    		    String doc = metadataService.getCollectionSystemGeneratedMetadata(path).getRegistrarDOC();
+    		    metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries(), doc);
     		    addCollectionUpdatedEvent(path, false, false);
     	}
     	
@@ -356,16 +358,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   try {
       	        // Validate the new collection meets the hierarchy definition.
     		    String collectionPath = path.substring(0, path.lastIndexOf('/'));
-    		    String doc = securityService.getRequestInvoker().getNciAccount().getDoc();
-      	        dataManagementService.validateHierarchy(collectionPath, doc, true);
+    		    HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
+      	        dataManagementService.validateHierarchy(collectionPath, invokerNciAccount.getDoc(), true);
     		   
     		    // Assign system account as an additional owner of the data-object.
    		        dataManagementService.assignSystemAccountPermission(path);
    		  
 		        // Attach the user provided metadata.
-		        metadataService.addMetadataToDataObject(
-		    	   		           path, 
-		    			           dataObjectRegistration.getMetadataEntries());
+		        metadataService.addMetadataToDataObject(path, 
+		    			                                dataObjectRegistration.getMetadataEntries(), 
+		    			                                invokerNciAccount.getDoc());
 		        
 		        // Extract the source location and size.
 		        HpcFileLocation source = dataObjectRegistration.getSource();
@@ -376,10 +378,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				
 				// Transfer the data file.
 		        HpcDataObjectUploadResponse uploadResponse = 
-		           dataTransferService.uploadDataObject(
-		        	   source, dataObjectFile, path, 
-		        	   securityService.getRequestInvoker().getNciAccount().getUserId(),
-		        	   dataObjectRegistration.getCallerObjectId());
+		           dataTransferService.uploadDataObject(source, dataObjectFile, path, 
+		        	                                    invokerNciAccount.getUserId(),
+		        	                                    dataObjectRegistration.getCallerObjectId());
 		        
 			    // Generate system metadata and attach to the data object.
 			    metadataService.addSystemGeneratedMetadataToDataObject(
@@ -407,12 +408,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    	}
     	   
 	    } else {
-	    	    if(dataObjectFile != null || (dataObjectRegistration.getSource() != null && dataObjectRegistration.getSource().getFileContainerId() != null && dataObjectRegistration.getSource().getFileId() != null)) {
+	    	    if(dataObjectFile != null || 
+	    	       (dataObjectRegistration.getSource() != null && 
+	    	    	dataObjectRegistration.getSource().getFileContainerId() != null && 
+	    	    	dataObjectRegistration.getSource().getFileId() != null)) {
 	    		   throw new HpcException("Data object cannot be updated. Only updating metadata is allowed.",
 			                              HpcErrorType.REQUEST_REJECTED);
 	    	    }
 	    	
-	    	    metadataService.updateDataObjectMetadata(path, dataObjectRegistration.getMetadataEntries()); 
+	    	    String doc = metadataService.getDataObjectSystemGeneratedMetadata(path).getRegistrarDOC();
+	    	    metadataService.updateDataObjectMetadata(path, dataObjectRegistration.getMetadataEntries(), doc); 
 	    }
 	    
 	    return created;
@@ -571,9 +576,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	HpcDataManagementModelDTO dataManagementModel = new HpcDataManagementModelDTO();
     	dataManagementModel.getCollectionMetadataValidationRules().addAll(
-    			               metadataService.getCollectionMetadataValidationRules(doc));
+    			               docConfiguration.getCollectionMetadataValidationRules());
     	dataManagementModel.getDataObjectMetadataValidationRules().addAll(
-	                           metadataService.getDataObjectMetadataValidationRules(doc));
+    			               docConfiguration.getDataObjectMetadataValidationRules());
     	dataManagementModel.setDataHierarchy(docConfiguration.getDataHierarchy());
     	dataManagementModel.setBasePath(docConfiguration.getBasePath());
     	dataManagementModel.getCollectionSystemGeneratedMetadataAttributeNames().addAll(metadataService.getCollectionSystemMetadataAttributeNames());
