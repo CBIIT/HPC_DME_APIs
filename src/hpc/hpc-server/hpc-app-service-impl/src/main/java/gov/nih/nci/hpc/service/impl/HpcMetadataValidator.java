@@ -11,28 +11,25 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
-import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
+import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
- * Validates various metadata provided by the user.
+ * Validates various metadata provided by the user. Validation rules are DOC specific.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
@@ -70,69 +67,41 @@ public class HpcMetadataValidator
     // Instance members
     //---------------------------------------------------------------------//
 
-	// Metadata validation rules.
-	List<HpcMetadataValidationRule> collectionMetadataValidationRules = new ArrayList<>();
-	List<HpcMetadataValidationRule> dataObjectMetadataValidationRules = new ArrayList<>();
-	
-	List<String> collectionSystemGeneratedMetadataAttributeNames = new ArrayList<>();
-	List<String> dataObjectSystemGeneratedMetadataAttributeNames = new ArrayList<>();
+	// DOC configuration locator.
+	@Autowired
+	private HpcDocConfigurationLocator docConfigurationLocator = null;
 	
 	// Set of system generated metadata attributes.
 	Set<String> systemGeneratedMetadataAttributes = new HashSet<>();
+	List<String> collectionSystemGeneratedMetadataAttributeNames = new ArrayList<>();
+	List<String> dataObjectSystemGeneratedMetadataAttributeNames = new ArrayList<>();
 	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
 	
     /**
-     * Default Constructor.
-     * 
-     * @throws HpcException Constructor is disabled.
-     */
-    @SuppressWarnings("unused")
-	private HpcMetadataValidator() throws HpcException
-    {
-    	throw new HpcException("Constructor Disabled",
-                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
-    }  
-    
-    /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param metadataValidationRulesPath The path to the validation rules JSON.
-     * 
-     * @throws HpcException on Spring configuration error.
      */
-    public HpcMetadataValidator(String metadataValidationRulesPath) throws HpcException
+    private HpcMetadataValidator() 
     {
-		try {
-	         JSONObject jsonMetadataValidationRules = getMetadataValidationRulesJSON(metadataValidationRulesPath);
+    	List<String> attributes = 
+	                 Arrays.asList(ID_ATTRIBUTE, REGISTRAR_ID_ATTRIBUTE, REGISTRAR_NAME_ATTRIBUTE,
+	              		           REGISTRAR_DOC_ATTRIBUTE, SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE,
+	            		           SOURCE_LOCATION_FILE_ID_ATTRIBUTE, ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE,
+	            		           ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE, DATA_TRANSFER_REQUEST_ID_ATTRIBUTE,
+	            		           DATA_TRANSFER_STATUS_ATTRIBUTE, DATA_TRANSFER_TYPE_ATTRIBUTE,
+	            		           DATA_TRANSFER_STARTED_ATTRIBUTE, DATA_TRANSFER_COMPLETED_ATTRIBUTE, 
+	            		           SOURCE_FILE_SIZE_ATTRIBUTE, CALLER_OBJECT_ID_ATTRIBUTE, 
+	            		           CHECKSUM_ATTRIBUTE);
+    	List<String> collectionAttributes = 
+    			     Arrays.asList(ID_ATTRIBUTE, REGISTRAR_ID_ATTRIBUTE, REGISTRAR_NAME_ATTRIBUTE,
+		                           REGISTRAR_DOC_ATTRIBUTE);
 	         
-	         collectionMetadataValidationRules.addAll(
-	        		   rulesFromJSON((JSONArray) jsonMetadataValidationRules.get("collectionMetadataValidationRules")));
-	         dataObjectMetadataValidationRules.addAll(
-	        		   rulesFromJSON((JSONArray) jsonMetadataValidationRules.get("dataObjectMetadataValidationRules")));
-	         
-	         List<String> attributes = 
-	              Arrays.asList(ID_ATTRIBUTE, REGISTRAR_ID_ATTRIBUTE, REGISTRAR_NAME_ATTRIBUTE,
-	            		        REGISTRAR_DOC_ATTRIBUTE, SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE,
-	            		        SOURCE_LOCATION_FILE_ID_ATTRIBUTE, ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE,
-	            		        ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE, DATA_TRANSFER_REQUEST_ID_ATTRIBUTE,
-	            		        DATA_TRANSFER_STATUS_ATTRIBUTE, DATA_TRANSFER_TYPE_ATTRIBUTE,
-	            		        DATA_TRANSFER_STARTED_ATTRIBUTE, DATA_TRANSFER_COMPLETED_ATTRIBUTE, 
-	            		        SOURCE_FILE_SIZE_ATTRIBUTE, CALLER_OBJECT_ID_ATTRIBUTE, 
-	            		        CHECKSUM_ATTRIBUTE);
-	         
-	         systemGeneratedMetadataAttributes.addAll(attributes);
-	         collectionSystemGeneratedMetadataAttributeNames.addAll(
-	        		   namesFromJSON((JSONArray) jsonMetadataValidationRules.get("collectionSystemGeneratedMetadataAttributes")));
-	         dataObjectSystemGeneratedMetadataAttributeNames.addAll(
-	        		   namesFromJSON((JSONArray) jsonMetadataValidationRules.get("dataObjectSystemGeneratedMetadataAttributes")));
-	         
-		} catch(Exception e) {
-			    throw new HpcException("Could not open or parse: " + metadataValidationRulesPath,
-                                       HpcErrorType.SPRING_CONFIGURATION_ERROR, e);
-		}
+        systemGeneratedMetadataAttributes.addAll(attributes);
+	    collectionSystemGeneratedMetadataAttributeNames.addAll(collectionAttributes);
+	    dataObjectSystemGeneratedMetadataAttributeNames.addAll(attributes);
     }	
     
     //---------------------------------------------------------------------//
@@ -142,6 +111,7 @@ public class HpcMetadataValidator
     /**
      * Validate collection metadata. Null unit values are converted to empty strings.
      *
+     * @param doc The DOC to determine the validation rules (which are DOC specific). 
      * @param existingMetadataEntries Optional (can be null). The metadata entries currently associated 
      *                                with the collection or data object.
      * @param addUpdateMetadataEntries Optional (can be null) A list of metadata entries
@@ -149,18 +119,25 @@ public class HpcMetadataValidator
      * 
      * @throws HpcException If the metadata is invalid.
      */
-    public void validateCollectionMetadata(List<HpcMetadataEntry> existingMetadataEntries,
+    public void validateCollectionMetadata(String doc,
+    		                               List<HpcMetadataEntry> existingMetadataEntries,
     		                               List<HpcMetadataEntry> addUpdateMetadataEntries) 
     		                              throws HpcException
     {
+    	HpcDocConfiguration docConfiguration = docConfigurationLocator.get(doc);
+    	if(docConfiguration == null) {
+    	   throw new HpcException("Invalid DOC: " + doc, HpcRequestRejectReason.INVALID_DOC);
+    	}
+    	
     	validateMetadata(existingMetadataEntries, 
     			         addUpdateMetadataEntries,
-    			         collectionMetadataValidationRules);
+    			         docConfiguration.getCollectionMetadataValidationRules());
     }
     
     /**
      * Validate data object metadata. Null unit values are converted to empty strings.
      *
+     * @param doc The DOC to determine the validation rules (which are DOC specific). 
      * @param existingMetadataEntries Optional (can be null). The metadata entries currently associated 
      *                                with the collection or data object.
      * @param addUpdateMetadataEntries Optional (can be null) A list of metadata entries
@@ -168,13 +145,19 @@ public class HpcMetadataValidator
      * 
      * @throws HpcException If the metadata is invalid.
      */
-    public void validateDataObjectMetadata(List<HpcMetadataEntry> existingMetadataEntries,
+    public void validateDataObjectMetadata(String doc,
+    		                               List<HpcMetadataEntry> existingMetadataEntries,
     		                               List<HpcMetadataEntry> addUpdateMetadataEntries) 
     		                              throws HpcException
     {
+    	HpcDocConfiguration docConfiguration = docConfigurationLocator.get(doc);
+    	if(docConfiguration == null) {
+    	   throw new HpcException("Invalid DOC: " + doc, HpcRequestRejectReason.INVALID_DOC);
+    	}
+    	
     	validateMetadata(existingMetadataEntries, 
     			         addUpdateMetadataEntries,
-    			         dataObjectMetadataValidationRules);
+    			         docConfiguration.getDataObjectMetadataValidationRules());
     }
     
     /**
@@ -207,26 +190,6 @@ public class HpcMetadataValidator
     	return dataObjectSystemGeneratedMetadataAttributeNames;
     }
 
-    /**
-     * Return the collection metadata validation rules.
-     *
-     * @return List of HpcMetadataValidationRule
-     */
-    public List<HpcMetadataValidationRule> getCollectionMetadataValidationRules()
-    {
-    	return collectionMetadataValidationRules;
-    }
-    
-    /**
-     * Return the data object metadata validation rules.
-     *
-     * @return List of HpcMetadataValidationRule
-     */
-    public List<HpcMetadataValidationRule> getDataObjectMetadataValidationRules()
-    {
-    	return dataObjectMetadataValidationRules;
-    }
-    		                               
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -343,22 +306,6 @@ public class HpcMetadataValidator
 		   return true;
 		}
 		
-	    // Skip rules for other DOCs.
-		String doc = metadataEntriesMap.get(REGISTRAR_DOC_ATTRIBUTE);
-		if(doc == null) {
-		   // In registration case, the DOC system generated metadata is assigned after user generated
-		   // metadata is validated, so we get it from the request invoker directly.
-       	   HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
-       	   doc = invoker != null ? invoker.getNciAccount().getDoc() : null;
-		}
-       	
-		if(doc != null &&
-		   metadataValidationRule.getDocs() != null &&
-		   !metadataValidationRule.getDocs().isEmpty() &&
-		   !metadataValidationRule.getDocs().contains(doc)) {
-		   return true;
-		}
-		
 		return false;
 	}
     
@@ -386,124 +333,6 @@ public class HpcMetadataValidator
 		}
 		
 		return null;
-    }
-    
-    /**
-     * Instantiate list metadata validation rules from JSON.
-     *
-     * @param jsonMetadataValidationRules The validation rules JSON array. 
-     * @return A collection of metadata validation rules.
-     * @throws HpcException If failed to parse the JSON.
-     */
-    @SuppressWarnings("unchecked")
-	private List<HpcMetadataValidationRule> rulesFromJSON(JSONArray jsonMetadataValidationRules) 
-    		                                             throws HpcException
-    {
-    	List<HpcMetadataValidationRule> validationRules = new ArrayList<>();
-    	
-    	// Iterate through the rules and map to POJO.
-    	Iterator<JSONObject> rulesIterator = jsonMetadataValidationRules.iterator();
-    	while(rulesIterator.hasNext()) {
-    		  JSONObject jsonMetadataValidationRule = rulesIterator.next();
-    		
-	    	  if(!jsonMetadataValidationRule.containsKey("attribute") ||
-	    		 !jsonMetadataValidationRule.containsKey("mandatory") ||
-	    		 !jsonMetadataValidationRule.containsKey("ruleEnabled") ||
-	    		 !jsonMetadataValidationRule.containsKey("docs")) {
-	    		 throw new HpcException("Invalid rule JSON object: " + jsonMetadataValidationRule,
-	    		                        HpcErrorType.SPRING_CONFIGURATION_ERROR);	
-	    	  }
-	    			
-	    	  // JSON -> POJO.
-	    	  HpcMetadataValidationRule metadataValidationRule = new HpcMetadataValidationRule();
-	    	  metadataValidationRule.setAttribute((String) jsonMetadataValidationRule.get("attribute"));
-	    	  metadataValidationRule.setMandatory((Boolean) jsonMetadataValidationRule.get("mandatory"));
-	    	  metadataValidationRule.setRuleEnabled((Boolean) jsonMetadataValidationRule.get("ruleEnabled"));
-	    	  metadataValidationRule.setDefaultValue((String) jsonMetadataValidationRule.get("defaultValue"));
-	    	  metadataValidationRule.setDefaultUnit((String) jsonMetadataValidationRule.get("defaultUnit"));
-	    	  
-	    	  JSONArray jsonDOC = (JSONArray) jsonMetadataValidationRule.get("docs");
-	    	  if(jsonDOC != null) {
-		    	 Iterator<String> docIterator = jsonDOC.iterator();
-		    	 while(docIterator.hasNext()) {
-		    	   	   metadataValidationRule.getDocs().add(docIterator.next());
-		    	 }
-	    	  }
-	    	  
-	    	  JSONArray jsonCollectionTypes = (JSONArray) jsonMetadataValidationRule.get("collectionTypes");
-	    	  if(jsonCollectionTypes != null) {
-		    	 Iterator<String> collectionTypeIterator = jsonCollectionTypes.iterator();
-		    	 while(collectionTypeIterator.hasNext()) {
-		    	   	   metadataValidationRule.getCollectionTypes().add(collectionTypeIterator.next());
-		    	 }
-	    	  }
-	    	  
-	    	  // Extract the valid values.
-	    	  JSONArray jsonValidValues = (JSONArray) jsonMetadataValidationRule.get("validValues");
-	    	  if(jsonValidValues != null) {
-	    	     Iterator<String> validValuesIterator = jsonValidValues.iterator();
-	    	     while(validValuesIterator.hasNext()) {
-	    	    	   metadataValidationRule.getValidValues().add(validValuesIterator.next());
-	    	     }
-	    	  }
-	    	  
-	    	  validationRules.add(metadataValidationRule);
-    	}
-    	
-    	return validationRules;
-    }
-    
-    /**
-     * Instantiate list system metadata attribute names from JSON.
-     *
-     * @param jsonSystemMetadataAttributeNamesJSON The validation rules JSON array. 
-     * @return A collection of metadata attribute names
-     * @throws HpcException If failed to parse the JSON.
-     */
-    @SuppressWarnings("unchecked")
-	private List<String> namesFromJSON(JSONArray jsonSystemMetadataAttributeNamesJSON) 
-    		                                             throws HpcException
-    {
-    	List<String> jsonSystemMetadataAttributeNames = new ArrayList<>();
-    	
-    	// Iterate through the rules and map to POJO.
-    	Iterator<String> rulesIterator = jsonSystemMetadataAttributeNamesJSON.iterator();
-    	while(rulesIterator.hasNext()) {
-    		jsonSystemMetadataAttributeNames.add(rulesIterator.next());
-   	  }
-    	
-    	return jsonSystemMetadataAttributeNames;
-    }    
-    /**
-     * Load the metadata validation rules from file.
-     * 
-     * @param metadataValidationRulesPath The path to the validation rules JSON.
-     * @return a JSON object with the validation rules
-     * @throws HpcException on service failure.
-     */
-	private JSONObject getMetadataValidationRulesJSON(String metadataValidationRulesPath) 
-			                                         throws HpcException
-    {
-		try {
-	         FileReader reader = new FileReader(metadataValidationRulesPath);
-	         JSONObject jsonMetadataValidationRules = (JSONObject) ((JSONObject) new JSONParser().parse(reader)).get("HpcMetadataValidationRules");
-	         if(jsonMetadataValidationRules == null) {
-	       	    throw new HpcException("No validation rules",
-	                                   HpcErrorType.SPRING_CONFIGURATION_ERROR); 
-	         }
-	         
-             if(!jsonMetadataValidationRules.containsKey("collectionMetadataValidationRules") ||
-                !jsonMetadataValidationRules.containsKey("dataObjectMetadataValidationRules")) {
-	       	    throw new HpcException("Invalid JSON rules: " + jsonMetadataValidationRules,
-	                                   HpcErrorType.SPRING_CONFIGURATION_ERROR);
-             }
-	         
-	         return jsonMetadataValidationRules;
-	         
-		} catch(Exception e) {
-		    throw new HpcException("Could not open or parse: " + metadataValidationRulesPath,
-                                   HpcErrorType.SPRING_CONFIGURATION_ERROR, e);
-		}
     }
 }
 
