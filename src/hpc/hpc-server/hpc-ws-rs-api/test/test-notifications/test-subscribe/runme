@@ -17,11 +17,14 @@ source $HPC_DM_TEST/utils/functions
 $HPC_DM_TEST/test-notifications/utils/runtest
 
 
+RESPONSE_HEADER=subscribe-notifications-response-header.tmp
+RESPONSE_MSG=subscribe-notifications-response-message.json.tmp
+
 subscribe_to_template_notifications
 
 
-RESPONSE_HEADER=subscribe-notifications-response-header.tmp
-RESPONSE_MSG=subscribe-notifications-response-message.json.tmp
+#RESPONSE_HEADER=subscribe-notifications-response-header.tmp
+#RESPONSE_MSG=subscribe-notifications-response-message.json.tmp
 
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
