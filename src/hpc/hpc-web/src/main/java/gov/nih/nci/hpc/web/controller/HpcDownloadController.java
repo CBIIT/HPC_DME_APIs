@@ -1,5 +1,5 @@
 /**
- * HpcSearchProjectController.java
+ * HpcDownloadController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -9,9 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import java.io.File;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -60,7 +58,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDataRegistrationController.java
+ * @version $Id: HpcDownloadController.java
  */
 
 @Controller
@@ -72,6 +70,16 @@ public class HpcDownloadController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.collection}")
 	private String collectionServiceURL;
 
+	/**
+	 * Get action to prepare download page
+	 * 
+	 * @param q
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
@@ -80,16 +88,15 @@ public class HpcDownloadController extends AbstractHpcController {
 		String downloadFilePath = request.getParameter("path");
 		String downloadType = request.getParameter("type");
 		model.addAttribute("downloadFilePath", downloadFilePath);
-		if(downloadFilePath != null)
-		{
+		if (downloadFilePath != null) {
 			String fileName = downloadFilePath;
 			int index = downloadFilePath.lastIndexOf("/");
-			
-			if(index == -1)
+
+			if (index == -1)
 				index = downloadFilePath.lastIndexOf("//");
-			
-			if(index != -1)
-				 fileName = downloadFilePath.substring(index+1);
+
+			if (index != -1)
+				fileName = downloadFilePath.substring(index + 1);
 			model.addAttribute("downloadFilePathName", fileName);
 		}
 		model.addAttribute("downloadType", downloadType);
@@ -104,6 +111,17 @@ public class HpcDownloadController extends AbstractHpcController {
 		return "download";
 	}
 
+	/**
+	 * POST action to initiate async download.
+	 * 
+	 * @param downloadFile
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @param response
+	 * @return
+	 */
 	@JsonView(Views.Public.class)
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
@@ -113,19 +131,23 @@ public class HpcDownloadController extends AbstractHpcController {
 		AjaxResponseBody result = new AjaxResponseBody();
 		try {
 			String authToken = (String) session.getAttribute("hpcUserToken");
+			if (authToken == null) {
+				result.setMessage("Invalid user session, expired. Please login again.");
+				return result;
+			}
+
 			String serviceURL = null;
 			if (downloadFile.getDownloadType().equals("collection"))
 				serviceURL = collectionServiceURL + downloadFile.getDestinationPath() + "/download";
 			else
 				serviceURL = dataObjectServiceURL + downloadFile.getDestinationPath() + "/download";
+
 			HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
-			boolean asyncDownload = false;
 			if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("async")) {
 				HpcFileLocation location = new HpcFileLocation();
 				location.setFileContainerId(downloadFile.getEndPointName());
 				location.setFileId(downloadFile.getEndPointLocation());
 				dto.setDestination(location);
-				asyncDownload = true;
 			}
 
 			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
@@ -133,7 +155,6 @@ public class HpcDownloadController extends AbstractHpcController {
 
 			Response restResponse = client.invoke("POST", dto);
 			if (restResponse.getStatus() == 200) {
-				result.setCode("200");
 				result.setMessage("Asynchronous download request is submitted successfully!");
 				return result;
 			} else {
@@ -146,30 +167,22 @@ public class HpcDownloadController extends AbstractHpcController {
 
 				MappingJsonFactory factory = new MappingJsonFactory(mapper);
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-				try
-				{
+				try {
 					HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-					result.setCode("400");
 					result.setMessage("Download request is not successfull: " + exception.getMessage());
 					return result;
-				}
-				catch(Exception e)
-				{
-					result.setCode("400");
+				} catch (Exception e) {
 					result.setMessage("Download request is not successfull: " + e.getMessage());
 					return result;
 				}
 			}
 		} catch (HttpStatusCodeException e) {
-			result.setCode("400");
 			result.setMessage("Download request is not successfull: " + e.getMessage());
 			return result;
 		} catch (RestClientException e) {
-			result.setCode("400");
 			result.setMessage("Download request is not successfull: " + e.getMessage());
 			return result;
 		} catch (Exception e) {
-			result.setCode("400");
 			result.setMessage("Download request is not successfull: " + e.getMessage());
 			return result;
 		}

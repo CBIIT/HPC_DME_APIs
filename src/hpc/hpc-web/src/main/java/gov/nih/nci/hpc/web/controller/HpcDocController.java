@@ -1,5 +1,5 @@
 /**
- * HpcUserRegistrationController.java
+ * HpcDocController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -36,11 +36,11 @@ import gov.nih.nci.hpc.web.model.HpcWebUser;
 
 /**
  * <p>
- * HPC DM User registration controller
+ * Controller to get DOC details
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcUserRegistrationController.java
+ * @version $Id: HpcDocController.java
  */
 
 @Controller

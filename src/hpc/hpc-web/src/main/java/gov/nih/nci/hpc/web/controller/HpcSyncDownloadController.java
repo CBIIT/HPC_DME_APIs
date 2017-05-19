@@ -1,5 +1,5 @@
 /**
- * HpcSearchProjectController.java
+ * HpcSyncDownloadController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -53,7 +53,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDataRegistrationController.java
+ * @version $Id: HpcSyncDownloadController.java
  */
 
 @Controller
@@ -63,6 +63,17 @@ public class HpcSyncDownloadController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.dataObject}")
 	private String dataObjectServiceURL;
 
+	/**
+	 * POST action for sync download
+	 * 
+	 * @param downloadFile
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @param response
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	@ResponseBody
 	public Resource download(@Valid @ModelAttribute("hpcDownloadDatafile") HpcDownloadDatafile downloadFile,
@@ -70,6 +81,11 @@ public class HpcSyncDownloadController extends AbstractHpcController {
 			HttpServletResponse response) {
 		try {
 			String authToken = (String) session.getAttribute("hpcUserToken");
+			if (authToken == null) {
+				model.addAttribute("Invalid user session, expired. Please login again.");
+				return null;
+			}
+
 			String serviceURL = dataObjectServiceURL + downloadFile.getDestinationPath() + "/download";
 			HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
 
@@ -93,24 +109,21 @@ public class HpcSyncDownloadController extends AbstractHpcController {
 				MappingJsonFactory factory = new MappingJsonFactory(mapper);
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
-				try
-				{
+				try {
 					HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-					model.addAttribute("message", "Failed to download: "+exception.getMessage());
-				}
-				catch(Exception e)
-				{
-					model.addAttribute("message", "Failed to download: "+e.getMessage());
+					model.addAttribute("message", "Failed to download: " + exception.getMessage());
+				} catch (Exception e) {
+					model.addAttribute("message", "Failed to download: " + e.getMessage());
 				}
 			}
 		} catch (HttpStatusCodeException e) {
-			model.addAttribute("message", "Failed to download: "+e.getMessage());
+			model.addAttribute("message", "Failed to download: " + e.getMessage());
 			e.printStackTrace();
 		} catch (RestClientException e) {
-			model.addAttribute("message", "Failed to download: "+e.getMessage());
+			model.addAttribute("message", "Failed to download: " + e.getMessage());
 			e.printStackTrace();
 		} catch (Exception e) {
-			model.addAttribute("message", "Failed to download: "+e.getMessage());
+			model.addAttribute("message", "Failed to download: " + e.getMessage());
 			e.printStackTrace();
 		}
 		return null;

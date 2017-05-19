@@ -1,5 +1,5 @@
 /**
- * HpcSearchProjectController.java
+ * HpcFindGroupController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -39,7 +39,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDataRegistrationController.java
+ * @version $Id: HpcFindGroupController.java
  */
 
 @Controller
@@ -69,9 +69,6 @@ public class HpcFindGroupController extends AbstractHpcController {
 		return "findgroup";
 	}
 
-	/*
-	 * Action for Dataset registration
-	 */
 	@RequestMapping(method = RequestMethod.POST)
 	public String findUsers(@Valid @ModelAttribute("hpcGroup") HpcWebGroup hpcWebGroup, BindingResult bindingResult,
 			Model model, HttpSession session, HttpServletRequest request) {

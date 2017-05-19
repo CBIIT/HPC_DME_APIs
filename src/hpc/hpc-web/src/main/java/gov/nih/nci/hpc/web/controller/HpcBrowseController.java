@@ -44,7 +44,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC Web Browse controller
+ * HPC Web Browse controller. Builds tree nodes based on user DOC basepath and then builds up the tree based on expanded nodes
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
@@ -57,16 +57,23 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 public class HpcBrowseController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.collection}")
 	private String collectionURL;
-	@Value("${gov.nih.nci.hpc.server.tree}")
-	private String treeServiceURL;
-	@Value("${gov.nih.nci.hpc.server.model}")
-	private String docServiceURL;
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
 
+	/**
+	 * GET operation on Browse. Builds initial tree 
+	 * @param q
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public String get(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
+		
+		//Verify User session
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		if (user == null || authToken == null) {
@@ -76,11 +83,15 @@ public class HpcBrowseController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "index";
 		}
+		
+		//Get User DOC model for base path
 		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
 		if (modelDTO == null) {
 			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(), sslCertPath, sslCertPassword);
 			session.setAttribute("userDOCModel", modelDTO);
 		}
+		
+		//If browser tree nodes are cached, return cached data. If not, query browser tree nodes based on the base path and cache it.
 		try {
 			HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
 			if (browserEntry == null) {
@@ -102,14 +113,61 @@ public class HpcBrowseController extends AbstractHpcController {
 				model.addAttribute("browserEntry", browserEntry);
 			} else
 				model.addAttribute("message", "No collections found!");
+			
 			model.addAttribute("basePath", modelDTO.getBasePath());
 			return "browse";
 		} catch (Exception e) {
+			model.addAttribute("message", "Failed to get tree. Reason: "+e.getMessage());
 			e.printStackTrace();
 			return "browse";
 		}
 	}
 
+	/**
+	 * POST Action. When a tree node is expanded, this action fetches its child nodes
+	 * @param hpcBrowserEntry
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @param response
+	 * @param redirectAttributes
+	 * @return
+	 */
+	@RequestMapping(method = RequestMethod.POST)
+	public String browse(@Valid @ModelAttribute("hpcBrowse") HpcBrowserEntry hpcBrowserEntry, Model model,
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request, HttpServletResponse response,
+			final RedirectAttributes redirectAttributes) {
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
+
+		try {
+			if (hpcBrowserEntry.getSelectedNodePath() != null) {
+				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath(), browserEntry, authToken, model,
+						false);
+				browserEntry = trimPath(browserEntry, browserEntry.getName());
+				List<HpcBrowserEntry> entries = new ArrayList<HpcBrowserEntry>();
+				entries.add(browserEntry);
+				model.addAttribute("browserEntryList", entries);
+				model.addAttribute("browserEntry", browserEntry);
+				session.setAttribute("browserEntry", browserEntry);
+			}
+		} catch (Exception e) {
+			redirectAttributes.addFlashAttribute("error", "Failed to update data file: " + e.getMessage());
+		} finally {
+		}
+		return "browse";
+	}
+	
+	/**
+	 * Get child Tree nodes for selected tree node and merge it with cached nodes
+	 * @param path
+	 * @param browserEntry
+	 * @param authToken
+	 * @param model
+	 * @param getChildren
+	 * @return
+	 */
 	private HpcBrowserEntry getTreeNodes(String path, HpcBrowserEntry browserEntry, String authToken, Model model,
 			boolean getChildren) {
 		HpcBrowserEntry selectedEntry = getSelectedEntry(path, browserEntry);
@@ -124,7 +182,6 @@ public class HpcBrowseController extends AbstractHpcController {
 
 		for (HpcCollectionDTO collectionDTO : collections.getCollections()) {
 			HpcCollection collection = collectionDTO.getCollection();
-			boolean isFolder = false;
 			selectedEntry.setFullPath(collection.getAbsolutePath());
 			selectedEntry.setId(collection.getAbsolutePath());
 			selectedEntry.setName(collection.getCollectionName());
@@ -144,9 +201,6 @@ public class HpcBrowseController extends AbstractHpcController {
 					listChildEntry = getTreeNodes(listEntry.getPath(), listChildEntry, authToken, model, false);
 				else {
 					HpcBrowserEntry emptyEntry = new HpcBrowserEntry();
-					// emptyEntry.setName("<div style=\"display:block;\"><img
-					// width=\"50\" height=\"50\" src=\"img/spinner.gif\"
-					// alt=\"Wait\" /></div>");
 					emptyEntry.setName("");
 					listChildEntry.getChildren().add(emptyEntry);
 				}
@@ -182,51 +236,7 @@ public class HpcBrowseController extends AbstractHpcController {
 		return null;
 	}
 
-	private HpcBrowserEntry populateBrowserEntries(HpcBrowserEntry browserEntry, String doc, String authToken,
-			Model model) {
-		HpcDataManagementTreeDTO tree = HpcClientUtil.getDOCTree(authToken, treeServiceURL, doc, true, sslCertPath,
-				sslCertPassword);
-		if (tree == null) {
-			model.addAttribute("message", "No Heirarchy!");
-			return null;
-		}
-		HpcDataManagementTreeEntry basePath = tree.getBasePath();
-		browserEntry.setCollection(true);
-		browserEntry.setFullPath(basePath.getPath());
-		browserEntry.setId(basePath.getPath());
-		browserEntry.setName(basePath.getPath());
-		buildTree(browserEntry, basePath);
-		return browserEntry;
-	}
-
-	private HpcBrowserEntry buildTree(HpcBrowserEntry browseEntry, HpcDataManagementTreeEntry treeEntry) {
-		if (treeEntry == null)
-			return browseEntry;
-
-		List<String> dataObjects = treeEntry.getDataObjects();
-		for (String dataObject : dataObjects) {
-			HpcBrowserEntry entry = new HpcBrowserEntry();
-			entry.setFullPath(dataObject);
-			entry.setId(dataObject);
-			entry.setName(dataObject);
-			entry.setCollection(false);
-			browseEntry.getChildren().add(entry);
-		}
-		List<HpcDataManagementTreeEntry> collections = treeEntry.getSubCollections();
-		for (HpcDataManagementTreeEntry collection : collections) {
-			HpcBrowserEntry entry = new HpcBrowserEntry();
-			entry.setFullPath(collection.getPath());
-			entry.setId(collection.getPath());
-			entry.setCollection(true);
-			entry.setName(collection.getPath());
-			browseEntry.getChildren().add(entry);
-			buildTree(entry, collection);
-		}
-		return browseEntry;
-	}
-
 	private HpcBrowserEntry trimPath(HpcBrowserEntry entry, String parentPath) {
-		String path = entry.getName();
 		for (HpcBrowserEntry child : entry.getChildren()) {
 			String childPath = child.getFullPath();
 			if (childPath == null || childPath.equals(""))
@@ -240,31 +250,4 @@ public class HpcBrowseController extends AbstractHpcController {
 		return entry;
 	}
 
-	/*
-	 * Action for browse
-	 */
-	@RequestMapping(method = RequestMethod.POST)
-	public String browse(@Valid @ModelAttribute("hpcBrowse") HpcBrowserEntry hpcBrowserEntry, Model model,
-			BindingResult bindingResult, HttpSession session, HttpServletRequest request, HttpServletResponse response,
-			final RedirectAttributes redirectAttributes) {
-		String authToken = (String) session.getAttribute("hpcUserToken");
-		HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
-
-		try {
-			if (hpcBrowserEntry.getSelectedNodePath() != null) {
-				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath(), browserEntry, authToken, model,
-						true);
-				browserEntry = trimPath(browserEntry, browserEntry.getName());
-				List<HpcBrowserEntry> entries = new ArrayList<HpcBrowserEntry>();
-				entries.add(browserEntry);
-				model.addAttribute("browserEntryList", entries);
-				model.addAttribute("browserEntry", browserEntry);
-				session.setAttribute("browserEntry", browserEntry);
-			}
-		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("error", "Failed to update data file: " + e.getMessage());
-		} finally {
-		}
-		return "browse";
-	}
 }
