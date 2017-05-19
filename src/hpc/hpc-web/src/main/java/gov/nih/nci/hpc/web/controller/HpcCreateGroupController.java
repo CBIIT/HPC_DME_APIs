@@ -1,5 +1,5 @@
 /**
- * HpcSearchProjectController.java
+ * HpcCreateGroupController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -41,11 +41,11 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM Project Search controller
+ * Create Group Controller. 
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDataRegistrationController.java
+ * @version $Id: HpcCreateGroupController.java
  */
 
 @Controller
@@ -57,6 +57,15 @@ public class HpcCreateGroupController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.docs}")
 	private String docsServiceURL;
 
+	/**
+	 * Prepare Create Group page
+	 * @param q
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
@@ -81,8 +90,16 @@ public class HpcCreateGroupController extends AbstractHpcController {
 		model.addAttribute("selectedUsers", selectedUsers);
 	}
 
-	/*
-	 * Action for User registration
+	/**
+	 * Create Group POST request
+	 * @param hpcWebGroup
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @param response
+	 * @param redirectAttributes
+	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
 	public String createGroup(@Valid @ModelAttribute("hpcGroup") HpcWebGroup hpcWebGroup, Model model,
@@ -99,6 +116,7 @@ public class HpcCreateGroupController extends AbstractHpcController {
 		}
 
 		try {
+			//If user click on Cancel button, redirect back to Group home page
 			if (hpcWebGroup.getActionType() != null && hpcWebGroup.getActionType().endsWith("cancel"))
 			{
 				redirectAttributes.addFlashAttribute("return", "true");
@@ -179,9 +197,6 @@ public class HpcCreateGroupController extends AbstractHpcController {
 					addusers.add(userName[0]);
 			}
 		}
-		
-//		if(userRole.equals("GROUP_ADMIN"))
-//			addusers.add(roleUserId);
 		if (addusers.size() > 0)
 			dto.getAddUserIds().addAll(addusers);
 		return dto;

@@ -1,5 +1,5 @@
 /**
- * HpcLoginController.java
+ * HpcDatafileController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
@@ -39,7 +38,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.web.model.HpcCollectionModel;
 import gov.nih.nci.hpc.web.model.HpcDatafileModel;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
@@ -47,11 +45,11 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC Web Login controller
+ * Controller to display data file details and update metadata.
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcLoginController.java
+ * @version $Id: HpcDatafileController.java
  */
 
 @Controller
@@ -63,13 +61,22 @@ public class HpcDatafileController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
 
+	/**
+	 * Get operation to display data file details and its metadata
+	 * 
+	 * @param body
+	 * @param path
+	 * @param action
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.GET)
-	// public String home(String path, String action, Model model, HttpSession
-	// session) {
 	public String home(@RequestBody(required = false) String body, @RequestParam String path,
 			@RequestParam String action, Model model, BindingResult bindingResult, HttpSession session,
 			HttpServletRequest request) {
-
 		try {
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			String userId = (String) session.getAttribute("hpcUserId");
@@ -88,10 +95,10 @@ public class HpcDatafileController extends AbstractHpcController {
 			HpcDataObjectListDTO datafiles = HpcClientUtil.getDatafiles(authToken, serviceURL, path, false, sslCertPath,
 					sslCertPassword);
 			if (datafiles != null && datafiles.getDataObjects() != null && datafiles.getDataObjects().size() > 0) {
-				HpcDataManagementModelDTO modelDTO =  (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
-				if(modelDTO == null)
-					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(),
-						sslCertPath, sslCertPassword);
+				HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+				if (modelDTO == null)
+					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(), sslCertPath,
+							sslCertPassword);
 				HpcDataObjectDTO dataFile = datafiles.getDataObjects().get(0);
 				HpcDatafileModel hpcDatafile = buildHpcDataObject(dataFile,
 						modelDTO.getDataObjectSystemGeneratedMetadataAttributeNames());
@@ -99,7 +106,8 @@ public class HpcDatafileController extends AbstractHpcController {
 				model.addAttribute("hpcDatafile", hpcDatafile);
 				if (action != null && action.equals("edit"))
 					model.addAttribute("action", "edit");
-				HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId, serviceURL, sslCertPath, sslCertPassword);
+				HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId,
+						serviceURL, sslCertPath, sslCertPassword);
 				model.addAttribute("userpermission", permission.getPermission().toString());
 			} else {
 				String message = "Data file not found!";
@@ -107,12 +115,51 @@ public class HpcDatafileController extends AbstractHpcController {
 				return "dashboard";
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			model.addAttribute("error", "Failed to get data file: " + e.getMessage());
 			e.printStackTrace();
 			return "dashboard";
 		}
 		return "datafile";
+	}
+
+	/**
+	 * Post operation to update metadata
+	 * 
+	 * @param hpcDatafile
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @param response
+	 * @param redirectAttributes
+	 * @return
+	 */
+	@RequestMapping(method = RequestMethod.POST)
+	public String updateCollection(@Valid @ModelAttribute("hpcDatafile") HpcDatafileModel hpcDatafile, Model model,
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request, HttpServletResponse response,
+			final RedirectAttributes redirectAttributes) {
+		String[] action = request.getParameterValues("action");
+		if (action != null && action.length > 0 && action[0].equals("cancel"))
+			return "redirect:/datafile?path=" + hpcDatafile.getPath() + "&action=view";
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		try {
+			if (hpcDatafile.getPath() == null || hpcDatafile.getPath().trim().length() == 0)
+				model.addAttribute("error", "Invald Data file path");
+
+			HpcDataObjectRegistrationDTO registrationDTO = constructRequest(request, session, hpcDatafile.getPath());
+
+			boolean updated = HpcClientUtil.updateDatafile(authToken, serviceURL, registrationDTO,
+					hpcDatafile.getPath(), sslCertPath, sslCertPassword);
+			if (updated) {
+				redirectAttributes.addFlashAttribute("error", "Data file " + hpcDatafile.getPath() + " is Updated!");
+				session.removeAttribute("selectedUsers");
+			}
+		} catch (Exception e) {
+			redirectAttributes.addFlashAttribute("error", "Failed to update data file: " + e.getMessage());
+		} finally {
+			model.addAttribute("hpcDatafile", hpcDatafile);
+		}
+		return "redirect:/datafile?path=" + hpcDatafile.getPath() + "&action=view";
 	}
 
 	private HpcDatafileModel buildHpcDataObject(HpcDataObjectDTO datafile, List<String> systemAttrs) {
@@ -143,37 +190,6 @@ public class HpcDatafileController extends AbstractHpcController {
 			model.getParentMetadataEntries().add(attrEntry);
 		}
 		return model;
-	}
-
-	/*
-	 * Action for User registration
-	 */
-	@RequestMapping(method = RequestMethod.POST)
-	public String updateCollection(@Valid @ModelAttribute("hpcGroup") HpcDatafileModel hpcDatafile, Model model,
-			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
-			HttpServletResponse response, final RedirectAttributes redirectAttributes) {
-		String[] action = request.getParameterValues("action");
-		if(action != null && action.length > 0 && action[0].equals("cancel"))
-			return "redirect:/datafile?path=" + hpcDatafile.getPath() + "&action=view";
-		String authToken = (String) session.getAttribute("hpcUserToken");
-		try {
-			if (hpcDatafile.getPath() == null || hpcDatafile.getPath().trim().length() == 0)
-				model.addAttribute("error", "Invald Data file path");
-
-			HpcDataObjectRegistrationDTO registrationDTO = constructRequest(request, session, hpcDatafile.getPath());
-
-			boolean updated = HpcClientUtil.updateDatafile(authToken, serviceURL, registrationDTO,
-					hpcDatafile.getPath(), sslCertPath, sslCertPassword);
-			if (updated) {
-				redirectAttributes.addFlashAttribute("error", "Data file " + hpcDatafile.getPath() + " is Updated!");
-				session.removeAttribute("selectedUsers");
-			}
-		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("error", "Failed to update data file: " + e.getMessage());
-		} finally {
-			model.addAttribute("hpcDatafile", hpcDatafile);
-		}
-		return "redirect:/datafile?path=" + hpcDatafile.getPath() + "&action=view";
 	}
 
 	private HpcDataObjectRegistrationDTO constructRequest(HttpServletRequest request, HttpSession session,
