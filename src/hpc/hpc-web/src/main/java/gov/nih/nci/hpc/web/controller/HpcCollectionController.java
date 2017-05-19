@@ -1,5 +1,5 @@
 /**
- * HpcLoginController.java
+ * HpcCollectionController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -46,11 +46,11 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC Web Login controller
+ * Collection controller. Gets selected collection details. Updates collection metadata.
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcLoginController.java
+ * @version $Id: HpcCollectionController.java
  */
 
 @Controller
@@ -62,14 +62,23 @@ public class HpcCollectionController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
 
+	/**
+	 * Get selected collection details from its path
+	 * @param body
+	 * @param path
+	 * @param action
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.GET)
-	// public String home(String path, String action, Model model, HttpSession
-	// session) {
 	public String home(@RequestBody(required = false) String body, @RequestParam String path,
 			@RequestParam String action, Model model, BindingResult bindingResult, HttpSession session,
 			HttpServletRequest request) {
-
 		try {
+			//User Session validation 
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			String userId = (String) session.getAttribute("hpcUserId");
 			String authToken = (String) session.getAttribute("hpcUserToken");
@@ -84,6 +93,7 @@ public class HpcCollectionController extends AbstractHpcController {
 			if (path == null)
 				return "dashboard";
 
+			//Get collection
 			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, serviceURL, path, false,
 					sslCertPath, sslCertPassword);
 			if (collections != null && collections.getCollections() != null
@@ -92,6 +102,7 @@ public class HpcCollectionController extends AbstractHpcController {
 				if(modelDTO == null)
 					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(),
 						sslCertPath, sslCertPassword);
+				//Get collection permissions to enable Edit, Permission icons on the UI
 				HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId, serviceURL, sslCertPath, sslCertPassword);
 				HpcCollectionDTO collection = collections.getCollections().get(0);
 				HpcCollectionModel hpcCollection = buildHpcCollection(collection,
@@ -120,6 +131,44 @@ public class HpcCollectionController extends AbstractHpcController {
 		return "collection";
 	}
 
+	/**
+	 * Update collection 
+	 * @param hpcCollection
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @param response
+	 * @param redirectAttributes
+	 * @return
+	 */
+	@RequestMapping(method = RequestMethod.POST)
+	public String updateCollection(@Valid @ModelAttribute("hpcGroup") HpcCollectionModel hpcCollection, Model model,
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
+			HttpServletResponse response, final RedirectAttributes redirectAttributes) {
+		String[] action = request.getParameterValues("action");
+		if(action != null && action.length > 0 && action[0].equals("cancel"))
+			return "redirect:/collection?path=" + hpcCollection.getPath() + "&action=view";
+		
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		try {
+			if (hpcCollection.getPath() == null || hpcCollection.getPath().trim().length() == 0)
+				model.addAttribute("error", "Invald collection path");
+
+			HpcCollectionRegistrationDTO registrationDTO = constructRequest(request, session, hpcCollection.getPath());
+
+			boolean updated = HpcClientUtil.updateCollection(authToken, serviceURL, registrationDTO,
+					hpcCollection.getPath(), sslCertPath, sslCertPassword);
+			if (updated) {
+				redirectAttributes.addFlashAttribute("error", "Collection " + hpcCollection.getPath() + " is Updated!");
+				session.removeAttribute("selectedUsers");
+			}
+		} catch (Exception e) {
+			redirectAttributes.addFlashAttribute("error", "Failed to update data file: " + e.getMessage());
+		}
+		return "redirect:/collection?path=" + hpcCollection.getPath() + "&action=view";
+	}
+	
 	private HpcCollectionModel buildHpcCollection(HpcCollectionDTO collection, List<String> systemAttrs) {
 		HpcCollectionModel model = new HpcCollectionModel();
 		systemAttrs.add("collection_type");
@@ -153,37 +202,6 @@ public class HpcCollectionController extends AbstractHpcController {
 		return model;
 	}
 
-	/*
-	 * Action for User registration
-	 */
-	@RequestMapping(method = RequestMethod.POST)
-	public String updateCollection(@Valid @ModelAttribute("hpcGroup") HpcCollectionModel hpcCollection, Model model,
-			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
-			HttpServletResponse response, final RedirectAttributes redirectAttributes) {
-		String[] action = request.getParameterValues("action");
-		if(action != null && action.length > 0 && action[0].equals("cancel"))
-			return "redirect:/collection?path=" + hpcCollection.getPath() + "&action=view";
-		
-		String authToken = (String) session.getAttribute("hpcUserToken");
-		try {
-			if (hpcCollection.getPath() == null || hpcCollection.getPath().trim().length() == 0)
-				model.addAttribute("error", "Invald collection path");
-
-			HpcCollectionRegistrationDTO registrationDTO = constructRequest(request, session, hpcCollection.getPath());
-
-			boolean updated = HpcClientUtil.updateCollection(authToken, serviceURL, registrationDTO,
-					hpcCollection.getPath(), sslCertPath, sslCertPassword);
-			if (updated) {
-				redirectAttributes.addFlashAttribute("error", "Collection " + hpcCollection.getPath() + " is Updated!");
-				session.removeAttribute("selectedUsers");
-			}
-		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("error", "Failed to update data file: " + e.getMessage());
-		} finally {
-			model.addAttribute("hpcCollection.getPath()", hpcCollection);
-		}
-		return "redirect:/collection?path=" + hpcCollection.getPath() + "&action=view";
-	}
 
 	private HpcCollectionRegistrationDTO constructRequest(HttpServletRequest request, HttpSession session,
 			String path) {

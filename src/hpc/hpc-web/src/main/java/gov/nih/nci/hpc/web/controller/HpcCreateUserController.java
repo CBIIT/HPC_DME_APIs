@@ -1,5 +1,5 @@
 /**
- * HpcSearchProjectController.java
+ * HpcCreateUserController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -42,11 +42,11 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM Project Search controller
+ * Create User controller
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDataRegistrationController.java
+ * @version $Id: HpcCreateUserController.java
  */
 
 @Controller
@@ -58,6 +58,15 @@ public class HpcCreateUserController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.docs}")
 	private String docsServiceURL;
 
+	/**
+	 * Prepare create user page. Populate available DOCs and Roles to assign to
+	 * @param q
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
@@ -74,39 +83,15 @@ public class HpcCreateUserController extends AbstractHpcController {
 		return "createuser";
 	}
 
-	private void initialize(Model model, String authToken, HpcUserDTO user) {
-		HpcWebUser webUser = new HpcWebUser();
-		model.addAttribute("hpcWebUser", webUser);
-		populateDOCs(model, authToken, user);
-		populateRoles(model, user);
-
-	}
-
-	private void populateDOCs(Model model, String authToken, HpcUserDTO user) {
-		List<String> userDOCs = new ArrayList<String>();
-		if (user.getUserRole().equals("SYSTEM_ADMIN")) {
-			HpcDataManagementDocListDTO docs = HpcClientUtil.getDOCs(authToken, docsServiceURL, sslCertPath,
-					sslCertPassword);
-			model.addAttribute("docs", docs.getDocs());
-		} else {
-			userDOCs.add(user.getDoc());
-			model.addAttribute("docs", userDOCs);
-		}
-	}
-
-	private void populateRoles(Model model, HpcUserDTO user) {
-		List<String> roles = new ArrayList<String>();
-		if (user.getUserRole().equals("SYSTEM_ADMIN")) {
-			roles.add("SYSTEM_ADMIN");
-			roles.add("GROUP_ADMIN");
-			roles.add("USER");
-		} else
-			roles.add("USER");
-		model.addAttribute("roles", roles);
-	}
-
-	/*
-	 * Action for User registration
+	/**
+	 * Create User POST action
+	 * @param hpcWebUser
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @param response
+	 * @return
 	 */
 	@JsonView(Views.Public.class)
 	@RequestMapping(method = RequestMethod.POST)
@@ -144,4 +129,37 @@ public class HpcCreateUserController extends AbstractHpcController {
 		}
 		return result;
 	}
+	
+	private void initialize(Model model, String authToken, HpcUserDTO user) {
+		HpcWebUser webUser = new HpcWebUser();
+		model.addAttribute("hpcWebUser", webUser);
+		populateDOCs(model, authToken, user);
+		populateRoles(model, user);
+
+	}
+
+	private void populateDOCs(Model model, String authToken, HpcUserDTO user) {
+		List<String> userDOCs = new ArrayList<String>();
+		if (user.getUserRole().equals("SYSTEM_ADMIN")) {
+			HpcDataManagementDocListDTO docs = HpcClientUtil.getDOCs(authToken, docsServiceURL, sslCertPath,
+					sslCertPassword);
+			model.addAttribute("docs", docs.getDocs());
+		} else {
+			userDOCs.add(user.getDoc());
+			model.addAttribute("docs", userDOCs);
+		}
+	}
+
+	private void populateRoles(Model model, HpcUserDTO user) {
+		List<String> roles = new ArrayList<String>();
+		if (user.getUserRole().equals("SYSTEM_ADMIN")) {
+			roles.add("SYSTEM_ADMIN");
+			roles.add("GROUP_ADMIN");
+			roles.add("USER");
+		} else
+			roles.add("USER");
+		model.addAttribute("roles", roles);
+	}
+
+
 }
