@@ -1,5 +1,5 @@
 /**
- * HpcLoginController.java
+ * HpcDashBoardController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -38,15 +38,20 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 @EnableAutoConfiguration
 @RequestMapping("/dashboard")
 public class HpcDashBoardController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.dataObject}")
-	private String serviceURL;
-	@Value("${gov.nih.nci.hpc.server.dataObject}")
-	private String datasetURL;
 	@Value("${gov.nih.nci.hpc.server.collection}")
 	private String collectionURL;
 	@Value("${gov.nih.nci.hpc.server.query}")
 	private String queryURL;
 
+	/**
+	 * 
+	 * @param q
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {

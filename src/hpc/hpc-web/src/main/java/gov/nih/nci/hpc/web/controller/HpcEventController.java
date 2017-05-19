@@ -1,5 +1,5 @@
 /**
- * HpcSearchProjectController.java
+ * HpcEventController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -43,7 +43,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDataRegistrationController.java
+ * @version $Id: HpcEventController.java
  */
 
 @Controller
@@ -53,8 +53,15 @@ public class HpcEventController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.notification.receipt}")
 	private String receiptServiceURL;
 
-	/*
-	 * Action for Datset registration page
+	/**
+	 * GET action to display event details
+	 * @param body
+	 * @param id
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String body, @RequestParam String id, Model model,
