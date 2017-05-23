@@ -321,7 +321,6 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	// Validate Metadata.
        	metadataValidator.validateDataObjectMetadata(doc, null, metadataEntries);
        	
-       	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(), 
        			                                    path, metadataEntries);

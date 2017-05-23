@@ -427,18 +427,6 @@ public interface HpcDataManagementProxy
     		                           throws HpcException;
     
     /**
-     * Get user groups by search criteria.
-     * 
-     * @param authenticatedToken An authenticated token.
-     * @param groupPattern The group pattern to search for (using case insensitive matching).
-     *                     SQL LIKE wildcards ('%', '_') are supported. 
-     * @return A list of group names.
-     * @throws HpcException on data management system failure.
-     */
-    public List<String> getGroups(Object authenticatedToken, String groupPattern) 
-    		                     throws HpcException;
-    
-    /**
      * Get absolute path (append the iRODs base path, to the user provided path).
      *
      * @param relativePath The relative Path.

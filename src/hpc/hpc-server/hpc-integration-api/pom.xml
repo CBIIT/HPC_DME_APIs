@@ -26,6 +26,11 @@
 
 	<build>
 		<plugins>
+		    <!--  This will install the Globus jars to the local mvn repo. The hpc-integration-impl
+		          has dependencies on these jars, and thus we can't install them in its pom file because 
+		          dependencies are checked first. This is placed here to ensure the jars are installed before
+		          the integration-impl is built. There is no dependency on the Globus jars from this API bundle.
+		    -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-install-plugin</artifactId>
