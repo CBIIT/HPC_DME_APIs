@@ -44,6 +44,7 @@ public class HpcDashBoardController extends AbstractHpcController {
 	private String queryURL;
 
 	/**
+	 * GET action to display dashboard page
 	 * 
 	 * @param q
 	 * @param model

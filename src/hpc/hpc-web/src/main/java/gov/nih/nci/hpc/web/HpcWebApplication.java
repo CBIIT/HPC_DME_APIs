@@ -19,13 +19,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcWebApplication.java 
+ * @version $Id: HpcWebApplication.java
  */
 
 @SpringBootApplication
 public class HpcWebApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(HpcWebApplication.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(HpcWebApplication.class, args);
+	}
 }

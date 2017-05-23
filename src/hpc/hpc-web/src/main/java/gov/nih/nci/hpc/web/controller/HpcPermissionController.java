@@ -1,5 +1,5 @@
 /**
- * HpcUserRegistrationController.java
+ * HpcPermissionController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -48,12 +48,10 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.web.model.HpcCollectionModel;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcPermissionEntry;
 import gov.nih.nci.hpc.web.model.HpcPermissionEntryType;
@@ -62,7 +60,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM User registration controller
+ * Controller to manage user permissions on a collection or data file
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
@@ -84,6 +82,19 @@ public class HpcPermissionController extends AbstractHpcController {
 	@Value("${hpc.serviceaccount}")
 	private String serviceAccount;
 
+	/**
+	 * GET action to populate user permissions
+	 * 
+	 * @param body
+	 * @param path
+	 * @param type
+	 * @param assignType
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String body, @RequestParam String path, @RequestParam String type,
 			@RequestParam String assignType, Model model, BindingResult bindingResult, HttpSession session,
@@ -116,6 +127,81 @@ public class HpcPermissionController extends AbstractHpcController {
 				sslCertPassword);
 		model.addAttribute("ownpermission",
 				(userPermission != null && userPermission.getPermission().equals(HpcPermission.OWN)) ? true : false);
+
+		return "permission";
+	}
+
+	/**
+	 * POST action to assign or update user permissions. On update, redirect
+	 * back to permissions page with resulted message
+	 * 
+	 * @param permissionsRequest
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @param redirectAttrs
+	 * @return
+	 */
+	@RequestMapping(method = RequestMethod.POST)
+	public String setPermissions(@Valid @ModelAttribute("permissions") HpcPermissions permissionsRequest, Model model,
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
+			RedirectAttributes redirectAttrs) {
+		String serviceAPIUrl = getServiceURL(model, permissionsRequest.getPath(), permissionsRequest.getType());
+		if (serviceAPIUrl == null)
+			return "permission";
+
+		try {
+			String authToken = (String) session.getAttribute("hpcUserToken");
+			HpcEntityPermissionsDTO subscriptionsRequestDTO = constructRequest(request, permissionsRequest.getPath());
+			setChangedPermissions(session, subscriptionsRequestDTO);
+			WebClient client = HpcClientUtil.getWebClient(serviceAPIUrl, sslCertPath, sslCertPassword);
+			client.header("Authorization", "Bearer " + authToken);
+
+			Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
+			if (restResponse.getStatus() == 200) {
+				redirectAttrs.addFlashAttribute("updateStatus", "Updated successfully");
+				return "redirect:/permissions?assignType=User&type=collection&path=" + permissionsRequest.getPath();
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				model.addAttribute("updateStatus", "Failed to save criteria! Reason: " + exception.getMessage());
+			}
+		} catch (HttpStatusCodeException e) {
+			model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
+			e.printStackTrace();
+		} catch (RestClientException e) {
+			model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) {
+			model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			String authToken = (String) session.getAttribute("hpcUserToken");
+			if (authToken == null) {
+				return "redirect:/";
+			}
+			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+			if (user == null) {
+				ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
+				bindingResult.addError(error);
+				HpcLogin hpcLogin = new HpcLogin();
+				model.addAttribute("hpcLogin", hpcLogin);
+				return "redirect:/";
+			}
+
+			populatePermissions(model, permissionsRequest.getPath(), permissionsRequest.getType(),
+					permissionsRequest.getAssignType(), authToken, session);
+		}
 
 		return "permission";
 	}
@@ -189,71 +275,6 @@ public class HpcPermissionController extends AbstractHpcController {
 		model.addAttribute("names", assignedNames);
 	}
 
-	@RequestMapping(method = RequestMethod.POST)
-	public String setPermissions(@Valid @ModelAttribute("permissions") HpcPermissions permissionsRequest, Model model,
-			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
-			RedirectAttributes redirectAttrs) {
-
-		String path = (String) session.getAttribute("permissionsPath");
-		String serviceAPIUrl = getServiceURL(model, permissionsRequest.getPath(), permissionsRequest.getType());
-		if (serviceAPIUrl == null)
-			return "permission";
-
-		try {
-			String authToken = (String) session.getAttribute("hpcUserToken");
-			HpcEntityPermissionsDTO subscriptionsRequestDTO = constructRequest(request, permissionsRequest.getPath());
-			setChangedPermissions(session, subscriptionsRequestDTO);
-			WebClient client = HpcClientUtil.getWebClient(serviceAPIUrl, sslCertPath, sslCertPassword);
-			client.header("Authorization", "Bearer " + authToken);
-
-			Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
-			if (restResponse.getStatus() == 200) {
-				redirectAttrs.addFlashAttribute("updateStatus", "Updated successfully");
-				return "redirect:/permissions?assignType=User&type=collection&path=" + permissionsRequest.getPath();
-			} else {
-				ObjectMapper mapper = new ObjectMapper();
-				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-						new JacksonAnnotationIntrospector());
-				mapper.setAnnotationIntrospector(intr);
-				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-				MappingJsonFactory factory = new MappingJsonFactory(mapper);
-				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-
-				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				model.addAttribute("updateStatus", "Failed to save criteria! Reason: " + exception.getMessage());
-			}
-		} catch (HttpStatusCodeException e) {
-			model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
-			e.printStackTrace();
-		} catch (RestClientException e) {
-			model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
-			e.printStackTrace();
-		} catch (Exception e) {
-			model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
-			e.printStackTrace();
-		} finally {
-			String authToken = (String) session.getAttribute("hpcUserToken");
-			if (authToken == null) {
-				return "redirect:/";
-			}
-			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
-			if (user == null) {
-				ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
-				bindingResult.addError(error);
-				HpcLogin hpcLogin = new HpcLogin();
-				model.addAttribute("hpcLogin", hpcLogin);
-				return "redirect:/";
-			}
-
-			populatePermissions(model, permissionsRequest.getPath(), permissionsRequest.getType(),
-					permissionsRequest.getAssignType(), authToken, session);
-		}
-
-		return "permission";
-	}
-
 	private void setChangedPermissions(HttpSession session, HpcEntityPermissionsDTO subscriptionsRequestDTO) {
 		HpcPermissions permissions = (HpcPermissions) session.getAttribute("permissions");
 		if (permissions == null)
@@ -261,10 +282,6 @@ public class HpcPermissionController extends AbstractHpcController {
 		List<HpcUserPermission> updatedUserPermissions = new ArrayList<HpcUserPermission>();
 		List<HpcGroupPermission> updatedGroupPermissions = new ArrayList<HpcGroupPermission>();
 		TreeSet<HpcPermissionEntry> permissionEntires = permissions.getEntries();
-		List<String> updatedUsers = new ArrayList<String>();
-		List<String> updatedgroups = new ArrayList<String>();
-		List<HpcUserPermission> userPermissions = subscriptionsRequestDTO.getUserPermissions();
-		List<HpcGroupPermission> groupPermissions = subscriptionsRequestDTO.getGroupPermissions();
 
 		for (HpcUserPermission userPermission : subscriptionsRequestDTO.getUserPermissions()) {
 			boolean found = false;

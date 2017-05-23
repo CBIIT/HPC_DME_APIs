@@ -1,5 +1,5 @@
 /**
- * HpcSearchProjectController.java
+ * HpcGroupController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -37,7 +37,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcGroupController.java
+ * @version $Id$
  */
 
 @Controller
@@ -58,7 +58,7 @@ public class HpcGroupController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "index";
 		}
-		
+
 		String returnToHome = request.getParameter("return");
 		HpcWebGroup webGroup = new HpcWebGroup();
 		model.addAttribute("hpcWebGroup", webGroup);
@@ -73,8 +73,15 @@ public class HpcGroupController extends AbstractHpcController {
 		return "managegroup";
 	}
 
-	/*
-	 * Action for group search
+	/**
+	 * POST action to search for group
+	 * 
+	 * @param hpcWebGroup
+	 * @param bindingResult
+	 * @param model
+	 * @param session
+	 * @param request
+	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
 	public String findGroups(@Valid @ModelAttribute("hpcGroup") HpcWebGroup hpcWebGroup, BindingResult bindingResult,

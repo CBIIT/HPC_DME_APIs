@@ -12,7 +12,7 @@ public class HpcCollectionModel {
 	private HpcCollection collection;
 	private List<HpcMetadataAttrEntry> selfMetadataEntries;
 	private List<HpcMetadataAttrEntry> parentMetadataEntries;
-	
+
 	public String getPath() {
 		return path;
 	}
@@ -33,13 +33,12 @@ public class HpcCollectionModel {
 		if (selfMetadataEntries == null)
 			selfMetadataEntries = new ArrayList<HpcMetadataAttrEntry>();
 		Collections.sort(selfMetadataEntries, new Comparator<HpcMetadataAttrEntry>() {
-	        @Override
-	        public int compare(HpcMetadataAttrEntry entry1, HpcMetadataAttrEntry entry2)
-	        {
+			@Override
+			public int compare(HpcMetadataAttrEntry entry1, HpcMetadataAttrEntry entry2) {
 
-	            return  entry1.getAttrName().compareTo(entry2.getAttrName());
-	        }
-	    });		
+				return entry1.getAttrName().compareTo(entry2.getAttrName());
+			}
+		});
 		return selfMetadataEntries;
 	}
 
@@ -51,15 +50,14 @@ public class HpcCollectionModel {
 		if (parentMetadataEntries == null)
 			parentMetadataEntries = new ArrayList<HpcMetadataAttrEntry>();
 		Collections.sort(parentMetadataEntries, new Comparator<HpcMetadataAttrEntry>() {
-	        @Override
-	        public int compare(HpcMetadataAttrEntry entry1, HpcMetadataAttrEntry entry2)
-	        {
-	        	if(entry1.getAttrName() != null && entry2.getAttrName() != null)
-	        		return  entry1.getAttrName().compareTo(entry2.getAttrName());
-	        	else 
-	        		return -1;
-	        }
-	    });		
+			@Override
+			public int compare(HpcMetadataAttrEntry entry1, HpcMetadataAttrEntry entry2) {
+				if (entry1.getAttrName() != null && entry2.getAttrName() != null)
+					return entry1.getAttrName().compareTo(entry2.getAttrName());
+				else
+					return -1;
+			}
+		});
 		return parentMetadataEntries;
 	}
 

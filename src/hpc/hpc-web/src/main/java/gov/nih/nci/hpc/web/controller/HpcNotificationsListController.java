@@ -1,5 +1,5 @@
 /**
- * HpcSearchProjectController.java
+ * HpcNotificationsListController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -39,11 +39,11 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM Saved Search controller
+ * Controller to get user notifications list
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcQuerySavedSearchController.java
+ * @version $Id$
  */
 
 @Controller
@@ -53,6 +53,16 @@ public class HpcNotificationsListController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.notification.receipts}")
 	private String queryServiceURL;
 
+	/**
+	 * GET action to get user notifications
+	 * 
+	 * @param search
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@JsonView(Views.Public.class)
 	@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody

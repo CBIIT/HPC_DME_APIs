@@ -32,11 +32,11 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM Project Search controller
+ * User controller to search users
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDataRegistrationController.java
+ * @version $Id$
  */
 
 @Controller
@@ -48,6 +48,16 @@ public class HpcUserController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.user.active}")
 	private String activeUsersServiceURL;
 
+	/**
+	 * Get Action to prepare Manage User page
+	 * 
+	 * @param q
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
@@ -64,13 +74,22 @@ public class HpcUserController extends AbstractHpcController {
 		return "manageuser";
 	}
 
-	/*
-	 * Action for User registration
+	/**
+	 * POST action to search for users based on search criteria (UserId,
+	 * FirstName, LastName)
+	 * 
+	 * @param hpcWebUser
+	 * @param bindingResult
+	 * @param model
+	 * @param session
+	 * @param request
+	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
 	public String findUsers(@Valid @ModelAttribute("hpcUser") HpcWebUser hpcWebUser, BindingResult bindingResult,
 			Model model, HttpSession session, HttpServletRequest request) {
 		try {
+
 			String userId = null;
 			String firstName = null;
 			String lastName = null;
@@ -84,7 +103,8 @@ public class HpcUserController extends AbstractHpcController {
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			String serviceUrl = null;
-			if (user.getUserRole().equals("SYSTEM_ADMIN"))
+			// System Admin can view all Users including inactive users
+			if (user.getUserRole().equals(SYSTEM_ADMIN))
 				serviceUrl = allUsersServiceURL;
 			else
 				serviceUrl = activeUsersServiceURL;

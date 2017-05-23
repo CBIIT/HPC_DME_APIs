@@ -29,7 +29,7 @@ public class HpcBrowserEntry {
 
 	@JsonView(Views.Public.class)
 	private boolean populated;
-	
+
 	public String getId() {
 		return id;
 	}
