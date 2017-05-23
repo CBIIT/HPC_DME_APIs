@@ -764,24 +764,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	}
 
 	@Override
-    public List<String> getGroups(Object authenticatedToken, String groupPattern) 
-    		                     throws HpcException
-    {
-    	try {
-    		 String where = RodsGenQueryEnum.COL_USER_GROUP_NAME.getName() + " " + 
-                            "LIKE '" + groupPattern + "' and " +
-			                RodsGenQueryEnum.COL_USER_TYPE.getName() + " = '" + 
-                            UserTypeEnum.RODS_GROUP.getTextValue() + "'";
-    		
-    		 return toHpcGroupNames(irodsConnection.getUserGroupAO(authenticatedToken).findWhere(where));
-    		 
-    	} catch(Exception e) {
-                throw new HpcException("Failed to get user groups: " + e.getMessage(),
-		                               HpcErrorType.DATA_MANAGEMENT_ERROR, e);
-    	}
-    }
-	
-	@Override
 	public String getAbsolutePath(String path)
 	{
     	if(path == null) {
@@ -1163,26 +1145,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			    hpcSubjectPermission.setSubjectType(HpcSubjectType.USER);
 		}
     	return hpcSubjectPermission;
-    }
-    
-    /**
-     * Convert a list of iRODS user groups to HPC group names.
-     *
-     * @param irodsUserGroups The iRODS user groups.
-     * @return A list of HPC user group names.
-     */
-    private List<String> toHpcGroupNames(List<UserGroup> irodsUserGroups)
-    {
-    	if(irodsUserGroups == null) {
-    	   return null;
-    	}
-    	
-    	List<String> hpcUserGroups = new ArrayList<>();
-    	for(UserGroup irodsUserGroup : irodsUserGroups) {
-    		hpcUserGroups.add(irodsUserGroup.getUserGroupName());
-    	}
-    	
-    	return hpcUserGroups;
     }
     
     /**
