@@ -1,5 +1,5 @@
 /**
- * HpcLoginController.java
+ * HpcSubscribeNotificationsController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -12,9 +12,7 @@ package gov.nih.nci.hpc.web.controller;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -66,11 +64,11 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC Web Dashboard controller
+ * Controller to subscribe or unsubscribe notifications
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDashBoardController.java
+ * @version $Id$
  */
 
 @Controller
@@ -83,6 +81,16 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 	@Autowired
 	private Environment env;
 
+	/**
+	 * GET action to populate notifications with user subscriptions
+	 * 
+	 * @param q
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
@@ -107,6 +115,17 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 		return "subscribenotifications";
 	}
 
+	/**
+	 * POST action to subscribe or unsubscribe notifications
+	 * 
+	 * @param notificationRequest
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @param redirectAttrs
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.POST)
 	public String search(@Valid @ModelAttribute("notificationRequest") HpcNotificationRequest notificationRequest,
 			Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request,
@@ -181,7 +200,6 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 		List<HpcNotificationTrigger> triggers = new ArrayList<HpcNotificationTrigger>();
 
 		while (params.hasMoreElements()) {
-			HpcNotificationSubscription addUpdateSubscription = new HpcNotificationSubscription();
 			String paramName = params.nextElement();
 			if (paramName.startsWith("collectionPathAdded")) {
 				String[] value = request.getParameterValues(paramName);
@@ -192,7 +210,6 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 					pathEntry.setAttribute("COLLECTION_PATH");
 					pathEntry.setValue(value[0]);
 					entries.add(pathEntry);
-					String counter = paramName.substring("collectionPathAdded".length());
 					trigger.getPayloadEntries().addAll(entries);
 					triggers.add(trigger);
 					collectionUpdated = true;
@@ -263,7 +280,6 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 	}
 
 	private void populateNotifications(Model model, String authToken, HpcUserDTO user, HttpSession session) {
-		Map<String, String> eventTypes = new HashMap<String, String>();
 		List<HpcNotification> notifications = new ArrayList<HpcNotification>();
 		List<HpcNotificationSubscription> subscriptions = getUserNotifications(authToken);
 		List<HpcEventType> types = getEventTypes();
@@ -297,19 +313,8 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 			notifications.add(notification);
 		}
 
-		// model.addAttribute("eventTypes", eventTypes);
 		model.addAttribute("notifications", notifications);
 		session.setAttribute("subscribedNotifications", notifications);
-	}
-
-	private boolean isSubscribed(List<HpcNotificationSubscription> subscriptions, HpcEventType type) {
-		if (subscriptions == null || subscriptions.size() == 0)
-			return false;
-		for (HpcNotificationSubscription subscription : subscriptions) {
-			if (subscription.getEventType().equals(type))
-				return true;
-		}
-		return false;
 	}
 
 	private HpcNotificationSubscription getNotificationSubscription(List<HpcNotificationSubscription> subscriptions,
@@ -354,15 +359,10 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 	private List<HpcNotificationSubscription> getUserNotifications(String authToken) {
 		HpcNotificationSubscriptionListDTO subscriptionListDTO = HpcClientUtil.getUserNotifications(authToken,
 				notificationURL, sslCertPath, sslCertPassword);
-		List<String> subscriptionList = new ArrayList<String>();
 
 		if (subscriptionListDTO != null) {
 			List<HpcNotificationSubscription> subscriptions = subscriptionListDTO.getSubscriptions();
 			if (subscriptions != null && subscriptions.size() > 0) {
-				// for (HpcNotificationSubscription subscription :
-				// subscriptions) {
-				// subscriptionList.add(subscription.getEventType().name());
-				// }
 				return subscriptions;
 			}
 		}

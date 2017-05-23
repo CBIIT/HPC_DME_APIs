@@ -54,7 +54,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM Project Search controller
+ * Controller to support asynchronous download of a data file or collection
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
@@ -112,7 +112,7 @@ public class HpcDownloadController extends AbstractHpcController {
 	}
 
 	/**
-	 * POST action to initiate async download.
+	 * POST action to initiate asynchronous download.
 	 * 
 	 * @param downloadFile
 	 * @param model

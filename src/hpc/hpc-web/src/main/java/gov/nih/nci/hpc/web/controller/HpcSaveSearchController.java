@@ -1,5 +1,5 @@
 /**
- * HpcSearchProjectController.java
+ * HpcSaveSearchController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -45,7 +45,6 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
-import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
@@ -56,11 +55,11 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM Project Search controller
+ * Controller to save search criteria by a name
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDataRegistrationController.java
+ * @version $Id$
  */
 
 @Controller
@@ -71,6 +70,16 @@ public class HpcSaveSearchController extends AbstractHpcController {
 	private String queryServiceURL;
 	private String hpcMetadataAttrsURL;
 
+	/**
+	 * GET action to prepare save search page
+	 * 
+	 * @param q
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
@@ -87,6 +96,18 @@ public class HpcSaveSearchController extends AbstractHpcController {
 		return "savesearch";
 	}
 
+	/**
+	 * POST action to save search criteria by name. Last executed search
+	 * criteria is pulled from user session to save. Only "-" and "_" are
+	 * allowed as special chars in search
+	 * 
+	 * @param search
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@JsonView(Views.Public.class)
 	@RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
@@ -94,7 +115,6 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		AjaxResponseBody result = new AjaxResponseBody();
 		try {
-			// String criteria = getCriteria();
 			HpcCompoundMetadataQueryDTO compoundQuery = null;
 			if (session.getAttribute("compoundQuery") != null)
 				compoundQuery = (HpcCompoundMetadataQueryDTO) session.getAttribute("compoundQuery");
@@ -123,7 +143,8 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			}
 
 			String authToken = (String) session.getAttribute("hpcUserToken");
-			String serviceURL = queryServiceURL + "/" + URLEncoder.encode(search.getCriteriaName());
+			// Encode search name
+			String serviceURL = queryServiceURL + "/" + URLEncoder.encode(search.getCriteriaName(), "UTF-8");
 
 			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);

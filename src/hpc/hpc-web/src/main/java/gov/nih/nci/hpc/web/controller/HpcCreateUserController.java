@@ -46,7 +46,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcCreateUserController.java
+ * @version $Id$
  */
 
 @Controller
@@ -60,6 +60,7 @@ public class HpcCreateUserController extends AbstractHpcController {
 
 	/**
 	 * Prepare create user page. Populate available DOCs and Roles to assign to
+	 * 
 	 * @param q
 	 * @param model
 	 * @param bindingResult
@@ -85,6 +86,7 @@ public class HpcCreateUserController extends AbstractHpcController {
 
 	/**
 	 * Create User POST action
+	 * 
 	 * @param hpcWebUser
 	 * @param model
 	 * @param bindingResult
@@ -129,7 +131,7 @@ public class HpcCreateUserController extends AbstractHpcController {
 		}
 		return result;
 	}
-	
+
 	private void initialize(Model model, String authToken, HpcUserDTO user) {
 		HpcWebUser webUser = new HpcWebUser();
 		model.addAttribute("hpcWebUser", webUser);
@@ -160,6 +162,5 @@ public class HpcCreateUserController extends AbstractHpcController {
 			roles.add("USER");
 		model.addAttribute("roles", roles);
 	}
-
 
 }

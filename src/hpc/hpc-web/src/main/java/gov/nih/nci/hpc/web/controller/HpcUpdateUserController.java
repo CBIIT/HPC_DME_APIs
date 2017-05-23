@@ -1,5 +1,5 @@
 /**
- * HpcSearchProjectController.java
+ * HpcUpdateUserController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -42,11 +42,12 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM Project Search controller
+ * Controller to update a User. Delete a user by setting "Active" to false. User
+ * can be enabled again.
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDataRegistrationController.java
+ * @version $Id$
  */
 
 @Controller
@@ -58,6 +59,17 @@ public class HpcUpdateUserController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.docs}")
 	private String docsServiceURL;
 
+	/**
+	 * GET action to prepare update user page
+	 * 
+	 * @param q
+	 * @param userId
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, @RequestParam String userId, Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
@@ -74,44 +86,16 @@ public class HpcUpdateUserController extends AbstractHpcController {
 		return "updateuser";
 	}
 
-	private void init(String userId, Model model, String authToken, HpcUserDTO user) {
-		getUser(userId, model, authToken);
-		HpcWebUser webUser = new HpcWebUser();
-		webUser.setNciUserId(userId);
-		model.addAttribute("hpcWebUser", webUser);
-		populateDOCs(model, authToken, user);
-		populateRoles(model, user);
-	}
-
-	private void getUser(String userId, Model model, String authToken) {
-		HpcUserDTO userDTO = HpcClientUtil.getUserByAdmin(authToken, userServiceURL, userId, sslCertPath,
-				sslCertPassword);
-		model.addAttribute("userDTO", userDTO);
-	}
-
-	private void populateDOCs(Model model, String authToken, HpcUserDTO user) {
-		List<String> userDOCs = new ArrayList<String>();
-		if (user.getUserRole().equals("SYSTEM_ADMIN")) {
-			HpcDataManagementDocListDTO docs = HpcClientUtil.getDOCs(authToken, docsServiceURL, sslCertPath,
-					sslCertPassword);
-			model.addAttribute("docs", docs.getDocs());
-		} else {
-			userDOCs.add(user.getDoc());
-			model.addAttribute("docs", userDOCs);
-		}
-	}
-
-	private void populateRoles(Model model, HpcUserDTO user) {
-		List<String> roles = new ArrayList<String>();
-		if (user.getUserRole().equals("SYSTEM_ADMIN")) {
-			roles.add("SYSTEM_ADMIN");
-			roles.add("GROUP_ADMIN");
-			roles.add("USER");
-		} else
-			roles.add("USER");
-		model.addAttribute("roles", roles);
-	}
-
+	/**
+	 * POST action to update User record
+	 * 
+	 * @param hpcWebUser
+	 * @param bindingResult
+	 * @param model
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@JsonView(Views.Public.class)
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
@@ -146,6 +130,44 @@ public class HpcUpdateUserController extends AbstractHpcController {
 			init(hpcWebUser.getNciUserId(), model, authToken, user);
 		}
 		return result;
+	}
+
+	private void init(String userId, Model model, String authToken, HpcUserDTO user) {
+		getUser(userId, model, authToken);
+		HpcWebUser webUser = new HpcWebUser();
+		webUser.setNciUserId(userId);
+		model.addAttribute("hpcWebUser", webUser);
+		populateDOCs(model, authToken, user);
+		populateRoles(model, user);
+	}
+
+	private void getUser(String userId, Model model, String authToken) {
+		HpcUserDTO userDTO = HpcClientUtil.getUserByAdmin(authToken, userServiceURL, userId, sslCertPath,
+				sslCertPassword);
+		model.addAttribute("userDTO", userDTO);
+	}
+
+	private void populateDOCs(Model model, String authToken, HpcUserDTO user) {
+		List<String> userDOCs = new ArrayList<String>();
+		if (user.getUserRole().equals(SYSTEM_ADMIN)) {
+			HpcDataManagementDocListDTO docs = HpcClientUtil.getDOCs(authToken, docsServiceURL, sslCertPath,
+					sslCertPassword);
+			model.addAttribute("docs", docs.getDocs());
+		} else {
+			userDOCs.add(user.getDoc());
+			model.addAttribute("docs", userDOCs);
+		}
+	}
+
+	private void populateRoles(Model model, HpcUserDTO user) {
+		List<String> roles = new ArrayList<String>();
+		if (user.getUserRole().equals(SYSTEM_ADMIN)) {
+			roles.add(SYSTEM_ADMIN);
+			roles.add(GROUP_ADMIN);
+			roles.add(USER);
+		} else
+			roles.add(USER);
+		model.addAttribute("roles", roles);
 	}
 
 }

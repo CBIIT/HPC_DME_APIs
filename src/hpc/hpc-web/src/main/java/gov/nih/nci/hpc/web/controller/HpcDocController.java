@@ -17,8 +17,6 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -29,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
 
-import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
@@ -73,40 +70,6 @@ public class HpcDocController extends AbstractHpcController {
 		try {
 
 			URI uri = new URI(serviceUserURL + "/" + hpcUser.getNciUserId());
-			/*
-			 * ResponseEntity<HpcUserDTO> userEntity =
-			 * restTemplate.getForEntity(uri, HpcUserDTO.class); if(userEntity
-			 * != null && userEntity.hasBody() && userEntity.getBody() != null)
-			 * { ObjectError error = new ObjectError("nihUserId",
-			 * "UserId is already enrolled!"); bindingResult.addError(error); }
-			 * 
-			 * if (bindingResult.hasErrors()) { return "enroll"; }
-			 */
-			// HpcProxy client = new HpcProxyImpl(serverURL);
-			// HpcUserRegistrationRestService userRegistration =
-			// client.getUserRegistrationServiceProxy();
-			HpcUserDTO userDTO = new HpcUserDTO();
-			HpcNciAccount user = new HpcNciAccount();
-			user.setUserId(hpcUser.getNciUserId());
-			user.setFirstName(hpcUser.getFirstName());
-			user.setLastName(hpcUser.getLastName());
-			// userDTO.setNciAccount(user);
-			/*
-			 * Boolean validGlobusCredentials = restTemplate.postForObject(new
-			 * URI(serviceGlobusUserURL), userDTO, Boolean.class);
-			 * if(validGlobusCredentials != null) { //Boolean valid =
-			 * validGlobusCredentials.getBody(); if(!validGlobusCredentials) {
-			 * ObjectError error = new ObjectError("nihUserId",
-			 * "Invalid Globus credentials!"); bindingResult.addError(error);
-			 * return "enroll"; } }
-			 */
-
-			HttpEntity<String> response = restTemplate.postForEntity(serviceUserURL, userDTO, String.class);
-			String resultString = response.getBody();
-			HttpHeaders headers = response.getHeaders();
-			String location = headers.getLocation().toString();
-			String id = location.substring(location.lastIndexOf("/") + 1);
-			// hpcUser.setId(id);
 			model.addAttribute("registrationStatus", true);
 			model.addAttribute("hpcUser", hpcUser);
 		} catch (Exception e) {

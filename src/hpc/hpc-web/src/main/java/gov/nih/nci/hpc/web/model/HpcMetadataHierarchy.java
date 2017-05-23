@@ -16,7 +16,6 @@ public class HpcMetadataHierarchy {
 	private TreeSet<String> collectionAttrsSet;
 	private TreeSet<String> dataobjectAttrsSet;
 
-	
 	public List<String> getCollectionLevels() {
 		return collectionLevels;
 	}
