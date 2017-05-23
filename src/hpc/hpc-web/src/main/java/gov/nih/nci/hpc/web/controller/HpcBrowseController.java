@@ -35,8 +35,6 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeEntry;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcBrowserEntry;
 import gov.nih.nci.hpc.web.model.HpcLogin;
@@ -44,7 +42,8 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC Web Browse controller. Builds tree nodes based on user DOC basepath and then builds up the tree based on expanded nodes
+ * HPC Web Browse controller. Builds tree nodes based on user DOC basepath and
+ * then builds up the tree based on expanded nodes
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
@@ -61,7 +60,8 @@ public class HpcBrowseController extends AbstractHpcController {
 	private String hpcModelURL;
 
 	/**
-	 * GET operation on Browse. Builds initial tree 
+	 * GET operation on Browse. Builds initial tree
+	 * 
 	 * @param q
 	 * @param model
 	 * @param bindingResult
@@ -72,8 +72,8 @@ public class HpcBrowseController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public String get(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
-		
-		//Verify User session
+
+		// Verify User session
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		if (user == null || authToken == null) {
@@ -83,15 +83,16 @@ public class HpcBrowseController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "index";
 		}
-		
-		//Get User DOC model for base path
+
+		// Get User DOC model for base path
 		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
 		if (modelDTO == null) {
 			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(), sslCertPath, sslCertPassword);
 			session.setAttribute("userDOCModel", modelDTO);
 		}
-		
-		//If browser tree nodes are cached, return cached data. If not, query browser tree nodes based on the base path and cache it.
+
+		// If browser tree nodes are cached, return cached data. If not, query
+		// browser tree nodes based on the base path and cache it.
 		try {
 			HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
 			if (browserEntry == null) {
@@ -113,18 +114,20 @@ public class HpcBrowseController extends AbstractHpcController {
 				model.addAttribute("browserEntry", browserEntry);
 			} else
 				model.addAttribute("message", "No collections found!");
-			
+
 			model.addAttribute("basePath", modelDTO.getBasePath());
 			return "browse";
 		} catch (Exception e) {
-			model.addAttribute("message", "Failed to get tree. Reason: "+e.getMessage());
+			model.addAttribute("message", "Failed to get tree. Reason: " + e.getMessage());
 			e.printStackTrace();
 			return "browse";
 		}
 	}
 
 	/**
-	 * POST Action. When a tree node is expanded, this action fetches its child nodes
+	 * POST Action. When a tree node is expanded, this action fetches its child
+	 * nodes
+	 * 
 	 * @param hpcBrowserEntry
 	 * @param model
 	 * @param bindingResult
@@ -158,9 +161,11 @@ public class HpcBrowseController extends AbstractHpcController {
 		}
 		return "browse";
 	}
-	
+
 	/**
-	 * Get child Tree nodes for selected tree node and merge it with cached nodes
+	 * Get child Tree nodes for selected tree node and merge it with cached
+	 * nodes
+	 * 
 	 * @param path
 	 * @param browserEntry
 	 * @param authToken

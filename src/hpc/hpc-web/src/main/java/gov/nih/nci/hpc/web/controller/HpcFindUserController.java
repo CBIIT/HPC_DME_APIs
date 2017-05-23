@@ -1,5 +1,5 @@
 /**
- * HpcSearchProjectController.java
+ * HpcFindUserController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -35,11 +35,12 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM Project Search controller
+ * Controller to find users when assigning permissions to a collection or data
+ * file
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDataRegistrationController.java
+ * @version $Id$
  */
 
 @Controller
@@ -51,6 +52,19 @@ public class HpcFindUserController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.user.active}")
 	private String activeUsersServiceURL;
 
+	/**
+	 * GET action to display find user page
+	 * 
+	 * @param q
+	 * @param source
+	 * @param path
+	 * @param type
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, @RequestParam String source, @RequestParam String path,
 			@RequestParam String type, Model model, BindingResult bindingResult, HttpSession session,
@@ -73,8 +87,16 @@ public class HpcFindUserController extends AbstractHpcController {
 		return "finduser";
 	}
 
-	/*
-	 * Action for Dataset registration
+	/**
+	 * POST action to find users. If users are selected, put them user session
+	 * and redirect back to source page
+	 * 
+	 * @param hpcWebUser
+	 * @param bindingResult
+	 * @param model
+	 * @param session
+	 * @param request
+	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
 	public String findUsers(@Valid @ModelAttribute("hpcUser") HpcWebUser hpcWebUser, BindingResult bindingResult,
@@ -97,12 +119,12 @@ public class HpcFindUserController extends AbstractHpcController {
 				}
 				session.setAttribute("selectedUsers", buffer.toString());
 				if (selectedUsers != null && selectedUsers.length > 0)
-					if(hpcWebUser.getType() != null && hpcWebUser.getType().equals("group"))
-						return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&groupName=" + hpcWebUser.getPath()
-							+ "&type=" + hpcWebUser.getType();
+					if (hpcWebUser.getType() != null && hpcWebUser.getType().equals("group"))
+						return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&groupName="
+								+ hpcWebUser.getPath() + "&type=" + hpcWebUser.getType();
 					else
 						return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&path=" + hpcWebUser.getPath()
-							+ "&type=" + hpcWebUser.getType();
+								+ "&type=" + hpcWebUser.getType();
 			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
 				session.removeAttribute("selectedUsers");
 				return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&path=" + hpcWebUser.getPath()
@@ -120,12 +142,12 @@ public class HpcFindUserController extends AbstractHpcController {
 				lastName = hpcWebUser.getLastName();
 
 			String serviceUrl = null;
-			if (user.getUserRole().equals("SYSTEM_ADMIN"))
+			if (user.getUserRole().equals(SYSTEM_ADMIN))
 				serviceUrl = allUsersServiceURL;
 			else
 				serviceUrl = activeUsersServiceURL;
 
-			HpcUserListDTO users = HpcClientUtil.getUsers(authToken, serviceUrl, userId, firstName, lastName, null, 
+			HpcUserListDTO users = HpcClientUtil.getUsers(authToken, serviceUrl, userId, firstName, lastName, null,
 					sslCertPath, sslCertPassword);
 			if (users != null && users.getUsers() != null && users.getUsers().size() > 0)
 				model.addAttribute("searchresults", users.getUsers());

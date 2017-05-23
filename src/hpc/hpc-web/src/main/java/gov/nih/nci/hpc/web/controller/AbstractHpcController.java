@@ -14,6 +14,12 @@ public abstract class AbstractHpcController {
 	protected String sslCertPath;
 	@Value("${gov.nih.nci.hpc.ssl.cert.password}")
 	protected String sslCertPassword;
+	@Value("${hpc.SYSTEM_ADMIN}")
+	protected String SYSTEM_ADMIN;
+	@Value("${hpc.GROUP_ADMIN}")
+	protected String GROUP_ADMIN;
+	@Value("${hpc.USER}")
+	protected String USER;
 
 	protected Logger log = LoggerFactory.getLogger(this.getClass());
 

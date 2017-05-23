@@ -1,5 +1,5 @@
 /**
- * HpcSearchProjectController.java
+ * HpcSearchCriteriaController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -74,11 +74,11 @@ import gov.nih.nci.hpc.web.util.HpcCompoundSearchBuilder;
 
 /**
  * <p>
- * HPC DM Project Search controller
+ * Controller to search collections or data file based on search criteria input
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDataRegistrationController.java
+ * @version $Id$
  */
 
 @Controller
@@ -98,8 +98,16 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.metadataattributes}")
 	private String hpcMetadataAttrsURL;
 
-	/*
-	 * Action for Datset registration page
+	/**
+	 * GET action to display criteria page. Populate levels, metadata attributes
+	 * and operators to display search page
+	 * 
+	 * @param q
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
@@ -126,8 +134,18 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		return "criteria";
 	}
 
-	/*
-	 * Action for Project registration
+	/**
+	 * POST action to search for collections or data files by given criteria.
+	 * Build simple or complex search criteria based on given input. Parse
+	 * complex search equation and build compound search criteria.
+	 * 
+	 * @param search
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @param redirectAttrs
+	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
 	public String search(@Valid @ModelAttribute("hpcSearch") HpcSearch search, Model model, BindingResult bindingResult,
@@ -145,14 +163,13 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		boolean success = false;
 		try {
 
-			// String criteria = getCriteria();
+			@SuppressWarnings("unchecked")
 			Map<String, String> hierarchy = (Map<String, String>) session.getAttribute("hierarchies");
 
 			HpcCompoundMetadataQueryDTO compoundQuery = constructCriteria(hierarchy, search);
 			if (search.isDetailed())
 				compoundQuery.setDetailedResponse(true);
 
-			// criteria = criteria + "&detailedResponse=true";
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			String serviceURL = compoundDataObjectSearchServiceURL;
 			if (search.getSearchType() != null && search.getSearchType().equals("collection"))
@@ -344,7 +361,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			String level = search.getLevel()[i];
 			if (!attrName.isEmpty() && !attrValue.isEmpty() && !operator.isEmpty()) {
 				HpcMetadataQuery criteria = new HpcMetadataQuery();
-				if(attrName.equals("-1") || attrName.equals("ANY"))
+				if (attrName.equals("-1") || attrName.equals("ANY"))
 					criteria.setAttributeMatch(HpcMetadataQueryAttributeMatch.ANY);
 				else
 					criteria.setAttribute(attrName);
@@ -419,7 +436,6 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		}
 
 		HpcMetadataHierarchy dataHierarchy = new HpcMetadataHierarchy();
-		Map<String, String> hierarchy = new HashMap<String, String>();
 		List<String> collectionLevels = new ArrayList<String>();
 		List<String> dataobjectLevels = new ArrayList<String>();
 
@@ -473,11 +489,11 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 	private Map<String, String> getHierarchy(String authToken, HpcUserDTO user, HttpSession session) {
 		Map<String, String> hierarchiesMap = new HashMap<String, String>();
 		try {
-			HpcDataManagementModelDTO modelDTO =  (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
-			if(modelDTO == null)
-				modelDTO = HpcClientUtil.getDOCModel(authToken, modelServiceURL, user.getDoc(),
-					sslCertPath, sslCertPassword);
-			
+			HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+			if (modelDTO == null)
+				modelDTO = HpcClientUtil.getDOCModel(authToken, modelServiceURL, user.getDoc(), sslCertPath,
+						sslCertPassword);
+
 			HpcDataHierarchy hierarchy = modelDTO.getDataHierarchy();
 
 			List<String> hierarchies = new ArrayList<String>();

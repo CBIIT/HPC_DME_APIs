@@ -49,11 +49,11 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM Project Search controller
+ * Controller to manage synchronous download of a data file
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcSyncDownloadController.java
+ * @version $Id$
  */
 
 @Controller

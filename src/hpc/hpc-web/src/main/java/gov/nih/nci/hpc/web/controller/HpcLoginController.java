@@ -1,5 +1,5 @@
 /**
- * HpcUserRegistrationController.java
+ * HpcLoginController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -9,14 +9,9 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import javax.ws.rs.core.Response;
 
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -27,17 +22,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcLogin;
@@ -45,11 +30,11 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM User Login controller
+ * Login controller to authenticate user and initialize user session
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcUserRegistrationController.java
+ * @version $Id$
  */
 
 @Controller
@@ -95,7 +80,7 @@ public class HpcLoginController extends AbstractHpcController {
 				session.setAttribute("hpcUserId", hpcLogin.getUserId());
 				HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(),
 						sslCertPath, sslCertPassword);
-				if(modelDTO != null)
+				if (modelDTO != null)
 					session.setAttribute("userDOCModel", modelDTO);
 			} catch (HpcWebException e) {
 				model.addAttribute("loginStatus", false);
@@ -118,34 +103,5 @@ public class HpcLoginController extends AbstractHpcController {
 		model.addAttribute("queryURL", queryURL);
 
 		return "dashboard";
-	}
-
-	private HpcUserDTO getUser(String userId, String authToken) throws IOException, HpcWebException {
-		WebClient client = HpcClientUtil.getWebClient(serviceUserURL + "/" + userId, sslCertPath, sslCertPassword);
-		client.header("Authorization", "Bearer " + authToken);
-
-		Response restResponse = client.invoke("GET", null);
-		if (restResponse.getStatus() == 200) {
-			ObjectMapper mapper = new ObjectMapper();
-			AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-					new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()), new JacksonAnnotationIntrospector());
-			mapper.setAnnotationIntrospector(intr);
-			MappingJsonFactory factory = new MappingJsonFactory(mapper);
-			JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-			HpcUserDTO user = parser.readValueAs(HpcUserDTO.class);
-			return user;
-		} else {
-			ObjectMapper mapper = new ObjectMapper();
-			AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-					new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()), new JacksonAnnotationIntrospector());
-			mapper.setAnnotationIntrospector(intr);
-			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-			MappingJsonFactory factory = new MappingJsonFactory(mapper);
-			JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-
-			HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-			throw new HpcWebException("Failed to find user: " + exception.getMessage());
-		}
 	}
 }

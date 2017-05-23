@@ -39,11 +39,11 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM Project Search controller
+ * Controller to display user notification event details
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcEventController.java
+ * @version $Id$
  */
 
 @Controller
@@ -55,6 +55,7 @@ public class HpcEventController extends AbstractHpcController {
 
 	/**
 	 * GET action to display event details
+	 * 
 	 * @param body
 	 * @param id
 	 * @param model
