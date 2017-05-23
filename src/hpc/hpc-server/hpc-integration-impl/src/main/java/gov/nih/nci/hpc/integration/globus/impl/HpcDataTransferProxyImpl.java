@@ -386,6 +386,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		try {
 			r = client.getResult(resource);
 			r.document.getString("status");
+			
+			logger.error("ERAN: status" + r.document.getString("status"));
+			logger.error("ERAN: nice_status" + r.document.getString("nice_status"));
+			logger.error("ERAN: nice_status_details" + r.document.getString("nice_status_details"));
+			logger.error("ERAN: nice_status_short_description" + r.document.getString("nice_status_short_description"));
+			
+			
 			hpcDataTransferReport.setTaskID(dataTransferRequestId);
 			hpcDataTransferReport.setTaskType(r.document.getString("type"));
 			hpcDataTransferReport.setStatus(r.document.getString("status"));
