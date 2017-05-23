@@ -187,8 +187,10 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			                                   metadataEntry.getUnit()));
 		     }
 
-		     irodsConnection.getCollectionAO(authenticatedToken).
-		                     addBulkAVUMetadataToCollection(getAbsolutePath(path), avuDatas);
+		     if(!avuDatas.isEmpty()) {
+		        irodsConnection.getCollectionAO(authenticatedToken).
+		                           addBulkAVUMetadataToCollection(getAbsolutePath(path), avuDatas);
+		     }
 		     
 		} catch(JargonException e) {
 	            throw new HpcException("Failed to add metadata to a collection: " + 
@@ -241,8 +243,11 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 			                                   metadataEntry.getValue(), 
 			                                   metadataEntry.getUnit()));
 		     }
-		     irodsConnection.getDataObjectAO(authenticatedToken).
-		                     addBulkAVUMetadataToDataObject(getAbsolutePath(path), avuDatas);
+		     
+		     if(!avuDatas.isEmpty()) {
+		        irodsConnection.getDataObjectAO(authenticatedToken).
+		                           addBulkAVUMetadataToDataObject(getAbsolutePath(path), avuDatas);
+		     }
 		     
 		} catch(DuplicateDataException dde) {
 			    throw new HpcException("Failed to add metadata to a data object: " + 
