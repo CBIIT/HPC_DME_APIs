@@ -54,7 +54,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     
     // Globus transfer status strings.
 	private static final String FAILED_STATUS = "FAILED"; 
+	private static final String INACTIVE_STATUS = "INACTIVE";
+	private static final String ACTIVE_STATUS = "ACTIVE";
 	private static final String SUCCEEDED_STATUS = "SUCCEEDED";
+	private static final String PERMISSION_DENIED_STATUS = "PERMISSION_DENIED";
 	
 	private static final String NOT_DIRECTORY_GLOBUS_CODE = 
 			                    "ExternalError.DirListingFailed.NotDirectory";
@@ -184,7 +187,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     {
 		 HpcGlobusDataTransferReport report = getDataTransferReport(authenticatedToken, 
 				                                                    dataTransferRequestId);
+		 
 		 if(report.getStatus().equals(SUCCEEDED_STATUS)) {
+			// Upload completed successfully. Return status based on the archive type.
 	    	if(baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
 	      	   return HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE;
 	      	 } else {
@@ -192,11 +197,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	      	 }	
 		 }
 
-		 if(report.getStatus().equals(FAILED_STATUS)) {
+		 if(report.getStatus().equals(FAILED_STATUS) || report.getStatus().equals(INACTIVE_STATUS) ||
+		    (report.getStatus().equals(ACTIVE_STATUS) && report.getNiceStatus().equals(PERMISSION_DENIED_STATUS))) {
+			// Upload failed.
  			return HpcDataTransferUploadStatus.FAILED;
  		 }
 		 
-		 // Transfer is in progress. Return status based on the archive type.
+		 // Upload is in progress. Return status based on the archive type.
     	 if(baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
      	    return HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE;
      	 } else {
@@ -212,13 +219,17 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		 HpcGlobusDataTransferReport report = getDataTransferReport(authenticatedToken, 
 				                                                    dataTransferRequestId);
 		 if(report.getStatus().equals(SUCCEEDED_STATUS)) {
+			// Download completed successfully.
 	    	return HpcDataTransferDownloadStatus.COMPLETED;
 		 }
-
-		 if(report.getStatus().equals(FAILED_STATUS)) {
- 			return HpcDataTransferDownloadStatus.FAILED;
- 		 }
 		 
+		 if(report.getStatus().equals(FAILED_STATUS) || report.getStatus().equals(INACTIVE_STATUS) ||
+		    (report.getStatus().equals(ACTIVE_STATUS) && report.getNiceStatus().equals(PERMISSION_DENIED_STATUS))) {
+			// Download failed.
+		 	return HpcDataTransferDownloadStatus.FAILED;
+		 }
+		 
+		 // Download still in progress.
 		 return HpcDataTransferDownloadStatus.IN_PROGRESS;
     }
     
@@ -376,7 +387,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		     report.setNiceStatus(jsonReport.getString("nice_status"));
 			 report.setBytesTransferred(jsonReport.getLong("bytes_transferred"));
 			 
-			 logger.error("ERAN: report" + report);
 			 return report;
 		
 		} catch(Exception e) {
