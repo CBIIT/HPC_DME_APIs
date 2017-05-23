@@ -1,5 +1,5 @@
 /**
- * HpcLoginController.java
+ * HpcReportsController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -59,11 +59,11 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC Web Dashboard controller
+ * Controller to generate usage reports
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDashBoardController.java
+ * @version $Id$
  */
 
 @Controller
@@ -77,10 +77,19 @@ public class HpcReportsController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.docs}")
 	private String docsServiceURL;
 
-	
 	@Autowired
 	private Environment env;
 
+	/**
+	 * GET Operation to prepare reports page
+	 * 
+	 * @param q
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
@@ -103,30 +112,42 @@ public class HpcReportsController extends AbstractHpcController {
 		model.addAttribute("userRole", user.getUserRole());
 		model.addAttribute("userDOC", user.getDoc());
 		model.addAttribute("reportRequest", new HpcReportRequest());
-		HpcUserListDTO users = HpcClientUtil.getUsers(authToken, activeUsersServiceURL, null, null, null, user.getUserRole().equals("SYSTEM_ADMIN") ? null:user.getDoc(), sslCertPath, sslCertPassword);
+		HpcUserListDTO users = HpcClientUtil.getUsers(authToken, activeUsersServiceURL, null, null, null,
+				user.getUserRole().equals("SYSTEM_ADMIN") ? null : user.getDoc(), sslCertPath, sslCertPassword);
 		model.addAttribute("docUsers", users.getUsers());
 		List<String> docs = new ArrayList<String>();
-		if(user.getUserRole().equals("GROUP_ADMIN") || user.getUserRole().equals("USER"))
+		if (user.getUserRole().equals("GROUP_ADMIN") || user.getUserRole().equals("USER"))
 			docs.add(user.getDoc());
-		else if(user.getUserRole().equals("SYSTEM_ADMIN"))
-		{
-			HpcDataManagementDocListDTO dto = HpcClientUtil.getDOCs(authToken, docsServiceURL, sslCertPath, sslCertPassword);
-			if(dto != null)
+		else if (user.getUserRole().equals("SYSTEM_ADMIN")) {
+			HpcDataManagementDocListDTO dto = HpcClientUtil.getDOCs(authToken, docsServiceURL, sslCertPath,
+					sslCertPassword);
+			if (dto != null)
 				docs.addAll(dto.getDocs());
 		}
 		model.addAttribute("docs", docs);
 		return "reports";
 	}
 
+	/**
+	 * POST operation to generate report based on given request input
+	 * 
+	 * @param reportRequest
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
+	@SuppressWarnings("finally")
 	@RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public String generate(@Valid @ModelAttribute("reportRequest") HpcReportRequest reportRequest, Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		try {
 			HpcReportRequestDTO requestDTO = new HpcReportRequestDTO();
 			requestDTO.setType(HpcReportType.fromValue(reportRequest.getReportType()));
-			if (reportRequest.getDoc() != null && !reportRequest.getDoc().equals("-1"))
-			{
-				if(requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC) || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
+			if (reportRequest.getDoc() != null && !reportRequest.getDoc().equals("-1")) {
+				if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC)
+						|| requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
 					requestDTO.getDoc().add(reportRequest.getDoc());
 			}
 			if (reportRequest.getUser() != null && !reportRequest.getUser().equals("-1"))

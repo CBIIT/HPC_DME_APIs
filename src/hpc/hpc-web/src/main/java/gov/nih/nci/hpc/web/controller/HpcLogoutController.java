@@ -1,5 +1,5 @@
 /**
- * HpcLoginController.java
+ * HpcLogoutController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -21,11 +21,11 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 
 /**
  * <p>
- * HPC Web Login controller
+ * Logout controller to invalidate user session
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcLoginController.java
+ * @version $Id$
  */
 
 @Controller

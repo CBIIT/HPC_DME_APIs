@@ -35,11 +35,12 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM Project Search controller
+ * Controller to find groups when assigning permissions to a collection or data
+ * file
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcFindGroupController.java
+ * @version $Id$
  */
 
 @Controller
@@ -49,6 +50,18 @@ public class HpcFindGroupController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.group}")
 	private String groupServiceURL;
 
+	/**
+	 * GET action to display find groups page
+	 * 
+	 * @param q
+	 * @param path
+	 * @param type
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, @RequestParam String path, @RequestParam String type,
 			Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
@@ -69,6 +82,17 @@ public class HpcFindGroupController extends AbstractHpcController {
 		return "findgroup";
 	}
 
+	/**
+	 * POST action to find Groups. If groups are selected, put them user session
+	 * and redirect back to source page
+	 * 
+	 * @param hpcWebGroup
+	 * @param bindingResult
+	 * @param model
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.POST)
 	public String findUsers(@Valid @ModelAttribute("hpcGroup") HpcWebGroup hpcWebGroup, BindingResult bindingResult,
 			Model model, HttpSession session, HttpServletRequest request) {

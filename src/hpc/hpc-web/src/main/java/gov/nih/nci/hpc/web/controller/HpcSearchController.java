@@ -1,5 +1,5 @@
 /**
- * HpcSearchProjectController.java
+ * HpcSearchController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -35,32 +35,34 @@ import gov.nih.nci.hpc.web.util.HpcSearchUtil;
 
 /**
  * <p>
- * HPC DM Project Search controller
+ * Controller to execute a search search
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDataRegistrationController.java
+ * @version $Id$
  */
 
 @Controller
 @EnableAutoConfiguration
 @RequestMapping("/search")
 public class HpcSearchController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.collection}")
-	private String collectionServiceURL;
 	@Value("${gov.nih.nci.hpc.server.search.collection.compound}")
 	private String compoundCollectionSearchServiceURL;
 	@Value("${gov.nih.nci.hpc.server.search.dataobject.compound}")
 	private String compoundDataObjectSearchServiceURL;
-	@Value("${gov.nih.nci.hpc.server.dataObject}")
-	private String datafileServiceURL;
 	@Value("${gov.nih.nci.hpc.server.query}")
 	private String queryURL;
-	@Value("${gov.nih.nci.hpc.server.metadataattributes}")
-	private String hpcMetadataAttrsURL;
 
-	/*
-	 * Action for Datset registration page
+	/**
+	 * GET action to query by saved search name
+	 * 
+	 * @param body
+	 * @param queryName
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String body, @RequestParam String queryName, Model model,
@@ -70,7 +72,6 @@ public class HpcSearchController extends AbstractHpcController {
 			String authToken = (String) session.getAttribute("hpcUserToken");
 
 			query = HpcClientUtil.getQuery(authToken, queryURL, queryName, sslCertPath, sslCertPassword);
-			String serviceURL = collectionServiceURL;
 
 			String requestURL;
 			if (query != null && query.getNamedCompoundQuery().getCompoundQueryType()

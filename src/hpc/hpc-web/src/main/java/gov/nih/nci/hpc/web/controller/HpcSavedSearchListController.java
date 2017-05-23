@@ -1,5 +1,5 @@
 /**
- * HpcSearchProjectController.java
+ * HpcSavedSearchListController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -40,11 +40,12 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * HPC DM Saved Search controller
+ * Controller to get list of saved search names. This list is displayed on
+ * Dashboard
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcQuerySavedSearchController.java
+ * @version $Id$
  */
 
 @Controller
@@ -54,6 +55,16 @@ public class HpcSavedSearchListController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.query}")
 	private String queryServiceURL;
 
+	/**
+	 * GET action to query user saved searches
+	 * 
+	 * @param search
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
 	@JsonView(Views.Public.class)
 	@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
@@ -73,7 +84,7 @@ public class HpcSavedSearchListController extends AbstractHpcController {
 				SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 				for (HpcNamedCompoundMetadataQuery query : queries.getNamedCompoundQueries()) {
 					HpcNamedQuery namedQuery = new HpcNamedQuery();
-					namedQuery.setSearchName(URLEncoder.encode(query.getName()));
+					namedQuery.setSearchName(URLEncoder.encode(query.getName(), "UTF-8"));
 					namedQuery.setSearchType(query.getCompoundQueryType().value());
 					namedQuery.setCreatedOn(format.format(query.getCreated().getTime()));
 					result.add(namedQuery);

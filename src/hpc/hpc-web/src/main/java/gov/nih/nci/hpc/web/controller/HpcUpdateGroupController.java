@@ -1,5 +1,5 @@
 /**
- * HpcSearchProjectController.java
+ * HpcUpdateGroupController.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -49,7 +49,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
- * @version $Id: HpcDataRegistrationController.java
+ * @version $Id$
  */
 
 @Controller
@@ -90,59 +90,38 @@ public class HpcUpdateGroupController extends AbstractHpcController {
 		return "updategroup";
 	}
 
-	private void initialize(Model model, String authToken, String groupName, HttpSession session) {
-		HpcWebGroup webGroup = new HpcWebGroup();
-		webGroup.setGroupName(groupName);
-		model.addAttribute("hpcWebGroup", webGroup);
-		model.addAttribute("assignedNames", new ArrayList<String>());
-		String selectedUsers = (String) session.getAttribute("selectedUsers");
-		model.addAttribute("selectedUsers", selectedUsers);
-		if(groupName != null && groupName.length() > 0)
-		{
-			HpcGroupListDTO groupList = HpcClientUtil.getGroups(authToken, groupServiceURL, groupName, sslCertPath,
-					sslCertPassword);
-			if (groupList == null || groupList.getGroups() == null || groupList.getGroups().isEmpty()) {
-				model.addAttribute("message", "Group " + groupName + " not found");
-				return;
-			}
-			
-			for(HpcGroup group : groupList.getGroups())
-			{
-				if(group.getGroupName().equals(groupName))
-				{
-					model.addAttribute("group", group);
-					session.setAttribute("updategroup", group);
-					break;
-				}
-			}
-		}
-	}
-
-	/*
-	 * Action to update, delete group
+	/**
+	 * POST action to update or delete a GROUP. Updating Group name is not
+	 * allowed. Once the group is updated, redirect back to update group page
+	 * with resulted message.
+	 * 
+	 * @param hpcWebGroup
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @param response
+	 * @param redirectAttributes
+	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
 	public String updateGroup(@Valid @ModelAttribute("hpcGroup") HpcWebGroup hpcWebGroup, Model model,
-			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
-			HttpServletResponse response, final RedirectAttributes redirectAttributes) {
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request, HttpServletResponse response,
+			final RedirectAttributes redirectAttributes) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		List<String> messages = new ArrayList<String>();
 		try {
-			if (hpcWebGroup.getActionType() == null || hpcWebGroup.getActionType().trim().length() == 0 || hpcWebGroup.getActionType().endsWith("cancel"))
-			{
+			if (hpcWebGroup.getActionType() == null || hpcWebGroup.getActionType().trim().length() == 0
+					|| hpcWebGroup.getActionType().endsWith("cancel")) {
 				redirectAttributes.addFlashAttribute("return", "true");
 				return "redirect:group?return=true";
-			}
-			else if (hpcWebGroup.getActionType().endsWith("delete")) {
+			} else if (hpcWebGroup.getActionType().endsWith("delete")) {
 				try {
 					boolean deleted = HpcClientUtil.deleteGroup(authToken, groupServiceURL, hpcWebGroup.getGroupId(),
 							sslCertPath, sslCertPassword);
-					if (deleted)
-					{
+					if (deleted) {
 						messages.add("Successfully deleted group: " + hpcWebGroup.getGroupId());
 						model.addAttribute("messages", messages);
-						//redirectAttributes.addFlashAttribute("return", "true");
-						//return "redirect:group?return=true";
 						hpcWebGroup.setGroupName("");
 						model.addAttribute("hpcWebGroup", hpcWebGroup);
 						return "updategroup";
@@ -152,8 +131,7 @@ public class HpcUpdateGroupController extends AbstractHpcController {
 					model.addAttribute("messages", messages);
 				}
 			} else if (hpcWebGroup.getActionType().endsWith("update")) {
-				if (hpcWebGroup.getGroupId() == null || hpcWebGroup.getGroupId().trim().length() == 0)
-				{
+				if (hpcWebGroup.getGroupId() == null || hpcWebGroup.getGroupId().trim().length() == 0) {
 					messages.add("Invald user input");
 					model.addAttribute("messages", messages);
 					return "updategroup";
@@ -242,5 +220,30 @@ public class HpcUpdateGroupController extends AbstractHpcController {
 		}
 		if (removeUserIds.size() > 0)
 			dto.getDeleteUserIds().addAll(removeUserIds);
+	}
+
+	private void initialize(Model model, String authToken, String groupName, HttpSession session) {
+		HpcWebGroup webGroup = new HpcWebGroup();
+		webGroup.setGroupName(groupName);
+		model.addAttribute("hpcWebGroup", webGroup);
+		model.addAttribute("assignedNames", new ArrayList<String>());
+		String selectedUsers = (String) session.getAttribute("selectedUsers");
+		model.addAttribute("selectedUsers", selectedUsers);
+		if (groupName != null && groupName.length() > 0) {
+			HpcGroupListDTO groupList = HpcClientUtil.getGroups(authToken, groupServiceURL, groupName, sslCertPath,
+					sslCertPassword);
+			if (groupList == null || groupList.getGroups() == null || groupList.getGroups().isEmpty()) {
+				model.addAttribute("message", "Group " + groupName + " not found");
+				return;
+			}
+
+			for (HpcGroup group : groupList.getGroups()) {
+				if (group.getGroupName().equals(groupName)) {
+					model.addAttribute("group", group);
+					session.setAttribute("updategroup", group);
+					break;
+				}
+			}
+		}
 	}
 }

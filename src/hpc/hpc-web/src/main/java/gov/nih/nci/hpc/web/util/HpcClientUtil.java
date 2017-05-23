@@ -240,24 +240,24 @@ public class HpcClientUtil {
 			throw new HpcWebException("Failed to get tree for: " + docName + " due to: " + e.getMessage());
 		}
 	}
+
 	public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL, String path, boolean list,
 			String hpcCertPath, String hpcCertPassword) {
 		return getCollection(token, hpcCollectionlURL, path, false, list, hpcCertPath, hpcCertPassword);
 	}
-	public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL, String path, boolean children, boolean list,
-			String hpcCertPath, String hpcCertPassword) {
+
+	public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL, String path,
+			boolean children, boolean list, String hpcCertPath, String hpcCertPassword) {
 		try {
 			String serviceURL = hpcCollectionlURL;
-			if(children)
+			if (children)
 				serviceURL = serviceURL + path + "/children";
-			else if(list)
+			else if (list)
 				serviceURL = serviceURL + path + "?list=true";
 			else
 				serviceURL = serviceURL + path + "?list=false";
-			
-			WebClient client = HpcClientUtil.getWebClient(
-					serviceURL, hpcCertPath,
-					hpcCertPassword);
+
+			WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
 			client.header("Authorization", "Bearer " + token);
 
 			Response restResponse = client.invoke("GET", null);
@@ -290,8 +290,7 @@ public class HpcClientUtil {
 			String hpcCertPath, String hpcCertPassword) {
 		try {
 			WebClient client = HpcClientUtil.getWebClient(
-					hpcDatafileURL + "/" + path + (list ? "?list=true" : "?list=false"), hpcCertPath,
-					hpcCertPassword);
+					hpcDatafileURL + "/" + path + (list ? "?list=true" : "?list=false"), hpcCertPath, hpcCertPassword);
 			client.header("Authorization", "Bearer " + token);
 
 			Response restResponse = client.invoke("GET", null);
@@ -319,7 +318,7 @@ public class HpcClientUtil {
 			throw new HpcWebException("Failed to get Collection for: " + path + " due to: " + e.getMessage());
 		}
 	}
-	
+
 	public static HpcUserListDTO getUsers(String token, String hpcUserURL, String userId, String firstName,
 			String lastName, String doc, String hpcCertPath, String hpcCertPassword) {
 		try {
@@ -378,8 +377,7 @@ public class HpcClientUtil {
 		return null;
 	}
 
-	public static HpcUserDTO getUser(String token, String hpcUserURL, String hpcCertPath,
-			String hpcCertPassword) {
+	public static HpcUserDTO getUser(String token, String hpcUserURL, String hpcCertPath, String hpcCertPassword) {
 		try {
 
 			WebClient client = HpcClientUtil.getWebClient(hpcUserURL, hpcCertPath, hpcCertPassword);
@@ -461,7 +459,7 @@ public class HpcClientUtil {
 			throw new HpcWebException("Failed to get User due to: " + e.getMessage());
 		}
 	}
-	
+
 	public static boolean createUser(String token, String hpcUserURL, HpcUserRequestDTO userDTO, String userId,
 			String hpcCertPath, String hpcCertPassword) {
 		try {
@@ -493,11 +491,12 @@ public class HpcClientUtil {
 		}
 	}
 
-	public static HpcGroupMembersResponseDTO createGroup(String token, String hpcUserURL, HpcGroupMembersRequestDTO groupDTO,
-			String groupName, String hpcCertPath, String hpcCertPassword) {
+	public static HpcGroupMembersResponseDTO createGroup(String token, String hpcUserURL,
+			HpcGroupMembersRequestDTO groupDTO, String groupName, String hpcCertPath, String hpcCertPassword) {
 		HpcGroupMembersResponseDTO response = null;
 		try {
-			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + "/" + URLEncoder.encode(groupName), hpcCertPath, hpcCertPassword);
+			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + "/" + URLEncoder.encode(groupName), hpcCertPath,
+					hpcCertPassword);
 			client.header("Authorization", "Bearer " + token);
 
 			Response restResponse = client.invoke("PUT", groupDTO);
@@ -513,7 +512,7 @@ public class HpcClientUtil {
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
 				response = parser.readValueAs(HpcGroupMembersResponseDTO.class);
-				
+
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -528,20 +527,17 @@ public class HpcClientUtil {
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
 				throw new HpcWebException("Failed to create group: " + exception.getMessage());
 			}
-		} 
-		catch(HpcWebException e)
-		{
+		} catch (HpcWebException e) {
 			throw e;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to create group due to: " + e.getMessage());
 		}
 		return response;
 	}
 
-	public static HpcGroupMembersResponseDTO updateGroup(String token, String hpcUserURL, HpcGroupMembersRequestDTO groupDTO,
-			String groupName, String hpcCertPath, String hpcCertPassword) {
+	public static HpcGroupMembersResponseDTO updateGroup(String token, String hpcUserURL,
+			HpcGroupMembersRequestDTO groupDTO, String groupName, String hpcCertPath, String hpcCertPassword) {
 		HpcGroupMembersResponseDTO response = null;
 		try {
 			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath, hpcCertPassword);
@@ -559,7 +555,7 @@ public class HpcClientUtil {
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
 				response = parser.readValueAs(HpcGroupMembersResponseDTO.class);
-				
+
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -574,20 +570,17 @@ public class HpcClientUtil {
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
 				throw new HpcWebException("Failed to update group: " + exception.getMessage());
 			}
-		} 
-		catch(HpcWebException e)
-		{
+		} catch (HpcWebException e) {
 			throw e;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to update group due to: " + e.getMessage());
 		}
 		return response;
 	}
 
-	public static boolean deleteGroup(String token, String hpcUserURL,
-			String groupName, String hpcCertPath, String hpcCertPassword) {
+	public static boolean deleteGroup(String token, String hpcUserURL, String groupName, String hpcCertPath,
+			String hpcCertPassword) {
 		HpcGroupMembersResponseDTO response = null;
 		try {
 			WebClient client = HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath, hpcCertPassword);
@@ -609,19 +602,16 @@ public class HpcClientUtil {
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
 				throw new HpcWebException("Failed to delete group: " + exception.getMessage());
 			}
-		} 
-		catch(HpcWebException e)
-		{
+		} catch (HpcWebException e) {
 			throw e;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to delete group due to: " + e.getMessage());
 		}
 	}
 
-	public static boolean updateCollection(String token, String hpcCollectionURL, HpcCollectionRegistrationDTO collectionDTO,
-			String path, String hpcCertPath, String hpcCertPassword) {
+	public static boolean updateCollection(String token, String hpcCollectionURL,
+			HpcCollectionRegistrationDTO collectionDTO, String path, String hpcCertPath, String hpcCertPassword) {
 		try {
 			WebClient client = HpcClientUtil.getWebClient(hpcCollectionURL + path, hpcCertPath, hpcCertPassword);
 			client.header("Authorization", "Bearer " + token);
@@ -643,12 +633,9 @@ public class HpcClientUtil {
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
 				throw new HpcWebException("Failed to update collection: " + exception.getMessage());
 			}
-		} 
-		catch(HpcWebException e)
-		{
+		} catch (HpcWebException e) {
 			throw e;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to update collection due to: " + e.getMessage());
 		}
@@ -662,9 +649,9 @@ public class HpcClientUtil {
 			List<Attachment> atts = new LinkedList<Attachment>();
 			atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration", "application/json",
 					datafileDTO));
-			
+
 			client.header("Authorization", "Bearer " + token);
-			
+
 			Response restResponse = client.put(new MultipartBody(atts));
 			if (restResponse.getStatus() == 200) {
 				return true;
@@ -682,17 +669,14 @@ public class HpcClientUtil {
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
 				throw new HpcWebException("Failed to update data file: " + exception.getMessage());
 			}
-		} 
-		catch(HpcWebException e)
-		{
+		} catch (HpcWebException e) {
 			throw e;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to update data file due to: " + e.getMessage());
 		}
 	}
-	
+
 	public static boolean updateUser(String token, String hpcUserURL, HpcUserRequestDTO userDTO, String userId,
 			String hpcCertPath, String hpcCertPassword) {
 		try {
@@ -716,12 +700,9 @@ public class HpcClientUtil {
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
 				throw new HpcWebException("Failed to update user: " + exception.getMessage());
 			}
-		} 
-		catch(HpcWebException e)
-		{
+		} catch (HpcWebException e) {
 			throw e;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to update user due to: " + e.getMessage());
 		}
@@ -887,11 +868,12 @@ public class HpcClientUtil {
 		}
 	}
 
-	public static HpcUserPermissionDTO getPermissionForUser(String token, String path, String userId, String hpcServiceURL, String hpcCertPath,
-			String hpcCertPassword) {
+	public static HpcUserPermissionDTO getPermissionForUser(String token, String path, String userId,
+			String hpcServiceURL, String hpcCertPath, String hpcCertPassword) {
 
-		WebClient client = HpcClientUtil.getWebClient(hpcServiceURL + path + "/acl/user/" + userId, hpcCertPath, hpcCertPassword);
-		
+		WebClient client = HpcClientUtil.getWebClient(hpcServiceURL + path + "/acl/user/" + userId, hpcCertPath,
+				hpcCertPassword);
+
 		client.header("Authorization", "Bearer " + token);
 
 		Response restResponse = client.get();
