@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.globusonline.transfer.APIError;
 import org.globusonline.transfer.BaseTransferAPIClient;
 import org.globusonline.transfer.JSONTransferAPIClient;
@@ -320,14 +318,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		}
 	}
     
-    private Calendar convertToLexicalTime(String timeStr) 
-    {
-    	if (timeStr == null || "null".equalsIgnoreCase(timeStr))    	
-    		return null;     	
-    	else
-    		return DatatypeConverter.parseDateTime(timeStr.trim().replace(' ', 'T'));
-	}
-    
 	private JSONObject setJSONItem(HpcFileLocation source, HpcFileLocation destination, 
 			                       JSONTransferAPIClient client)  
 			                      throws HpcException 
@@ -377,58 +367,17 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
                                                              throws HpcException
     {
 		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
-		HpcGlobusDataTransferReport hpcDataTransferReport = new HpcGlobusDataTransferReport();
-		
-		JSONTransferAPIClient.Result r;
-		String resource = "/task/" +  dataTransferRequestId;
-		// Map<String, String> params = new HashMap<String, String>();
-		//    params.put("fields", "status");
+
 		try {
-			r = client.getResult(resource);
-			r.document.getString("status");
+			 JSONObject jsonReport = client.getResult("/task/" +  dataTransferRequestId).document;
 			
-			logger.error("ERAN: status" + r.document.getString("status"));
-			logger.error("ERAN: nice_status" + r.document.getString("nice_status"));
-			logger.error("ERAN: nice_status_details" + r.document.getString("nice_status_details"));
-			logger.error("ERAN: nice_status_short_description" + r.document.getString("nice_status_short_description"));
-			
-			
-			hpcDataTransferReport.setTaskID(dataTransferRequestId);
-			hpcDataTransferReport.setTaskType(r.document.getString("type"));
-			hpcDataTransferReport.setStatus(r.document.getString("status"));
-			if (r.document.has("request_time") && !r.document.isNull("request_time"))
-			hpcDataTransferReport.setRequestTime(convertToLexicalTime(r.document.getString("request_time")));
-			else
-			hpcDataTransferReport.setRequestTime(null);  
-			if (r.document.has("deadline") && !r.document.isNull("deadline"))
-			hpcDataTransferReport.setDeadline(convertToLexicalTime(r.document.getString("deadline")));
-			else
-			hpcDataTransferReport.setDeadline(null);     
-			if (r.document.has("completion_time") && !r.document.isNull("completion_time"))
-			hpcDataTransferReport.setCompletionTime(convertToLexicalTime(r.document.getString("completion_time")));
-			else
-			hpcDataTransferReport.setCompletionTime(null);
-			hpcDataTransferReport.setTotalTasks(r.document.getInt("subtasks_total"));
-			hpcDataTransferReport.setTasksSuccessful(r.document.getInt("subtasks_succeeded"));
-			hpcDataTransferReport.setTasksExpired(r.document.getInt("subtasks_expired"));
-			hpcDataTransferReport.setTasksCanceled(r.document.getInt("subtasks_canceled"));
-			hpcDataTransferReport.setTasksPending(r.document.getInt("subtasks_pending"));
-			hpcDataTransferReport.setTasksRetrying(r.document.getInt("subtasks_retrying"));
-			hpcDataTransferReport.setCommand(r.document.getString("command"));
-			hpcDataTransferReport.setSourceEndpoint(r.document.getString("source_endpoint"));
-			hpcDataTransferReport.setDestinationEndpoint(r.document.getString("destination_endpoint"));
-			hpcDataTransferReport.setDataEncryption(r.document.getBoolean("encrypt_data"));
-			hpcDataTransferReport.setChecksumVerification(r.document.getBoolean("verify_checksum"));
-			hpcDataTransferReport.setDelete(r.document.getBoolean("delete_destination_extra"));
-			hpcDataTransferReport.setFiles(r.document.getInt("files"));
-			hpcDataTransferReport.setFilesSkipped(r.document.getInt("files_skipped"));
-			hpcDataTransferReport.setDirectories(r.document.getInt("directories"));
-			hpcDataTransferReport.setBytesTransferred(r.document.getLong("bytes_transferred"));
-			hpcDataTransferReport.setBytesChecksummed(r.document.getLong("bytes_checksummed"));
-			hpcDataTransferReport.setEffectiveMbitsPerSec(r.document.getDouble("effective_bytes_per_second"));
-			hpcDataTransferReport.setFaults(r.document.getInt("faults"));
-		
-			return hpcDataTransferReport;
+			 HpcGlobusDataTransferReport report = new HpcGlobusDataTransferReport();
+			 report.setStatus(jsonReport.getString("status"));
+		     report.setNiceStatus(jsonReport.getString("nice_status"));
+			 report.setBytesTransferred(jsonReport.getLong("bytes_transferred"));
+			 
+			 logger.error("ERAN: report" + report);
+			 return report;
 		
 		} catch(Exception e) {
 		        throw new HpcException("[GLOBUS] Failed to get task report for task: " + dataTransferRequestId, 
