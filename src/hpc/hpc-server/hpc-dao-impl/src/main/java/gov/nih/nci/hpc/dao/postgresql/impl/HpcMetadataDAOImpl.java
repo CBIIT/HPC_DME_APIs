@@ -188,7 +188,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			" group by level_label order by level_label";
 	
 	private static final String GET_METADATA_MODIFIED_AT_SQL = 
-			"select max(modify_ts) from public.\"r_objt_metamap\" where object_id = ?;";
+			"select max(modify_ts) from public.\"r_objt_metamap\" where object_id = ?";
 	
     //---------------------------------------------------------------------//
     // Instance members
