@@ -25,7 +25,6 @@ import gov.nih.nci.hpc.exception.HpcException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
@@ -203,10 +202,10 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 			namedCompoundQuery.setDetailedResponse(rs.getBoolean("DETAILED_RESPONSE"));
 			namedCompoundQuery.setTotalCount(rs.getBoolean("TOTAL_COUNT"));
 			namedCompoundQuery.setCompoundQueryType(HpcCompoundMetadataQueryType.fromValue(rs.getString("QUERY_TYPE")));
-			Calendar created = new GregorianCalendar();
+			Calendar created = Calendar.getInstance();
 			created.setTime(rs.getTimestamp("CREATED"));
 			namedCompoundQuery.setCreated(created);
-			Calendar updated = new GregorianCalendar();
+			Calendar updated = Calendar.getInstance();
 			updated.setTime(rs.getTimestamp("UPDATED"));
 			namedCompoundQuery.setUpdated(updated);
 			return namedCompoundQuery;
