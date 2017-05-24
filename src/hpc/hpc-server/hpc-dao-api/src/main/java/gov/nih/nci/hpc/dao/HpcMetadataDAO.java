@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -138,6 +139,15 @@ public interface HpcMetadataDAO
 	public List<HpcMetadataLevelAttributes> 
 	getDataObjectMetadataAttributes(String levelLabel, String dataManagementUsername) 
 			                       throws HpcException;
+	
+    /**
+     * Get the latest metadata modification time of a given collection or data-object.
+     *
+     * @param id The collection or data-object ID.
+     * @return The date the last metadata update was done on the collection or data-object
+     * @throws HpcException on database error.
+     */
+	public Calendar getMetadataModifiedAt(int id) throws HpcException;
     
     /**
      * Refresh all materialized views.

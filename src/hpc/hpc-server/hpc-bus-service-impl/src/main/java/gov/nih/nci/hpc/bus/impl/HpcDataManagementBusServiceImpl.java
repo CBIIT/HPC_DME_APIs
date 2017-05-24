@@ -192,7 +192,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	HpcCollection collection = dataManagementService.getCollection(path, list != null ? list : false);
+    	HpcCollection collection = dataManagementService.getCollection(path, list != null ? list : false, true);
     	if(collection == null) {
       	   return null;
       	}
@@ -249,7 +249,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      	}
     	
     	// Get the collection.
-    	HpcCollection collection = dataManagementService.getCollection(path, true);
+    	HpcCollection collection = dataManagementService.getCollection(path, true, false);
     	if(collection == null) {
     	   throw new HpcException("Collection doesn't exist: " + path,
 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
@@ -279,7 +279,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	validatePermissionsRequest(collectionPermissionsRequest);
     	
     	// Validate the collection exists.
-    	if(dataManagementService.getCollection(path, false) == null) {
+    	if(dataManagementService.getCollection(path, false, false) == null) {
     	   throw new HpcException("Collection doesn't exist: " + path,
                                   HpcErrorType.INVALID_REQUEST_INPUT);	
       	}
@@ -306,7 +306,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Validate the collection exists.
-    	if(dataManagementService.getCollection(path, false) == null) {
+    	if(dataManagementService.getCollection(path, false, false) == null) {
       	   return null;
       	}
     	
@@ -326,7 +326,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      	}
 
     	// Validate the collection exists.
-    	if(dataManagementService.getCollection(path, false) == null) {
+    	if(dataManagementService.getCollection(path, false, false) == null) {
       	   return null;
       	}
     	HpcSubjectPermission permission = dataManagementService.getCollectionPermissionForUser(path, userId);
@@ -433,7 +433,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Get the data object.
-    	HpcDataObject dataObject = dataManagementService.getDataObject(path);
+    	HpcDataObject dataObject = dataManagementService.getDataObject(path, true);
     	if(dataObject == null) {
       	   return null;
       	}
@@ -464,7 +464,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Validate the data object exist.
-    	if(dataManagementService.getDataObject(path) == null) {
+    	if(dataManagementService.getDataObject(path, false) == null) {
     	   throw new HpcException("Data object doesn't exist: " + path,
                                   HpcErrorType.INVALID_REQUEST_INPUT);	
       	}
@@ -506,7 +506,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	validatePermissionsRequest(dataObjectPermissionsRequest);
     	
     	// Validate the data object exists.
-    	if(dataManagementService.getDataObject(path) == null) {
+    	if(dataManagementService.getDataObject(path, false) == null) {
     	   throw new HpcException("Data object doesn't exist: " + path,
                                   HpcErrorType.INVALID_REQUEST_INPUT);
       	}
@@ -533,7 +533,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      	}
     	
     	// Validate the data object exists.
-    	if(dataManagementService.getDataObject(path) == null) {
+    	if(dataManagementService.getDataObject(path, false) == null) {
       	   return null;
       	}
     	
@@ -553,7 +553,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      	}
 
     	// Validate the collection exists.
-    	if(dataManagementService.getDataObject(path) == null) {
+    	if(dataManagementService.getDataObject(path, false) == null) {
       	   return null;
       	}
     	HpcSubjectPermission permission = dataManagementService.getDataObjectPermissionForUser(path, userId);
@@ -812,7 +812,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Iterate through the sub-collections and download them.
 		for(HpcCollectionListingEntry subCollectionEntry : collection.getSubCollections()) {
 			String subCollectionPath = subCollectionEntry.getPath();
-			HpcCollection subCollection = dataManagementService.getCollection(subCollectionPath, true);
+			HpcCollection subCollection = dataManagementService.getCollection(subCollectionPath, true, false);
 	    	if(subCollection != null) {
 	    	   // Download this sub-collection. 
 			   dataObjectDownloadResponses.getDownloadReceipts().addAll(
@@ -1054,7 +1054,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	collectionTreeEntry.setPath(path);
     	
     	// Get the collection.
-    	HpcCollection collection = dataManagementService.getCollection(path, true);
+    	HpcCollection collection = dataManagementService.getCollection(path, true, false);
     	if(collection == null) {
       	   throw new HpcException("Failed to get collection: " + path, 
       			                  HpcErrorType.DATA_MANAGEMENT_ERROR);
