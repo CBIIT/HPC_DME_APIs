@@ -31,8 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -206,9 +204,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	// SQL Maps from operators to queries and filters.
 	HpcSQLMaps dataObjectSQL = new HpcSQLMaps();
 	HpcSQLMaps collectionSQL = new HpcSQLMaps();
-	
-    // The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -403,10 +398,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			 Calendar modifiedAt = Calendar.getInstance();
 			 modifiedAt.setTimeInMillis(1000 * 
 					                    jdbcTemplate.queryForObject(GET_METADATA_MODIFIED_AT_SQL, objectIdRowMapper, id));
-		     
-		     logger.error("ERAN: id: " + id);
-		     logger.error("ERAN: long: |" + jdbcTemplate.queryForObject(GET_METADATA_MODIFIED_AT_SQL, objectIdRowMapper, id) + "|");
-		     logger.error("ERAN: cal: " + modifiedAt);
 		     return modifiedAt;
 		     
 		} catch(DataAccessException e) {
