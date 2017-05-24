@@ -398,7 +398,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     public Calendar getMetadataModifiedAt(int id) throws HpcException
     {
 		try {
-		     String modifiedAtStr = jdbcTemplate.queryForObject(GET_METADATA_MODIFIED_AT_SQL, objectIdRowMapper);
+		     String modifiedAtStr = jdbcTemplate.queryForObject(GET_METADATA_MODIFIED_AT_SQL, objectIdRowMapper, id);
 		     if(StringUtils.isEmpty(modifiedAtStr)) {
 		    	return null;
 		     }
