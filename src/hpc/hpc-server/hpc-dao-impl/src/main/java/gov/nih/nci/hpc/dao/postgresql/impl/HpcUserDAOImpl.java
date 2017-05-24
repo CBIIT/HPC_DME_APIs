@@ -20,7 +20,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -209,11 +208,11 @@ public class HpcUserDAOImpl implements HpcUserDAO
 			nciAccount.setDoc(rs.getString("DOC"));
 			
         	HpcUser user = new HpcUser();
-        	Calendar created = new GregorianCalendar();
+        	Calendar created = Calendar.getInstance();
         	created.setTime(rs.getDate("CREATED"));
         	user.setCreated(created);
         	
-        	Calendar lastUpdated = new GregorianCalendar();
+        	Calendar lastUpdated = Calendar.getInstance();
         	lastUpdated.setTime(rs.getDate("LAST_UPDATED"));
         	user.setLastUpdated(lastUpdated);
         	

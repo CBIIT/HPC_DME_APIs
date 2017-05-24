@@ -27,7 +27,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -401,8 +400,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     public Calendar getMetadataModifiedAt(int id) throws HpcException
     {
 		try {
-			 Calendar modifiedAt = new GregorianCalendar();
-			 modifiedAt.setTimeInMillis(jdbcTemplate.queryForObject(GET_METADATA_MODIFIED_AT_SQL, objectIdRowMapper, id));
+			 Calendar modifiedAt = Calendar.getInstance();
+			 modifiedAt.setTimeInMillis(1000 * 
+					                    jdbcTemplate.queryForObject(GET_METADATA_MODIFIED_AT_SQL, objectIdRowMapper, id));
 		     
 		     logger.error("ERAN: id: " + id);
 		     logger.error("ERAN: long: |" + jdbcTemplate.queryForObject(GET_METADATA_MODIFIED_AT_SQL, objectIdRowMapper, id) + "|");

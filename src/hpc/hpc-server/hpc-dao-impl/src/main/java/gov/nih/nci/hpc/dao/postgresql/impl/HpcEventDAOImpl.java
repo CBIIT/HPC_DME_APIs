@@ -21,7 +21,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.json.simple.JSONObject;
@@ -207,7 +206,7 @@ public class HpcEventDAOImpl implements HpcEventDAO
 			event.setType(HpcEventType.fromValue(rs.getString("TYPE")));
 			event.getPayloadEntries().addAll(fromJSON(encryptor.decrypt(rs.getBytes("PAYLOAD"))));
 			
-        	Calendar created = new GregorianCalendar();
+        	Calendar created = Calendar.getInstance();
         	created.setTime(rs.getTimestamp("CREATED"));
         	event.setCreated(created);
             
