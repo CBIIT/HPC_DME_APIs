@@ -23,7 +23,6 @@ import gov.nih.nci.hpc.exception.HpcException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -398,7 +397,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		public HpcNotificationDeliveryReceipt mapRow(ResultSet rs, int rowNum) throws SQLException 
 		{
 			HpcNotificationDeliveryReceipt notificationDelivertReceipt = new HpcNotificationDeliveryReceipt();
-        	Calendar delivered = new GregorianCalendar();
+        	Calendar delivered = Calendar.getInstance();
         	delivered.setTime(rs.getTimestamp("DELIVERED"));
 			notificationDelivertReceipt.setDelivered(delivered);
 			notificationDelivertReceipt.setDeliveryStatus(rs.getBoolean("DELIVERY_STATUS"));
