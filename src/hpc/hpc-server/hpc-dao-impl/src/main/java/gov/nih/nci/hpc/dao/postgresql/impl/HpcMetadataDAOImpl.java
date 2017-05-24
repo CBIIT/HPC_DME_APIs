@@ -190,7 +190,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 			" group by level_label order by level_label";
 	
 	private static final String GET_METADATA_MODIFIED_AT_SQL = 
-			"select max(modify_ts) from public.\"r_objt_metamap\" where object_id = ?";
+			"select max(cast(modify_ts, bigint)) from public.\"r_objt_metamap\" where object_id = ?";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -202,7 +202,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	
 	// Row mappers.
 	private SingleColumnRowMapper<String> objectPathRowMapper = new SingleColumnRowMapper<>();
-	private SingleColumnRowMapper<String> objectIdRowMapper = new SingleColumnRowMapper<>();
+	private SingleColumnRowMapper<Long> objectIdRowMapper = new SingleColumnRowMapper<>();
 	private HpcMetadataLevelAttributesRowMapper metadataLevelAttributeRowMapper = new HpcMetadataLevelAttributesRowMapper();
 	HpcMetadataEntryRowMapper metadataEntryRowMapper = new HpcMetadataEntryRowMapper();
 	
@@ -403,16 +403,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     public Calendar getMetadataModifiedAt(int id) throws HpcException
     {
 		try {
-		     String modifiedAtStr = jdbcTemplate.queryForObject(GET_METADATA_MODIFIED_AT_SQL, objectIdRowMapper, id);
-		     if(StringUtils.isEmpty(modifiedAtStr)) {
-		    	return null;
-		     }
+			 Calendar modifiedAt = new GregorianCalendar();
+			 modifiedAt.setTime(new Date(jdbcTemplate.queryForObject(GET_METADATA_MODIFIED_AT_SQL, objectIdRowMapper, id)));
 		     
 		     logger.error("ERAN: id: " + id);
-		     logger.error("ERAN: str: |" + modifiedAtStr + "|");
-		     
-		     Calendar modifiedAt = new GregorianCalendar();
-		     modifiedAt.setTime(new Date(Long.valueOf(modifiedAtStr)));
+		     logger.error("ERAN: long: |" + jdbcTemplate.queryForObject(GET_METADATA_MODIFIED_AT_SQL, objectIdRowMapper, id) + "|");
 		     
 		     return modifiedAt;
 		     
