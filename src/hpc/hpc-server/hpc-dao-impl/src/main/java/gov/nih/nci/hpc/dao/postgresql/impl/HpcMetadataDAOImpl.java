@@ -27,7 +27,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +39,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
-import org.springframework.util.StringUtils;
 
 /**
  * <p>
@@ -404,11 +402,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     {
 		try {
 			 Calendar modifiedAt = new GregorianCalendar();
-			 modifiedAt.setTime(new Date(jdbcTemplate.queryForObject(GET_METADATA_MODIFIED_AT_SQL, objectIdRowMapper, id)));
+			 modifiedAt.setTimeInMillis(jdbcTemplate.queryForObject(GET_METADATA_MODIFIED_AT_SQL, objectIdRowMapper, id));
 		     
 		     logger.error("ERAN: id: " + id);
 		     logger.error("ERAN: long: |" + jdbcTemplate.queryForObject(GET_METADATA_MODIFIED_AT_SQL, objectIdRowMapper, id) + "|");
-		     
+		     logger.error("ERAN: cal: " + modifiedAt);
 		     return modifiedAt;
 		     
 		} catch(DataAccessException e) {
