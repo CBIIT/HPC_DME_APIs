@@ -26,6 +26,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +38,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.util.StringUtils;
 
 /**
  * <p>
@@ -183,6 +187,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL = 
 			" group by level_label order by level_label";
 	
+	private static final String GET_METADATA_MODIFIED_AT_SQL = 
+			"select max(modify_ts) from public.\"r_objt_metamap\" where object_id = ?;";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -193,6 +200,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	
 	// Row mappers.
 	private SingleColumnRowMapper<String> objectPathRowMapper = new SingleColumnRowMapper<>();
+	private SingleColumnRowMapper<String> objectIdRowMapper = new SingleColumnRowMapper<>();
 	private HpcMetadataLevelAttributesRowMapper metadataLevelAttributeRowMapper = new HpcMetadataLevelAttributesRowMapper();
 	HpcMetadataEntryRowMapper metadataEntryRowMapper = new HpcMetadataEntryRowMapper();
 	
@@ -384,6 +392,27 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     	return getMetadataAttributes(GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL, 
     			                     levelLabel, dataManagementUsername, 
     			                     DATA_OBJECT_LEVEL_LABEL_EQUAL_FILTER);
+    }
+    
+    @Override
+    public Calendar getMetadataModifiedAt(int id) throws HpcException
+    {
+		try {
+		     String modifiedAtStr = jdbcTemplate.queryForObject(GET_METADATA_MODIFIED_AT_SQL, objectIdRowMapper);
+		     if(StringUtils.isEmpty(modifiedAtStr)) {
+		    	return null;
+		     }
+		     
+		     Calendar modifiedAt = new GregorianCalendar();
+		     modifiedAt.setTime(new Date(Long.valueOf(modifiedAtStr)));
+		     
+		     return modifiedAt;
+		     
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get collection/data-object Paths: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		}		   	
     }
     
 	@Override

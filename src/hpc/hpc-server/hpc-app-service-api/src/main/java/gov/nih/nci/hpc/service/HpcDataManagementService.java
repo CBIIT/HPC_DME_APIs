@@ -147,13 +147,16 @@ public interface HpcDataManagementService
      *
      * @param path The collection's path.
      * @param list An indicator to list sub-collections and data-objects.
+     * @param metadataModifiedAt If set to 'true' the value of the collection's modifiedAt is set to the time the 
+     *                           last metadata update occurred. 
      * @return A collection.
      * @throws HpcException on service failure.
      */
-    public HpcCollection getCollection(String path, boolean list) throws HpcException;
+    public HpcCollection getCollection(String path, boolean list, boolean metadataModifiedAt) 
+    		                          throws HpcException;
     
     /**
-     * Get collection children by its path. No collection metadata is returned
+     * Get collection children by its path. No collection metadata is returned.
      *
      * @param path The collection's path.
      * @return A collection.
@@ -166,9 +169,12 @@ public interface HpcDataManagementService
      *
      * @param path The data object's path.
      * @return A data object.
+     * @param metadataUpdatedAt If set to 'true' the value of the dataObjects's updatedAt is set to the time the 
+     *                          last metadata update occurred, otherwise the date of the last physical data update is returned.
+     *                          Note: in HPC-DM data update is currently not supported. 
      * @throws HpcException on service failure.
      */
-    public HpcDataObject getDataObject(String path) throws HpcException;
+    public HpcDataObject getDataObject(String path, boolean metadataUpdatedAt) throws HpcException;
     
     /**
      * Get data objects that have their data transfer in-progress.

@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
+import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
@@ -72,6 +73,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	// DOC configuration locator.
 	@Autowired
 	private HpcDocConfigurationLocator docConfigurationLocator = null;
+	
+    // The Metadata DAO instance.
+	@Autowired
+    private HpcMetadataDAO metadataDAO = null;
 	
 	// Prepared query to get data objects that have their data transfer in-progress to archive.
 	private List<HpcMetadataQuery> dataTransferInProgressToArchiveQuery = new ArrayList<>();
@@ -326,11 +331,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public HpcCollection getCollection(String path, boolean list) throws HpcException
+    public HpcCollection getCollection(String path, boolean list, boolean metadataModifiedAt) 
+    		                          throws HpcException
     {
     	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
     	if(dataManagementProxy.getPathAttributes(authenticatedToken, path).getIsDirectory()) {
-    	   return dataManagementProxy.getCollection(authenticatedToken, path, list);
+    	   HpcCollection collection = dataManagementProxy.getCollection(authenticatedToken, path, list);
+    	   
+    	   if(metadataModifiedAt) {
+    		  // Asked to use the latest metadata modification time as 'Modified At'.
+    		  collection.setModifiedAt(metadataDAO.getMetadataModifiedAt(collection.getCollectionId()));
+    	   }
+    	   
+    	   return collection;
     	}
     	
     	return null;
@@ -344,11 +357,18 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
 
     @Override
-    public HpcDataObject getDataObject(String path) throws HpcException
+    public HpcDataObject getDataObject(String path, boolean lastUpdatedAt) throws HpcException
     {
     	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
     	if(dataManagementProxy.getPathAttributes(authenticatedToken, path).getIsFile()) {
-    	   return dataManagementProxy.getDataObject(authenticatedToken, path);
+    	   HpcDataObject dataObject = dataManagementProxy.getDataObject(authenticatedToken, path);
+    	   
+    	   if(lastUpdatedAt) {
+    		  // Asked to use the latest metadata modification time as 'Updated At'.
+    		  dataObject.setUpdatedAt(metadataDAO.getMetadataModifiedAt(dataObject.getId()));
+    	   }
+    	   
+    	   return dataObject;
     	}
     	
     	return null;
