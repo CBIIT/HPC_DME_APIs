@@ -409,7 +409,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		     }
 		     
 		     logger.error("ERAN: id: " + id);
-		     logger.error("ERAN: str: " + modifiedAtStr);
+		     logger.error("ERAN: str: |" + modifiedAtStr + "|");
 		     
 		     Calendar modifiedAt = new GregorianCalendar();
 		     modifiedAt.setTime(new Date(Long.valueOf(modifiedAtStr)));
