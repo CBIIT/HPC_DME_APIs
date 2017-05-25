@@ -99,7 +99,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 
 	//USAGE_SUMMARY_BY_DOC
 	private static final String SUM_OF_DATA_BY_DOC_SQL = 
-			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name = 'source_file_size' and b.object_id = c.data_id and b.object_id in " +
+			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name = 'source_file_size' and a.meta_id = b.meta_id and b.object_id in " +
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c  where a.meta_attr_name='registered_by_doc' and b.object_id=c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id = c.data_id)";
 
 	private static final String LARGEST_FILE_BY_DOC_SQL = 
@@ -107,7 +107,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id)";
 
 	private static final String AVERAGE_FILE_BY_DOC_SQL = 
-			"SELECT avg(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name = 'source_file_size' and b.object_id = c.data_id and b.object_id in " +
+			"SELECT avg(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name = 'source_file_size' and a.meta_id = b.meta_id and b.object_id in " +
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by_doc' and b.object_id=c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id)";
 
 	private static final String TOTAL_NUM_OF_USERS_BY_DOC_SQL = 
@@ -126,12 +126,12 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id) ";
 
 	private static final String FILE_SIZE_RANGE_BY_DOC_SQL = 
-			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b, r_data_main c  where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and b.object_id = c.data_id and b.object_id in " +
+			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b  where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ?  and b.object_id in " +
 					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id = c.data_id)";
 	
 	//USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE
 	private static final String SUM_OF_DATA_BY_DOC_DATE_SQL = 
-			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name = 'source_file_size' and b.object_id = c.data_id and b.object_id in " +
+			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name = 'source_file_size' and b.meta_id = a.meta_id and b.object_id in " +
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by_doc' and b.object_id=c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id = c.data_id " +
 			") and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
 
@@ -140,7 +140,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String AVERAGE_FILE_BY_DOC_DATE_SQL = 
-			"SELECT avg(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name = 'source_file_size' and b.object_id = c.data_id and b.object_id in " +
+			"SELECT avg(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name = 'source_file_size' and a.meta_id = b.meta_id and b.object_id in " +
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by_doc' and b.object_id=c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id = c.data_id " +
 			") and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
@@ -161,7 +161,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(a.create_ts as double precision) BETWEEN ? AND ? ";
 
 	private static final String FILE_SIZE_RANGE_BY_DOC_DATE_SQL = 
-			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and b.object_id = c.data_id and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and b.object_id in " +
+			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and b.object_id in " +
 					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c  where a.meta_attr_name='registered_by_doc' and b.object_id = c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
 	
 	//USAGE_SUMMARY_BY_USER
@@ -190,7 +190,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id) ";
 
 	private static final String FILE_SIZE_RANGE_BY_USER_SQL = 
-			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and b.object_id = c.data_id  and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and b.object_id in " +
+			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and b.object_id in " +
 					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by' and b.object_id = c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id)";
 	
 	//USAGE_SUMMARY_BY_USER_BY_DATE_RANGE
@@ -219,7 +219,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String FILE_SIZE_RANGE_BY_USER_DATE_SQL = 
-			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and b.object_id = c.data_id and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and b.object_id in " +
+			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and b.object_id in " +
 					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by' and a.meta_attr_value=? and b.object_id = c.data_id and a.meta_id=b.meta_id ) and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
 	
 	private static final String USERS_SQL = "select \"USER_ID\" from public.\"HPC_USER\"";
