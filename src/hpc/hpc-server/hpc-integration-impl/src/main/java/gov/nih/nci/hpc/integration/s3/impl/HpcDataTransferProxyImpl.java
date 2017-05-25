@@ -20,8 +20,6 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import java.util.Calendar;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -56,9 +54,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	@Autowired
 	@Qualifier("hpcS3ArchiveDestination")
 	HpcArchive baseArchiveDestination = null;
-	
-    // The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -116,9 +111,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     			                archiveDestinationLocation.getFileId(), 
     			                uploadRequest.getSourceFile()).withMetadata(objectMetadata); 
     	
-    	logger.error("ERAN: headers before: " + request.getCustomRequestHeaders());
-    	logger.error("ERAN: metadata before: " + request.getMetadata());
-    	
     	// Upload the data.
     	Upload s3Upload = null;
     	UploadResult s3UploadResult = null;
@@ -135,9 +127,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     			     s3Upload.addProgressListener(new HpcS3ProgressListener(progressListener));
     		 }
     		 
-    		 logger.error("ERAN: headers after: " + request.getCustomRequestHeaders());
-    	     logger.error("ERAN: metadata after: " + request.getMetadata());
-        	
         } catch(AmazonClientException ace) {
         	    throw new HpcException("[S3] Failed to upload file.", 
         	    		               HpcErrorType.DATA_TRANSFER_ERROR, ace);
