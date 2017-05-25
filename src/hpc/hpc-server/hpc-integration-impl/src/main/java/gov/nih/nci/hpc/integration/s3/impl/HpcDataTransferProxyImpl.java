@@ -20,6 +20,8 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import java.util.Calendar;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -54,6 +56,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	@Autowired
 	@Qualifier("hpcS3ArchiveDestination")
 	HpcArchive baseArchiveDestination = null;
+	
+    // The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -110,6 +115,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	   new PutObjectRequest(archiveDestinationLocation.getFileContainerId(), 
     			                archiveDestinationLocation.getFileId(), 
     			                uploadRequest.getSourceFile()).withMetadata(objectMetadata); 
+    	
+    	logger.error("ERAN: headers: " + request.getCustomRequestHeaders());
     	
     	// Upload the data.
     	Upload s3Upload = null;
