@@ -1,0 +1,5 @@
+putCollections --source samples/Batch_Upload_Input_File_Collections.csv
+putDatafiles --source samples/Batch_Upload_Input_File_Object.csv
+putPermissions --source samples/Batch_Permissions.csv
+registerFromFilePath --filePath C:\\DEV\\scripts --filePathBaseName scripts --destinationBasePath NO_HIERARCHY
+registerFromGlobusPath --globusEndpoint 852466ba-e409-11e6-b914-22000b9a448b --globusPath /demo3 --destinationBasePath NO_HIERARCHY
