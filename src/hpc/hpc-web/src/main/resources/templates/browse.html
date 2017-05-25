@@ -49,7 +49,9 @@
 <script src="js/tree.jquery.js"></script>
 <link rel="stylesheet" href="css/ui-grid.css"
 	type="text/css" />
-	
+<script
+	src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+
 <script th:inline="javascript">
 /*<![CDATA[*/
     var start = "[";
@@ -59,8 +61,6 @@
 /*]]>*/
 </script>
 	
-
-
 <style>
 /*style.css*/
 .gridStyle {
@@ -119,9 +119,17 @@
 					<div class="col-lg-9 col-md-12">
 						<div class="panel panel-default">
 							<div class="panel-heading">
+								<div class="col-md-3">
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>Browse</strong>
 								</h2>
+								</div>
+								<div class="col-md-3 col-md-offset-6">
+								<h2>
+									<strong> <a id="refreshBrowse" class="btn btn-link btn-sm" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="bookmarks" class="btn btn-link btn-sm" th:href="@{/bookmarks}" data-target="#bookmarksTarget"><i class="fa fa-star" title="Bookmarks" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="browsepartial" class="btn btn-link btn-sm" th:href="@{/browse?partial}" data-target="#browsePartial"><i class="fa fa-sitemap" title="Browse" aria-hidden="true"></i></a></strong>
+								</h2>
+								</div>
+								
 							</div>
 							<div th:if="${error != null}">
 								<div class="alert alert-error">
@@ -132,6 +140,23 @@
 							<div th:if="${error == null}">
 								<!--panel-body start-->
 								<div class="panel-body">
+									<div class="modal fade" id="bookmarksTarget" tabindex="-1" role="dialog"
+										aria-labelledby="bookmarksLabel" aria-hidden="true">
+										<div class="modal-dialog">
+											<div class="modal-content"></div>
+											<!-- /.modal-content -->
+										</div>
+										<!-- /.modal-dialog -->
+									</div>								
+									<div class="modal fade" id="browsePartial" tabindex="-1" role="dialog"
+										aria-labelledby="browsePartialLabel" aria-hidden="true">
+										<div class="modal-dialog">
+											<div class="modal-content"></div>
+											<!-- /.modal-content -->
+										</div>
+										<!-- /.modal-dialog -->
+									</div>								
+								
 									<div class="form-group">
 										<div id="tree1"></div>										
 									</div>
@@ -180,29 +205,13 @@ $(function() {
         saveState: true,
         onCreateLi: function(node, $li) {
             if (node.collection) {
-//            	if(node.fullPath == basePathName)
-//            		{
-//            		    $('#tree1').tree('closeNode', node);
-//	            	    $li.addClass('data-jstree');
-//	            	    $li.attr('opened', 'false');
-//            		}
                 $li.find('.jqtree-title').before('<span class="folder-icon"></span>');
-               // $li.find('.jqtree-title').after('<span id="' + ("processingIcon"+node.id) + '" style="display:inline; visibility:hidden"><img class="manImg" width="40" height="40" src="img/spinner.gif"></img></span>');
-                //$li.find('.jqtree-title').after('<span id="' + ("processingIcon"+node.id) + '" style="display:inline; visibility:hidden" class="loader"></span>');
                 $li.find('.jqtree-title').after('<div id="' + ("processingIcon"+node.id) + '" style="display:inline-block; visibility:hidden" class="loader"></div>');
             }
         }        
     });
 });
 
-/*
-$('#tree1').bind(
-	    'tree.init',
-	    function(event) {
-	        alert("init " +event.node.id);
-	    }
-	);
-	*/
 //bind 'tree.click' event
 $('#tree1').bind(
     'tree.click',
@@ -216,22 +225,9 @@ $('#tree1').bind(
     }
 );
 
-/*
-    $('#tree1').tree({
-    	onLoading: function (is_loading, node, $el) {
-    		alert("is_loading " + is_loading);
-    		document.getElementById("selectedNodeId").value = node.id;
-    		$("#browseForm").submit();
-        }        
-    });
-*/
-
-
 $('#tree1').bind('tree.open', function (e,data) {  
 	document.getElementById("selectedNodePath").value = e.node.fullPath;
 	var node = e.node;
-	//$('#tree1').tree('closeNode', node, false);
-	//	var nodeId = $("#tree1").tree('getSelectedNode').toString();
     document.getElementById("processingIcon"+node.id).style.visibility = "visible";
 	document.getElementById("selectedNodeId").value = node.id;
 	$("#browseForm").submit();

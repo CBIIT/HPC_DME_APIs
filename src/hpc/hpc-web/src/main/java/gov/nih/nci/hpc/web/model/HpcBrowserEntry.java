@@ -30,6 +30,9 @@ public class HpcBrowserEntry {
 	@JsonView(Views.Public.class)
 	private boolean populated;
 
+	@JsonView(Views.Public.class)
+	private boolean partial;
+
 	public String getId() {
 		return id;
 	}
@@ -94,5 +97,13 @@ public class HpcBrowserEntry {
 
 	public void setFullPath(String fullPath) {
 		this.fullPath = fullPath;
+	}
+
+	public boolean isPartial() {
+		return partial;
+	}
+
+	public void setPartial(boolean partial) {
+		this.partial = partial;
 	}
 }
