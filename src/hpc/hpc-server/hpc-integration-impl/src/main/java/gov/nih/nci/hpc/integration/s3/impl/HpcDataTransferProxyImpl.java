@@ -116,7 +116,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     			                archiveDestinationLocation.getFileId(), 
     			                uploadRequest.getSourceFile()).withMetadata(objectMetadata); 
     	
-    	logger.error("ERAN: headers: " + request.getCustomRequestHeaders());
+    	logger.error("ERAN: headers before: " + request.getCustomRequestHeaders());
+    	logger.error("ERAN: metadata before: " + request.getMetadata());
     	
     	// Upload the data.
     	Upload s3Upload = null;
@@ -133,6 +134,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     			     // Upload asynchronously
     			     s3Upload.addProgressListener(new HpcS3ProgressListener(progressListener));
     		 }
+    		 
+    		 logger.error("ERAN: headers after: " + request.getCustomRequestHeaders());
+    	     logger.error("ERAN: metadata after: " + request.getMetadata());
         	
         } catch(AmazonClientException ace) {
         	    throw new HpcException("[S3] Failed to upload file.", 
