@@ -162,11 +162,14 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
                                                              path);
        	validateCollectionTypeUpdate(existingMetadataEntries, metadataEntries);
        	
-       	// Validate Metadata.
+       	// Validate the metadata.
        	metadataValidator.validateCollectionMetadata(doc, existingMetadataEntries,
        			                                     metadataEntries);
        	
-       	// Add Metadata to the DM system.
+        // Update the 'metadata updated' system-metadata to record the time of this metadata update.
+       	metadataEntries.add(generateMetadataUpdatedMetadata());
+       	
+       	// Update the metadata.
        	dataManagementProxy.updateCollectionMetadata(dataManagementAuthenticator.getAuthenticatedToken(),
        			                                     path, metadataEntries);
     }
@@ -535,14 +538,17 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
-       	// Validate Metadata.
+       	// Validate the metadata.
        	metadataValidator.validateDataObjectMetadata(doc,
        			                                     dataManagementProxy.getDataObjectMetadata(
        			                                         dataManagementAuthenticator.getAuthenticatedToken(),
                                                          path),
        			                                     metadataEntries);
        	
-       	// Update Metadata.
+       	// Update the 'metadata updated' system-metadata to record the time of this metadata update.
+       	metadataEntries.add(generateMetadataUpdatedMetadata());
+       	
+       	// Update the metadata.
        	dataManagementProxy.updateDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(),
        			                                     path, metadataEntries);
     }
