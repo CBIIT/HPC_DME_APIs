@@ -937,10 +937,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	    createdAt.setTime(irodsCollection.getCreatedAt());
 	    hpcCollection.setCreatedAt(createdAt);
 	    
-	    Calendar modifiedAt = Calendar.getInstance();
-	    modifiedAt.setTime(irodsCollection.getModifiedAt());
-	    hpcCollection.setModifiedAt(modifiedAt);
-	    
 	    if(listingEntries != null) {
 	       for(CollectionAndDataObjectListingEntry listingEntry : listingEntries) {
 	    	   HpcCollectionListingEntry hpcCollectionListingEntry = new HpcCollectionListingEntry();
@@ -984,12 +980,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
 	    if(irodsDataObject.getCreatedAt() != null) {
 	       createdAt.setTime(irodsDataObject.getCreatedAt());
 	       hpcDataObject.setCreatedAt(createdAt);
-	    }
-	    
-	    Calendar updatedAt = Calendar.getInstance();
-	    if(irodsDataObject.getUpdatedAt() != null) {
-	       updatedAt.setTime(irodsDataObject.getUpdatedAt());
-	       hpcDataObject.setUpdatedAt(updatedAt);
 	    }
 	    
 	    return hpcDataObject;

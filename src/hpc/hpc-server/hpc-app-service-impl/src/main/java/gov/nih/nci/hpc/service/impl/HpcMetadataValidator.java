@@ -62,6 +62,7 @@ public class HpcMetadataValidator
 	public static final String SOURCE_FILE_SIZE_ATTRIBUTE = "source_file_size";
 	public static final String CALLER_OBJECT_ID_ATTRIBUTE = "archive_caller_object_id";
 	public static final String CHECKSUM_ATTRIBUTE = "checksum";
+	public static final String METADATA_UPDATED_ATTRIBUTE = "metadata_updated";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -94,10 +95,10 @@ public class HpcMetadataValidator
 	            		           DATA_TRANSFER_STATUS_ATTRIBUTE, DATA_TRANSFER_TYPE_ATTRIBUTE,
 	            		           DATA_TRANSFER_STARTED_ATTRIBUTE, DATA_TRANSFER_COMPLETED_ATTRIBUTE, 
 	            		           SOURCE_FILE_SIZE_ATTRIBUTE, CALLER_OBJECT_ID_ATTRIBUTE, 
-	            		           CHECKSUM_ATTRIBUTE);
+	            		           CHECKSUM_ATTRIBUTE, METADATA_UPDATED_ATTRIBUTE);
     	List<String> collectionAttributes = 
     			     Arrays.asList(ID_ATTRIBUTE, REGISTRAR_ID_ATTRIBUTE, REGISTRAR_NAME_ATTRIBUTE,
-		                           REGISTRAR_DOC_ATTRIBUTE);
+		                           REGISTRAR_DOC_ATTRIBUTE, METADATA_UPDATED_ATTRIBUTE);
 	         
         systemGeneratedMetadataAttributes.addAll(attributes);
 	    collectionSystemGeneratedMetadataAttributeNames.addAll(collectionAttributes);

@@ -28,6 +28,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_NAME_A
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_SIZE_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.METADATA_UPDATED_ATTRIBUTE;
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
@@ -185,6 +186,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	// Generate a collection ID and add it as metadata.
        	metadataEntries.add(generateIdMetadata());
        	
+       	// Create the Metadata-Updated metadata.
+       	metadataEntries.add(generateMetadataUpdatedMetadata());
+       	
        	// Create and add the registrar ID, name and DOC metadata.
        	metadataEntries.addAll(generateRegistrarMetadata());
        	
@@ -274,6 +278,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     	systemGeneratedMetadata.setCallerObjectId(
       		  metadataMap.get(CALLER_OBJECT_ID_ATTRIBUTE));
     	systemGeneratedMetadata.setChecksum(metadataMap.get(CHECKSUM_ATTRIBUTE));
+    	
+    	if(metadataMap.get(METADATA_UPDATED_ATTRIBUTE) != null) {
+     	   systemGeneratedMetadata.setMetadataUpdated(toCalendar(metadataMap.get(METADATA_UPDATED_ATTRIBUTE)));
+     	}
     		  
 		return systemGeneratedMetadata;
 	}
@@ -355,6 +363,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	
        	// Generate a data-object ID and add it as metadata.
        	metadataEntries.add(generateIdMetadata());
+       	
+       	// Create the Metadata-Updated metadata.
+       	metadataEntries.add(generateMetadataUpdatedMetadata());
        	
        	// Create and add the registrar ID, name and DOC metadata.
        	metadataEntries.addAll(generateRegistrarMetadata());
@@ -583,6 +594,17 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     private HpcMetadataEntry generateIdMetadata()
     {
     	return toMetadataEntry(ID_ATTRIBUTE, keyGenerator.generateKey());
+    }
+    
+    /**
+     * Generate Metadata Updated Metadata.
+     *
+     * @return The Generated ID metadata. 
+     */
+    private HpcMetadataEntry generateMetadataUpdatedMetadata()
+    {
+    	return toMetadataEntry(METADATA_UPDATED_ATTRIBUTE, 
+    			               dateFormat.format(Calendar.getInstance().getTime()));
     }
     
     /**
