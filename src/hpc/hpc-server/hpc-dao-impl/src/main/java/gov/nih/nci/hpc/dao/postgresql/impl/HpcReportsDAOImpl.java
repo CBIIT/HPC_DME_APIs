@@ -108,7 +108,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 
 	private static final String AVERAGE_FILE_BY_DOC_SQL = 
 			"SELECT avg(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name = 'source_file_size' and a.meta_id = b.meta_id and b.object_id in " +
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by_doc' and b.object_id=c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id)";
+			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id)";
 
 	private static final String TOTAL_NUM_OF_USERS_BY_DOC_SQL = 
 			"SELECT count(*) totalUsers FROM public.\"HPC_USER\" where \"DOC\"=?";
