@@ -65,13 +65,7 @@ public class HpcScheduledTasksImpl
     private void updateDataTransferUploadStatusTask()
     {
     	executeTask("updateDataTransferUploadStatusTask()", 
-    	            new HpcScheduledTask() 
-    	            {
-    					@Override public void execute() throws HpcException
-    	                {
-    						systemBusService.updateDataTransferUploadStatus();
-    	                }
-    	            });
+    			    systemBusService::updateDataTransferUploadStatus);
     }
     
     /**
@@ -83,13 +77,7 @@ public class HpcScheduledTasksImpl
     private void processTemporaryArchiveTask()
     {
     	executeTask("processTemporaryArchiveTask()", 
-		            new HpcScheduledTask() 
-		            {
-						@Override public void execute() throws HpcException
-		                {
-							systemBusService.processTemporaryArchive();
-		                }
-		            });
+    			    systemBusService::processTemporaryArchive);
     }
     
     /**
@@ -100,13 +88,7 @@ public class HpcScheduledTasksImpl
     private void cleanupDataTransferDownloadFilesTask()
     {
     	executeTask("cleanupDataTransferDownloadFilesTask()", 
-		            new HpcScheduledTask() 
-		            {
-						@Override public void execute() throws HpcException
-		                {
-							systemBusService.cleanupDataTransferDownloadFiles();
-		                }
-		            });
+    			    systemBusService::cleanupDataTransferDownloadFiles);
     }
     
     /**
@@ -117,13 +99,7 @@ public class HpcScheduledTasksImpl
     private void generateSummaryReport()
     {
     	executeTask("generateSummaryReport()", 
-		            new HpcScheduledTask() 
-		            {
-						@Override public void execute() throws HpcException
-		                {
-							systemBusService.generateSummaryReportEvent();
-		                }
-		            });
+    			    systemBusService::generateSummaryReportEvent);
     }
     
     /**
@@ -134,13 +110,7 @@ public class HpcScheduledTasksImpl
     private void generateWeeklySummaryReport()
     {
     	executeTask("generateWeeklySummaryReport()", 
-		            new HpcScheduledTask() 
-		            {
-						@Override public void execute() throws HpcException
-		                {
-							systemBusService.generateWeeklySummaryReportEvent();
-		                }
-		            });
+    			    systemBusService::generateWeeklySummaryReportEvent);
     }
 
      /**
@@ -150,14 +120,7 @@ public class HpcScheduledTasksImpl
     @Scheduled(cron = "${hpc.scheduler.cron.processevents.delay}")
     private void processEvents()
     {
-    	executeTask("processEvents()", 
-		            new HpcScheduledTask() 
-		            {
-						@Override public void execute() throws HpcException
-		                {
-							systemBusService.processEvents();
-		                }
-		            });
+    	executeTask("processEvents()", systemBusService::processEvents);
     }
     
     /**
@@ -167,14 +130,7 @@ public class HpcScheduledTasksImpl
     @Scheduled(cron = "${hpc.scheduler.cron.refreshMaterializedViews.delay}")
     private void refreshMetadataViewsTask()
     {
-    	executeTask("refreshMetadataViewsTask()", 
-		            new HpcScheduledTask() 
-		            {
-						@Override public void execute() throws HpcException
-		                {
-							systemBusService.refreshMetadataViews();
-		                }
-		            });
+    	executeTask("refreshMetadataViewsTask()", systemBusService::refreshMetadataViews);
     }
     
     //---------------------------------------------------------------------//
