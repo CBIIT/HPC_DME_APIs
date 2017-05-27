@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -39,11 +40,13 @@ public interface HpcDataManagementProxy
      * Authenticate the invoker w/ the data management system.
      *
      * @param dataManagementAccount The Data Management account to authenticate.
+     * @param authenticationType The authentication type.
      * @return An authenticated token, to be used in subsequent calls to data management.
      *         It returns null if the account is not authenticated.
      * @throws HpcException on data management system failure.
      */
-    public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount) 
+    public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount,
+    		                   HpcAuthenticationType authenticationType) 
     		                  throws HpcException;
     
     /**

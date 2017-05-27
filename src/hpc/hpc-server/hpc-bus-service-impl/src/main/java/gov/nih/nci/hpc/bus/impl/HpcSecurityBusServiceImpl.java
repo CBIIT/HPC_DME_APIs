@@ -270,7 +270,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		                          HpcErrorType.UNAUTHORIZED_REQUEST);
     	}
     	
-    	// Set the request invoker (in thread local)
+    	// Set the request invoker (in thread local).
         setRequestInvoker(nciUserId, 
         		          ldapAuthentication ? HpcAuthenticationType.LDAP : HpcAuthenticationType.NONE,
         		          toDataManagementAccount(nciUserId, password));

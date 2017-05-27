@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.integration.irods.impl;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccountProperty;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -269,24 +270,32 @@ public class HpcIRODSConnection
      * Authenticate an account.
      *
      * @param dataManagementAccount A data management account to authenticate.
+     * @param authenticationType The authentication type.
      * @return An authenticated IRODSAccount object, or null if authentication failed.
      * @throws HpcException on iRODS failure.
      */
-    public IRODSAccount authenticate(HpcIntegratedSystemAccount dataManagementAccount)
+    public IRODSAccount authenticate(HpcIntegratedSystemAccount dataManagementAccount,
+    		                         HpcAuthenticationType authenticationType)
     		                        throws HpcException
     {
     	IRODSAccount irodsAccount = null;
     	try {
-    		 if(!dataManagementAccount.getProperties().isEmpty()) {
-    			// The data management account is already authenticated. Return an iRODS account.
+    		 if(authenticationType.equals(HpcAuthenticationType.TOKEN)) {
+    			// The data management account was previously authenticated. Return an authenticated iRODS account.
     			irodsAccount = toAuthenticatedIrodsAccount(dataManagementAccount);
     			 
     		 } else {
-    			     // Authenticate the data management account.
+    			     // Determine the authentication scheme to use.  if the user is authenticated with LDAP, we
+    			     // use iRODS PAM authentication scheme. Otherwise (LDAP is turned off), we perform standard
+    			     // iRODS authentication.
+    			     AuthScheme authenticationScheme = authenticationType.equals(HpcAuthenticationType.LDAP) ?
+    			    		                           AuthScheme.PAM : AuthScheme.STANDARD;
+    			      
+    			     // Authenticate the data management account.  
 	    	         AuthResponse authResponse = 
 	    	             irodsFileSystem.getIRODSAccessObjectFactory().
 	    			  	                    authenticateIRODSAccount(toUnauthenticatedIrodsAccount(dataManagementAccount,
-	    				                   		                                                   AuthScheme.PAM));
+	    			  	                    		                                               authenticationScheme ));
 	    	         if(authResponse != null) {
 	    		        irodsAccount = authResponse.getAuthenticatedIRODSAccount();
 	    		
