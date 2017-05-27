@@ -295,7 +295,6 @@ public class HPCCmdCollection extends HPCCmdClient {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
 			try {
 				collection.setCreatedAt(dateFormat.format(dto.getCollection().getCreatedAt().getTime()));
-				collection.setModifiedAt(dateFormat.format(dto.getCollection().getModifiedAt().getTime()));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

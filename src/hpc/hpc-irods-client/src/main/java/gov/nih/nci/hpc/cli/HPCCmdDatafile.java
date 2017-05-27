@@ -295,7 +295,6 @@ public class HPCCmdDatafile extends HPCCmdClient {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
 			try {
 				datafile.setCreatedAt(dateFormat.format(dto.getDataObject().getCreatedAt().getTime()));
-				datafile.setModifiedAt(dateFormat.format(dto.getDataObject().getUpdatedAt().getTime()));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
