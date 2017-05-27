@@ -21,6 +21,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
@@ -107,10 +108,11 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     //---------------------------------------------------------------------//  
     
     @Override
-    public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount) 
+    public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount, 
+    		                   HpcAuthenticationType authenticationType) 
 		                      throws HpcException
     {
-    	return irodsConnection.authenticate(dataManagementAccount);
+    	return irodsConnection.authenticate(dataManagementAccount, authenticationType);
     }
     
     @Override
