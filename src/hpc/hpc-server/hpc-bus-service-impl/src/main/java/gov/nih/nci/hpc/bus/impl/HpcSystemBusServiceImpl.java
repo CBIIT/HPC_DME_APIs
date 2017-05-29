@@ -10,6 +10,15 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
+import java.io.File;
+import java.util.Calendar;
+import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.bus.aspect.SystemBusServiceImpl;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
@@ -32,17 +41,7 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
-import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
-
-import java.io.File;
-import java.util.Calendar;
-import java.util.List;
-
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -87,10 +86,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	// Event Application Service Instance.
 	@Autowired
     private HpcEventService eventService = null;
-	
-	// Report Application Service Instance
-	@Autowired
-    private HpcReportService reportService = null;
 	
 	// Metadata Application Service Instance
 	@Autowired
