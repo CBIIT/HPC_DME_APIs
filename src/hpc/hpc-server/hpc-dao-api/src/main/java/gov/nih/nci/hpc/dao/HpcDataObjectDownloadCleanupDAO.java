@@ -33,7 +33,7 @@ public interface HpcDataObjectDownloadCleanupDAO
      * @throws HpcException on database error.
      */
     public void upsert(HpcDataObjectDownloadCleanup dataObjectDownloadCleanup) 
-    		          throws HpcException;
+    		          throws HpcException; 
     
     /**
      * Delete a data object download cleanup.
