@@ -10,6 +10,15 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -35,18 +44,7 @@ import gov.nih.nci.hpc.dto.security.HpcUserListEntry;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
-import gov.nih.nci.hpc.service.HpcDataManagementService;
-import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -70,13 +68,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 	
 	@Autowired
     private HpcDataManagementSecurityService dataManagementSecurityService = null;
-	
-	@Autowired
-    private HpcDataManagementService dataManagementService = null;
-	
-    // The Data Transfer Service instance.
-	@Autowired
-    private HpcDataTransferService dataTransferService = null;
 	
     //---------------------------------------------------------------------//
     // Constructors
