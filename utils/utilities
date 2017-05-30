@@ -440,7 +440,7 @@ function get_config {
     echo "Cannot find the configuration file $CONFIG_FILE" >&2 
     return 1
   fi
-  return "--config $CONFIG_FILE"
+  echo "--config $CONFIG_FILE"
   
 }
 
