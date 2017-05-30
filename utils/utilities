@@ -43,6 +43,26 @@ function get_json_value {
 }
 
 
+#Return a single value for a given attribute in a java properties file 
+#Inputs:   properties-file-name(or input string)  
+#      :   attribute-name 
+function get_value {
+
+  if [ -z "$1" ] || [ -z "$2" ]
+  then
+      echo "ERROR: using get_value" >&2
+      echo "USAGE: get_value <input-string-or-file> <attribute>" >&2
+      return 1
+  fi
+  INPUT="$1"
+  ATTRIBUTE="$2"
+  INPUT=`get_file_value "$INPUT"`
+  echo "$INPUT" | grep "${ATTRIBUTE}=" | sed "s/.*${ATTRIBUTE}[    ]*=[    ]*\(.*\)/\1/"
+}
+
+
+
+
 #If the input is a filename, return the contents of the file, otherwise return the input.
 #Inputs: <input-string-or-filename>
 function get_file_value {
@@ -66,12 +86,13 @@ function get_file_value {
 #Get the username from the config file
 function get_username {
 
-    USER_NAME=$(get_json_value $HPC_DM_UTILS/test-conf username)
+    local PROPERTIES_FILE=$HPC_DM_UTILS/hpcdme.properties
+    local USER_NAME=$(get_value $PROPERTIES_FILE hpc.user)
 
     if [ -z "$USER_NAME" ]
     then 
-        echo "ERROR: Can not retrieve username from $HPC_DM_UTILS/test-conf" >&2
-        exit 
+        echo "ERROR: Can not retrieve username from $PROPERTIES_FILE" >&2
+        return 1
     fi
     echo $USER_NAME
 }
@@ -97,12 +118,13 @@ function get_globus_user {
 #Get the server from the config file
 function get_server {
 
-    SERVER_NAME=$(get_json_value $HPC_DM_UTILS/test-conf server)
+    local PROPERTIES_FILE=$HPC_DM_UTILS/hpcdme.properties
+    local SERVER_NAME=$(get_value $PROPERTIES_FILE hpc.server.url)
 
     if [ -z "$SERVER_NAME" ]
     then 
-        echo "ERROR: Can not retrieve server from $HPC_DM_UTILS/test-conf" >&2
-        exit 
+        echo "ERROR: Can not retrieve server from $PROPERTIES_FILE" >&2
+        return 1 
     fi
     echo $SERVER_NAME
 }
@@ -409,6 +431,18 @@ function check_data_object  {
     fi 
 }
 
+#Returns the curl configuration argument
+function get_config {
+
+  local CONFIG_FILE=$HPC_DM_UTILS/tokens/curl-conf
+  if [ ! -f $CONFIG_FILE ]
+  then
+    echo "Cannot find the configuration file $CONFIG_FILE" >&2 
+    return 1
+  fi
+  return "--config $CONFIG_FILE"
+  
+}
 
 
 
