@@ -288,8 +288,8 @@ public class HpcIRODSConnection
     			     // Determine the authentication scheme to use.  if the user is authenticated with LDAP, we
     			     // use iRODS PAM authentication scheme. Otherwise (LDAP is turned off), we perform standard
     			     // iRODS authentication.
-    			     AuthScheme authenticationScheme = authenticationType.equals(HpcAuthenticationType.LDAP) ?
-    			    		                           AuthScheme.PAM : AuthScheme.STANDARD;
+    			     AuthScheme authenticationScheme = authenticationType.equals(HpcAuthenticationType.NONE) ?
+    			    		                           AuthScheme.STANDARD : AuthScheme.PAM;
     			      
     			     // Authenticate the data management account.  
 	    	         AuthResponse authResponse = 

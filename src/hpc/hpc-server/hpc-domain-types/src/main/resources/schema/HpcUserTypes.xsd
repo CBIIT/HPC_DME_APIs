@@ -40,6 +40,7 @@
 			<xsd:enumeration value="LDAP" />
 			<xsd:enumeration value="TOKEN" />
 			<xsd:enumeration value="NONE" />
+			<xsd:enumeration value="SYSTEM_ACCOUNT" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
