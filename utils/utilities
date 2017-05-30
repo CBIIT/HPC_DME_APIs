@@ -19,7 +19,7 @@ function get_http_code {
         echo "USAGE: get_http_code <http-response-file>"
         exit
     fi
-    grep 'HTTP' $1  | grep '[02-9][0-9][0-9]' | sed 's/.*\([0-9][0-9][0-9]\).*/\1/'
+    grep 'HTTP' $1  | tail -n 1 |  grep '[02-9][0-9][0-9]' | sed 's/.*\([0-9][0-9][0-9]\).*/\1/'
 }
 
 
