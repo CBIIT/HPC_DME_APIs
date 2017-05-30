@@ -43,7 +43,7 @@ function dm_generate_token () {
         return
     else  
       local TOKEN_FILE=$(get_value $HPC_DM_UTILS/hpcdme.properties hpc.login.token)
-      local FORMATED_PATH=echo $TOKEN_FILE | sed "s#\\#/#g"
+      local FORMATED_PATH=$(echo $TOKEN_FILE | sed 's/\\/\//g')
       echo $TOKEN > $HPC_DM_UTILS/${FORMATED_PATH}
       local CONFIG_STRING=$(cat "$HPC_DM_UTILS/tokens/curl-conf" | sed "s/Bearer.*/Bearer $TOKEN\"/")
       echo "$CONFIG_STRING" > $CONFIG_PATH
