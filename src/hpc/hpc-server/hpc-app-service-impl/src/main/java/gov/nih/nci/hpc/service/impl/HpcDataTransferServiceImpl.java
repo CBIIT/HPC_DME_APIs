@@ -708,8 +708,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 						                         secondHopDownloadRequest.getDestinationLocation());
 				   
 			} catch(HpcException e) {
-				    logger.error("Failed to perform 2nd hop download", e);
-			        transferFailed();
+				    logger.error("Failed to submit 2nd hop download request", e);
+			    	try {
+			    		 eventService.addDataTransferDownloadFailedEvent(
+			    				         userId, path, null, secondHopDownloadRequest.getDestinationLocation(),
+			    				         Calendar.getInstance(), e.getMessage());
+			    		 
+			    	} catch(HpcException ex) {
+			    		    logger.error("Failed to add data transfer download failed event", ex);
+			    	}
 			}
 		}
 		
