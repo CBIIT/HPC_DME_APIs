@@ -22,7 +22,7 @@ import java.util.List;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
+ * @version $Id$ (Last commit before master)
  */
 
 public interface HpcDataManagementSecurityService 
