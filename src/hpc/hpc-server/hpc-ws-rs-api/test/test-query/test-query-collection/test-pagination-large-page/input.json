@@ -1,0 +1,14 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"pi_doc",
+                "value":"FNLCR",
+                "operator":"EQUAL"
+            }
+        ]
+    },
+    "detailedResponse":false,
+    "page":1000
+}

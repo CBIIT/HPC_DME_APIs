@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Job Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css"/>
+    <style>
+        body {
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .table-fixed {
+            table-layout: fixed;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container col-md-8 col-md-offset-2">
+    <div class="row">
+        <h1 class="text-center">Job Report</h1>
+        <br/>
+        <h4><span class="label label-info">Name:</span> $report.parameters.name</h4>
+        <h4><span class="label label-info">Execution id:</span> $report.parameters.executionId</h4>
+        <br/>
+    </div>
+
+    <div class="row">
+        <h3>Job metrics</h3>
+        <div class="col-md-6">
+            <table class="table table-bordered table-hover table-condensed">
+                <tbody>
+                <tr>
+                    <td>Start Time</td>
+                    <td>$report.formattedStartTime</td>
+                </tr>
+                <tr>
+                    <td>End Time</td>
+                    <td>$report.formattedEndTime</td>
+                </tr>
+                <tr>
+                    <td>Duration</td>
+                    <td>$report.formattedDuration</td>
+                </tr>
+                <tr>
+                    <td>Status</td>
+                    <td><span class="label label-status">$report.status</span></td>
+                </tr>
+                <tr>
+                    <td>Record processing time average</td>
+                    <td>$report.formattedRecordProcessingTimeAverage</td>
+                </tr>
+                <tr>
+                    <td>Skipped records</td>
+                    <td><span class="label label-default skipped-records" data-total="$report.metrics.skippedCount">$report.formattedSkippedCount</span></td>
+                </tr>
+                <tr>
+                    <td>Filtered records</td>
+                    <td><span class="label label-warning filtered-records" data-total="$report.metrics.filteredCount">$report.formattedFilteredCount</span></td>
+                </tr>
+                <tr>
+                    <td>Error records</td>
+                    <td><span class="label label-danger error-records" data-total="$report.metrics.errorCount">$report.formattedErrorCount</span></td>
+                </tr>
+                <tr>
+                    <td>Success records</td>
+                    <td><span class="label label-success success-records" data-total="$report.metrics.successCount">$report.formattedSuccessCount</span></td>
+                </tr>
+                <tr>
+                    <td>Total records</td>
+                    <td><span class="label label-primary total-records" data-total="$report.metrics.totalCount">$report.formattedTotalCount (100%)</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-6">
+            <div id="chart" style="min-width: 300px; height: 320px; margin: 0 auto"></div>
+        </div>
+    </div>
+
+    <div class="row">
+        <h3>Job properties</h3>
+        <table class="table table-bordered table-striped table-hover table-condensed">
+            <tbody>
+            <tr> <td>Limit</td> <td>$report.formattedLimit</td> </tr>
+            <tr> <td>Skip</td> <td>$report.parameters.skip</td> </tr>
+            <tr> <td>Timeout</td> <td>$report.formattedTimeout</td> </tr>
+            <tr> <td>Strict mode</td> <td>$report.parameters.strictMode</td> </tr>
+            <tr> <td>Silent mode</td> <td>$report.parameters.silentMode</td> </tr>
+            <tr> <td>JMX mode</td> <td>$report.parameters.jmxMode</td> </tr>
+            <tr> <td>Keep alive</td> <td>$report.parameters.keepAlive</td> </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script src="https://code.jquery.com/jquery.js"></script>
+<script src="http://netdna.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+<script src="http://code.highcharts.com/highcharts.js"></script>
+<script>
+    jQuery(document).ready(function () {
+
+        var status = jQuery(".label-status");
+        if (status.html() == "COMPLETED") {
+            status.addClass("label-success");
+        } else {
+            status.addClass("label-danger");
+        }
+
+        jQuery('#chart').highcharts({
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: true
+            },title: {
+                text: ''
+            },
+            tooltip: {
+                pointFormat: '<b>{point.y}</b>'
+            },
+            credits: {
+                enabled: false
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: false
+                    },
+                    showInLegend: true
+                }
+            },
+            series: [{
+                type: 'pie',
+                data: [
+                    {
+                        name: 'Skipped',
+                        color: '#777',
+                        y: jQuery(".skipped-records").data("total")
+                    },
+                    {
+                        name: 'Filtered',
+                        color: '#f0ad4e',
+                        y: jQuery(".filtered-records").data("total")
+                    },
+                    {
+                        name: 'Errors',
+                        color: '#d9534f',
+                        y: jQuery(".error-records").data("total")
+                    },
+                    {
+                        name: 'Success',
+                        color: '#5cb85c',
+                        y: jQuery(".success-records").data("total")
+                    }
+                ]
+            }]
+        });
+    });
+
+</script>
+</body>
+</html>

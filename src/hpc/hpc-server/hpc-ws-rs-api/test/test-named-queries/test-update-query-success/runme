@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# runme 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+
+RESPONSE_HEADER=register-query-response-header.tmp
+RESPONSE_MSG=register-query-response-message.json.tmp
+
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+
+if [ ! "$HTTP_CODE" -eq "201" ]
+then
+    echo "Failed to register the query during makeme. " 
+    exit
+fi
+    
+
+REGISTERED_ID=$(cat registered-query-id.tmp)
+UPDATED_FIELD=updated-id
+
+#Update the query file
+cat query.json.tmp | sed "s/$REGISTERED_ID/$UPDATED_FIELD/" > updated-query.json.tmp
+
+RESPONSE_HEADER=update-query-response-header.tmp
+RESPONSE_MSG=update-query-response-message.json.tmp
+
+
+register_query $REGISTERED_ID updated-query.json.tmp POST
+
+#Verify the update result
+
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+echo $HTTP_CODE 
+
+#Check the HTTP code
+if [ "$HTTP_CODE" != "200"  ]
+then
+    echo "Failed to update the query, received code HTTP_CODE"  >&2
+    exit
+fi
+
+#Get the updated query
+
+RESPONSE_HEADER=get-query-response-header.tmp
+RESPONSE_MSG=get-query-response-message.json.tmp
+
+get_query "$REGISTERED_ID"
+
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+if [ "$HTTP_CODE" != "200"  ]
+then
+    echo "Failed to get the updated query, received code HTTP_CODE"  >&2
+    exit
+fi
+
+echo $HTTP_CODE 
+
+#Makeme put the updated field is part of the query.
+PATTERN_EXISTS=$(grep "$UPDATED_FIELD" $RESPONSE_MSG)
+
+if [ -z "$PATTERN_EXISTS" ]
+then
+    echo "The returned query $RESPONSE_MSG does not match query.json.tmp" >&2
+fi

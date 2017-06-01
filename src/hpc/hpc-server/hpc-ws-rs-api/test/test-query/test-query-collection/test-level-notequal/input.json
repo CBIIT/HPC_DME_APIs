@@ -1,0 +1,17 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"name",
+                "value":"dice test project 1",
+                "operator":"EQUAL",
+                "levelFilter":{
+                    "level":1,
+                    "operator": "NOT_EQUAL"
+                }
+            }
+        ]
+    },
+    "detailedResponse":true
+}

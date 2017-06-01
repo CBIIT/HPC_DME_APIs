@@ -1,0 +1,166 @@
+{
+	"HpcMetadataValidationRules":{
+		"collectionMetadataValidationRules":[
+			{
+				"attribute": "collection_type",
+				"mandatory": true,
+				"validValues":[
+					"ParentColllection",
+					"SubCollection"
+				],
+				"ruleEnabled": true,
+				"docs":["UNIT_TEST"]
+			},
+			{
+				"attribute": "text",
+				"mandatory": true,
+				"collectionTypes":[
+					"ParentColllection",
+					"SubCollection"
+				],
+				"ruleEnabled":true,
+				"docs":["UNIT_TEST"]
+			},
+			{
+				"attribute": "choice",
+				"mandatory": false,
+				"defaultValue":"A",
+				"collectionTypes":[
+					"ParentColllection",
+					"SubCollection"
+				],
+				"validValues":[
+					"A",
+					"B"
+				],
+				"ruleEnabled":true,
+				"docs":["UNIT_TEST"]
+			}
+		],
+		"dataObjectMetadataValidationRules":[
+			{
+				"attribute":"file_type",
+				"mandatory":false,
+				"ruleEnabled":true,
+				"docs":["FNLCR"]
+			},
+			{
+				"attribute":"description",
+				"mandatory":false,
+				"ruleEnabled":true,
+				"docs":["FNLCR"]
+			},
+			{
+				"attribute":"reference_genome",
+				"mandatory":false,
+				"ruleEnabled":true,
+				"docs":["FNLCR"]
+			},
+			{
+				"attribute":"reference_annotation",
+				"mandatory":false,
+				"ruleEnabled":true,
+				"docs":["FNLCR"]
+			},
+			{
+				"attribute":"software_tool",
+				"mandatory":false,
+				"ruleEnabled":true,
+				"docs":["FNLCR"]
+			},
+			{
+				"attribute":"md5_checksum",
+				"mandatory":false,
+				"ruleEnabled":true,
+				"docs":["FNLCR"]
+			},
+			{
+				"attribute":"phi_content",
+				"mandatory":true,
+				"collectionTypes":[
+					"Dataset"
+				],
+				"defaultValue":"Unspecified",
+				"validValues":[
+					"Unspecified",
+					"PHI Present",
+					"PHI Not Present",
+					"Not Specified"
+				],
+				"ruleEnabled":true,
+				"docs":["FNLCR"]
+			},
+			{
+				"attribute":"pii_content",
+				"mandatory":true,
+				"collectionTypes":[
+					"Dataset"
+				],
+				"defaultValue":"Unspecified",
+				"validValues":[
+					"Unspecified",
+					"PII Present",
+					"PII Not Present",
+					"Not Specified"
+				],
+				"ruleEnabled":true,
+				"docs":["FNLCR"]
+			},
+			{
+				"attribute":"data_encryption_status",
+				"mandatory":true,
+				"collectionTypes":[
+					"Dataset"
+				],
+				"defaultValue":"Unspecified",
+				"validValues":[
+					"Unspecified",
+					"Encrypted",
+					"Not Encrypted",
+					"Not Specified"
+				],
+				"ruleEnabled":true,
+				"docs":["FNLCR"]
+			},
+			{
+				"attribute":"data_compression_status",
+				"mandatory":true,
+				"collectionTypes":[
+					"Dataset"
+				],
+				"defaultValue":"Unspecified",
+				"validValues":[
+					"Unspecified",
+					"Compressed",
+					"Not Compressed",
+					"Not Specified"
+				],
+				"ruleEnabled":true,
+				"docs":["FNLCR"]
+			}
+		],
+		,
+      "collectionSystemGeneratedMetadataAttributes":[  
+         "uuid",
+         "registered_by",
+         "registered_by_name",
+         "registered_by_doc"
+      ],
+      "dataObjectSystemGeneratedMetadataAttributes":[  
+         "uuid",
+         "registered_by",
+         "registered_by_name",
+         "registered_by_doc",
+         "source_file_container_id",
+         "source_file_id",
+         "archive_file_container_id",
+         "archive_file_id",
+         "data_transfer_request_id",
+         "data_transfer_status",
+         "data_transfer_type",
+         "source_file_size",
+         "archive_caller_object_id",
+         "checksum"         
+      ]
+	}
+}

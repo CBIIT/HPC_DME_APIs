@@ -1,0 +1,40 @@
+{
+	"metadataEntries": [
+      	{
+      	 "attribute": "name",
+      	 "value": "dice test project 4"
+   		},
+      	{
+      	 "attribute": "collection_type",
+      	 "value": "Project"
+   		},
+   		{
+      	 "attribute": "description",
+      	 "value": "A project that contains a lot of files"
+   		},
+   		{
+   		 "attribute": "internal_project_id",
+      	 "value": "dice internal project 4"
+   		},
+   		{
+   		 "attribute": "source_lab_pi",
+      	 "value": "dice"
+   		},
+   		{
+   		 "attribute": "lab_branch",
+      	 "value": "Lab Branch Name"
+   		},
+   		{
+   		 "attribute": "pi_doc",
+      	 "value": "FNLCR"
+   		},
+   		{
+   		 "attribute": "pi_name",
+      	 "value": "dxtest"
+   		},
+   		{
+   		 "attribute": "project_id_CSAS",
+      	 "value": "project_id_CSAS4"
+   		}
+	]
+}

@@ -1,0 +1,13 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"numerical_attr",
+                "value":"101",
+                "operator":"NUM_GREATER_OR_EQUAL"
+            }
+        ]
+    },
+    "detailedResponse":true
+}

@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+#import common functions
+
+
+
+source $HPC_DM_TEST/utils/functions
+../../utils/runtest
+
+#Check if collection registration went through:
+verify_registration collection-registration-response-header.tmp
+
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username $HPC_DM_TEST/utils/config`
+PROJECT_PATH=`cat registered-project-path.tmp`
+
+OBJECT_PATH=$PROJECT_PATH/object-${NAME}.txt
+
+
+RESPONSE_MSG=dataObject-registration-response-message.json.tmp
+RESPONSE_HEADER=dataObject-registration-response-header.tmp
+
+
+#Create an object file
+OBJECT_FILE=object.tmp
+echo "Hello" >  $OBJECT_FILE 
+
+curl_register input.json "$OBJECT_PATH" dataObject "$OBJECT_FILE"
+
+RETURN_CODE=`get_http_code $RESPONSE_HEADER`
+RETURNED_ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
+RETURNED_ERROR_MESSAGE=`get_json_value $RESPONSE_MSG message`
+
+echo "$RETURN_CODE" 1>&2
+echo "$RETURNED_ERROR_TYPE" 1>&2
+echo "$RETURNED_ERROR_MESSAGE" 1>&2
