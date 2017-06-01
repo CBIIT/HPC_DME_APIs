@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# maketest 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Common script to make  to register a collection
+# Usage: makeme
+
+
+source $HPC_DM_TEST/utils/functions
+
+#Register a parent project with a very unique attribute/value metadata
+sleep 1
+ACTING_USER=dice_user_sys_admin
+NAME=$(date +"%b-%d-%G-%H-%M-%S")
+PROJECT_PATH="$(get_basefolder)/project-permission-$NAME"
+PROJECT_DESCRIPTION=project-metadata.json
+
+curl_register $PROJECT_DESCRIPTION  $PROJECT_PATH collection
+echo "$PROJECT_PATH" > registered-project-path.tmp
+
+cp $RESPONSE_HEADER project-response-header.tmp  
+cp $RESPONSE_MSG project-response-message.json.tmp   2>/dev/null
+
+
+#Give dice_user a "WRITE" permission for the project 
+update_single_permission "collection/$PROJECT_PATH" dice_user WRITE 

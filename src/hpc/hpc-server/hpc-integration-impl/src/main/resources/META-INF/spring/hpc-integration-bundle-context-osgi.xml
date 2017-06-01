@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * hpc-integration-bundle-context-osgi.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:ctx="http://www.springframework.org/schema/context" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xmlns:osgix="http://www.springframework.org/schema/osgi-compendium"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                        http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd
+                        http://www.springframework.org/schema/osgi-compendium http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd">
+
+	<!-- HPC Integration OSGi Properties -->
+	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
+	      <prop key="hpc.integration.irods.host">fr-s-hpcdm-gp-d.ncifcrf.gov</prop>
+	      <prop key="hpc.integration.irods.port">1247</prop>
+	      <prop key="hpc.integration.irods.zone">tempZone</prop>
+	      <prop key="hpc.integration.irods.resource">demoResc</prop>
+	      <prop key="hpc.integration.irods.basePath">/tempZone/home</prop>
+	      
+	      <prop key="hpc.integration.globus.nexusAPIURL">nexus.api.globusonline.org</prop>
+	      <prop key="hpc.integration.globus.globusURL">www.globusonline.org</prop>
+	      
+	      <prop key="hpc.integration.globus.archive.endpoint">nihfnlcr#gridftp1</prop>
+		  <prop key="hpc.integration.globus.archive.path">/mnt/IRODsTest/FNL_SF_Archive</prop>
+		  <prop key="hpc.integration.globus.archive.directory">/mnt/IRODsTest/FNL_SF_Archive</prop>
+		  <prop key="hpc.integration.globus.archive.type">TEMPORARY_ARCHIVE</prop>
+		  
+		  <prop key="hpc.integration.globus.download.endpoint">nihfnlcr#gridftp1</prop>
+		  <prop key="hpc.integration.globus.download.path">/mnt/IRODsTest/FNL_SF_Share</prop>
+		  <prop key="hpc.integration.globus.download.directory">/mnt/IRODsTest/FNL_SF_Share</prop>
+		  
+		  <prop key="hpc.integration.cleversafe.URL">http://fr-s-clvrsf-01.ncifcrf.gov</prop>
+	      <prop key="hpc.integration.cleversafe.archive.vault">DSE-TestVault1</prop>
+		  <prop key="hpc.integration.cleversafe.archive.objectId">FNL_SF_Archive</prop>
+		  <prop key="hpc.integration.cleversafe.archive.type">ARCHIVE</prop>
+	      
+	      <prop key="hpc.integration.ldap.URL">ldaps://nci-ldap-prod.nci.nih.gov:636</prop>
+	      <prop key="hpc.integration.ldap.username">CN=NCILDAP,OU=NCI,O=NIH</prop>
+	      <prop key="hpc.integration.ldap.password">***REMOVED***</prop>
+	      <prop key="hpc.integration.ldap.base">ou=Users,ou=NCI,o=NIH</prop>
+	      <prop key="hpc.integration.ldap.userIdFilter">cn</prop>
+	      <prop key="hpc.integration.ldap.userIdDomainName">nih.gov</prop>
+	</osgix:cm-properties>
+
+	<ctx:property-placeholder properties-ref="preProps" />
+
+	<!-- OSGi beans export -->
+	<osgi:service ref="hpcLdapAuthenticationProxy"
+		          interface="gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy" />
+	<osgi:service ref="hpcGlobusDataTransferProxy"
+		          interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
+	<osgi:service ref="hpcS3DataTransferProxy"
+		          interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
+	<osgi:service ref="hpcDataManagementProxy"
+		          interface="gov.nih.nci.hpc.integration.HpcDataManagementProxy" />
+
+</beans>

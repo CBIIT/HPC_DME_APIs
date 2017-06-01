@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+#import common functions
+
+
+#Run common script
+../../../utils/runtest
+
+REGISTRATION_TYPE=$1
+DESTINATION_PATH=$2
+ERROR_TYPE="$3"
+ERROR_REASON="$4"
+
+source ../../../utils/functions
+source ../../utils/registration-functions
+
+
+POLICIES_FILE=policies.json
+
+if ! [ -f $POLICIES_FILE ] 
+then
+    echo "ERROR: LOCAL POLICIES FILE DOES NOT EXIST. RUN MAKEME FIRST"
+    exit
+fi
+
+
+
+RESPONSE_MSG=${REGISTRATION_TYPE}-registration-response-message.json.tmp
+RESPONSE_HEADER=${REGISTRATION_TYPE}-registration-response-header.tmp
+
+#RESPONSE_HEADER=response-header
+#RESPONSE_MSG=response-message.json
+
+
+SERVER=`cat ../../../utils/server`
+
+#DESTINATION="tempZone/home/rods/eran-test-folder-a/folder-b"
+
+VALID_INPUT=`validate_collection $POLICIES_FILE  input.json`
+#echo "$VALID_INPUT"
+
+if [[  "$VALID_INPUT" !=  "PASS" ]] &&  [[ "$VALID_INPUT" != *"FAIL"* ]]
+#if [[  "$VALID_INPUT" != *"FAIL"* ]]
+then
+    echo "Validation returned: $VALID_INPUT"
+    exit
+fi
+
+#Clean previous curl results
+rm $RESPONSE_HEADER $RESPONSE_MSG  2>/dev/null
+
+curl_register input.json $DESTINATION_PATH $REGISTRATION_TYPE
+
+RETURN_CODE=`get_http_code $RESPONSE_HEADER`
+
+#If the input is valid, 201 should be returned
+if [ "$VALID_INPUT" == "PASS" ] && [ -z "$ERROR_TYPE" ]
+then 
+    if [ "$RETURN_CODE" != "201" ] 
+    then
+        echo "Valid input returned code: $RETURN_CODE"
+    fi
+fi
+
+
+#If an error is expected, 400 should be returned
+if [[ "$VALID_INPUT" == *"FAIL"* ]] || [ -n "$ERROR_TYPE" ]
+then
+    if [ "$RETURN_CODE" != "400" ]  && [ "$RETURN_CODE" != "500" ]
+    then
+        echo "Invalid input returned code: $RETURN_CODE"
+    fi
+    RETURNED_ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
+    if [ "$RETURNED_ERROR_TYPE" != "$ERROR_TYPE" ]
+    then
+        echo "Invalid error type. Expected: $ERROR_TYPE, received: $RETURNED_ERROR_TYPE"
+    fi
+    
+    if [ -n "$ERROR_REASON" ]
+    then
+        RETURNED_ERROR_REASON=`get_json_value $RESPONSE_MSG requestRejectReason`
+        if [ "$RETURNED_ERROR_REASON" != "$ERROR_REASON" ]
+        then
+            echo "Invalid error reason. Expected: $ERROR_REASON, received: $RETURNED_ERROR_REASON"
+        fi
+    fi
+fi

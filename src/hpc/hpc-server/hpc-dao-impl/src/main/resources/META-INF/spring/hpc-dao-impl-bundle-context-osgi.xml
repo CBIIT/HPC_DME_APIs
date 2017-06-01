@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * hpc-dao-impl-bundle-context-osgi.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:ctx="http://www.springframework.org/schema/context" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	   xmlns:osgix="http://www.springframework.org/schema/osgi-compendium"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd
+                           http://www.springframework.org/schema/osgi-compendium http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd">
+
+	<!-- HPC Application Services OSGi Properties -->
+	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
+		<prop key="hpc.dao.postgresql.dbName">postgres</prop>
+		<prop key="hpc.dao.postgresql.host">localhost</prop>
+		<prop key="hpc.dao.postgresql.port">5432</prop>
+		<prop key="hpc.dao.postgresql.username">postgres</prop>
+		<prop key="hpc.dao.postgresql.password">pwd</prop>
+		<prop key="hpc.dao.postgresql.url">jdbc:postgresql://${hpc.dao.postgresql.host}:${hpc.dao.postgresql.port}/${hpc.dao.postgresql.dbName}</prop>
+		<prop key="hpc.dao.postgresql.encryptor.key">***128-bit-key**</prop>
+	</osgix:cm-properties>
+
+	<ctx:property-placeholder properties-ref="preProps" />
+
+	<!-- OSGi beans export -->
+	<osgi:service ref="hpcUserDAO" interface="gov.nih.nci.hpc.dao.HpcUserDAO" />
+	<osgi:service ref="hpcSystemAccountDAO" interface="gov.nih.nci.hpc.dao.HpcSystemAccountDAO" />
+	<osgi:service ref="hpcDataObjectDownloadCleanupDAO" 
+	              interface="gov.nih.nci.hpc.dao.HpcDataObjectDownloadCleanupDAO" />
+	<osgi:service ref="hpcNotificationDAO" interface="gov.nih.nci.hpc.dao.HpcNotificationDAO" />
+	<osgi:service ref="hpcEventDAO" interface="gov.nih.nci.hpc.dao.HpcEventDAO" />
+	<osgi:service ref="hpcReportDAO" interface="gov.nih.nci.hpc.dao.HpcReportsDAO" />
+	<osgi:service ref="hpcMetadataDAO" interface="gov.nih.nci.hpc.dao.HpcMetadataDAO" />
+	<osgi:service ref="hpcUserNamedQueryDAO" interface="gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO" />
+	<osgi:service ref="hpcGroupDAO" interface="gov.nih.nci.hpc.dao.HpcGroupDAO" />
+	<osgi:service ref="hpcDocConfigurationDAO" interface="gov.nih.nci.hpc.dao.HpcDocConfigurationDAO" />
+
+</beans>
