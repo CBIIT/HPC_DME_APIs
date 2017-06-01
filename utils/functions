@@ -467,4 +467,62 @@ function dm_download_dataobject_sync {
 
 
 
+#Register a directory from a file system using the cmd line client.
+#Inputs:  <source-path>: The path on the file system 
+#         <destinaton-path>: The destination logical path on the archive
+function dm_register_directory {
+
+    local USAGE="USAGE: dm_register_directory <source-path> <destination-path>"
+
+    check_java
+    if [ -z "$1" ] || [ -z "$2" ] 
+    then
+        echo "ERROR: using dm_register_directory" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return 1
+    fi
+
+    local src_path="$1"
+    local dst_path="$2"
+
+    #Check if the jar exists:
+    local jar_file=$(get_jar)
+    local jar_path=$HPC_DM_UTILS/hpc-client/$jar_file
+    if [ ! -f $jar_path ]
+    then
+      echo "Can not find $jar_path " >&2
+      return 1
+    fi
+
+    #Make sure the source directory exists:
+    if [ ! -d $src_path ]
+    then
+      echo "The source directory: $src_path does not exist." >&2
+      return 1
+    fi 
+
+    full_src_path=$(myreadlink $src_path)
+    #Generate the command for the client: 
+    local command_file=$HPC_DM_UTILS/temp/cmd-file
+    local basedir=$(basename $full_src_path)
+    echo "registerFromFilePath --filePath $full_src_path --filePathBaseName $basedir --destinationBasePath $dst_path" >  $command_file
+
+    local log_file=./dm_log
+    local error_file=./dm_error
+
+    java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
+    if [ "$?" -eq  1 ]
+    then
+      echo "The batch registration did not  complete successfully" >&2
+      echo "Check complete log and error files at:" >&2
+      echo "$log_file" >&2
+      echo "$error_file" >&2
+      return 1
+    else 
+      echo "Batch registration for $full_src_path was successful" 
+    fi
+
+}
+
 

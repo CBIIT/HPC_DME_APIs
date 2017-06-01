@@ -130,6 +130,23 @@ function get_server {
 }
 
 
+#Get the jar filename from the config file
+function get_jar {
+
+    local PROPERTIES_FILE=$HPC_DM_UTILS/hpcdme.properties
+    local JAR_FILE=$(get_value $PROPERTIES_FILE hpc.jar.version)
+
+    if [ -z "$JAR_FILE" ]
+    then 
+        echo "ERROR: Can not retrieve hpc.jar.version from $PROPERTIES_FILE" >&2
+        return 1 
+    fi
+    echo $JAR_FILE
+}
+
+
+
+
 #Get the globus server from the globus config file
 function get_globus_server {
 
@@ -444,6 +461,32 @@ function get_config {
   
 }
 
+function check_java {
 
+  java -version &>/dev/null
+  if [ $? -ne 0 ]
+  then 
+    echo "No java found in PATH" >&2
+    return 1
+  else
+    _java=java
+  fi
 
+  if [[ "$_java" ]]; then
+    version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
+    if [[ "$version" < "1.5" ]]; then
+      echo "java version is less than 1.8" >&2
+      return 1
+    fi
+  fi
+}
 
+#Returns the absolute path from a relative path
+#Arguments:   <relative_path>
+function myreadlink {
+  relative_path=$1
+  pushd $1 > /dev/null
+  absolute_path=$(pwd)
+  popd > /dev/null
+  echo $absolute_path 
+}
