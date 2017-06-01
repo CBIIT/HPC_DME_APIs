@@ -469,12 +469,12 @@ function check_java {
     echo "No java found in PATH" >&2
     return 1
   else
-    _java=java
+    local _java=java
   fi
 
   if [[ "$_java" ]]; then
-    version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
-    if [[ "$version" < "1.5" ]]; then
+    local java_version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
+    if [[ "$java_version" < "1.8" ]]; then
       echo "java version is less than 1.8" >&2
       return 1
     fi
