@@ -1,0 +1,17 @@
+{
+    "metadataEntries": [
+        {
+         "attribute": "name",
+         "value": "test-folder"
+        },
+        {
+         "attribute": "collection_type",
+         "value": "Folder"
+        },
+        {
+         "attribute": "description",
+         "value": "for-batch-client"
+        }
+    ]
+}
+

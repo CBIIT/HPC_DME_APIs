@@ -1,0 +1,8 @@
+{
+   "addUpdateSubscriptions": [
+    {
+        "eventType": "DATA_TRANSFER_UPLOAD_ARCHIVED",
+        "notificationDeliveryMethods": ["DXINVALID_METHOD"]
+    }
+   ]
+}

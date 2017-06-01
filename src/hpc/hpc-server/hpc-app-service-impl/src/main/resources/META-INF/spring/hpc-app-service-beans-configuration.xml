@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * hpc-app-service-beans-configuration.xml
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:util="http://www.springframework.org/schema/util" 
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	                       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	                       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+	<context:annotation-config />
+	
+	<!--  HPC Data Management Authenticator -->
+	<bean id="hpcDataManagementAuthenticator" class="gov.nih.nci.hpc.service.impl.HpcDataManagementAuthenticator" />
+	
+	<!--  HPC Keys generator -->
+	<bean id="hpcKeyGenerator" class="gov.nih.nci.hpc.service.impl.HpcUUIDKeyGeneratorImpl" />
+
+	<!--  HPC Metadata Validator -->
+	<bean id="hpcMetadataValidator" class="gov.nih.nci.hpc.service.impl.HpcMetadataValidator" />
+	
+	<!--  HPC Data Hierarchy Validator -->
+	<bean id="hpcDataHierarchyValidator" class="gov.nih.nci.hpc.service.impl.HpcDataHierarchyValidator" />
+	
+	<!--  Map of HPC Data Transfer Proxies -->
+	<util:map id="hpcDataTransferProxies" 
+	          key-type="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType"
+	          value-type="gov.nih.nci.hpc.integration.HpcDataTransferProxy">
+  		<entry key="GLOBUS" value-ref="hpcGlobusDataTransferProxy" />
+  		<entry key="S_3" value-ref="hpcS3DataTransferProxy" />
+	</util:map>
+	
+	<!--  HPC System Accounts Locator -->
+	<bean id="hpcSystemAccountLocator" class="gov.nih.nci.hpc.service.impl.HpcSystemAccountLocator"
+	      init-method="reload" />
+	      
+	<!--  Email Notification Sender beans -->
+	<bean id="hpcMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="${hpc.service.notification.mail.host}" />
+		<property name="port" value="${hpc.service.notification.mail.port}" />
+		<property name="javaMailProperties">
+	   		<props>
+       			<prop key="mail.smtp.auth">false</prop>
+       			<prop key="mail.smtp.starttls.enable">false</prop>
+       	   </props>
+		</property>
+	</bean>
+	<bean id="hpcNotificationFormatter" class="gov.nih.nci.hpc.service.impl.HpcNotificationFormatter" >
+		<constructor-arg value="${hpc.service.notification.formatsPath}" />
+	</bean>
+	<bean id="hpcMimeMessagePreparator" class="gov.nih.nci.hpc.service.impl.HpcMimeMessagePreparator" />
+	<bean id="hpcEmailNotificationSender" class="gov.nih.nci.hpc.service.impl.HpcEmailNotificationSenderImpl" />
+	
+	<!--  Default level filters for collection and data object search -->
+	<bean id="hpcDefaultCollectionLevelFilter" class="gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter" >
+		<property name="level" value="${hpc.service.dataSearch.defaultCollectionLevelFilter.level}" />
+		<property name="operator" >
+			<bean class="gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator" factory-method="fromValue" >
+				<constructor-arg value="${hpc.service.dataSearch.defaultCollectionLevelFilter.operator}" />
+			</bean>
+		</property>
+	</bean>
+	<bean id="hpcDefaultDataObjectLevelFilter" class="gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter" >
+		<property name="level" value="${hpc.service.dataSearch.defaultDataObjectLevelFilter.level}" />
+		<property name="operator" >
+			<bean class="gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator" factory-method="fromValue" >
+				<constructor-arg value="${hpc.service.dataSearch.defaultDataObjectLevelFilter.operator}" />
+			</bean>
+		</property>
+	</bean>
+	
+	<!--  Map of HPC Data Notification Senders -->
+	<util:map id="hpcNotificationSenders" 
+	          key-type="gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod"
+	          value-type="gov.nih.nci.hpc.service.impl.HpcNotificationSender">
+  		<entry key="EMAIL" value-ref="hpcEmailNotificationSender" />
+	</util:map>
+	
+	<!--  The DOC to base path map -->
+	<bean id="hpcDocConfigurationLocator" class="gov.nih.nci.hpc.service.impl.HpcDocConfigurationLocator" 
+	      init-method="reload" />
+	
+	<!-- HPC Application Services Beans -->
+	<bean id="hpcSecurityService" class="gov.nih.nci.hpc.service.impl.HpcSecurityServiceImpl">
+		<constructor-arg value="${hpc.service.security.authenticationTokenSignatureKey}" index="0" />
+		<constructor-arg value="${hpc.service.security.authenticationTokenExpirationPeriod}" index="1" />
+	</bean>
+	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl">
+		<constructor-arg ref="hpcDataTransferProxies" index="0" />
+		<constructor-arg value="${hpc.service.dataTransfer.downloadDirectory}" index="1" />
+	</bean>
+	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl" >
+		<constructor-arg value="${hpc.service.dataManagement.systemAdminSubjects}" />
+	</bean>
+	<bean id="hpcDataManagementSecurityService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementSecurityServiceImpl" />
+	<bean id="hpcDataSearchService" class="gov.nih.nci.hpc.service.impl.HpcDataSearchServiceImpl">
+		<constructor-arg value="${hpc.service.dataSearch.searchResultsPageSize}" index="0" />
+		<constructor-arg ref="hpcDefaultCollectionLevelFilter" index="1" />
+		<constructor-arg ref="hpcDefaultDataObjectLevelFilter" index="2" />
+	</bean>
+	<bean id="hpcMetadataService" class="gov.nih.nci.hpc.service.impl.HpcMetadataServiceImpl" />
+	<bean id="hpcNotificationService" class="gov.nih.nci.hpc.service.impl.HpcNotificationServiceImpl">
+		<constructor-arg value="${hpc.service.notification.notificationDeliveryReceiptsPageSize}" index="0" />
+		<constructor-arg ref="hpcNotificationSenders" index="1" />
+	</bean>
+	<bean id="hpcEventService" class="gov.nih.nci.hpc.service.impl.HpcEventServiceImpl" >
+		<constructor-arg value="${hpc.service.event.invokerCollectionUpdateNotification}" />
+	</bean>
+	<bean id="hpcReportService" class="gov.nih.nci.hpc.service.impl.HpcReportServiceImpl" />
+</beans>

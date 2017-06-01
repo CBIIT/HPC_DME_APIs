@@ -1,0 +1,13 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"common_object1_object2_attribute",
+                "value":"common_value",
+                "operator":"EQUAL"
+            }
+        ]
+    },
+    "detailedResponse":true
+}

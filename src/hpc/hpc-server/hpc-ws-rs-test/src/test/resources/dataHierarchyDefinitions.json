@@ -1,0 +1,17 @@
+{
+  "HpcDataHierarchyDefinitions": [
+    {
+      "DOC": [
+        "UNIT_TEST"
+      ],
+      "collectionType": "ParentColllection",
+      "isDataObjectContainer": false,
+      "subCollections": [
+        {
+          "collectionType": "SubCollection",
+          "isDataObjectContainer": true
+        }
+      ]
+    }
+  ]
+}

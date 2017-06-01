@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="HPC Data Management" />
+<meta name="author" content="SVG, Inc" />
+<link rel="shortcut icon" href="img/favicon.png" />
+
+
+<title>HPC Data Management Environment</title>
+
+<link rel="stylesheet" type="text/css" href="css/ng-grid.css" />
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+<!-- Bootstrap CSS -->
+<link href="css/bootstrap.min.css" rel="stylesheet" />
+<!-- bootstrap theme -->
+<link href="css/bootstrap-theme.css" rel="stylesheet" />
+<!-- font icon -->
+<link href="css/elegant-icons-style.css" rel="stylesheet" />
+<link href="css/font-awesome.min.css" rel="stylesheet" />
+<!-- Custom styles -->
+<link rel="stylesheet" href="css/fullcalendar.css" />
+<link href="css/widgets.css" rel="stylesheet" />
+<link href="css/style.css" rel="stylesheet" />
+<link href="css/style-responsive.css" rel="stylesheet" />
+<link href="css/xcharts.min.css" rel=" stylesheet" />
+<link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
+<!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
+<!--[if lt IE 9]>
+      <script src="js/html5shiv.js"></script>
+      <script src="js/respond.min.js"></script>
+      <script src="js/lte-ie7.js"></script>
+    <![endif]-->
+<script
+	src="js/angular/1.5.0/angular.js"></script>
+<script
+	src="js/angular/1.5.0/angular-touch.js"></script>
+<script
+	src="js/angular/1.5.0/angular-animate.js"></script>
+<script src="js/ui-grid/csv.js"></script>
+<script src="js/ui-grid/pdfmake.js"></script>
+<script src="js/ui-grid/vfs_fonts.js"></script>
+
+<script src="js/ui-grid/4.0.2/ui-grid.js"></script>
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+
+<link rel="stylesheet" href="css/ui-grid.css"
+	type="text/css" />
+<script
+	src="js/jquery/3.1.1/jquery.min.js"></script>
+<script
+	src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+
+<style>
+/*style.css*/
+.gridStyle {
+	border: 1px solid rgb(212, 212, 212);
+	height: 300px
+}
+</style>
+<script th:inline="javascript">
+/*<![CDATA[*/
+    var assignedNames = [[${names}]];
+/*]]>*/
+</script>
+
+</head>
+<body ng-controller="MyCtrl">
+
+	<!-- container section start -->
+	<section id="container" class="">
+		<div th:include="header :: header"></div>
+		<!--main content start-->
+		<section id="main-content">
+			<section class="wrapper">
+				<!--Title start-->
+				<div class="row">
+					<div class="col-lg-12">
+						<h3 class="page-header">
+							<i class="fa fa-dashboard"></i> Dashboard
+						</h3>
+						<ol class="breadcrumb">
+							<li><i class="fa fa-dashboard"></i><a
+								th:href="@{/dashboard}">Dashboard</a></li>
+							<li><i class="fa fa-list-alt"></i>Authorization</li>
+							<li><i class="fa fa-list-alt"></i>Permissions</li>
+						</ol>
+					</div>
+				</div>
+				<!--Title End-->
+				<!--Row start-->
+				<div class="row">
+					<div class="col-lg-9 col-md-12">
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<h2>
+									<i class="fa fa-list-alt red"></i><strong>Manage
+										Permissions</strong>
+								</h2>
+							</div>
+							<div th:if="${updateStatus != null}">
+								<div class="alert alert-error">
+									<a class="close" data-dismiss="alert">×</a> <label
+										for="${updateStatus}" th:text="${updateStatus}"></label>
+								</div>
+							</div>
+							<div class="modal fade" id="userNameModal" tabindex="-1"
+								role="dialog" aria-labelledby="userNameModalLabel"
+								aria-hidden="true">
+								<div class="modal-dialog">
+									<div class="modal-content"></div>
+									<!-- /.modal-content -->
+								</div>
+								<!-- /.modal-dialog -->
+							</div>
+							<div class="modal fade" id="groupNameModal" tabindex="-1"
+								role="dialog" aria-labelledby="groupNameModalLabel"
+								aria-hidden="true">
+								<div class="modal-dialog">
+									<div class="modal-content"></div>
+									<!-- /.modal-content -->
+								</div>
+								<!-- /.modal-dialog -->
+							</div>
+
+							<div th:if="${error == null}">
+								<!--panel-body start-->
+								<div class="panel-body">
+									<div class="form-group">
+										<div class="col-md-12 form-group">
+											<form class="form-horizontal" id="permissionsform" action="#"
+												role="form" th:action="@{/permissions}"
+												th:object="${permissions}" method="post"
+												enctype="multipart/form-data">
+												<div class="form-group">
+													<label for="Name">Path:</label> <label
+														for="${permissions.getPath()}"
+														th:text="${permissions.getPath()}"></label>
+														<input type="hidden" th:field="*{path}" th:value="${permissions.getPath()}"/>
+														<input type="hidden" th:field="*{type}" th:value="${permissions.getType()}"/>
+												</div>
+												<div class="form-group">
+													<table class="table table-bordered table-hover"
+														id="permissionsTable">
+														<thead>
+															<tr>
+																<th class="text-center">Name</th>
+																<th class="text-center">Type</th>
+																<th class="text-center">Own</th>
+																<th class="text-center">Read</th>
+																<th class="text-center">Write</th>
+																<th class="text-center">None</th>
+															</tr>
+														</thead>
+														<tbody>
+															<tr id='permissionRow0'
+																th:each="permission, iterationStatus : ${permissions.getEntries()}"
+																th:with="index=0">
+																<td style="white-space: nowrap" align="center"><label
+																	for="${permission.getName()}"
+																	th:text="${permission.getName()}"></label> <input
+																	type="hidden"
+																	th:id="'permissionName'+${iterationStatus.count}"
+																	th:name="'permissionName'+${iterationStatus.count}"
+																	th:value="${permission.getName()}" /></td>
+																<td style="white-space: nowrap" align="center"><label
+																	for="${permission.getType().value()}"
+																	th:text="${permission.getType().value()}"></label> <input
+																	type="hidden"
+																	th:id="'permissionType'+${iterationStatus.count}"
+																	th:name="'permissionType'+${iterationStatus.count}"
+																	th:value="${permission.getType().value()}" /></td>
+																<td style="white-space: nowrap" align="center">
+																	<div th:if="${permission.isOwn()} == false">
+																		<input type="radio"
+																			th:id="'permission_own'+${iterationStatus.count}"
+																			th:name="'permission'+${iterationStatus.count}"
+																			value="own" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
+																	</div>
+																	<div th:if="${permission.isOwn()} == true">
+																		<input type="radio" checked="checked"
+																			th:id="'permission_own'+${iterationStatus.count}"
+																			th:name="'permission'+${iterationStatus.count}"
+																			value="own" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
+																	</div>
+																</td>
+																<td style="white-space: nowrap" align="center">
+																	<div th:if="${permission.isRead()} == false">
+																		<input type="radio"
+																			th:id="'permission_read'+${iterationStatus.count}"
+																			th:name="'permission'+${iterationStatus.count}"
+																			value="read" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
+																	</div>
+																	<div th:if="${permission.isRead()} == true">
+																		<input type="radio" checked="checked"
+																			th:id="'permission_read'+${iterationStatus.count}"
+																			th:name="'permission'+${iterationStatus.count}"
+																			value="read" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
+																	</div>
+																</td>
+																<td style="white-space: nowrap" align="center">
+																	<div th:if="${permission.isWrite()} == false">
+																		<input type="radio"
+																			th:id="'permission_write'+${iterationStatus.count}"
+																			th:name="'permission'+${iterationStatus.count}"
+																			value="write" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
+																	</div>
+																	<div th:if="${permission.isWrite()} == true">
+																		<input type="radio" checked="checked"
+																			th:id="'permission_write'+${iterationStatus.count}"
+																			th:name="'permission'+${iterationStatus.count}"
+																			value="write" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
+																	</div>
+																</td>
+																<td style="white-space: nowrap" align="center">
+																		<input type="radio"
+																			th:id="'permission_none'+${iterationStatus.count}"
+																			th:name="'permission'+${iterationStatus.count}"
+																			value="none" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
+																</td>
+															</tr>
+														</tbody>
+													</table>
+												</div>
+												<div class="form-group">
+													<div class="col-sm-offset-2 col-sm-10" align="right" >
+														<button type="submit" class="btn btn-md btn-primary"
+															id="primaryButton" disabled="disabled">Assign</button>
+													</div>
+												</div>
+												<div class="form-group" th:if="${ownpermission == true}">
+													<table class="table table-hover" id="entryTable">
+														<tr id='entryTableRow0' align="center">
+															<td style="white-space: nowrap" align="right"><label
+																for="Share With">Share With:</label></td>
+															<td style="white-space: nowrap" align="left">
+															<div th:if="${permissions.isUserType()} == true">
+															<input
+																type="radio" name="shareWithType" id="shareWithTypeName"
+																value="user" checked="checked"
+																onClick="enableUserGroup(this)" />User&nbsp;&nbsp;&nbsp;
+																
+															<input type="radio" name="shareWithType"
+																id="shareWithTypeGroup" value="group"
+																onClick="enableUserGroup(this)" />Group
+															</div>	
+															<div th:if="${permissions.isUserType()} == false">
+															<input
+																type="radio" name="shareWithType" id="shareWithTypeName"
+																value="user" 
+																onClick="enableUserGroup(this)" />User&nbsp;&nbsp;&nbsp;
+																
+															<input type="radio" name="shareWithType"
+																id="shareWithTypeGroup" value="group" checked="checked"
+																onClick="enableUserGroup(this)" />Group
+															</div>	
+															</td>
+														</tr>
+														<tr id='entryTableRow1' align="center" th:if="${permissions.isUserType()} == true">
+															<td style="white-space: nowrap" align="right"><label
+																for="Share With">User(s):</label></td>
+															<td style="white-space: nowrap" align="left">															
+															<input
+																type="text" id="userName" size="65" th:value="${selectedUsers}" placeholder="Enter User Id delimited with ; or click search button"/>&nbsp;&nbsp;&nbsp;
+																<a id="userNamelink" class="btn btn-link btn-sm"
+																th:href="@{'../finduser?source=permissions&amp;path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a>
+															</td>
+														</tr>
+														<tr id='entryTableRow2' style="display: none" align="center" th:if="${permissions.isUserType()} == true">
+															<td style="white-space: nowrap" align="right"><label
+																for="Share With">Group(s):</label></td>
+															<td style="white-space: nowrap" align="left"><input
+																type="text" id="groupName" size="65" th:value="${selectedGroups}" placeholder="Enter Group name delimited with ; or click search button"/>&nbsp;&nbsp;&nbsp;
+																<a id="groupNamelink" class="btn btn-link btn-sm"
+																th:href="@{'../findgroup?path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a>
+															</td>
+														</tr>
+														<tr id='entryTableRow1' style="display: none" align="center" th:if="${permissions.isUserType()} == false">
+															<td style="white-space: nowrap" align="right"><label
+																for="Share With">User(s):</label></td>
+															<td style="white-space: nowrap" align="left">															
+															<input
+																type="text" id="userName" th:value="${selectedUsers}" />&nbsp;&nbsp;&nbsp;
+																<a id="userNamelink" class="btn btn-link btn-sm"
+																th:href="@{'../finduser?source=permission&amp;path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a>
+																
+															</td>
+														</tr>
+														<tr id='entryTableRow2' align="center" th:if="${permissions.isUserType()} == false">
+															<td style="white-space: nowrap" align="right"><label
+																for="Share With">Group(s):</label></td>
+															<td style="white-space: nowrap" align="left"><input
+																type="text" id="groupName" th:value="${selectedGroups}" />&nbsp;&nbsp;&nbsp;
+																<a id="groupNamelink" class="btn btn-link btn-sm"
+																th:href="@{'../findgroup?path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a></td>
+														</tr>
+														<tr id='entryTableRow3' align="center">
+															<td style="white-space: nowrap" align="right"><label
+																for="Share With">Permissions:</label></td>
+															<td style="white-space: nowrap" align="left"><input
+																type="radio" name="addpermission" id="addpermission_own"
+																value="addown" />&nbsp;Own&nbsp;&nbsp;&nbsp; <input
+																type="radio" name="addpermission" id="addpermission_read"
+																value="addread" />&nbsp;Read&nbsp;&nbsp;&nbsp; <input
+																type="radio" name="addpermission" id="addpermission_write"
+																value="addwrite" />&nbsp;Write&nbsp;&nbsp;&nbsp;</td>
+														</tr>
+														<tr id='entryTableRow4' align="center">
+															<td style="white-space: nowrap" align="right" colspan="2">
+																<a id="addPermissionButton" class="btn btn-md btn-primary pull-right"
+																onClick="addPermission()">Add</a>
+															</td>
+														</tr>
+													</table>
+												</div>
+											</form>
+										</div>
+									</div>
+								</div>
+							</div>
+
+						</div>
+						<!--/col-->
+
+					</div>
+				</div>
+				<div class="row"></div>
+			</section>
+		</section>
+		<!--main content end-->
+	</section>
+	<!-- container section start -->
+
+	<!-- javascripts -->
+	<!-- bootstrap -->
+	<script src="js/bootstrap.min.js"></script>
+
+	<script src="js/jquery-ui-1.10.4.min.js"></script>
+	<script src="js/jquery.scrollTo.min.js"></script>
+	<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
+	<script src="assets/jquery-knob/js/jquery.knob.js"></script>
+	<script src="js/jquery.sparkline.js" type="text/javascript"></script>
+	<script src="js/jquery.customSelect.min.js"></script>
+
+	<!--custome script for all page-->
+	<script src="js/scripts.js"></script>
+
+	<script type="text/javascript">
+	//<![CDATA[
+		function enableSave() {
+			$('#primaryButton').removeClass('disabled');
+			$('#primaryButton').prop('disabled', false);
+		}
+
+		function enableUserGroup(selection) {
+
+			var groupRow = document.getElementById("entryTableRow2");
+			var userRow = document.getElementById("entryTableRow1");
+
+			if (selection.value == "group") {
+				groupRow.style.display = '';
+				userRow.style.display = 'none';
+			} else {
+				userRow.style.display = '';
+				groupRow.style.display = 'none';
+			}
+			var userName = document.getElementById("userName");
+			var groupName = document.getElementById("groupName");
+			var addpermissionOwn = document.getElementById("addpermission_own");
+			var addpermissionRead = document.getElementById("addpermission_read");
+			var addpermissionWrite = document.getElementById("addpermission_write");
+			userName.value ='';
+			groupName.value ='';
+			addpermissionOwn.checked = false;
+			addpermissionRead.checked = false;
+			addpermissionWrite.checked = false;
+		}
+
+		var rowId = 1;
+
+		function addPermission() {
+			rowId++;
+			var groupNames;
+			var userNames;
+			var table = document.getElementById("permissionsTable");
+			var rows = table.getElementsByTagName("tbody")[0]
+					.getElementsByTagName("tr").length;
+			var shareWithName = document.getElementById("shareWithTypeName");
+			var shareWithGroup = document.getElementById("shareWithTypeGroup");
+			var userName = document.getElementById("userName");
+			if(userName != null && userName != "")
+				userNames = userName.value.split(";");
+			var groupName = document.getElementById("groupName");
+			if(groupName != null && groupName != "")
+				groupNames = groupName.value.split(";");
+			var addpermissionOwn = document.getElementById("addpermission_own");
+			var addpermissionRead = document.getElementById("addpermission_read");
+			var addpermissionWrite = document.getElementById("addpermission_write");
+			
+			for(i = 0; i < assignedNames.length; i++)
+			{
+				for(var j=0;j<userNames.length;j++)
+				{
+					if(userNames[j] == assignedNames[i])
+					{
+						alert("Duplicate Entry!");
+						return false;
+					}
+				}
+				for(var j=0;j<groupNames.length;j++)
+				{
+					if(groupNames[j] == assignedNames[i])
+					{
+						alert("Duplicate Entry!");
+						return false;
+					}
+				}
+			}
+			
+			if((userName.value == null || userName.value == "") && (groupName.value == null || groupName.value == ""))
+			{
+				alert("Invalid entry. User/Group name is missing");
+				return false;
+			}
+			
+			if(addpermissionOwn.checked == false && addpermissionRead.checked == false && addpermissionWrite.checked == false)
+			{
+				alert("Select a permission")
+				return false;
+			}
+			
+			for(var i=0;i<userNames.length;i++)
+			{
+				if(userNames[i] == "")
+					continue;
+
+				rows = rows + 1;
+				var row = table.insertRow(rows);
+				row.id = "permissionRow" + (rows);
+				var cell0 = row.insertCell(0);
+				var cell1 = row.insertCell(1);
+				var cell2 = row.insertCell(2);
+				var cell3 = row.insertCell(3);
+				var cell4 = row.insertCell(4);
+				var cell5 = row.insertCell(5);
+				cell0.align="center";
+				cell1.align="center";
+				cell2.align="center";
+				cell3.align="center";
+				cell4.align="center";
+				cell5.align="center";
+				
+				if (shareWithName.checked == true) {
+					cell0.innerHTML = '<label id="permissionName' + (rows)
+							+ '">' + (userNames[i]) + '</label>'
+							+ '<input type="hidden" name="permissionName'
+							+ (rows) + '" id="permissionName'
+							+ (rows) + '" value="' + (userNames[i]) + '" />';
+					cell1.innerHTML = '<label id="permissionType' + (rows)
+							+ '">USER</label>'
+							+ '<input type="hidden" name="permissionType'
+							+ (rows) + '" id="permissionType'
+							+ (rows) + '" value="USER" />';
+					assignedNames.push(userNames[i]);
+				} 
+	
+				if (addpermissionOwn.checked == true)
+				{
+					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
+							+ '" name="permission' + (rows) + '" value="own" checked="checked" />';
+					cell3.innerHTML = '<input type="radio" id="permission_read'
+						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
+					cell4.innerHTML = '<input type="radio" id="permission_write'
+						+ (rows) + '" name="permission' + (rows) + '" value="write" />';
+					cell5.innerHTML = '<input type="radio" id="permission_none'
+						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
+				}
+				else if (addpermissionRead.checked == true)
+				{
+					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
+					+ '" name="permission' + (rows) + '" value="own" />';
+					cell3.innerHTML = '<input type="radio" id="permission_read'
+						+ (rows) + '" name="permission' + (rows)
+						+ '" value="read" checked="checked" />';
+					cell4.innerHTML = '<input type="radio" id="permission_write'
+						+ (rows) + '" name="permission' + (rows) + '" value="write" />';
+					cell5.innerHTML = '<input type="radio" id="permission_none'
+						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
+				}
+				else if (addpermissionWrite.checked == true)
+				{
+					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
+						+ '" name="permission' + (rows) + '" value="own" />';
+					cell3.innerHTML = '<input type="radio" id="permission_read'
+						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
+					cell4.innerHTML = '<input type="radio" id="permission_write'
+						+ (rows) + '" name="permission' + (rows)
+						+ '" value="write" checked="checked" />';
+					cell5.innerHTML = '<input type="radio" id="permission_none'
+						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
+				}
+	
+			}
+			for(var i=0;i<groupNames.length;i++)
+			{
+				if(groupNames[i] == "")
+					continue;
+				rows = rows + 1;
+				var row = table.insertRow(rows);
+				row.id = "permissionRow" + (rows);
+				var cell0 = row.insertCell(0);
+				var cell1 = row.insertCell(1);
+				var cell2 = row.insertCell(2);
+				var cell3 = row.insertCell(3);
+				var cell4 = row.insertCell(4);
+				var cell5 = row.insertCell(5);
+				cell0.align="center";
+				cell1.align="center";
+				cell2.align="center";
+				cell3.align="center";
+				cell4.align="center";
+				cell5.align="center";
+				
+				if (shareWithGroup.checked == true) {
+					cell0.innerHTML = '<label id="permissionName' + (rows)
+							+ '">' + (groupNames[i]) + '</label>'
+							+ '<input type="hidden" name="permissionName'
+							+ (rows) + '" id="permissionName'
+							+ (rows) + '" value="' + (groupNames[i]) + '" />';
+					cell1.innerHTML = '<label id="permissionType' + (rows)
+							+ '">GROUP</label>'
+							+ '<input type="hidden" name="permissionType'
+							+ (rows) + '" id="permissionType'
+							+ (rows) + '" value="GROUP" />';
+					assignedNames.push(groupNames[i]);
+				} 
+	
+				if (addpermissionOwn.checked == true)
+				{
+					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
+							+ '" name="permission' + (rows) + '" value="own" checked="checked" />';
+					cell3.innerHTML = '<input type="radio" id="permission_read'
+						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
+					cell4.innerHTML = '<input type="radio" id="permission_write'
+						+ (rows) + '" name="permission' + (rows) + '" value="write" />';
+					cell5.innerHTML = '<input type="radio" id="permission_none'
+						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
+				}
+				else if (addpermissionRead.checked == true)
+				{
+					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
+					+ '" name="permission' + (rows) + '" value="own" />';
+					cell3.innerHTML = '<input type="radio" id="permission_read'
+						+ (rows) + '" name="permission' + (rows)
+						+ '" value="read" checked="checked" />';
+					cell4.innerHTML = '<input type="radio" id="permission_write'
+						+ (rows) + '" name="permission' + (rows) + '" value="write" />';
+					cell5.innerHTML = '<input type="radio" id="permission_none'
+						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
+				}
+				else if (addpermissionWrite.checked == true)
+				{
+					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
+						+ '" name="permission' + (rows) + '" value="own" />';
+					cell3.innerHTML = '<input type="radio" id="permission_read'
+						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
+					cell4.innerHTML = '<input type="radio" id="permission_write'
+						+ (rows) + '" name="permission' + (rows)
+						+ '" value="write" checked="checked" />';
+					cell5.innerHTML = '<input type="radio" id="permission_none'
+						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
+				}
+	
+			}			
+			$('#primaryButton').removeClass('disabled');
+			$('#primaryButton').prop('disabled', false);
+
+			return false;
+		}
+		/*]]>*/
+	</script>
+
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+        "userId": "testid",
+            "firstName": "testfirst",
+            "lastName": "testlast",
+            "doc":"FNLCR",
+   
+    "userRole" :"SYSTEM_ADMIN"
+}

@@ -1,0 +1,6 @@
+object_path,Type,UserId,GroupId,Permission
+/NO_HIERARCHY/PI_Ji_Luo3,collection,luz6,,WRITE
+/NO_HIERARCHY/project1,collection,zakigf,,OWN
+/NO_HIERARCHY/PI_Ji_Luo3,collection,konkapv,,OWN
+/NO_HIERARCHY/demo1,collection,,prasad-test2,READ
+/NO_HIERARCHY/PI_Ji_Luo3/Project_Ji_Luo_Next_Year_4_shRNA_lib_7_6_16/Cell_AN3KP/Sample_CRISPR_HZ_Luo_3_N701/CRISPR_HZ_Luo_3_N701_6,dataObject,,prasad-test2,WRITE

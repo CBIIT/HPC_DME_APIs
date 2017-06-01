@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="HPC Data Management" />
+<meta name="author" content="SVG, Inc" />
+<link rel="shortcut icon" href="img/favicon.png" />
+
+
+<title>HPC Data Management Environment</title>
+
+<link rel="stylesheet" type="text/css" href="css/ng-grid.css" />
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+<!-- Bootstrap CSS -->
+<link href="css/bootstrap.min.css" rel="stylesheet" />
+<!-- bootstrap theme -->
+<link href="css/bootstrap-theme.css" rel="stylesheet" />
+<!-- font icon -->
+<link href="css/elegant-icons-style.css" rel="stylesheet" />
+<link href="css/font-awesome.min.css" rel="stylesheet" />
+<!-- Custom styles -->
+<link rel="stylesheet" href="css/fullcalendar.css" />
+<link href="css/widgets.css" rel="stylesheet" />
+<link href="css/style.css" rel="stylesheet" />
+<link href="css/style-responsive.css" rel="stylesheet" />
+<link href="css/xcharts.min.css" rel=" stylesheet" />
+<link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
+<!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
+<!--[if lt IE 9]>
+      <script src="js/html5shiv.js"></script>
+      <script src="js/respond.min.js"></script>
+      <script src="js/lte-ie7.js"></script>
+    <![endif]-->
+<script
+	src="js/angular/1.5.0/angular.js"></script>
+<script
+	src="js/angular/1.5.0/angular-touch.js"></script>
+<script
+	src="js/angular/1.5.0/angular-animate.js"></script>
+<script src="js/ui-grid/csv.js"></script>
+<script src="js/ui-grid/pdfmake.js"></script>
+<script src="js/ui-grid/vfs_fonts.js"></script>
+
+<script src="js/ui-grid/4.0.2/ui-grid.js"></script>
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+
+<link rel="stylesheet" href="css/ui-grid.css"
+	type="text/css" />
+<script
+	src="js/jquery/3.1.1/jquery.min.js"></script>
+<script
+	src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+
+<style>
+/*style.css*/
+.gridStyle {
+	border: 1px solid rgb(212, 212, 212);
+	height: 300px
+}
+</style>
+<script th:inline="javascript">
+/*<![CDATA[*/
+    var assignedNames = [[${assignedNames}]];
+/*]]>*/
+</script>
+
+</head>
+<body ng-controller="MyCtrl">
+
+	<!-- container section start -->
+	<section id="container" class="">
+		<div th:include="header :: header"></div>
+		<!--main content start-->
+		<section id="main-content">
+			<section class="wrapper">
+				<!--Title start-->
+				<div class="row">
+					<div class="col-lg-12">
+						<h3 class="page-header">
+							<i class="fa fa-dashboard"></i> Dashboard
+						</h3>
+						<ol class="breadcrumb">
+							<li><i class="fa fa-dashboard"></i><a
+								th:href="@{/dashboard}">Dashboard</a></li>
+							<li><i class="fa fa-list-alt"></i>Manage</li>
+							<li><i class="fa fa-list-alt"></i>Group(s)</li>
+						</ol>
+					</div>
+				</div>
+				<!--Title End-->
+				<!--Row start-->
+				<div class="row">
+					<div class="col-lg-9 col-md-12">
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<h2>
+									<i class="fa fa-list-alt red"></i><strong>Manage
+										Group(s)</strong>
+								</h2>
+							</div>
+							<div>
+								<!--panel-body start-->
+								<div class="panel-body">
+									<div class="form-group">
+										<div class="col-md-12 form-group">
+											<form class="form-horizontal" id="groupForm"
+												th:object="${hpcWebGroup}" method="POST">
+												<div class="panel panel-default">
+													<div class="panel-body">
+														<table>
+															<tr>
+																<td>
+																	<div th:if="${messages != null}">
+																		<div class="alert alert-error" th:each="message: ${messages}">
+																			<a class="close" data-dismiss="alert">×</a> <label
+																				for="${message}" th:text="${message}"></label>
+																		</div>
+																	</div>
+																</td>
+															</tr>
+															<tr>
+																<td>
+																	<div class="form-group">
+																		<div class="col-sm-12 column">
+																			<label for="groupName">Group Name:</label> <input
+																				type="text" class="form-control"
+																				th:field="*{groupName}"
+																				placeholder="Enter Group Name" size="40" />
+																		</div>
+																	</div>
+																	<div class="modal-footer">
+																		<button type="submit" class="btn btn-md btn-primary"
+																			id="primaryButton" onClick="return validate()">Create</button>
+																		<button type="submit" class="btn btn-primary"
+																			data-dismiss="modal" id="cancel" onClick="cancel()">Cancel</button>
+																	</div>
+																	<input type="hidden" name="actionType" id="actionType"/>
+																</td>
+															</tr>
+															<tr>
+																<td>&nbsp;</td>
+															</tr>
+															<tr>
+																<td>Add Users to Group</td>
+															</tr>
+															<tr>
+																<td>
+																	<div class="form-group">
+																		<table class="table table-bordered table-hover"
+																			id="usersTable">
+																			<thead>
+																				<tr>
+																					<th class="text-center">Select</th>
+																					<th class="text-center">UserId</th>
+																				</tr>
+																			</thead>
+																			<tbody>
+																			<!-- 
+																				<tr>
+																					<th class="text-center">&nbsp;</th>
+																					<th class="text-center">&nbsp;</th>
+																				</tr>
+																			-->
+																			</tbody>
+																		</table>
+																	</div>
+																</td>
+															</tr>
+															<tr>
+																<td>
+																	<div class="form-group">
+																		<table class="table table-hover" id="entryTable">
+																			<tr id='entryTableRow1' align="center">
+																				<td style="white-space: nowrap" align="right"><label
+																					for="Share With">User(s):</label></td>
+																				<td style="white-space: nowrap" align="left"><input
+																					type="text" id="userName"
+																					th:value="${selectedUsers}" />&nbsp;&nbsp;&nbsp; <a
+																					id="userNamelink" class="btn btn-link btn-sm"
+																					th:href="@{/finduser?source=creategroup&amp;path=dummy&amp;type=dummy}">Search</a></td>
+																			</tr>
+																			<tr id='entryTableRow2' align="center">
+																				<td style="white-space: nowrap" align="right"
+																					colspan="2"><a id="addUserButton"
+																					class="btn btn-default pull-right"
+																					onClick="addUser()">Add</a></td>
+																			</tr>
+																		</table>
+																	</div>
+																</td>
+															</tr>
+														</table>
+													</div>
+												</div>
+											</form>
+										</div>
+									</div>
+								</div>
+							</div>
+
+						</div>
+						<!--/col-->
+
+					</div>
+				</div>
+				<div class="row"></div>
+			</section>
+		</section>
+		<!--main content end-->
+	</section>
+	<!-- container section start -->
+
+	<!-- javascripts -->
+	<!-- bootstrap -->
+	<script src="js/bootstrap.min.js"></script>
+
+	<script src="js/jquery-ui-1.10.4.min.js"></script>
+	<script src="js/jquery.scrollTo.min.js"></script>
+	<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
+	<script src="assets/jquery-knob/js/jquery.knob.js"></script>
+	<script src="js/jquery.sparkline.js" type="text/javascript"></script>
+	<script src="js/jquery.customSelect.min.js"></script>
+
+	<!--custome script for all page-->
+	<script src="js/scripts.js"></script>
+
+	<script type="text/javascript">
+	//<![CDATA[
+	       
+	    function validate()
+	    {
+	    	var groupName = document.getElementById("groupName").value;
+	    	if(groupName == null || hasWhiteSpace(groupName))
+	    	{
+	    		alert("Invalid group name. Space is not allowed")
+	    		return false;
+	    	}
+	    }
+	    
+	    function cancel()
+	    {
+			document.getElementById("actionType").value = "cancel";
+			$("#groupForm").submit();
+	    }
+		function enableSave() {
+			$('#primaryButton').removeClass('disabled');
+			$('#primaryButton').prop('disabled', false);
+		}
+		var rowId = 1;
+
+		function addUser() {
+			rowId++;
+			var userNames;
+			var table = document.getElementById("usersTable");
+			var rows = 0;
+			if(table.getElementsByTagName("tbody")[0]
+					.getElementsByTagName("tr"))
+				rows = table.getElementsByTagName("tbody")[0]
+						.getElementsByTagName("tr").length;
+			var userName = document.getElementById("userName");
+			if(userName != null && userName != "")
+				userNames = userName.value.split(";");
+			
+			if(assignedNames != null)
+			{
+			for(i = 0; i < assignedNames.length; i++)
+			{
+				for(var j=0;j<userNames.length;j++)
+				{
+					if(userNames[j] == assignedNames[i])
+					{
+						alert("Duplicate Entry!");
+						return false;
+					}
+				}
+			}
+			}
+			
+			if(userName.value == null || userName.value == "")
+			{
+				alert("Invalid entry. User name is missing");
+				return false;
+			}
+			for(var i=0;i<userNames.length;i++)
+			{
+				if(userNames[i] == "")
+					continue;
+
+				rows = rows + 1;
+				var row = table.insertRow(rows);
+				row.id = "userRow" + (rows);
+				var cell0 = row.insertCell(0);
+				cell0.align="center";
+				var cell1 = row.insertCell(1);
+				cell1.align="center";
+				
+				cell0.innerHTML = '<input type="checkbox" name="userId'
+				+ (rows) + '" id="userId'
+				+ (rows) + '" checked="checked" />';
+
+				cell1.innerHTML = '<label id="userName' + (rows)
+							+ '">' + (userNames[i]) + '</label>'
+							+ '<input type="hidden" name="userName'
+							+ (rows) + '" id="userName'
+							+ (rows) + '" value="' + (userNames[i]) + '" />';
+					assignedNames.push(userNames[i]);
+			}
+
+			$('#primaryButton').removeClass('disabled');
+			$('#primaryButton').prop('disabled', false);
+			document.getElementById("userName").value="";
+			return false;
+		}
+		
+		function hasWhiteSpace(s) {
+			  return s.indexOf(' ') >= 0;
+		}
+		
+		/*]]>*/
+	</script>
+
+</body>
+</html>
