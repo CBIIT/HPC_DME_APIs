@@ -1,0 +1,108 @@
+
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<link rel="stylesheet" type="text/css" href="../css/style.css" />
+<link href="../css/bootstrap.min.css" rel="stylesheet" />
+<link href="../css/bootstrap-theme.css" rel="stylesheet" />
+
+<script src="../js/angular/1.4.3/angular.js"></script>
+<script src="../js/angular/1.4.3/angular-touch.js"></script>
+<script src="../js/angular/1.4.3/angular-animate.js"></script>
+<script src="../js/ui-grid/csv.js"></script>
+<script src="../js/ui-grid/pdfmake.js"></script>
+<script src="../js/ui-grid/vfs_fonts.js"></script>
+<script src="../js/ui-grid/ui-grid.js"></script>
+<link rel="stylesheet" href="css/ui-grid.css"
+	type="text/css" />
+<script
+	src="js/jquery/3.1.1/jquery.min.js"></script>
+<script
+	src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+</head>
+<body>
+
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal">&times;</button>
+		<h4 class="modal-title">Save Search Criteria</h4>
+	</div>
+	<form class="form-horizontal" id="saveCriteriaForm"
+		th:object="${hpcSaveSearch}">
+		<div class="modal-body">
+			<div class="pull-left" id="message"
+				style="display: none; float: left">
+				<p>&nbsp;</p>
+			</div>
+			<p>&nbsp;</p>
+			<div class="form-group">
+				<label for="criteriaName">Name</label> <input type="text"
+					class="form-control" th:field="*{criteriaName}" id="criteriaName"
+					placeholder="Enter name" />
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-success" id="submit">Save</button>
+			<button type="button" class="btn btn-default btn-primary" data-dismiss="modal"
+				id="close">Close</button>
+		</div>
+	</form>
+
+	<script th:inline="javascript">
+	/*<![CDATA[*/
+ $(function() {
+//twitter bootstrap script
+ var $form = $('#saveCriteriaForm');
+ $('#saveCriteriaForm').on('submit', function(e){	 
+	 e.preventDefault();
+	 var ele = document.getElementById("message");
+	 var searchName = document.getElementById("criteriaName").value;
+	 if(checkForSpecialChar(searchName))
+		 {
+		 	alert ("Name has special characters. Only _ and - are allowed.");
+		 	return false;
+		 }
+		 	
+	 $.ajax({
+     type: "POST",
+	 url: "/savesearch",
+	 data: $form.serialize(),
+	 success: function(msg){
+	     console.log('SUCCESS: ', msg);
+	     $('#message').html(msg.message);
+ 	     ele.style.display = "block";
+	 },
+	 error: function(e){
+	 console.log('ERROR: ', e);
+	     $('#message').html(e.message);
+	     ele.style.display = "block";
+	 }
+     });
+	 
+ });
+});
+
+ function hasWhiteSpace(s) {
+		  return s.indexOf(' ') >= 0;
+ }
+
+ var specialChars = " <>@!#$%^&*()+[]{}?:;|'\"\\,./~`=";
+ var checkForSpecialChar = function(string){
+  for(i = 0; i < specialChars.length;i++){
+    if(string.indexOf(specialChars[i]) > -1){
+        return true
+     }
+  }
+  return false;
+ }
+ 
+ $(function() {
+	//twitter bootstrap script
+	 $('#saveCriteriaForm').on('close', function(e){	 
+		 $('#myModal-event').modal('hide');
+	 });
+ });
+ /*]]>*/
+</script>
+
+</body>
+</html>

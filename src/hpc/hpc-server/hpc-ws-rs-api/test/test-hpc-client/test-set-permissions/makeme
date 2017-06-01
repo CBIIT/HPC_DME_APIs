@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# makeme
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+# Script to make this test
+# Usage: makeme [no arguments]
+
+./cleanme
+$HPC_DM_TEST/utils/maketest
+$HPC_DM_TEST/test-hpc-client/utils/maketest
+
+source $HPC_DM_TEST/utils/functions
+
+#Register two projects  and a new user
+FOLDER_DESCRIPTION=folder.json
+USERID=`get_username $HPC_DM_TEST/utils/config`
+
+#Register folder1
+FOLDER_PATH="/FNL_SF_Archive/${USERID}/dice-unit-test/project-batch1"
+echo "$FOLDER_PATH" > registered-folder-path1.tmp
+curl_register "$FOLDER_DESCRIPTION" "$FOLDER_PATH" collection
+if [ -e collection-registration-response-message.json.tmp ]
+then
+    cp collection-registration-response-message.json.tmp collection1-registration-response-message.json.tmp
+fi 
+cp collection-registration-response-header.tmp collection1-registration-response-header.tmp
+
+
+#Register folder 2
+FOLDER_PATH="/FNL_SF_Archive/${USERID}/dice-unit-test/project-batch2"
+echo "$FOLDER_PATH" > registered-folder-path2.tmp
+curl_register "$FOLDER_DESCRIPTION" "$FOLDER_PATH" collection
+if [ -e collection-registration-response-message.json.tmp ]
+then
+    cp collection-registration-response-message.json.tmp collection2-registration-response-message.json.tmp
+fi 
+cp collection-registration-response-header.tmp collection2-registration-response-header.tmp
+
+#Create a new user
+RESPONSE_HEADER=user-registration-response-header.tmp
+create_new_user "register-user-template.json"
+
+RESPONSE_CODE=`get_http_code $RESPONSE_HEADER`
+if [ $RESPONSE_CODE != 201 ]
+then 
+    echo "ERROR: New user creation failed"
+    exit
+fi
+

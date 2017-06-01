@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+#source $HPC_DM_TEST/test-search/utils/search-functions
+
+#Check if the collection registration function called in makeme was successful.
+#check_registration
+
+RESPONSE_HEADER=response-header
+RESPONSE_MSG=response-message.json
+
+query_by_metadata collection input.json 
+
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+echo $HTTP_CODE
+
+ATTRIBUTE="name"
+VALUE="dice test project 1"
+RES=$(check_existance "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" "TRUE")  

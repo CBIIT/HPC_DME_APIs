@@ -1,0 +1,13 @@
+{
+    "metadataEntries": [
+        {
+         "attribute": "name",
+         "value": "dxtest-run-name"
+        },
+        {
+         "attribute": "collection_type",
+         "value": "Run"
+        }
+    ]
+}
+

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcUserTypes.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-user="http://hpc.nci.nih.gov/domain/user"
+	targetNamespace="http://hpc.nci.nih.gov/domain/user"
+	elementFormDefault="unqualified">
+
+	<xsd:simpleType name="HpcIntegratedSystem">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="GLOBUS" />
+			<xsd:enumeration value="IRODS" />
+			<xsd:enumeration value="CLEVERSAFE" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="HpcUserRole">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="USER" />
+			<xsd:enumeration value="GROUP_ADMIN" />
+			<xsd:enumeration value="SYSTEM_ADMIN" />
+			<xsd:enumeration value="NONE" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="HpcAuthenticationType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="LDAP" />
+			<xsd:enumeration value="TOKEN" />
+			<xsd:enumeration value="NONE" />
+			<xsd:enumeration value="SYSTEM_ACCOUNT" />
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:complexType name="HpcIntegratedSystemAccountProperty">
+		<xsd:sequence>
+			<xsd:element name="name" type="xsd:string" />
+			<xsd:element name="value" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcIntegratedSystemAccount">
+		<xsd:sequence>
+			<xsd:element name="username" type="xsd:string" />
+			<xsd:element name="password" type="xsd:string" />
+			<xsd:element name="integratedSystem" 
+			             type="hpc-domain-user:HpcIntegratedSystem" />
+			<xsd:element name="properties" 
+			             type="hpc-domain-user:HpcIntegratedSystemAccountProperty" 
+			             minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="HpcNciAccount">
+		<xsd:sequence>
+			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="firstName" type="xsd:string" />
+			<xsd:element name="lastName" type="xsd:string" />
+			<xsd:element name="doc" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+</xsd:schema>

@@ -1,0 +1,13 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"name",
+                "value":"%",
+                "operator":"LIKE"
+            }
+        ]
+    },
+    "detailedResponse": true
+}
