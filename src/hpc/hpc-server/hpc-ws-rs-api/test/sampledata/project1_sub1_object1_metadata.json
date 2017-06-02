@@ -1,0 +1,48 @@
+{ 
+     	"metadataEntries": [
+               {
+                "attribute": "name",
+                "value": "dice test sub1 data file 1"
+                              },
+               {
+                "attribute": "description",
+                "value": "dice test sub1 data file 1 description"
+                              },
+                              {
+                "attribute": "source_lab_pi",
+                "value": "dice1"
+                              },
+                              {
+                "attribute": "lab_branch",
+                "value": "branch1"
+                              },
+                              {
+                               "attribute": "pi_doc",
+                "value": "FNLCR"
+                              },
+                              {
+                               "attribute": "flow_cell_id",
+                "value": "file-FlowCell ID1"
+                              },
+                              {
+                               "attribute": "run_id",
+                "value": "file-Run ID1"
+                              },
+                              {
+                               "attribute": "run_date",
+                "value": "10/11/2015"
+                              },
+                              {
+                               "attribute": "library_id",
+                "value": "file-Library ID1"
+                              },
+                              {
+                               "attribute": "file_attr3",
+                "value": "file_attr3_value1"
+                              },
+                              {
+                               "attribute": "file_attr4",
+                "value": "file_attr4_value1"
+                              }
+               ]
+}

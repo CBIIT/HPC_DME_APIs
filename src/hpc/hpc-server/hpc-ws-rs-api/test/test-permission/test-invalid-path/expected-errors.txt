@@ -1,0 +1,2 @@
+400
+Collection doesn't exist: /dxinvalid/path

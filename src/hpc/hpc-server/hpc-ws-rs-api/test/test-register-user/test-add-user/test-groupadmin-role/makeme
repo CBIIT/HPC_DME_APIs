@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# makeme
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+# Script to clean the resutls of this test
+# Usage: cleanme [no arguments]
+
+
+
+
+# Script to build the executable for this test
+# Usage: makeme [no arguments]
+
+#Clean previous results
+../utils/maketest 
+./cleanme
+
+$HPC_DM_TEST/utils/maketest

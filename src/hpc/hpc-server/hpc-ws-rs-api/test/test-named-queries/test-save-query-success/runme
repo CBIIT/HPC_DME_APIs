@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# runme 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+
+
+QUERY_ID=$(register_query_from_template)
+
+RESPONSE_HEADER=register-query-response-header.tmp
+RESPONSE_MSG=register-query-response-message.json.tmp
+
+
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+echo $HTTP_CODE
+
+#Parse the response header. 
+
+

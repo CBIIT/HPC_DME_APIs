@@ -1,0 +1,18 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"pi_doc",
+                "value":"FNLCR",
+                "operator":"EQUAL"
+            },
+            {
+                "attribute":"name",
+                "value":"dice test sub1 data file 1",
+                "operator":"EQUAL"
+            }
+        ]
+    },
+    "detailedResponse":true
+}

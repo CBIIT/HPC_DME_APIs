@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcMetadataTypes.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
+	targetNamespace="http://hpc.nci.nih.gov/domain/metadata"
+	elementFormDefault="unqualified">
+	
+	<xsd:complexType name="HpcMetadataEntry">
+		<xsd:sequence>
+			<xsd:element name="attribute" type="xsd:string" />
+			<xsd:element name="value" type="xsd:string" />
+			<xsd:element name="unit" type="xsd:string" />
+			<xsd:element name="level" type="xsd:int" minOccurs="0" />
+			<xsd:element name="levelLabel" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcMetadataEntries">
+		<xsd:sequence>
+				<xsd:element name="selfMetadataEntries" 
+			                 type="hpc-domain-metadata:HpcMetadataEntry" 
+				             maxOccurs="unbounded" />
+				<xsd:element name="parentMetadataEntries" 
+			                 type="hpc-domain-metadata:HpcMetadataEntry" 
+				             maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:simpleType name="HpcMetadataQueryOperator">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="EQUAL" />
+			<xsd:enumeration value="NOT_EQUAL" />
+			<xsd:enumeration value="LIKE" />
+			<xsd:enumeration value="NUM_LESS_THAN" />
+			<xsd:enumeration value="NUM_GREATER_THAN" />
+			<xsd:enumeration value="NUM_LESS_OR_EQUAL" />
+			<xsd:enumeration value="NUM_GREATER_OR_EQUAL" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="HpcMetadataQueryAttributeMatch">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="EXACT" />
+			<xsd:enumeration value="ANY" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="HpcMetadataQueryLevelFilter">
+		<xsd:sequence>
+       		<xsd:element name="level" type="xsd:int" minOccurs="0" />
+       		<xsd:element name="label" type="xsd:string" />
+    		<xsd:element name="operator" type="hpc-domain-metadata:HpcMetadataQueryOperator" />
+    	</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcMetadataQuery">
+		<xsd:sequence>
+			<xsd:element name="attribute" type="xsd:string" />
+			<xsd:element name="operator" type="hpc-domain-metadata:HpcMetadataQueryOperator" />
+			<xsd:element name="value" type="xsd:string" />
+			<xsd:element name="levelFilter" type="hpc-domain-metadata:HpcMetadataQueryLevelFilter" />
+			<xsd:element name="attributeMatch" type="hpc-domain-metadata:HpcMetadataQueryAttributeMatch" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:simpleType name="HpcCompoundMetadataQueryOperator">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="OR" />
+			<xsd:enumeration value="AND" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="HpcCompoundMetadataQuery">
+		<xsd:sequence>
+			<xsd:element name="operator" type="hpc-domain-metadata:HpcCompoundMetadataQueryOperator" />
+			<xsd:element name="queries" type="hpc-domain-metadata:HpcMetadataQuery" 
+			             minOccurs="0"  maxOccurs="unbounded" />
+			<xsd:element name="compoundQueries" type="hpc-domain-metadata:HpcCompoundMetadataQuery"
+			             minOccurs="0"  maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:simpleType name="HpcCompoundMetadataQueryType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="COLLECTION" />
+			<xsd:enumeration value="DATA_OBJECT" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="HpcNamedCompoundMetadataQuery">
+		<xsd:sequence>
+			<xsd:element name="name" type="xsd:string" />
+			<xsd:element name="compoundQueryType" type="hpc-domain-metadata:HpcCompoundMetadataQueryType" />
+			<xsd:element name="detailedResponse" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="totalCount" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="compoundQuery" type="hpc-domain-metadata:HpcCompoundMetadataQuery" />
+			<xsd:element name="created" type="xsd:dateTime" />
+			<xsd:element name="updated" type="xsd:dateTime" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcMetadataValidationRule">
+		<xsd:sequence>
+			<xsd:element name="attribute" type="xsd:string" />
+			<xsd:element name="mandatory" type="xsd:boolean" />
+			<xsd:element name="validValues" type="xsd:string" 
+			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="defaultValue" type="xsd:string" />
+			<xsd:element name="defaultUnit" type="xsd:string" />
+			<xsd:element name="collectionTypes" type="xsd:string" 
+			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="ruleEnabled" type="xsd:boolean" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcMetadataLevelAttributes">
+		<xsd:sequence>
+			<xsd:element name="levelLabel" type="xsd:string" />
+			<xsd:element name="metadataAttributes" type="xsd:string"
+			             minOccurs="0"  maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+</xsd:schema>
