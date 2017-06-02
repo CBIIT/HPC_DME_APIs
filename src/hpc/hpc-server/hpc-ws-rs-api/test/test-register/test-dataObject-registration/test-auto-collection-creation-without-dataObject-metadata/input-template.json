@@ -1,0 +1,15 @@
+{ 
+    "source": {
+        "fileContainerId": "globus-shared-endpoint-uid",
+        "fileId": "test.txt"
+    },
+    "createParentCollections": true,
+    "parentCollectionMetadataEntries": [
+        {
+            "attribute": "collection_type",
+            "value": "Folder"
+        }
+     ]
+
+
+}

@@ -1,0 +1,13 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"project1_file_num_attr_1",
+                "value":"100",
+                "operator":"NUM_LESS_OR_EQUAL"
+            }
+        ]
+    },
+    "detailedResponse":true
+}

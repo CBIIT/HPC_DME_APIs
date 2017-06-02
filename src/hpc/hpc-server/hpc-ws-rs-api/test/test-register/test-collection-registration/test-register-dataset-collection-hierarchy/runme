@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# runme
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+#import common functions
+source ../../../utils/functions
+
+
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username ../../../utils/config`
+
+DATASET_PATH=$(get_basefolder)/test-${NAME}
+
+
+
+curl_register input.json $DATASET_PATH collection
+RESPONSE_HEADER=collection-registration-response-header.tmp
+RESPONSE_MSG=collection-registration-response-message.json.tmp
+
+
+HTTP_CODE=$(get_http_code $RESPONSE_HEADER)
+echo $HTTP_CODE >&2
+
+
+if [ $HTTP_CODE -eq "400" ]
+then
+   EXPECTED_MESSAGE="Invalid collection hierarchy for DOC"
+   get_json_value $RESPONSE_MSG "errorType" >&2
+   get_json_value $RESPONSE_MSG "message" | sed "s#^$EXPECTED_MESSAGE.*#$EXPECTED_MESSAGE#" >&2
+fi

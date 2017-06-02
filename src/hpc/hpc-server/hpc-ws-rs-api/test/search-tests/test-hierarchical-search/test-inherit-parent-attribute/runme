@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source ../../../utils/functions
+source ../../utils/search-functions
+
+#Check if the collection registration function called in makeme was successful.
+verify_registration  parent-registration-response-header.tmp
+verify_registration  child-registration-response-header.tmp
+
+
+RESPONSE_HEADER=response-header
+RESPONSE_MSG=response-message.json
+
+search_by_metadata collection input.json
+SERVER=`cat ../../../utils/server`
+
+curl -G -X GET $SERVER/hpc-server/collection --data-urlencode metadataQuery@input.json  --config ../../../utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+check_connection $RESPONSE_HEADER
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+echo $HTTP_CODE
+
+
+CHILD_PATH=$(cat child-project-path.tmp)
+ATTRIBUTE="absolutePath"
+VALUE=$CHILD_PATH
+
+#Make sure the response does include the project with the absolute path $CHILD_PATH 
+RESPONSE_GROUPS=`cat $RESPONSE_MSG | tr "{" "\n" | tr "," "\n"`
+PROJECT_GROUPS=`echo "$RESPONSE_GROUPS" | grep "$ATTRIBUTE"`
+PROJECT_NAMES=`get_json_value "$PROJECT_GROUPS" $ATTRIBUTE`
+
+PROJECT_FOUND="FALSE"
+for project in $PROJECT_NAMES; do
+    if [[ $project == *"$VALUE"*  ]]
+    then
+        PROJECT_FOUND="TRUE"
+        break
+    fi
+done 
+
+if [ "$PROJECT_FOUND" == "FALSE" ] 
+then
+    echo "ERROR: PROJECT \"$CHILD_PATH\" IS NOT PART OF THE RESULTS."  1>&2
+#    echo "FOUND PROJECTS:" >&2
+#    echo "$PROJECT_NAMES" >&2
+fi

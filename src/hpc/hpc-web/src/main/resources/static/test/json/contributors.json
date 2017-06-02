@@ -1,0 +1,19 @@
+[{
+    "id": "1",
+    "firstname": "Misko",
+    "lastname": "Hevery",
+    "company": "Google",
+    "project": "AngularJS"
+}, {
+    "id": "2",
+    "firstname": "Itay",
+    "lastname": "Herskovits",
+    "company": "Backand",
+    "project": "Backand.REST"
+}, {
+    "id": "3",
+    "firstname": "Relly",
+    "lastname": "Rivlin",
+    "company": "Backand",
+    "project": "Backand.AngularJS"
+}]

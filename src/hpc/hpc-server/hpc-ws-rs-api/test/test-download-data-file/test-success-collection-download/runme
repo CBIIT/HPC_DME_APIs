@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+../utils/runtest
+
+
+verify_registration  collection-registration-response-header.tmp
+verify_registration  dataObject-registration-response-header.tmp
+
+
+FOLDER_PATH=collection/$(cat registered-folder-path.tmp)
+
+
+RESPONSE_HEADER=download-response-header.tmp 
+RESPONSE_MSG=download-response-message.json.tmp
+download_async "$FOLDER_PATH"
+
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+echo $HTTP_CODE
+
+#Do not check the file is the code is not 200
+if [ $HTTP_CODE != 200 ] 
+then
+    exit
+fi
+
+FOLDER_PATH=$(get_json_value input.json.tmp fileId)
+verify_globus_file  $FOLDER_PATH
+FILE_ID=$(basename $(cat registered-dataobject-path.tmp))
+verify_globus_file  $FOLDER_PATH/$FILE_ID
