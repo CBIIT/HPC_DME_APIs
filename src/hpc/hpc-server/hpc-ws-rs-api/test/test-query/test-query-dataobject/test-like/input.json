@@ -1,0 +1,13 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"name",
+                "value":"dice test sub1 data file %",
+                "operator":"LIKE"
+            }
+        ]
+    },
+    "detailedResponse":true
+}

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcSecurity.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-user="http://hpc.nci.nih.gov/domain/user"
+	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
+	xmlns:hpc-dto-security="http://hpc.nci.nih.gov/dto/security"
+	targetNamespace="http://hpc.nci.nih.gov/dto/security" 
+	elementFormDefault="unqualified">
+
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/user"
+		        schemaLocation="HpcUserTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datatransfer"
+		        schemaLocation="HpcDataTransferTypes.xsd" />
+
+	<!-- User DTO -->
+	<xsd:element name="HpcUserRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="firstName" type="xsd:string" />
+				<xsd:element name="lastName" type="xsd:string" />
+				<xsd:element name="doc" type="xsd:string" />
+				<xsd:element name="userRole" type="xsd:string" />
+				<xsd:element name="active" type="xsd:boolean" minOccurs="0" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="HpcUserDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="firstName" type="xsd:string" />
+				<xsd:element name="lastName" type="xsd:string" />
+				<xsd:element name="doc" type="xsd:string" />
+				<xsd:element name="userRole" type="xsd:string" />
+				<xsd:element name="active" type="xsd:boolean" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:complexType name="HpcUserListEntry">
+		<xsd:sequence>
+			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="firstName" type="xsd:string" />
+			<xsd:element name="lastName" type="xsd:string" />
+			<xsd:element name="doc" type="xsd:string" />
+			<xsd:element name="active" type="xsd:boolean" minOccurs="0" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<!--  list DTO -->
+	<xsd:element name="HpcUserListDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="users" type="hpc-dto-security:HpcUserListEntry" 
+				             minOccurs="0" maxOccurs="unbounded"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<!--  Authentication Response -->
+	<xsd:element name="HpcAuthenticationResponseDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="authenticationType" type="hpc-domain-user:HpcAuthenticationType" />
+				<xsd:element name="userRole" type="hpc-domain-user:HpcUserRole" />
+				<xsd:element name="token" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<!-- System Account DTO -->
+	<xsd:element name="HpcSystemAccountDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="account"
+					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
+				<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- User Group DTO -->
+	<xsd:element name="HpcGroupMembersRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="addUserIds" type="xsd:string"
+					         minOccurs="0" maxOccurs="unbounded" />
+			    <xsd:element name="deleteUserIds" type="xsd:string"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:complexType name="HpcGroupMemberResponse">
+		<xsd:sequence>
+			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="result" type="xsd:boolean" />
+			<xsd:element name="message" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="HpcGroupMembersResponseDTO">
+		<xsd:complexType> 
+			<xsd:sequence>
+				<xsd:element name="addGroupMemberResponses"
+				             type="hpc-dto-security:HpcGroupMemberResponse"
+					         minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="deleteGroupMemberResponses"
+				             type="hpc-dto-security:HpcGroupMemberResponse"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
+	<xsd:element name="HpcGroupMembersDTO">
+		<xsd:complexType> 
+			<xsd:sequence>
+				<xsd:element name="userIds" type="xsd:string"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
+	<xsd:complexType name="HpcGroup">
+		<xsd:sequence>
+			<xsd:sequence>
+			    <xsd:element name="groupName" type="xsd:string" />
+				<xsd:element name="userIds" type="xsd:string"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="HpcGroupListDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:sequence>
+				    <xsd:element name="groups"
+					             type="hpc-dto-security:HpcGroup"
+						         minOccurs="0" maxOccurs="unbounded" />
+				</xsd:sequence>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+</xsd:schema>
