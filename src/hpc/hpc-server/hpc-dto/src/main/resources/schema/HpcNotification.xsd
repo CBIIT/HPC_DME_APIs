@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcNotification.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-notification="http://hpc.nci.nih.gov/domain/notification"
+	xmlns:hpc-dto-notification="http://hpc.nci.nih.gov/dto/notification"
+	targetNamespace="http://hpc.nci.nih.gov/dto/notification" 
+	elementFormDefault="unqualified">
+
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/notification"
+		        schemaLocation="HpcNotificationTypes.xsd" />
+
+	<!-- Notification Subscriptions DTO -->
+	<xsd:element name="HpcNotificationSubscriptionsRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="addUpdateSubscriptions" 
+				             type="hpc-domain-notification:HpcNotificationSubscription" 
+				             minOccurs="0" maxOccurs="unbounded"/>
+				<xsd:element name="deleteSubscriptions"
+					         type="hpc-domain-notification:HpcEventType" 
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="HpcNotificationSubscriptionListDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="subscriptions"
+				             type="hpc-domain-notification:HpcNotificationSubscription"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
+	<xsd:complexType name="HpcNotificationDeliveryReceiptDTO">
+		<xsd:sequence>
+		    <xsd:element name="eventId" type="xsd:int" />
+			<xsd:element name="eventType" type="hpc-domain-notification:HpcEventType" />
+			<xsd:element name="eventPayloadEntries" 
+		    	         type="hpc-domain-notification:HpcEventPayloadEntry" 
+		             	 minOccurs="0" maxOccurs="unbounded" />
+		    <xsd:element name="eventCreated" type="xsd:dateTime" />
+			<xsd:element name="notificationDeliveryMethod" type="hpc-domain-notification:HpcNotificationDeliveryMethod" />
+			<xsd:element name="deliveryStatus" type="xsd:boolean" />
+			<xsd:element name="delivered" type="xsd:dateTime" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="HpcNotificationDeliveryReceiptListDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="notificationDeliveryReceipts"
+				             	 type="hpc-dto-notification:HpcNotificationDeliveryReceiptDTO"
+					             minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="page" type="xsd:int" />
+				<xsd:element name="limit" type="xsd:int" />
+				<xsd:element name="totalCount" type="xsd:int" minOccurs="0" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
+	
+</xsd:schema>

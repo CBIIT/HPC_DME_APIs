@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+#Register a project in the "project-search"  path
+
+#Arguments:<project-description.json>
+#          [subpath] subpath to append to the path
+function register_project {
+
+    source ../../../utils/functions
+    PROJECT_DESCRIPTION=$1
+    USERID=`get_username ../../../utils/config`
+    DESTINATION_PATH="/FNL_SF_Archive/${USERID}/dice-unit-test/project-search"
+
+    SUB_PATH="$2"   
+    if [ ! -z "$SUB_PATH" ]
+    then
+        DESTINATION_PATH=$DESTINATION_PATH/$SUB_PATH
+    fi
+    echo "$DESTINATION_PATH" > registered-project-path.tmp
+    curl_register "$PROJECT_DESCRIPTION" "$DESTINATION_PATH" collection
+
+}
+
+
+function register_dataobject {
+    source ../../../utils/functions
+
+    DATAOBJECT_DESCRIPTION=$1
+    PROJECT_PATH=`cat registered-project-path.tmp`
+
+    NAME=`date +"%b-%d-%G-%H-%M-%S"`
+    DESTINATION_PATH=${PROJECT_PATH}/object-${NAME}.txt
+    echo "$DESTINATION_PATH" > registered-dataobject-name.tmp
+
+    curl_register "$DATAOBJECT_DESCRIPTION" "$DESTINATION_PATH" dataObject
+}
+
+
+
+function check_registration {
+    #Check that the collection was registered correctly
+    verify_registration  collection-registration-response-header.tmp
+}
+
+
+function check_dataobject_registration {
+    #Check that the collection was registered correctly
+    verify_registration  dataObject-registration-response-header.tmp
+}

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcNotificationTypes.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-notification="http://hpc.nci.nih.gov/domain/notification"
+	targetNamespace="http://hpc.nci.nih.gov/domain/notification"
+	elementFormDefault="unqualified">
+
+	<xsd:simpleType name="HpcEventType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE" />
+			<xsd:enumeration value="DATA_TRANSFER_UPLOAD_ARCHIVED" />
+			<xsd:enumeration value="DATA_TRANSFER_UPLOAD_FAILED" />
+			<xsd:enumeration value="DATA_TRANSFER_DOWNLOAD_COMPLETED" />
+			<xsd:enumeration value="DATA_TRANSFER_DOWNLOAD_FAILED" />
+			<xsd:enumeration value="USAGE_SUMMARY_REPORT" />
+			<xsd:enumeration value="USAGE_SUMMARY_BY_WEEKLY_REPORT" />
+			<xsd:enumeration value="USAGE_SUMMARY_BY_DOC_REPORT" />
+			<xsd:enumeration value="USAGE_SUMMARY_BY_DOC_BY_WEEKLY_REPORT" />
+			<xsd:enumeration value="USAGE_SUMMARY_BY_USER_REPORT" />
+			<xsd:enumeration value="USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT" />
+			<xsd:enumeration value="COLLECTION_UPDATED" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="HpcNotificationDeliveryMethod">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="EMAIL" />
+			<xsd:enumeration value="TEXT" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="HpcNotificationTrigger">
+		<xsd:sequence>
+			<xsd:element name="payloadEntries" 
+			             type="hpc-domain-notification:HpcEventPayloadEntry" 
+			             minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcNotificationSubscription">
+		<xsd:sequence>
+			<xsd:element name="id" type="xsd:int" minOccurs="0" />
+			<xsd:element name="eventType" type="hpc-domain-notification:HpcEventType" />
+			<xsd:element name="notificationDeliveryMethods" 
+			             type="hpc-domain-notification:HpcNotificationDeliveryMethod" 
+			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="notificationTriggers" 
+			             type="hpc-domain-notification:HpcNotificationTrigger" 
+			             minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcEventPayloadEntry">
+		<xsd:sequence>
+			<xsd:element name="attribute" type="xsd:string" />
+			<xsd:element name="value" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcEvent">
+		<xsd:sequence>
+			<xsd:element name="id" type="xsd:int" minOccurs="0" />
+			<xsd:element name="userIds" type="xsd:string" 
+			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="type" type="hpc-domain-notification:HpcEventType" />
+			<xsd:element name="payloadEntries" 
+			             type="hpc-domain-notification:HpcEventPayloadEntry" 
+			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="created" type="xsd:dateTime" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcNotificationDeliveryReceipt">
+		<xsd:sequence>
+			<xsd:element name="eventId" type="xsd:int" />
+			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="notificationDeliveryMethod" type="hpc-domain-notification:HpcNotificationDeliveryMethod" />
+			<xsd:element name="deliveryStatus" type="xsd:boolean" />
+			<xsd:element name="delivered" type="xsd:dateTime" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcNotificationFormatArgument">
+		<xsd:sequence>
+			<xsd:element name="index" type="xsd:int" />
+			<xsd:element name="payloadEntryAttribute" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcNotificationFormat">
+		<xsd:sequence>
+			<xsd:element name="subjectFormat" type="xsd:string" />
+			<xsd:element name="subjectArguments" 
+			             type="hpc-domain-notification:HpcNotificationFormatArgument" 
+			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="textFormat" type="xsd:string" />
+			<xsd:element name="textArguments" 
+			             type="hpc-domain-notification:HpcNotificationFormatArgument" 
+			             minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+</xsd:schema>
