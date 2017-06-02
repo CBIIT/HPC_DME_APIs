@@ -538,6 +538,11 @@ function dm_register_globus_directory {
 
     local USAGE="USAGE: dm_register_globus_directory <source-path> <destination-path> [globus-endpoint]"
     check_java
+    if [ "$?" -ne 0 ]
+    then 
+      return 1
+    fi
+
     if [ -z "$1" ] || [ -z "$2" ] 
     then
         echo "ERROR: using dm_register_globus_directory" >&2
