@@ -30,7 +30,7 @@
 		<postgresql.version>9.3-1102-jdbc41</postgresql.version>
 		<slf4j.version>1.7.22</slf4j.version>
 		<spring.version>3.2.17.RELEASE</spring.version>
-		<amazon-aws.version>1.11.49</amazon-aws.version>
+		<amazon-aws.version>1.11.125</amazon-aws.version>
 		<jackson.version>2.8.5</jackson.version>
 		<jargon.version>4.1.10.0-RELEASE</jargon.version>
 		<jargon-conveyor.version>4.0.2.1-RELEASE</jargon-conveyor.version>
