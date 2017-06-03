@@ -84,6 +84,12 @@
 		<prop key="hpc.ws.rs.auth.data-search.get-metadata-attributes">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.data-search.refresh-metadata-views">SYSTEM_ADMIN</prop>
 		
+		<prop key="hpc.ws.rs.auth.data-browse.add-bookmark">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-browse.update-bookmark">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-browse.delete-bookmark">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-browse.get-bookmark">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		<prop key="hpc.ws.rs.auth.data-browse.get-bookmarks">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
+		
 		<prop key="hpc.ws.rs.auth.notification.subscribe-notifications">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.notification.get-notification-subscriptions">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		
