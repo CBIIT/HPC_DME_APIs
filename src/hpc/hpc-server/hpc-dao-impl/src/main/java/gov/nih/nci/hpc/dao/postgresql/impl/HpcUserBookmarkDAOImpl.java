@@ -44,7 +44,7 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO
     
     // SQL Queries.
 	private static final String UPSERT_USER_BOOKMARK_SQL = 
-			"insert into public.\"HPC_USER_QUERY\" ( " +
+			"insert into public.\"HPC_USER_BOOKMARK\" ( " +
 	                "\"USER_ID\", \"BOOKMARK_NAME\", \"PATH\", \"BOOKMARK_GROUP\", " +
 	                "\"CREATED\", \"UPDATED\" ) " +
 	                "values (?, ?, ?, ?, ?, ?) " + 
@@ -119,7 +119,7 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO
 		     jdbcTemplate.update(DELETE_USER_BOOKMARK_SQL, nciUserId, bookmarkName);
 		     
 		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to delete a user query" + 
+			    throw new HpcException("Failed to delete a bookmark" + 
 		                               e.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, e);
 		}   
