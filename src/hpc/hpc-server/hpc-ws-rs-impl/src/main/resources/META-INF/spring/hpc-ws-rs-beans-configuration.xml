@@ -128,6 +128,7 @@
 		<entry key="http://hpc.nci.nih.gov/dto/security" value="gov.nih.nci.hpc.dto.security" />
 		<entry key="http://hpc.nci.nih.gov/dto/datamanagement" value="gov.nih.nci.hpc.dto.datamanagement" />
 		<entry key="http://hpc.nci.nih.gov/dto/datasearch" value="gov.nih.nci.hpc.dto.datasearch" />
+		<entry key="http://hpc.nci.nih.gov/dto/databrowse" value="gov.nih.nci.hpc.dto.databrowse" />
 		<entry key="http://hpc.nci.nih.gov/dto/notification" value="gov.nih.nci.hpc.dto.notification" />
 		<entry key="http://hpc.nci.nih.gov/dto/report" value="gov.nih.nci.hpc.dto.report" />
 		<entry key="http://hpc.nci.nih.gov/domain/error" value="gov.nih.nci.hpc.domain.error" />
@@ -243,6 +244,7 @@
 	<bean id="hpcSecurityRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcSecurityRestServiceImpl" />
 	<bean id="hpcDataManagementRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl" />
 	<bean id="hpcDataSearchRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataSearchRestServiceImpl" />
+	<bean id="hpcDataBrowseRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataBrowseRestServiceImpl" />
 	<bean id="hpcNotificationRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcNotificationRestServiceImpl" />
 	<bean id="hpcReportRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcReportRestServiceImpl" />
 	
@@ -252,6 +254,7 @@
 			<ref bean="hpcSecurityRestService" />
 			<ref bean="hpcDataManagementRestService" />
 			<ref bean="hpcDataSearchRestService" />
+			<ref bean="hpcDataBrowseRestService" />
 			<ref bean="hpcNotificationRestService" />
 			<ref bean="hpcReportRestService" />
 		</jaxrs:serviceBeans>
@@ -280,6 +283,7 @@
 			<ref bean="hpcSecurityRestService" />
 			<ref bean="hpcDataManagementRestService" />
 			<ref bean="hpcDataSearchRestService" />
+			<ref bean="hpcDataBrowseRestService" />
 			<ref bean="hpcNotificationRestService" />
 			<ref bean="hpcReportRestService" />
 		</jaxrs:serviceBeans>

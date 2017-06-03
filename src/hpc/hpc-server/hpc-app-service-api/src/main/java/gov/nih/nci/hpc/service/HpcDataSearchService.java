@@ -79,7 +79,7 @@ public interface HpcDataSearchService
     /**
      * Save a query for a user.
      *
-     * @param nciUserId The user ID save the query for.
+     * @param nciUserId The user ID to save the query for.
      * @param namedCompoundMetadataQuery The compound query.
      * @throws HpcException on service failure.
      */
@@ -90,7 +90,7 @@ public interface HpcDataSearchService
     /**
      * Delete a query for a user.
      *
-     * @param nciUserId The user ID save the query for.
+     * @param nciUserId The user ID to delete the query for.
      * @param queryName The query name.
      * @throws HpcException on service failure.
      */
