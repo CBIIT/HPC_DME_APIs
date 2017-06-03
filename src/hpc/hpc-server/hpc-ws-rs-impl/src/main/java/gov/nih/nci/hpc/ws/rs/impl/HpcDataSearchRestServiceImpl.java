@@ -47,7 +47,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     // Instance members
     //---------------------------------------------------------------------//
 
-    // The Data Management Business Service instance.
+    // The Data Search Business Service instance.
 	@Autowired
     private HpcDataSearchBusService dataSearchBusService = null;
 	
