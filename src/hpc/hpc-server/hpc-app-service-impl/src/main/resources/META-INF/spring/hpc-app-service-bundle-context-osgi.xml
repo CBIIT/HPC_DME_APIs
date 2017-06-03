@@ -54,6 +54,8 @@
 		          interface="gov.nih.nci.hpc.service.HpcDataSearchService" />	
 	<osgi:service ref="hpcMetadataService"
 		          interface="gov.nih.nci.hpc.service.HpcMetadataService" />	
+	<osgi:service ref="hpcDataBrowseService"
+		          interface="gov.nih.nci.hpc.service.HpcDataBrowseService" />	
 	<osgi:service ref="hpcNotificationService"
 		          interface="gov.nih.nci.hpc.service.HpcNotificationService" />	
 	<osgi:service ref="hpcEventService"
@@ -79,7 +81,9 @@
 	<osgi:reference id="hpcMetadataDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcMetadataDAO" />	
 	<osgi:reference id="hpcUserNamedQueryDAO" 
-	                interface="gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO" />		
+	                interface="gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO" />	
+	<osgi:reference id="hpcUserBookmarkDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcUserBookmarkDAO" />			
 	<osgi:reference id="hpcDocConfigurationDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcDocConfigurationDAO" />                 
 	<osgi:reference id="hpcGlobusDataTransferProxy"
