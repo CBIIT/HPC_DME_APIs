@@ -70,7 +70,7 @@ public class HpcDataBrowseServiceImpl implements HpcDataBrowseService
     	// Validate the bookmark
     	HpcDomainValidationResult validationResult = isValidBookmark(bookmark);
        	if(!validationResult.getValid()) {
-           throw new HpcException("Invalid named compound metadata query: " + validationResult.getMessage(), 
+           throw new HpcException("Invalid bookmark request: " + validationResult.getMessage(), 
          			              HpcErrorType.INVALID_REQUEST_INPUT);
         }
        	
