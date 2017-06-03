@@ -210,6 +210,13 @@
         		<entry key="getMetadataAttributes" value="${hpc.ws.rs.auth.data-search.get-metadata-attributes}"/>
         		<entry key="refreshMetadataViews" value="${hpc.ws.rs.auth.data-search.refresh-metadata-views}"/>
         		
+        		<!--  Data Browse Service Authorizations -->
+        		<entry key="addBookmark" value="${hpc.ws.rs.auth.data-browse.add-bookmark}"/>
+        		<entry key="updateBookmark" value="${hpc.ws.rs.auth.data-browse.update-bookmark}"/>
+        		<entry key="deleteBookmark" value="${hpc.ws.rs.auth.data-browse.delete-bookmark}"/>
+        		<entry key="getBookmark" value="${hpc.ws.rs.auth.data-browse.get-bookmark}"/>
+        		<entry key="getBookmarks" value="${hpc.ws.rs.auth.data-browse.get-bookmarks}"/>
+        		
         		<!--  Notification Service Authorizations -->
         		<entry key="subscribeNotifications" value="${hpc.ws.rs.auth.notification.subscribe-notifications}"/>
         		<entry key="getNotificationSubscriptions" value="${hpc.ws.rs.auth.notification.get-notification-subscriptions}"/>
