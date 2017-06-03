@@ -28,6 +28,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 /**
  * <p>
@@ -170,8 +171,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     		            throws HpcException
     {
     	// Input validation.
-    	if(queryName == null || queryName.isEmpty() ||
-           compoundMetadataQueryDTO == null) {
+    	if(StringUtils.isEmpty(queryName) || compoundMetadataQueryDTO == null) {
     	   throw new HpcException("Null or empty queryName / compoundMetadataQueryDTO", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
@@ -206,14 +206,15 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     		               throws HpcException
     {
     	// Input validation.
-    	if(queryName == null || queryName.isEmpty() ||
-           compoundMetadataQueryDTO == null) {
+    	if(StringUtils.isEmpty(queryName) || compoundMetadataQueryDTO == null) {
     	   throw new HpcException("Null or empty queryName / compoundMetadataQueryDTO", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
     	// Get the user-id of this request invoker.
     	String nciUserId = securityService.getRequestInvoker().getNciAccount().getUserId();
+    	
+    	// Get the query.
     	HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery = 
     			                      dataSearchService.getQuery(nciUserId, queryName);
     	if(namedCompoundMetadataQuery == null) {
@@ -221,6 +222,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
+    	// Update the query.
     	if(compoundMetadataQueryDTO.getCompoundQuery() != null) {
     	   namedCompoundMetadataQuery.setCompoundQuery(compoundMetadataQueryDTO.getCompoundQuery());
     	}
@@ -242,8 +244,8 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     public void deleteQuery(String queryName) throws HpcException
     {
     	// Input validation.
-    	if(queryName == null || queryName.isEmpty())  {
-    	   throw new HpcException("Null or empty nciUserId / queryName", 
+    	if(StringUtils.isEmpty(queryName))  {
+    	   throw new HpcException("Null or empty query name", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
@@ -267,12 +269,12 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
     @Override
     public HpcNamedCompoundMetadataQueryListDTO getQueries() throws HpcException
     {
-    	HpcNamedCompoundMetadataQueryListDTO queriesList = new HpcNamedCompoundMetadataQueryListDTO();
-    	queriesList.getNamedCompoundQueries().addAll(
-    			       dataSearchService.getQueries(
-    			           securityService.getRequestInvoker().getNciAccount().getUserId()));
+    	HpcNamedCompoundMetadataQueryListDTO queryList = new HpcNamedCompoundMetadataQueryListDTO();
+    	queryList.getNamedCompoundQueries().addAll(
+    		         dataSearchService.getQueries(
+    			         securityService.getRequestInvoker().getNciAccount().getUserId()));
     	
-    	return queriesList;
+    	return queryList;
     }
     
     @Override
@@ -361,7 +363,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
                                          throws HpcException
     {
     	// Input validation.
-    	if(queryName == null || queryName.isEmpty()) {
+    	if(StringUtils.isEmpty(queryName)) {
     	   throw new HpcException("Null or empty query name",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
