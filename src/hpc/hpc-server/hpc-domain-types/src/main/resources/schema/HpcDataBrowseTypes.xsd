@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcMetadataTypes.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-databrowse="http://hpc.nci.nih.gov/domain/databrowse"
+	targetNamespace="http://hpc.nci.nih.gov/domain/databrowse"
+	elementFormDefault="unqualified">
+	
+	<xsd:complexType name="HpcBookmark">
+		<xsd:sequence>
+			<xsd:element name="name" type="xsd:string" />
+			<xsd:element name="group" type="xsd:string" />
+			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="created" type="xsd:dateTime" />
+			<xsd:element name="updated" type="xsd:dateTime" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+</xsd:schema>

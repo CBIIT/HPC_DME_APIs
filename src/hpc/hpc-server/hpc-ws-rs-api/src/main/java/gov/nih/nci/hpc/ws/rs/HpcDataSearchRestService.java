@@ -144,7 +144,7 @@ public interface HpcDataSearchRestService
     public Response getQuery(@PathParam("queryName") String queryName);
     
     /**
-     * Get all saved queries for a user.
+     * Get all saved queries.
      *
      * @return The REST service response w/ HpcNamedCompoundMetadataQueryListDTO entity.
      */

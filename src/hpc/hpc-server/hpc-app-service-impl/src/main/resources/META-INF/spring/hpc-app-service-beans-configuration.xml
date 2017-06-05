@@ -110,6 +110,7 @@
 		<constructor-arg ref="hpcDefaultDataObjectLevelFilter" index="2" />
 	</bean>
 	<bean id="hpcMetadataService" class="gov.nih.nci.hpc.service.impl.HpcMetadataServiceImpl" />
+	<bean id="hpcDataBrowseService" class="gov.nih.nci.hpc.service.impl.HpcDataBrowseServiceImpl" />
 	<bean id="hpcNotificationService" class="gov.nih.nci.hpc.service.impl.HpcNotificationServiceImpl">
 		<constructor-arg value="${hpc.service.notification.notificationDeliveryReceiptsPageSize}" index="0" />
 		<constructor-arg ref="hpcNotificationSenders" index="1" />

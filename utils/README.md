@@ -9,19 +9,23 @@ I-Edit the following configuration files in this directory:
 
   1- ./hpcdme.properties
 
-    - Edit the server name. 
+    - Edit the server name:hpc.server.url
+    - Edit the user name:hpc.user
+
+    If you plan to use a default globus endpoint:
+    - Edit:hpc.default.globus.endpoint 
 
   2- ./tokens/curl-conf
 
-     If your are fimiliar with curl, add in a separate line all the arguments you would like to send with the REST request. 
-     Otherwise, leave the file unchanged.
+     If your are fimiliar with curl, add in a separate line all the arguments
+     you would like to send with the REST request.  Otherwise, leave the file
+     unchanged.
 
 
 
-II- Define the environment variable HPC_DM_UTILS and let it point to the directory where this README.md is located.
-    Export this varialbe in your ~/.bashrc or ~/.profile file
-
-    source the functions script 
+II- Define the environment variable HPC_DM_UTILS and let it point to the
+    directory where this README.md is located.  Export this varialbe in your
+    ~/.bashrc or ~/.profile file and source the functions script 
 
     For example:
 

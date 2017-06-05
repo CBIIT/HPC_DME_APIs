@@ -29,7 +29,7 @@ public interface HpcUserNamedQueryDAO
     /**
      * Upsert a query for a user.
      *
-     * @param nciUserId The user ID save the query for.
+     * @param nciUserId The user ID to save the query for.
      * @param namedCompoundMetadataQuery The named compound metadata query.
      * @throws HpcException on database error.
      */
@@ -40,7 +40,7 @@ public interface HpcUserNamedQueryDAO
     /**
      * Delete a query for a user.
      *
-     * @param nciUserId The user ID save the query for.
+     * @param nciUserId The user ID to delete the query for.
      * @param queryName The query name.
      * @throws HpcException on database error.
      */
@@ -51,7 +51,7 @@ public interface HpcUserNamedQueryDAO
      * Get all saved queries for a user.
      *
      * @param nciUserId The registered user ID.
-     * @return <code>List&lt;HpcNamedCompoundMetadataQuery&gt;</code>
+     * @return A list of queries saved by the user.
      * @throws HpcException on database error.
      */
     public List<HpcNamedCompoundMetadataQuery> getQueries(String nciUserId) 
@@ -62,7 +62,7 @@ public interface HpcUserNamedQueryDAO
      *
      * @param nciUserId The registered user ID.
      * @param queryName The query name.
-     * @return HpcNamedCompoundMetadataQuery
+     * @return The requested named query.
      * @throws HpcException on database error.
      */
     public HpcNamedCompoundMetadataQuery getQuery(String nciUserId, String queryName) 

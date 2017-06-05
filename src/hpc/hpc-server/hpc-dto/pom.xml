@@ -155,6 +155,15 @@
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
+								<xsdOption>
+									<xsd>xjc-build/schema/HpcDataBrowse.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.dto.databrowse</packagename>
+									<bindingFile>xjc-build/schema/hpc-dto-databrowse-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:simple</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
 							</xsdOptions>
 						</configuration>
 					</execution>
@@ -172,6 +181,7 @@
 							gov.nih.nci.hpc.dto.security,
 							gov.nih.nci.hpc.dto.datamanagement,
 							gov.nih.nci.hpc.dto.datasearch,
+							gov.nih.nci.hpc.dto.databrowse,
 							gov.nih.nci.hpc.dto.notification,
 							gov.nih.nci.hpc.dto.report
 						</Export-Package>

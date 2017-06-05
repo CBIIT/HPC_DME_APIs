@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import java.io.InputStream;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -131,7 +132,7 @@ public interface HpcDataManagementRestService
      * Get a collection's permission for userId.
      *
      * @param path The collection path.
-     * @param userId
+     * @param userId The user id to get permissions for.
      * @return The REST service response w/ HpcUserPermissionDTO entity.
      */
 	@GET
@@ -186,6 +187,16 @@ public interface HpcDataManagementRestService
 	public Response downloadDataObject(@PathParam("path") String path,
 			                           HpcDownloadRequestDTO downloadRequest,
 			                           @Context MessageContext mc);
+	
+    /**
+     * Delete a data object.
+     *
+     * @param path The data object path.
+     * @return The REST service response.
+     */
+	@DELETE
+	@Path("/dataObject/{path:.*}")
+	public Response deleteDataObject(@PathParam("path") String path);
 
     /**
      * Set a data object's permissions.
