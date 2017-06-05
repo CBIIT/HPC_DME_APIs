@@ -24,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -190,5 +192,25 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	downloadResponse.setDestinationFile(downloadRequest.getDestinationFile());
     	
     	return downloadResponse;
+    }
+    
+    @Override
+    public void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation)
+    		                    throws HpcException 
+    {
+    	// Create a S3 delete request.
+    	DeleteObjectRequest request = new DeleteObjectRequest(fileLocation.getFileContainerId(), 
+    			                                              fileLocation.getFileId());
+    	try {
+   		     s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client().deleteObject(request);
+   		    
+    	} catch(AmazonServiceException ase) {
+    		    throw new HpcException("[S3] Failed to delete file: " + request, 
+  	                                   HpcErrorType.DATA_TRANSFER_ERROR, ase);
+    		    
+        } catch(AmazonClientException ace) {
+        	    throw new HpcException("[S3] Failed to delete file: " + request, 
+                                       HpcErrorType.DATA_TRANSFER_ERROR, ace);
+        }	
     }
 }

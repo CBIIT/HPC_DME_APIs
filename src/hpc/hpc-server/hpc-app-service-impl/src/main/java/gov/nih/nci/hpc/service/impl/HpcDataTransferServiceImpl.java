@@ -189,6 +189,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	return downloadDataObject(downloadRequest);
     }
     
+    @Override
+    public void deleteDataObject(HpcFileLocation fileLocation, 
+                                 HpcDataTransferType dataTransferType) 
+                                throws HpcException
+    {
+    	// Input validation.
+    	if(!HpcDomainValidator.isValidFileLocation(fileLocation)) {	
+    	   throw new HpcException("Invalid file location", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}	
+    	
+    	dataTransferProxies.get(dataTransferType).deleteDataObject(
+    			                                        getAuthenticatedToken(dataTransferType), 
+    			                                        fileLocation);
+    }
+    
 	@Override   
 	public HpcDataTransferUploadStatus getDataTransferUploadStatus(HpcDataTransferType dataTransferType,
 			                                                       String dataTransferRequestId) 
