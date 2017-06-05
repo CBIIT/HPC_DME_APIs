@@ -68,6 +68,17 @@ public interface HpcDataTransferService
 			                                     HpcDataTransferType dataTransferType) 
 			                                     throws HpcException;
 	
+    /** 
+     * Delete a data object file.
+     * 
+     * @param fileLocation The file location.
+     * @param dataTransferType The data transfer type.
+     * @throws HpcException on service failure.
+     */
+	public void deleteDataObject(HpcFileLocation fileLocation, 
+                                 HpcDataTransferType dataTransferType) 
+                                throws HpcException;
+	
     /**
      * Get a data transfer upload request status.
      *

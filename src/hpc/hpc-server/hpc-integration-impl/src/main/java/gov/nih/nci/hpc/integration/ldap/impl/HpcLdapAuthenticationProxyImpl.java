@@ -108,7 +108,7 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 	public boolean authenticate(String userName, String password) throws HpcException
 	{
 		String fullyDistinguishedName = getFullyDistinguishedName(userName);
-	if(fullyDistinguishedName == null) {
+		if(fullyDistinguishedName == null) {
 		   // user not found.
 		   return false;
 		}

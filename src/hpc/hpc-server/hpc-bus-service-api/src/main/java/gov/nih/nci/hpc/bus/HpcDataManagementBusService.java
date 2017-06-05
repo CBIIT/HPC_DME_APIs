@@ -152,6 +152,14 @@ public interface HpcDataManagementBusService
 	public HpcDownloadResponseDTO downloadDataObject(String path, 
 			                                         HpcDownloadRequestDTO downloadRequest)
 			                                        throws HpcException;
+	
+    /**
+     * Delete Data Object.
+     *
+     * @param path The data object path.
+     * @throws HpcException on service failure.
+     */
+	public void deleteDataObject(String path) throws HpcException;
 
     /**
      * Set data object permissions.

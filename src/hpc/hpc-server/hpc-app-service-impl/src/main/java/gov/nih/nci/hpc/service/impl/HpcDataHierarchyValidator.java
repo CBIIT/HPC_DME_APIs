@@ -46,8 +46,6 @@ public class HpcDataHierarchyValidator
 	
     /**
      * Constructor for Spring Dependency Injection.
-     * 
-     * @throws HpcException Constructor is disabled.
      */
 	private HpcDataHierarchyValidator()
     {
