@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcDataBrowse.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-databrowse="http://hpc.nci.nih.gov/domain/databrowse"
+	xmlns:hpc-dto-databrowse="http://hpc.nci.nih.gov/dto/databrowse"
+	targetNamespace="http://hpc.nci.nih.gov/dto/databrowse"
+	elementFormDefault="unqualified">
+	
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/databrowse"
+		        schemaLocation="HpcDataBrowseTypes.xsd" />
+
+	<!-- Compound Metadata Query -->
+	<xsd:element name="HpcBookmarkRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+			    <xsd:element name="path" type="xsd:string" />
+			    <xsd:element name="group" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
+		<xsd:element name="HpcBookmarkDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="bookmark" 
+				             type="hpc-domain-databrowse:HpcBookmark" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
+	<xsd:element name="HpcBookmarkListDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="bookmarks"
+				             type="hpc-domain-databrowse:HpcBookmark"
+					         minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
+</xsd:schema>

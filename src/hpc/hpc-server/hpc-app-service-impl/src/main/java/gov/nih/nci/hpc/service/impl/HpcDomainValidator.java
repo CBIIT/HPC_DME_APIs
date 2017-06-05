@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
@@ -30,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -224,6 +226,12 @@ public class HpcDomainValidator
     	return isValidCompoundMetadataQuery(compoundMetadataQuery, 1); 
     }
     
+    /**
+     * Validate named compound metadata query.
+     *
+     * @param namedCompoundMetadataQuery Named compound metadata query.
+     * @return Domain validation result
+     */
     public static HpcDomainValidationResult 
                   isValidNamedCompoundMetadataQuery(HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery)
     {
@@ -277,6 +285,38 @@ public class HpcDomainValidator
 
     	return true;
     }  
+    
+    //---------------------------------------------------------------------//
+    // Data Browse Domain Object Types Validators
+    //---------------------------------------------------------------------//
+    
+    /**
+     * Validate a bookmark.
+     *
+     * @param bookmark The bookmark to validate.
+     * @return Domain validation result
+     */
+    public static HpcDomainValidationResult isValidBookmark(HpcBookmark bookmark)
+    {
+    	HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
+    	validationResult.setValid(false);
+
+    	if(bookmark == null) {
+    	   validationResult.setMessage("Null bookmark");
+    	   return validationResult;
+    	}
+    	if(StringUtils.isEmpty(bookmark.getName())) { 
+    	   validationResult.setMessage("Null or empty bookmark name");
+     	   return validationResult;
+    	}
+    	if(StringUtils.isEmpty(bookmark.getPath())) { 
+    	   validationResult.setMessage("Null or empty bookmark path");
+      	   return validationResult;
+    	}
+    	
+    	validationResult.setValid(true);
+    	return validationResult;
+    }
     
     //---------------------------------------------------------------------//
     // Helper Methods

@@ -91,8 +91,7 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 	private HpcUserQueryRowMapper userQueryRowMapper = new HpcUserQueryRowMapper();
 	
     // The logger instance.
-	private static final Logger logger = 
-			LoggerFactory.getLogger(HpcUserDAOImpl.class.getName());
+	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -111,7 +110,7 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcUserQueryDAO Interface Implementation
+    // HpcUserNamedQueryDAO Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
