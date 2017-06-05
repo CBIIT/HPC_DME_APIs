@@ -86,8 +86,8 @@ public interface HpcDataManagementService
      * Get collection permissions for userId. 
      *
      * @param path The collection path.
+     * @param userId The user-id to get permissions for.
      * @return permission on the collection.
-     * @return userId
      * @throws HpcException on service failure.
      */
     public HpcSubjectPermission getCollectionPermissionForUser(String path, String userId) throws HpcException;
@@ -115,8 +115,8 @@ public interface HpcDataManagementService
      * Get data object permission by userId. 
      *
      * @param path The data object path.
+     * @param userId The user-id to get permissions for.
      * @return permissions on the data object.
-     * @return userId
      * @throws HpcException on service failure.
      */
     public HpcSubjectPermission getDataObjectPermissionForUser(String path, String userId) throws HpcException;

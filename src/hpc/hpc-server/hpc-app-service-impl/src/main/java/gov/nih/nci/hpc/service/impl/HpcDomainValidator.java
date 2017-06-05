@@ -293,7 +293,7 @@ public class HpcDomainValidator
     /**
      * Validate a bookmark.
      *
-     * @param namedCompoundMetadataQuery Named compound metadata query.
+     * @param bookmark The bookmark to validate.
      * @return Domain validation result
      */
     public static HpcDomainValidationResult isValidBookmark(HpcBookmark bookmark)
