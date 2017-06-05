@@ -10,6 +10,9 @@
 
 package gov.nih.nci.hpc.integration;
 
+import java.util.List;
+import java.util.UUID;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
@@ -23,9 +26,6 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
-
-import java.util.List;
-import java.util.UUID;
 
 /**
  * <p>
@@ -80,6 +80,21 @@ public interface HpcDataTransferProxy
     		                                               throws HpcException;
     
     /**
+     * Delete a data object file.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param fileLocation The file location.
+     * @throws HpcException on data transfer system failure.
+     */
+    default public void deleteDataObject(Object authenticatedToken,
+    		                             HpcFileLocation fileLocation)
+                                        throws HpcException
+    {
+    	throw new HpcException("deleteDataObject() not supported",
+                                HpcErrorType.UNEXPECTED_ERROR);
+                                        }
+    
+    /**
      * Get a data transfer upload request status.
      *
      * @param authenticatedToken An authenticated token.
@@ -87,11 +102,12 @@ public interface HpcDataTransferProxy
      * @return The data transfer request status.
      * @throws HpcException on data transfer system failure.
      */
-    default HpcDataTransferUploadStatus getDataTransferUploadStatus(Object authenticatedToken,
-    		                                                        String dataTransferRequestId) 
-    		                                                       throws HpcException
+    default public HpcDataTransferUploadStatus 
+            getDataTransferUploadStatus(Object authenticatedToken,
+    		                            String dataTransferRequestId) 
+    		                           throws HpcException
     {
-    	throw new HpcException("getDataTransferUploadStatus() not supported by S3",
+    	throw new HpcException("getDataTransferUploadStatus() not supported",
 	                           HpcErrorType.UNEXPECTED_ERROR);
     }
     
@@ -103,11 +119,12 @@ public interface HpcDataTransferProxy
      * @return The data transfer request status.
      * @throws HpcException on data transfer system failure.
      */
-    default HpcDataTransferDownloadStatus getDataTransferDownloadStatus(Object authenticatedToken,
+    default public 
+            HpcDataTransferDownloadStatus getDataTransferDownloadStatus(Object authenticatedToken,
     		                                                            String dataTransferRequestId) 
     		                                                           throws HpcException
     {
-    	throw new HpcException("getDataTransferDownloadStatus() not supported by S3",
+    	throw new HpcException("getDataTransferDownloadStatus() not supported",
 	                           HpcErrorType.UNEXPECTED_ERROR);
     }
     
@@ -119,11 +136,11 @@ public interface HpcDataTransferProxy
      * @return The size of the data transferred in bytes.
      * @throws HpcException on data transfer system failure.
      */
-    default long getDataTransferSize(Object authenticatedToken,
-    		                         String dataTransferRequestId) 
-    		                        throws HpcException
+    default public long getDataTransferSize(Object authenticatedToken,
+    		                                String dataTransferRequestId) 
+    		                               throws HpcException
     {
-    	throw new HpcException("getDataTransferStatus() not supported by S3",
+    	throw new HpcException("getDataTransferStatus() not supported",
 	               HpcErrorType.UNEXPECTED_ERROR);
     }
     
@@ -136,12 +153,12 @@ public interface HpcDataTransferProxy
      * @return The path attributes.
      * @throws HpcException on data transfer system failure.
      */
-    default HpcPathAttributes getPathAttributes(Object authenticatedToken, 
-    		                                    HpcFileLocation fileLocation,
-    		                                    boolean getSize) 
-    		                                   throws HpcException
+    default public HpcPathAttributes getPathAttributes(Object authenticatedToken, 
+    		                                           HpcFileLocation fileLocation,
+    		                                           boolean getSize) 
+    		                                          throws HpcException
     {
-    	throw new HpcException("getDataTransferStatus() not supported by S3",
+    	throw new HpcException("getDataTransferStatus() not supported",
                                HpcErrorType.UNEXPECTED_ERROR);
     }
     
@@ -153,9 +170,9 @@ public interface HpcDataTransferProxy
      * @return a file path.
      * @throws HpcException on data transfer system failure.
      */
-    default String getFilePath(String fileId, boolean archive) throws HpcException
+    default public String getFilePath(String fileId, boolean archive) throws HpcException
     {
-	  	throw new HpcException("getFilePath not supported by S3",
+	  	throw new HpcException("getFilePath not supported",
 	                           HpcErrorType.UNEXPECTED_ERROR);
     }
     
@@ -166,9 +183,9 @@ public interface HpcDataTransferProxy
      * @return The download source location.
      * @throws HpcException on data transfer system failure.
      */
-    default HpcFileLocation getDownloadSourceLocation(String path) throws HpcException
+    default public HpcFileLocation getDownloadSourceLocation(String path) throws HpcException
     {
-	  	throw new HpcException("getDownloadSourceLocation not supported by S3",
+	  	throw new HpcException("getDownloadSourceLocation not supported",
 	                           HpcErrorType.UNEXPECTED_ERROR);
     }
     

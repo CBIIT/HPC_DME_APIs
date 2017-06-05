@@ -85,7 +85,6 @@ public class HpcDocConfigurationLocator extends HashMap<String, HpcDocConfigurat
 	/**
      * Load the DOC configurations from the DB. Called by spring as init-method.
      *
-     * @param docBasePaths The base paths in a config-string format.
      * @throws HpcException On configuration error.
      */
 	public void reload() throws HpcException

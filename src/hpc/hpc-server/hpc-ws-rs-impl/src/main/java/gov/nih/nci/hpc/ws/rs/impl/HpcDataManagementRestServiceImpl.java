@@ -10,6 +10,18 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.UUID;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
@@ -31,18 +43,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.UUID;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -263,6 +263,19 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		return downloadResponse(downloadResponse, messageContext);
+    }
+    
+    @Override
+	public Response deleteDataObject(String path)
+    {
+		try {
+			 dataManagementBusService.deleteDataObject(path);
+			 
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+		return okResponse(null, false);
     }
     
     @Override

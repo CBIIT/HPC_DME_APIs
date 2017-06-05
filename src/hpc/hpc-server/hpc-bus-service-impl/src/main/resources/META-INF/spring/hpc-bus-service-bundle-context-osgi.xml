@@ -34,6 +34,8 @@
 		          interface="gov.nih.nci.hpc.bus.HpcDataManagementBusService" />
 	<osgi:service ref="hpcDataSearchBusService"
 		          interface="gov.nih.nci.hpc.bus.HpcDataSearchBusService" />
+	<osgi:service ref="hpcDataBrowseBusService"
+		          interface="gov.nih.nci.hpc.bus.HpcDataBrowseBusService" />
 	<osgi:service ref="hpcSystemBusService"
 		          interface="gov.nih.nci.hpc.bus.HpcSystemBusService" />
 	<osgi:service ref="hpcNotificationBusService"
@@ -54,6 +56,8 @@
 		            interface="gov.nih.nci.hpc.service.HpcDataManagementSecurityService" />
 	<osgi:reference id="hpcDataSearchService"
 		            interface="gov.nih.nci.hpc.service.HpcDataSearchService" />
+	<osgi:reference id="hpcDataBrowseService"
+		            interface="gov.nih.nci.hpc.service.HpcDataBrowseService" />
 	<osgi:reference id="hpcMetadataService"
 		            interface="gov.nih.nci.hpc.service.HpcMetadataService" />
 	<osgi:reference id="hpcNotificationService"
