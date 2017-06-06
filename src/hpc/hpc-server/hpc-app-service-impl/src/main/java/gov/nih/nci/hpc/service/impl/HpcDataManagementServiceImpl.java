@@ -11,14 +11,28 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import gov.nih.nci.hpc.dao.HpcDataObjectDeletionDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
@@ -28,15 +42,6 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -72,6 +77,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	// DOC configuration locator.
 	@Autowired
 	private HpcDocConfigurationLocator docConfigurationLocator = null;
+	
+	// Data Object Deletion DAO.
+	@Autowired
+	private HpcDataObjectDeletionDAO dataObjectDeletionDAO = null;
 	
 	// Prepared query to get data objects that have their data transfer in-progress to archive.
 	private List<HpcMetadataQuery> dataTransferInProgressToArchiveQuery = new ArrayList<>();
@@ -224,6 +233,25 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	// Delete the data object file.
     	dataManagementProxy.delete(dataManagementAuthenticator.getAuthenticatedToken(), path);
+    }
+    
+    @Override
+    public void delete(String path, HpcFileLocation archiveLocation,
+    		           boolean archiveDeleteStatus, HpcMetadataEntries metadataEntries) 
+    		          throws HpcException
+    {
+		// Try to remove the path capture the status.
+		boolean dataManagementDeleteStatus = true;
+		try {
+    	     delete(path);
+    	     
+		} catch(HpcException e) {
+			    dataManagementDeleteStatus = false;
+		}
+		
+		dataObjectDeletionDAO.insert(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId(), 
+				                     path, metadataEntries, archiveLocation, archiveDeleteStatus, 
+				                     dataManagementDeleteStatus, Calendar.getInstance());
     }
     
     @Override
