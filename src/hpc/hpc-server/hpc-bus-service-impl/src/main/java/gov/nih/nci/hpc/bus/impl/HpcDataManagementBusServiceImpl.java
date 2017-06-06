@@ -458,14 +458,28 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                                     throws HpcException
     {
     	// Input validation.
-    	if(downloadRequest == null) {
-    	   throw new HpcException("Null download request",
+    	if(path == null || downloadRequest == null) {
+    	   throw new HpcException("Null path or download request",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
-    	
-    	// Validate the data-object exists and archived. 
-    	HpcSystemGeneratedMetadata metadata = validateArchived(path);
-    	
+        	
+		// Validate the data object exists.
+		if(dataManagementService.getDataObject(path) == null) {
+		   throw new HpcException("Data object doesn't exist: " + path,
+	                              HpcErrorType.INVALID_REQUEST_INPUT);	
+	  	}
+		
+		// Get the System generated metadata.
+		HpcSystemGeneratedMetadata metadata = 
+		   metadataService.getDataObjectSystemGeneratedMetadata(path);
+		
+		// Validate the file is archived.
+		if(!metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+		   throw new HpcException("Object is not in archived state yet. It is in " +
+				                  metadata.getDataTransferStatus().value() + " state",
+				                  HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+		}
+		
     	// Download the data object.
     	HpcDataObjectDownloadResponse downloadResponse = 
     		   dataTransferService.downloadDataObject(path, metadata.getArchiveLocation(), 
@@ -482,13 +496,44 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     @Override
     public void deleteDataObject(String path) throws HpcException
     {
-    	// Validate the data-object exists and archived. 
-    	HpcSystemGeneratedMetadata metadata = validateArchived(path);
+    	// Input validation.
+    	if(path == null) {
+    	   throw new HpcException("Null path",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+        	
+		// Validate the data object exists.
+		if(dataManagementService.getDataObject(path) == null) {
+		   throw new HpcException("Data object doesn't exist: " + path,
+	                              HpcErrorType.INVALID_REQUEST_INPUT);	
+	  	}
+		
+    	// Get the metadata for this data object. 
+    	HpcMetadataEntries metadataEntries = 
+    		               metadataService.getDataObjectMetadataEntries(path);
+    	HpcSystemGeneratedMetadata systemGeneratedMetadata =
+		   metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
+		
+		// Validate the file is archived.
+		if(!systemGeneratedMetadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+		   throw new HpcException("Object is not in archived state yet. It is in " +
+				                  systemGeneratedMetadata.getDataTransferStatus().value() + " state",
+				                  HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+		}
     	
-    	dataTransferService.deleteDataObject(metadata.getArchiveLocation(), 
-                                             metadata.getDataTransferType());
-    	
-    	dataManagementService.delete(path);
+		// Try to remove the file from archive and capture the status.
+		boolean archiveDeleteStatus = true;
+		try {
+    	     dataTransferService.deleteDataObject(systemGeneratedMetadata.getArchiveLocation(), 
+    		     	                              systemGeneratedMetadata.getDataTransferType());
+    	     
+		} catch(HpcException e) {
+			    archiveDeleteStatus = false;
+		}
+		
+		// Remove the file from data management.
+    	dataManagementService.delete(path, systemGeneratedMetadata.getArchiveLocation(),
+    			                     archiveDeleteStatus, metadataEntries);
     	
     }
     
@@ -1073,39 +1118,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	return collectionTreeEntry;
     }
     
-	/** 
-     * Validate a path is of an archived data-object.
-     * 
-     * @param path The data object path
-     * @return The data object's system generated metadata if the data-object is archived.
-     * @throws HpcException If the data-object is not archived or doesn't exist.
-     */
-    private HpcSystemGeneratedMetadata validateArchived(String path) throws HpcException
-    {
-    	if(path == null) {
-     	   throw new HpcException("Null path",
-     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
-     	}
-    	
-		// Validate the data object exists.
-		if(dataManagementService.getDataObject(path) == null) {
-		   throw new HpcException("Data object doesn't exist: " + path,
-	                              HpcErrorType.INVALID_REQUEST_INPUT);	
-	  	}
-		
-		// Get the System generated metadata.
-		HpcSystemGeneratedMetadata metadata = 
-		   metadataService.getDataObjectSystemGeneratedMetadata(path);
-		
-		// Validate the file is archived.
-		if(!metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
-		   throw new HpcException("Object is not in archived state yet. It is in " +
-				                  metadata.getDataTransferStatus().value() + " state",
-				                  HpcRequestRejectReason.FILE_NOT_ARCHIVED);
-		}
-		
-		return metadata;
-    }
+
 }
 
  
