@@ -29,7 +29,6 @@ import java.util.List;
  * </p>
  *
  * @author <a href="mailto:Mahidhar.Narra@nih.gov">Mahidhar Narra</a>
- * @version $Id$
  */
 
 public interface HpcDataTransferService 
@@ -42,13 +41,14 @@ public interface HpcDataTransferService
      * @param path The data object registration path.
      * @param userId The user-id who requested the data upload.
      * @param callerObjectId The caller's provided data object ID.
+     * @param doc The doc (needed to determine the archive connection config).
      * @return A data object upload response.
      * @throws HpcException on service failure.
      */
 	public HpcDataObjectUploadResponse uploadDataObject(HpcFileLocation sourceLocation, 
                                                         File sourceFile, 
                                                         String path, String userId,
-                                                        String callerObjectId)
+                                                        String callerObjectId, String doc)
                                                        throws HpcException;
     
     /** 
@@ -58,6 +58,7 @@ public interface HpcDataTransferService
      * @param archiveLocation The archive file location.
      * @param destinationLocation The user requested file destination.
      * @param dataTransferType The data transfer type.
+     * @param doc The doc (needed to determine the archive connection config).
      * @return A data object download response.
      * @throws HpcException on service failure.
      */
@@ -65,7 +66,8 @@ public interface HpcDataTransferService
 			                                     String path,
 			                                     HpcFileLocation archiveLocation, 
 			                                     HpcFileLocation destinationLocation,
-			                                     HpcDataTransferType dataTransferType) 
+			                                     HpcDataTransferType dataTransferType,
+			                                     String doc) 
 			                                     throws HpcException;
 	
     /** 
@@ -73,10 +75,12 @@ public interface HpcDataTransferService
      * 
      * @param fileLocation The file location.
      * @param dataTransferType The data transfer type.
+     * @param doc The doc (needed to determine the archive connection config).
      * @throws HpcException on service failure.
      */
 	public void deleteDataObject(HpcFileLocation fileLocation, 
-                                 HpcDataTransferType dataTransferType) 
+                                 HpcDataTransferType dataTransferType,
+                                 String doc) 
                                 throws HpcException;
 	
     /**
@@ -84,11 +88,13 @@ public interface HpcDataTransferService
      *
      * @param dataTransferType The data transfer type.
      * @param dataTransferRequestId The data transfer request ID.
+     * @param doc The doc (needed to determine the archive connection config).
      * @return The data transfer upload request status.
      * @throws HpcException on service failure.
      */
     public HpcDataTransferUploadStatus getDataTransferUploadStatus(HpcDataTransferType dataTransferType,
-    		                                                       String dataTransferRequestId) 
+    		                                                       String dataTransferRequestId,
+    		                                                       String doc) 
     		                                                      throws HpcException;
     
     /**
@@ -96,11 +102,12 @@ public interface HpcDataTransferService
      *
      * @param dataTransferType The data transfer type.
      * @param dataTransferRequestId The data transfer request ID.
+     * @param doc The doc (needed to determine the archive connection config).
      * @return The data transfer download request status.
      * @throws HpcException on service failure.
      */
     public HpcDataTransferDownloadStatus getDataTransferDownloadStatus(HpcDataTransferType dataTransferType,
-    		                                                           String dataTransferRequestId) 
+    		                                                           String dataTransferRequestId, String doc) 
     		                                                          throws HpcException;
     
     /**
@@ -108,11 +115,12 @@ public interface HpcDataTransferService
      *
      * @param dataTransferType The data transfer type.
      * @param dataTransferRequestId The data transfer request ID.
+     * @param doc The doc (needed to determine the archive connection config).
      * @return The size of the data transferred in bytes.
      * @throws HpcException on service failure.
      */
     public long getDataTransferSize(HpcDataTransferType dataTransferType,
-    		                        String dataTransferRequestId) 
+    		                        String dataTransferRequestId, String doc) 
     		                       throws HpcException;
     
     /**
@@ -121,12 +129,13 @@ public interface HpcDataTransferService
      * @param dataTransferType The data transfer type.
      * @param fileLocation The endpoint/path to get attributes for.
      * @param getSize If set to true, the file/directory size will be returned. 
+     * @param doc The doc (needed to determine the archive connection config).
      * @return The path attributes.
      * @throws HpcException on service failure.
      */
     public HpcPathAttributes getPathAttributes(HpcDataTransferType dataTransferType,
     		                                   HpcFileLocation fileLocation,
-    		                                   boolean getSize) 
+    		                                   boolean getSize, String doc) 
     		                                  throws HpcException;
     
     /**

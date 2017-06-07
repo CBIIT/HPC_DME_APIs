@@ -9,7 +9,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -83,6 +82,7 @@
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="sourceLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="sourceFile" type="hpc-domain-datatransfer:HpcFile" />
+			<xsd:element name="doc" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -105,6 +105,7 @@
 			<xsd:element name="archiveLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
+			<xsd:element name="doc" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -120,6 +121,7 @@
 		<xsd:sequence>
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="doc" type="xsd:string" />
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
 			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="downloadFilePath" type="xsd:string" />

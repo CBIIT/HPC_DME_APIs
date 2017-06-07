@@ -41,7 +41,6 @@
 		  <prop key="hpc.integration.globus.download.path">/mnt/IRODsTest/FNL_SF_Share</prop>
 		  <prop key="hpc.integration.globus.download.directory">/mnt/IRODsTest/FNL_SF_Share</prop>
 		  
-		  <prop key="hpc.integration.cleversafe.URL">http://fr-s-clvrsf-01.ncifcrf.gov</prop>
 	      <prop key="hpc.integration.cleversafe.archive.vault">DSE-TestVault1</prop>
 		  <prop key="hpc.integration.cleversafe.archive.objectId">FNL_SF_Archive</prop>
 		  <prop key="hpc.integration.cleversafe.archive.type">ARCHIVE</prop>

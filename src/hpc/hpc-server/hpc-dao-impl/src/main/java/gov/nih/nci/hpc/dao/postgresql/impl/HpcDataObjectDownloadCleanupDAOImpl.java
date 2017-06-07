@@ -33,7 +33,6 @@ import org.springframework.jdbc.core.RowMapper;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloadCleanupDAO
@@ -45,11 +44,12 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
     // SQL Queries.
 	public static final String UPSERT_SQL = 
 		   "insert into public.\"HPC_DATA_OBJECT_DOWNLOAD_CLEANUP\" ( " +
-                    "\"USER_ID\", \"PATH\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", \"DOWNLOAD_FILE_PATH\"," +
+                    "\"USER_ID\", \"PATH\", \"DOC\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", \"DOWNLOAD_FILE_PATH\"," +
                     "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\") " +
-                    "values (?, ?, ?, ?, ?, ?, ?) " +
+                    "values (?, ?, ?, ?, ?, ?, ?, ?) " +
            "on conflict(\"DATA_TRANSFER_REQUEST_ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
                         "\"PATH\"=excluded.\"PATH\", " + 
+                        "\"DOC\"=excluded.\"DOC\", " + 
                         "\"DATA_TRANSFER_REQUEST_ID\"=excluded.\"DATA_TRANSFER_REQUEST_ID\", " + 
                         "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\", " +
                         "\"DOWNLOAD_FILE_PATH\"=excluded.\"DOWNLOAD_FILE_PATH\", " +
@@ -103,6 +103,7 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
 		     jdbcTemplate.update(UPSERT_SQL,
 		    		             dataObjectDownloadCleanup.getUserId(),
 		    		             dataObjectDownloadCleanup.getPath(),
+		    		             dataObjectDownloadCleanup.getDoc(),
 		    		             dataObjectDownloadCleanup.getDataTransferRequestId(),
 		    		             dataObjectDownloadCleanup.getDataTransferType().value(),
 		    		             dataObjectDownloadCleanup.getDownloadFilePath(),
@@ -156,6 +157,7 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
 		{
 			HpcDataObjectDownloadCleanup dataObjectDownloadCleanup = new HpcDataObjectDownloadCleanup();
 			dataObjectDownloadCleanup.setUserId(rs.getString("USER_ID"));
+			dataObjectDownloadCleanup.setDoc(rs.getString("DOC"));
 			dataObjectDownloadCleanup.setPath(rs.getString("PATH"));
 			dataObjectDownloadCleanup.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
 			dataObjectDownloadCleanup.setDataTransferType(
