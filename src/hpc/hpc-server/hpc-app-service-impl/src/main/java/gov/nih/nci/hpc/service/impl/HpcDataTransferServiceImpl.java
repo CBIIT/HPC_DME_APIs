@@ -688,7 +688,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
  				  	                                         firstHopDownloadRequest.getArchiveLocation().getFileId(),
  				  	                                         firstHopDownloadRequest.getDoc()),
  			        HpcDataTransferType.GLOBUS,
- 			        firstHopDownloadRequest.getPath());
+ 			        firstHopDownloadRequest.getPath(),
+ 			       firstHopDownloadRequest.getDoc());
 			
 			// Create the source file for the second hop download
 			sourceFile = createFile(
@@ -781,12 +782,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	     * @param destinationLocation The caller's destination.
 	     * @param dataTransferType The data transfer type to create the request
 	     * @param path The data object logical path.
+	     * @param doc The DOC.
 	     * @return Data object download request.
 	     * @throws HpcException If it failed to obtain an authentication token.
 	     */
 	    private HpcDataObjectDownloadRequest toSecondHopDownloadRequest(HpcFileLocation destinationLocation,
 	    		                                                        HpcDataTransferType dataTransferType,
-	    		                                                        String path)
+	    		                                                        String path, String doc)
 	    		                                                       throws HpcException
 	    {
 	    	// Create a source location.
@@ -800,6 +802,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    	downloadRequest.setDestinationLocation(destinationLocation);
 	    	downloadRequest.setDataTransferType(dataTransferType);
 	    	downloadRequest.setPath(path);
+	    	downloadRequest.setDoc(doc);
 	    	
 	    	return downloadRequest;
 	    }
