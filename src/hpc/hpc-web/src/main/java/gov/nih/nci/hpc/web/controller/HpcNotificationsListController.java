@@ -11,6 +11,7 @@ package gov.nih.nci.hpc.web.controller;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
+import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.web.model.HpcNotificationReceipt;
@@ -89,7 +91,7 @@ public class HpcNotificationsListController extends AbstractHpcController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
+		result.sort(Comparator.comparing(HpcNotificationReceipt::getEventCreated));
 		return result;
 	}
 }

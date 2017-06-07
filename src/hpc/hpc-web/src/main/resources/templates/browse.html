@@ -47,6 +47,7 @@
 <script src="../bower_components/jquery/dist/jquery.js"></script>
 <!--https://mbraak.github.io/jqTree -->
 <script src="js/tree.jquery.js"></script>
+<script src="js/jqTreeContextMenu.js"></script>
 <link rel="stylesheet" href="css/ui-grid.css"
 	type="text/css" />
 <script
@@ -58,6 +59,7 @@
     var end = "]";
     var data = [[${browserEntryList}]];
     var basePathName = [[${basePath}]];
+    var scrollLoc = [[${scrollLoc}]];
 /*]]>*/
 </script>
 	
@@ -90,9 +92,18 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+.myMenuStyle {
+		position: absolute;
+		background-color: #eee;
+		border: 1px solid #000;
+		list-style: none;
+	}
+	.myMenuStyle > li {
+		background-color: #eee;
+	}
 </style>
 </head>
-<body ng-controller="MyCtrl">
+<body ng-controller="MyCtrl" onload="scrollWindow()">
 
 	<!-- container section start -->
 	<section id="container" class="">
@@ -156,10 +167,26 @@
 										</div>
 										<!-- /.modal-dialog -->
 									</div>								
+									<div class="modal fade" id="createBookmarksTarget" tabindex="-1" role="dialog"
+										aria-labelledby="browsePartialLabel" aria-hidden="true">
+										<div class="modal-dialog">
+											<div class="modal-content"></div>
+											<!-- /.modal-content -->
+										</div>
+										<!-- /.modal-dialog -->
+									</div>								
 								
 									<div class="form-group">
 										<div id="tree1"></div>										
 									</div>
+<!--									
+									<ul id="myMenu" class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+											<li><a href="#Bookmark"><i class="fa fa-star"></i>Bookmark</a></li>
+											<li> <a data-toggle="modal" id="bookmark" class="btn btn-link btn-sm" th:href="@{/bookmark}" data-target="#createBookmarksTarget">Bookmark &nbsp;<i class="fa fa-star" title="Bookmark" aria-hidden="true"></i></a></li>
+ 											<li class="divider"></li>
+											<li><a href="#"><i class="icon-remove"></i> Unbookmark</a></li>
+									</ul>	
+ -->											
 								</div>
 							</div>
 
@@ -178,6 +205,7 @@
 		method="POST">
 		<input type="hidden" id="selectedNodePath" name="selectedNodePath"/>
 		<input type="hidden" id="selectedNodeId" name="selectedNodeId"/>
+		<input type="hidden" id="scrollLoc" name="scrollLoc"/>
 	</form>
 	
 	<!-- container section start -->
@@ -197,12 +225,14 @@
 
 <script th:inline="javascript">
 /*<![CDATA[*/
+           
 $(function() {
     $('#tree1').tree({
     	closedIcon: $('<i class="fa fa-folder" />'),
         openedIcon: $('<i class="fa fa-folder-open" />'),
         data: data,
         saveState: true,
+        usecontextmenu: true,
         onCreateLi: function(node, $li) {
             if (node.collection) {
                 $li.find('.jqtree-title').before('<span class="folder-icon"></span>');
@@ -225,14 +255,44 @@ $('#tree1').bind(
     }
 );
 
+$("body").mousemove(function(e) {
+    scrollLoc = e.pageY;
+})
+
+function scrollWindow()
+{
+	window.scrollBy(0, Number(scrollLoc));
+}
+
 $('#tree1').bind('tree.open', function (e,data) {  
 	document.getElementById("selectedNodePath").value = e.node.fullPath;
 	var node = e.node;
     document.getElementById("processingIcon"+node.id).style.visibility = "visible";
 	document.getElementById("selectedNodeId").value = node.id;
+	document.getElementById("scrollLoc").value = scrollLoc;
 	$("#browseForm").submit();
 }
 );
+
+$('#tree1').jqTreeContextMenu($('#myMenu'), {
+    "Bookmark": function (node) { 
+//    	alert('Bookmark: ' + node.name); 
+    	 $('#createBookmarksTarget').removeData('bs.modal');
+    	 $('#createBookmarksTarget').modal({remote: '/bookmark?path'+ node.name});
+    	 // $('#createBookmarksTarget').find(".modal-body").load('/bookmark');
+       	  $('#createBookmarksTarget').modal('show');
+//    	$(document).on('show.bs.modal','#createBookmarksTarget', function (e) {
+//    		  alert('hi1');
+//      	    var link = $(e.relatedTarget);
+//      	    alert("link "+link)
+//      	    alert($('#createBookmarksTarget').find(".modal-body"));
+      	    //$(this).find(".modal-body").load(link.attr("/bookmark"));
+//      	  $('#createBookmarksTarget').find(".modal-body").load('/bookmark');
+//       	  $('#createBookmarksTarget').modal('show');
+//    	});
+    }
+}); 
+
 /*]]>*/
 </script>
 

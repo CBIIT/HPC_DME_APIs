@@ -61,6 +61,8 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
+import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
+import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
@@ -85,6 +87,7 @@ import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.web.HpcWebException;
+import gov.nih.nci.hpc.web.model.HpcBookmark;
 
 public class HpcClientUtil {
 
@@ -491,6 +494,101 @@ public class HpcClientUtil {
 		}
 	}
 
+	public static boolean createBookmark(String token, String hpcBookmarkURL, HpcBookmarkRequestDTO hpcBookmark,
+			String hpcBookmarkName, String hpcCertPath, String hpcCertPassword) {
+		try {
+			WebClient client = HpcClientUtil.getWebClient(hpcBookmarkURL + "/" + hpcBookmarkName, hpcCertPath,
+					hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.invoke("PUT", hpcBookmark);
+			if (restResponse.getStatus() == 201) {
+				return true;
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				throw new HpcWebException("Failed to create bookmark: " + exception.getMessage());
+			}
+		} catch (HpcWebException e) {
+			throw e;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to create bookmark due to: " + e.getMessage());
+		}
+	}
+
+	public static boolean deleteBookmark(String token, String hpcBookmarkURL, 
+			String hpcBookmarkName, String hpcCertPath, String hpcCertPassword) {
+		try {
+			WebClient client = HpcClientUtil.getWebClient(hpcBookmarkURL + "/" + hpcBookmarkName, hpcCertPath,
+					hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.delete();
+			if (restResponse.getStatus() == 200) {
+				return true;
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				throw new HpcWebException("Failed to delete bookmark: " + exception.getMessage());
+			}
+		} catch (HpcWebException e) {
+			throw e;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to delete bookmark due to: " + e.getMessage());
+		}
+	}
+
+	public static HpcBookmarkListDTO getBookmarks(String token, String hpcBookmarkURL, String hpcCertPath,
+			String hpcCertPassword) {
+		WebClient client = HpcClientUtil.getWebClient(hpcBookmarkURL, hpcCertPath, hpcCertPassword);
+		client.header("Authorization", "Bearer " + token);
+
+		Response restResponse = client.get();
+
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
+		MappingJsonFactory factory = new MappingJsonFactory();
+		JsonParser parser;
+		try {
+			parser = factory.createParser((InputStream) restResponse.getEntity());
+		} catch (IllegalStateException | IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get Bookmarks due to: " + e.getMessage());
+		}
+		try {
+			return parser.readValueAs(HpcBookmarkListDTO.class);
+		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get Bookmarks due to: " + e.getMessage());
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get Bookmarks due to: " + e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get Bookmarks due to: " + e.getMessage());
+		}
+	}
+
 	public static HpcGroupMembersResponseDTO createGroup(String token, String hpcUserURL,
 			HpcGroupMembersRequestDTO groupDTO, String groupName, String hpcCertPath, String hpcCertPassword) {
 		HpcGroupMembersResponseDTO response = null;
@@ -677,6 +775,36 @@ public class HpcClientUtil {
 		}
 	}
 
+	public static boolean deleteDatafile(String token, String hpcDatafileURL,
+			String path, String hpcCertPath, String hpcCertPassword) {
+		try {
+			WebClient client = HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath, hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.delete();
+			if (restResponse.getStatus() == 200) {
+				return true;
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				throw new HpcWebException("Failed to delete data file: " + exception.getMessage());
+			}
+		} catch (HpcWebException e) {
+			throw e;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to delete data file due to: " + e.getMessage());
+		}
+	}
 	public static boolean updateUser(String token, String hpcUserURL, HpcUserRequestDTO userDTO, String userId,
 			String hpcCertPath, String hpcCertPassword) {
 		try {
