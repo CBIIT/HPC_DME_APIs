@@ -12,6 +12,8 @@ package gov.nih.nci.hpc.service;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -62,6 +64,23 @@ public interface HpcDataManagementService
      * @throws HpcException on service failure.
      */
     public void delete(String path) throws HpcException;
+    
+    /**
+     * Delete a path (data object or directory) and keep a record of the deletion in the DB.
+     * Note: Currently, there is no 'audit trail' functionality implemented. iRODS has this capability, and there
+     * is a plan to use it. This is a temporary solution to have a record of what data objects deleted, by
+     * who and when. When the permanent solution is implemented (using iRODS capability) this API method and the
+     * DAO behind it should be retired.
+     *
+     * @param path The path to delete.
+     * @param archiveLocation The physical file location in the archive.
+     * @param metadataEntries The metadata associated with this path.
+     * @param archiveDeleteStatus True if the physical file was successfully removed from archive.
+     * @throws HpcException on service failure.
+     */
+    public void delete(String path, HpcFileLocation archiveLocation, 
+    		           boolean archiveDeleteStatus, HpcMetadataEntries metadataEntries) 
+    		          throws HpcException;
     
     /**
      * Set collection permission for a subject (user or group). 
