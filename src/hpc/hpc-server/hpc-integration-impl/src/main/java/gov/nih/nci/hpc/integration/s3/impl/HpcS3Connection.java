@@ -29,36 +29,16 @@ import com.amazonaws.services.s3.transfer.TransferManager;
 public class HpcS3Connection 
 { 
     //---------------------------------------------------------------------//
-    // Instance members
-    //---------------------------------------------------------------------//
-	
-	// S3 connection attributes.
-	private String s3URL = null;
-	
-    //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
 	
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param s3URL The S3 Endpoint URL.
      */
-    private HpcS3Connection(String s3URL)
+    private HpcS3Connection()
     {
-        this.s3URL = s3URL;
     }
-    
-	/**
-     * Default Constructor.
-     * 
-     * @throws HpcException Constructor is disabled.
-     */
-	private HpcS3Connection() throws HpcException
-    {
-    	throw new HpcException("Constructor Disabled",
-                               HpcErrorType.SPRING_CONFIGURATION_ERROR);
-    }   
     
     //---------------------------------------------------------------------//
     // Methods
@@ -68,9 +48,10 @@ public class HpcS3Connection
      * Authenticate an account.
      *
      * @param dataTransferAccount A data transfer account to authenticate.
+     * @param s3URL The S3 URL to connect to.
      * @return An authenticated TransferManager object, or null if authentication failed.
      */
-    public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount)
+    public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String s3URL)
     {
     	BasicAWSCredentials cleversafeCredentials = 
     		 new BasicAWSCredentials(dataTransferAccount.getUsername(), 

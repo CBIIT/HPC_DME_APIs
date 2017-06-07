@@ -12,10 +12,12 @@
 -- @version $Id$
 --
 
-INSERT INTO public."HPC_DOC_CONFIGURATION" VALUES('NOHIERARCHY', '/NO_HIERARCHY', NULL);
+INSERT INTO public."HPC_DOC_CONFIGURATION" 
+VALUES('NOHIERARCHY', '/NO_HIERARCHY', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'NO_HIERARCHY',
+       'ARCHIVE', NULL, NULL, NULL);
 
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('FNLCR', '/FNL_SF_Archive',
+VALUES('FNLCR', '/FNL_SF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'FNL_SF_Archive', 'ARCHIVE',
        '{
       	 "collectionType": "PI_Lab",
       	 "isDataObjectContainer": false,
@@ -384,10 +386,12 @@ VALUES('FNLCR', '/FNL_SF_Archive',
 		 ]
 	    }');
 
-INSERT INTO public."HPC_DOC_CONFIGURATION" VALUES('CCBR', '/CCBR_SF_Archive', NULL, NULL, NULL);
+INSERT INTO public."HPC_DOC_CONFIGURATION" 
+VALUES('CCBR', '/CCBR_SF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 
+       'CCBR_SF_Archive', 'ARCHIVE', NULL, NULL, NULL);
 
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('DUMMY', '/TEST_Archive',
+VALUES('DUMMY', '/TEST_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'DUMMY_Archive', 'ARCHIVE',
        '{
       	 "collectionType": "Project",
       	 "isDataObjectContainer": true,
@@ -907,8 +911,15 @@ VALUES('DUMMY', '/TEST_Archive',
 		 ]
 	    }');
 
-INSERT INTO public."HPC_DOC_CONFIGURATION" VALUES('CCR-LEEMAX', '/CCR_LEEMAX_Archive', NULL, NULL, NULL);
+INSERT INTO public."HPC_DOC_CONFIGURATION" 
+VALUES('CCR-LEEMAX', '/CCR_LEEMAX_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'CCR_LEEMAX_Archive',
+       'ARCHIVE', NULL, NULL, NULL);
 
-INSERT INTO public."HPC_DOC_CONFIGURATION" VALUES('HiTIF', '/HiTIF_Archive', NULL, NULL, NULL);
-INSERT INTO public."HPC_DOC_CONFIGURATION" VALUES('DUMMY_NO_HIER', '/TEST_NO_HIER_Archive', NULL, NULL, NULL);
+INSERT INTO public."HPC_DOC_CONFIGURATION" 
+VALUES('HiTIF', '/HiTIF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'HiTIF_Archive',
+       'ARCHIVE', NULL, NULL, NULL);
+                                                  
+INSERT INTO public."HPC_DOC_CONFIGURATION" 
+VALUES('DUMMY_NO_HIER', '/TEST_NO_HIER_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'NO_HIER_Archive',
+       'ARCHIVE', NULL, NULL, NULL);
 

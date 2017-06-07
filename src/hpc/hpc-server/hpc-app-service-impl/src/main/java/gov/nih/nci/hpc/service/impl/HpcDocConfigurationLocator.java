@@ -11,6 +11,8 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.dao.HpcDocConfigurationDAO;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
@@ -80,6 +82,40 @@ public class HpcDocConfigurationLocator extends HashMap<String, HpcDocConfigurat
 	public Set<String> getBasePaths() 
     {
 		return basePaths;
+    }
+	
+	/**
+     * Get Archive connection URL for a specific DOC and data transfer type.
+     * Note: At this time only S3 URL is configurable, but not Globus.
+     *
+     * @param doc The DOC.
+     * @param dataTransferType The data transfer type.
+     * @return The archive URL for the requested DOC and data-transfer.
+     */
+	public String getArchiveURL(String doc, HpcDataTransferType dataTransferType) 
+    {
+		HpcDocConfiguration docConfiguration = get(doc);
+		if(docConfiguration != null && dataTransferType.equals(HpcDataTransferType.S_3)) {
+		   return docConfiguration.getS3URL();
+		}
+		return null;
+    }
+	
+	/**
+     * Get base archive destination for a specific DOC and data transfer type.
+     * Note: At this time only S3 base archive destination is configurable, but not Globus.
+     *
+     * @param doc The DOC.
+     * @param dataTransferType The data transfer type.
+     * @return The base archive destination  for the requested DOC and data-transfer.
+     */
+	public HpcArchive getBaseArchiveDestination(String doc, HpcDataTransferType dataTransferType) 
+    {
+		HpcDocConfiguration docConfiguration = get(doc);
+		if(docConfiguration != null && dataTransferType.equals(HpcDataTransferType.S_3)) {
+		   return docConfiguration.getS3BaseArchiveDestination();
+		}
+		return null;
     }
 	
 	/**

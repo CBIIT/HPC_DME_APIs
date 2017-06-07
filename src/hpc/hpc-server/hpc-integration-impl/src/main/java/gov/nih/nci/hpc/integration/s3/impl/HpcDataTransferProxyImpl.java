@@ -1,21 +1,6 @@
 package gov.nih.nci.hpc.integration.s3.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
-import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
-import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
-import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 
 import java.util.Calendar;
 import java.util.List;
@@ -33,13 +18,28 @@ import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.amazonaws.services.s3.transfer.model.UploadResult;
 
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
+import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
+
 /**
  * <p>
  * HPC Data Transfer Proxy S3 Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcDataTransferProxyImpl implements HpcDataTransferProxy 
@@ -78,10 +78,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     //---------------------------------------------------------------------//  
     
     @Override
-    public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount) 
+    public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount,
+    		                   String url) 
 		                      throws HpcException
     {
-    	return s3Connection.authenticate(dataTransferAccount);
+    	return s3Connection.authenticate(dataTransferAccount, url);
     }
     
     @Override

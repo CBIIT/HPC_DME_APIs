@@ -73,7 +73,6 @@ import org.springframework.util.StringUtils;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusService
@@ -359,7 +358,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       	        // Validate the new collection meets the hierarchy definition.
     		    String collectionPath = path.substring(0, path.lastIndexOf('/'));
     		    HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
-      	        dataManagementService.validateHierarchy(collectionPath, invokerNciAccount.getDoc(), true);
+    		    String doc = invokerNciAccount.getDoc();
+      	        dataManagementService.validateHierarchy(collectionPath, doc, true);
     		   
     		    // Assign system account as an additional owner of the data-object.
    		        dataManagementService.assignSystemAccountPermission(path);
@@ -367,7 +367,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		        // Attach the user provided metadata.
 		        metadataService.addMetadataToDataObject(path, 
 		    			                                dataObjectRegistration.getMetadataEntries(), 
-		    			                                invokerNciAccount.getDoc());
+		    			                                doc);
 		        
 		        // Extract the source location and size.
 		        HpcFileLocation source = dataObjectRegistration.getSource();
@@ -380,7 +380,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		        HpcDataObjectUploadResponse uploadResponse = 
 		           dataTransferService.uploadDataObject(source, dataObjectFile, path, 
 		        	                                    invokerNciAccount.getUserId(),
-		        	                                    dataObjectRegistration.getCallerObjectId());
+		        	                                    dataObjectRegistration.getCallerObjectId(), doc);
 		        
 			    // Generate system metadata and attach to the data object.
 			    metadataService.addSystemGeneratedMetadataToDataObject(
@@ -392,7 +392,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			    			                   uploadResponse.getDataTransferStarted(),
 			    			                   uploadResponse.getDataTransferCompleted(),
 			    			                   getSourceSize(source, uploadResponse.getDataTransferType(),
-				                                             dataObjectFile), 
+				                                             dataObjectFile, doc), 
 			    			                   dataObjectRegistration.getCallerObjectId()); 
 	
 			    // Add collection update event.
@@ -484,7 +484,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	HpcDataObjectDownloadResponse downloadResponse = 
     		   dataTransferService.downloadDataObject(path, metadata.getArchiveLocation(), 
                                                       downloadRequest.getDestination(),
-                                                      metadata.getDataTransferType());
+                                                      metadata.getDataTransferType(),
+                                                      metadata.getRegistrarDOC());
     	
     	// Construct and return a DTO.
     	return toDownloadResponseDTO(downloadResponse.getDataTransferRequestId(),
@@ -525,7 +526,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		boolean archiveDeleteStatus = true;
 		try {
     	     dataTransferService.deleteDataObject(systemGeneratedMetadata.getArchiveLocation(), 
-    		     	                              systemGeneratedMetadata.getDataTransferType());
+    		     	                              systemGeneratedMetadata.getDataTransferType(),
+    		     	                              systemGeneratedMetadata.getRegistrarDOC());
     	     
 		} catch(HpcException e) {
 			    archiveDeleteStatus = false;
@@ -668,14 +670,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * @param source A data transfer source.
      * @param dataTransferType The data transfer type.
      * @param dataObjectFile The attached data file.
+     * @param doc The DOC.
      * @return The source size in bytes.
      * @throws HpcException on service failure.
      */
 	private Long getSourceSize(HpcFileLocation source, HpcDataTransferType dataTransferType,
-			                   File dataObjectFile) throws HpcException
+			                   File dataObjectFile, String doc) throws HpcException
 	{
 		if(source != null) {
-		   return dataTransferService.getPathAttributes(dataTransferType, source, true).getSize();
+		   return dataTransferService.getPathAttributes(dataTransferType, source, true, doc).getSize();
 		}
 		
 		if(dataObjectFile != null) {
@@ -715,10 +718,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		long transferSize = 0;
 		try {
 		     transferSize = dataTransferService.getDataTransferSize(
-		    		                    systemGeneratedMetadata.getDataTransferType(),
-		    		                    dataTransferRequestId);
+		    		            systemGeneratedMetadata.getDataTransferType(),
+		    		            dataTransferRequestId, systemGeneratedMetadata.getRegistrarDOC());
 		} catch(HpcException e) {
-			    logger.error("Failed to get data transfer size: " + dataTransferRequestId);
+			    logger.error("Failed to get data transfer size: " + dataTransferRequestId, e);
 			    return "Unknown";
 		}
 		
