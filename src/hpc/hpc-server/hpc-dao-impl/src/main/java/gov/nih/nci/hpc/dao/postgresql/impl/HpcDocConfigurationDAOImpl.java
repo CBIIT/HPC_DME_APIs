@@ -10,13 +10,6 @@
 
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
-import gov.nih.nci.hpc.dao.HpcDocConfigurationDAO;
-import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
-import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
-import gov.nih.nci.hpc.exception.HpcException;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -32,13 +25,22 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
+import gov.nih.nci.hpc.dao.HpcDocConfigurationDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
+import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
+import gov.nih.nci.hpc.exception.HpcException;
+
 /**
  * <p>
  * HPC DOC Configuration DAO Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
@@ -110,6 +112,14 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
 			HpcDocConfiguration docConfiguration = new HpcDocConfiguration();
 			docConfiguration.setDoc(rs.getString("DOC"));
 			docConfiguration.setBasePath(rs.getString("BASE_PATH"));
+			docConfiguration.setS3URL(rs.getString("S3_URL"));
+			HpcArchive s3BaseArchiveDestination = new HpcArchive();
+			HpcFileLocation s3ArchiveLocation = new HpcFileLocation();
+			s3ArchiveLocation.setFileContainerId(rs.getString("S3_VAULT"));
+			s3ArchiveLocation.setFileId(rs.getString("S3_OBJECT_ID"));
+			s3BaseArchiveDestination.setFileLocation(s3ArchiveLocation);
+			s3BaseArchiveDestination.setType(HpcArchiveType.fromValue(rs.getString("S3_ARCHIVE_TYPE")));
+			
 			try {
 			     docConfiguration.setDataHierarchy(getDataHierarchyFromJSONStr(rs.getString("DATA_HIERARCHY")));
 			     docConfiguration.getCollectionMetadataValidationRules().addAll(

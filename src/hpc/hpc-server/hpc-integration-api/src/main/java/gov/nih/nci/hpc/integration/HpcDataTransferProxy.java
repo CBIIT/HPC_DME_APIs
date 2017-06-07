@@ -42,11 +42,13 @@ public interface HpcDataTransferProxy
      * Authenticate the invoker w/ the data transfer system.
      *
      * @param dataTransferAccount The Data Transfer account to authenticate.
+     * @param url The archive URL to connect to.
      * @return An authenticated token, to be used in subsequent calls to data transfer.
      *         It returns null if the account is not authenticated.
      * @throws HpcException on data transfer system failure.
      */
-    public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount) 
+    public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount,
+    		                   String url) 
     		                  throws HpcException;
     
     /**

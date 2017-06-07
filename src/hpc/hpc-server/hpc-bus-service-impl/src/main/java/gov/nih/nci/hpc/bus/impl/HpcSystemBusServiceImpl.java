@@ -49,7 +49,6 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcSystemBusServiceImpl implements HpcSystemBusService
@@ -137,7 +136,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			 HpcDataTransferUploadStatus dataTransferStatus =
     		        dataTransferService.getDataTransferUploadStatus(
     		        		               systemGeneratedMetadata.getDataTransferType(),
-    		        		               systemGeneratedMetadata.getDataTransferRequestId());
+    		        		               systemGeneratedMetadata.getDataTransferRequestId(),
+    		        		               systemGeneratedMetadata.getRegistrarDOC());
     			 
     			 Calendar dataTransferCompleted = null;
     			 switch(dataTransferStatus) {
@@ -208,7 +208,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  		         HpcDataObjectUploadResponse uploadResponse = 
  		        	dataTransferService.uploadDataObject(null, file, path, 
  		        			                             systemGeneratedMetadata.getRegistrarId(),
- 		        			                             systemGeneratedMetadata.getCallerObjectId());
+ 		        			                             systemGeneratedMetadata.getCallerObjectId(),
+ 		        			                             systemGeneratedMetadata.getRegistrarDOC());
  		     
  		         // Delete the file.
  		         if(!FileUtils.deleteQuietly(file)) {
@@ -254,7 +255,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		HpcDataTransferDownloadStatus dataTransferDownloadStatus = 
     		   dataTransferService.getDataTransferDownloadStatus(
     			                      dataObjectDownloadCleanup.getDataTransferType(), 
-    			                      dataObjectDownloadCleanup.getDataTransferRequestId());
+    			                      dataObjectDownloadCleanup.getDataTransferRequestId(),
+    			                      dataObjectDownloadCleanup.getDoc());
     		
     		// Cleanup the file if the transfer is no longer in-progress, and add an event.
     		if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
