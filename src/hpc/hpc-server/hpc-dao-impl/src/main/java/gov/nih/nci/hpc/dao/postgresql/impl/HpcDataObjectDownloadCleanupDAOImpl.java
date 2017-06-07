@@ -91,7 +91,7 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcManagedUserDAO Interface Implementation
+    // HpcDataObjectDownloadCleanupDAO Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override

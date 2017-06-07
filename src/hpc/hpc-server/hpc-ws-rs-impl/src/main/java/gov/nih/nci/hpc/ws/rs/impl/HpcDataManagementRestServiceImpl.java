@@ -269,7 +269,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 	public Response deleteDataObject(String path)
     {
 		try {
-			 dataManagementBusService.deleteDataObject(path);
+			 dataManagementBusService.deleteDataObject(toAbsolutePath(path));
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
