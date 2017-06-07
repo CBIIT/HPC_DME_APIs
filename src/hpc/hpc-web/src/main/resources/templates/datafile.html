@@ -84,21 +84,35 @@
 				<!--Title End-->
 				<!--Row start-->
 				<div class="row">
+							<div class="pull-left col-lg-9 col-md-12" id="deletemessage"
+								style="display: none; float: left">
+								<p>&nbsp;</p>
+							</div>
+							<div class="pull-left col-lg-9 col-md-12" id="deletewait"
+								style="display: none; float: left">
+								<p>&nbsp;</p>
+							</div>
+				</div>
+				<div class="row">
 					<div class="col-lg-9 col-md-12">
 						<div class="panel panel-default">
-							<div class="panel-heading">
+							<div class="panel-heading" th:if="${hpcDatafile != null}">
 								<h2 th:switch="${userpermission}">
 								<div th:case="'READ'">
-									<i class="fa fa-list-alt red"></i><strong>Data file</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=datafile&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=dataObject&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-users" aria-hidden="true"></i></a>
+									<i class="fa fa-list-alt red"></i><strong>Data file</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=datafile&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=dataObject&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-users" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="createBookmarks" class="btn btn-link btn-sm" th:href="@{'../bookmark?path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}" data-target="#createBookmarksTarget"><i class="fa fa-star-o" aria-hidden="true"></i></a>
 								</div>
 								<div th:case="'WRITE'">
-									<i class="fa fa-list-alt red"></i><strong>Data file</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=datafile&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=dataObject&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-users" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../datafile?action=edit&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-edit" aria-hidden="true"></i></a>
+									<i class="fa fa-list-alt red"></i><strong>Data file</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=datafile&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=dataObject&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-users" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../datafile?action=edit&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-edit" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="createBookmarks" class="btn btn-link btn-sm" th:href="@{'../bookmark?path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}" data-target="#createBookmarksTarget"><i class="fa fa-star-o" aria-hidden="true"></i></a>
 								</div>
 								<div th:case="'OWN'">
-									<i class="fa fa-list-alt red"></i><strong>Data file</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=datafile&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=dataObject&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-users" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../datafile?action=edit&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-edit" aria-hidden="true"></i></a>
+									<i class="fa fa-list-alt red"></i><strong>Data file</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=datafile&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=dataObject&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-users" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../datafile?action=edit&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-edit" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="createBookmarks" class="btn btn-link btn-sm" th:href="@{'../bookmark?path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}" data-target="#createBookmarksTarget"><i class="fa fa-star-o" aria-hidden="true"></i></a>
+								</div>
+								<div th:case="'DELETE'">
+									<i class="fa fa-list-alt red"></i><strong>Data file</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=datafile&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=dataObject&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-users" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../datafile?action=edit&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-edit" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="createBookmarks" class="btn btn-link btn-sm" th:href="@{'../bookmark?path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}" data-target="#createBookmarksTarget"><i class="fa fa-star-o" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:onclick="'deleteObject(\''  + ${hpcDatafile.getDataObject().getAbsolutePath()} + '\')'"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
 								</div>
 								</h2>
 							</div>
+							
 							<div th:if="${error != null}">
 								<div class="alert alert-error">
 									<a class="close" data-dismiss="alert">×</a> <label
@@ -106,7 +120,16 @@
 								</div>
 							</div>
 								<!--panel-body start-->
-								<div class="panel-body">
+								<div class="panel-body" th:if="${hpcDatafile != null}">
+									<div class="modal fade" id="createBookmarksTarget" tabindex="-1" role="dialog"
+										aria-labelledby="browsePartialLabel" aria-hidden="true">
+										<div class="modal-dialog">
+											<div class="modal-content"></div>
+											<!-- /.modal-content -->
+										</div>
+										<!-- /.modal-dialog -->
+									</div>								
+								
 									<div class="form-group">
 										<div class="col-md-12 form-group">
 											<label for="Name">Path:</label> <label
@@ -123,16 +146,6 @@
 												for="${hpcDatafile.getDataObject().getDataOwnerName()}"
 												th:text="${hpcDatafile.getDataObject().getDataOwnerName()}"></label>
 										</div>
-										<div class="col-md-6 form-group">
-											<label for="textbox1">Created on:</label> <label
-												for="${hpcDatafile.getDataObject().getCreatedAt()}"
-												th:text="${#calendars.format(hpcDatafile.getDataObject().getCreatedAt(),'dd MMMM yyyy')}"></label>
-										</div>
-										<div class="col-md-6 form-group">
-											<label for="textbox1">Last updated on:</label> <label
-												for="${hpcDatafile.getDataObject().getUpdatedAt()}"
-												th:text="${#calendars.format(hpcDatafile.getDataObject().getUpdatedAt(),'dd MMMM yyyy')}"></label>
-										</div>
 									</div>
 								</div>
 								<div class="panel-heading">
@@ -140,7 +153,7 @@
 										<i class="fa fa-list-alt red"></i><strong>Metadata</strong>
 									</h2>
 								</div>
-								<div class="panel-body">
+								<div class="panel-body" th:if="${hpcDatafile != null}">
 								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
 									aria-labelledby="myModalLabel" aria-hidden="true">
 									<div class="modal-dialog">
@@ -163,7 +176,7 @@
 										<tbody th:if="${hpcDatafile.getSelfMetadataEntries() != null}">
 											<div th:if="${action == 'edit'}">
 												<input type="hidden" name="action" id="action" value="edit"/>
-												<input type="hidden" name="path" id="action" th:value="${hpcDatafile.getPath()}"/>
+												<input type="hidden" name="path" id="path" th:value="${hpcDatafile.getPath()}"/>
 											<tr
 												th:each="metadataItem : ${hpcDatafile.getSelfMetadataEntries()}">
 												<td width="20%"><label th:text="${metadataItem.getAttrName()}"></label></td>
@@ -196,8 +209,12 @@
 									</table>
 								</div>
 								</form>
+								<form class="form-horizontal" id="datafileDeleteForm" th:action="@{/datafile}"
+									th:object="${hpcDatafile}">
+									<input type="hidden" name="deletepath" id="deletepath" th:value="${hpcDatafile.getDataObject().getAbsolutePath()}"/>
+								</form>
 								</div>
-								<div class="panel-heading">
+								<div class="panel-heading" th:if="${hpcDatafile != null}">
 									<h2>
 										<i class="fa fa-list-alt red"></i> <a class="btn link"
 											onClick="showParentAttrs()">Parent Metadata <span
@@ -206,7 +223,7 @@
 
 									</h2>
 								</div>
-								<div class="form-group" id="parentAttrs" style="display: none">
+								<div class="form-group" id="parentAttrs" style="display: none" th:if="${hpcDatafile != null}">
 									<table class="table table-bordered  col-md-12">
 										<thead>
 											<tr>
@@ -253,9 +270,18 @@
 	function cancelEdit()
 	{
 		document.getElementById("action").value = "cancel";
-		$('#userForm').attr('action', '/finduser');
-		$("#userForm").submit();
+		$('#datafileForm').attr('action', '/datafile?path=' +document.getElementById("path").value);
+		$("#datafileForm").submit();
 	}
+	
+    function deleteObject(path)
+    {
+    	if (confirm("Are you sure to delete?") == true) {
+			document.getElementById("deletepath").value = path;
+			document.getElementById("path").value = path;
+			$("#datafileDeleteForm").submit();
+    	}
+    }
 	
 	var toggle = true;
 	function showParentAttrs() {
@@ -279,6 +305,51 @@
 			ele.style.display = "block";
 		}
 	}
+	
+	$(function() {
+		//twitter bootstrap script
+		var $form = $('#datafileDeleteForm');
+		
+		$('#datafileDeleteForm')
+				.on(
+						'submit',
+						function(e) {
+							e.preventDefault();
+							$("#wait")
+										.html(
+												'<img width="50" height="50" src="img/spinner.gif" alt="Wait" />');
+								var ele = document
+										.getElementById("deletemessage");
+								ele.style.display = "none";
+								var waitEle = document
+										.getElementById("deletewait");
+								waitEle.style.display = "block";
+								$.ajax({
+									type : "DELETE",
+									url : "/datafile?deletepath="+document.getElementById("deletepath").value,
+									data : $form.serialize(),
+									success : function(msg) {
+										waitEle.style.display = "none";
+										console.log('SUCCESS: ', msg);
+										$('#deletemessage').html(msg.message);
+										ele.style.display = "block";
+									},
+									error : function(e) {
+										$("#deletewait").html('');
+										console.log('ERROR: ', e);
+										$('#deletemessage').html(e.message);
+										ele.style.display = "block";
+									}
+								});
+						});
+	});
+
+	$(function() {
+		//twitter bootstrap script
+		$('#bookmarksForm').on('close', function(e) {
+			$('#myModal-event').modal('hide');
+		});
+	});	
 </script>
 
 </body>

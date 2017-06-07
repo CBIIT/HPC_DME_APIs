@@ -105,10 +105,11 @@ public class HpcBrowseController extends AbstractHpcController {
 				path = (String) request.getAttribute("path");
 			}
 		}
-		if(path == null || path.isEmpty())
-			path = (String) session.getAttribute("selectedBrowsePath");
-
-		if (path == null || path.isEmpty())
+		String selectedBrowsePath = (String) session.getAttribute("selectedBrowsePath");;
+		if(selectedBrowsePath != null && (path == null || path.isEmpty()))
+			session.removeAttribute("browserEntry");
+		
+		if (path == null || path.isEmpty() || request.getParameter("base") != null)
 			path = modelDTO.getBasePath();
 		session.setAttribute("selectedBrowsePath", path);
 		// If browser tree nodes are cached, return cached data. If not, query
@@ -122,6 +123,8 @@ public class HpcBrowseController extends AbstractHpcController {
 				browserEntry.setId(path);
 				browserEntry.setName(path);
 				browserEntry = getTreeNodes(path, browserEntry, authToken, model, false, true);
+				if(request.getParameter("base") == null)
+					browserEntry = addPathEntries(path, browserEntry);
 				browserEntry = trimPath(browserEntry, browserEntry.getName());
 				session.setAttribute("browserEntry", browserEntry);
 			}
@@ -141,6 +144,34 @@ public class HpcBrowseController extends AbstractHpcController {
 			e.printStackTrace();
 			return "browse";
 		}
+	}
+
+	private HpcBrowserEntry addPathEntries(String path, HpcBrowserEntry browserEntry)
+	{
+		if(path.indexOf("/") != -1)
+		{
+			String[] paths = path.split("/");
+			for(int i=paths.length-2;i>=0;i--)
+			{
+				if(paths[i].isEmpty())
+					continue;
+				browserEntry = addPathEntry(path, paths[i], browserEntry);
+			}
+		}
+		return browserEntry;
+	}
+
+	private HpcBrowserEntry addPathEntry(String fullPath, String path, HpcBrowserEntry childEntry)
+	{
+		HpcBrowserEntry entry = new HpcBrowserEntry();
+		String entryPath = fullPath.substring(0, (fullPath.indexOf("/"+path) + ("/"+path).length()));
+		entry.setCollection(true);
+		entry.setId(entryPath);
+		entry.setFullPath(entryPath);
+		entry.setPopulated(true);
+		entry.setName(path);
+		entry.getChildren().add(childEntry);
+		return entry;
 	}
 
 	/**
@@ -165,14 +196,18 @@ public class HpcBrowseController extends AbstractHpcController {
 
 		try {
 			if (hpcBrowserEntry.getSelectedNodePath() != null) {
-				session.setAttribute("selectedBrowsePath", hpcBrowserEntry.getSelectedNodePath());
+				//session.setAttribute("selectedBrowsePath", hpcBrowserEntry.getSelectedNodePath());
 				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath(), browserEntry, authToken, model,
 						false, hpcBrowserEntry.isPartial());
+				if(hpcBrowserEntry.isPartial())
+					browserEntry = addPathEntries(hpcBrowserEntry.getSelectedNodePath(), browserEntry);
+
 				browserEntry = trimPath(browserEntry, browserEntry.getName());
 				List<HpcBrowserEntry> entries = new ArrayList<HpcBrowserEntry>();
 				entries.add(browserEntry);
 				model.addAttribute("browserEntryList", entries);
 				model.addAttribute("browserEntry", browserEntry);
+				model.addAttribute("scrollLoc", hpcBrowserEntry.getScrollLoc());
 				session.setAttribute("browserEntry", browserEntry);
 			}
 		} catch (Exception e) {
@@ -202,6 +237,7 @@ public class HpcBrowseController extends AbstractHpcController {
 			selectedEntry.getChildren().clear();
 		if(selectedEntry == null)
 			selectedEntry = new HpcBrowserEntry();
+		
 		HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, collectionURL, path, true, false,
 				sslCertPath, sslCertPassword);
 
@@ -277,7 +313,7 @@ public class HpcBrowseController extends AbstractHpcController {
 			if (childPath == null || childPath.equals(""))
 				continue;
 			if (childPath.indexOf(parentPath) != -1) {
-				String childName = childPath.substring(parentPath.length() + 1);
+				String childName = childPath.substring(childPath.indexOf(parentPath) + parentPath.length() + 1);
 				child.setName(childName);
 			}
 			trimPath(child, childPath);

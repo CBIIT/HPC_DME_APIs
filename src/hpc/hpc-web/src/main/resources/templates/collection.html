@@ -86,16 +86,16 @@
 				<div class="row">
 					<div class="col-lg-9 col-md-12">
 						<div class="panel panel-default">
-							<div class="panel-heading">
+							<div class="panel-heading" th:if="${collection != null}">
 								<h2 th:switch="${userpermission}">
 								<div th:case="'READ'">
-									<i class="fa fa-list-alt red"></i><strong>Collection</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-users" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../browse?refresh&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-sitemap" aria-hidden="true"></i></a>
+									<i class="fa fa-list-alt red"></i><strong>Collection</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-users" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../browse?refresh&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-sitemap" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="createBookmarks" class="btn btn-link btn-sm" th:href="@{'../bookmark?path=' + ${collection.getCollection().getCollectionName()}}" data-target="#createBookmarksTarget"><i class="fa fa-star-o" aria-hidden="true"></i></a>
 								</div>
 								<div th:case="'WRITE'">
-									<i class="fa fa-list-alt red"></i><strong>Collection</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-users" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../collection?action=edit&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-edit" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../browse?refresh&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-sitemap" aria-hidden="true"></i></a>
+									<i class="fa fa-list-alt red"></i><strong>Collection</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-users" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../collection?action=edit&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-edit" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../browse?refresh&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-sitemap" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="createBookmarks" class="btn btn-link btn-sm" th:href="@{'../bookmark?path=' + ${collection.getCollection().getCollectionName()}}" data-target="#createBookmarksTarget"><i class="fa fa-star-o" aria-hidden="true"></i></a>
 								</div>
 								<div th:case="'OWN'">
-									<i class="fa fa-list-alt red"></i><strong>Collection</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-users" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../collection?action=edit&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-edit" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../browse?refresh&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-sitemap" aria-hidden="true"></i></a>
+									<i class="fa fa-list-alt red"></i><strong>Collection</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-users" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../collection?action=edit&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-edit" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../browse?refresh&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-sitemap" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="createBookmarks" class="btn btn-link btn-sm" th:href="@{'../bookmark?path=' + ${collection.getCollection().getCollectionName()}}" data-target="#createBookmarksTarget"><i class="fa fa-star-o" aria-hidden="true"></i></a>
 								</div>
 								</h2>
 							</div>
@@ -106,7 +106,7 @@
 								</div>
 							</div>
 								<!--panel-body start-->
-								<div class="panel-body">
+								<div class="panel-body"  th:if="${collection != null}">
 								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
 									aria-labelledby="myModalLabel" aria-hidden="true">
 									<div class="modal-dialog">
@@ -115,6 +115,14 @@
 									</div>
 									<!-- /.modal-dialog -->
 								</div>								
+									<div class="modal fade" id="createBookmarksTarget" tabindex="-1" role="dialog"
+										aria-labelledby="browsePartialLabel" aria-hidden="true">
+										<div class="modal-dialog">
+											<div class="modal-content"></div>
+											<!-- /.modal-content -->
+										</div>
+										<!-- /.modal-dialog -->
+									</div>								
 								
 									<div class="form-group">
 										<div class="col-md-12 form-group">
@@ -132,6 +140,7 @@
 												for="${collection.getCollection().getCollectionOwnerName()}"
 												th:text="${collection.getCollection().getCollectionOwnerName()}"></label>
 										</div>
+										<!-- 
 										<div class="col-md-6 form-group">
 											<label for="textbox1">Created on:</label> <label
 												for="${collection.getCollection().getCreatedAt()}"
@@ -142,6 +151,7 @@
 												for="${collection.getCollection().getModifiedAt()}"
 												th:text="${#calendars.format(collection.getCollection().getModifiedAt(),'dd MMMM yyyy')}"></label>
 										</div>
+										 -->
 									</div>
 								</div>
 								<div class="panel-heading">
@@ -149,7 +159,7 @@
 										<i class="fa fa-list-alt red"></i><strong>Metadata</strong>
 									</h2>
 								</div>
-								<div class="panel-body">
+								<div class="panel-body"  th:if="${collection != null}">
 								<form class="form-horizontal" id="collectionForm" th:action="@{/collection}"
 									th:object="${hpcCollection}" method="POST">
 								
@@ -208,7 +218,7 @@
 
 									</h2>
 								</div>
-								<div class="form-group" id="parentAttrs" style="display: none">
+								<div class="form-group" id="parentAttrs" style="display: none"  th:if="${collection != null}">
 									<table class="table table-bordered  col-md-12">
 										<thead>
 											<tr>
