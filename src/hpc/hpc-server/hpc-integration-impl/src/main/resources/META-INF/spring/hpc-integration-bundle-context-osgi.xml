@@ -41,10 +41,6 @@
 		  <prop key="hpc.integration.globus.download.path">/mnt/IRODsTest/FNL_SF_Share</prop>
 		  <prop key="hpc.integration.globus.download.directory">/mnt/IRODsTest/FNL_SF_Share</prop>
 		  
-	      <prop key="hpc.integration.cleversafe.archive.vault">DSE-TestVault1</prop>
-		  <prop key="hpc.integration.cleversafe.archive.objectId">FNL_SF_Archive</prop>
-		  <prop key="hpc.integration.cleversafe.archive.type">ARCHIVE</prop>
-	      
 	      <prop key="hpc.integration.ldap.URL">ldaps://nci-ldap-prod.nci.nih.gov:636</prop>
 	      <prop key="hpc.integration.ldap.username">CN=NCILDAP,OU=NCI,O=NIH</prop>
 	      <prop key="hpc.integration.ldap.password">ferd1234</prop>

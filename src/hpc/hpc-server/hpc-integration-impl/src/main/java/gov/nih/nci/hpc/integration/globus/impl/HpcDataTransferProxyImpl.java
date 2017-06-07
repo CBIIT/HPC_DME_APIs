@@ -106,7 +106,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     
     @Override
     public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount,
-    		                   String url) 
+    		                   String urlNotUsed) 
 		                      throws HpcException
     {
     	// Note: At this time, there is no DOC specific configuration for Globus connection.
@@ -119,9 +119,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
     		                                            HpcDataObjectUploadRequest uploadRequest,
     		                                            List<HpcMetadataEntry> metadataEntries,
+    		                                            HpcArchive baseArchiveDestinationNotUsed,
     		                                            HpcDataTransferProgressListener progressListener) 
     		                                           throws HpcException
     {
+    	// Note: At this time, there is no DOC specific configuration for Globus base archive destination.
+    	//       The Globus base archive destination is configured via Spring. In the future, this may be 
+    	//       a new requirement, so the parameter passed in will be used instead of the spring injected one.
+    	
     	// Progress listener not supported.
     	if(progressListener != null) {
     	   throw new HpcException("Globus data transfer doesn't support progress listener", 

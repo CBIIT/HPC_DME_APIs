@@ -6,7 +6,6 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -52,11 +51,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	@Autowired
     private HpcS3Connection s3Connection = null;
 	
-	// The base archive destination.
-	@Autowired
-	@Qualifier("hpcS3ArchiveDestination")
-	HpcArchive baseArchiveDestination = null;
-	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -89,6 +83,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
     		                                            HpcDataObjectUploadRequest uploadRequest,
     		                                            List<HpcMetadataEntry> metadataEntries,
+    		                                            HpcArchive baseArchiveDestination,
     		                                            HpcDataTransferProgressListener progressListener) 
     		                                           throws HpcException
    {

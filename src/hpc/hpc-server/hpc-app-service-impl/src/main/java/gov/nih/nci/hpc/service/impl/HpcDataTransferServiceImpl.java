@@ -504,11 +504,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     			                         uploadRequest.getDoc());
     	
     	// Upload the data object using the appropriate data transfer proxy.
+    	String doc = uploadRequest.getDoc();
   	    return dataTransferProxies.get(dataTransferType).
-  	    		   uploadDataObject(getAuthenticatedToken(dataTransferType, uploadRequest.getDoc()), 
+  	    		   uploadDataObject(getAuthenticatedToken(dataTransferType, doc), 
   	    		                    uploadRequest, 
   	    		                    generateMetadata(uploadRequest.getPath(),
-  	    		                    		         uploadRequest.getUserId()), 
+  	    		                    		         uploadRequest.getUserId()),
+  	    		                    docConfigurationLocator.getBaseArchiveDestination(doc, dataTransferType), 
   	    		                    null);
     }
     
