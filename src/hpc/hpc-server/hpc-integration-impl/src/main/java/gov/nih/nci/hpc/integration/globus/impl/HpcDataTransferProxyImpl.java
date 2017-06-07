@@ -1,6 +1,24 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
+
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.globusonline.transfer.APIError;
+import org.globusonline.transfer.BaseTransferAPIClient;
+import org.globusonline.transfer.JSONTransferAPIClient;
+import org.globusonline.transfer.JSONTransferAPIClient.Result;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
@@ -20,30 +38,12 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.globusonline.transfer.APIError;
-import org.globusonline.transfer.BaseTransferAPIClient;
-import org.globusonline.transfer.JSONTransferAPIClient;
-import org.globusonline.transfer.JSONTransferAPIClient.Result;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 /**
  * <p>
  * HPC Data Transfer Proxy Globus Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcDataTransferProxyImpl implements HpcDataTransferProxy 
@@ -105,9 +105,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     //---------------------------------------------------------------------//  
     
     @Override
-    public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount) 
+    public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount,
+    		                   String url) 
 		                      throws HpcException
     {
+    	// Note: At this time, there is no DOC specific configuration for Globus connection.
+    	//       The Globus connection URL is configured via Spring. In the future, this may be 
+    	//       a new requirement, so the 'url' parameter passed in will be used instead.
     	return globusConnection.authenticate(dataTransferAccount);
     }
     

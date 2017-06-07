@@ -9,7 +9,6 @@
 --
 --
 -- @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
--- @version $Id$
 --
 
 DROP TABLE IF EXISTS public."HPC_DATA_OBJECT_DOWNLOAD_CLEANUP";
@@ -17,6 +16,7 @@ CREATE TABLE public."HPC_DATA_OBJECT_DOWNLOAD_CLEANUP"
 (
   "USER_ID" text NOT NULL,
   "PATH" text NOT NULL,
+  "DOC" text NOT NULL,
   "DATA_TRANSFER_REQUEST_ID" text NOT NULL,
   "DATA_TRANSFER_TYPE" text NOT NULL,
   "DOWNLOAD_FILE_PATH" text NOT NULL,

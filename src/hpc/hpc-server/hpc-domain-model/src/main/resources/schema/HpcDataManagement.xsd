@@ -16,6 +16,7 @@
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	xmlns:hpc-domain-datamanagement="http://hpc.nci.nih.gov/domain/datamanagement"
 	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
+	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
 	targetNamespace="http://hpc.nci.nih.gov/domain/model"
 	elementFormDefault="unqualified">
 	
@@ -23,12 +24,16 @@
 		        schemaLocation="HpcDataManagementTypes.xsd" />
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
 		        schemaLocation="HpcMetadataTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datatransfer"
+		        schemaLocation="HpcDataTransferTypes.xsd" />
 
 	<xsd:element name="HpcDocConfiguration">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="doc" type="xsd:string" />
 			    <xsd:element name="basePath" type="xsd:string" />
+			    <xsd:element name="s3URL" type="xsd:string" />
+			    <xsd:element name="s3BaseArchiveDestination" type="hpc-domain-datatransfer:HpcArchive" />
 				<xsd:element name="collectionMetadataValidationRules"
 				             type="hpc-domain-metadata:HpcMetadataValidationRule"
 					         minOccurs="0" maxOccurs="unbounded" />
