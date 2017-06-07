@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
@@ -57,6 +58,7 @@ public interface HpcDataTransferProxy
      * @param authenticatedToken An authenticated token.
      * @param uploadRequest The data upload request
      * @param metadataEntries (Optional) a list of metadata to attach to the physical file storage.
+     * @param baseArchiveDestination The archive's base destination location.
      * @param progressListener (Optional) a progress listener for async notification on transfer completion.
      * @return A data object upload response.
      * @throws HpcException on data transfer system failure.
@@ -64,6 +66,7 @@ public interface HpcDataTransferProxy
     public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
     		                                            HpcDataObjectUploadRequest uploadRequest,
     		                                            List<HpcMetadataEntry> metadataEntries,
+    		                                            HpcArchive baseArchiveDestination,
     		                                            HpcDataTransferProgressListener progressListener) 
     		                                           throws HpcException;
     
