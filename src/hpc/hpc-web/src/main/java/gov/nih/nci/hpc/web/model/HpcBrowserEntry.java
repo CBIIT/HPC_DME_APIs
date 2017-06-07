@@ -7,6 +7,9 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 public class HpcBrowserEntry {
 	@JsonView(Views.Public.class)
+	private String scrollLoc;
+
+	@JsonView(Views.Public.class)
 	private String name;
 
 	@JsonView(Views.Public.class)
@@ -105,5 +108,13 @@ public class HpcBrowserEntry {
 
 	public void setPartial(boolean partial) {
 		this.partial = partial;
+	}
+
+	public String getScrollLoc() {
+		return scrollLoc;
+	}
+
+	public void setScrollLoc(String scrollLoc) {
+		this.scrollLoc = scrollLoc;
 	}
 }

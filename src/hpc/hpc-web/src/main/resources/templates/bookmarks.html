@@ -34,11 +34,11 @@
 }
 .modal-body{
     height: 450px;
-    width: 700px;
+    width: 675px;
     overflow-y: auto;
 }
 .modal-header{
-    width: 700px;
+    width: 650px;
     overflow-y: auto;
 }
 </style>
@@ -66,7 +66,7 @@
 						displayName : 'Name'
 					}, {
 						field : 'path',
-						width : 500,
+						width : 400,
 						displayName : 'Path'
 					} ]
 				};
@@ -81,10 +81,13 @@
 		<button type="button" class="close" data-dismiss="modal">&times;</button>
 		<h4 class="modal-title">Bookmarks</h4>
 	</div>
+		<form class="form-horizontal" id="bookmarksForm"
+		    th:object="${hpcBookmark}"
+			method="POST">
 	<div class="modal-body">
 			<div class="panel panel-default">
 				<div class="panel-body">
-			<table class="table table-bordered"
+			<table class="table table-bordered" width="600"
 				id="bookmarksTable">
 				<thead>
 					<tr>
@@ -92,18 +95,88 @@
 					</tr>
 				</thead>
 				<tbody>
+						<tr>
+							<td>
+								<div class="pull-left" id="message"
+									style="display: none; float: left">
+									<p>&nbsp;</p>
+								</div>
+								<div class="pull-left" id="wait"
+									style="display: none; float: left">
+									<p>&nbsp;</p>
+								</div>
+							</td>
+						</tr>
+				
 					<tr id='bookmarksrow'
 						th:each="bookmark : ${bookmarksList}"
 						th:with="index=0">
 						<td style="white-space: nowrap" align="center"><a th:href="@{'/browse?refresh&amp;path=' + ${bookmark.getPath()}}"><label
 							for="${bookmark.getName()}"
 							th:text="${bookmark.getName()}"></label></a>
-						</td>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<button th:onclick="'submitForm(\''  + ${bookmark.getName()} + '\')'">
+										<i class="fa fa-trash-o" aria-hidden="true"></i></button></td>
+						
 					</tr>
 				</tbody>
 			</table>
 				</div>
 			</div>
 	</div>
+	<input type="hidden" name="name" id="name" />
+	</form>
+	<script>
+	
+	function submitForm(bookmark)
+	{
+		document.getElementById("name").value = bookmark;
+	}
+	
+		$(function() {
+			//twitter bootstrap script
+			var $form = $('#bookmarksForm');
+			
+			$('#bookmarksForm')
+					.on(
+							'submit',
+							function(e) {
+								e.preventDefault();
+								$("#wait")
+											.html(
+													'<img width="50" height="50" src="img/spinner.gif" alt="Wait" />');
+									var ele = document
+											.getElementById("message");
+									ele.style.display = "none";
+									var waitEle = document
+											.getElementById("wait");
+									waitEle.style.display = "block";
+									$.ajax({
+										type : "POST",
+										url : "/bookmarks",
+										data : $form.serialize(),
+										success : function(msg) {
+											waitEle.style.display = "none";
+											console.log('SUCCESS: ', msg);
+											$('#message').html(msg.message);
+											ele.style.display = "block";
+										},
+										error : function(e) {
+											$("#wait").html('');
+											console.log('ERROR: ', e);
+											$('#message').html(e.message);
+											ele.style.display = "block";
+										}
+									});
+							});
+		});
+
+		$(function() {
+			//twitter bootstrap script
+			$('#bookmarksForm').on('close', function(e) {
+				$('#myModal-event').modal('hide');
+			});
+		});
+	</script>	
 </body>
 </html>
