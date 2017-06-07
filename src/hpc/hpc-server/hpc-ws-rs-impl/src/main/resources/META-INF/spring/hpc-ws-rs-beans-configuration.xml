@@ -112,6 +112,7 @@
           <value>userPermissions</value>
           <value>deleteGroupMemberResponses</value>
           <value>addGroupMemberResponses</value>
+          <value>bookmarks</value>
     </util:list>
 
 	<!-- JSON Provider -->

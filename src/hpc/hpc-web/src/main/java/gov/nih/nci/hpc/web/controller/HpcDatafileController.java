@@ -29,8 +29,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
@@ -38,9 +42,11 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcDatafileModel;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
+import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
@@ -108,7 +114,13 @@ public class HpcDatafileController extends AbstractHpcController {
 					model.addAttribute("action", "edit");
 				HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId,
 						serviceURL, sslCertPath, sslCertPassword);
-				model.addAttribute("userpermission", permission.getPermission().toString());
+				if (user.getUserRole().equals("SYSTEM_ADMIN") || user.getUserRole().equals("GROUP_ADMIN")) {
+					if (permission.getPermission().equals(HpcPermission.OWN))
+						model.addAttribute("userpermission", "DELETE");
+					else
+						model.addAttribute("userpermission", permission.getPermission().toString());
+				} else
+					model.addAttribute("userpermission", permission.getPermission().toString());
 			} else {
 				String message = "Data file not found!";
 				model.addAttribute("error", message);
@@ -138,10 +150,19 @@ public class HpcDatafileController extends AbstractHpcController {
 	public String updateCollection(@Valid @ModelAttribute("hpcDatafile") HpcDatafileModel hpcDatafile, Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request, HttpServletResponse response,
 			final RedirectAttributes redirectAttributes) {
+		String authToken = (String) session.getAttribute("hpcUserToken");
 		String[] action = request.getParameterValues("action");
 		if (action != null && action.length > 0 && action[0].equals("cancel"))
 			return "redirect:/datafile?path=" + hpcDatafile.getPath() + "&action=view";
-		String authToken = (String) session.getAttribute("hpcUserToken");
+		else if (action != null && action.length > 0 && action[0].equals("delete")) {
+			boolean deleted = HpcClientUtil.deleteDatafile(authToken, serviceURL, hpcDatafile.getPath(), sslCertPath,
+					sslCertPassword);
+			if (deleted) {
+				redirectAttributes.addFlashAttribute("error", "Data file " + hpcDatafile.getPath() + " is deleted!");
+				session.removeAttribute("selectedUsers");
+			}
+		}
+
 		try {
 			if (hpcDatafile.getPath() == null || hpcDatafile.getPath().trim().length() == 0)
 				model.addAttribute("error", "Invald Data file path");
@@ -160,6 +181,33 @@ public class HpcDatafileController extends AbstractHpcController {
 			model.addAttribute("hpcDatafile", hpcDatafile);
 		}
 		return "redirect:/datafile?path=" + hpcDatafile.getPath() + "&action=view";
+	}
+
+	@JsonView(Views.Public.class)
+	@RequestMapping(method = RequestMethod.DELETE)
+	@ResponseBody
+	public AjaxResponseBody deleteObject(@Valid @ModelAttribute("hpcDatafile") HpcDatafileModel hpcDatafile,
+			Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request,
+			HttpServletResponse response) {
+		AjaxResponseBody result = new AjaxResponseBody();
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		try {
+			String path = request.getParameter("deletepath");
+			if(path == null)
+			{
+				result.setMessage("Invaliad Data object path!");
+				return result;
+			}
+			boolean deleted = HpcClientUtil.deleteDatafile(authToken, serviceURL, path, sslCertPath,
+					sslCertPassword);
+			if (deleted)
+				result.setMessage("Data object deleted!");
+		} catch (Exception e) {
+			result.setMessage("Failed to delete object: " + e.getMessage());
+		} finally {
+			model.addAttribute("hpcDatafile", hpcDatafile);
+		}
+		return result;
 	}
 
 	private HpcDatafileModel buildHpcDataObject(HpcDataObjectDTO datafile, List<String> systemAttrs) {
