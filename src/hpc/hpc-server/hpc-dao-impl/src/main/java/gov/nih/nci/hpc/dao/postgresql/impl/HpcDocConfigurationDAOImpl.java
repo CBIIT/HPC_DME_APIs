@@ -119,6 +119,7 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
 			s3ArchiveLocation.setFileId(rs.getString("S3_OBJECT_ID"));
 			s3BaseArchiveDestination.setFileLocation(s3ArchiveLocation);
 			s3BaseArchiveDestination.setType(HpcArchiveType.fromValue(rs.getString("S3_ARCHIVE_TYPE")));
+			docConfiguration.setS3BaseArchiveDestination(s3BaseArchiveDestination);
 			
 			try {
 			     docConfiguration.setDataHierarchy(getDataHierarchyFromJSONStr(rs.getString("DATA_HIERARCHY")));
