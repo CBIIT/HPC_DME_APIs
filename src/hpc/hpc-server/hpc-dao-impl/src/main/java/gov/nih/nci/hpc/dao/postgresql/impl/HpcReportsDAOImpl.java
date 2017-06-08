@@ -211,7 +211,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 
 	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_USER_DATE_SQL = 
 			"select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_meta_main a, r_coll_main b, r_objt_metamap c where b.coll_id=c.object_id and c.meta_id=a.meta_id and a.meta_attr_name='collection_type' and b.coll_id in"+
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c where c.coll_id=b.object_id and a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(b.create_ts as double precision) BETWEEN ? AND ?  "+
+			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c where c.coll_id=b.object_id and a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(b.create_ts as double precision) BETWEEN ? AND ? "+
 			"group by a.meta_attr_value";
 
 	private static final String TOTAL_NUM_OF_META_ATTRS_BY_USER_DATE_SQL = 
