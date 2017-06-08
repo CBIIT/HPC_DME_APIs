@@ -161,7 +161,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(a.create_ts as double precision) BETWEEN ? AND ? ";
 
 	private static final String FILE_SIZE_RANGE_BY_DOC_DATE_SQL = 
-			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and b.object_id in " +
+			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c  where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and c.data_id = b.object_id and b.object_id in " +
 					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c  where a.meta_attr_name='registered_by_doc' and b.object_id = c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
 	
 	//USAGE_SUMMARY_BY_USER
@@ -219,7 +219,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String FILE_SIZE_RANGE_BY_USER_DATE_SQL = 
-			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and b.object_id in " +
+			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and c.data_id = b.object_id and b.object_id in " +
 					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by' and a.meta_attr_value=? and b.object_id = c.data_id and a.meta_id=b.meta_id ) and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
 	
 	private static final String USERS_SQL = "select \"USER_ID\" from public.\"HPC_USER\"";
