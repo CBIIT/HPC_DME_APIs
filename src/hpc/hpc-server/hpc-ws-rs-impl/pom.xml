@@ -157,52 +157,7 @@
           							<trustcacerts>true</trustcacerts>
           							<noprompt>true</noprompt>
         						</configuration>
-          					</execution>     					
-          					<execution>
-          						<id>importiRODSServerCertificate</id>
-            					<goals>
-            						<goal>importCertificate</goal>
-            					</goals>
-            					<phase>generate-resources</phase>
-            					<configuration>
-            						<keystore>src/main/resources/keystore.jks</keystore>
-            						<file>src/main/resources/irods.crt</file>
-          							<storepass>***REMOVED***</storepass>
-          							<alias>hpc-irods-server</alias>
-          							<trustcacerts>true</trustcacerts>
-          							<noprompt>true</noprompt>
-        						</configuration>
-          					</execution>    
-          					<execution>
-          						<id>importLDAPServerRootCertificate</id>
-            					<goals>
-            						<goal>importCertificate</goal>
-            					</goals>
-            					<phase>generate-resources</phase>
-            					<configuration>
-            						<keystore>src/main/resources/keystore.jks</keystore>
-            						<file>src/main/resources/ldap-root.crt</file>
-          							<storepass>***REMOVED***</storepass>
-          							<alias>NIH-DPKI-ROOT-1A</alias>
-          							<trustcacerts>true</trustcacerts>
-          							<noprompt>true</noprompt>
-        						</configuration>
-          					</execution>    
-          					<execution>
-          						<id>importLDAPServerIntermediateCertificate</id>
-            					<goals>
-            						<goal>importCertificate</goal>
-            					</goals>
-            					<phase>generate-resources</phase>
-            					<configuration>
-            						<keystore>src/main/resources/keystore.jks</keystore>
-            						<file>src/main/resources/ldap-intermediate.crt</file>
-          							<storepass>***REMOVED***</storepass>
-          							<alias>NIH-DPKI-CA-1A</alias>
-          							<trustcacerts>true</trustcacerts>
-          							<noprompt>true</noprompt>
-        						</configuration>
-          					</execution>   					
+          					</execution>     							
         				</executions>
       				</plugin>
       			</plugins>
