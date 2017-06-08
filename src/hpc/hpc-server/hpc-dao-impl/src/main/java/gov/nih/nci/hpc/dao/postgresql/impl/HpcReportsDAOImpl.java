@@ -51,7 +51,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, r_objt_metamap b, r_data_main c where a.meta_attr_name = 'source_file_size' and b.meta_id=a.meta_id and b.object_id=c.data_id";
 
 	private static final String LARGEST_FILE_SQL = 
-			"SELECT max(to_number(meta_attr_value, '9999999999999999999')) maxSize FROM public.r_meta_main where meta_attr_name = 'source_file_size'";
+			"SELECT max(to_number(meta_attr_value, '9999999999999999999')) maxSize FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name = 'source_file_size' and a.meta_id=b.meta_id and b.object_id = c.data_id" ;
 
 	private static final String AVERAGE_FILE_SQL = 
 			"SELECT avg(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, r_objt_metamap b, r_data_main c where a.meta_attr_name = 'source_file_size' and b.meta_id=a.meta_id and b.object_id=c.data_id";
@@ -74,7 +74,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 
 	//USAGE_SUMMARY_DATE_RANGE
 	private static final String SUM_OF_DATA_BY_DATE_SQL = 
-			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, r_objt_metamap b, r_data_main c where a.meta_attr_name = 'source_file_size' and b.meta_id=a.meta_id and b.object_id=c.data_id and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
+			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name = 'source_file_size' and b.meta_id=a.meta_id and b.object_id = c.data_id and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String LARGEST_FILE_BY_DATE_SQL = 
 			"SELECT max(to_number(meta_attr_value, '9999999999999999999')) maxSize FROM public.r_meta_main where meta_attr_name = 'source_file_size' and CAST(create_ts as double precision) BETWEEN ? AND ?";
@@ -99,7 +99,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 
 	//USAGE_SUMMARY_BY_DOC
 	private static final String SUM_OF_DATA_BY_DOC_SQL = 
-			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name = 'source_file_size' and a.meta_id = b.meta_id and b.object_id in " +
+			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name = 'source_file_size' and a.meta_id = b.meta_id and b.object_id=c.data_id and b.object_id in " +
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c  where a.meta_attr_name='registered_by_doc' and b.object_id=c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id = c.data_id)";
 
 	private static final String LARGEST_FILE_BY_DOC_SQL = 
