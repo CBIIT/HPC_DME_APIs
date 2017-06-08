@@ -210,8 +210,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  		        			                             systemGeneratedMetadata.getRegistrarId(),
  		        			                             systemGeneratedMetadata.getCallerObjectId(),
  		        			                             systemGeneratedMetadata.getRegistrarDOC());
- 		         
- 		         logger.error("ERAN 1: " + systemGeneratedMetadata.getRegistrarDOC());
  		     
  		         // Delete the file.
  		         if(!FileUtils.deleteQuietly(file)) {

@@ -5,8 +5,6 @@ import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestina
 import java.util.Calendar;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.amazonaws.AmazonClientException;
@@ -53,10 +51,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	@Autowired
     private HpcS3Connection s3Connection = null;
 	
-	// The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
-	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -93,13 +87,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		                                            HpcDataTransferProgressListener progressListener) 
     		                                           throws HpcException
    {
-    	if(baseArchiveDestination == null) {
-    		logger.error("ERAN 2: null");
-    	} else {
-    		    logger.error("ERAN 3: " + baseArchiveDestination.toString());
-    		    logger.error("ERAN 4: " + baseArchiveDestination.getType() + "," + baseArchiveDestination.getFileLocation());
-    	}
-    	
        	// Calculate the archive destination.
     	HpcFileLocation archiveDestinationLocation = 
     	   getArchiveDestinationLocation(baseArchiveDestination.getFileLocation(), 
