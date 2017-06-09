@@ -1,0 +1,1 @@
+-H "Authorization : Bearer un=XXXXXX|tokenid=|expiry=|client_id=xxx|token_type=Bearer|SigningSubject=https://nexus.api.globusonline.org/goauth/keys/|sig="
