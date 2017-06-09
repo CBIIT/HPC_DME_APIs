@@ -783,7 +783,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		tengbEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB);
 		tengbEntry.setValue(getFileSize(criteria, fileSizeArgs, filesizedateArgs, filesizedocArgs, filesizedocDateArgs, filesizeuserArgs, filesizeuserDateArgs));
 
-		lower = new Long("10000000000");
+		lower = new Long("10000000001");
 		upper = new Long("100000000000000");
 		fileSizeArgs[0] = lower;
 		fileSizeArgs[1] = upper;
