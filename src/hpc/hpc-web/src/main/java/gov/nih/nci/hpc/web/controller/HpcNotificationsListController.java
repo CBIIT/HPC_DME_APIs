@@ -11,6 +11,7 @@ package gov.nih.nci.hpc.web.controller;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -91,7 +92,14 @@ public class HpcNotificationsListController extends AbstractHpcController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		result.sort(Comparator.comparing(HpcNotificationReceipt::getEventCreated));
+		//result.sort(Comparator.comparing(HpcNotificationReceipt::getEventCreated));
+		
+		Collections.sort(result, new Comparator<HpcNotificationReceipt>() {
+	        @Override
+	        public int compare(HpcNotificationReceipt h1, HpcNotificationReceipt h2) {
+	            return h2.getEventCreated().compareTo(h1.getEventCreated());
+	        }
+	    });
 		return result;
 	}
 }
