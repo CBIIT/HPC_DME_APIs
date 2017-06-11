@@ -32,7 +32,7 @@
 				<configuration>
 					<filesets>
 						<fileset>
-							<directory>xjc-build</directory>
+							<directory>${basedir}/xjc-build</directory>
 						</fileset>
 					</filesets>
 				</configuration>
@@ -48,10 +48,10 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>xjc-build/schema</outputDirectory>
+							<outputDirectory>${basedir}/xjc-build/schema</outputDirectory>
 							<resources>
 								<resource>
-									<directory>src/main/resources/schema</directory>
+									<directory>${basedir}/src/main/resources/schema</directory>
 								</resource>
 							</resources>
 						</configuration>
@@ -102,63 +102,63 @@
 						<configuration>
 							<xsdOptions>
 								<xsdOption>
-									<xsd>xjc-build/schema/HpcException.xsd</xsd>
+									<xsd>${basedir}/xjc-build/schema/HpcException.xsd</xsd>
 									<packagename>gov.nih.nci.hpc.dto.error</packagename>
-									<bindingFile>xjc-build/schema/hpc-dto-error-jaxb-binding.xjb</bindingFile>
+									<bindingFile>${basedir}/xjc-build/schema/hpc-dto-error-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
 										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
 								<xsdOption>
-									<xsd>xjc-build/schema/HpcSecurity.xsd</xsd>
+									<xsd>${basedir}/xjc-build/schema/HpcSecurity.xsd</xsd>
 									<packagename>gov.nih.nci.hpc.dto.security</packagename>
-									<bindingFile>xjc-build/schema/hpc-dto-security-jaxb-binding.xjb</bindingFile>
+									<bindingFile>${basedir}/xjc-build/schema/hpc-dto-security-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
 										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
 								<xsdOption>
-									<xsd>xjc-build/schema/HpcDataManagement.xsd</xsd>
+									<xsd>${basedir}/xjc-build/schema/HpcDataManagement.xsd</xsd>
 									<packagename>gov.nih.nci.hpc.dto.datamanagement</packagename>
-									<bindingFile>xjc-build/schema/hpc-dto-datamanagement-jaxb-binding.xjb</bindingFile>
+									<bindingFile>${basedir}/xjc-build/schema/hpc-dto-datamanagement-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
 										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
 								<xsdOption>
-									<xsd>xjc-build/schema/HpcDataSearch.xsd</xsd>
+									<xsd>${basedir}/xjc-build/schema/HpcDataSearch.xsd</xsd>
 									<packagename>gov.nih.nci.hpc.dto.datasearch</packagename>
-									<bindingFile>xjc-build/schema/hpc-dto-datasearch-jaxb-binding.xjb</bindingFile>
+									<bindingFile>${basedir}/xjc-build/schema/hpc-dto-datasearch-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
 										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
 								<xsdOption>
-									<xsd>xjc-build/schema/HpcNotification.xsd</xsd>
+									<xsd>${basedir}/xjc-build/schema/HpcNotification.xsd</xsd>
 									<packagename>gov.nih.nci.hpc.dto.notification</packagename>
-									<bindingFile>xjc-build/schema/hpc-dto-notification-jaxb-binding.xjb</bindingFile>
+									<bindingFile>${basedir}/xjc-build/schema/hpc-dto-notification-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
 										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
 								<xsdOption>
-									<xsd>xjc-build/schema/HpcReport.xsd</xsd>
+									<xsd>${basedir}/xjc-build/schema/HpcReport.xsd</xsd>
 									<packagename>gov.nih.nci.hpc.dto.report</packagename>
-									<bindingFile>xjc-build/schema/hpc-dto-report-jaxb-binding.xjb</bindingFile>
+									<bindingFile>${basedir}/xjc-build/schema/hpc-dto-report-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
 										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
 								<xsdOption>
-									<xsd>xjc-build/schema/HpcDataBrowse.xsd</xsd>
+									<xsd>${basedir}/xjc-build/schema/HpcDataBrowse.xsd</xsd>
 									<packagename>gov.nih.nci.hpc.dto.databrowse</packagename>
-									<bindingFile>xjc-build/schema/hpc-dto-databrowse-jaxb-binding.xjb</bindingFile>
+									<bindingFile>${basedir}/xjc-build/schema/hpc-dto-databrowse-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
 										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
