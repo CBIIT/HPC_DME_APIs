@@ -25,11 +25,11 @@
 
 	<build>
 		<filters>
-			<filter>target/classes/META-INF/maven/dependencies.properties</filter>
+			<filter>${basedir}/target/classes/META-INF/maven/dependencies.properties</filter>
 		</filters>
 		<resources>
 			<resource>
-				<directory>src/main/resources</directory>
+				<directory>${basedir}/src/main/resources</directory>
 				<filtering>true</filtering>
 			</resource>
 		</resources>
@@ -40,7 +40,7 @@
 				<configuration>
 					<filesets>
 						<fileset>
-							<directory>src/main/resources</directory>
+							<directory>${basedir}/src/main/resources</directory>
 							<includes>
             					<include>hpc-server.properties</include>
           					</includes>
@@ -93,12 +93,12 @@
 						<configuration>
 							<artifacts>
 								<artifact>
-									<file>target/classes/features.xml</file>
+									<file>${basedir}/target/classes/features.xml</file>
 									<type>xml</type>
 									<classifier>features</classifier>
 								</artifact>
 								<artifact>
-									<file>src/main/resources/hpc-server.properties</file>
+									<file>${basedir}/src/main/resources/hpc-server.properties</file>
 									<type>properties</type>
 									<classifier>hpc-server</classifier>
 								</artifact>
