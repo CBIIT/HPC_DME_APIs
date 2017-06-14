@@ -55,9 +55,6 @@ public class HpcS3Connection
      */
     public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String s3URL)
     {
-    	BasicAWSCredentials cleversafeCredentials = 
-    		 new BasicAWSCredentials(dataTransferAccount.getUsername(), 
-    				                 dataTransferAccount.getPassword());
     	/*
     	AWSStaticCredentialsProvider cleversafeCredentialsProvider = 
     	   new AWSStaticCredentialsProvider(cleversafeCredentials);
@@ -65,7 +62,14 @@ public class HpcS3Connection
     	return TransferManagerBuilder.standard().withS3Client(AmazonS3ClientBuilder.standard().
     			   	                             withCredentials(cleversafeCredentialsProvider).build()).build();
     			   	                             */
-    	return new TransferManager(cleversafeCredentials);
+    	BasicAWSCredentials cleversafeCredentials = 
+       		 new BasicAWSCredentials(dataTransferAccount.getUsername(), 
+       				                 dataTransferAccount.getPassword());
+
+       	TransferManager transferManager = new TransferManager(cleversafeCredentials);
+       	transferManager.getAmazonS3Client().setEndpoint(s3URL);
+       	
+       	return transferManager;
     }
 	
     /**
