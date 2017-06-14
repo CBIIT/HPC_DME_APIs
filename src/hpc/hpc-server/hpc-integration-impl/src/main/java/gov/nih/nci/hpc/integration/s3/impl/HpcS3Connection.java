@@ -58,11 +58,14 @@ public class HpcS3Connection
     	BasicAWSCredentials cleversafeCredentials = 
     		 new BasicAWSCredentials(dataTransferAccount.getUsername(), 
     				                 dataTransferAccount.getPassword());
+    	/*
     	AWSStaticCredentialsProvider cleversafeCredentialsProvider = 
     	   new AWSStaticCredentialsProvider(cleversafeCredentials);
 
     	return TransferManagerBuilder.standard().withS3Client(AmazonS3ClientBuilder.standard().
     			   	                             withCredentials(cleversafeCredentialsProvider).build()).build();
+    			   	                             */
+    	return new TransferManager(cleversafeCredentials);
     }
 	
     /**
