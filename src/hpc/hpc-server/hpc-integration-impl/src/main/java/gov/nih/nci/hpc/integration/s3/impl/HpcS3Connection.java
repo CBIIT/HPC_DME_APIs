@@ -10,12 +10,15 @@
 
 package gov.nih.nci.hpc.integration.s3.impl;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
+
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
-
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.transfer.TransferManager;
 
 /**
  * <p>
@@ -55,11 +58,11 @@ public class HpcS3Connection
     	BasicAWSCredentials cleversafeCredentials = 
     		 new BasicAWSCredentials(dataTransferAccount.getUsername(), 
     				                 dataTransferAccount.getPassword());
+    	AWSStaticCredentialsProvider cleversafeCredentialsProvider = 
+    	   new AWSStaticCredentialsProvider(cleversafeCredentials);
 
-    	TransferManager transferManager = new TransferManager(cleversafeCredentials);
-    	transferManager.getAmazonS3Client().setEndpoint(s3URL);
-    	
-    	return transferManager;
+    	return TransferManagerBuilder.standard().withS3Client(AmazonS3ClientBuilder.standard().
+    			   	                             withCredentials(cleversafeCredentialsProvider).build()).build();
     }
 	
     /**

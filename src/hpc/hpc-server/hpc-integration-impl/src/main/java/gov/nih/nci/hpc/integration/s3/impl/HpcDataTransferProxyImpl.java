@@ -28,6 +28,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
@@ -127,7 +128,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		 
         } catch(AmazonClientException ace) {
         	    throw new HpcException("[S3] Failed to upload file.", 
-        	    		               HpcErrorType.DATA_TRANSFER_ERROR, ace);
+        	    		               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, ace);
         	    
         } catch(InterruptedException ie) {
         	    Thread.currentThread().interrupt();
@@ -177,7 +178,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		    
         } catch(AmazonClientException ace) {
     	        throw new HpcException("[S3] Failed to download file.", 
-    	    	     	               HpcErrorType.DATA_TRANSFER_ERROR, ace);
+    	    	     	               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, ace);
     	    
         } catch(InterruptedException ie) {
     	        Thread.currentThread().interrupt();
@@ -202,11 +203,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
    		    
     	} catch(AmazonServiceException ase) {
     		    throw new HpcException("[S3] Failed to delete file: " + request, 
-  	                                   HpcErrorType.DATA_TRANSFER_ERROR, ase);
+  	                                   HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, ase);
     		    
         } catch(AmazonClientException ace) {
         	    throw new HpcException("[S3] Failed to delete file: " + request, 
-                                       HpcErrorType.DATA_TRANSFER_ERROR, ace);
+                                       HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, ace);
         }	
     }
 }

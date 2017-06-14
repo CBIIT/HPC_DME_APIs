@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadCleanup;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
@@ -112,7 +113,7 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a data object download cleanup: " + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
     }
 	
@@ -124,7 +125,7 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to delete a data object download cleanup: " + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 	
@@ -140,7 +141,7 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get data object download cleanup: " + 
 		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 	
