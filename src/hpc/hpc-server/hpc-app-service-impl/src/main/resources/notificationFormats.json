@@ -1,115 +1,116 @@
-{  
-	"notificationFormats": [  
-    	{  
-         "eventType" : "DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE",
-         "subjectFormat" : "HPC Data Upload received in temporary archive",
-         "subjectArguments" : [],
-         "textFormat" : "Your data upload request is stored in temporary archive. \nIt will post to permanent archive soon. \nData path: %1$s",
-         "textArguments" : [
-         	{  
-             "payloadEntryAttribute" : "DATA_OBJECT_PATH",
-             "index" : "0"
-			}
-         ]
-        },
-    	{  
-         "eventType" : "DATA_TRANSFER_UPLOAD_ARCHIVED",
-         "subjectFormat" : "HPC Data Transfer Upload Request Completed at %1$s",
-         "subjectArguments" : [
-         	{  
-             "payloadEntryAttribute" : "DATA_TRANSFER_COMPLETED",
-             "index" : "0"
-			}
-		 ],
-         "textFormat" : "Your upload request is completed.\nSource path: %1$s\nTarget path: %2$s",
-         "textArguments" : [
-         	{  
-             "payloadEntryAttribute" : "SOURCE_LOCATION",
-             "index" : "0"
-			}
-         	{  
-             "payloadEntryAttribute" : "DATA_OBJECT_PATH",
-             "index" : "1"
-			}
-         ]
-        },
-        {  
-         "eventType" : "DATA_TRANSFER_UPLOAD_FAILED",
-         "subjectFormat" : "HPC Data Transfer Upload Request Failed at %1$s",
-         "subjectArguments" : [
-         	{  
-             "payloadEntryAttribute" : "DATA_TRANSFER_COMPLETED",
-             "index" : "0"
-			}
-		 ],
-         "textFormat" : "Your data registration failed. \nData path: %1$s \nReason for failure: %2$s",
-         "textArguments" : [
-         	{  
-             "payloadEntryAttribute" : "DATA_OBJECT_PATH",
-             "index" : "0"
-			},
-			{  
-             "payloadEntryAttribute" : "ERROR_MESSAGE",
-             "index" : "1"
-			}
-         ]
-        },
-        {  
-         "eventType" : "DATA_TRANSFER_DOWNLOAD_COMPLETED",
-         "subjectFormat" : "HPC Data Transfer Download Request Completed at %1$s",
-         "subjectArguments" : [
-         	{  
-             "payloadEntryAttribute" : "DATA_TRANSFER_COMPLETED",
-             "index" : "0"
-            }
-         ],
-         "textFormat" : "Your download request is completed.\nSource path: %1$s\nTarget path: %2$s",
-         "textArguments" : [
-         	{  
-             "payloadEntryAttribute" : "DATA_OBJECT_PATH",
-             "index" : "0"
-			}
-         	{  
-             "payloadEntryAttribute" : "DESTINATION_LOCATION",
-             "index" : "1"
-			}
-         ]
-        },
-        {  
-         "eventType" : "DATA_TRANSFER_DOWNLOAD_FAILED",
-         "subjectFormat" : "HPC Data Transfer Download Request Failed at %1$s",
-         "subjectArguments" : [
-         	{  
-             "payloadEntryAttribute" : "DATA_TRANSFER_COMPLETED",
-             "index" : "0"
-			}
-		 ],
-         "textFormat" : "Your download request failed.\nSource path: %1$s\nTarget path: %2$s\nReason for failure: %3$s",
-            "textArguments" : [
-         	{  
-             "payloadEntryAttribute" : "DATA_OBJECT_PATH",
-             "index" : "0"
-			}
-         	{  
-             "payloadEntryAttribute" : "DESTINATION_LOCATION",
-             "index" : "1"
-			},
-			{  
-             "payloadEntryAttribute" : "ERROR_MESSAGE",
-             "index" : "2"
-			}
-         ]
-        },
-        {  
-         "eventType" : "USAGE_SUMMARY_REPORT",
-         "subjectFormat" : "HPC DME Summary Report: [%1$s]",
-         "subjectArguments" : [
-         	{  
-             "payloadEntryAttribute" : "REPORT_GENERATED_ON",
-             "index" : "0"
-            }
-         ],
-         "textFormat" : "HPC DME Usage summary report generated on %1$s. \n_______________________________________________________
+{
+	"notificationFormats": [
+		{
+			"eventType": "DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE",
+			"subjectFormat": "HPC Data Upload received in temporary archive",
+			"subjectArguments": [
+			],
+			"textFormat": "Your data upload request is stored in temporary archive. \nIt will post to permanent archive soon. \nData path: %1$s",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "0"
+				}
+			]
+		},
+		{
+			"eventType": "DATA_TRANSFER_UPLOAD_ARCHIVED",
+			"subjectFormat": "HPC Data Transfer Upload Request Completed at %1$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "0"
+				}
+			],
+			"textFormat": "Your upload request is completed.\nSource path: %1$s\nTarget path: %2$s",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "SOURCE_LOCATION",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "1"
+				}
+			]
+		},
+		{
+			"eventType": "DATA_TRANSFER_UPLOAD_FAILED",
+			"subjectFormat": "HPC Data Transfer Upload Request Failed at %1$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "0"
+				}
+			],
+			"textFormat": "Your data registration failed. \nData path: %1$s \nReason for failure: %2$s",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "ERROR_MESSAGE",
+					"index": "1"
+				}
+			]
+		},
+		{
+			"eventType": "DATA_TRANSFER_DOWNLOAD_COMPLETED",
+			"subjectFormat": "HPC Data Transfer Download Request Completed at %1$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "0"
+				}
+			],
+			"textFormat": "Your download request is completed.\nSource path: %1$s\nTarget path: %2$s",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "DESTINATION_LOCATION",
+					"index": "1"
+				}
+			]
+		},
+		{
+			"eventType": "DATA_TRANSFER_DOWNLOAD_FAILED",
+			"subjectFormat": "HPC Data Transfer Download Request Failed at %1$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "0"
+				}
+			],
+			"textFormat": "Your download request failed.\nSource path: %1$s\nTarget path: %2$s\nReason for failure: %3$s",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "DESTINATION_LOCATION",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "ERROR_MESSAGE",
+					"index": "2"
+				}
+			]
+		},
+		{
+			"eventType": "USAGE_SUMMARY_REPORT",
+			"subjectFormat": "HPC DME Summary Report: [%1$s]",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "REPORT_GENERATED_ON",
+					"index": "0"
+				}
+			],
+			"textFormat": "HPC DME Usage summary report generated on %1$s. \n_______________________________________________________
          \nTotal registered users: %2$s 
          \nTotal size of the data:  %3$s bytes
          \nLargest file:  %4$s bytes
@@ -126,83 +127,83 @@
 		 \n\t > 500MB and < 1GB:  %14$s
 		 \n\t > 1GB and < 10GB:  %15$s
 		 \n\t > 10GB:  %16$s",
-         "textArguments" : [
-         	{  
-             "payloadEntryAttribute" : "REPORT_GENERATED_ON",
-             "index" : "0"
-			},
-         	{  
-             "payloadEntryAttribute" : "TOTAL_NUM_OF_REGISTERED_USERS",
-             "index" : "1"
-			},
-         	{  
-             "payloadEntryAttribute" : "TOTAL_DATA_SIZE",
-             "index" : "2"
-			},
-         	{  
-             "payloadEntryAttribute" : "LARGEST_FILE_SIZE",
-             "index" : "3"
-			},
-         	{  
-             "payloadEntryAttribute" : "AVERAGE_FILE_SIZE",
-             "index" : "4"
-			},
-         	{  
-             "payloadEntryAttribute" : "TOTAL_NUM_OF_DATA_OBJECTS",
-             "index" : "5"
-			},
-         	{  
-             "payloadEntryAttribute" : "TOTAL_NUM_OF_COLLECTIONS",
-             "index" : "6"
-			},
-         	{  
-             "payloadEntryAttribute" : "TOTAL_NUMBER_OF_META_ATTRS",
-             "index" : "7"
-			},
-         	{  
-             "payloadEntryAttribute" : "FILE_SIZE_BELOW_1_MB",
-             "index" : "8"
-			},
-         	{  
-             "payloadEntryAttribute" : "FILE_SIZE_1_MB_10_MB",
-             "index" : "9"
-			},
-         	{  
-             "payloadEntryAttribute" : "FILE_SIZE_10_MB_50_MB",
-             "index" : "10"
-			},
-         	{  
-             "payloadEntryAttribute" : "FILE_SIZE_50_MB_100_MB",
-             "index" : "11"
-			},
-         	{  
-             "payloadEntryAttribute" : "FILE_SIZE_100_MB_500_MB",
-             "index" : "12"
-			},
-         	{  
-             "payloadEntryAttribute" : "FILE_SIZE_500_MB_1_GB",
-             "index" : "13"
-			},
-         	{  
-             "payloadEntryAttribute" : "FILE_SIZE_1_GB_10_GB",
-             "index" : "14"
-			},
-         	{  
-             "payloadEntryAttribute" : "FILE_SIZE_OVER_10_GB",
-             "index" : "15"
-			}
-         ]
-        },
- 		{  
-         "eventType" : "USAGE_SUMMARY_BY_WEEKLY_REPORT",
-         "subjectFormat" : "HPC DME Summary by weekly report: [%1$s]",
-         "subjectArguments" : [
-         	{  
-             "payloadEntryAttribute" : "REPORT_GENERATED_ON",
-             "index" : "0"
-            }
-         ],
-         "textFormat" : "HPC DME Usage summary report generated on %1$s. \n_______________________________________________________
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "REPORT_GENERATED_ON",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_NUM_OF_REGISTERED_USERS",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_DATA_SIZE",
+					"index": "2"
+				},
+				{
+					"payloadEntryAttribute": "LARGEST_FILE_SIZE",
+					"index": "3"
+				},
+				{
+					"payloadEntryAttribute": "AVERAGE_FILE_SIZE",
+					"index": "4"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_NUM_OF_DATA_OBJECTS",
+					"index": "5"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_NUM_OF_COLLECTIONS",
+					"index": "6"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_NUMBER_OF_META_ATTRS",
+					"index": "7"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_BELOW_1_MB",
+					"index": "8"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_1_MB_10_MB",
+					"index": "9"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_10_MB_50_MB",
+					"index": "10"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_50_MB_100_MB",
+					"index": "11"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_100_MB_500_MB",
+					"index": "12"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_500_MB_1_GB",
+					"index": "13"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_1_GB_10_GB",
+					"index": "14"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_OVER_10_GB",
+					"index": "15"
+				}
+			]
+		},
+		{
+			"eventType": "USAGE_SUMMARY_BY_WEEKLY_REPORT",
+			"subjectFormat": "HPC DME Summary by weekly report: [%1$s]",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "REPORT_GENERATED_ON",
+					"index": "0"
+				}
+			],
+			"textFormat": "HPC DME Usage summary report generated on %1$s. \n_______________________________________________________
          \nReporting period from %17$s to %18$s\n
          \nTotal registered users: %2$s 
          \nTotal size of the data:  %3$s bytes
@@ -220,96 +221,122 @@
 		 \n\t > 500MB and < 1GB:  %14$s
 		 \n\t > 1GB and < 10GB:  %15$s
 		 \n\t > 10GB:  %16$s",
-         "textArguments" : [
-         	{  
-             "payloadEntryAttribute" : "REPORT_GENERATED_ON",
-             "index" : "0"
-			},
-         	{  
-             "payloadEntryAttribute" : "TOTAL_NUM_OF_REGISTERED_USERS",
-             "index" : "1"
-			},
-         	{  
-             "payloadEntryAttribute" : "TOTAL_DATA_SIZE",
-             "index" : "2"
-			},
-         	{  
-             "payloadEntryAttribute" : "LARGEST_FILE_SIZE",
-             "index" : "3"
-			},
-         	{  
-             "payloadEntryAttribute" : "AVERAGE_FILE_SIZE",
-             "index" : "4"
-			},
-         	{  
-             "payloadEntryAttribute" : "TOTAL_NUM_OF_DATA_OBJECTS",
-             "index" : "5"
-			},
-         	{  
-             "payloadEntryAttribute" : "TOTAL_NUM_OF_COLLECTIONS",
-             "index" : "6"
-			},
-         	{  
-             "payloadEntryAttribute" : "TOTAL_NUMBER_OF_META_ATTRS",
-             "index" : "7"
-			},
-         	{  
-             "payloadEntryAttribute" : "FILE_SIZE_BELOW_1_MB",
-             "index" : "8"
-			},
-         	{  
-             "payloadEntryAttribute" : "FILE_SIZE_1_MB_10_MB",
-             "index" : "9"
-			},
-         	{  
-             "payloadEntryAttribute" : "FILE_SIZE_10_MB_50_MB",
-             "index" : "10"
-			},
-         	{  
-             "payloadEntryAttribute" : "FILE_SIZE_50_MB_100_MB",
-             "index" : "11"
-			},
-         	{  
-             "payloadEntryAttribute" : "FILE_SIZE_100_MB_500_MB",
-             "index" : "12"
-			},
-         	{  
-             "payloadEntryAttribute" : "FILE_SIZE_500_MB_1_GB",
-             "index" : "13"
-			},
-         	{  
-             "payloadEntryAttribute" : "FILE_SIZE_1_GB_10_GB",
-             "index" : "14"
-			},
-         	{  
-             "payloadEntryAttribute" : "FILE_SIZE_OVER_10_GB",
-             "index" : "15"
-			},
-			{  
-             "payloadEntryAttribute" : "FROM_DATE",
-             "index" : "16"
-			},
-			{  
-             "payloadEntryAttribute" : "TO_DATE",
-             "index" : "17"
-			}
-         ]
-        },
-        {  
-         "eventType" : "COLLECTION_UPDATED",
-         "subjectFormat" : "HPC collection updated",
-         "subjectArguments" : [],
-         "textFormat" : "Collection %1$s was updated.\n %2$s.",
-         "textArguments" : [
-         	{  
-             "payloadEntryAttribute" : "COLLECTION_PATH",
-             "index" : "0"
-			},
-			{  
-             "payloadEntryAttribute" : "UPDATE_DESCRIPTION",
-             "index" : "1"
-			}
-         ]
-        },    
-    ]
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "REPORT_GENERATED_ON",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_NUM_OF_REGISTERED_USERS",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_DATA_SIZE",
+					"index": "2"
+				},
+				{
+					"payloadEntryAttribute": "LARGEST_FILE_SIZE",
+					"index": "3"
+				},
+				{
+					"payloadEntryAttribute": "AVERAGE_FILE_SIZE",
+					"index": "4"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_NUM_OF_DATA_OBJECTS",
+					"index": "5"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_NUM_OF_COLLECTIONS",
+					"index": "6"
+				},
+				{
+					"payloadEntryAttribute": "TOTAL_NUMBER_OF_META_ATTRS",
+					"index": "7"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_BELOW_1_MB",
+					"index": "8"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_1_MB_10_MB",
+					"index": "9"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_10_MB_50_MB",
+					"index": "10"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_50_MB_100_MB",
+					"index": "11"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_100_MB_500_MB",
+					"index": "12"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_500_MB_1_GB",
+					"index": "13"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_1_GB_10_GB",
+					"index": "14"
+				},
+				{
+					"payloadEntryAttribute": "FILE_SIZE_OVER_10_GB",
+					"index": "15"
+				},
+				{
+					"payloadEntryAttribute": "FROM_DATE",
+					"index": "16"
+				},
+				{
+					"payloadEntryAttribute": "TO_DATE",
+					"index": "17"
+				}
+			]
+		},
+		{
+			"eventType": "COLLECTION_UPDATED",
+			"subjectFormat": "HPC collection updated",
+			"subjectArguments": [
+			],
+			"textFormat": "Collection %1$s was updated.\n %2$s.",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "COLLECTION_PATH",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "UPDATE_DESCRIPTION",
+					"index": "1"
+				}
+			]
+		},
+		{
+			"eventType": "INTEGRATED_SYSTEM_ERROR",
+			"subjectFormat": "HPC-DM: %1$s error: %2$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "INTEGRATED_SYSTEM",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "ERROR_MESSAGE",
+					"index": "1"
+				}
+			],
+			"textFormat": "%1$s server or connection is broken - Please have DBA or System Administrator check.\n%2$s\n",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "INTEGRATED_SYSTEM",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "STACK_TRACE",
+					"index": "1"
+				}
+			]
+		}
+	]
 }

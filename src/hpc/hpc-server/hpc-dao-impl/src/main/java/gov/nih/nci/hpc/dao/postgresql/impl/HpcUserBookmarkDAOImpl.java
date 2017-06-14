@@ -26,6 +26,7 @@ import org.springframework.jdbc.core.RowMapper;
 import gov.nih.nci.hpc.dao.HpcUserBookmarkDAO;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -108,7 +109,7 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a user bookmark " + 
 		                               e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 	
@@ -121,7 +122,7 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to delete a bookmark" + 
 		                               e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}   
 	}
 	
@@ -136,9 +137,8 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO
 			    return null;
 			    
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get user bookmarks: " + 
-		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		        throw new HpcException("Failed to get user bookmarks: " + e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}	    	
     }
     
@@ -156,7 +156,7 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get a user bookamrk: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
     }
 	
