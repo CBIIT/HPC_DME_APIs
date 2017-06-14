@@ -229,10 +229,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public void delete(String path) throws HpcException
+    public void delete(String path)
     {
-    	// Delete the data object file.
-    	dataManagementProxy.delete(dataManagementAuthenticator.getAuthenticatedToken(), path);
+		try {
+	    	 // Delete the data object file.
+	    	 dataManagementProxy.delete(dataManagementAuthenticator.getAuthenticatedToken(), path);
+   	     
+		} catch(HpcException e) {
+			    logger.error("Failed to delete a file", e);
+		}
+
     }
     
     @Override
@@ -243,9 +249,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		// Try to remove the path capture the status.
 		boolean dataManagementDeleteStatus = true;
 		try {
-    	     delete(path);
+	    	 // Delete the data object file.
+	    	 dataManagementProxy.delete(dataManagementAuthenticator.getAuthenticatedToken(), path);
     	     
 		} catch(HpcException e) {
+			    logger.error("Failed to delete a file", e);
 			    dataManagementDeleteStatus = false;
 		}
 		

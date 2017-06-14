@@ -27,7 +27,6 @@ import org.json.JSONObject;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcGlobusConnection 

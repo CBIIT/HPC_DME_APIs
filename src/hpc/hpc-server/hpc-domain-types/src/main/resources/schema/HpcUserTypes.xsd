@@ -23,6 +23,8 @@
 			<xsd:enumeration value="GLOBUS" />
 			<xsd:enumeration value="IRODS" />
 			<xsd:enumeration value="CLEVERSAFE" />
+			<xsd:enumeration value="LDAP" />
+			<xsd:enumeration value="POSTGRESQL" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
