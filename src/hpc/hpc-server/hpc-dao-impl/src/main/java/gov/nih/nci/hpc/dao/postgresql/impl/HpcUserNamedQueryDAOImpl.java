@@ -20,6 +20,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryAttributeMatch;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
@@ -46,7 +47,6 @@ import org.springframework.jdbc.core.RowMapper;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
@@ -130,9 +130,8 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 		    		             namedCompoundMetadataQuery.getUpdated());
 		     
 		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to upsert a user query " + 
-		                               e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+			    throw new HpcException("Failed to upsert a user query " + e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 	
@@ -143,9 +142,8 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 		     jdbcTemplate.update(DELETE_USER_QUERY_SQL, nciUserId, queryName);
 		     
 		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to delete a user query" + 
-		                               e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+			    throw new HpcException("Failed to delete a user query" + e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}   
 	}
 	
@@ -161,9 +159,8 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 			    return null;
 			    
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get user queries: " + 
-		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		        throw new HpcException("Failed to get user queries: " + e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}	    	
     }
     
@@ -181,7 +178,7 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get a user query: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
     }
 	

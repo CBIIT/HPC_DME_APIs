@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationTrigger;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
@@ -39,7 +40,6 @@ import org.springframework.transaction.annotation.Transactional;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcNotificationDAOImpl implements HpcNotificationDAO
@@ -168,7 +168,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a notification subscription: " + 
 		                               e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		} 
     }
 	
@@ -183,7 +183,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to delete a notification subscription: " + 
 		                               e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}		
 	}
 	
@@ -210,7 +210,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get notification subscriptions: " + 
 		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}		
 	}
 	
@@ -239,7 +239,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get notification subscription: " + 
 		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}				
 		
     }
@@ -257,7 +257,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get notification subscribed users: " + 
 		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}				
     }
 	
@@ -275,7 +275,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get notification subscribed users: " + 
 		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}				
     }
     	
@@ -294,7 +294,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a notification delivery receipt: " + 
 		                               e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}                                    
     }
     
@@ -312,7 +312,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get notification subscriptions: " + 
 		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}	
     }
 
@@ -332,9 +332,8 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 			    return null;
 			    
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get notification subscriptions: " + 
-		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		        throw new HpcException("Failed to get notification subscriptions: " + e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}	
     }
 
@@ -347,7 +346,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to count notification delivery receipts: " + 
 		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}	
     }
 

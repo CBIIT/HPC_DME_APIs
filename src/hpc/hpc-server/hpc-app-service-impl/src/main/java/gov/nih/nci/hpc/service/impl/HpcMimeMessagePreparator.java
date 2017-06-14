@@ -10,17 +10,16 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
-import gov.nih.nci.hpc.domain.notification.HpcEventType;
-
 import java.util.List;
 
 import javax.mail.Message;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.MimeMessagePreparator;
+
+import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
+import gov.nih.nci.hpc.domain.notification.HpcEventType;
 
 /**
  * <p>
@@ -28,7 +27,6 @@ import org.springframework.mail.javamail.MimeMessagePreparator;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcMimeMessagePreparator 
@@ -62,16 +60,13 @@ public class HpcMimeMessagePreparator
     public MimeMessagePreparator getPreparator(String userId, HpcEventType eventType, 
     		                                   List<HpcEventPayloadEntry> payloadEntries)
     {
-        return new MimeMessagePreparator() 
+        return (mimeMessage) ->  
         {
-            public void prepare(MimeMessage mimeMessage) throws Exception 
-            {
-            	mimeMessage.setRecipient(
-            			       Message.RecipientType.TO,
-                               new InternetAddress(userId + "@" + NIH_EMAIL_DOMAIN));
-                mimeMessage.setSubject(notificationFormatter.formatSubject(eventType, payloadEntries));
-                mimeMessage.setText(notificationFormatter.formatText(eventType, payloadEntries));
-            }
+        	mimeMessage.setRecipient(
+            		       Message.RecipientType.TO,
+                           new InternetAddress(userId + "@" + NIH_EMAIL_DOMAIN));
+            mimeMessage.setSubject(notificationFormatter.formatSubject(eventType, payloadEntries));
+            mimeMessage.setText(notificationFormatter.formatText(eventType, payloadEntries));
         };
     }
 }
