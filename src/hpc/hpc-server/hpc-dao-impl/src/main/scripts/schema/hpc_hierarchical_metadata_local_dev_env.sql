@@ -67,3 +67,15 @@ CREATE FOREIGN TABLE r_data_hierarchy_meta_main (
        meta_attr_unit text)
        SERVER hpc_dm_dev
        OPTIONS (schema_name 'public', table_name 'r_data_hierarchy_meta_main');
+       
+ CREATE FOREIGN TABLE r_user_main (
+       user_id integer,
+       user_name text,
+       user_type_name text,
+       zone_name text,
+       user_info text,
+       r_comment text,
+       create_ts text,
+       modify_ts text)
+       SERVER hpc_dm_dev
+       OPTIONS (schema_name 'public', table_name 'r_user_main');
