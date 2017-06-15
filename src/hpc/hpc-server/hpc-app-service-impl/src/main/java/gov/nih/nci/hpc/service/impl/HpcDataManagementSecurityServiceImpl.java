@@ -148,6 +148,12 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
+    	// Validate group name. Only alphanumeric + '_' and '-' are supported
+    	if(!groupName.matches("[a-zA-Z0-9\\-_]+")) {
+     	   throw new HpcException("Invalid group name. Only alphanumeric, '_' and '-' are supported.", 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
     	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
     	
     	// Validate the group doesn't already exists.
