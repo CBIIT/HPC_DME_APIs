@@ -129,7 +129,7 @@ function dm_register () {
     rm $RESPONSE_HEADER 2>/dev/null 
 
     local CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/${DESTINATION_PATH}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
-  
+    
     if [ "$TYPE" == "dataObject" ]
     then
         if [ -z "$DATAOBJECT_FILE" ]
@@ -140,12 +140,13 @@ function dm_register () {
         fi
     elif [ "$TYPE" == "collection" ]
     then
-
+            
            curl -H "Content-Type: application/json" -d @$DESCRIPTION $CURL_FLAGS  -H "Accept: application/json" 2>curl-status
     else
         echo "ERROR: Unsupported registration type:$TYPE"
         return 1
     fi
+
     check_connection $RESPONSE_HEADER
 }
 
@@ -166,6 +167,7 @@ function dm_register_collection {
 
     local DESCRIPTION="$1"
     local DESTINATION_PATH="$2"
+
     dm_register $DESCRIPTION $DESTINATION_PATH collection
     if [ "$?" -eq  1 ]
     then
@@ -446,7 +448,7 @@ function dm_download_dataobject_sync {
 
     local SERVER=$(get_server)
     
-    local CONFIG=$(get_cnfig)
+    local CONFIG=$(get_config)
 
     local TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json"
 
@@ -515,7 +517,33 @@ function dm_register_directory {
     local log_file=./dm_log
     local error_file=./dm_error
 
-    java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
+
+    case "$(uname -s)" in
+    
+       Darwin)
+         echo 'Mac OS X is not currently supported'
+         return 1
+         ;;
+    
+       Linux)
+        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
+         ;;
+    
+       CYGWIN*|MINGW32*|MSYS*)
+        echo "MS Windows is not currently supported"
+        return 1
+        java -DHPC_DM_UTILS=$HPC_DM_UTILS -Dhpc.client.properties=$(cygpath -w $HPC_DM_UTILS/hpcdme.properties)  -jar $(cygpath -w $jar_path)  --cmdfile $(cygpath -w $command_file)
+         ;;
+    
+       # Add here more strings to compare
+       # See correspondence table at the bottom of this answer
+    
+       *)
+         echo 'Current OS not supported' 
+         return 1
+         ;;
+    esac
+
     if [ "$?" -eq  1 ]
     then
       echo "The batch registration did not fully complete successfully" >&2
@@ -523,8 +551,6 @@ function dm_register_directory {
       echo "$log_file" >&2
       echo "$error_file" >&2
       return 1
-    else 
-      echo "Batch registration for $full_src_path was successful" 
     fi
 
 }
