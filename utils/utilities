@@ -57,7 +57,7 @@ function get_value {
   INPUT="$1"
   ATTRIBUTE="$2"
   INPUT=`get_file_value "$INPUT"`
-  echo "$INPUT" | grep "${ATTRIBUTE}=" | sed "s/.*${ATTRIBUTE}[    ]*=[    ]*\(.*\)/\1/"
+  echo "$INPUT" | grep "^[^#]" |  grep "${ATTRIBUTE}=" | sed "s/.*${ATTRIBUTE}[    ]*=[    ]*\(.*\)/\1/"
 }
 
 
@@ -207,11 +207,11 @@ function verify_registration {
         if [ ! -e "$RESPONSE_MSG" ] 
         then
           echo "Can not find the response message file $RESPONSE_MSG" >&2
-          return
+          return 1
         else
           MESSAGE=$(get_json_value "$RESPONSE_MSG" message)
           echo "ERROR MESSAGE:$MESSAGE" 1>&2
-          return 
+          return 1
         fi 
     fi
 }
