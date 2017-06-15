@@ -20,6 +20,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryAttributeMatch;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
@@ -43,7 +44,6 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcMetadataDAOImpl implements HpcMetadataDAO 
@@ -353,7 +353,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get collection hierarchical metadata: " + 
 		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}	
     }
     
@@ -367,7 +367,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get data object hierarchical metadata: " + 
 		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}	
     }
     
@@ -397,13 +397,13 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		try {
 			 Calendar modifiedAt = Calendar.getInstance();
 			 modifiedAt.setTimeInMillis(1000 * 
-					                    jdbcTemplate.queryForObject(GET_METADATA_MODIFIED_AT_SQL, objectIdRowMapper, id));
+					                    jdbcTemplate.queryForObject(GET_METADATA_MODIFIED_AT_SQL, 
+					                    		                    objectIdRowMapper, id));
 		     return modifiedAt;
 		     
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get collection/data-object Paths: " + 
-		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		        throw new HpcException("Failed to get collection/data-object Paths: " + e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}		   	
     }
     
@@ -420,7 +420,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to refresh materialized views: " + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
     }
 	
@@ -660,7 +660,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get collection/data-object Paths: " + 
 		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}		
     }
     
@@ -677,9 +677,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 		     return jdbcTemplate.queryForObject(preparedQuery.sql, Integer.class, preparedQuery.args);
 		     
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to count collection/data-object: " + 
-		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		        throw new HpcException("Failed to count collection/data-object: " + e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}	
     }
     
@@ -731,9 +730,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 					                   args.toArray());
 		
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get metadata attributes: " + 
-		                               e.getMessage(),
-			    	                   HpcErrorType.DATABASE_ERROR, e);
+		        throw new HpcException("Failed to get metadata attributes: " + e.getMessage(),
+			    	                   HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 }

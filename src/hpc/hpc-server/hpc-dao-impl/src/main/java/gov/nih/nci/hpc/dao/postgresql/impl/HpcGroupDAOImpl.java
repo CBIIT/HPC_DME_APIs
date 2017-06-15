@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.dao.postgresql.impl;
 
 import gov.nih.nci.hpc.dao.HpcGroupDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.ArrayList;
@@ -29,7 +30,6 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcGroupDAOImpl implements HpcGroupDAO
@@ -97,7 +97,7 @@ public class HpcGroupDAOImpl implements HpcGroupDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get groups: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}		
     }
 }

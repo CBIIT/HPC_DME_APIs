@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.dao.postgresql.impl;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -36,7 +37,6 @@ import org.springframework.jdbc.core.RowMapper;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcUserDAOImpl implements HpcUserDAO
@@ -128,7 +128,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a user: " + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
     }
 	
@@ -144,7 +144,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get a user: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 	
@@ -187,7 +187,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get users: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}		
     }
 	

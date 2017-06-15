@@ -1,6 +1,7 @@
 package gov.nih.nci.hpc.integration.ldap.impl;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
 
@@ -23,7 +24,6 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProxy
@@ -161,7 +161,7 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 		
 		} catch(NamingException ne) {
 			    throw new HpcException("Error occured in connecting to the directory server", 
-			    		               HpcErrorType.LDAP_ERROR, ne);
+			    		               HpcErrorType.LDAP_ERROR, HpcIntegratedSystem.LDAP, ne);
 		}
 		
 		SearchControls searchControls = new SearchControls();
