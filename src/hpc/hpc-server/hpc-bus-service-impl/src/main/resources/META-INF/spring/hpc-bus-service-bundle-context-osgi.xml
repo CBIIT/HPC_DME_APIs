@@ -9,7 +9,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -23,6 +22,7 @@
 
 	<!-- HPC Application Services OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
+		<prop key="hpc.bus.aspect.systemAdministratorUserId">HPC_DME_Admin</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

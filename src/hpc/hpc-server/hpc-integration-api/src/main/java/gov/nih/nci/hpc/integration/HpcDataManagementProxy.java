@@ -83,8 +83,9 @@ public interface HpcDataManagementProxy
      * @param authenticatedToken An authenticated token.
      * @param path The path to delete.
      * @return true if the object file was successfully deleted.
+     * @throws HpcException on data management system failure.
      */
-    public boolean delete(Object authenticatedToken, String path);
+    public boolean delete(Object authenticatedToken, String path) throws HpcException;
 
     /**
      * Add metadata to a collection.
