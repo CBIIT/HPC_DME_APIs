@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.sql.ResultSet;
@@ -40,7 +41,6 @@ import org.springframework.jdbc.core.RowMapper;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcEventDAOImpl implements HpcEventDAO
@@ -118,9 +118,8 @@ public class HpcEventDAOImpl implements HpcEventDAO
 		    		             event.getCreated());
 		     
 		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to insert an event " + 
-		                               e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+			    throw new HpcException("Failed to insert an event " + e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 	
@@ -134,9 +133,8 @@ public class HpcEventDAOImpl implements HpcEventDAO
 			    return null;
 			    
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get notification events: " + 
-		                               e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		        throw new HpcException("Failed to get notification events: " + e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}	    	
     }
     
@@ -147,9 +145,8 @@ public class HpcEventDAOImpl implements HpcEventDAO
 		     jdbcTemplate.update(DELETE_EVENT_SQL, eventId);
 		     
 		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to delete a notification event" + 
-		                               e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+			    throw new HpcException("Failed to delete a notification event" + e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}    	
     }
     
@@ -167,7 +164,7 @@ public class HpcEventDAOImpl implements HpcEventDAO
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to insert an event to history table" + 
 		                               e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
     }
     
@@ -183,7 +180,7 @@ public class HpcEventDAOImpl implements HpcEventDAO
 		    
 		} catch(DataAccessException e) {
 	            throw new HpcException("Failed to get an event from history: " + e.getMessage(),
-	    	    	                   HpcErrorType.DATABASE_ERROR, e);
+	    	    	                   HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
     }
 	

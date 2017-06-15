@@ -13,6 +13,7 @@ import org.globusonline.transfer.BaseTransferAPIClient;
 import org.globusonline.transfer.JSONTransferAPIClient;
 import org.globusonline.transfer.JSONTransferAPIClient.Result;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDataTransferReport;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
@@ -329,12 +331,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		        throw new HpcException("[GLOBUS] Failed to transfer: " + error.message +
 		    	     	               ". Source: " + source + 
 	                                   ". Destination: " + destination, 
-                                       HpcErrorType.DATA_TRANSFER_ERROR, error);
+                                       HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS,
+                                       error);
 		        
 		} catch(Exception e) {
 		        throw new HpcException("[GLOBUS] Failed to transfer. Source: " + source +
 		        		               ". Destination: " + destination, 
-		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
+		                               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
 		}
 	}
     
@@ -352,7 +355,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	        item.put("recursive", getPathAttributes(source, client, false).getIsDirectory());
 	        return item;
 	        
-		} catch(Exception e) {
+		} catch(JSONException e) {
 	        throw new HpcException(
 	        		     "[GLOBUS] Failed to create JSON: " + source + ", " + destination, 
 	        		     HpcErrorType.DATA_TRANSFER_ERROR, e);
@@ -367,10 +370,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
                                + "/autoactivate?if_expires_in=100";
              client.postResult(resource, null, null);
              
+		} catch(APIError error) {
+			    HpcIntegratedSystem integratedSystem = error.statusCode >= 500 ? HpcIntegratedSystem.GLOBUS : null;
+	            throw new HpcException("[GLOBUS] Endpoint doesn't exist or inactive. Make sure the endpoint name " +
+	                                   "is correct and active: " + endpointName, 
+	        		                   HpcErrorType.DATA_TRANSFER_ERROR, integratedSystem, error);
+	            
 		} catch(Exception e) {
 		        throw new HpcException("[GLOBUS] Endpoint doesn't exist or inactive. Make sure the endpoint name " +
 		                               "is correct and active: " + endpointName, 
-		        		               HpcErrorType.DATA_TRANSFER_ERROR, e);
+		        		               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
 		}
     }
 	
@@ -400,7 +409,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		
 		} catch(Exception e) {
 		        throw new HpcException("[GLOBUS] Failed to get task report for task: " + dataTransferRequestId, 
-		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
+		                               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
 		} 
     }
     
@@ -452,7 +461,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         	    
         } catch(Exception e) {
 	            throw new HpcException("[GLOBUS] Failed to get path attributes: " + fileLocation, 
-       		                           HpcErrorType.DATA_TRANSFER_ERROR, e);
+       		                           HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
         }
         
     	return pathAttributes;
@@ -578,7 +587,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	    } catch(Exception e) {
 		        throw new HpcException("[GLOBUS] Failed to invoke list directory content service: " + 
 	                                   dirLocation, 
-		                               HpcErrorType.DATA_TRANSFER_ERROR, e);
+		                               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
 		}
     }
 }
