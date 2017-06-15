@@ -23,7 +23,6 @@ import com.amazonaws.event.ProgressListener;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: HpcS3Connection.java 1717 2016-12-01 22:39:40Z rosenbergea $
  */
 
 public class HpcS3ProgressListener implements ProgressListener

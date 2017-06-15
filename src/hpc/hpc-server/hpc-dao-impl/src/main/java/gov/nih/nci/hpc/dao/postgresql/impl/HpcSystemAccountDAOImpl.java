@@ -32,7 +32,6 @@ import org.springframework.jdbc.core.RowMapper;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
@@ -103,7 +102,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a system account: " + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
     }
 	
@@ -119,7 +118,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get a system account: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 	
@@ -136,7 +135,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get a system account: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 	
