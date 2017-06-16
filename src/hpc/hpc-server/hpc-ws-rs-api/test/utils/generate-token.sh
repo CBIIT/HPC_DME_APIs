@@ -17,6 +17,6 @@ then
     exit
 fi
 
-CONFIG=$(cat "$HPC_DM_TEST/utils/config" | sed "s/Bearer.*/Bearer $TOKEN\"/")
+CONFIG=$(cat "$HPC_DM_TEST/utils/config-sample" | sed "s/Bearer.*/Bearer $TOKEN\"/")
 echo "$CONFIG" > $HPC_DM_TEST/utils/config
 
