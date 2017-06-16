@@ -97,6 +97,38 @@ function get_username {
     echo $USER_NAME
 }
 
+
+#Get the default Globus endpoint from the config file
+function get_globus_endpoint {
+
+    local PROPERTIES_FILE=$HPC_DM_UTILS/hpcdme.properties
+    local GLOBUS=$(get_value $PROPERTIES_FILE hpc.default.globus.endpoint)
+
+    if [ -z "$GLOBUS" ]
+    then 
+        echo "ERROR: Can not retrieve hpc.default.globus.endpoint  from $PROPERTIES_FILE" >&2
+        return 1
+    fi
+    echo $GLOBUS
+}
+
+
+#Get the globus username from the config file
+function get_globus_endpoint {
+
+    local properties_file=$HPC_DM_UTILS/hpcdme.properties
+    local globus_user=$(get_value $properties_file hpc.globus.user)
+
+    if [ -z "$globus_user" ]
+    then 
+        echo "ERROR: Can not retrieve hpc.globus.user from $properties_file" >&2
+        return 1
+    fi
+    echo $globus_user
+}
+
+
+
 #Get the globus username from the globus config file
 function get_globus_user {
 
