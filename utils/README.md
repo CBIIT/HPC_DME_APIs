@@ -5,22 +5,25 @@ Common command line utilities to access the API.
 
 -Configuration:
 
-I-Edit the following configuration files in this directory:
+I-Make a copy of the following sample configuration files in this directory:
 
-  1- ./hpcdme.properties
+  1- ./hpcdme.properties-sample
+ 
+    - Copy the sample file to make your own copy:
+      cp hpcdme.properties-sample hpcdme.properties
 
-    - Edit the server name:hpc.server.url
-    - Edit the user name:hpc.user
+    - In your hpcdme.properties file, edit:
+        - The server name:hpc.server.url
+        - The user name:hpc.user
 
-    If you plan to use a default globus endpoint:
-    - Edit:hpc.default.globus.endpoint 
+        If you plan to use a default globus endpoint:
+        - Edit:hpc.default.globus.endpoint 
 
-  2- ./tokens/curl-conf
+  2- ./tokens/curl-conf-sample
 
      If your are fimiliar with curl, add in a separate line all the arguments
      you would like to send with the REST request.  Otherwise, leave the file
      unchanged.
-
 
 
 II- Define the environment variable HPC_DM_UTILS and let it point to the
@@ -30,5 +33,4 @@ II- Define the environment variable HPC_DM_UTILS and let it point to the
     For example:
 
       export HPC_DM_UTILS=/path/to/this/README.md
-
       source  $HPC_DM_UTILS/functions

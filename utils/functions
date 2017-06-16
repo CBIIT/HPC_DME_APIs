@@ -13,6 +13,23 @@
 
 source $HPC_DM_UTILS/utilities
 
+#Make sure the ./hpcdme.properties and the ./tokens/curl-conf  files exists
+
+function file_check_message  {
+
+    file_name="$1"
+    echo "Initializing data management utilities error:" >&2
+    echo "Can not find the file $file_name" >&2 
+    echo "Read: $HPC_DM_UTILS/README.md for more information" >&2
+}
+
+file_name=$HPC_DM_UTILS/hpcdme.properties
+if [ ! -e "$file_name" ]
+then
+    file_check_message  "$file_name"
+    return 1
+fi
+
 #Generate a DM API authentication token
 function dm_generate_token () {
 
@@ -45,7 +62,7 @@ function dm_generate_token () {
       local TOKEN_FILE=$(get_value $HPC_DM_UTILS/hpcdme.properties hpc.login.token)
       local FORMATED_PATH=$(echo $TOKEN_FILE | sed 's/\\/\//g')
       echo $TOKEN > $HPC_DM_UTILS/${FORMATED_PATH}
-      local CONFIG_STRING=$(cat "$HPC_DM_UTILS/tokens/curl-conf" | sed "s/Bearer.*/Bearer $TOKEN\"/")
+      local CONFIG_STRING=$(cat "$HPC_DM_UTILS/tokens/curl-conf-sample" | sed "s/Bearer.*/Bearer $TOKEN\"/")
       echo "$CONFIG_STRING" > $CONFIG_PATH
       rm $LOG_FILE 2>/dev/null
     fi
