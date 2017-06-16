@@ -10,4 +10,5 @@
 
 # Common script to make tests 
 
+source $HPC_DM_TEST/utils/functions
 
