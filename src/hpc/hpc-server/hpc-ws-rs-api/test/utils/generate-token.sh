@@ -3,7 +3,7 @@
 source $HPC_DM_TEST/utils/functions
 
 LOG_FILE=$HPC_DM_TEST/utils/log
-rm $LOG_FILE
+rm $LOG_FILE 2>/dev/null
 
 SERVER=$(cat $HPC_DM_TEST/utils/server)
 

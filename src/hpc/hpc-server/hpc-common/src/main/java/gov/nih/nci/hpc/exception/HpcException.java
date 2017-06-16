@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.exception;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 
 import java.io.StringWriter;
 import java.io.PrintWriter;
@@ -39,6 +40,9 @@ public class HpcException extends Exception implements java.io.Serializable
     
 	// The request reject reason value.
     private HpcRequestRejectReason requestRejectReason = null;
+    
+	// The integrated system that is the source of the exception. 
+    private HpcIntegratedSystem integratedSystem = null;
 
     //---------------------------------------------------------------------//
     // constructors
@@ -99,7 +103,7 @@ public class HpcException extends Exception implements java.io.Serializable
     
     /**
      * Constructs a new HpcException with a given message, error type and
-     * a Throwable cause
+     * a Throwable cause.
      *
      * @param message The message for the exception.
      * @param errorType The type of the error, often the subsystem that is 
@@ -111,6 +115,23 @@ public class HpcException extends Exception implements java.io.Serializable
     {
         super(message, cause);
         setErrorType(errorType);
+    }
+    
+    /**
+     * Constructs a new HpcException with a given message, error type, 
+     * integrated-system and a Throwable cause.
+     *
+     * @param message The message for the exception.
+     * @param errorType The type of the error, often the subsystem that is 
+     *        the source of the error.
+     * @param cause The root cause Throwable.
+     */
+    public HpcException(String message, HpcErrorType errorType, 
+    		            HpcIntegratedSystem integratedSystem, Throwable cause) 
+    {
+        super(message, cause);
+        setErrorType(errorType);
+        setIntegratedSystem(integratedSystem);
     }
     
     /**
@@ -178,6 +199,26 @@ public class HpcException extends Exception implements java.io.Serializable
     public void setRequestRejectReason(HpcRequestRejectReason requestRejectReason)
     {
         this.requestRejectReason = requestRejectReason;
+    }   
+    
+    /**
+     * Get the integrated system (if null then the source of the exception is not an integrated system).
+     *
+     * @return The integrated system.
+     */
+    public HpcIntegratedSystem getIntegratedSystem()
+    {
+        return integratedSystem;
+    }    
+    
+    /**
+     * Set the integration system.
+     *
+     * @param integratedSystem The integrated system that is the source of the exception.
+     */
+    public void setIntegratedSystem(HpcIntegratedSystem integratedSystem)
+    {
+        this.integratedSystem = integratedSystem;
     }   
     
     /**
