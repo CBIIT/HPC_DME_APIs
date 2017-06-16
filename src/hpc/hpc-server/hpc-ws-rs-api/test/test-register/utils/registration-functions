@@ -205,6 +205,7 @@ function get_system_added_metadata {
     OUTPUT_FILE="system-generated-metadata.tmp"
 
     ONE_LINE=$(tr "\n" " " < "$POLICIES_FILE")
+
     METADATA_ARRAY=$(get_json_array_value "$ONE_LINE" "$METADATA_TYPE")
 
     echo "$METADATA_ARRAY" | tr "," "\n" |  tr -d " \""  > $OUTPUT_FILE

@@ -1769,7 +1769,7 @@ function delete_dataobject {
     if [ "$#" -ne  3 ] 
     then    
         echo "$USAGE"  1>&2
-        exit
+        exit 1
 
     fi
 
@@ -1795,3 +1795,31 @@ function check_dataObject_archived {
         exit 1
     fi
 }
+
+#Get DOC policies
+#Inputs:    <DOC-NAME> 
+#           <response-header>
+#           <response-message>
+function get_doc_policies {
+
+    USAGE="ERROR: using get_doc_policies.\nUSAGE: get_doc_policies <DOC-NAME> <response-header> <response-message>"
+
+    if [ "$#" -ne  3 ] 
+    then    
+        echo "$USAGE"  1>&2
+        exit 1
+
+    fi
+
+    doc="$1"
+    RESPONSE_HEADER="$2"
+    RESPONSE_MSG="$3"
+
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+    CONFIG=$(get_curl_config)
+
+    curl -X GET $SERVER/dm/model/"$doc" $CONFIG -H "Accept: application/json" -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG"  -s 2>curl-status
+    check_connection $RESPONSE_HEADER
+}
+
+
