@@ -25,7 +25,6 @@ import java.util.List;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public interface HpcDataManagementService 
@@ -58,12 +57,13 @@ public interface HpcDataManagementService
     public boolean createFile(String path) throws HpcException;
     
     /**
-     * Delete a path (data object or directory).
+     * Delete a path (data object or directory). This is a silent delete - no exception is thrown
+     * in case of a failure.
      *
      * @param path The path to delete.
      * @throws HpcException on service failure.
      */
-    public void delete(String path) throws HpcException;
+    public void delete(String path);
     
     /**
      * Delete a path (data object or directory) and keep a record of the deletion in the DB.
