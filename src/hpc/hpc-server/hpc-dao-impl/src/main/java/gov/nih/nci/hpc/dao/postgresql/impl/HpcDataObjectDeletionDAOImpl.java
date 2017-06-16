@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -89,7 +90,7 @@ public class HpcDataObjectDeletionDAOImpl implements HpcDataObjectDeletionDAO
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to insert a data object deletion: " + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
     }
 	

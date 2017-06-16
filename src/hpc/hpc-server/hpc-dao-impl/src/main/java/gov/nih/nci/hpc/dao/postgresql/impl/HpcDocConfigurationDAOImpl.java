@@ -33,6 +33,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -95,7 +96,7 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get DOC configurations: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}		
     }
 	
@@ -150,7 +151,7 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
     	} catch(Exception e) {
     		    throw new HpcException(
     		    		     "Failed to connect to PostgreSQL DB. Check credentials config", 
-    		    		     HpcErrorType.DATABASE_ERROR, e);
+    		    		     HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
     	}
     } 
 	

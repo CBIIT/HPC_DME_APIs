@@ -58,7 +58,7 @@
 						<configuration>
 							<artifacts>
 								<artifact>
-									<file>src/main/resources/notificationFormats.json</file>
+									<file>${basedir}/src/main/resources/notificationFormats.json</file>
 									<type>json</type>
 									<classifier>notificationFormats</classifier>
 								</artifact>
