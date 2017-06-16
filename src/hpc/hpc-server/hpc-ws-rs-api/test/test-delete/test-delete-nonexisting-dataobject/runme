@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+../utils/runtest
+
+verify_registration  collection-registration-response-header.tmp
+
+OBJECT_PATH=$(cat registered-project-path.tmp)/dxtest-dataObject.txt
+
+#Delete the dataobject 
+
+RESPONSE_HEADER="delete-dataObject-response-header.tmp"
+RESPONSE_MSG="delete-dataObject-response-message.json.tmp"
+delete_dataobject "$OBJECT_PATH" $RESPONSE_HEADER $RESPONSE_MSG
+
+EXPECTED_MSG="Data object doesn't exist:"
+get_http_code $RESPONSE_HEADER >&2
+get_json_value $RESPONSE_MSG  errorType >&2
+get_json_value $RESPONSE_MSG  message | sed "s/$EXPECTED_MSG.*/$EXPECTED_MSG/" >&2
+

@@ -32,7 +32,7 @@
 				<configuration>
 					<filesets>
 						<fileset>
-							<directory>xjc-build</directory>
+							<directory>${basedir}/xjc-build</directory>
 						</fileset>
 					</filesets>
 				</configuration>
@@ -48,10 +48,10 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>xjc-build/schema</outputDirectory>
+							<outputDirectory>${basedir}/xjc-build/schema</outputDirectory>
 							<resources>
 								<resource>
-									<directory>src/main/resources/schema</directory>
+									<directory>${basedir}/src/main/resources/schema</directory>
 								</resource>
 							</resources>
 						</configuration>
@@ -102,27 +102,27 @@
 						<configuration>
 							<xsdOptions>
 								<xsdOption>
-									<xsd>xjc-build/schema/HpcUser.xsd</xsd>
+									<xsd>${basedir}/xjc-build/schema/HpcUser.xsd</xsd>
 									<packagename>gov.nih.nci.hpc.domain.model</packagename>
-									<bindingFile>xjc-build/schema/hpc-domain-user-jaxb-binding.xjb</bindingFile>
+									<bindingFile>${basedir}/xjc-build/schema/hpc-domain-user-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
 										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
 								<xsdOption>
-									<xsd>xjc-build/schema/HpcMetadata.xsd</xsd>
+									<xsd>${basedir}/xjc-build/schema/HpcMetadata.xsd</xsd>
 									<packagename>gov.nih.nci.hpc.domain.model</packagename>
-									<bindingFile>xjc-build/schema/hpc-domain-metadata-jaxb-binding.xjb</bindingFile>
+									<bindingFile>${basedir}/xjc-build/schema/hpc-domain-metadata-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
 										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
 								<xsdOption>
-									<xsd>xjc-build/schema/HpcDataManagement.xsd</xsd>
+									<xsd>${basedir}/xjc-build/schema/HpcDataManagement.xsd</xsd>
 									<packagename>gov.nih.nci.hpc.domain.model</packagename>
-									<bindingFile>xjc-build/schema/hpc-domain-datamanagement-jaxb-binding.xjb</bindingFile>
+									<bindingFile>${basedir}/xjc-build/schema/hpc-domain-datamanagement-jaxb-binding.xjb</bindingFile>
 									<extensionArgs>
 										<arg>-Xts:style:simple</arg>
 										<arg>-Xbg</arg>
