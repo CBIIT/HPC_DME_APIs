@@ -57,16 +57,16 @@ public interface HpcDataManagementService
     public boolean createFile(String path) throws HpcException;
     
     /**
-     * Delete a path (data object or directory). This is a silent delete - no exception is thrown
-     * in case of a failure.
+     * Delete a path (data object or directory). 
      *
      * @param path The path to delete.
-     * @throws HpcException on service failure.
+     * @param quiet If set to true, no exception is thrown in case of a failure.
+     * @throws HpcException on service failure (unless 'quiet' is set to 'true').
      */
-    public void delete(String path);
+    public void delete(String path, boolean quiet) throws HpcException;
     
     /**
-     * Delete a path (data object or directory) and keep a record of the deletion in the DB.
+     * Save a record of the deletion in the DB.
      * Note: Currently, there is no 'audit trail' functionality implemented. iRODS has this capability, and there
      * is a plan to use it. This is a temporary solution to have a record of what data objects deleted, by
      * who and when. When the permanent solution is implemented (using iRODS capability) this API method and the
@@ -74,13 +74,16 @@ public interface HpcDataManagementService
      *
      * @param path The path to delete.
      * @param archiveLocation The physical file location in the archive.
-     * @param metadataEntries The metadata associated with this path.
      * @param archiveDeleteStatus True if the physical file was successfully removed from archive.
+     * @param metadataEntries The metadata associated with this path.
+     * @param dataManagementDeleteStatus True if data object was removed from the data management system.
+     * @param message (Optional) Error message received in case the deletion request failed. 
      * @throws HpcException on service failure.
      */
-    public void delete(String path, HpcFileLocation archiveLocation, 
-    		           boolean archiveDeleteStatus, HpcMetadataEntries metadataEntries) 
-    		          throws HpcException;
+    public void saveDataObjectDeletionRequest(String path, HpcFileLocation archiveLocation, 
+    		                                  boolean archiveDeleteStatus, HpcMetadataEntries metadataEntries,
+    		                                  boolean dataManagementDeleteStatus, String message) 
+    		                                 throws HpcException;
     
     /**
      * Set collection permission for a subject (user or group). 
@@ -135,10 +138,19 @@ public interface HpcDataManagementService
      *
      * @param path The data object path.
      * @param userId The user-id to get permissions for.
-     * @return permissions on the data object.
+     * @return permission on the data object.
      * @throws HpcException on service failure.
      */
     public HpcSubjectPermission getDataObjectPermissionForUser(String path, String userId) throws HpcException;
+    
+    /**
+     * Get data object permission (for the request invoker) 
+     *
+     * @param path The data object path.
+     * @return permission on the data object.
+     * @throws HpcException on service failure.
+     */
+    public HpcSubjectPermission getDataObjectPermission(String path) throws HpcException;
 
     /**
      * Assign system account as an additional owner of an entity.

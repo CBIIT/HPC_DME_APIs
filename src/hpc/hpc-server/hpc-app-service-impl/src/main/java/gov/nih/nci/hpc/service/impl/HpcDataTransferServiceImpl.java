@@ -27,6 +27,7 @@ import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
@@ -353,9 +354,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
     	
     	// No authenticated token found for this request. Create one.
+    	HpcIntegratedSystemAccount dataTransferSystemAccount = systemAccountLocator.getSystemAccount(dataTransferType);
+    	if(dataTransferSystemAccount == null) {
+    	   throw new HpcException("System account not registered for " + dataTransferType.value(), 
+    			                  HpcErrorType.UNEXPECTED_ERROR);
+    	}
         Object token = dataTransferProxies.get(dataTransferType).
-        		           authenticate(systemAccountLocator.getSystemAccount(dataTransferType),
-        		        		        docConfigurationLocator.getArchiveURL(doc, dataTransferType));
+        		           authenticate(dataTransferSystemAccount, 
+        		                        docConfigurationLocator.getArchiveURL(doc, dataTransferType));
     	if(token == null) {
     	   throw new HpcException("Invalid data transfer account credentials",
                                   HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);
