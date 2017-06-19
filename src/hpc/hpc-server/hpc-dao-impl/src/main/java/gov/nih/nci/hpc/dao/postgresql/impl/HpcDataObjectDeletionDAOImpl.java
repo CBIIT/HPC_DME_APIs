@@ -45,7 +45,7 @@ public class HpcDataObjectDeletionDAOImpl implements HpcDataObjectDeletionDAO
 		   "insert into public.\"HPC_DATA_OBJECT_DELETION_HISTORY\" ( " +
                     "\"USER_ID\", \"PATH\", \"METADATA\", \"ARCHIVE_FILE_CONTAINER_ID\"," +
                     "\"ARCHIVE_FILE_ID\", \"ARCHIVE_DELETE_STATUS\", \"DATA_MANAGEMENT_DELETE_STATUS\"," +
-                    "\"DELETED\") values (?, ?, ?, ?, ?, ?, ?, ?)"; 
+                    "\"DELETED\", \"MESSAGE\") values (?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -78,7 +78,7 @@ public class HpcDataObjectDeletionDAOImpl implements HpcDataObjectDeletionDAO
 	@Override
 	public void insert(String userId, String path, HpcMetadataEntries metadataEntries,
 	                   HpcFileLocation archiveLocation, boolean archiveDeleteStatus,
-    		           boolean dataManagementDeleteStatus, Calendar deleted) 
+    		           boolean dataManagementDeleteStatus, Calendar deleted, String message) 
 			          throws HpcException
     {
 		try {
@@ -86,7 +86,7 @@ public class HpcDataObjectDeletionDAOImpl implements HpcDataObjectDeletionDAO
 		    		             toJSONString(metadataEntries), 
 		    		             archiveLocation.getFileContainerId(), 
 		    		             archiveLocation.getFileId(), archiveDeleteStatus,
-		    		             dataManagementDeleteStatus, deleted);
+		    		             dataManagementDeleteStatus, deleted, message);
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to insert a data object deletion: " + e.getMessage(),

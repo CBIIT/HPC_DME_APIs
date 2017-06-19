@@ -16,6 +16,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseDTO;
@@ -33,7 +34,6 @@ import java.io.File;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public interface HpcDataManagementBusService 
@@ -157,9 +157,10 @@ public interface HpcDataManagementBusService
      * Delete Data Object.
      *
      * @param path The data object path.
+     * @return A response DTO with detailed statuses.
      * @throws HpcException on service failure.
      */
-	public void deleteDataObject(String path) throws HpcException;
+	public HpcDataObjectDeleteResponseDTO deleteDataObject(String path) throws HpcException;
 
     /**
      * Set data object permissions.
