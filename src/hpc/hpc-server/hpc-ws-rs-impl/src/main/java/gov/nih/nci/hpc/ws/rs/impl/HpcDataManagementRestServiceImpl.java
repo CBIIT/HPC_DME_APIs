@@ -31,6 +31,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadReceiptDTO;
@@ -50,7 +51,6 @@ import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
@@ -268,14 +268,15 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     @Override
 	public Response deleteDataObject(String path)
     {
+    	HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse = null;
 		try {
-			 dataManagementBusService.deleteDataObject(toAbsolutePath(path));
+			 dataObjectDeleteResponse = dataManagementBusService.deleteDataObject(toAbsolutePath(path));
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
 		}
 		
-		return okResponse(null, false);
+		return okResponse(dataObjectDeleteResponse, false);
     }
     
     @Override
