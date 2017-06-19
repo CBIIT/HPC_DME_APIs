@@ -37,12 +37,13 @@ public interface HpcDataObjectDeletionDAO
      * @param dataManagementDeleteStatus True if the data object record was successfully removed from 
      *        the data management system (iRODS). 
      * @param deleted The time the data object was deleted.
+     * @param message (Optional) Error message if the deletion failed.
      * 
      * @throws HpcException on database error.
      */
     public void insert(String userId, String path, HpcMetadataEntries metadataEntries,
     		           HpcFileLocation archiveLocation, boolean archiveDeleteStatus,
-    		           boolean dataManagementDeleteStatus, Calendar deleted) 
+    		           boolean dataManagementDeleteStatus, Calendar deleted, String message) 
     		          throws HpcException;
 }
 

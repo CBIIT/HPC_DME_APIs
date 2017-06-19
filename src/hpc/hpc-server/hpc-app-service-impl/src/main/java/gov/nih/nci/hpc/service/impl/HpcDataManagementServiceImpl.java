@@ -49,7 +49,6 @@ import gov.nih.nci.hpc.service.HpcDataManagementService;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcDataManagementServiceImpl implements HpcDataManagementService
@@ -229,37 +228,32 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public void delete(String path)
+    public void delete(String path, boolean quiet) throws HpcException
     {
 		try {
 	    	 // Delete the data object file.
 	    	 dataManagementProxy.delete(dataManagementAuthenticator.getAuthenticatedToken(), path);
    	     
 		} catch(HpcException e) {
-			    logger.error("Failed to delete a file", e);
+			    if(quiet) {
+			       logger.error("Failed to delete a file", e);
+			    } else {
+			    	    throw(e);
+			    }
 		}
 
     }
     
     @Override
-    public void delete(String path, HpcFileLocation archiveLocation,
-    		           boolean archiveDeleteStatus, HpcMetadataEntries metadataEntries) 
-    		          throws HpcException
+    public void saveDataObjectDeletionRequest(String path, HpcFileLocation archiveLocation,
+    		                                  boolean archiveDeleteStatus, 
+    		                                  HpcMetadataEntries metadataEntries,
+    		                                  boolean dataManagementDeleteStatus, String message) 
+    		                                 throws HpcException
     {
-		// Try to remove the path capture the status.
-		boolean dataManagementDeleteStatus = true;
-		try {
-	    	 // Delete the data object file.
-	    	 dataManagementProxy.delete(dataManagementAuthenticator.getAuthenticatedToken(), path);
-    	     
-		} catch(HpcException e) {
-			    logger.error("Failed to delete a file", e);
-			    dataManagementDeleteStatus = false;
-		}
-		
 		dataObjectDeletionDAO.insert(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId(), 
 				                     path, metadataEntries, archiveLocation, archiveDeleteStatus, 
-				                     dataManagementDeleteStatus, Calendar.getInstance());
+				                     dataManagementDeleteStatus, Calendar.getInstance(), message);
     }
     
     @Override
@@ -306,6 +300,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     public HpcSubjectPermission getDataObjectPermissionForUser(String path, String userId) throws HpcException
     {
     	return dataManagementProxy.getDataObjectPermissionForUser(dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
+    }
+    
+    @Override
+    public HpcSubjectPermission getDataObjectPermission(String path) throws HpcException
+    {
+    	return dataManagementProxy.getDataObjectPermissionForUser(
+    			                      dataManagementAuthenticator.getAuthenticatedToken(), path, 
+    			                      HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
     }
 
     @Override
