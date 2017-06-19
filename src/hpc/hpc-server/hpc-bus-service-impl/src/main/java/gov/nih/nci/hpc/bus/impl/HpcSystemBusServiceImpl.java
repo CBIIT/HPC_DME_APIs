@@ -157,7 +157,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	   	    		         
     			        case FAILED:
     			             // Data transfer failed. Remove the data object.
-  		    	             dataManagementService.delete(path);
+  		    	             dataManagementService.delete(path, true);
   		    	             logger.error("Data transfer failed: " + path);
   		    	             break;
   		    	             

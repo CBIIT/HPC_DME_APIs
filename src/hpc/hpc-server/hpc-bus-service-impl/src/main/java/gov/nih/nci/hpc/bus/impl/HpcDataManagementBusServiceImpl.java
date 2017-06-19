@@ -38,6 +38,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadReceiptDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
@@ -169,7 +170,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   } finally {
 			          if(!registrationCompleted) {
 				         // Collection registration failed. Remove it from Data Management.
-				         dataManagementService.delete(path);
+				         dataManagementService.delete(path, true);
 			          }
 	       }
        	   
@@ -403,7 +404,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    	} finally {
 	    			   if(!registrationCompleted) {
 	    				  // Data object registration failed. Remove it from Data Management.
-	    				  dataManagementService.delete(path);
+	    				  dataManagementService.delete(path, true);
 	    			   }
 	    	}
     	   
@@ -495,7 +496,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public void deleteDataObject(String path) throws HpcException
+    public HpcDataObjectDeleteResponseDTO deleteDataObject(String path) throws HpcException
     {
     	// Input validation.
     	if(path == null) {
@@ -509,6 +510,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
 	  	}
 		
+		// Validate the invoker is the owner of the data object.
+		HpcPermission permission = dataManagementService.getDataObjectPermission(path).getPermission();
+		if(!permission.equals(HpcPermission.OWN)) {
+		   throw new HpcException("Data object can only be deleted by its owner. Your permission: " + 
+		                          permission.value(), HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
+		}
     	// Get the metadata for this data object. 
     	HpcMetadataEntries metadataEntries = 
     		               metadataService.getDataObjectMetadataEntries(path);
@@ -522,20 +529,44 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				                  HpcRequestRejectReason.FILE_NOT_ARCHIVED);
 		}
     	
+		HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse = new HpcDataObjectDeleteResponseDTO();
+		dataObjectDeleteResponse.setArchiveDeleteStatus(true);
+	    dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
+	    
 		// Try to remove the file from archive and capture the status.
-		boolean archiveDeleteStatus = true;
 		try {
     	     dataTransferService.deleteDataObject(systemGeneratedMetadata.getArchiveLocation(), 
     		     	                              systemGeneratedMetadata.getDataTransferType(),
     		     	                              systemGeneratedMetadata.getRegistrarDOC());
     	     
 		} catch(HpcException e) {
-			    archiveDeleteStatus = false;
+			    logger.error("Failed to delete file from archive", e);
+			    dataObjectDeleteResponse.setArchiveDeleteStatus(false);
+			    dataObjectDeleteResponse.setMessage(e.getMessage());
 		}
 		
-		// Remove the file from data management.
-    	dataManagementService.delete(path, systemGeneratedMetadata.getArchiveLocation(),
-    			                     archiveDeleteStatus, metadataEntries);
+		// If the archive removal was successful, then remove the file from data management.
+		try {
+			 if(dataObjectDeleteResponse.getArchiveDeleteStatus()) {
+    	        dataManagementService.delete(path, false);
+			 } else {
+				     dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
+			 }
+    	     
+		} catch(HpcException e) {
+		        logger.error("Failed to delete file from datamanagement", e);
+		        dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
+		        dataObjectDeleteResponse.setMessage(e.getMessage());
+		}
+		
+		// Keep a record of this data object deletion request and it's result.
+		dataManagementService.saveDataObjectDeletionRequest(
+				                  path, systemGeneratedMetadata.getArchiveLocation(), 
+				                  dataObjectDeleteResponse.getArchiveDeleteStatus(), metadataEntries, 
+				                  dataObjectDeleteResponse.getDataManagementDeleteStatus(),
+				                  dataObjectDeleteResponse.getMessage());
+		
+		return dataObjectDeleteResponse;
     	
     }
     
