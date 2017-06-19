@@ -202,6 +202,18 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
+	<!--  Data Object Delete Response DTO -->
+	<xsd:element name="HpcDataObjectDeleteResponseDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+			    <xsd:element name="dataManagementDeleteStatus" type="xsd:boolean" />
+			    <xsd:element name="archiveDeleteStatus" type="xsd:boolean" />
+			    <xsd:element name="message" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
+	<!--  Data Management Model DTO -->
 	<xsd:element name="HpcDataManagementModelDTO">
 		<xsd:complexType>
 			<xsd:sequence>
