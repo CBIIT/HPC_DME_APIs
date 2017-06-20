@@ -638,5 +638,36 @@ function dm_register_globus_directory {
     local error_file=./dm_error
 
     
-    java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
+
+    case "$(uname -s)" in
+    
+       Darwin)
+         echo 'Mac OS X is not currently supported'
+         return 1
+         ;;
+    
+       Linux)
+        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
+         ;;
+    
+       CYGWIN*|MINGW32*|MSYS*)
+            java -DHPC_DM_UTILS=$(cygpath -m $HPC_DM_UTILS) -Dhpc.client.properties=$(cygpath -w $HPC_DM_UTILS/hpcdme.properties)  -jar $(cygpath -w $jar_path)  --cmdfile $(cygpath -w $command_file)
+        ;;
+    
+       # Add here more strings to compare
+       # See correspondence table at the bottom of this answer
+    
+       *)
+         echo 'Current OS not supported' 
+         return 1
+         ;;
+    esac
+
+
+
+
+
+
+
+
 }
