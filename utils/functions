@@ -98,7 +98,7 @@ function dm_globus_generate_token {
     else  
       local TOKEN_FILE=$(get_value $HPC_DM_UTILS/hpcdme.properties hpc.globus.login.token)
       local FORMATED_PATH=$(echo $TOKEN_FILE | sed 's/\\/\//g')
-      echo $TOKEN > $HPC_DM_UTILS/${FORMATED_PATH}
+      echo ${GLOBUS_USER}:${TOKEN} > $HPC_DM_UTILS/${FORMATED_PATH}
       local CONFIG_STRING=$(cat "$CONFIG_PATH-sample" | sed "s@Bearer.*@Bearer $TOKEN\"@")
       echo "$CONFIG_STRING" > $CONFIG_PATH
       rm $LOG_FILE 2>/dev/null
