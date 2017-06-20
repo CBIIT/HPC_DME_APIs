@@ -1,0 +1,4 @@
+400
+REQUEST_REJECTED
+FILE_NOT_ARCHIVED
+Object is not in archived state yet.
