@@ -559,10 +559,9 @@ function dm_register_directory {
          ;;
     
        CYGWIN*|MINGW32*|MSYS*)
-        echo "MS Windows is not currently supported"
-        return 1
-        java -DHPC_DM_UTILS=$HPC_DM_UTILS -Dhpc.client.properties=$(cygpath -w $HPC_DM_UTILS/hpcdme.properties)  -jar $(cygpath -w $jar_path)  --cmdfile $(cygpath -w $command_file)
-         ;;
+            echo "registerFromFilePath --filePath `cygpath -m $full_src_path` --filePathBaseName $basedir --destinationBasePath $dst_path" >  $command_file
+            java -DHPC_DM_UTILS=$(cygpath -m $HPC_DM_UTILS) -Dhpc.client.properties=$(cygpath -w $HPC_DM_UTILS/hpcdme.properties)  -jar $(cygpath -w $jar_path)  --cmdfile $(cygpath -w $command_file)
+        ;;
     
        # Add here more strings to compare
        # See correspondence table at the bottom of this answer
