@@ -65,7 +65,7 @@ public class HpcSearchController extends AbstractHpcController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(@RequestBody(required = false) String body, @RequestParam String queryName, Model model,
+	public String home(@RequestBody(required = false) String body, @RequestParam String queryName, @RequestParam String page, Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		HpcNamedCompoundMetadataQueryDTO query = null;
 		try {
@@ -76,17 +76,17 @@ public class HpcSearchController extends AbstractHpcController {
 			String requestURL;
 			if (query != null && query.getNamedCompoundQuery().getCompoundQueryType()
 					.equals(HpcCompoundMetadataQueryType.COLLECTION))
-				requestURL = compoundCollectionSearchServiceURL + "/" + queryName;
+				requestURL = compoundCollectionSearchServiceURL + "/" + queryName + "?totalCount=true&page="+page;
 			else if (query != null && query.getNamedCompoundQuery().getCompoundQueryType()
 					.equals(HpcCompoundMetadataQueryType.DATA_OBJECT))
-				requestURL = compoundDataObjectSearchServiceURL + "/" + queryName;
+				requestURL = compoundDataObjectSearchServiceURL + "/" + queryName + "?totalCount=true&page="+page;
 			else
 				return "dashboard";
-
+			
 			session.setAttribute("namedCompoundQuery", query.getNamedCompoundQuery());
 
 			if (query.getNamedCompoundQuery().getDetailedResponse())
-				requestURL = requestURL + "?detailedResponse=true&totalCount=false";
+				requestURL = requestURL + "&detailedResponse=true";
 
 			WebClient client = HpcClientUtil.getWebClient(requestURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
@@ -129,6 +129,9 @@ public class HpcSearchController extends AbstractHpcController {
 			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
 			return "dashboard";
 		}
+		model.addAttribute("source", "search");
+		model.addAttribute("queryName", queryName);
+		model.addAttribute("pageNumber", new Integer(page).intValue());
 
 		if (query == null)
 			return "dashboard";

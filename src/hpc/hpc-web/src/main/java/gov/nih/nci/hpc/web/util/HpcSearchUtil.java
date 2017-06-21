@@ -53,6 +53,9 @@ public class HpcSearchUtil {
 			}
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("searchType", "collection");
+			model.addAttribute("totalCount", collections.getTotalCount());
+			model.addAttribute("totalPages", getTotalPages(collections.getTotalCount()));
+			
 		} else {
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 			List<HpcCollectionDTO> searchResults = collections.getCollections();
@@ -72,9 +75,20 @@ public class HpcSearchUtil {
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("detailed", "yes");
 			model.addAttribute("searchType", "collection");
+			model.addAttribute("totalCount", collections.getTotalCount());
+			model.addAttribute("totalPages", getTotalPages(collections.getTotalCount()));
 		}
 	}
 
+	public static int getTotalPages(int totalCount)
+	{
+		int total = 0;
+		total = totalCount / 100;
+		if(totalCount % 100 != 0)
+			total++;
+		return total;
+	}
+	
 	private static void processDataObjectResults(HpcSearch search, Response restResponse, Model model)
 			throws JsonParseException, IOException {
 		MappingJsonFactory factory = new MappingJsonFactory();
@@ -93,6 +107,8 @@ public class HpcSearchUtil {
 			}
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("searchType", "datafile");
+			model.addAttribute("totalCount", dataObjects.getTotalCount());
+			model.addAttribute("totalPages", getTotalPages(dataObjects.getTotalCount()));
 		} else {
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 			List<HpcDataObjectDTO> searchResults = dataObjects.getDataObjects();
@@ -112,6 +128,8 @@ public class HpcSearchUtil {
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("detailed", "yes");
 			model.addAttribute("searchType", "datafile");
+			model.addAttribute("totalCount", dataObjects.getTotalCount());
+			model.addAttribute("totalPages", getTotalPages(dataObjects.getTotalCount()));
 		}
 	}
 
