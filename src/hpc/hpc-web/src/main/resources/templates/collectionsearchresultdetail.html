@@ -55,6 +55,13 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
     var results = "[[${searchresults}]]";
+    var pageNumber = "[[${pageNumber}]]";
+    var source = [[${source}]];
+    var  queryName = [[${queryName}]];
+    var totalRows = [[${totalCount}]];
+    var totalPages = "[[${totalPages}]]";
+    var targetType = "collection";
+    var currentPage = "[[${pageNumber}]]";
 /*]]>*/
 </script>
 <script>
@@ -82,8 +89,11 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
     treeRowHeaderAlwaysVisible: false,
     onRegisterApi: function( gridApi ) {
       $scope.grid1Api = gridApi;
+      $scope.totalPages = totalPages;
+      $scope.currentPage = currentPage;
     }
   };
+  $scope.gridOptions1.totalItems = totalRows;
   $scope.gridOptions1.data = results;
 
   $scope.expandAll = function(){
@@ -167,11 +177,31 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 									<div id="grid1" ui-grid="gridOptions1" ui-grid-cellNav="true"
 										ui-grid-pagination="true" ui-grid-grouping="true"
 										ui-grid-resize-columns="true" ui-grid-move-columns="true"></div>
+     <p>Current page: {{ currentPage }} of {{ totalPages }}</p>
+      <button type="button" id="btnFirst" class="btn btn-success" onclick="updatePage('first')">
+        First page
+      </button>
+      <button type="button" id="btnPrevious" class="btn btn-success" onclick="updatePage('previous')">
+        Previous
+      </button>
+      <button type="button" id="btnNext" class="btn btn-success" onclick="updatePage('next')">
+        Next
+      </button>
+      <button type="button" id="btnLast" class="btn btn-success" onclick="updatePage('last')">
+        Last
+      </button>
+										
 								</div>
 							</div>
 						</div>
 
 					</div>
+					<form class="form-horizontal" id="simplesearchform" action="#"
+						role="form" th:action="@{/criteria}" th:object="${hpcSearch}"
+						method="post" enctype="multipart/form-data">
+						<input type="hidden" id="actionType" name="actionType" value="pagination"/>
+						<input type="hidden" id="pageNumber" name="pageNumber"/>
+					</form> 
 
 				</div>
 				<!--/col-->
@@ -191,6 +221,73 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
+<script>
+/*<![CDATA[*/
+    function updatePage(action)
+    {
+		if(source == "'search'" || source == 'search')
+		{
+			if(action == "next")
+			 	window.location.href = "/search?queryName="+queryName+"&page=" + (parseInt(currentPage) +1);
+			else if(action == "previous")
+				window.location.href = "/search?queryName="+queryName+"&page=" + (parseInt(currentPage) - 1);
+			else if(action == "first")
+				window.location.href = "/search?queryName="+queryName+"&page=1";
+			else if(action == "last")
+				window.location.href = "/search?queryName="+queryName+"&page=" + totalPages;
+		}
+		else
+		{
+			if(action == "next")
+				document.getElementById("pageNumber").value = parseInt(currentPage) + 1;
+			else if(action == "previous")
+				document.getElementById("pageNumber").value = parseInt(currentPage) - 1;
+			else if(action == "first")
+				document.getElementById("pageNumber").value =  1;
+			else if(action == "last")
+				document.getElementById("pageNumber").value = totalPages;
+			
+			document.getElementById("simplesearchform").submit();
+		}
+		
+    }
+	
+	if(currentPage == "1")
+	{
+		$('#btnPrevious').addClass('disabled');
+		$('#btnPrevious').prop('disabled', true);
+		$('#btnFirst').addClass('disabled');
+		$('#btnFirst').prop('disabled', true);
+		$('#btnNext').removeClass('disabled');
+		$('#btnNext').prop('disabled', false);
+		$('#btnLast').removeClass('disabled');
+		$('#btnLast').prop('disabled', false);
+	}
+	else
+	{
+		$('#btnPrevious').removeClass('disabled');
+		$('#btnPrevious').prop('disabled', false);
+		$('#btnFirst').removeClass('disabled');
+		$('#btnFirst').prop('disabled', false);
+	}
+	
+	if(currentPage == totalPages)
+	{
+		$('#btnNext').addClass('disabled');
+		$('#btnNext').prop('disabled', true);
+		$('#btnLast').addClass('disabled');
+		$('#btnLast').prop('disabled', true);
+	}
+	else
+	{
+		$('#btnNext').removeClass('disabled');
+		$('#btnNext').prop('disabled', false);
+		$('#btnLast').removeClass('disabled');
+		$('#btnLast').prop('disabled', false);
+	}
+
+/*]]>*/
+</script>
 
 </body>
 </html>
