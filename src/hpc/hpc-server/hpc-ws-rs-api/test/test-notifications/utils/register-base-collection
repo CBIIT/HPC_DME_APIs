@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# maketest
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+#Register the base collection
+
+source $HPC_DM_TEST/utils/functions
+
+PROJECT_PATH="$(get_basefolder)/project-notification"
+register_collection_from_template "$PROJECT_PATH"
+
+echo "$PROJECT_PATH"  > registered-project-path.tmp
