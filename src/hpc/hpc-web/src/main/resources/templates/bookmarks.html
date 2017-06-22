@@ -92,11 +92,12 @@
 				<thead>
 					<tr>
 						<th class="text-center">Name</th>
+						<th class="text-center">Delete</th>
 					</tr>
 				</thead>
 				<tbody>
 						<tr>
-							<td>
+							<td colspan="2">
 								<div class="pull-left" id="message"
 									style="display: none; float: left">
 									<p>&nbsp;</p>
@@ -108,13 +109,15 @@
 							</td>
 						</tr>
 				
-					<tr id='bookmarksrow'
+					<tr th:id="${bookmark.getName()}"
 						th:each="bookmark : ${bookmarksList}"
 						th:with="index=0">
-						<td style="white-space: nowrap" align="center"><a th:href="@{'/browse?refresh&amp;path=' + ${bookmark.getPath()}}"><label
+						<td style="white-space: nowrap" align="left" ><a th:href="@{'/browse?refresh&amp;path=' + ${bookmark.getPath()}}"><label
 							for="${bookmark.getName()}"
 							th:text="${bookmark.getName()}"></label></a>
-						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+							</td>
+							<td align="left">
+						
 						<button th:onclick="'submitForm(\''  + ${bookmark.getName()} + '\')'">
 										<i class="fa fa-trash-o" aria-hidden="true"></i></button></td>
 						
@@ -160,6 +163,7 @@
 											console.log('SUCCESS: ', msg);
 											$('#message').html(msg.message);
 											ele.style.display = "block";
+											deleteRow(document.getElementById("name").value);
 										},
 										error : function(e) {
 											$("#wait").html('');
@@ -177,6 +181,14 @@
 				$('#myModal-event').modal('hide');
 			});
 		});
+		
+		function deleteRow(rowid) {
+		    var table = document.getElementById("bookmarksTable");
+		    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+		    var row = document.getElementById(rowid);
+		    row.parentNode.removeChild(row);
+		}
+		
 	</script>	
 </body>
 </html>
