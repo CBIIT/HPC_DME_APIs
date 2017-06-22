@@ -71,6 +71,7 @@ import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.model.HpcSearchResult;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcCompoundSearchBuilder;
+import gov.nih.nci.hpc.web.util.HpcSearchUtil;
 
 /**
  * <p>
@@ -160,13 +161,35 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			return "criteria";
 		}
 
+		HpcSearch hpcSearch = null;
+		if(search == null || (search.getActionType() != null && search.getActionType().equals("pagination")))
+		{
+			hpcSearch = (HpcSearch) session.getAttribute("hpcSearch");
+//			if(hpcSearch == null)
+//				hpcSearch = new HpcSearch();
+//
+//			hpcSearch.setAdvancedCriteria(search.getAdvancedCriteria());
+//			hpcSearch.setAttrName(search.getAttrName());
+//			hpcSearch.setAttrValue(search.getAttrValue());
+//			hpcSearch.setDetailed(search.isDetailed());
+//			hpcSearch.setLevel(search.getLevel());
+//			hpcSearch.setLevelOperator(search.getLevelOperator());
+//			hpcSearch.setOperator(search.getOperator());
+//			hpcSearch.setRowId(search.getRowId());
+//			hpcSearch.setSearchType(search.getSearchType());
+			hpcSearch.setPageNumber(search.getPageNumber());
+			search = hpcSearch;
+		}
+		
+		model.addAttribute("source", "criteria");
+		model.addAttribute("pageNumber", search.getPageNumber());
 		boolean success = false;
 		try {
 
 			@SuppressWarnings("unchecked")
 			Map<String, String> hierarchy = (Map<String, String>) session.getAttribute("hierarchies");
 
-			HpcCompoundMetadataQueryDTO compoundQuery = constructCriteria(hierarchy, search);
+			HpcCompoundMetadataQueryDTO compoundQuery = constructCriteria(hierarchy, hpcSearch != null ? hpcSearch : search);
 			if (search.isDetailed())
 				compoundQuery.setDetailedResponse(true);
 
@@ -180,10 +203,10 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 
 			Response restResponse = client.invoke("POST", compoundQuery);
 			if (restResponse.getStatus() == 200) {
-				processResponseResults(search, restResponse, model, redirectAttrs);
+				processResponseResults(hpcSearch != null ? hpcSearch : search, restResponse, model, redirectAttrs);
 				success = true;
 				session.setAttribute("compoundQuery", compoundQuery);
-				// model.addAttribute("searchresultscolumns",getColumnDefs(search.isDetailed()));
+				session.setAttribute("hpcSearch", hpcSearch != null ? hpcSearch : search);
 			} else {
 				String message = "No matching results!";
 				ObjectError error = new ObjectError("hpcSearch", message);
@@ -258,6 +281,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			}
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("searchType", "collection");
+			model.addAttribute("totalCount", collections.getTotalCount());
+			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(collections.getTotalCount()));
 		} else {
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 			List<HpcCollectionDTO> searchResults = collections.getCollections();
@@ -277,6 +302,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("detailed", "yes");
 			model.addAttribute("searchType", "collection");
+			model.addAttribute("totalCount", collections.getTotalCount());
+			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(collections.getTotalCount()));
 		}
 	}
 
@@ -298,6 +325,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			}
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("searchType", "datafile");
+			model.addAttribute("totalCount", dataObjects.getTotalCount());
+			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(dataObjects.getTotalCount()));
 		} else {
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 			List<HpcDataObjectDTO> searchResults = dataObjects.getDataObjects();
@@ -317,11 +346,14 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("detailed", "yes");
 			model.addAttribute("searchType", "datafile");
+			model.addAttribute("totalCount", dataObjects.getTotalCount());
+			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(dataObjects.getTotalCount()));			
 		}
 	}
 
 	private HpcCompoundMetadataQueryDTO constructCriteria(Map<String, String> hierarchy, HpcSearch search) {
 		HpcCompoundMetadataQueryDTO dto = new HpcCompoundMetadataQueryDTO();
+		dto.setTotalCount(true);
 		HpcCompoundMetadataQuery query = null;
 		if (search.getAdvancedCriteria() != null && !search.getAdvancedCriteria().isEmpty())
 			query = buildAdvancedSearch(hierarchy, search);
@@ -335,6 +367,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		else
 			dto.setCompoundQueryType(HpcCompoundMetadataQueryType.DATA_OBJECT);
 		dto.setDetailedResponse(search.isDetailed());
+		dto.setPage(search.getPageNumber());
 		return dto;
 	}
 
