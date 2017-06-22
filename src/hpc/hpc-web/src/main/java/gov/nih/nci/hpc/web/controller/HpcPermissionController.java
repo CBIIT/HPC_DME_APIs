@@ -147,12 +147,16 @@ public class HpcPermissionController extends AbstractHpcController {
 	public String setPermissions(@Valid @ModelAttribute("permissions") HpcPermissions permissionsRequest, Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
 			RedirectAttributes redirectAttrs) {
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		if (authToken == null) {
+			return "redirect:/";
+		}
+		
 		String serviceAPIUrl = getServiceURL(model, permissionsRequest.getPath(), permissionsRequest.getType());
 		if (serviceAPIUrl == null)
 			return "permission";
 
 		try {
-			String authToken = (String) session.getAttribute("hpcUserToken");
 			HpcEntityPermissionsDTO subscriptionsRequestDTO = constructRequest(request, permissionsRequest.getPath());
 			setChangedPermissions(session, subscriptionsRequestDTO);
 			WebClient client = HpcClientUtil.getWebClient(serviceAPIUrl, sslCertPath, sslCertPassword);
@@ -161,7 +165,7 @@ public class HpcPermissionController extends AbstractHpcController {
 			Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
 			if (restResponse.getStatus() == 200) {
 				redirectAttrs.addFlashAttribute("updateStatus", "Updated successfully");
-				return "redirect:/permissions?assignType=User&type=collection&path=" + permissionsRequest.getPath();
+				return "redirect:/permissions?assignType=User&type="+permissionsRequest.getType()+"&path=" + permissionsRequest.getPath();
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -186,10 +190,6 @@ public class HpcPermissionController extends AbstractHpcController {
 			model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
 			e.printStackTrace();
 		} finally {
-			String authToken = (String) session.getAttribute("hpcUserToken");
-			if (authToken == null) {
-				return "redirect:/";
-			}
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			if (user == null) {
 				ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
@@ -198,11 +198,10 @@ public class HpcPermissionController extends AbstractHpcController {
 				model.addAttribute("hpcLogin", hpcLogin);
 				return "redirect:/";
 			}
-
-			populatePermissions(model, permissionsRequest.getPath(), permissionsRequest.getType(),
-					permissionsRequest.getAssignType(), authToken, session);
 		}
 
+		populatePermissions(model, permissionsRequest.getPath(), permissionsRequest.getType(),
+				permissionsRequest.getAssignType(), authToken, session);
 		return "permission";
 	}
 

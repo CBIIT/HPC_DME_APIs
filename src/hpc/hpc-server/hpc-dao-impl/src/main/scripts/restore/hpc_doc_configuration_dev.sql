@@ -417,7 +417,7 @@ VALUES('DUMMY', '/TEST_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestV
 				"validValues": [
 					"Project",
 					"Dataset",
-					"Flowcell",
+					"Run",
 					"Folder"
 				],
 				"ruleEnabled": true
