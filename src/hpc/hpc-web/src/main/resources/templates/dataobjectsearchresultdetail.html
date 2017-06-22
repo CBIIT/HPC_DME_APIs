@@ -62,6 +62,7 @@
     var totalPages = "[[${totalPages}]]";
     var targetType = "datafile";
     var currentPage = "[[${pageNumber}]]";
+    var currentPageSize = "[[${currentPageSize}]]";
 /*]]>*/
 </script>
 
@@ -124,6 +125,8 @@
 										$scope.grid1Api = gridApi;
 									    $scope.totalPages = totalPages;
 									    $scope.currentPage = currentPage;
+									    $scope.totalRows = totalRows;
+									    $scope.currentPageSize = currentPageSize;
 									}
 								};
 								$scope.gridOptions1.data = results;
@@ -214,17 +217,17 @@
 									<div id="grid1" ui-grid="gridOptions1" ui-grid-cellNav="true"
 										ui-grid-pagination="true" ui-grid-grouping="true"
 										ui-grid-resize-columns="true" ui-grid-move-columns="true"></div>
-     <p>Current page: {{ currentPage }} of {{ totalPages }}</p>
-      <button type="button" id="btnFirst" class="btn btn-success" onclick="updatePage('first')">
+     <p>Current page: {{ currentPage }} of {{ totalPages }} &nbsp;&nbsp;|&nbsp;&nbsp;Page Size: {{ currentPageSize }} &nbsp;&nbsp;|&nbsp;&nbsp;Total Records: {{ totalRows }}</p>
+      <button type="button" id="btnFirst" class="btn btn-md btn-primary" onclick="updatePage('first')">
         First
       </button>
-      <button type="button" id="btnPrevious" class="btn btn-success" onclick="updatePage('previous')">
+      <button type="button" id="btnPrevious" class="btn btn-md btn-primary" onclick="updatePage('previous')">
         Previous
       </button>
-      <button type="button" id="btnNext" class="btn btn-success" onclick="updatePage('next')">
+      <button type="button" id="btnNext" class="btn btn-md btn-primary" onclick="updatePage('next')">
         Next
       </button>
-      <button type="button" id="btnLast" class="btn btn-success" onclick="updatePage('last')">
+      <button type="button" id="btnLast" class="btn btn-md btn-primary" onclick="updatePage('last')">
         Last
       </button>
 								</div>
