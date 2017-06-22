@@ -12,6 +12,7 @@ public class HpcSearch {
 	private String searchType;
 	private String advancedCriteria;
 	private String actionType;
+	private int pageNumber=1;
 
 	public String[] getRowId() {
 		return rowId;
@@ -91,5 +92,13 @@ public class HpcSearch {
 
 	public void setAdvancedCriteria(String advancedCriteria) {
 		this.advancedCriteria = advancedCriteria;
+	}
+
+	public int getPageNumber() {
+		return pageNumber;
+	}
+
+	public void setPageNumber(int pageNumber) {
+		this.pageNumber = pageNumber;
 	}
 }

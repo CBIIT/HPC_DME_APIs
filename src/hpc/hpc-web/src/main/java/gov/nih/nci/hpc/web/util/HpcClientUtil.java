@@ -796,13 +796,13 @@ public class HpcClientUtil {
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				throw new HpcWebException("Failed to delete data file: " + exception.getMessage());
+				throw new HpcWebException(exception.getMessage());
 			}
 		} catch (HpcWebException e) {
 			throw e;
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to delete data file due to: " + e.getMessage());
+			throw new HpcWebException(e.getMessage());
 		}
 	}
 	public static boolean updateUser(String token, String hpcUserURL, HpcUserRequestDTO userDTO, String userId,
