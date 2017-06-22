@@ -1814,15 +1814,14 @@ function get_doc_policies {
 
 #Add bookmark for a path
 #Inputs:    <bookmark-name> 
-#           <bookmark-path>
-#           <bookmark-group>
+#           <bookmark.json>
 #           <response-header>
 #           <response-msg>
 function add_bookmark {
 
-    USAGE="ERROR: using add_bookmark.\nUSAGE: add_bookmark <bookmark-name> <bookmark-path> <bookmark-group> <response-header> <response-message>"
+    USAGE="ERROR: using add_bookmark.\nUSAGE: add_bookmark <bookmark-name> <bookmark.json> <response-header> <response-message>"
 
-    if [ "$#" -ne  5 ] 
+    if [ "$#" -ne  4 ] 
     then    
         echo "$USAGE"  1>&2
         exit 1
@@ -1830,15 +1829,15 @@ function add_bookmark {
     fi
 
     bookmark_name="$1"
-    bookmark_path="$2"
-    bookmark_group="$3"
-    RESPONSE_HEADER="$4"
-    RESPONSE_MSG="$5"
+    json_file="$2"
+    RESPONSE_HEADER="$3"
+    RESPONSE_MSG="$4"
 
-    template_file=$HPC_DM_TEST/utils/templates/bookmark-template.json
-    json_file=bookmark.json.tmp
-    new_template=$(cat $template_file | sed "s@dxpath@$bookmark_path@" | sed "s@dxgroup@$bookmark_group@") 
-    echo "$new_template" > $json_file
+    if [ ! -e "$json_file" ]
+    then
+        echo "ERROR: the bookmark json file:$json_file does not exist." >&2
+        exit 1
+    fi 
 
     SERVER=`cat $HPC_DM_TEST/utils/server`
     CONFIG=$(get_curl_config)
@@ -1874,7 +1873,12 @@ function add_bookmark_from_template {
     echo $bookmark_name > bookmark-name.tmp
     echo $bookmark_group > bookmark-group.tmp
 
-    add_bookmark  "$bookmark_name" "$bookmark_path" "$bookmark_group" "$response_header" "$response_msg"
+    template_file=$HPC_DM_TEST/utils/templates/bookmark-template.json
+    json_file=bookmark.json.tmp
+    new_template=$(cat $template_file | sed "s@dxpath@$bookmark_path@" | sed "s@dxgroup@$bookmark_group@") 
+    echo "$new_template" > $json_file
+
+    add_bookmark  "$bookmark_name" "$json_file" "$response_header" "$response_msg"
 }
 
 #Update bookmark for a path
