@@ -231,11 +231,10 @@
 	    function validate()
 	    {
 	    	var groupName = document.getElementById("groupName").value;
-	    	if(groupName == null || hasWhiteSpace(groupName))
-	    	{
-	    		alert("Invalid group name. Space is not allowed")
-	    		return false;
-	    	}
+	        if( /[^a-zA-Z0-9\-\_]/.test( groupName ) ) {
+	        	alert("Invalid group name. Space is not allowed. Only _ and - special chars are allowed");
+	            return false;
+	        }
 	    }
 	    
 	    function cancel()

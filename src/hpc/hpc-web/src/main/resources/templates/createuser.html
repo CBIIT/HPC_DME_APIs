@@ -93,7 +93,7 @@
 								</div>
 								<div class="modal-footer">
 									<button type="submit" class="btn btn-md btn-primary"
-										id="primaryButton">Create</button>
+										id="primaryButton" onClick="return validate()">Create</button>
 									<button type="button" class="btn btn-primary"
 										data-dismiss="modal" id="close">Close</button>
 								</div>
@@ -106,6 +106,16 @@
 	</div>
 
 	<script>
+	
+    function validate()
+    {
+    	var userName = document.getElementById("nciUserId").value;
+        if( /[^a-zA-Z0-9\-\_]/.test( userName ) ) {
+        	alert("Invalid UserId. Space is not allowed. Only _ and - special chars are allowed");
+            return false;
+        }
+    }
+	
 		$(function() {
 			//twitter bootstrap script
 			var $form = $('#userForm');
