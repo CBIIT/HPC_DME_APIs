@@ -66,19 +66,19 @@
 						<tr>
 							<td>
 								<div class="form-group">
-										<div class="pull-left">
-										<label class="radio-inline"><input type="radio"
-										name="searchType" id="searchType" value="async"
-										onChange="display(this)" checked="chekced" />Asynchronous</label> 
-										</div>
 										<div class="pull-left" th:if="${downloadType == 'datafile'}">
 										<label
 										class="radio-inline"><input type="radio"
 										id="searchType" name="searchType" value="sync"
-										onChange="display(this)" />Synchronous</label>
+										onChange="display(this)" checked="chekced" />Synchronous</label>
+										</div>
+										<div class="pull-left">
+										<label class="radio-inline"><input type="radio"
+										name="searchType" id="searchType" value="async"
+										onChange="display(this)"/>Asynchronous</label> 
 										</div>
 								</div>
-								<div class="form-group" id="AsyncDiv" style="display: show">
+								<div class="form-group" id="AsyncDiv" style="display: none">
 									<div class="col-sm-12 column">
 										<label for="endPointName">Globus Endpoint UUID:</label> <input
 											type="text" class="form-control" th:field="*{endPointName}"
@@ -91,7 +91,7 @@
 											placeholder="Enter Globus Endpoint Path" size="40" />
 									</div>
 								</div>
-								<div class="form-group" id="SyncDiv" style="display: none" th:if="${downloadType == 'datafile'}">
+								<div class="form-group" id="SyncDiv" style="display: show" th:if="${downloadType == 'datafile'}">
 									<div class="col-sm-12 column">
 										<label for="downloadFileName">Download file name:</label> <input
 											type="text" class="form-control"
@@ -130,7 +130,7 @@
 			var selected1 = radioSelected[0].checked;
 			var selected2 = radioSelected[1].checked;
 
-			if (selected1 == true) {
+			if (selected2 == true) {
 				var endPointName = document.getElementById("endPointName").value;
 				var endPointLocation = document
 						.getElementById("endPointLocation").value;
@@ -150,13 +150,14 @@
 					return false;
 				}
 			}
-			if (selected1 == false) {
+			if (selected2 == false) {
 				var downloadFileName = document.getElementById("downloadForm").elements
 						.namedItem("downloadFileName").value;
 				document.getElementById("downloadSyncForm").elements
 						.namedItem("downloadFileName").value = downloadFileName;
 				$('#downloadSyncForm').attr('action', '/downloadsync');
 				$("#downloadSyncForm").submit();
+				return false;
 			}
 		}
 
@@ -170,7 +171,7 @@
 								e.preventDefault();
 								var radioSelected = document
 										.getElementsByName("searchType");
-								var asynChecked = radioSelected[0].checked;
+								var asynChecked = radioSelected[1].checked;
 								if (asynChecked == true) {
 									$("#wait")
 											.html(
