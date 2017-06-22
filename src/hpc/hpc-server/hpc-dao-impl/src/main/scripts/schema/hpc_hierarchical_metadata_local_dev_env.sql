@@ -79,3 +79,20 @@ CREATE FOREIGN TABLE r_data_hierarchy_meta_main (
        modify_ts text)
        SERVER hpc_dm_dev
        OPTIONS (schema_name 'public', table_name 'r_user_main');
+       
+ CREATE FOREIGN TABLE r_user_group (
+       group_user_id integer,
+       user_id integer,
+       create_ts text,
+       modify_ts text)
+       SERVER hpc_dm_dev
+       OPTIONS (schema_name 'public', table_name 'r_user_group');      
+       
+CREATE FOREIGN TABLE r_objt_access (
+       object_id integer,
+       user_id integer,
+       access_type_id integer,
+       create_ts text,
+       modify_ts text)
+       SERVER hpc_dm_dev
+       OPTIONS (schema_name 'public', table_name 'r_objt_access');
