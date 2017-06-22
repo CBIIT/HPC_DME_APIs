@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+# Common runme for the bookmark tests.
+# Usage: runtest [no arguments]
+
