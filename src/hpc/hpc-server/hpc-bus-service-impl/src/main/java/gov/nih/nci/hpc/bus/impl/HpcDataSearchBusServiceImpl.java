@@ -149,7 +149,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService
       	
 		if(totalCount) {
 			   int count = dataObjectPaths.size();
-			   dataObjectsDTO.setTotalCount(count < limit ? count : 
+			   dataObjectsDTO.setTotalCount((page == 1 && count < limit) ? count : 
 				                            dataSearchService.getDataObjectCount(
 				                            		             compoundMetadataQueryDTO.getCompoundQuery()));
 		}
