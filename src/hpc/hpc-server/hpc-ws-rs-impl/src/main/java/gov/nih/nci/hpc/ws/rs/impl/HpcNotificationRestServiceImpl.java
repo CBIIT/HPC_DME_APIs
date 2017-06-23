@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
@@ -103,7 +102,8 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 	
-		return okResponse(deliveryReceipts, true);   	
+		return okResponse(!deliveryReceipts.getNotificationDeliveryReceipts().isEmpty() ? 
+				          deliveryReceipts : null, true);   	
     }
 
     @Override
