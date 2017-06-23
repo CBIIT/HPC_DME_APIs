@@ -34,7 +34,7 @@ http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
         Edit the server name and port number for the server to be tested.
     4. ./utils/test-configuration
         - Edit the shared globus endpoint. 
-        - Eddit the top level folder where collections will be registered "base-folder"
+        - Edit the top level folder where collections will be registered "base-folder"
 
   II- Create a globus shared endpoint called HPC_DM_TEST and share it with the system admin. Add a test.txt empty file to this Globus endpoint:
         "endpoint": "HPC_DM_TEST",
