@@ -1,0 +1,8 @@
+{
+            "groupPermissions": [
+                {
+                        "groupName": "dxgroupid",
+                        "permission": "dxnewpermission"
+                }
+            ]
+}
