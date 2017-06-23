@@ -23,7 +23,6 @@ import java.io.PrintWriter;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcException extends Exception implements java.io.Serializable
@@ -67,6 +66,23 @@ public class HpcException extends Exception implements java.io.Serializable
     {
         super(message);
         setErrorType(errorType);
+    }
+    
+    /**
+     * Constructs a new HpcException with a given message, error type, 
+     * and integrated-system.
+     *
+     * @param message The message for the exception.
+     * @param errorType The type of the error, often the subsystem that is 
+     *        the source of the error.
+     * @param integratedSystem The integrated system which is the source of the error.
+     */
+    public HpcException(String message, HpcErrorType errorType, 
+    		            HpcIntegratedSystem integratedSystem) 
+    {
+        super(message);
+        setErrorType(errorType);
+        setIntegratedSystem(integratedSystem);
     }
     
     /**
@@ -124,6 +140,7 @@ public class HpcException extends Exception implements java.io.Serializable
      * @param message The message for the exception.
      * @param errorType The type of the error, often the subsystem that is 
      *        the source of the error.
+     * @param integratedSystem The integrated system which is the source of the error.
      * @param cause The root cause Throwable.
      */
     public HpcException(String message, HpcErrorType errorType, 

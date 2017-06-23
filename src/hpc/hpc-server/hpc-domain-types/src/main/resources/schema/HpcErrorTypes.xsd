@@ -48,7 +48,6 @@
 
 			<!-- Data Management Request Reject Reasons -->
 			<xsd:enumeration value="INVALID_NCI_ACCOUNT" />
-			<xsd:enumeration value="INVALID_DATA_TRANSFER_ACCOUNT" />
 			<xsd:enumeration value="INVALID_DATA_MANAGEMENT_ACCOUNT" />
 			<xsd:enumeration value="DATA_OBJECT_PATH_ALREADY_EXISTS" />
 			<xsd:enumeration value="INVALID_DATA_OBJECT_PATH" />
