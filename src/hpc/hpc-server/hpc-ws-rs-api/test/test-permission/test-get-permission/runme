@@ -23,5 +23,4 @@ RESPONSE_MSG=get-permission-response-message.json.tmp
 get_permission collection/$(get_basefolder)/dice_project2
 
 PERMISSION_LINE=$(cat $RESPONSE_MSG | tr "{" "\n" | grep \"dice_user\")
-echo $PERMISSION_LINE
 get_json_value "$PERMISSION_LINE" permission 
