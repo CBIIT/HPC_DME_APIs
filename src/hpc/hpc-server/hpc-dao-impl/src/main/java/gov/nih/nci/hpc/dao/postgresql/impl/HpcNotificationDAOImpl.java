@@ -97,7 +97,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	
 	private static final String GET_DELIVERY_RECEIPTS_SQL = 
 		    "select * from public.\"HPC_NOTIFICATION_DELIVERY_RECEIPT\" where \"USER_ID\" = ? " +
-	        "order by \"EVENT_ID\" limit ? offset ?";
+	        "order by \"EVENT_ID\" desc limit ? offset ?";
 	
 	private static final String GET_DELIVERY_RECEIPT_SQL = 
 		    "select * from public.\"HPC_NOTIFICATION_DELIVERY_RECEIPT\" where \"USER_ID\" = ? and \"EVENT_ID\" = ?";
