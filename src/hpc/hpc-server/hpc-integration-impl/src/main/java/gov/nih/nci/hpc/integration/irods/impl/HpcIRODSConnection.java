@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.integration.irods.impl;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccountProperty;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -312,7 +313,8 @@ public class HpcIRODSConnection
     	} catch(JargonException e) {
 		        throw new HpcException("Failed to authenticate an iRODS account: " + 
                                        e.getMessage(),
-                                       HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+                                       HpcErrorType.DATA_MANAGEMENT_ERROR, 
+                                       HpcIntegratedSystem.IRODS, e);
     	}
     }  
     

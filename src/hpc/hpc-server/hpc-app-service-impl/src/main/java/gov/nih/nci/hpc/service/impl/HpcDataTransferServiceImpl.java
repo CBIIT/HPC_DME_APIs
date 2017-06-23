@@ -340,8 +340,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     {
     	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
     	if(invoker == null) {
-	       throw new HpcException("Unknown user",
-			                      HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);
+	       throw new HpcException("Unknown user", HpcErrorType.UNEXPECTED_ERROR);
     	}
     	
     	// Search for an existing token.
@@ -364,7 +363,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
         		                        docConfigurationLocator.getArchiveURL(doc, dataTransferType));
     	if(token == null) {
     	   throw new HpcException("Invalid data transfer account credentials",
-                                  HpcRequestRejectReason.INVALID_DATA_TRANSFER_ACCOUNT);
+    			                  HpcErrorType.DATA_TRANSFER_ERROR, 
+    			                  dataTransferSystemAccount.getIntegratedSystem());
     	}
     	
     	// Store token on the request context.
