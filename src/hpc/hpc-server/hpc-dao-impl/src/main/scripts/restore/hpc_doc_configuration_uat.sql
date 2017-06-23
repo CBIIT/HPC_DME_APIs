@@ -13,7 +13,7 @@
 --
 
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('NOHIERARCHY', '/NO_HIERARCHY', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'NO_HIERARCHY',
+VALUES('NOHIERARCHY', '/NO_HIERARCHY', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'FNL_SF_Archive',
        'ARCHIVE', NULL, NULL, NULL);
 
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
@@ -388,10 +388,10 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-Tes
 
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
 VALUES('CCBR', '/CCBR_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 
-       'CCBR_Archive', 'ARCHIVE', NULL, NULL, NULL);
+       'FNL_SF_Archive', 'ARCHIVE', NULL, NULL, NULL);
 
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('DUMMY', '/TEST_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'DUMMY_Archive', 'ARCHIVE',
+VALUES('DUMMY', '/TEST_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'FNL_SF_Archive', 'ARCHIVE',
        '{
       	 "collectionType": "Project",
       	 "isDataObjectContainer": true,
@@ -912,33 +912,37 @@ VALUES('DUMMY', '/TEST_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestV
 	    }');
 
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('CCR-LEEMAX', '/CCR_LEEMAX_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'CCR_LEEMAX_Archive',
+VALUES('CCR-LEEMAX', '/CCR_LEEMAX_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'FNL_SF_Archive',
        'ARCHIVE', NULL, NULL, NULL);
 
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('HiTIF', '/HiTIF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'HiTIF_Archive',
+VALUES('HiTIF', '/HiTIF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'FNL_SF_Archive',
        'ARCHIVE', NULL, NULL, NULL);
                                                   
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('DUMMY_NO_HIER', '/TEST_NO_HIER_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'TEST_NO_HIER_Archive',
+VALUES('DUMMY_NO_HIER', '/TEST_NO_HIER_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'FNL_SF_Archive',
        'ARCHIVE', NULL, NULL, NULL);
 
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('JDACS4C', '/JDACS4C_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'JDACS4C_Archive',
+VALUES('JDACS4C', '/JDACS4C_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'FNL_SF_Archive',
        'ARCHIVE', NULL, NULL, NULL);
 
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('ATOM', '/ATOM_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'ATOM_Archive',
+VALUES('ATOM', '/ATOM_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'FNL_SF_Archive',
        'ARCHIVE', NULL, NULL, NULL);
 
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('MoCha', '/MoCha_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'MoCha_Archive',
+VALUES('MoCha', '/MoCha_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'FNL_SF_Archive',
        'ARCHIVE', NULL, NULL, NULL);
 
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('RAS_INF', '/RAS_INF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'RAS_INF_Archive',
+VALUES('RAS_INF', '/RAS_INF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'FNL_SF_Archive',
        'ARCHIVE', NULL, NULL, NULL);
 
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('BIOWULF', '/BIOWULF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'BIOWULF_Archive',
+VALUES('BIOWULF', '/BIOWULF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'FNL_SF_Archive',
+       'ARCHIVE', NULL, NULL, NULL);
+
+INSERT INTO public."HPC_DOC_CONFIGURATION" 
+VALUES('DSITP_FNL', '/DSITP_FNL_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault2', 'FNL_SF_Archive',
        'ARCHIVE', NULL, NULL, NULL);
