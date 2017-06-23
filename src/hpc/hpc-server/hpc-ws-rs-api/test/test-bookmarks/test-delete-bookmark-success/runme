@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+# Script to run this test
+# Usage: runme [no arguments]
+
+
+source $HPC_DM_TEST/utils/functions
+#$HPC_DM_TEST/utils/runtest
+../utils/runtest
+
+
+#Verify add worked
+response_hdr=add-bookmark-response-header.tmp
+verify_registration $response_hdr
+
+#delete the bookmark
+bookmark_name=$(cat bookmark-name.tmp)
+
+response_hdr=delete-bookmark-response-header.tmp
+response_msg=delete-bookmark-response-message.json.tmp
+
+delete_bookmark "$bookmark_name" "$response_hdr" "$response_msg"
+verify_registration $response_hdr
+
+#Get the deleted bookmark
+response_hdr=get-bookmark-response-header.tmp
+response_msg=get-bookmark-response-message.json.tmp
+
+get_bookmark "$bookmark_name" "$response_hdr" "$response_msg"
+get_http_code $response_hdr
