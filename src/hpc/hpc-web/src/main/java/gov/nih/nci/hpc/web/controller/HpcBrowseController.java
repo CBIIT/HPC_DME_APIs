@@ -111,6 +111,7 @@ public class HpcBrowseController extends AbstractHpcController {
 		
 		if (path == null || path.isEmpty() || request.getParameter("base") != null)
 			path = modelDTO.getBasePath();
+		path = path.trim();
 		session.setAttribute("selectedBrowsePath", path);
 		// If browser tree nodes are cached, return cached data. If not, query
 		// browser tree nodes based on the base path and cache it.
@@ -196,6 +197,7 @@ public class HpcBrowseController extends AbstractHpcController {
 
 		try {
 			if (hpcBrowserEntry.getSelectedNodePath() != null) {
+				
 				//session.setAttribute("selectedBrowsePath", hpcBrowserEntry.getSelectedNodePath());
 				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath(), browserEntry, authToken, model,
 						false, hpcBrowserEntry.isPartial());
@@ -230,6 +232,7 @@ public class HpcBrowseController extends AbstractHpcController {
 	 */
 	private HpcBrowserEntry getTreeNodes(String path, HpcBrowserEntry browserEntry, String authToken, Model model,
 			boolean getChildren, boolean partial) {
+		path = path.trim();
 		HpcBrowserEntry selectedEntry = getSelectedEntry(path, browserEntry);
 		if (selectedEntry != null && selectedEntry.isPopulated())
 			return partial ? selectedEntry : browserEntry;
