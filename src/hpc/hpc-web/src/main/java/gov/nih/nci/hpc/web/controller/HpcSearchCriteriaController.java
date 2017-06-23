@@ -283,6 +283,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			model.addAttribute("searchType", "collection");
 			model.addAttribute("totalCount", collections.getTotalCount());
 			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(collections.getTotalCount()));
+			model.addAttribute("currentPageSize", returnResults.size());
 		} else {
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 			List<HpcCollectionDTO> searchResults = collections.getCollections();
@@ -303,6 +304,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			model.addAttribute("detailed", "yes");
 			model.addAttribute("searchType", "collection");
 			model.addAttribute("totalCount", collections.getTotalCount());
+			model.addAttribute("currentPageSize", returnResults.size());
 			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(collections.getTotalCount()));
 		}
 	}
@@ -326,6 +328,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("searchType", "datafile");
 			model.addAttribute("totalCount", dataObjects.getTotalCount());
+			model.addAttribute("currentPageSize", returnResults.size());
 			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(dataObjects.getTotalCount()));
 		} else {
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
@@ -347,6 +350,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			model.addAttribute("detailed", "yes");
 			model.addAttribute("searchType", "datafile");
 			model.addAttribute("totalCount", dataObjects.getTotalCount());
+			model.addAttribute("currentPageSize", returnResults.size());
 			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(dataObjects.getTotalCount()));			
 		}
 	}

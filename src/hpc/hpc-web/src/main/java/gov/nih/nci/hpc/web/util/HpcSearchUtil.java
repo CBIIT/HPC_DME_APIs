@@ -54,6 +54,7 @@ public class HpcSearchUtil {
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("searchType", "collection");
 			model.addAttribute("totalCount", collections.getTotalCount());
+			model.addAttribute("currentPageSize", returnResults.size());
 			model.addAttribute("totalPages", getTotalPages(collections.getTotalCount()));
 			
 		} else {
@@ -76,6 +77,7 @@ public class HpcSearchUtil {
 			model.addAttribute("detailed", "yes");
 			model.addAttribute("searchType", "collection");
 			model.addAttribute("totalCount", collections.getTotalCount());
+			model.addAttribute("currentPageSize", returnResults.size());
 			model.addAttribute("totalPages", getTotalPages(collections.getTotalCount()));
 		}
 	}
@@ -108,6 +110,7 @@ public class HpcSearchUtil {
 			model.addAttribute("searchresults", returnResults);
 			model.addAttribute("searchType", "datafile");
 			model.addAttribute("totalCount", dataObjects.getTotalCount());
+			model.addAttribute("currentPageSize", returnResults.size());
 			model.addAttribute("totalPages", getTotalPages(dataObjects.getTotalCount()));
 		} else {
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
@@ -129,6 +132,7 @@ public class HpcSearchUtil {
 			model.addAttribute("detailed", "yes");
 			model.addAttribute("searchType", "datafile");
 			model.addAttribute("totalCount", dataObjects.getTotalCount());
+			model.addAttribute("currentPageSize", returnResults.size());
 			model.addAttribute("totalPages", getTotalPages(dataObjects.getTotalCount()));
 		}
 	}
