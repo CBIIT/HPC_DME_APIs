@@ -1749,3 +1749,7 @@ VALUES('RAS_INF', '/RAS_INF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vaul
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
 VALUES('BIOWULF', '/BIOWULF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault', 'HPC_DME_Prod_Archive',
        'ARCHIVE', NULL, NULL, NULL);
+
+INSERT INTO public."HPC_DOC_CONFIGURATION" 
+VALUES('DSITP_FNL', '/DSITP_FNL_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault', 'HPC_DME_Prod_Archive',
+       'ARCHIVE', NULL, NULL, NULL);
