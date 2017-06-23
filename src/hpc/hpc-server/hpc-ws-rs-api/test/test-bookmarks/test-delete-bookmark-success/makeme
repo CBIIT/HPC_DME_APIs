@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+
+# Script to build the executable for this test
+# Usage: makeme [no arguments]
+
+source $HPC_DM_TEST/utils/functions
+../utils/maketest
+./cleanme
+collection_path=/$(get_basefolder)/dice_project1
+response_hdr=add-bookmark-response-header.tmp
+response_msg=add-bookmark-response-message.json.tmp
+
+add_bookmark_from_template "$collection_path"  "$response_hdr" "$response_msg"
