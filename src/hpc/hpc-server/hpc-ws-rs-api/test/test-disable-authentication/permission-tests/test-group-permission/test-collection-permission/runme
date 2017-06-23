@@ -41,10 +41,17 @@ mv $RESPONSE_MSG first-$RESPONSE_MSG
 RESPONSE_HEADER=query-response-header.tmp
 RESPONSE_MSG=query-response-message.json.tmp
 query_by_metadata collection input.json $USER_ID  
-ATTRIBUTE="\"name\""
+exists=$(grep $REPONSE_MSG $PROJECT_PATH) 
+if [ -z $exists  ]
+then
+    echo  "ERROR: can not find $PROJECT_PATH in $RESPONSE_MSG after granting permission"
+    exit 1
+fi
+
+#ATTRIBUTE="\"name\""
 #Check that the collection is  returned 
-VALUE="dice-group-permission-project-name"
-check_existance "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" TRUE
+#VALUE="dice-group-permission-project-name"
+#check_existance "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" TRUE
 
 
 
@@ -55,6 +62,7 @@ refresh_views
 
 #Try to get the project. Should fail
 ACTING_USER=$USER_ID
+echo $PROJECT_PATH 
 get_item collection/$PROJECT_PATH $RESPONSE_HEADER $RESPONSE_MSG $USER_ID 
 get_http_code $RESPONSE_HEADER
 
@@ -62,10 +70,17 @@ get_http_code $RESPONSE_HEADER
 RESPONSE_HEADER=false-query-response-header.tmp
 RESPONSE_MSG=false-query-response-message.json.tmp
 query_by_metadata collection input.json $USER_ID  
-ATTRIBUTE="\"name\""
+exists=$(grep $REPONSE_MSG $PROJECT_PATH) 
+if [ ! -z $exists  ]
+then
+    echo  "ERROR: I can find $PROJECT_PATH in $RESPONSE_MSG after removing permission"
+    exit 1
+fi
+
+#ATTRIBUTE="\"name\""
 #Check that the collection is  returned 
-VALUE="dice-group-permission-project-name"
-check_non_existance "$RESPONSE_HEADER" "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE"
+#VALUE="dice-group-permission-project-name"
+#check_non_existance "$RESPONSE_HEADER" "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE"
 
 
 

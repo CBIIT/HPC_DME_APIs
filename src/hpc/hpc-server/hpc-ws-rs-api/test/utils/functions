@@ -742,10 +742,14 @@ function register_group {
     GROUP_NAME="$2"
     RESPONSE_HEADER="$3"
     RESPONSE_MSG="$4"
+    CONFIG=$(get_curl_config) 
 
 
     SERVER=`cat $HPC_DM_TEST/utils/server`
-    curl -H "Content-Type: application/json" -d @"$INPUT_FILE" -X PUT ${SERVER}/group/"$GROUP_NAME"  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
+
+
+    curl -H "Content-Type: application/json" -d @"$INPUT_FILE" -X PUT ${SERVER}/group/"$GROUP_NAME"  $CONFIG  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
+
     check_connection $RESPONSE_HEADER
 
 }
@@ -801,6 +805,35 @@ function add_user_to_group {
 
     update_group "input.json.tmp" "$GROUP_ID" "$RESPONSE_HEADER" "$RESPONSE_MSG"
 }
+
+
+#Remove user from group
+#Inputs: groupID
+#      : userID 
+function remove_user_from_group {
+
+    if [ -z "$1" ] || [ -z "$2" ]
+    then
+        echo "ERROR: using remove_user_to_group"
+        echo "USAGE: remove_user_to_group  <group-id> <user-id>"
+        exit
+    fi
+
+    GROUP_ID="$1"
+    USER_ID="$2"
+
+    INPUT_TEMPLATE=$(cat $HPC_DM_TEST/utils/templates/remove-user-from-group-template.json)
+    REMOVED_USER=$(echo "$INPUT_TEMPLATE" | sed "s/dxtest-new-user/$USER_ID/")
+
+    echo "$REMOVED_USER" > input.json.tmp
+
+    RESPONSE_MSG=group-update-response-message.json.tmp
+    RESPONSE_HEADER=group-update-response-header.tmp
+
+    update_group "input.json.tmp" "$GROUP_ID" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+}
+
+
 
 #Register a new user and a group from template:
 function register_user_and_group {
@@ -1456,6 +1489,39 @@ function get_item {
     check_connection $RESPONSE_HEADER
 }
 
+#Get a permisson on an item (collection or dataObject) from the archive
+#Inputs: <item-path> (should have a prefix of "dataObject" or "collection:)
+function get_permission {
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR: using get_permission"
+        echo "USAGE: get_permission  <item-path>"
+        exit 1
+    fi
+
+    CONFIG=$(get_curl_config) 
+    ITEM_PATH="$1"
+
+    if [[ "$ITEM_PATH" != "dataObject"* ]] && [[ "$ITEM_PATH" !=  "collection"* ]]
+    then 
+        echo "ERROR: get_permission" >&2
+        echo "PATH \"$ITEM_PATH\" does not contain the prefix \"collection\" or \"dataObject\"" >&2
+        exit 1
+    fi
+
+
+    RESPONSE_HEADER=get-permission-response-header.tmp
+    RESPONSE_MSG=get-permission-response-message.json.tmp
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+
+    curl -X GET "$SERVER/$ITEM_PATH"/acl  $CONFIG -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    check_connection $RESPONSE_HEADER
+}
+
+
+
+
 #Update the premission using an input json file
 #Inputs: <premission-file> The file that describes the premission
 #        <path> The path of the collection or dataObject (should include the type as prefix)
@@ -1465,7 +1531,7 @@ function get_item {
 
 function update_permission {
 
-    USAGE="USAGE: update_permission <permission-file> <[dataObjecg|collection]path>[response-header-file] [response-message-file]"
+    USAGE="USAGE: update_group_permission <permission-file> <[dataObjecg|collection]path>[response-header-file] [response-message-file]"
 
     if [ "$#" -lt 2 ]
     then
@@ -1506,7 +1572,60 @@ function update_permission {
 }
 
 
-#Update the permission of a single path using a template
+#Update the user permission of a single path using a template
+#Inputs: <path>         The path for the collection or the dataObject where the permission should be updated 
+#        <group_id>      The group to be granted the new permission
+#        <permission>   The new permission that should be given  
+# If the variable ACTING_USER is set, this will be used as the acting user 
+
+
+function update_group_permission {
+
+     
+    USAGE="ERROR: using update_group_permission.\nUSAGE: update_group_permission <path> <group_id> <permission>"
+
+    if [ -z "$1" ]
+    then    
+        echo "Missing path" >&2
+        echo "$USAGE"  1>&2
+        exit
+
+    fi
+
+    if [ -z "$2" ]
+    then
+
+        echo "Missing user_id" >&2
+        echo "$USAGE" >&2
+        exit
+
+    fi
+
+    if [ -z "$3" ]
+    then
+
+        echo "Missing permission" >&2
+        echo "$USAGE" >&2
+        exit
+
+    fi
+   
+    PERMISSION_PATH="$1"
+    GROUP_ID="$2"
+    NEW_PERMISSION="$3"
+       
+    UPDATED_GROUP=$(cat $HPC_DM_TEST/utils/templates/group-permission-update-template.json | sed "s#dxgroupid#$GROUP_ID#")
+    UPDATED_PERMISSION=$(echo "$UPDATED_GROUP" | sed "s#dxnewpermission#$NEW_PERMISSION#")
+    echo "$UPDATED_PERMISSION" > group-permission.json.tmp
+    
+    #Submit the request to change permission
+    update_permission "group-permission.json.tmp" "$PERMISSION_PATH" 
+    
+}
+
+
+
+#Update the group permission of a single path using a template
 #Inputs: <path>         The path for the collection or the dataObject where the permission should be updated 
 #        <user_id>      The user to be granted the new permission
 #        <permission>   The new permission that should be given  
@@ -1558,6 +1677,8 @@ function update_single_permission {
     update_permission "permission.json.tmp" "$PERMISSION_PATH" 
     
 }
+
+
 
 #Register a query
 #Inputs:    <query-name> 
