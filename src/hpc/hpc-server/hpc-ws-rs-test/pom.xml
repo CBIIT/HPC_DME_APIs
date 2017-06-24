@@ -8,7 +8,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: pom.xml 1213 2016-05-30 01:48:21Z rosenbergea $
  -->
  
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -23,6 +22,17 @@
 	</parent>
 	<artifactId>hpc-ws-rs-test</artifactId>
 
+	<build>
+		<resources>
+			<resource>
+            	<directory>src/test/resources/</directory>
+        	</resource>
+        	<resource>
+            	<directory>src/test/dice/</directory>
+        	</resource>
+    	</resources>
+	</build>
+	
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
