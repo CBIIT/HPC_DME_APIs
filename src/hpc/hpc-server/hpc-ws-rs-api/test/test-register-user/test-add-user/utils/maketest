@@ -1,6 +1,0 @@
-#!/bin/bash
-
-#Common maketest for the tests
-
-#Make sure a second passes before generating a new user ID
-sleep 1

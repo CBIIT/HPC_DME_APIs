@@ -1,3 +1,0 @@
-400
-INVALID_REQUEST_INPUT
-No data transfer source or data attachment provided

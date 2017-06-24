@@ -1,9 +1,0 @@
-{
-            "path": "dxcollectionpath",
-            "userPermissions": [
-                {
-                        "userId": "dxnewuserid",
-                        "permission": "NONE"
-                }
-            ]
-}

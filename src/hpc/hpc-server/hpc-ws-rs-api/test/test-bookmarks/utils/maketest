@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-# Common makeme for the bookmark tests.
-# Usage: maketest [no arguments]
-./cleanme
