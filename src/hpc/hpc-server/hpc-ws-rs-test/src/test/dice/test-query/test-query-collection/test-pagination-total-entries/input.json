@@ -1,0 +1,14 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"name",
+                "value":"prasad project1 sub1",
+                "operator":"EQUAL"
+            }
+        ]
+    },
+    "detailedResponse":false,
+    "totalCount": true 
+}

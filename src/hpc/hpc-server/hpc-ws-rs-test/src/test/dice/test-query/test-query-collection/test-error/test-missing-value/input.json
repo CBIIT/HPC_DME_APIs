@@ -1,0 +1,17 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"pi_doc",
+                "operator":"EQUAL"
+            },
+            {
+                "attribute":"name",
+                "value":"prasad project1 sub1",
+                "operator":"EQUAL"
+            }
+        ]
+    },
+    "detailedResponse":true
+}

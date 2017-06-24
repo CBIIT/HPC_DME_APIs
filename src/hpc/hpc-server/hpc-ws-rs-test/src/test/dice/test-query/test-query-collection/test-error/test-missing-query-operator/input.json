@@ -1,0 +1,17 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"pi_doc",
+                "value":"FNLCR",
+            },
+            {
+                "attribute":"name",
+                "value":"prasad project1 sub1",
+                "operator":"EQUAL"
+            }
+        ]
+    },
+    "detailedResponse":true
+}
