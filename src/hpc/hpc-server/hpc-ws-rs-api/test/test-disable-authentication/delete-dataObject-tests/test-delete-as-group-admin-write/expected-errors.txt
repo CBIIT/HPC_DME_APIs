@@ -1,3 +1,0 @@
-400
-REQUEST_REJECTED
-Data object can only be deleted by its owner. Your permission: WRITE

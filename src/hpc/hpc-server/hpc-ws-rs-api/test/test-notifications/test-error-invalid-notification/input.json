@@ -1,8 +1,0 @@
-{
-   "addUpdateSubscriptions": [
-    {
-        "eventType": "DXDICE_INVALID_NOTIFICATION",
-        "notificationDeliveryMethods": ["EMAIL"]
-    }
-   ]
-}

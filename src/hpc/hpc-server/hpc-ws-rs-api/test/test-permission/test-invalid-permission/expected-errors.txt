@@ -1,2 +1,0 @@
-400
-Null or empty permission in a permission request. Valid values are [[OWN, READ, WRITE, NONE]]

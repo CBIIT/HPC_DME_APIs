@@ -1,2 +1,0 @@
-400
-Invalid compound metadata query: Null metadata attribute in query
