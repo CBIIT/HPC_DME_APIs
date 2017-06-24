@@ -1,3 +1,0 @@
-400
-REQUEST_REJECTED
-Data object cannot be updated. Only updating metadata is allowed.

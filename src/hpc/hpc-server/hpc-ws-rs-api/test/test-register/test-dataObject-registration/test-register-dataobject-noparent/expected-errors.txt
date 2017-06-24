@@ -1,3 +1,0 @@
-400
-REQUEST_REJECTED
-Invalid data object path. Parent directory doesn't exist

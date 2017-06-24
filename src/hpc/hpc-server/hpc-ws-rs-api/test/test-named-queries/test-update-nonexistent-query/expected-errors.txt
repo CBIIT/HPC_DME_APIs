@@ -1,3 +1,0 @@
-400
-INVALID_REQUEST_INPUT
-Query name doesn't exist
