@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# maketest
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+#Register a project and a dataObject to be deleted 
+
+#Clean previous results
+./cleanme
+source $HPC_DM_TEST/utils/functions
+
+#Register the base collection
+ACTING_USER=dice_user_sys_admin
+source $HPC_DM_TEST/test-delete/utils/register-base-collection
+
+#Register a dataObject synchronously as  
+PROJECT_PATH=$(cat registered-project-path.tmp)
+register_dataobject_sync_from_template $PROJECT_PATH
+dataobject_path=$(cat registered-data-object-path.tmp)
+update_single_permission  collection/"$PROJECT_PATH" dice_user_group_admin OWN
+update_single_permission  dataObject/"$dataobject_path" dice_user_group_admin NONE

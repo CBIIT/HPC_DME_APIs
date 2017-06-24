@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+# Script to run this test
+# Usage: runme [no arguments]
+
+
+#$HPC_DM_TEST/utils/runtest
+../utils/runtest
+
+source $HPC_DM_TEST/utils/functions
+
+#Verify add worked
+collection_path=/$(get_basefolder)/dice_project1
+response_hdr=add-bookmark-response-header.tmp
+verify_registration $response_hdr
+
+#get the bookmark
+bookmark_name=$(cat bookmark-name.tmp)
+bookmark_group=$(cat bookmark-group.tmp)
+response_hdr=get-bookmark-response-header.tmp
+response_msg=get-bookmark-response-message.json.tmp
+
+get_bookmark "$bookmark_name" "$response_hdr" "$response_msg"
+get_http_code $response_hdr
+
+#Verify the path is correct
+path_exists=$(grep "$collection_path" $response_msg)
+if [ -z "$path_exists" ]
+then
+    echo "ERROR: cannot find the path $collection_path in $response_msg" >&2
+fi
+
+#Verify the group is correct
+group_exists=$(grep "$bookmark_group" $response_msg)
+if [ -z "$group_exists" ]
+then
+    echo "ERROR: cannot find the group $bookmark_group in $response_msg" >&2
+fi
+

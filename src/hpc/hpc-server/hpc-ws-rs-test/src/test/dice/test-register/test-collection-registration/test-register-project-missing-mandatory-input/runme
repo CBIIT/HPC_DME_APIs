@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+#import common functions
+source ../../../utils/functions
+sleep 1
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username ../../../utils/config`
+
+DESTINATION=$(get_basefolder)/test-${NAME}
+curl_register input.json "$DESTINATION" collection
+
+get_http_code $RESPONSE_HEADER >&2
+get_json_value $RESPONSE_MSG errorType >&2
+get_json_value $RESPONSE_MSG message >&2

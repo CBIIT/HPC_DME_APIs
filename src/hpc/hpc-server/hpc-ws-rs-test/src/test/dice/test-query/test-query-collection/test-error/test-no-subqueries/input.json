@@ -1,0 +1,6 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+    },
+    "detailedResponse":true
+}
