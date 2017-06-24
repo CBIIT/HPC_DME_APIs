@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+../utils/runtest
+
+
+verify_registration  collection-registration-response-header.tmp
+verify_registration  dataObject-registration-response-header.tmp
+
+
+FOLDER_PATH=collection/$(cat registered-folder-path.tmp)
+
+
+RESPONSE_HEADER=download-response-header.tmp 
+RESPONSE_MSG=download-response-message.json.tmp
+download_async "$FOLDER_PATH"
+
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+echo $HTTP_CODE
+
+FILE_ID=$(cat registered-dataobject-path.tmp)
+
+#Check that the object is still in archive state: 
+MSG_EXIST=$(grep "Object is not in archived state yet" $RESPONSE_MSG)
+if [ -z "$MSG_EXIST" ]
+then
+    echo "ERROR: an unarchived object $FILE_ID is downloaded " >&2
+fi
+

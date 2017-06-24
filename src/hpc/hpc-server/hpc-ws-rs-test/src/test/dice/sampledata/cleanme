@@ -1,0 +1,3 @@
+#!/bin/bash
+
+$HPC_DM_TEST/utils/cleantest

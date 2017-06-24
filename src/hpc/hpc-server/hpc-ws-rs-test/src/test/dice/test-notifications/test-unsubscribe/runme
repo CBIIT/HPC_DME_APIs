@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# runme 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+source ..//utils/functions
+
+#Run the common runtest
+$HPC_DM_TEST/test-notifications/utils/runtest
+
+#Verify that the subscription went through
+SUBSCRIPTION_HEADER=subscribe-notifications-response-header.tmp
+verify_registration $SUBSCRIPTION_HEADER
+
+RESPONSE_HEADER=get-notifications-response-header.tmp
+RESPONSE_MSG=get-notifications-response-message.json.tmp
+
+get_notifications
+
+
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+echo $HTTP_CODE
+
+
+#NOTIFICATION_TYPES=$(get_possible_notifications)
+#
+#for notification in $NOTIFICATION_TYPES
+#do 
+#    LINE=$(grep "$notification" $RESPONSE_MSG)
+#    if [ ! -z "$LINE" ]
+#    then
+#        echo "THE notificaiton \"$notification\" still exists in the response message"
+#    fi
+#done
+#
