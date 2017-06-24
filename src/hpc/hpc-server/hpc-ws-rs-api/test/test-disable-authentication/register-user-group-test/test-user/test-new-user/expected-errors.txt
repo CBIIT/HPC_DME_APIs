@@ -1,2 +1,0 @@
-ERROR: Failed to register new user
-Response code:401 
