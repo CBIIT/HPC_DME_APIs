@@ -5,7 +5,7 @@
 
 	<groupId>gov.nih.nci.hpc</groupId>
 	<artifactId>hpc-web</artifactId>
-	<version>1.1.0</version>
+	<version>1.2.0</version>
 	<packaging>war</packaging>
 
 	<name>hpc-web</name>
