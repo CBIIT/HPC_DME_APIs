@@ -1,0 +1,14 @@
+{
+    "compoundQuery": {
+        "operator": "AND",
+        "queries":[
+            {
+                "attribute":"name",
+                "value":"project4 dummy file",
+                "operator":"EQUAL"
+            }
+        ]
+    },
+    "detailedResponse":false,
+    "page":2
+}
