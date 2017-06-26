@@ -20,7 +20,7 @@ fi
 
 GLOBUS_CONFIG="$HPC_DM_TEST/utils/globus-config"
 
-CONFIG=$(cat $GLOBUS_CONFIG | sed "s@Bearer.*@Bearer $TOKEN\"@")
+CONFIG=$(cat $GLOBUS_CONFIG-sample | sed "s@Bearer.*@Bearer $TOKEN\"@")
 
 echo "$CONFIG" > $GLOBUS_CONFIG 
 
