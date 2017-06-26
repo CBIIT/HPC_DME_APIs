@@ -13,4 +13,6 @@
 @ddblock_end copyright
 ******************************/
 
-Register the a large  dataObject with 10GB.
+Register asynchronously a large  dataObject with 10GB.
+
+Follow the setup instruction shown in ../README.txt
