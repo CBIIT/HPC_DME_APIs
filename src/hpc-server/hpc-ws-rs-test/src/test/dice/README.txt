@@ -21,33 +21,36 @@ To download and install DICE, please follow the documentation at:
 http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
 
 -Configuration:
-  I-Edit four configuration files in the ./utils subdirectory:
-    1- ./utils/config
-        Add you username after the option "-u <username>[:password]"
-        Note: Do not check in the config file in the repository with your NCI password.
-        For that, the config file is checked in as a dynamic link.
-    2- ./utils/globus-config
-        Add you username after the option "-u <username>[:password]"
-        Note: Do not check in the globus-config file in the repository with your GlobusID password.
-        For that, the globus-config file is checked in as a dynamic link.
-    3. ./utils/server
-        Edit the server name and port number for the server to be tested.
-    4. ./utils/test-configuration
-        - Edit the shared globus endpoint. 
-        - Edit the top level folder where collections will be registered "base-folder"
+  I- General configuration:
+     Edit the configuration file:  ./utils/test-configuration:
+        1- Edit your NCI "username"
+        2- Edit the "base-folder" for your test DOC
+        3- Edit your "globus-user" that is linked to your NCI account.
+        4- Edit the "globus-shared-endpoint-uid" as mentioned in step II
 
-  II- Create a globus shared endpoint called HPC_DM_TEST and share it with the system admin. Add a test.txt empty file to this Globus endpoint:
+
+  II- Globus configuraton:
+      1- Create a globus shared endpoint (e.g., HPC _DM_TEST) and share it with the system admin. 
+         Review the user guide document to get the system admin account. 
+      2- Add a test.txt empty file to this Globus endpoint:
         "endpoint": "HPC_DM_TEST",
-        "path": "test.txt"
-
-  III- Add a dice-download empty folder to this  Globus endpoint:
+        "path": "/test.txt"
+      3- Add a dice-download empty folder to your shared Globus endpoint
         "endpoint": "HPC_DM_TEST",
         "path": "/dice-download/"
-  
-  IV- Define the environment variable HPC_DM_TEST and let it point to the directory where this README.txt is located.
-        For example:
-           $export HPC_DM_TEST=/path/to/this/README.txt/
+ 
 
+  III- Server configuration:
+        Edit the  ./utils/server to add the server name and port number for the
+        server to be tested.
+
+ 
+  IV- Scripts configuration: 
+        Define the environment variable HPC_DM_TEST and let it point to the
+        directory where this README.txt is located.  
+        For example, in your ~/.bashrc file add: 
+            export HPC_DM_TEST=/path/to/this/README.txt/
+        
   V- To run test-hpc-client units tests, please follow the setup steps shown in ./test-hpc-client/README.txt 
 
   VI- The user who will run the test should be part of a dummy DOC with the hierarchy specified in the appendix.
