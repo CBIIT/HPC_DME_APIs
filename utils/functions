@@ -588,6 +588,7 @@ function dm_register_directory {
 #By default the endpoint specified in hpcdme.properties will be used
 #Inputs:  <source-path>: The path on the globus endpoint 
 #         <destinaton-path>: The destination logical path on the archive
+#         [globus-endpoint]: The endpoint to use other that default
 function dm_register_globus_directory {
 
     local USAGE="USAGE: dm_register_globus_directory <source-path> <destination-path> [globus-endpoint]"
@@ -620,7 +621,7 @@ function dm_register_globus_directory {
     local globus_endpoint
     if [ -z "$3" ]
     then
-      echo "Using the default globus endpoint in $HPC_DM_UTILS/hpcdme.properties" 
+      #echo "Using the default globus endpoint in $HPC_DM_UTILS/hpcdme.properties" 
       globus_endpoint=$(get_globus_endpoint)
       if [ "$?" -ne 0 ]
       then
@@ -662,12 +663,97 @@ function dm_register_globus_directory {
          return 1
          ;;
     esac
-
-
-
-
-
-
-
-
 }
+
+
+#Download a collection to Globus 
+#Inputs: collection-apth
+#        destination-file
+function dm_download_collection_async {
+
+
+    local USAGE="USAGE:dm_download_collection_async <collection-logical-path> <globus-destination-path> [globus-endpoint]"
+
+    if [ "$#" -lt 2 ] 
+    then
+        echo "ERROR: using dm_download_collection_async" >&2
+        echo "recieved $@" 
+        echo "$USAGE" >&2
+        return 1
+    fi
+
+    local src_path="$1"
+    local dst_path="$2"
+
+    local globus_endpoint
+    if [ -z "$3" ]
+    then
+      #echo "Using the default globus endpoint in $HPC_DM_UTILS/hpcdme.properties" 
+      globus_endpoint=$(get_globus_endpoint)
+      if [ "$?" -ne 0 ]
+      then
+        return 1
+      fi
+    else
+      globus_endpoint="$3"
+    fi       
+
+    local template_file=$HPC_DM_UTILS/templates/download-async-template.json
+    if [ ! -e "$template_file" ]
+    then
+        echo "Can not file the template file: $template_file" >&2
+        echo "Please pull the latest version and try again" >&2
+        return 1
+    fi
+
+    #Make sure the template did not change:
+    local container="globus-shared-endpoint-uid"
+    local destination="destination-name"
+
+    local container_exists=$(grep  $container $template_file) 
+    if [ -z "$container_exists" ]
+    then
+        echo "The template file $template_file changed." >&2
+        echo "Please pull the latest version and try again" >&2
+        return 1
+    fi 
+
+    local destination_exists=$(grep $destination $template_file) 
+    if [ -z "$destination_exists" ]
+    then
+        echo "The template file $template_file changed." >&2
+        echo "Please pull the latest version and try again" >&2
+        return 1
+    fi 
+
+    local request_file=$HPC_DM_UTILS/temp/async-download.json.tmp
+     
+    #Update the globus endpoint
+    updated_endpoint=$(cat $template_file | sed "s@$container@$globus_endpoint@")
+
+    #Update the file name 
+    updated_destination=$(echo "$updated_endpoint" | sed "s#${destination}#${dst_path}#")
+    echo  "$updated_destination" > $request_file
+
+    local response_hdr=download-dataobject-response-header.tmp
+    local response_msg=download-dataobject-response-message.json.tmp
+
+    local SERVER=$(get_server)
+    local CONFIG=$(get_config)
+
+    curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/collection/$src_path/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> curl-status 
+    check_connection $response_hdr
+
+
+    local code=$(get_http_code "$response_hdr") 
+
+    if [ "$code" -ne 200 ]
+    then 
+      #In this case the destination path file will contain the error code
+      print_error_message "$reponse_msg" "$code" 
+    else
+      rm $response_hdr 2> /dev/null
+    fi
+}
+
+
