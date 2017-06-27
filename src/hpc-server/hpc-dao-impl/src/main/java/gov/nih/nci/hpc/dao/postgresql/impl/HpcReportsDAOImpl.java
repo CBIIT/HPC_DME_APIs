@@ -26,9 +26,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -231,6 +236,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 	// The Spring JDBC Template instance.
 	@Autowired
 	private JdbcTemplate jdbcTemplate = null;
+	
+	// The logger instance.
+	private final Logger logger = 
+			             LoggerFactory.getLogger(this.getClass().getName());
 	
 	// Row mappers.
 	private HpcReportRowMapper reportRowMapper = new HpcReportRowMapper();
@@ -535,31 +544,47 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			userDateArgs[2] = toDateLong;
 		}
 		
+		long start = System.currentTimeMillis();
+		
 		//TOTAL_NUM_OF_REGISTERED_USERS
 		HpcReportEntry userSizeEntry = new HpcReportEntry();
 		userSizeEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUM_OF_REGISTERED_USERS);
 		userSizeEntry.setValue(getUsersSize(criteria, dateArgs, docArg, docDateUsersArgs));
-
+		long stop = System.currentTimeMillis();
+		logger.error("TOTAL_NUM_OF_REGISTERED_USERS " + (stop - start));
+		start = System.currentTimeMillis();
 		
 		//Total Size - TOTAL_DATA_SIZE
 		HpcReportEntry sizeEntry = new HpcReportEntry();
 		sizeEntry.setAttribute(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
 		sizeEntry.setValue(getTotalDataSize(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs));
+		stop = System.currentTimeMillis();
+		logger.error("TOTAL_DATA_SIZE " + (stop - start));
+		start = System.currentTimeMillis();
 		
 		//Largest file - LARGEST_FILE_SIZE
 		HpcReportEntry largestFileSizeEntry = new HpcReportEntry();
 		largestFileSizeEntry.setAttribute(HpcReportEntryAttribute.LARGEST_FILE_SIZE);
 		largestFileSizeEntry.setValue(getLargestSize(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs));
+		stop = System.currentTimeMillis();
+		logger.error("LARGEST_FILE_SIZE " + (stop - start));
+		start = System.currentTimeMillis();
 		
 		//Average file - AVERAGE_FILE_SIZE
 		HpcReportEntry averageFileSizeEntry = new HpcReportEntry();
 		averageFileSizeEntry.setAttribute(HpcReportEntryAttribute.AVERAGE_FILE_SIZE);
 		averageFileSizeEntry.setValue(getAverageSize(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs));
+		stop = System.currentTimeMillis();
+		logger.error("AVERAGE_FILE_SIZE " + (stop - start));
+		start = System.currentTimeMillis();
 
 		//Total number of data objects - TOTAL_NUM_OF_DATA_OBJECTS
 		HpcReportEntry numOfDataObjEntry = new HpcReportEntry();
 		numOfDataObjEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS);
 		numOfDataObjEntry.setValue(getTotalDataObjSize(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs));
+		stop = System.currentTimeMillis();
+		logger.error("TOTAL_NUM_OF_DATA_OBJECTS " + (stop - start));
+		start = System.currentTimeMillis();
 
 		//Total number of collections - TOTAL_NUM_OF_COLLECTIONS
 		List<Map<String, Object>> list = getTotalCollectionsSize(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs);
@@ -589,11 +614,17 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		HpcReportEntry numOfCollEntry = new HpcReportEntry();
 		numOfCollEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUM_OF_COLLECTIONS);
 		numOfCollEntry.setValue(str.toString());
+		stop = System.currentTimeMillis();
+		logger.error("TOTAL_NUM_OF_COLLECTIONS " + (stop - start));
+		start = System.currentTimeMillis();
 
 		//Total Meta attributes Size - TOTAL_NUMBER_OF_META_ATTRS
 		HpcReportEntry metasizeEntry = new HpcReportEntry();
 		metasizeEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUMBER_OF_META_ATTRS);
 		metasizeEntry.setValue(getTotalMetaAttrCount(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs));
+		stop = System.currentTimeMillis();
+		logger.error("TOTAL_NUMBER_OF_META_ATTRS " + (stop - start));
+		start = System.currentTimeMillis();
 		
 		//Distribution of files - FILE_SIZE_BELOW_1_MB
 		Long lower = Long.valueOf(0);
@@ -640,6 +671,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		HpcReportEntry oneMBEntry = new HpcReportEntry();
 		oneMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_BELOW_1_MB);
 		oneMBEntry.setValue(getFileSize(criteria, fileSizeArgs, filesizedateArgs, filesizedocArgs, filesizedocDateArgs, filesizeuserArgs, filesizeuserDateArgs));
+		stop = System.currentTimeMillis();
+		logger.error("FILE_SIZE_BELOW_1_MB " + (stop - start));
+		start = System.currentTimeMillis();
 		
 		lower = Long.valueOf(1000000);
 		upper = Long.valueOf(10000000);
@@ -664,6 +698,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		HpcReportEntry tenMBEntry = new HpcReportEntry();
 		tenMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_1_MB_10_MB);
 		tenMBEntry.setValue(getFileSize(criteria, fileSizeArgs, filesizedateArgs, filesizedocArgs, filesizedocDateArgs, filesizeuserArgs, filesizeuserDateArgs));
+		stop = System.currentTimeMillis();
+		logger.error("FILE_SIZE_1_MB_10_MB " + (stop - start));
+		start = System.currentTimeMillis();
 		
 		lower = Long.valueOf(10000000);
 		upper = Long.valueOf(50000000);
@@ -688,6 +725,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		HpcReportEntry fiftyMBEntry = new HpcReportEntry();
 		fiftyMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_10_MB_50_MB);
 		fiftyMBEntry.setValue(getFileSize(criteria, fileSizeArgs, filesizedateArgs, filesizedocArgs, filesizedocDateArgs, filesizeuserArgs, filesizeuserDateArgs));
+		stop = System.currentTimeMillis();
+		logger.error("FILE_SIZE_10_MB_50_MB " + (stop - start));
+		start = System.currentTimeMillis();
 
 		lower = Long.valueOf(50000000);
 		upper = Long.valueOf(100000000);
@@ -711,6 +751,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		HpcReportEntry hundredMBEntry = new HpcReportEntry();
 		hundredMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_50_MB_100_MB);
 		hundredMBEntry.setValue(getFileSize(criteria, fileSizeArgs, filesizedateArgs, filesizedocArgs, filesizedocDateArgs, filesizeuserArgs, filesizeuserDateArgs));
+		stop = System.currentTimeMillis();
+		logger.error("FILE_SIZE_50_MB_100_MB " + (stop - start));
+		start = System.currentTimeMillis();
 
 		lower = Long.valueOf(100000000);
 		upper = Long.valueOf(500000000);
@@ -734,6 +777,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		HpcReportEntry fivehundredMBEntry = new HpcReportEntry();
 		fivehundredMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_100_MB_500_MB);
 		fivehundredMBEntry.setValue(getFileSize(criteria, fileSizeArgs, filesizedateArgs, filesizedocArgs, filesizedocDateArgs, filesizeuserArgs, filesizeuserDateArgs));
+		stop = System.currentTimeMillis();
+		logger.error("FILE_SIZE_100_MB_500_MB " + (stop - start));
+		start = System.currentTimeMillis();
 
 		lower = Long.valueOf(500000000);
 		upper = Long.valueOf(1000000000);
@@ -757,6 +803,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		HpcReportEntry onegbEntry = new HpcReportEntry();
 		onegbEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_500_MB_1_GB);
 		onegbEntry.setValue(getFileSize(criteria, fileSizeArgs, filesizedateArgs, filesizedocArgs, filesizedocDateArgs, filesizeuserArgs, filesizeuserDateArgs));
+		stop = System.currentTimeMillis();
+		logger.error("FILE_SIZE_500_MB_1_GB " + (stop - start));
+		start = System.currentTimeMillis();
 
 		lower = Long.valueOf(1000000000);
 		upper = new Long("10000000000");
@@ -780,6 +829,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		HpcReportEntry tengbEntry = new HpcReportEntry();
 		tengbEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_1_GB_10_GB);
 		tengbEntry.setValue(getFileSize(criteria, fileSizeArgs, filesizedateArgs, filesizedocArgs, filesizedocDateArgs, filesizeuserArgs, filesizeuserDateArgs));
+		stop = System.currentTimeMillis();
+		logger.error("FILE_SIZE_1_GB_10_GB " + (stop - start));
+		start = System.currentTimeMillis();
 
 		lower = new Long("10000000001");
 		upper = new Long("100000000000000");
@@ -803,6 +855,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		HpcReportEntry overtengbEntry = new HpcReportEntry();
 		overtengbEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_OVER_10_GB);
 		overtengbEntry.setValue(getFileSize(criteria, fileSizeArgs, filesizedateArgs, filesizedocArgs, filesizedocDateArgs, filesizeuserArgs, filesizeuserDateArgs));
+		stop = System.currentTimeMillis();
+		logger.error("FILE_SIZE_OVER_10_GB " + (stop - start));
+		start = System.currentTimeMillis();
 
 		report.setGeneratedOn(Calendar.getInstance());
 		if(criteria.getDocs() != null && criteria.getDocs().size()>0)
