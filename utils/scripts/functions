@@ -804,7 +804,7 @@ function dm_download_async {
     if [ "$code" -ne 200 ]
     then 
       #In this case the destination path file will contain the error code
-      print_error_message "$reponse_msg" "$code"  || exit 1
+      print_error_message "$response_msg" "$code"  || exit 1
     else
       rm $response_hdr 2> /dev/null
     fi
