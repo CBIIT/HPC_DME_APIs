@@ -8,7 +8,7 @@ Common command line utilities to access the API.
 NOTE: If you are using cygwin, please run this command form this directory to
 make sure the Unix test file format is used : 
 
-sed -i "s/\r$//" functions utilities hpcdme.properties-sample
+sed -i "s/\r$//" functions 
 
 I-Make a copy of the following sample configuration files in this directory:
 
