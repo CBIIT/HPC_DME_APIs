@@ -7,7 +7,26 @@
 # Distributed under the OSI-approved BSD 3-Clause License.
 # See http://ncip.github.com/HPC/LICENSE.txt for details.
 #
-# Common utilities
+# Common utilities sourced by every script 
+
+#Make sure the ./hpcdme.properties exists
+
+function file_check_message  {
+
+    file_name="$1"
+    echo "Initializing data management utilities error:" >&2
+    echo "Can not find the file $file_name" >&2 
+    echo "Read: $HPC_DM_UTILS/README.md for more information" >&2
+}
+
+file_name=$HPC_DM_UTILS/hpcdme.properties
+if [ ! -e "$file_name" ]
+then
+    file_check_message  "$file_name"
+    exit 1
+fi
+
+#source $HPC_DM_UTILS/scripts/functions
 
 
 #Return the HTTP code in the response excluding 100
@@ -52,7 +71,7 @@ function get_value {
   then
       echo "ERROR: using get_value" >&2
       echo "USAGE: get_value <input-string-or-file> <attribute>" >&2
-      return 1
+      exit 1
   fi
   INPUT="$1"
   ATTRIBUTE="$2"
@@ -92,7 +111,7 @@ function get_username {
     if [ -z "$USER_NAME" ]
     then 
         echo "ERROR: Can not retrieve username from $PROPERTIES_FILE" >&2
-        return 1
+        exit 1
     fi
     echo $USER_NAME
 }
@@ -107,7 +126,7 @@ function get_globus_endpoint {
     if [ -z "$GLOBUS" ]
     then 
         echo "ERROR: Can not retrieve hpc.default.globus.endpoint  from $PROPERTIES_FILE" >&2
-        return 1
+        exit 1
     fi
     echo $GLOBUS
 }
@@ -122,7 +141,7 @@ function get_globus_user {
     if [ -z "$globus_user" ]
     then 
         echo "ERROR: Can not retrieve hpc.globus.user from $properties_file" >&2
-        return 1
+        exit 1
     fi
     echo $globus_user
 }
@@ -137,7 +156,7 @@ function get_server {
     if [ -z "$SERVER_NAME" ]
     then 
         echo "ERROR: Can not retrieve server from $PROPERTIES_FILE" >&2
-        return 1 
+        exit 1 
     fi
     echo $SERVER_NAME
 }
@@ -152,7 +171,7 @@ function get_jar {
     if [ -z "$JAR_FILE" ]
     then 
         echo "ERROR: Can not retrieve hpc.jar.version from $PROPERTIES_FILE" >&2
-        return 1 
+        exit 1 
     fi
     echo $JAR_FILE
 }
@@ -187,7 +206,7 @@ function check_connection {
     if [ -z "$CONT" ]
     then
         echo "ERROR: THE RESPONSE HEADER FILE $RESPONSE_HEADER IS EMPTY, CHECK CONNECTION" 1>&2
-        exit
+        exit 1
     fi
 }
 
@@ -214,11 +233,11 @@ function verify_registration {
         if [ ! -e "$RESPONSE_MSG" ] 
         then
           echo "Can not find the response message file $RESPONSE_MSG" >&2
-          return 1
+          exit 1
         else
           MESSAGE=$(get_json_value "$RESPONSE_MSG" message)
           echo "ERROR MESSAGE:$MESSAGE" 1>&2
-          return 1
+          exit 1
         fi 
     fi
 }
@@ -236,7 +255,7 @@ function get_json_description {
         echo "ERROR: using get_json_description" >&2
         echo "Received: $@" >&2
         echo "$USAGE" >&2
-        return
+        exit
     fi
 
     ATTRIBUTES="$1"
@@ -256,7 +275,7 @@ function get_file_attributes {
         echo "ERROR: using get_file_attributes" >&2
         echo "Received: $@" >&2
         echo "$USAGE" >&2
-        return
+        exit
     fi
  
     FILE_PATH="$1"
@@ -278,7 +297,7 @@ function list_new_files {
         echo "ERROR: using list_new_files" >&2
         echo "Received: $@" >&2
         echo "$USAGE" >&2
-        return
+        exit
     fi
  
 
@@ -347,7 +366,7 @@ function list_globus_files {
         echo "ERROR: using list_globus_files" >&2
         echo "Received: $@" >&2
         echo "$USAGE" >&2
-        return
+        exit
     fi
 
     #Generate a globus token
@@ -373,21 +392,27 @@ function print_error_message {
         echo "ERROR: using print_error_message" >&2
         echo "recieved $@" 
         echo "$USAGE" >&2
-        return
+        exit 1
     fi
 
     RESPONSE_CODE="$2"
-    
+  
+    if [ -z $RESPONSE_CODE   ]
+    then
+        echo "NO RESPONSE CODE"  >&2
+        exit 1
+    fi
+
     if [ ! -z "$RESPONSE_CODE" ] && [ "$RESPONSE_CODE" -ne 204 ]
     then
       ERROR_MSG=$(get_json_value $1 message) >&2
       echo "ERROR_CODE:$RESPONSE_CODE" >&2
       echo "ERROR_MESSAGE:\"$ERROR_MSG\"" >&2
-      return 1
+      exit 1
     elif [ "$RESPONSE_CODE" -eq 204  ]
     then
-      echo "ERROR_MESSAGE:\"no content\"" >&2
-      return 1
+      echo "ERROR_MESSAGE:\"no content for the specified path\"" >&2
+      exit 1
     fi 
 }
 
@@ -402,14 +427,14 @@ function print_json_message {
         echo "ERROR: using print_json_message" >&2
         echo "recieved $@" 
         echo "$USAGE" >&2
-        return
+        exit
     fi
 
     JSON_MESSAGE="$1"
     if [ ! -e "$JSON_MESSAGE" ]
     then
       echo "ERROR: Can not fin the file:\"$JSON_MESSAGE\"" >&2
-      return 
+      exit 
     fi 
     #Check if python json formatter is present
     echo "{}" | python -m json.tool > /dev/null
@@ -434,7 +459,7 @@ function check_data_object  {
         echo "ERROR: using $0" >&2
         echo "recieved $@" 
         echo "$USAGE" >&2
-        return
+        exit
     fi
 
     DATAOBJECT_PATH="$1"
@@ -446,12 +471,12 @@ function check_data_object  {
     CODE=$(get_http_code $RESPONSE_HEADER) 
     if [ "$CODE" -eq 200 ]
     then
-      return 0
+      exit 0
     elif [ "$CODE" -eq 204 ]
     then 
-      return 1
+      exit 1
     else
-      return 2 
+      exit 2 
     fi 
 }
 
@@ -462,7 +487,8 @@ function get_config {
   if [ ! -f $CONFIG_FILE ]
   then
     echo "Cannot find the configuration file $CONFIG_FILE" >&2 
-    return 1
+    echo "Run dm_generate_token" >&2 
+    exit 1
   fi
   echo "--config $CONFIG_FILE"
   
@@ -474,7 +500,7 @@ function check_java {
   if [ $? -ne 0 ]
   then 
     echo "No java found in PATH" >&2
-    return 1
+    exit 1
   else
     local _java=java
   fi
@@ -483,7 +509,7 @@ function check_java {
     local java_version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
     if [[ "$java_version" < "1.8" ]]; then
       echo "java version is less than 1.8" >&2
-      return 1
+      exit 1
     fi
   fi
 }
@@ -497,3 +523,51 @@ function myreadlink {
   popd > /dev/null
   echo $absolute_path 
 }
+
+#Returns if the path is either a collection or a dataObject or none
+#Argument: <path>
+function get_type  {
+
+    local archive_path="$1"
+    #Make sure the item exists and figure out if it is a collection or a dataobject
+    local get_response_hdr=$HPC_DM_UTILS/temp/get_collection_response_header.tmp
+    local get_response_msg=$HPC_DM_UTILS/temp/get_collection_response_message.json.tmp
+    rm $get_response_hdr 2>/dev/null
+    rm $get_response_msg 2>/dev/null
+    dm_get_item  collection/$archive_path "$get_response_msg" "$get_response_hdr" || exit 1
+    
+    code=$(get_http_code "$get_response_hdr")  || exit 1
+
+    if [ "$code" -eq 200 ]
+    then 
+        rm $get_response_hdr 2>/dev/null
+        rm $get_response_msg 2>/dev/null
+        echo "collection"
+        return 
+    elif [ "$code" -ne 204 ] 
+    then 
+      print_error_message "$get_response_msg" "$code" 
+      exit 1
+    fi
+
+    local get_response_hdr=$HPC_DM_UTILS/temp/get_dataobject_response_header.tmp
+    local get_response_msg=$HPC_DM_UTILS/temp/get_dataobject_response_message.json.tmp
+    rm $get_response_hdr 2>/dev/null
+    rm $get_response_msg 2>/dev/null
+    dm_get_item  dataObject/$archive_path "$get_response_msg" "$get_response_hdr" || exit 1
+    code=$(get_http_code "$get_response_hdr")  || exit 1
+
+    if [ "$code" -eq 200 ]
+    then 
+        echo "dataObject"
+        rm $get_response_hdr 2>/dev/null
+        rm $get_response_msg 2>/dev/null
+        return 
+    elif [ "$code" -ne 204 ] 
+    then 
+      print_error_message "$get_response_msg" "$code" 
+      exit 1
+    fi
+}
+
+
