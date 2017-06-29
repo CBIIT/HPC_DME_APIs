@@ -30,14 +30,14 @@ http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
 
 
   II- Globus configuraton:
-      1- Create a globus shared endpoint (e.g., HPC _DM_TEST) and share it with the system admin. 
-         Review the user guide document to get the system admin account. 
+      1- Create a globus shared endpoint (e.g., HPC _DM_TEST) and share it with the service account. 
+         Review the user guide document to get the service account. 
       2- Add a test.txt empty file to this Globus endpoint:
         "endpoint": "HPC_DM_TEST",
         "path": "/test.txt"
-      3- Add a dice-download empty folder to your shared Globus endpoint
+      3- Add a download empty folder to your shared Globus endpoint
         "endpoint": "HPC_DM_TEST",
-        "path": "/dice-download/"
+        "path": "/download/"
  
 
   III- Server configuration:
@@ -50,10 +50,16 @@ http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
         directory where this README.txt is located.  
         For example, in your ~/.bashrc file add: 
             export HPC_DM_TEST=/path/to/this/README.txt/
-        
-  V- To run test-hpc-client units tests, please follow the setup steps shown in ./test-hpc-client/README.txt 
+       
+  V- Token generation 
+        Before you can run the test, you need to generate an HPC DM API token and a globus token.
+        To generate these two tokens, run:
+        $HPC_DM_TEST/utils/generate-token.sh
+        $HPC_DM_TEST/utils/generate-globus-token.sh
 
-  VI- The user who will run the test should be part of a dummy DOC with the hierarchy specified in the appendix.
+  VI- To run test-hpc-client units tests, please follow the setup steps shown in ./test-hpc-client/README.txt 
+
+  VII- The user who will run the test should be part of a dummy DOC with the hierarchy specified in the appendix.
 
 -Execution:
   Every leaf directory includes two scripts: makeme and runme.
