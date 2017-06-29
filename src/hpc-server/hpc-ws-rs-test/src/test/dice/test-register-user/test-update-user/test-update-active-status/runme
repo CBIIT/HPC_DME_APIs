@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# makeme 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+
+#import common functions
+source ../utils/functions
+
+#Run common script
+$HPC_DM_TEST/utils/runtest
+
+update_user
+
+RESPONSE_CODE=`get_http_code $RESPONSE_HEADER`
+echo $RESPONSE_CODE 
+
+
+#Verify the user is inactive 
+USER_ID=$(cat new-user-id.tmp)
+RESPONSE_HEADER=search-active-users-response-header.tmp
+RESPONSE_MSG=search-active-users-response-message.json.tmp
+
+search_users -u$USER_ID
+get_http_code $RESPONSE_HEADER
+
+search_users -u$USER_ID -a 
+RESPONSE_HEADER=search-all-users-response-header.tmp
+RESPONSE_MSG=search-all-users-response-message.json.tmp
+get_http_code $RESPONSE_HEADER
+EXIST_UID=$(grep "$USER_ID" $RESPONSE_MSG)
+
+if [ -z "$EXIST_UID" ] 
+then
+    echo "ERROR: $USER_ID is not part of all users" >&2
+fi
+
