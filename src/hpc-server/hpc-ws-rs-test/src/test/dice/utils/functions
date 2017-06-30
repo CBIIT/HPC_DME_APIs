@@ -2191,4 +2191,21 @@ function get_bookmarks {
     check_connection $RESPONSE_HEADER
 }
 
+function convert_date_to_seconds  {
+
+    usage="convert_date_to_seconds month-day-year hour:minute:seconds"
+    if [ $# -ne 1 ]
+    then
+        echo "$usage" >&2
+        exit 1
+    fi
+
+    x="$1"
+    month=${x:0:2}
+    day=${x:3:2}
+    year=${x:6:4}
+    time=${x:11:9}
+    new_string="$year-$month-$day $time"
+    date --date="$new_string" +%s
+}
 
