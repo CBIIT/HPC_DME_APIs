@@ -619,10 +619,14 @@ function create_new_user {
     sleep 1
     SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
     NEW_USER_ID=testid-$SUFFIX
-    UPDATED_FIRST=`cat $REGISTRATION_TEMPLATE | sed "s/testfirst/testfirst-$SUFFIX/"`
-    UPDATED_LAST=`echo "$UPDATED_FIRST" | sed "s/testlast/testlast-$SUFFIX/"`
+    NEW_FIRST_NAME=testfirst-$SUFFIX
+    NEW_LAST_NAME=testlast-$SUFFIX
+    UPDATED_FIRST=`cat $REGISTRATION_TEMPLATE | sed "s/testfirst/$NEW_FIRST_NAME/"`
+    UPDATED_LAST=`echo "$UPDATED_FIRST" | sed "s/testlast/$NEW_LAST_NAME/"`
     echo "$UPDATED_LAST" > register-user.json.tmp
     echo "$NEW_USER_ID" > new-user-id.tmp 
+    echo "$NEW_FIRST_NAME" > new-first-name.tmp 
+    echo "$NEW_LAST_NAME" > new-last-name.tmp 
     
     RESPONSE_HEADER=user-registration-response-header.tmp
     RESPONSE_MSG=user-registration-response-message.json.tmp
@@ -710,31 +714,31 @@ function search_users {
             subset=all
             ;;
         u)
-            if [ -z "$search_args" ]
-            then
-                search_args="?nciUserId=$OPTARG" 
-            else    
-                search_args=${search_args}\&nciUserId=$OPTARG 
-            fi 
-            #search_args="$search_args --data \"nciUserId=$OPTARG\"" 
+#            if [ -z "$search_args" ]
+#            then
+#                search_args="?nciUserId=$OPTARG" 
+#            else    
+#                search_args=${search_args}\&nciUserId=$OPTARG 
+#            fi 
+            search_args="$search_args --data-urlencode nciUserId=$OPTARG" 
             ;;
         f)
-            if [ -z "$search_args" ]
-            then
-                search_args="?firstName=$OPTARG" 
-            else    
-                search_args=${search_args}\&firstName=$OPTARG 
-            fi 
-            #search_args="$search_args --data \"firstName=$OPTARG\"" 
+#            if [ -z "$search_args" ]
+#            then
+#                search_args="?firstNamePattern=$OPTARG" 
+#            else    
+#                search_args=${search_args}\&firstNamePattern=$OPTARG 
+#            fi 
+            search_args="$search_args --data-urlencode firstNamePattern=$OPTARG" 
             ;;
         l)
-            if [ -z "$search_args" ]
-            then
-                search_args="?lastName=$OPTARG" 
-            else    
-                search_args=${search_args}\&lastName=$OPTARG 
-            fi 
-            #search_args="$search_args --data \"lastName=$OPTARG\"" 
+#            if [ -z "$search_args" ]
+#            then
+#                search_args="?lastNamePattern=$OPTARG" 
+#            else    
+#                search_args=${search_args}\&lastNamePattern=$OPTARG 
+#            fi 
+            search_args="$search_args --data-urlencode lastNamePattern=$OPTARG" 
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -754,7 +758,7 @@ function search_users {
     config=$(get_curl_config) 
     SERVER=`cat $HPC_DM_TEST/utils/server`
    
-    curl  -X GET ${SERVER}/user/$subset/$search_args  $config -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> curl-status
+    curl  -G ${SERVER}/user/$subset $search_args  $config -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> curl-status
     check_connection $response_hdr
 }
 
