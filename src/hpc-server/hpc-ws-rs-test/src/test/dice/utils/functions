@@ -714,30 +714,12 @@ function search_users {
             subset=all
             ;;
         u)
-#            if [ -z "$search_args" ]
-#            then
-#                search_args="?nciUserId=$OPTARG" 
-#            else    
-#                search_args=${search_args}\&nciUserId=$OPTARG 
-#            fi 
             search_args="$search_args --data-urlencode nciUserId=$OPTARG" 
             ;;
         f)
-#            if [ -z "$search_args" ]
-#            then
-#                search_args="?firstNamePattern=$OPTARG" 
-#            else    
-#                search_args=${search_args}\&firstNamePattern=$OPTARG 
-#            fi 
             search_args="$search_args --data-urlencode firstNamePattern=$OPTARG" 
             ;;
         l)
-#            if [ -z "$search_args" ]
-#            then
-#                search_args="?lastNamePattern=$OPTARG" 
-#            else    
-#                search_args=${search_args}\&lastNamePattern=$OPTARG 
-#            fi 
             search_args="$search_args --data-urlencode lastNamePattern=$OPTARG" 
             ;;
         \?)
@@ -763,8 +745,26 @@ function search_users {
 }
 
 
+#Search groups
+#Inputs:     
+#       [search criteria]
+function search_groups {
 
+    usage="USAGE: search_groups  [search_criteria]"
+    search_args=
+    if [ ! -z "$1" ]
+    then
+        search_args="--data-urlencode groupPattern=$1"
+    fi
 
+    response_hdr="search-groups-response-header.tmp"
+    response_msg="search-groups-response-message.json.tmp"
+    config=$(get_curl_config) 
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+   
+    curl  -G ${SERVER}/group $search_args  $config -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> curl-status
+    check_connection $response_hdr
+}
 
 
 #Update an existing  group
