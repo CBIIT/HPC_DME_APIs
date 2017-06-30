@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+../utils/runtest
+
+#Check if collection registration went through:
+verify_registration collection-registration-response-header.tmp
+
+SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username $HPC_DM_TEST/utils/config`
+PROJECT_PATH=`cat registered-project-path.tmp`
+DATAOBJECT_PATH="${PROJECT_PATH}/object-${SUFFIX}.txt"
+
+response_hdr=dataObject-registration-response-header.tmp
+response_msg=dataObject-registration-response-message.json.tmp
+#Register the dataObject 
+curl_register input.json  "$DATAOBJECT_PATH" dataObject 
+
+mv $response_hdr original-registration-response-header.tmp
+mv $response_msg original-registration-response-message.json.tmp 2>/dev/null
+
+#Update the registered dataObject
+curl_register updated-input.json  "$DATAOBJECT_PATH" dataObject 
+
+mv $response_hdr first-update-response-header.tmp
+mv $response_msg first-update-response-message.json.tmp 2>/dev/null
+
+
+#Get the registered dataObject by path
+get_response_hdr=first-get-response-header.tmp
+get_response_msg=first-get-response-message.json.tmp
+get_item "dataObject/${DATAOBJECT_PATH}" "$get_response_hdr" "$get_response_msg"
+
+ATTRIBUTE="\"metadata_updated\""
+#VALUE=`cat value.tmp`
+
+#Make sure the response does include the object
+RESPONSE_GROUPS=`cat $get_response_msg | tr "{" "\n"`
+OBJECT_GROUPS=`echo "$RESPONSE_GROUPS" | grep "$ATTRIBUTE"`
+UPDATED_VALUE1=`get_json_value "$OBJECT_GROUPS" "value"`
+time1=$(convert_date_to_seconds "$UPDATED_VALUE1")
+
+
+#update metadata again
+sleep 1
+response_hdr=dataObject-registration-response-header.tmp
+response_msg=dataObject-registration-response-message.json.tmp
+curl_register updated-input.json  "$DATAOBJECT_PATH" dataObject 
+mv $response_hdr second-update-response-header.tmp
+mv $response_msg second-update-response-message.json.tmp 2>/dev/null
+
+#Get the updated dataObject
+get_response_hdr=second-get-response-header.tmp
+get_response_msg=second-get-response-message.json.tmp
+get_item "dataObject/${DATAOBJECT_PATH}" "$get_response_hdr" "$get_response_msg"
+
+ATTRIBUTE="\"metadata_updated\""
+#VALUE=`cat value.tmp`
+
+#Make sure the response does include the object
+RESPONSE_GROUPS=`cat $get_response_msg | tr "{" "\n"`
+OBJECT_GROUPS=`echo "$RESPONSE_GROUPS" | grep "$ATTRIBUTE"`
+UPDATED_VALUE2=`get_json_value "$OBJECT_GROUPS" "value"`
+time2=$(convert_date_to_seconds "$UPDATED_VALUE2")
+
+
+if [ "$time2" -le "$time1" ]
+then
+    echo "ERROR the second update time stamp $UPDATED_VALUE2 is not greater than the first update $UPDATED_VALUE1" >&2
+fi
