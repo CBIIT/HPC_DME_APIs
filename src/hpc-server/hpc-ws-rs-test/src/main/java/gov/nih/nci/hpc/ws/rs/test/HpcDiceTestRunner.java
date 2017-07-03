@@ -87,6 +87,51 @@ public class HpcDiceTestRunner
     	try {
     		 System.out.println("Running bookmarks test...");
     	     reportBuilder.append(runTest("Bookmarks", "test-bookmarks"));
+    	     
+    		 System.out.println("Running connection test...");
+    	     reportBuilder.append(runTest("Connection", "test-connection"));
+    	     
+    		 System.out.println("Running delete test...");
+    	     reportBuilder.append(runTest("Delete", "test-delete"));
+    	     
+    		 System.out.println("Running disable-authentication test...");
+    	     reportBuilder.append(runTest("Disable Authentication", "test-disable-authentication"));
+    	     
+    		 System.out.println("Running download-data-file test...");
+    	     reportBuilder.append(runTest("Download Data File", "test-download-data-file"));
+    	     
+    		 System.out.println("Running hpc-authentication test...");
+    	     reportBuilder.append(runTest("Authentication", "test-hpc-authentication"));
+    	     
+    		 System.out.println("Running miscellaneous test...");
+    	     reportBuilder.append(runTest("Miscellaneous", "test-miscellaneous"));
+    	     
+    		 System.out.println("Running named-queries test...");
+    	     reportBuilder.append(runTest("Named Queries", "test-named-queries"));
+    	     
+    		 System.out.println("Running notifications test...");
+    	     reportBuilder.append(runTest("Notifications", "test-notifications"));
+    	     
+    		 System.out.println("Running permission test...");
+    	     reportBuilder.append(runTest("Permission", "test-permission"));
+    	     
+    		 System.out.println("Running query test...");
+    	     reportBuilder.append(runTest("Query", "test-query"));
+    	     
+    		 System.out.println("Running register test...");
+    	     reportBuilder.append(runTest("Register", "test-register"));
+    	     
+       		 System.out.println("Running register-user test...");
+    	     reportBuilder.append(runTest("Register User", "test-register-user"));
+    	     
+       		 System.out.println("Running search-group test...");
+    	     reportBuilder.append(runTest("Search Group", "test-search-group"));
+    	     
+       		 System.out.println("Running search-user test...");
+    	     reportBuilder.append(runTest("Search User", "test-search-user"));
+    	     
+       		 System.out.println("Running user-groups test...");
+    	     reportBuilder.append(runTest("User Groups", "test-user-groups"));
 		
 		     FileUtils.writeStringToFile(reportFile, reportBuilder.toString(), Charset.defaultCharset());
 		     
