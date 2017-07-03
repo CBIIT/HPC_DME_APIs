@@ -15,7 +15,6 @@ source $HPC_DM_TEST/utils/functions
 
 #Check if the collection and the dataObject registration functions called in makeme were successful.
 
-set -e
 
 USER_ID=dice_user
 NEW_GROUP_ID=$(cat new-group-id.tmp)
@@ -41,10 +40,17 @@ mv $RESPONSE_MSG first-$RESPONSE_MSG
 RESPONSE_HEADER=query-response-header.tmp
 RESPONSE_MSG=query-response-message.json.tmp
 query_by_metadata collection input.json $USER_ID  
-exists=$(grep $REPONSE_MSG $PROJECT_PATH) 
-if [ -z $exists  ]
+response_code=$(get_http_code $RESPONSE_HEADER)
+if [  "$response_code" -eq 200 ]
 then
-    echo  "ERROR: can not find $PROJECT_PATH in $RESPONSE_MSG after granting permission"
+    exists=$(grep  $(basename $PROJECT_PATH) $RESPONSE_MSG) 
+    if [ -z $exists  ]
+    then
+        echo  "ERROR: can not find $PROJECT_PATH in $RESPONSE_MSG after granting permission"
+        exit 1
+    fi
+else
+    echo "$USER_ID can not search for $PROJECT_PATH" >&2
     exit 1
 fi
 
@@ -62,7 +68,6 @@ refresh_views
 
 #Try to get the project. Should fail
 ACTING_USER=$USER_ID
-echo $PROJECT_PATH 
 get_item collection/$PROJECT_PATH $RESPONSE_HEADER $RESPONSE_MSG $USER_ID 
 get_http_code $RESPONSE_HEADER
 
@@ -70,11 +75,15 @@ get_http_code $RESPONSE_HEADER
 RESPONSE_HEADER=false-query-response-header.tmp
 RESPONSE_MSG=false-query-response-message.json.tmp
 query_by_metadata collection input.json $USER_ID  
-exists=$(grep $REPONSE_MSG $PROJECT_PATH) 
-if [ ! -z $exists  ]
+response_code=$(get_http_code $RESPONSE_HEADER)
+if [ "$response_code" -eq 200 ]
 then
-    echo  "ERROR: I can find $PROJECT_PATH in $RESPONSE_MSG after removing permission"
-    exit 1
+    exists=$(grep $(basename $PROJECT_PATH) $RESPONSE_MSG ) 
+    if [ ! -z $exists  ]
+    then
+        echo  "ERROR: I can find $PROJECT_PATH in $RESPONSE_MSG after removing permission"
+        exit 1
+    fi
 fi
 
 #ATTRIBUTE="\"name\""
