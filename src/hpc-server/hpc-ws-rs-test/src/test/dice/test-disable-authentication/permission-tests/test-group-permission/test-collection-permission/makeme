@@ -30,5 +30,3 @@ NEW_GROUP_ID=$(cat new-group-id.tmp)
 
 #Give READ permission to the new-group
 update_group_permission collection/$PROJECT_PATH $NEW_GROUP_ID  READ
-
-
