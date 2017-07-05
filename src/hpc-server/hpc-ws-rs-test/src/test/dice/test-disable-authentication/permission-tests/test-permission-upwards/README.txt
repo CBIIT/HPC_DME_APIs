@@ -14,5 +14,4 @@
 ******************************/
 
 Register a parent collection, then a child collection. Give Read permission to
-dice_user for the child collection and make sure it does not get the parent
-collection metadata.
+dice_user for the child collection and make sure it gets the parent collection metadata.
