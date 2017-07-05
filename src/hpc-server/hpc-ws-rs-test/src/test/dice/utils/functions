@@ -789,7 +789,8 @@ function update_group {
     RESPONSE_MSG="$4"
 
     SERVER=`cat $HPC_DM_TEST/utils/server`
-    curl -H "Content-Type: application/json" -d @"$INPUT_FILE" -X POST ${SERVER}/group/$GROUP_NAME  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
+    CONFIG=$(get_curl_config)
+    curl -H "Content-Type: application/json" -d @"$INPUT_FILE" -X POST ${SERVER}/group/$GROUP_NAME  $(get_curl_config)  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
     check_connection $RESPONSE_HEADER
 
 }
@@ -1911,7 +1912,7 @@ function refresh_views {
     SERVER=`cat $HPC_DM_TEST/utils/server`
     RESPONSE_HEADER=refresh-views-response-header.tmp
     RESPONSE_MSG=refresh-views-response-message.json.tmp
-    curl -X POST ${SERVER}/refreshMetadataViews  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -X POST ${SERVER}/refreshMetadataViews  $(get_curl_config)  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     check_connection $RESPONSE_HEADER
 }
 
