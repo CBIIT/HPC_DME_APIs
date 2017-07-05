@@ -13,5 +13,4 @@
 @ddblock_end copyright
 ******************************/
 
-Register users and groups using group admin 
-Currently this can not take place as the group admin can not work through the iRODS API.
+Register a new user using as group admin account.
