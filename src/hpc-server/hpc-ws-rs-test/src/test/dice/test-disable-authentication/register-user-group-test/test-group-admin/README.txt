@@ -13,4 +13,4 @@
 @ddblock_end copyright
 ******************************/
 
-Register a new user using a group admin account.
+Register users and groups using group admin 
