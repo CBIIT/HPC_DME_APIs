@@ -84,58 +84,72 @@ public class HpcDiceTestRunner
     	// Run the tests.
     	try {
     		 System.out.println("Running bookmarks test...");
-    	     reportBuilder.append(runTest("Bookmarks", "test-bookmarks", testScriptBaseDir));
+    		 FileUtils.writeStringToFile(reportFile, runTest("Bookmarks", "test-bookmarks", testScriptBaseDir), 
+    				                     Charset.defaultCharset(), true);
     	     
     		 System.out.println("Running connection test...");
-    	     reportBuilder.append(runTest("Connection", "test-connection", testScriptBaseDir));
-    	     
+    		 FileUtils.writeStringToFile(reportFile, runTest("Connection", "test-connection", testScriptBaseDir), 
+    				                     Charset.defaultCharset(), true);
+
     		 System.out.println("Running delete test...");
-    	     reportBuilder.append(runTest("Delete", "test-delete", testScriptBaseDir));
+    		 FileUtils.writeStringToFile(reportFile, runTest("Delete", "test-delete", testScriptBaseDir), 
+    				                     Charset.defaultCharset(), true);
     	     
     		 System.out.println("Running disable-authentication test...");
-    	     reportBuilder.append(runTest("Disable Authentication", "test-disable-authentication",
-    	    		                      testScriptBaseDir));
+    		 FileUtils.writeStringToFile(reportFile, runTest("Disable Authentication", "test-disable-authentication",
+                                                             testScriptBaseDir), 
+    				                     Charset.defaultCharset(), true);
     	     
     		 System.out.println("Running download-data-file test...");
-    	     reportBuilder.append(runTest("Download Data File", "test-download-data-file", 
-    	    		                      testScriptBaseDir));
+    		 FileUtils.writeStringToFile(reportFile, runTest("Download Data File", "test-download-data-file", 
+                                                             testScriptBaseDir), 
+    				                     Charset.defaultCharset(), true);
     	     
     		 System.out.println("Running hpc-authentication test...");
-    	     reportBuilder.append(runTest("Authentication", "test-hpc-authentication", 
-    	    		                      testScriptBaseDir));
+    		 FileUtils.writeStringToFile(reportFile, runTest("Authentication", "test-hpc-authentication", 
+                                                             testScriptBaseDir), 
+    				                     Charset.defaultCharset(), true);
     	     
     		 System.out.println("Running miscellaneous test...");
-    	     reportBuilder.append(runTest("Miscellaneous", "test-miscellaneous", testScriptBaseDir));
+    		 FileUtils.writeStringToFile(reportFile, runTest("Miscellaneous", "test-miscellaneous", testScriptBaseDir), 
+    				                     Charset.defaultCharset(), true);
     	     
     		 System.out.println("Running named-queries test...");
-    	     reportBuilder.append(runTest("Named Queries", "test-named-queries", testScriptBaseDir));
+    		 FileUtils.writeStringToFile(reportFile, runTest("Named Queries", "test-named-queries", testScriptBaseDir), 
+    				                     Charset.defaultCharset(), true);
     	     
     		 System.out.println("Running notifications test...");
-    	     reportBuilder.append(runTest("Notifications", "test-notifications", testScriptBaseDir));
+    		 FileUtils.writeStringToFile(reportFile, runTest("Notifications", "test-notifications", testScriptBaseDir), 
+    				                     Charset.defaultCharset(), true);
     	     
     		 System.out.println("Running permission test...");
-    	     reportBuilder.append(runTest("Permission", "test-permission", testScriptBaseDir));
+    		 FileUtils.writeStringToFile(reportFile, runTest("Permission", "test-permission", testScriptBaseDir), 
+    				                     Charset.defaultCharset(), true);
     	     
     		 System.out.println("Running query test...");
-    	     reportBuilder.append(runTest("Query", "test-query", testScriptBaseDir));
+    		 FileUtils.writeStringToFile(reportFile, runTest("Query", "test-query", testScriptBaseDir), 
+    				                     Charset.defaultCharset(), true);
     	     
     		 System.out.println("Running register test...");
-    	     reportBuilder.append(runTest("Register", "test-register", testScriptBaseDir));
+    		 FileUtils.writeStringToFile(reportFile, runTest("Register", "test-register", testScriptBaseDir), 
+    				                     Charset.defaultCharset(), true);
     	     
        		 System.out.println("Running register-user test...");
-    	     reportBuilder.append(runTest("Register User", "test-register-user", testScriptBaseDir));
+       		 FileUtils.writeStringToFile(reportFile, runTest("Register User", "test-register-user", testScriptBaseDir), 
+       				                     Charset.defaultCharset(), true);
     	     
        		 System.out.println("Running search-group test...");
-    	     reportBuilder.append(runTest("Search Group", "test-search-group", testScriptBaseDir));
+       		 FileUtils.writeStringToFile(reportFile, runTest("Search Group", "test-search-group", testScriptBaseDir), 
+       				                     Charset.defaultCharset(), true);
     	     
        		 System.out.println("Running search-user test...");
-    	     reportBuilder.append(runTest("Search User", "test-search-user", testScriptBaseDir));
+       		 FileUtils.writeStringToFile(reportFile, runTest("Search User", "test-search-user", testScriptBaseDir), 
+       				                     Charset.defaultCharset(), true);
     	     
        		 System.out.println("Running user-groups test...");
-    	     reportBuilder.append(runTest("User Groups", "test-user-groups", testScriptBaseDir));
+       		 FileUtils.writeStringToFile(reportFile, runTest("User Groups", "test-user-groups", testScriptBaseDir), 
+       				                     Charset.defaultCharset(), true);
 		
-		     FileUtils.writeStringToFile(reportFile, reportBuilder.toString(), Charset.defaultCharset());
-		     
 		} catch(Exception e) {
 			    System.err.println("Failed to run automated test" + e.getMessage());
 		}
