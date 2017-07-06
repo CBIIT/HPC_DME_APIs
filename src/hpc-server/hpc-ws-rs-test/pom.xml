@@ -52,9 +52,6 @@
 				<version>1.6.0</version>
 				<configuration>
 					<mainClass>gov.nih.nci.hpc.ws.rs.test.HpcDiceTestRunner</mainClass>
-					<arguments>
-            			<argument>${basedir}/src/test/dice</argument>
-          			</arguments>
 				</configuration>
 			</plugin>
 		</plugins>
