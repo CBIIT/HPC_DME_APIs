@@ -45,9 +45,6 @@ public class HpcDiceTestRunner
 	// Date formatter to format report run time.
 	static private DateFormat runDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
 	
-	// The test script base dir.
-	static private String testBaseDir = null;
-	
     //---------------------------------------------------------------------//
     // constructors
     //---------------------------------------------------------------------//
@@ -66,17 +63,18 @@ public class HpcDiceTestRunner
     
     public static void main(String [] args)
 	{
-    	if(args.length != 1) {
-    	   System.err.println("Test scripts base directory not provided");
+    	if(args.length != 2) {
+    	   System.err.println("Usage: mvn exec:java -Dexec.arg\"<dice-test-scripts-home-dir> <reports-dir>\"");
     	   System.exit(1);
     	}
     	
     	// Keep the scripts base directory.
-    	testBaseDir = args[0];
+    	String testScriptBaseDir = args[0];
+    	String testReportBaseDir = args[1];
     	
     	// Create a report file.
     	Date runDate = Calendar.getInstance().getTime();
-    	File reportFile = new File("AutoTestReport." + tsDateFormat.format(runDate) + ".html");
+    	File reportFile = new File(testReportBaseDir + "/AutoTestReport." + tsDateFormat.format(runDate) + ".html");
     	
     	// Build the report header and table.
     	StringBuilder reportBuilder = new StringBuilder();
@@ -86,52 +84,55 @@ public class HpcDiceTestRunner
     	// Run the tests.
     	try {
     		 System.out.println("Running bookmarks test...");
-    	     reportBuilder.append(runTest("Bookmarks", "test-bookmarks"));
+    	     reportBuilder.append(runTest("Bookmarks", "test-bookmarks", testScriptBaseDir));
     	     
     		 System.out.println("Running connection test...");
-    	     reportBuilder.append(runTest("Connection", "test-connection"));
+    	     reportBuilder.append(runTest("Connection", "test-connection", testScriptBaseDir));
     	     
     		 System.out.println("Running delete test...");
-    	     reportBuilder.append(runTest("Delete", "test-delete"));
+    	     reportBuilder.append(runTest("Delete", "test-delete", testScriptBaseDir));
     	     
     		 System.out.println("Running disable-authentication test...");
-    	     reportBuilder.append(runTest("Disable Authentication", "test-disable-authentication"));
+    	     reportBuilder.append(runTest("Disable Authentication", "test-disable-authentication",
+    	    		                      testScriptBaseDir));
     	     
     		 System.out.println("Running download-data-file test...");
-    	     reportBuilder.append(runTest("Download Data File", "test-download-data-file"));
+    	     reportBuilder.append(runTest("Download Data File", "test-download-data-file", 
+    	    		                      testScriptBaseDir));
     	     
     		 System.out.println("Running hpc-authentication test...");
-    	     reportBuilder.append(runTest("Authentication", "test-hpc-authentication"));
+    	     reportBuilder.append(runTest("Authentication", "test-hpc-authentication", 
+    	    		                      testScriptBaseDir));
     	     
     		 System.out.println("Running miscellaneous test...");
-    	     reportBuilder.append(runTest("Miscellaneous", "test-miscellaneous"));
+    	     reportBuilder.append(runTest("Miscellaneous", "test-miscellaneous", testScriptBaseDir));
     	     
     		 System.out.println("Running named-queries test...");
-    	     reportBuilder.append(runTest("Named Queries", "test-named-queries"));
+    	     reportBuilder.append(runTest("Named Queries", "test-named-queries", testScriptBaseDir));
     	     
     		 System.out.println("Running notifications test...");
-    	     reportBuilder.append(runTest("Notifications", "test-notifications"));
+    	     reportBuilder.append(runTest("Notifications", "test-notifications", testScriptBaseDir));
     	     
     		 System.out.println("Running permission test...");
-    	     reportBuilder.append(runTest("Permission", "test-permission"));
+    	     reportBuilder.append(runTest("Permission", "test-permission", testScriptBaseDir));
     	     
     		 System.out.println("Running query test...");
-    	     reportBuilder.append(runTest("Query", "test-query"));
+    	     reportBuilder.append(runTest("Query", "test-query", testScriptBaseDir));
     	     
     		 System.out.println("Running register test...");
-    	     reportBuilder.append(runTest("Register", "test-register"));
+    	     reportBuilder.append(runTest("Register", "test-register", testScriptBaseDir));
     	     
        		 System.out.println("Running register-user test...");
-    	     reportBuilder.append(runTest("Register User", "test-register-user"));
+    	     reportBuilder.append(runTest("Register User", "test-register-user", testScriptBaseDir));
     	     
        		 System.out.println("Running search-group test...");
-    	     reportBuilder.append(runTest("Search Group", "test-search-group"));
+    	     reportBuilder.append(runTest("Search Group", "test-search-group", testScriptBaseDir));
     	     
        		 System.out.println("Running search-user test...");
-    	     reportBuilder.append(runTest("Search User", "test-search-user"));
+    	     reportBuilder.append(runTest("Search User", "test-search-user", testScriptBaseDir));
     	     
        		 System.out.println("Running user-groups test...");
-    	     reportBuilder.append(runTest("User Groups", "test-user-groups"));
+    	     reportBuilder.append(runTest("User Groups", "test-user-groups", testScriptBaseDir));
 		
 		     FileUtils.writeStringToFile(reportFile, reportBuilder.toString(), Charset.defaultCharset());
 		     
@@ -140,9 +141,11 @@ public class HpcDiceTestRunner
 		}
 	}
     
-    private static String runTest(String testName, String testScript) throws Exception
+    private static String runTest(String testName, String testScript, 
+    		                      String testScriptBaseDir) 
+    		                     throws Exception
     {
-    	File scriptDirectory = new File(testBaseDir + "/" + testScript);
+    	File scriptDirectory = new File(testScriptBaseDir + "/" + testScript);
     	if(!scriptDirectory.isDirectory()) {
     	   throw new IOException("Directory doesn't exist: " + scriptDirectory);
     	}
@@ -151,7 +154,7 @@ public class HpcDiceTestRunner
     	process.waitFor();
     	
     	// Parse the summary test file.
-    	File testSummaryFile = new File(testBaseDir + "/" + testScript + "/autotest-output/test_summary.txt");
+    	File testSummaryFile = new File(testScriptBaseDir + "/" + testScript + "/autotest-output/test_summary.txt");
     	List<String> linesList = FileUtils.readLines(testSummaryFile, Charset.defaultCharset());
     	String[] linesArray = new String[linesList.size()];
         linesArray = linesList.toArray(linesArray);
@@ -193,13 +196,27 @@ public class HpcDiceTestRunner
     	   testResultsBuilder.append("<table border=\"1\">");
     	   testResultsBuilder.append("<thead>");
     	   testResultsBuilder.append("<tr style=\"text-align: center;\">");
-    	   testResultsBuilder.append("<td>Failures</td>");
+    	   testResultsBuilder.append("<td>Failed Test</td>");
+    	   testResultsBuilder.append("<td>Actual Output</td>");
+    	   testResultsBuilder.append("<td>Correct Output</td>");
     	   testResultsBuilder.append("</tr>");
     	   testResultsBuilder.append("</thead>");
     	   testResultsBuilder.append("<tbody>");
     	   for(int i = failuresStartIndex; i <= failuresLastIndex; i++) {
+    		   String testCaseAbsolutePath = linesArray[i];
+    		   String testCase = testCaseAbsolutePath.substring(testCaseAbsolutePath.lastIndexOf('/') + 1, 
+    				                                            testCaseAbsolutePath.length());
+    		   File actualOutputFile = new File(testCaseAbsolutePath + "/autotest-output/output.txt");
+    		   File correctOutputFile = new File(testCaseAbsolutePath + "/correct-output.txt");
+    				   
     	       testResultsBuilder.append("<tr>");    	
-    	       testResultsBuilder.append("<td>" + linesArray[i] + "</td>");
+    	       testResultsBuilder.append("<td>" + testCase + "</td>");
+    	       testResultsBuilder.append("<td>" + FileUtils.readFileToString(actualOutputFile, 
+    	    		                                                         Charset.defaultCharset()) + 
+    	    		                     "</td>");
+    	       testResultsBuilder.append("<td>" + FileUtils.readFileToString(correctOutputFile, 
+                                                                             Charset.defaultCharset()) +
+    	    		                     "</td>");
     	       testResultsBuilder.append("</tr>");
     	   }
     	   testResultsBuilder.append("</tbody>");
@@ -213,13 +230,27 @@ public class HpcDiceTestRunner
     	   testResultsBuilder.append("<table border=\"1\">");
     	   testResultsBuilder.append("<thead>");
     	   testResultsBuilder.append("<tr style=\"text-align: center;\">");
-    	   testResultsBuilder.append("<td>Error Mismatch</td>");
+    	   testResultsBuilder.append("<td>Error Mismatch Test</td>");
+    	   testResultsBuilder.append("<td>Actual Error</td>");
+    	   testResultsBuilder.append("<td>Expected Error</td>");
     	   testResultsBuilder.append("</tr>");
     	   testResultsBuilder.append("</thead>");
      	   testResultsBuilder.append("<tbody>");
      	   for(int i = errorMismatchStartIndex; i <= errorMismatchLastIndex; i++) {
+    		   String testCaseAbsolutePath = linesArray[i];
+    		   String testCase = testCaseAbsolutePath.substring(testCaseAbsolutePath.lastIndexOf('/') + 1, 
+    				                                            testCaseAbsolutePath.length());
+    		   File actualErrorFile = new File(testCaseAbsolutePath + "/autotest-output/error_output.txt");
+    		   File expectedErrorFile = new File(testCaseAbsolutePath + "/expected-errors.txt");
+    				   
     	       testResultsBuilder.append("<tr>");    	
-    	       testResultsBuilder.append("<td>" + linesArray[i] + "</td>");
+    	       testResultsBuilder.append("<td>" + testCase + "</td>");
+    	       testResultsBuilder.append("<td>" + FileUtils.readFileToString(actualErrorFile, 
+    	    		                                                         Charset.defaultCharset()) + 
+    	    		                     "</td>");
+    	       testResultsBuilder.append("<td>" + FileUtils.readFileToString(expectedErrorFile, 
+                                                                             Charset.defaultCharset()) +
+    	    		                     "</td>");
     	       testResultsBuilder.append("</tr>");
      	   }
     	   testResultsBuilder.append("</tbody>");
