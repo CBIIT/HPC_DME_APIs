@@ -48,418 +48,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
                "Sample", 
                "Folder"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
-         },
-         {  
-            "attribute":"collection_type",
-            "mandatory":true,
-            "validValues":[  
-               "Project",
-               "Dataset",
-               "Run",
-               "Folder"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"name",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Project"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"description",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Project"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"project_type",
-            "mandatory":true,
-            "defaultValue":"Unspecified",
-            "collectionTypes":[  
-               "Project"
-            ],
-            "validValues":[  
-               "Unspecified",
-               "Umbrella Project",
-               "Sequencing",
-               "Analysis"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"internal_project_id",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Project"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"source_lab_pi",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Project"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"lab_branch",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Project"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"pi_doc",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Project"
-            ],
-            "validValues":[  
-               "FNLCR",
-               "DUMMY",
-               "CCBR"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"original_date_created",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Project"
-            ],
-            "defaultValue":"System-Date",
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"name",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"description",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"source_lab_pi",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Project"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"lab_branch",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Project"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"pi_doc",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Project"
-            ],
-            "validValues":[  
-               "FNLCR",
-               "DUMMY",
-               "CCBR"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"original_date_created",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Project"
-            ],
-            "defaultValue":"System-Date",
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"phi_content",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "PHI Present",
-               "PHI Not Present",
-               "Not Specified"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"pii_content",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "PII Present",
-               "PII Not Present",
-               "Not Specified"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"data_encryption_status",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "Encrypted",
-               "Not Encrypted",
-               "Not Specified"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"data_compression_status",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "Compressed",
-               "Not Compressed",
-               "Not Specified"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"funding_organization",
-            "mandatory":false,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"flow_cell_id",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"run_id",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"run_date",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"sequencing_platform",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "Illumina-MiSeq",
-               "Illumina-NextSeq",
-               "Illumina-HiSeq",
-               "Illumina-HiSeq X",
-               "Ion-PGM",
-               "Ion-Proton",
-               "PacBio-PacBio RS"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"sequencing_application_type",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "DNA-Seq (Re-Sequencing)",
-               "DNA-Seq (De novo assembly)",
-               "SNP Analysis / Rearrangement Detection",
-               "Exome",
-               "ChiP-Seq"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"library_id",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"library_name",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "TruSeq ChIP-Seq",
-               "Illumina TrueSeq"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"library_type",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "TruSeq ChIP-Seq",
-               "Illumina TrueSeq"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"library_protocol",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "TruSeq ChIP-Seq",
-               "Illumina TrueSeq"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"pi_name",
@@ -467,21 +56,15 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "PI_Lab"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
-            "attribute":"project_id_CSAS",
+            "attribute":"project_id_CSAS_NAS",
             "mandatory":true,
             "collectionTypes":[  
                "Project"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"project_name",
@@ -489,10 +72,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Project"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"lab_contact",
@@ -500,10 +80,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Project"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"bioinformatics_contact",
@@ -511,10 +88,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Project"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"project_start_date",
@@ -523,10 +97,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Project"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"grant_funding_agent",
@@ -534,10 +105,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Project"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"flowcell_id",
@@ -545,10 +113,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Flowcell"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"run_name",
@@ -556,10 +121,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Flowcell"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"run_date",
@@ -567,10 +129,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Flowcell"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"sequencing_platform",
@@ -578,10 +137,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Flowcell"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"sequencing_application_type",
@@ -589,10 +145,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Flowcell"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"read_length",
@@ -600,10 +153,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Flowcell"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"pooling",
@@ -611,10 +161,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Flowcell"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"sample_id",
@@ -622,10 +169,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"sample_name",
@@ -633,10 +177,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"initial_sample_concentration_ngul",
@@ -644,10 +185,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"initial_sample_volume_ul",
@@ -655,10 +193,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"sfqc_sample_concentration_ngul",
@@ -666,10 +201,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"sfqc_sample_size",
@@ -677,10 +209,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"RIN",
@@ -688,10 +217,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"28s18s",
@@ -699,10 +225,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"library_id",
@@ -710,10 +233,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"library_lot",
@@ -721,10 +241,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"library_name",
@@ -732,10 +249,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"sfqc_library_concentration_nM",
@@ -743,10 +257,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"sfqc_library_size",
@@ -754,10 +265,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"source_id",
@@ -765,10 +273,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"source_name",
@@ -776,10 +281,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"source_organism",
@@ -787,10 +289,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"source_provider",
@@ -798,337 +297,41 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
             "collectionTypes":[  
                "Sample"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          }
       ]
 		}',
 	   '{
 		 "metadataValidationRules": [  
          {  
-            "attribute":"name",
-            "mandatory":true,
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"description",
-            "mandatory":true,
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"source_lab_pi",
-            "mandatory":true,
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"lab_branch",
-            "mandatory":true,
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"pi_doc",
-            "mandatory":true,
-            "validValues":[  
-               "FNLCR",
-               "DUMMY",
-               "CCBR"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"original_date_created",
-            "mandatory":true,
-            "defaultValue":"System-Date",
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"phi_content",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "PHI Present",
-               "PHI Not Present",
-               "Not Specified"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"pii_content",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "PII Present",
-               "PII Not Present",
-               "Not Specified"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"data_encryption_status",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "Encrypted",
-               "Not Encrypted",
-               "Not Specified"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"data_compression_status",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "Compressed",
-               "Not Compressed",
-               "Not Specified"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"funding_organization",
-            "mandatory":false,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"flow_cell_id",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"run_id",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"run_date",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"sequencing_platform",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "Illumina-MiSeq",
-               "Illumina-NextSeq",
-               "Illumina-HiSeq",
-               "Illumina-HiSeq X",
-               "Ion-PGM",
-               "Ion-Proton",
-               "PacBio-PacBio RS"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"sequencing_application_type",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "DNA-Seq (Re-Sequencing)",
-               "DNA-Seq (De novo assembly)",
-               "SNP Analysis / Rearrangement Detection",
-               "Exome",
-               "ChiP-Seq"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"library_id",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"library_name",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "TruSeq ChIP-Seq",
-               "Illumina TrueSeq"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"library_type",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "TruSeq ChIP-Seq",
-               "Illumina TrueSeq"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
-            "attribute":"library_protocol",
-            "mandatory":true,
-            "collectionTypes":[  
-               "Dataset"
-            ],
-            "defaultValue":"Unspecified",
-            "validValues":[  
-               "Unspecified",
-               "TruSeq ChIP-Seq",
-               "Illumina TrueSeq"
-            ],
-            "ruleEnabled":true,
-            "docs":[  
-               "DUMMY"
-            ]
-         },
-         {  
             "attribute":"object_name",
             "mandatory":true,
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"file_type",
             "mandatory":false,
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"reference_genome",
             "mandatory":false,
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"reference_annotation",
             "mandatory":false,
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"software_tool",
             "mandatory":false,
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"md5_checksum",
             "mandatory":false,
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"phi_content",
@@ -1140,10 +343,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
                "PHI Not Present",
                "Not Specified"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"pii_content",
@@ -1155,10 +355,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
                "PII Not Present",
                "Not Specified"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"data_encryption_status",
@@ -1170,10 +367,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
                "Not Encrypted",
                "Not Specified"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          },
          {  
             "attribute":"data_compression_status",
@@ -1185,10 +379,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'fr-s-clvrsf-01', 'HPC_DME_Production_Vault',
                "Not Compressed",
                "Not Specified"
             ],
-            "ruleEnabled":true,
-            "docs":[  
-               "FNLCR"
-            ]
+            "ruleEnabled":true
          }
       ]
 	    }');

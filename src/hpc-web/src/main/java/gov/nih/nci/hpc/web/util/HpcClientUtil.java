@@ -497,7 +497,7 @@ public class HpcClientUtil {
 	public static boolean createBookmark(String token, String hpcBookmarkURL, HpcBookmarkRequestDTO hpcBookmark,
 			String hpcBookmarkName, String hpcCertPath, String hpcCertPassword) {
 		try {
-			WebClient client = HpcClientUtil.getWebClient(hpcBookmarkURL + "/" + hpcBookmarkName, hpcCertPath,
+			WebClient client = HpcClientUtil.getWebClient(hpcBookmarkURL + "/" + URLEncoder.encode(hpcBookmarkName, "UTF-8"), hpcCertPath,
 					hpcCertPassword);
 			client.header("Authorization", "Bearer " + token);
 
