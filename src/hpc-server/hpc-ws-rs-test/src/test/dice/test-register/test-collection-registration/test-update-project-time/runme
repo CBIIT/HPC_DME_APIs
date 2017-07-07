@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+sleep 1
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username "$HPC_DM_TEST/utils/config"`
+COLLECTION_PATH="$(get_basefolder)/test-${NAME}"
+
+#Register the collection 
+curl_register input.json  "$COLLECTION_PATH" collection
+
+#Check the returned code is 201
+REG_HTTP_CODE=`get_http_code collection-registration-response-header.tmp`
+response_hdr=collection-registration-response-header.tmp
+response_msg=collection-registration-response-message.json.tmp
+
+if [ "$REG_HTTP_CODE" != "201" ]  
+then
+        echo "FAILED TO REGISTER, HTTP_CODE = $REG_HTTP_CODE" 1>&2
+        exit
+fi
+
+mv $response_hdr original-registration-header.tmp
+mv $response_msg original-registration-message.json.tmp 2>/dev/null
+
+
+#Update the registered collection
+curl_register updated-input.json  "$COLLECTION_PATH" collection
+mv $response_hdr first-update-response-header.tmp
+mv $response_msg first-update-response-message.json.tmp 2>/dev/null
+
+#Get the registered collection by path
+get_response_hdr=first-get-response-header.tmp
+get_response_msg=first-get-response-message.json.tmp
+get_item "collection/${COLLECTION_PATH}" "$get_response_hdr" "$get_response_msg"
+
+#Make sure the response does include the update attribute 
+ATTRIBUTE="\"metadata_updated\""
+RESPONSE_GROUPS=`cat $get_response_msg | tr "{" "\n"`
+OBJECT_GROUPS=`echo "$RESPONSE_GROUPS" | grep "$ATTRIBUTE"`
+UPDATED_VALUE1=`get_json_value "$OBJECT_GROUPS" "value"`
+time1=$(convert_date_to_seconds "$UPDATED_VALUE1")
+
+#update metadata again
+sleep 1
+response_hdr=collection-registration-response-header.tmp
+response_msg=collection-registration-response-message.json.tmp
+curl_register updated-input.json  "$COLLECTION_PATH" collection
+mv $response_hdr second-update-response-header.tmp
+mv $response_msg second-update-response-message.json.tmp 2>/dev/null
+
+#Get the updated collection
+get_response_hdr=second-get-response-header.tmp
+get_response_msg=second-get-response-message.json.tmp
+get_item "collection/${COLLECTION_PATH}" "$get_response_hdr" "$get_response_msg"
+
+#Get the new time stamp
+ATTRIBUTE="\"metadata_updated\""
+RESPONSE_GROUPS=`cat $get_response_msg | tr "{" "\n"`
+OBJECT_GROUPS=`echo "$RESPONSE_GROUPS" | grep "$ATTRIBUTE"`
+UPDATED_VALUE2=`get_json_value "$OBJECT_GROUPS" "value"`
+time2=$(convert_date_to_seconds "$UPDATED_VALUE2")
+
+#compare time stamps
+if [ "$time2" -le "$time1" ]
+then
+    echo "ERROR the second update time stamp $UPDATED_VALUE2 is not greater than the first update $UPDATED_VALUE1" >&2
+fi

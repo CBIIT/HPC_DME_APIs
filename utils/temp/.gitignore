@@ -1,3 +1,4 @@
 log
 cmd-file
 *.tmp
+curl-status
