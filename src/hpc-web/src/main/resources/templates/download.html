@@ -127,10 +127,9 @@
 	<script>
 		function validateAndSubmit() {
 			var radioSelected = document.getElementsByName("searchType");
-			var selected1 = radioSelected[0].checked;
-			var selected2 = radioSelected[1].checked;
+			var radioValue = document.querySelector('input[name="searchType"]:checked').value
 
-			if (selected2 == true) {
+			if (radioValue == 'async') {
 				var endPointName = document.getElementById("endPointName").value;
 				var endPointLocation = document
 						.getElementById("endPointLocation").value;
@@ -150,7 +149,8 @@
 					return false;
 				}
 			}
-			if (selected2 == false) {
+			
+			if (radioValue == 'sync') {
 				var downloadFileName = document.getElementById("downloadForm").elements
 						.namedItem("downloadFileName").value;
 				document.getElementById("downloadSyncForm").elements
@@ -171,8 +171,9 @@
 								e.preventDefault();
 								var radioSelected = document
 										.getElementsByName("searchType");
-								var asynChecked = radioSelected[1].checked;
-								if (asynChecked == true) {
+								
+								var radioValue = document.querySelector('input[name="searchType"]:checked').value
+								if (radioValue == 'async') {
 									$("#wait")
 											.html(
 													'<img width="50" height="50" src="img/spinner.gif" alt="Wait" />');
