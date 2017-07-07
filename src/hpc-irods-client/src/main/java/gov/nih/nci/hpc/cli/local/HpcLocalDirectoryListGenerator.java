@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -34,6 +35,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import gov.nih.nci.hpc.cli.domain.HpcMetadataAttributes;
 import gov.nih.nci.hpc.cli.util.HpcBatchException;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcCmdException;
@@ -67,27 +69,35 @@ public class HpcLocalDirectoryListGenerator {
 		this.hpcServerURL = hpcServerURL;
 	}
 
-	public boolean run(String filePath, String filePathBaseName, String destinationBasePath, String logFile,
-			String recordFile) {
+	public boolean run(String filePath, String excludePattern, String filePathBaseName, String destinationBasePath,
+			String logFile, String recordFile) {
 		this.logFile = logFile;
+		this.recordFile = recordFile;
 		boolean success = true;
+		Pattern pattern = null;
 		HpcLocalDirectoryListQuery impl = new HpcLocalDirectoryListQuery();
 		try {
-
+			if (excludePattern != null && !excludePattern.isEmpty())
+				pattern = Pattern.compile(excludePattern);
 			// authenticatedToken = impl.authenticate(userId, password);
-			List<HpcPathAttributes> files = impl.getPathAttributes(filePath);
+			List<HpcPathAttributes> files = impl.getPathAttributes(filePath, pattern);
 			if (files != null) {
 				for (HpcPathAttributes file : files) {
 					HpcDataObjectRegistrationDTO dataObject = new HpcDataObjectRegistrationDTO();
-					List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
-					HpcMetadataEntry nameEntry = new HpcMetadataEntry();
-					nameEntry.setAttribute("name");
-					nameEntry.setValue(file.getName());
-					metadataEntries.add(nameEntry);
-					HpcMetadataEntry dateEntry = new HpcMetadataEntry();
-					dateEntry.setAttribute("modified_date");
-					dateEntry.setValue(file.getUpdatedDate());
-					metadataEntries.add(dateEntry);
+					List<HpcMetadataEntry> metadataEntries = null;
+					try
+					{
+						metadataEntries = getMetadata(file);
+					}
+					catch(HpcCmdException e)
+					{
+						String message = "Failed to process file: " + file.getAbsolutePath() + " Reaon: " + e.getMessage();
+						System.out.println(message);
+						writeException(e, message, null);
+						writeRecord(file.getAbsolutePath());
+						continue;
+					}
+					
 					dataObject.getMetadataEntries().addAll(metadataEntries);
 					dataObject.setCreateParentCollections(true);
 					List<HpcMetadataEntry> parentCollectionMetadataEntries = new ArrayList<HpcMetadataEntry>();
@@ -123,6 +133,39 @@ public class HpcLocalDirectoryListGenerator {
 		return success;
 	}
 
+	private List<HpcMetadataEntry> getMetadata(HpcPathAttributes file) throws HpcCmdException{
+		String fullPath = file.getAbsolutePath();
+		File metadataFile = new File(fullPath + ".json");
+		List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
+		if (metadataFile.exists()) {
+			MappingJsonFactory factory = new MappingJsonFactory();
+			JsonParser parser;
+			try {
+				parser = factory.createParser(new FileInputStream(metadataFile));
+				HpcMetadataAttributes metadataAttributes = parser.readValueAs(HpcMetadataAttributes.class);
+				metadataEntries = metadataAttributes.getMetadataEntries();
+				//metadataEntries = parser.readValueAs(new TypeReference<List<HpcMetadataEntry>>() {
+				//});
+			} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+				throw new HpcCmdException(
+						"Failed to read JSON metadata file: " + file.getAbsolutePath() + " Reason: " + e.getMessage());
+			} catch (IOException e) {
+				throw new HpcCmdException(
+						"Failed to read JSON metadata file: " + file.getAbsolutePath() + " Reason: " + e.getMessage());
+			}
+		} else {
+			HpcMetadataEntry nameEntry = new HpcMetadataEntry();
+			nameEntry.setAttribute("name");
+			nameEntry.setValue(file.getName());
+			metadataEntries.add(nameEntry);
+			HpcMetadataEntry dateEntry = new HpcMetadataEntry();
+			dateEntry.setAttribute("modified_date");
+			dateEntry.setValue(file.getUpdatedDate());
+			metadataEntries.add(dateEntry);
+		}
+		return metadataEntries;
+	}
+
 	private String getObjectPath(String filePathBaseName, String filePath) {
 		String name = filePathBaseName + File.separatorChar;
 		if (filePath.indexOf(name) != -1)
@@ -140,9 +183,12 @@ public class HpcLocalDirectoryListGenerator {
 		HpcLogWriter.getInstance().WriteLog(logFile, exceptionAsString);
 	}
 
+	private void writeRecord(String filePath) {
+		HpcLogWriter.getInstance().WriteLog(recordFile, filePath);
+	}
+
 	public void processRecord(HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO, String basePath,
 			String objectPath) throws RecordProcessingException {
-		// TODO Auto-generated method stub
 		InputStream inputStream = null;
 		HpcExceptionDTO response = null;
 		String jsonInString = null;
@@ -171,7 +217,6 @@ public class HpcLocalDirectoryListGenerator {
 			writeException(e, message, null);
 			throw new RecordProcessingException(exceptionAsString);
 		}
-		long start = System.currentTimeMillis();
 		objectPath = objectPath.replace("//", "/");
 		objectPath = objectPath.replace("\\", "/");
 		if (objectPath.charAt(0) != File.separatorChar)
@@ -184,10 +229,9 @@ public class HpcLocalDirectoryListGenerator {
 		try {
 			System.out.println("Processing: " + basePath + "/" + objectPath);
 			Response restResponse = client.put(new MultipartBody(atts));
-			long stop = System.currentTimeMillis();
 			if (restResponse.getStatus() != 201) {
 				MappingJsonFactory factory = new MappingJsonFactory();
-				JsonParser parser = factory.createJsonParser((InputStream) restResponse.getEntity());
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 				try {
 					response = parser.readValueAs(HpcExceptionDTO.class);
 				} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
@@ -261,7 +305,7 @@ public class HpcLocalDirectoryListGenerator {
 				try {
 					inputStream.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					// e.printStackTrace();
 				}
 		}
 	}
