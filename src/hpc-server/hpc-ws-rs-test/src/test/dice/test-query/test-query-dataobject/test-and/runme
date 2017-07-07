@@ -25,7 +25,7 @@ echo $HTTP_CODE
 
 ATTRIBUTE="\"name\""
 
-#Check that the two object files are returned
+#Check that one object is returned. 
 
 VALUE="dice test sub1 data file 1"
 RES=$(check_existance "$RESPONSE_MSG" "$ATTRIBUTE" "$VALUE" "TRUE")

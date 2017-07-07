@@ -252,11 +252,11 @@ function dm_sync_globus_endpoint  {
 
 #Get an item (collection or dataObject) from the archive
 #Inputs: <item-path> (should have a prefix of "dataObject" or "collection")
-#      : [response-message-filename]
-#      : [response-header-filename]
+#      : [metadata-file]
+#      : [REST-response]
 function dm_get_item {
 
-    local USAGE="dm_get_item  <item-path> [response-message-filename] [response-header-filename]"
+    local USAGE="dm_get_item  <item-path> [metadata-file] [REST-response]"
 
     if [ "$#" -lt 1 ] 
     then
@@ -295,11 +295,11 @@ function dm_get_item {
 
 #Get the metadata of a dataobject from the archive
 #Inputs: <dataObject-path> 
-#      : [response-message-filename]
-#      : [response-header-filename]
+#      : [metadata-file]
+#      : [REST-response]
 function dm_get_dataobject {
 
-    local USAGE="dm_get_item_dataobject  <dataobject-path> [response-message-filename] [response-header-filename]"
+    local USAGE="dm_get_item_dataobject  <dataobject-path> [metadata-file] [REST-response]"
 
     if [ "$#" -lt 1 ] 
     then
@@ -343,11 +343,11 @@ function dm_get_dataobject {
 
 #Get the metadata of a collection from the archive
 #Inputs: <collection-path> 
-#      : [response-message-filename]
-#      : [response-header-filename]
+#      : [metadata-file]
+#      : [REST-response]
 function dm_get_collection {
 
-    local USAGE="dm_get_collection  <collection-path> [response-message-filename] [response-header-filename]"
+    local USAGE="dm_get_collection  <collection-path> [metadata-file] [REST-response]"
 
     if [ "$#" -lt 1 ] 
     then

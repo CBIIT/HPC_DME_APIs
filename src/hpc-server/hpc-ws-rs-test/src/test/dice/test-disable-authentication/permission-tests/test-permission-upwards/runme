@@ -24,6 +24,9 @@ verify_registration  $RESPONSE_HEADER
 PROJECT_PATH=$(cat registered-project-path.tmp)
 FOLDER_PATH=$(cat registered-folder-path.tmp)
 
+#Switch to dice_use 
+ACTING_USER=dice_user
+
 #Try to get the project, should be unsuccessful
 RESPONSE_HEADER=get-project-response-header.tmp
 RESPONSE_MSG=get-project-response-message.json.tmp
@@ -37,6 +40,19 @@ RESPONSE_MSG=get-folder-response-message.json.tmp
 get_item collection/$FOLDER_PATH $RESPONSE_HEADER $RESPONSE_MSG  dice_user
 get_http_code $RESPONSE_HEADER
 
-#Search for the folder using a project attribute   
-#query_by_metadata collection input.json 
-#query_by_metadata collection input.json dice_user
+#Search for the folder using a project attribute, should be successful (as request by the users) 
+
+RESPONSE_HEADER=search-response-header.tmp
+RESPONSE_MSG=search-response-message.json.tmp
+
+query_by_metadata collection updated-search-input.json.tmp dice_user
+
+#Make sure the folder is returned
+code=$(get_http_code $RESPONSE_HEADER)
+echo $code
+if [ "$code" -eq 200 ]
+then
+    folder_name=$(basename $FOLDER_PATH)
+    project_name=$(basename "$PROJECT_PATH")
+    grep -q "$project_name..$folder_name" "$RESPONSE_MSG"  || echo "$folder_name is not part of the results" >&2
+fi
