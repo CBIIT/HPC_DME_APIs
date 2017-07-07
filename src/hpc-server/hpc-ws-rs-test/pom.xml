@@ -9,7 +9,7 @@
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  -->
- 
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -25,14 +25,38 @@
 	<build>
 		<resources>
 			<resource>
-            	<directory>src/test/resources/</directory>
-        	</resource>
-        	<resource>
-            	<directory>src/test/dice/</directory>
-        	</resource>
-    	</resources>
+				<directory>src/test/resources/</directory>
+			</resource>
+			<resource>
+				<directory>src/test/dice/</directory>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+						<Export-Package>
+							gov.nih.nci.hpc.ws.rs.test
+						</Export-Package>
+						<Import-Package>*</Import-Package>
+					</instructions>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.6.0</version>
+				<configuration>
+					<mainClass>gov.nih.nci.hpc.ws.rs.test.HpcDiceTestRunner</mainClass>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -60,49 +84,49 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-    		<groupId>junit</groupId>
-    		<artifactId>junit</artifactId>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
 		</dependency>
 		<dependency>
-   			<groupId>org.apache.cxf</groupId>
-   			<artifactId>cxf-rt-transports-local</artifactId>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-transports-local</artifactId>
 		</dependency>
 		<dependency>
-   			<groupId>org.apache.cxf</groupId>
-   			<artifactId>cxf-rt-transports-http-jetty</artifactId>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-transports-http-jetty</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
 		</dependency>
 		<dependency>
-  			<groupId>org.apache.cxf</groupId>
-  			<artifactId>cxf-rt-rs-client</artifactId>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-rs-client</artifactId>
 		</dependency>
 		<dependency>
-    		<groupId>org.apache.cxf</groupId>
-    		<artifactId>cxf-rt-rs-extension-providers</artifactId>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-rs-extension-providers</artifactId>
 		</dependency>
 		<dependency>
-    		<groupId>org.codehaus.jettison</groupId>
-    		<artifactId>jettison</artifactId>
+			<groupId>org.codehaus.jettison</groupId>
+			<artifactId>jettison</artifactId>
 		</dependency>
 		<dependency>
-    		<groupId>org.springframework</groupId>
-    		<artifactId>spring-test</artifactId>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
 		</dependency>
 		<dependency>
-    		<groupId>org.mockito</groupId>
-    		<artifactId>mockito-all</artifactId>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
 		</dependency>
 		<dependency>
-    		<groupId>org.slf4j</groupId>
-    		<artifactId>slf4j-log4j12</artifactId>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
 	</dependencies>
-	
+
 </project>
