@@ -95,27 +95,24 @@ public class HpcClientUtil {
 			params.setDisableCNCheck(true);
 			conduit.setTlsClientParameters(params);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Unable to build REST Client: IOException: " + e.getMessage());
+			// e.printStackTrace();
 		} catch (CertificateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Unable to build REST Client: CertificateException: " + e.getMessage());
+			// e.printStackTrace();
 		} catch (KeyStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Unable to build REST Client: KeyStoreException: " + e.getMessage());
+			//e.printStackTrace();
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Unable to build REST Client: NoSuchAlgorithmException: " + e.getMessage());
 		} catch (UnrecoverableKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Unable to build REST Client: UnrecoverableKeyException: " + e.getMessage());
 		} finally {
 			if (fis != null) {
 				try {
 					fis.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					System.out.println("Unable to build REST Client: IOException: " + e.getMessage());
 				}
 			}
 		}
@@ -124,34 +121,36 @@ public class HpcClientUtil {
 
 	public static String getAuthenticationToken(String userId, String passwd, String hpcServerURL, String hpcCertPath,
 			String hpcCertPassword) {
-
-		WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/authenticate", hpcCertPath, hpcCertPassword);
-		String token = DatatypeConverter.printBase64Binary((userId + ":" + passwd).getBytes());
-		client.header("Authorization", "Basic " + token);
-		Response restResponse = client.get();
-
-		if (restResponse == null)
-			return null;
-		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser;
+
 		try {
-			parser = factory.createJsonParser((InputStream) restResponse.getEntity());
+			WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/authenticate", hpcCertPath, hpcCertPassword);
+			String token = DatatypeConverter.printBase64Binary((userId + ":" + passwd).getBytes());
+			client.header("Authorization", "Basic " + token);
+			Response restResponse = client.get();
+			if (restResponse == null)
+				return null;
+			MappingJsonFactory factory = new MappingJsonFactory();
+			parser = factory.createParser((InputStream) restResponse.getEntity());
 		} catch (IllegalStateException | IOException e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			System.out.println("Unable to get authenticatio token: " + e1.getMessage());
 			return null;
 		}
 		try {
 			HpcAuthenticationResponseDTO dto = parser.readValueAs(HpcAuthenticationResponseDTO.class);
 			return dto.getToken();
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-			e.printStackTrace();
+			System.out.println("Unable to get authenticatio token: JsonMappingException: " + e.getMessage());
+			// e.printStackTrace();
 			return null;
 		} catch (JsonProcessingException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
+			System.out.println("Unable to get authenticatio token: JsonProcessingException: " + e.getMessage());
 			return null;
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Unable to get authenticatio token: IOException: " + e.getMessage());
+			// e.printStackTrace();
 			return null;
 		}
 	}
@@ -210,30 +209,23 @@ public class HpcClientUtil {
 
 			restTemplate.setErrorHandler(new HpcResponseErrorHandler());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Unable to build REST Template: IOException: " + e.getMessage());
 		} catch (CertificateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Unable to build REST Template: CertificateException: " + e.getMessage());
 		} catch (KeyStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Unable to build REST Template: KeyStoreException: " + e.getMessage());
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Unable to build REST Template: NoSuchAlgorithmException: " + e.getMessage());
 		} catch (UnrecoverableKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Unable to build REST Template: UnrecoverableKeyException: " + e.getMessage());
 		} catch (KeyManagementException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Unable to build REST Template: KeyManagementException: " + e.getMessage());
 		} finally {
 			if (fis != null) {
 				try {
 					fis.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					System.out.println("Unable to build REST Template: IOException: " + e.getMessage());
 				}
 			}
 		}

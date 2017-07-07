@@ -164,7 +164,7 @@
 									th:object="${hpcCollection}" method="POST">
 								
 								<div class="form-group">
-									<table class="table table-bordered  col-md-12">
+									<table class="table table-bordered  col-md-12" id="metaAttrTable">
 										<thead>
 											<tr>
 												<th>Attribute Name</th>
@@ -196,6 +196,8 @@
 											<td>&nbsp;</td>
 											<td align="right">
 												<div class="modal-footer">
+													<button class="btn btn-md btn-primary"
+														id="primaryButton" onClick="return addMetadata()">Add Metadata</button>
 													<button type="submit" class="btn btn-md btn-primary"
 														id="primaryButton" th:disabled="${collection.getSelfMetadataEntries() == null} ?'disabled' : 'false'">Update</button>
 													<button type="submit" class="btn btn-primary"
@@ -262,8 +264,23 @@
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
 	<script type="text/javascript">
+	var rowId = 1;
 	
-    function cancelEdit()
+	function addMetadata() {
+		rowId++;
+	    var table = document.getElementById("metaAttrTable");
+	    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+	    rows = rows - 1;
+	    var row = table.insertRow(rows+1);
+	    row.id = "attrRow"+(rows+1);
+	    var cell0 = row.insertCell(0);
+	    var cell1 = row.insertCell(1);
+	    cell0.innerHTML = '<input type="text" id="addAttrName'+(rows+1)+'" name="addAttrName'+(rows+1)+'" placeholder="Value" class="form-control"/>';
+	    cell1.innerHTML = '<input type="text" id="addAttrValue'+(rows+1)+'" name="addAttrValue'+(rows+1)+'" placeholder="Value" class="form-control"/>';
+	    return false;
+	}	
+
+	function cancelEdit()
     {
 		document.getElementById("action").value = "cancel";
 		$("#collectionForm").submit();
