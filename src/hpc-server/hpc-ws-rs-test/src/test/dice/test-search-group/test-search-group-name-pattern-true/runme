@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# makeme 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+response_hdr=group-registration-response-header.tmp
+verify_registration $response_hdr
+
+#Search by groupID 
+group_id=$(cat new-group-id.tmp)
+sub_group_id=${group_id:6:100}
+response_hdr=search-groups-response-header.tmp
+response_msg=search-groups-response-message.json.tmp
+
+search_groups %${sub_group_id}
+get_http_code $response_hdr
+get_json_value $response_msg groupName > returned-group-name.tmp
+
+diff new-group-id.tmp  returned-group-name.tmp >&2

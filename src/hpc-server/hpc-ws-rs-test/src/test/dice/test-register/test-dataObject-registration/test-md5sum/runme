@@ -51,6 +51,5 @@ MDEXIST=$(grep  $MDSUM $RESPONSE_MSG)
 
 if [ -z "$MDEXIST" ]
 then
-    echo "Failed to find the md5sum $MEXIT in the datafile metadata $RESPONSE_MSG"
+    echo "Failed to find the md5sum $MDEXIT in the datafile metadata $RESPONSE_MSG"
 fi
-
