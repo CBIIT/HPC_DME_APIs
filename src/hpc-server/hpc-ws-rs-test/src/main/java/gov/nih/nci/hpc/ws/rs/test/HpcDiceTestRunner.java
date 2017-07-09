@@ -45,6 +45,12 @@ public class HpcDiceTestRunner
 	// Date formatter to format report run time.
 	static private DateFormat runDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
 	
+	// Report mail sender
+	static private HpcTestReportEmailSender mailSender = new HpcTestReportEmailSender();
+	
+	// An indicator whether the test failed.
+	static private boolean testFailed = false;
+	
     //---------------------------------------------------------------------//
     // constructors
     //---------------------------------------------------------------------//
@@ -149,10 +155,24 @@ public class HpcDiceTestRunner
        		 System.out.println("Running user-groups test...");
        		 FileUtils.writeStringToFile(reportFile, runTest("User Groups", "test-user-groups", testScriptBaseDir), 
        				                     Charset.defaultCharset(), true);
-		
+       		 
 		} catch(Exception e) {
+			    testFailed = true;
 			    System.err.println("Failed to run automated test" + e.getMessage());
 		}
+    	
+   	    // Notify admin if the test failed.
+     	if(testFailed) {
+     	   String report = "";
+     	   try {
+     	        report = FileUtils.readFileToString(reportFile, Charset.defaultCharset());
+     	        
+     	  } catch(Exception e) {
+			      System.err.println("Failed to read report file" + e);
+     	  }
+     	   
+     	  mailSender.sendTestReport(reportFile.getName(), report);
+     	}
 	}
     
     private static String runTest(String testName, String testScript, 
@@ -206,6 +226,7 @@ public class HpcDiceTestRunner
     	int failuresStartIndex = 2;
     	int failuresLastIndex = 0;
     	if(failures > 0) {
+    	   testFailed = true;
     	   failuresLastIndex = failuresStartIndex + failures - 1;
     	   testResultsBuilder.append("<table border=\"1\">");
     	   testResultsBuilder.append("<thead>");
@@ -239,6 +260,7 @@ public class HpcDiceTestRunner
     	}
     	
     	if(errorMismatch > 0) {
+    	   testFailed = true;
            int errorMismatchStartIndex = failuresLastIndex + 2;
            int errorMismatchLastIndex = errorMismatchStartIndex + errorMismatch - 1;
     	   testResultsBuilder.append("<table border=\"1\">");
