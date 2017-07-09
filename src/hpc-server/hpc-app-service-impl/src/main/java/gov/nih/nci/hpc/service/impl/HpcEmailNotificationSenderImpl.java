@@ -26,7 +26,6 @@ import org.springframework.mail.javamail.JavaMailSender;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcEmailNotificationSenderImpl implements HpcNotificationSender
@@ -42,6 +41,10 @@ public class HpcEmailNotificationSenderImpl implements HpcNotificationSender
 	// MIME Message Preparator.
 	@Autowired
 	HpcMimeMessagePreparator messagePreparator = null;
+	
+    //---------------------------------------------------------------------//
+    // Methods
+    //---------------------------------------------------------------------//
 	
     //---------------------------------------------------------------------//
     // HpcNotificationSender Interface Implementation
