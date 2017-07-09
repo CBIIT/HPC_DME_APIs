@@ -728,7 +728,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		public HpcDataObjectDownloadResponse getDownloadResponse()
 		{
 			HpcDataObjectDownloadResponse downloadResponse = new HpcDataObjectDownloadResponse();
-			downloadResponse.setDataTransferRequestId("N/A" );
 			downloadResponse.setDestinationLocation(secondHopDownloadRequest.getDestinationLocation());
 			return downloadResponse;
 		}
