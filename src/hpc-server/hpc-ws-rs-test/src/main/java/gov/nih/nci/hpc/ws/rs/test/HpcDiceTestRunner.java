@@ -69,14 +69,15 @@ public class HpcDiceTestRunner
     
     public static void main(String [] args)
 	{
-    	if(args.length != 2) {
-    	   System.err.println("Usage: mvn exec:java -Dexec.arg\"<dice-test-scripts-home-dir> <reports-dir>\"");
+    	if(args.length != 3) {
+    	   System.err.println("Usage: mvn exec:java -Dexec.arg\"<dice-test-scripts-home-dir> <reports-dir> <email-address>\"");
     	   System.exit(1);
     	}
     	
     	// Keep the scripts base directory.
     	String testScriptBaseDir = args[0];
     	String testReportBaseDir = args[1];
+    	String reportEmailAddress = args[2];
     	
     	// Create a report file.
     	Date runDate = Calendar.getInstance().getTime();
@@ -171,7 +172,7 @@ public class HpcDiceTestRunner
 			      System.err.println("Failed to read report file" + e);
      	  }
      	   
-     	  mailSender.sendTestReport(reportFile.getName(), report);
+     	  mailSender.sendTestReport(reportFile.getName(), report, reportEmailAddress);
      	}
 	}
     
