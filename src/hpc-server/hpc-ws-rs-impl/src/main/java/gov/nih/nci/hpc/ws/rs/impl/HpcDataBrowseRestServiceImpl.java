@@ -10,11 +10,15 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+
 import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.bus.HpcDataBrowseBusService;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkRequestDTO;
@@ -68,8 +72,10 @@ public class HpcDataBrowseRestServiceImpl extends HpcRestServiceImpl
     public Response addBookmark(String bookmarkName, HpcBookmarkRequestDTO bookmarkRequest)
     {
 		try {
-			 dataBrowseBusService.addBookmark(bookmarkName, bookmarkRequest);
-			 
+			dataBrowseBusService.addBookmark(URLDecoder.decode(bookmarkName, "UTF-8"), bookmarkRequest);
+		} catch (UnsupportedEncodingException e) {
+			HpcException hpce = new HpcException("Failed to decode bookmark name: "+e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR);
+			return errorResponse(hpce);
 		} catch(HpcException e) {
 			    return errorResponse(e);
 		}
@@ -81,8 +87,11 @@ public class HpcDataBrowseRestServiceImpl extends HpcRestServiceImpl
     public Response updateBookmark(String bookmarkName, HpcBookmarkRequestDTO bookmarkRequest)
     {
 		try {
-			 dataBrowseBusService.updateBookmark(bookmarkName, bookmarkRequest);
+			 dataBrowseBusService.updateBookmark(URLDecoder.decode(bookmarkName, "UTF-8"), bookmarkRequest);
 			 
+		} catch (UnsupportedEncodingException e) {
+			HpcException hpce = new HpcException("Failed to decode bookmark name: "+e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR);
+			return errorResponse(hpce);
 		} catch(HpcException e) {
 			    return errorResponse(e);
 		}
@@ -94,8 +103,10 @@ public class HpcDataBrowseRestServiceImpl extends HpcRestServiceImpl
     public Response deleteBookmark(String bookmarkName)
     {
 		try {
-			 dataBrowseBusService.deleteBookmark(bookmarkName);
-			 
+			 dataBrowseBusService.deleteBookmark(URLDecoder.decode(bookmarkName, "UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			HpcException hpce = new HpcException("Failed to decode bookmark name: "+e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR);
+			return errorResponse(hpce);
 		} catch(HpcException e) {
 			    return errorResponse(e);
 		}
@@ -108,8 +119,11 @@ public class HpcDataBrowseRestServiceImpl extends HpcRestServiceImpl
     {
     	HpcBookmarkDTO bookmark = null;
 		try {
-			 bookmark = dataBrowseBusService.getBookmark(bookmarkName);
+			 bookmark = dataBrowseBusService.getBookmark(URLDecoder.decode(bookmarkName, "UTF-8"));
 			 
+		} catch (UnsupportedEncodingException e) {
+			HpcException hpce = new HpcException("Failed to decode bookmark name: "+e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR);
+			return errorResponse(hpce);
 		} catch(HpcException e) {
 			    return errorResponse(e);
 		}

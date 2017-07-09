@@ -551,7 +551,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		userSizeEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUM_OF_REGISTERED_USERS);
 		userSizeEntry.setValue(getUsersSize(criteria, dateArgs, docArg, docDateUsersArgs));
 		long stop = System.currentTimeMillis();
-		logger.error("TOTAL_NUM_OF_REGISTERED_USERS " + (stop - start));
+		logger.error(": " + (stop - start));
 		start = System.currentTimeMillis();
 		
 		//Total Size - TOTAL_DATA_SIZE
