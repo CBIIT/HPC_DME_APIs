@@ -58,13 +58,13 @@ public class HpcTestReportEmailSender
     // Methods
     //---------------------------------------------------------------------//  
     
-    public void sendTestReport(String testTitle, String testReport)
+    public void sendTestReport(String testTitle, String testReport, String reportEmailAddress)
     {
         try {
              mailSender.send((mimeMessage) ->  
             	             {
             	            	 mimeMessage.setRecipient(Message.RecipientType.TO,
-            	                                          new InternetAddress("rosenbergea@nih.gov"));
+            	                                          new InternetAddress(reportEmailAddress));
             	                 mimeMessage.setSubject("HPC-DM Automated Test Failed (" + testTitle + ")");
             	                 mimeMessage.setText(testReport, Charset.defaultCharset().name(), "html");
             	             });
