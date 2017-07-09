@@ -10,8 +10,9 @@ package gov.nih.nci.hpc.cli.local;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,12 +42,12 @@ public class HpcLocalDirectoryListQuery {
 	 * @throws HpcException
 	 *             on data transfer system failure.
 	 */
-	public List<HpcPathAttributes> getPathAttributes(String fileLocation) throws HpcException {
+	public List<HpcPathAttributes> getPathAttributes(String fileLocation, Pattern excludePattern) throws HpcException {
 		List<HpcPathAttributes> pathAttributes = new ArrayList<HpcPathAttributes>();
 
 		// Invoke the Globus directory listing service.
 		try {
-			List<File> dirContent = listDirectory(fileLocation);
+			List<File> dirContent = listDirectory(fileLocation, excludePattern);
 			getPathAttributes(pathAttributes, dirContent);
 		} catch (Exception e) {
 			throw new HpcException("[GLOBUS] Failed to get path attributes: " + fileLocation,
@@ -76,21 +77,36 @@ public class HpcLocalDirectoryListQuery {
 		}
 	}
 
-	public static List<File> listDirectory(String directoryName) {
+	public static List<File> listDirectory(String directoryName, Pattern excludePattern) {
 		File directory = new File(directoryName);
 
 		List<File> resultList = new ArrayList<File>();
 
 		// get all the files from a directory
 		File[] fList = directory.listFiles();
-		resultList.addAll(Arrays.asList(fList));
+//		resultList.addAll(Arrays.asList(fList));
 		for (File file : fList) {
+			if(isMatch(file.getName(), excludePattern))
+			{
+				System.out.println("Excluding file: " + file.getAbsolutePath());
+				continue;
+			}
 			if (file.isFile()) {
-				System.out.println(file.getAbsolutePath());
+				resultList.add(file);
+				System.out.println("Including file:" + file.getAbsolutePath());
 			} else if (file.isDirectory()) {
-				resultList.addAll(listDirectory(file.getAbsolutePath()));
+				resultList.addAll(listDirectory(file.getAbsolutePath(), excludePattern));
 			}
 		}
 		return resultList;
+	}
+	
+	private static boolean isMatch(String fileName, Pattern excludePattern)
+	{
+		if(excludePattern == null)
+			return false;
+		
+		  Matcher matcher = excludePattern.matcher(fileName);
+		  return matcher.matches();
 	}
 }

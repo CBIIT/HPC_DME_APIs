@@ -8,6 +8,7 @@
 package gov.nih.nci.hpc.cli;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -35,6 +36,18 @@ public class HPCCmdRegisterLocalFile extends HPCCmdClient {
 			logFile = logDir + File.separator + "registerLocalPath_errorLog"
 					+ new SimpleDateFormat("yyyyMMdd'.txt'").format(new Date());
 		}
+		if (fileLogWriter == null) {
+			File file1 = new File(logFile);
+			try {
+				if (!file1.exists()) {
+					file1.createNewFile();
+				}
+				fileLogWriter = new FileWriter(file1, true);
+			} catch (IOException e) {
+				System.out.println("Failed to initialize Batch process: " + e.getMessage());
+				//e.printStackTrace();
+			}
+		}
 	}
 
 	protected void createRecordsLog(String fileName, String type) {
@@ -56,12 +69,14 @@ public class HPCCmdRegisterLocalFile extends HPCCmdClient {
 			String detail, String userId, String password) {
 		boolean success = true;
 		String localPath = null;
+		String excludePattern = null;
 		String filePathBaseName = null;
 		String destinationBasePath = null;
 		try {
 			createErrorLog();
 
 			localPath = (String) criteria.get("filePath");
+			excludePattern = (String) criteria.get("excludePattern");
 			filePathBaseName = (String) criteria.get("filePathBaseName");
 			destinationBasePath = (String) criteria.get("destinationBasePath");
 			if (cmd == null || cmd.isEmpty() || criteria == null || criteria.isEmpty()) {
@@ -71,9 +86,16 @@ public class HPCCmdRegisterLocalFile extends HPCCmdClient {
 			try {
 				String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath,
 						hpcCertPassword);
+				
+				if(authToken == null)
+				{
+					System.out.println("Failed to get authentication token. Aborting!");
+					return false;
+				}
 				HpcLocalDirectoryListGenerator generator = new HpcLocalDirectoryListGenerator(hpcServerURL, authToken,
 						hpcCertPath, hpcCertPassword);
-				success = generator.run(localPath, filePathBaseName, destinationBasePath, logFile, logRecordsFile);
+				success = generator.run(localPath, excludePattern, filePathBaseName, destinationBasePath, logFile,
+						logRecordsFile);
 				logRecordsFile = null;
 			} catch (Exception e) {
 				createErrorLog();
@@ -89,7 +111,7 @@ public class HPCCmdRegisterLocalFile extends HPCCmdClient {
 
 		} catch (Exception e) {
 			System.out.println("Cannot read the input file");
-			e.printStackTrace();
+			// e.printStackTrace();
 		}
 		return success;
 	}
