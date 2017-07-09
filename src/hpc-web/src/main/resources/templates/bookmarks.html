@@ -112,10 +112,11 @@
 					<tr th:id="${bookmark.getName()}"
 						th:each="bookmark : ${bookmarksList}"
 						th:with="index=0">
-						<td style="white-space: nowrap" align="left" ><a th:href="@{'/browse?refresh&amp;path=' + ${bookmark.getPath()}}"><label
-							for="${bookmark.getName()}"
-							th:text="${bookmark.getName()}"></label></a>
-							</td>
+						<td style="white-space: nowrap" align="left">
+							<a th:href="@{'/browse?refresh&amp;path=' + ${bookmark.getPath()}}">
+							<span th:utext="${bookmark.getName()}"></span>
+							</a>
+						</td>
 							<td align="left">
 						
 						<button th:onclick="'submitForm(\''  + ${bookmark.getName()} + '\')'">
