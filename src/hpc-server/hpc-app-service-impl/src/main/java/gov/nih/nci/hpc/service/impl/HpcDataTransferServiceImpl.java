@@ -697,7 +697,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
  				  	                                         firstHopDownloadRequest.getDoc()),
  			        HpcDataTransferType.GLOBUS,
  			        firstHopDownloadRequest.getPath(),
- 			       firstHopDownloadRequest.getDoc());
+ 			        firstHopDownloadRequest.getDoc());
 			
 			// Create the source file for the second hop download
 			sourceFile = createFile(
