@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
@@ -28,11 +29,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
+import gov.nih.nci.hpc.web.model.HpcCollectionModel;
 import gov.nih.nci.hpc.web.model.HpcNamedQuery;
 import gov.nih.nci.hpc.web.model.HpcSaveSearch;
 import gov.nih.nci.hpc.web.model.Views;
@@ -87,6 +91,7 @@ public class HpcSavedSearchListController extends AbstractHpcController {
 					namedQuery.setSearchName(URLEncoder.encode(query.getName(), "UTF-8"));
 					namedQuery.setSearchType(query.getCompoundQueryType().value());
 					namedQuery.setCreatedOn(format.format(query.getCreated().getTime()));
+					namedQuery.setDelete(URLEncoder.encode(query.getName(), "UTF-8"));
 					result.add(namedQuery);
 				}
 			}

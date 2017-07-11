@@ -27,7 +27,7 @@ app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
                  { field: 'searchName', width:300, displayName: 'Search Name', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="search?queryName={{COL_FIELD CUSTOM_FILTERS}}&amp;page=1">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
                  { field: 'searchType', width:200, displayName : 'Search Type' },
                  { field: 'createdOn', width:200, displayName : 'Created On'},
-                 { field: 'Delete', width:200, displayName : 'Delete', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="search?queryName={{COL_FIELD CUSTOM_FILTERS}}&amp;action=delete">Delete</a></div>' }
+                 { field: 'delete', width:200, displayName: 'Delete', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="deleteSearch?queryName={{COL_FIELD CUSTOM_FILTERS}}&amp;page=1">Delete</a></div>'  }
                ],
   };
 
