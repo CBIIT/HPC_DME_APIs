@@ -51,7 +51,12 @@
 	src="js/jquery/3.1.1/jquery.min.js"></script>
 <script
 	src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
-
+	
+<script th:inline="javascript">
+/*<![CDATA[*/
+    var attributeNames = [[${attributeNames}]];
+/*]]>*/
+</script>
 <style>
 /*style.css*/
 .gridStyle {
@@ -199,7 +204,7 @@
 													<button class="btn btn-md btn-primary"
 														id="primaryButton" onClick="return addMetadata()">Add Metadata</button>
 													<button type="submit" class="btn btn-md btn-primary"
-														id="primaryButton" th:disabled="${collection.getSelfMetadataEntries() == null} ?'disabled' : 'false'">Update</button>
+														id="primaryButton" onClick="return validateMetadata()" th:disabled="${collection.getSelfMetadataEntries() == null} ?'disabled' : 'false'">Update</button>
 													<button type="submit" class="btn btn-primary"
 														id="cancel" onClick="cancelEdit()">Cancel</button>
 												</div>
@@ -264,6 +269,8 @@
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
 	<script type="text/javascript">
+	/*<![CDATA[*/
+
 	var rowId = 1;
 	
 	function addMetadata() {
@@ -280,6 +287,26 @@
 	    return false;
 	}	
 
+	function validateMetadata()
+	{
+		rowId++;
+	    var table = document.getElementById("metaAttrTable");
+	    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+		for(var i=1;i<rows;i++)
+		{
+			if(document.getElementById("addAttrName"+i) != null)
+			{
+				var attrNameValue = document.getElementById("addAttrName"+i).value;	
+				if(attributeNames.indexOf(attrNameValue) > -1)
+				{
+					alert("Duplicate attribute name: " + attrNameValue + ", Please use different name")
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
 	function cancelEdit()
     {
 		document.getElementById("action").value = "cancel";
@@ -308,6 +335,7 @@
 			ele.style.display = "block";
 		}
 	}
+	/*]]>*/
 </script>
 
 </body>

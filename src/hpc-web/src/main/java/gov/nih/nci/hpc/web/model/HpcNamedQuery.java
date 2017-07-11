@@ -12,6 +12,9 @@ public class HpcNamedQuery {
 	@JsonView(Views.Public.class)
 	private String createdOn;
 
+	@JsonView(Views.Public.class)
+	private String delete;
+
 	public String getSearchName() {
 		return searchName;
 	}
@@ -36,4 +39,11 @@ public class HpcNamedQuery {
 		this.createdOn = createdOn;
 	}
 
+	public String getDelete() {
+		return delete;
+	}
+
+	public void setDelete(String delete) {
+		this.delete = delete;
+	}
 }
