@@ -49,6 +49,7 @@ public class HpcMimeMessagePreparator
     //---------------------------------------------------------------------//
     // Methods
     //---------------------------------------------------------------------//
+	
     /**
      * Instantiate a MIME message preparator for an event.
      *

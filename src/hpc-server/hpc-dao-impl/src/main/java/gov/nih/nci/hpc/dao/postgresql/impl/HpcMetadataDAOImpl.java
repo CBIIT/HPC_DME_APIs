@@ -10,21 +10,6 @@
 
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
-import gov.nih.nci.hpc.dao.HpcMetadataDAO;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
-import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryAttributeMatch;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
-import gov.nih.nci.hpc.exception.HpcException;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -37,6 +22,19 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+
+import gov.nih.nci.hpc.dao.HpcMetadataDAO;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryAttributeMatch;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
@@ -198,12 +196,40 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
 	// Row mappers.
 	private SingleColumnRowMapper<String> objectPathRowMapper = new SingleColumnRowMapper<>();
 	private SingleColumnRowMapper<Long> objectIdRowMapper = new SingleColumnRowMapper<>();
-	private HpcMetadataLevelAttributesRowMapper metadataLevelAttributeRowMapper = new HpcMetadataLevelAttributesRowMapper();
-	HpcMetadataEntryRowMapper metadataEntryRowMapper = new HpcMetadataEntryRowMapper();
+	private RowMapper<HpcMetadataLevelAttributes> metadataLevelAttributeRowMapper = (rs, rowNum) -> 
+	{
+		HpcMetadataLevelAttributes metadataLevelAttributes = new HpcMetadataLevelAttributes();
+		metadataLevelAttributes.setLevelLabel(rs.getString("LEVEL_LABEL"));
+		
+		// Extract the metadata attributes for this level. Defensive coding to exclude any null values.
+		String[] metadataAttributes = (String[]) rs.getArray("ATTRIBUTES").getArray();
+		int metadataAttributesSize = metadataAttributes.length;
+		for(int i = 0; i < metadataAttributesSize; i++) {
+			if(metadataAttributes[i] != null) {
+			   metadataLevelAttributes.getMetadataAttributes().add(metadataAttributes[i]);
+			}
+		}
+		
+		return metadataLevelAttributes;
+	};
+	private RowMapper<HpcMetadataEntry> metadataEntryRowMapper = (rs, rowNum) -> 
+	{
+		HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
+		metadataEntry.setAttribute(rs.getString("META_ATTR_NAME"));
+		metadataEntry.setValue(rs.getString("META_ATTR_VALUE"));
+		String unit = rs.getString("META_ATTR_UNIT");
+		metadataEntry.setUnit(unit != null && !unit.isEmpty() ? unit : null);
+		
+		Long level = rs.getLong("LEVEL");
+		metadataEntry.setLevel(level != null ? level.intValue() : null);
+		metadataEntry.setLevelLabel(rs.getString("LEVEL_LABEL"));
+		
+		return metadataEntry;
+	};
 	
 	// SQL Maps from operators to queries and filters.
-	HpcSQLMaps dataObjectSQL = new HpcSQLMaps();
-	HpcSQLMaps collectionSQL = new HpcSQLMaps();
+	private HpcSQLMaps dataObjectSQL = new HpcSQLMaps();
+	private HpcSQLMaps collectionSQL = new HpcSQLMaps();
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -427,47 +453,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
-	
-	// Row Mapper
-	private class HpcMetadataEntryRowMapper implements RowMapper<HpcMetadataEntry>
-	{
-		@Override
-		public HpcMetadataEntry mapRow(ResultSet rs, int rowNum) throws SQLException 
-		{
-			HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
-			metadataEntry.setAttribute(rs.getString("META_ATTR_NAME"));
-			metadataEntry.setValue(rs.getString("META_ATTR_VALUE"));
-			String unit = rs.getString("META_ATTR_UNIT");
-			metadataEntry.setUnit(unit != null && !unit.isEmpty() ? unit : null);
-			
-			Long level = rs.getLong("LEVEL");
-			metadataEntry.setLevel(level != null ? level.intValue() : null);
-			metadataEntry.setLevelLabel(rs.getString("LEVEL_LABEL"));
-			
-			return metadataEntry;
-		}
-	}
-	
-	private class HpcMetadataLevelAttributesRowMapper implements RowMapper<HpcMetadataLevelAttributes>
-	{
-		@Override
-		public HpcMetadataLevelAttributes mapRow(ResultSet rs, int rowNum) throws SQLException 
-		{
-			HpcMetadataLevelAttributes metadataLevelAttributes = new HpcMetadataLevelAttributes();
-			metadataLevelAttributes.setLevelLabel(rs.getString("LEVEL_LABEL"));
-			
-			// Extract the metadata attributes for this level. Defensive coding to exclude any null values.
-			String[] metadataAttributes = (String[]) rs.getArray("ATTRIBUTES").getArray();
-			int metadataAttributesSize = metadataAttributes.length;
-			for(int i = 0; i < metadataAttributesSize; i++) {
-				if(metadataAttributes[i] != null) {
-				   metadataLevelAttributes.getMetadataAttributes().add(metadataAttributes[i]);
-				}
-			}
-			
-			return metadataLevelAttributes;
-		}
-	}
 	
 	// Prepared query.
 	private class HpcPreparedQuery

@@ -10,19 +10,6 @@
 
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
-import gov.nih.nci.hpc.dao.HpcNotificationDAO;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
-import gov.nih.nci.hpc.domain.notification.HpcEventType;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationTrigger;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
-import gov.nih.nci.hpc.exception.HpcException;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.List;
 
@@ -33,6 +20,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.transaction.annotation.Transactional;
+
+import gov.nih.nci.hpc.dao.HpcNotificationDAO;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
+import gov.nih.nci.hpc.domain.notification.HpcEventType;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationTrigger;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
@@ -114,12 +112,43 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	private JdbcTemplate jdbcTemplate = null;
 	
 	// Row mappers.
-	private HpcNotificationSubscriptionRowMapper notificationSubscriptionRowMapper = 
-			                                     new HpcNotificationSubscriptionRowMapper();
-	private HpcNotificationTriggerRowMapper notificationTriggerRowMapper = 
-                                            new HpcNotificationTriggerRowMapper();
-	private HpcNotificationDeliveryReceiptRowMapper notificationDeliveryReceiptRowMapper = 
-			                                     new HpcNotificationDeliveryReceiptRowMapper();
+	private RowMapper<HpcNotificationSubscription> notificationSubscriptionRowMapper = (rs, rowNum) -> 
+	{
+		HpcNotificationSubscription notificationSubscription = new HpcNotificationSubscription();
+		notificationSubscription.setId(rs.getInt("ID"));
+		notificationSubscription.setEventType(HpcEventType.fromValue(rs.getString("EVENT_TYPE")));
+		String[] deliveryMethods = (String[]) rs.getArray("NOTIFICATION_DELIVERY_METHODS").getArray();
+		for(String deliveryMethod : deliveryMethods) {
+			notificationSubscription.getNotificationDeliveryMethods().add(
+					    HpcNotificationDeliveryMethod.fromValue(deliveryMethod));
+		}
+        
+        return notificationSubscription;
+	};
+	private RowMapper<HpcNotificationTrigger> notificationTriggerRowMapper = (rs, rowNum) ->
+	{
+		HpcNotificationTrigger notificationTrigger = new HpcNotificationTrigger();
+		String[] triggers = (String[]) rs.getArray("NOTIFICATION_TRIGGER").getArray();
+		for(String trigger : triggers) {
+			notificationTrigger.getPayloadEntries().add(fromString(trigger));
+		}
+        
+        return notificationTrigger;
+	};
+	private RowMapper<HpcNotificationDeliveryReceipt> notificationDeliveryReceiptRowMapper = (rs, rowNum) -> 
+	{
+		HpcNotificationDeliveryReceipt notificationDelivertReceipt = new HpcNotificationDeliveryReceipt();
+    	Calendar delivered = Calendar.getInstance();
+    	delivered.setTime(rs.getTimestamp("DELIVERED"));
+		notificationDelivertReceipt.setDelivered(delivered);
+		notificationDelivertReceipt.setDeliveryStatus(rs.getBoolean("DELIVERY_STATUS"));
+		notificationDelivertReceipt.setEventId(rs.getInt("EVENT_ID"));
+		notificationDelivertReceipt.setNotificationDeliveryMethod(
+				     HpcNotificationDeliveryMethod.fromValue(rs.getString("NOTIFICATION_DELIVERY_METHOD")));
+		notificationDelivertReceipt.setUserId(rs.getString("USER_ID"));
+        
+        return notificationDelivertReceipt;
+	};
 	private SingleColumnRowMapper<String> userIdRowMapper = new SingleColumnRowMapper<>();
 	private SingleColumnRowMapper<Integer> notificationIdRowMapper = new SingleColumnRowMapper<>();
 	
@@ -354,61 +383,6 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
     // Helper Methods
     //---------------------------------------------------------------------//  
 
-	// HpcNotificationSubscription Row to Object mapper.
-	private class HpcNotificationSubscriptionRowMapper implements RowMapper<HpcNotificationSubscription>
-	{
-		@Override
-		public HpcNotificationSubscription mapRow(ResultSet rs, int rowNum) throws SQLException 
-		{
-			HpcNotificationSubscription notificationSubscription = new HpcNotificationSubscription();
-			notificationSubscription.setId(rs.getInt("ID"));
-			notificationSubscription.setEventType(HpcEventType.fromValue(rs.getString("EVENT_TYPE")));
-			String[] deliveryMethods = (String[]) rs.getArray("NOTIFICATION_DELIVERY_METHODS").getArray();
-			for(String deliveryMethod : deliveryMethods) {
-				notificationSubscription.getNotificationDeliveryMethods().add(
-						    HpcNotificationDeliveryMethod.fromValue(deliveryMethod));
-			}
-            
-            return notificationSubscription;
-		}
-	}
-	
-	// HpcNotificationTrigger Row to Object mapper.
-	private class HpcNotificationTriggerRowMapper implements RowMapper<HpcNotificationTrigger>
-	{
-		@Override
-		public HpcNotificationTrigger mapRow(ResultSet rs, int rowNum) throws SQLException 
-		{
-			HpcNotificationTrigger notificationTrigger = new HpcNotificationTrigger();
-			String[] triggers = (String[]) rs.getArray("NOTIFICATION_TRIGGER").getArray();
-			for(String trigger : triggers) {
-				notificationTrigger.getPayloadEntries().add(fromString(trigger));
-			}
-            
-            return notificationTrigger;
-		}
-	}
-	
-	// HpcNotificationDeliveryReceipt Row to Object mapper.
-	private class HpcNotificationDeliveryReceiptRowMapper implements RowMapper<HpcNotificationDeliveryReceipt>
-	{
-		@Override
-		public HpcNotificationDeliveryReceipt mapRow(ResultSet rs, int rowNum) throws SQLException 
-		{
-			HpcNotificationDeliveryReceipt notificationDelivertReceipt = new HpcNotificationDeliveryReceipt();
-        	Calendar delivered = Calendar.getInstance();
-        	delivered.setTime(rs.getTimestamp("DELIVERED"));
-			notificationDelivertReceipt.setDelivered(delivered);
-			notificationDelivertReceipt.setDeliveryStatus(rs.getBoolean("DELIVERY_STATUS"));
-			notificationDelivertReceipt.setEventId(rs.getInt("EVENT_ID"));
-			notificationDelivertReceipt.setNotificationDeliveryMethod(
-					     HpcNotificationDeliveryMethod.fromValue(rs.getString("NOTIFICATION_DELIVERY_METHOD")));
-			notificationDelivertReceipt.setUserId(rs.getString("USER_ID"));
-            
-            return notificationDelivertReceipt;
-		}
-	}
-	
     /** 
      * Map a collection of delivery methods to a SQL text array.
      * 
