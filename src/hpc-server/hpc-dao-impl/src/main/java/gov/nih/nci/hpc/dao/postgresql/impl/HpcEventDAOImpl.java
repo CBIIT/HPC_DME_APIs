@@ -10,16 +10,6 @@
 
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
-import gov.nih.nci.hpc.dao.HpcEventDAO;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.notification.HpcEvent;
-import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
-import gov.nih.nci.hpc.domain.notification.HpcEventType;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
-import gov.nih.nci.hpc.exception.HpcException;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -34,6 +24,14 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+
+import gov.nih.nci.hpc.dao.HpcEventDAO;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.notification.HpcEvent;
+import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
+import gov.nih.nci.hpc.domain.notification.HpcEventType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
@@ -81,8 +79,24 @@ public class HpcEventDAOImpl implements HpcEventDAO
 	@Autowired
 	HpcEncryptor encryptor = null;
 	
-	// Row mappers.
-	private HpcEventRowMapper eventRowMapper = new HpcEventRowMapper();
+	// HpcDocConfiguration Table to Object mapper.
+	private RowMapper<HpcEvent> eventRowMapper = (rs, rowNum) -> 
+	{
+		HpcEvent event = new HpcEvent();
+		event.setId(rs.getInt("ID"));
+		String userIds = rs.getString("USER_IDS");
+		for(String userId : userIds.split(",")) {
+			event.getUserIds().add(userId);
+		}
+		event.setType(HpcEventType.fromValue(rs.getString("TYPE")));
+		event.getPayloadEntries().addAll(fromJSON(encryptor.decrypt(rs.getBytes("PAYLOAD"))));
+		
+    	Calendar created = Calendar.getInstance();
+    	created.setTime(rs.getTimestamp("CREATED"));
+    	event.setCreated(created);
+        
+        return event;
+	};
 	
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -187,29 +201,6 @@ public class HpcEventDAOImpl implements HpcEventDAO
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
-
-	// HpcEvent Row to Object mapper.
-	private class HpcEventRowMapper implements RowMapper<HpcEvent>
-	{
-		@Override
-		public HpcEvent mapRow(ResultSet rs, int rowNum) throws SQLException 
-		{
-			HpcEvent event = new HpcEvent();
-			event.setId(rs.getInt("ID"));
-			String userIds = rs.getString("USER_IDS");
-			for(String userId : userIds.split(",")) {
-				event.getUserIds().add(userId);
-			}
-			event.setType(HpcEventType.fromValue(rs.getString("TYPE")));
-			event.getPayloadEntries().addAll(fromJSON(encryptor.decrypt(rs.getBytes("PAYLOAD"))));
-			
-        	Calendar created = Calendar.getInstance();
-        	created.setTime(rs.getTimestamp("CREATED"));
-        	event.setCreated(created);
-            
-            return event;
-		}
-	}
 	
     /** 
      * Convert payload entries into a JSON string

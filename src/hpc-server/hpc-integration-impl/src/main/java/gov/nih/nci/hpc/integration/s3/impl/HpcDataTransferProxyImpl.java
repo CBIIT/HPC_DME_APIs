@@ -124,6 +124,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		 } else {
     			     // Upload asynchronously
     			     s3Upload.addProgressListener(new HpcS3ProgressListener(progressListener));
+    			 
     		 }
     		 
         } catch(AmazonClientException ace) {

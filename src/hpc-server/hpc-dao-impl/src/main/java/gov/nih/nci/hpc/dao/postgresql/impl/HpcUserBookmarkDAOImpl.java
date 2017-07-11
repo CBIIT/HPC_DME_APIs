@@ -10,8 +10,6 @@
 
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.List;
 
@@ -71,7 +69,20 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO
 	private JdbcTemplate jdbcTemplate = null;
 	
 	// Row mappers.
-	private HpcUserBookmarkRowMapper userBookmarkRowMapper = new HpcUserBookmarkRowMapper();
+	private RowMapper<HpcBookmark> userBookmarkRowMapper = (rs, rowNum) ->
+	{
+		HpcBookmark bookmark = new HpcBookmark();
+		bookmark.setName(rs.getString("BOOKMARK_NAME"));
+		bookmark.setGroup(rs.getString("BOOKMARK_GROUP"));
+		bookmark.setPath(rs.getString("PATH"));
+		Calendar created = Calendar.getInstance();
+		created.setTime(rs.getTimestamp("CREATED"));
+		bookmark.setCreated(created);
+		Calendar updated = Calendar.getInstance();
+		updated.setTime(rs.getTimestamp("UPDATED"));
+		bookmark.setUpdated(updated);
+		return bookmark;
+	};
 	
     // The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -159,30 +170,6 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
     }
-	
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-
-	// HpcEvent Row to Object mapper.
-	private class HpcUserBookmarkRowMapper implements RowMapper<HpcBookmark>
-	{
-		@Override
-		public HpcBookmark mapRow(ResultSet rs, int rowNum) throws SQLException 
-		{
-			HpcBookmark bookmark = new HpcBookmark();
-			bookmark.setName(rs.getString("BOOKMARK_NAME"));
-			bookmark.setGroup(rs.getString("BOOKMARK_GROUP"));
-			bookmark.setPath(rs.getString("PATH"));
-			Calendar created = Calendar.getInstance();
-			created.setTime(rs.getTimestamp("CREATED"));
-			bookmark.setCreated(created);
-			Calendar updated = Calendar.getInstance();
-			updated.setTime(rs.getTimestamp("UPDATED"));
-			bookmark.setUpdated(updated);
-			return bookmark;
-		}
-	}
 }
 
  
