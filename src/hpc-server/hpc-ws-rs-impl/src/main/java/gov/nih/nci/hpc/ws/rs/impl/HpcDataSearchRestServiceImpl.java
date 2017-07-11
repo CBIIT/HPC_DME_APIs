@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.ws.rs.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
@@ -21,6 +22,7 @@ import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataSearchRestService;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
 import javax.ws.rs.core.Response;
@@ -95,7 +97,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     {
     	HpcCollectionListDTO collections = null;
 		try {
-			 collections = dataSearchBusService.getCollections(queryName, detailedResponse, 
+			 collections = dataSearchBusService.getCollections(decodeString(queryName), detailedResponse, 
 					                                           page, totalCount);
 			 
 		} catch(HpcException e) {
@@ -127,7 +129,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     {
     	HpcDataObjectListDTO dataObjects = null;
 		try {
-			 dataObjects = dataSearchBusService.getDataObjects(queryName, detailedResponse,
+			 dataObjects = dataSearchBusService.getDataObjects(decodeString(queryName), detailedResponse,
 					                                           page, totalCount);
 			 
 		} catch(HpcException e) {
@@ -143,7 +145,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     		                 HpcCompoundMetadataQueryDTO compoundMetadataQuery)
     {
 		try {
-			 dataSearchBusService.addQuery(URLDecoder.decode(queryName), compoundMetadataQuery);
+			 dataSearchBusService.addQuery(decodeString(queryName), compoundMetadataQuery);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -157,7 +159,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     		                    HpcCompoundMetadataQueryDTO compoundMetadataQuery)
     {
 		try {
-			 dataSearchBusService.updateQuery(URLDecoder.decode(queryName), compoundMetadataQuery);
+			 dataSearchBusService.updateQuery(decodeString(queryName), compoundMetadataQuery);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -170,7 +172,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     public Response deleteQuery(String queryName)
     {
 		try {
-			 dataSearchBusService.deleteQuery(URLDecoder.decode(queryName));
+			 dataSearchBusService.deleteQuery(decodeString(queryName));
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -184,7 +186,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     {
     	HpcNamedCompoundMetadataQueryDTO query = null;
 		try {
-			 query = dataSearchBusService.getQuery(URLDecoder.decode(queryName));
+			 query = dataSearchBusService.getQuery(decodeString(queryName));
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -234,6 +236,15 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		return okResponse(null, false);
+    }
+    
+    private String decodeString(String encodedValue) throws HpcException
+    {
+    	try {
+			return URLDecoder.decode(encodedValue, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new HpcException("Failed to decode name: "+e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR);
+		}
     }
 }
 

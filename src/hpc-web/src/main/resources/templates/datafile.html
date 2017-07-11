@@ -51,6 +51,12 @@
 	src="js/jquery/3.1.1/jquery.min.js"></script>
 <script
 	src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+	
+<script th:inline="javascript">
+/*<![CDATA[*/
+    var attributeNames = [[${attributeNames}]];
+/*]]>*/
+</script>
 
 <style>
 /*style.css*/
@@ -167,7 +173,7 @@
 									th:object="${hpcDatafile}" method="POST">
 								
 								<div class="form-group">
-									<table width="100%" class="table table-bordered col-md-9">
+									<table width="100%" class="table table-bordered col-md-9" id="metaAttrTable">
 										<thead>
 											<tr>
 												<th>Attribute Name</th>
@@ -199,6 +205,8 @@
 											<td width="20%">&nbsp;</td>
 											<td align="right" width="80%">
 												<div class="modal-footer">
+													<button class="btn btn-md btn-primary"
+														id="primaryButton" onClick="return addMetadata()">Add Metadata</button>
 													<button type="submit" class="btn btn-md btn-primary"
 														id="primaryButton">Update</button>
 													<button type="button" class="btn btn-primary"
@@ -268,6 +276,44 @@
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
 	<script type="text/javascript">
+	/*<![CDATA[*/
+	
+	var rowId = 1;
+	
+	function addMetadata() {
+		rowId++;
+	    var table = document.getElementById("metaAttrTable");
+	    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+	    rows = rows - 1;
+	    var row = table.insertRow(rows+1);
+	    row.id = "attrRow"+(rows+1);
+	    var cell0 = row.insertCell(0);
+	    var cell1 = row.insertCell(1);
+	    cell0.innerHTML = '<input type="text" id="addAttrName'+(rows+1)+'" name="addAttrName'+(rows+1)+'" placeholder="Value" class="form-control"/>';
+	    cell1.innerHTML = '<input type="text" id="addAttrValue'+(rows+1)+'" name="addAttrValue'+(rows+1)+'" placeholder="Value" class="form-control"/>';
+	    return false;
+	}	
+	
+	function validateMetadata()
+	{
+		rowId++;
+	    var table = document.getElementById("metaAttrTable");
+	    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+		for(var i=1;i<rows;i++)
+		{
+			if(document.getElementById("addAttrName"+i) != null)
+			{
+				var attrNameValue = document.getElementById("addAttrName"+i).value;	
+				if(attributeNames.indexOf(attrNameValue) > -1)
+				{
+					alert("Duplicate attribute name: " + attrNameValue + ", Please use different name")
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
 	function cancelEdit()
 	{
 		document.getElementById("action").value = "cancel";
@@ -350,6 +396,7 @@
 			$('#myModal-event').modal('hide');
 		});
 	});	
+	/*]]>*/
 </script>
 
 </body>
