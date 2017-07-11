@@ -36,12 +36,14 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcDatafileModel;
 import gov.nih.nci.hpc.web.model.HpcLogin;
@@ -110,6 +112,8 @@ public class HpcDatafileController extends AbstractHpcController {
 						modelDTO.getDataObjectSystemGeneratedMetadataAttributeNames());
 				hpcDatafile.setPath(path);
 				model.addAttribute("hpcDatafile", hpcDatafile);
+				model.addAttribute("attributeNames", getMetadataAttributeNames(dataFile));
+
 				if (action != null && action.equals("edit"))
 					model.addAttribute("action", "edit");
 				HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId,
@@ -134,6 +138,18 @@ public class HpcDatafileController extends AbstractHpcController {
 		return "datafile";
 	}
 
+	private List<String> getMetadataAttributeNames(HpcDataObjectDTO dataFile) {
+		List<String> names = new ArrayList<String>();
+		if (dataFile == null || dataFile.getMetadataEntries() == null
+				|| dataFile.getMetadataEntries().getSelfMetadataEntries() == null
+				|| dataFile.getMetadataEntries().getParentMetadataEntries() == null
+				)
+			return names;
+		for(HpcMetadataEntry entry : dataFile.getMetadataEntries().getSelfMetadataEntries())
+			names.add(entry.getAttribute());
+		return names;
+	}
+	
 	/**
 	 * Post operation to update metadata
 	 * 
@@ -254,6 +270,21 @@ public class HpcDatafileController extends AbstractHpcController {
 				String[] attrValue = request.getParameterValues(paramName);
 				entry.setAttribute(attrName);
 				entry.setValue(attrValue[0]);
+				metadataEntries.add(entry);
+			}else if(paramName.startsWith("addAttrName"))
+			{
+				HpcMetadataEntry entry = new HpcMetadataEntry();
+				String attrId = paramName.substring("addAttrName".length());
+				String[] attrName = request.getParameterValues(paramName);
+				String[] attrValue = request.getParameterValues("addAttrValue"+attrId);
+				if(attrName.length > 0 && !attrName[0].isEmpty())
+					entry.setAttribute(attrName[0]);
+				else
+					throw new HpcWebException("Invalid metadata attribute name. Empty value is not valid!");
+				if(attrValue.length > 0 && !attrValue[0].isEmpty())
+					entry.setValue(attrValue[0]);
+				else
+					throw new HpcWebException("Invalid metadata attribute value. Empty value is not valid!");
 				metadataEntries.add(entry);
 			}
 		}

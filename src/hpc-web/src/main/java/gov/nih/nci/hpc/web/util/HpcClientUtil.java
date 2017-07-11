@@ -558,6 +558,38 @@ public class HpcClientUtil {
 		}
 	}
 
+	public static boolean deleteSearch(String token, String hpcSavedSearchURL, 
+			String searchName, String hpcCertPath, String hpcCertPassword) {
+		try {
+			WebClient client = HpcClientUtil.getWebClient(hpcSavedSearchURL + "/" + URLEncoder.encode(searchName, "UTF-8"), hpcCertPath,
+					hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.delete();
+			if (restResponse.getStatus() == 200) {
+				return true;
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				throw new HpcWebException("Failed to delete saved search: " + exception.getMessage());
+			}
+		} catch (HpcWebException e) {
+			throw e;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to delete saved search due to: " + e.getMessage());
+		}
+	}
+
 	public static HpcBookmarkListDTO getBookmarks(String token, String hpcBookmarkURL, String hpcCertPath,
 			String hpcCertPassword) {
 		WebClient client = HpcClientUtil.getWebClient(hpcBookmarkURL, hpcCertPath, hpcCertPassword);
@@ -715,6 +747,42 @@ public class HpcClientUtil {
 			client.header("Authorization", "Bearer " + token);
 
 			Response restResponse = client.invoke("PUT", collectionDTO);
+			if (restResponse.getStatus() == 200 || restResponse.getStatus() == 201) {
+				return true;
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				throw new HpcWebException("Failed to create/update collection: " + exception.getMessage());
+			}
+		} catch (HpcWebException e) {
+			throw e;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to create/update collection due to: " + e.getMessage());
+		}
+	}
+
+	public static boolean registerDatafile(String token, String hpcDatafileURL, HpcDataObjectRegistrationDTO datafileDTO,
+			String path, String hpcCertPath, String hpcCertPassword) {
+		try {
+			WebClient client = HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath, hpcCertPassword);
+			client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
+			List<Attachment> atts = new LinkedList<Attachment>();
+			atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration", "application/json",
+					datafileDTO));
+
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.put(new MultipartBody(atts));
 			if (restResponse.getStatus() == 200) {
 				return true;
 			} else {
@@ -729,16 +797,16 @@ public class HpcClientUtil {
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				throw new HpcWebException("Failed to update collection: " + exception.getMessage());
+				throw new HpcWebException("Failed to update data file: " + exception.getMessage());
 			}
 		} catch (HpcWebException e) {
 			throw e;
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to update collection due to: " + e.getMessage());
+			throw new HpcWebException("Failed to update data file due to: " + e.getMessage());
 		}
 	}
-
+	
 	public static boolean updateDatafile(String token, String hpcDatafileURL, HpcDataObjectRegistrationDTO datafileDTO,
 			String path, String hpcCertPath, String hpcCertPassword) {
 		try {

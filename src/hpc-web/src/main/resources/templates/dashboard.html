@@ -178,6 +178,9 @@
 					<!--/col-->
 
 				</div>
+				<form class="form-horizontal" id="searchForm" th:action="@{/savedSearchList}" method="POST">
+					<input type="hidden" name="searchName" id="searchName" />
+				</form>
 
 
 			</section>
@@ -201,7 +204,14 @@
 
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
-
+	<script>
+	function deleteSearch(searchName)
+	{
+		document.getElementById("searchName").value = searchName;
+		$("#searchForm").submit();
+	}
+	
+	</script>
 
 </body>
 </html>
