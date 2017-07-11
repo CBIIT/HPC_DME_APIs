@@ -10,15 +10,6 @@
 
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
-import gov.nih.nci.hpc.dao.HpcUserDAO;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.model.HpcUser;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
-import gov.nih.nci.hpc.domain.user.HpcNciAccount;
-import gov.nih.nci.hpc.exception.HpcException;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -30,6 +21,13 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+
+import gov.nih.nci.hpc.dao.HpcUserDAO;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
@@ -86,8 +84,31 @@ public class HpcUserDAOImpl implements HpcUserDAO
 	HpcEncryptor encryptor = null;
 	
 	// Row mapper.
-	private HpcUserRowMapper rowMapper = new HpcUserRowMapper();
-	
+	private RowMapper<HpcUser> rowMapper = (rs, rowNum) ->
+	{
+		HpcNciAccount nciAccount = new HpcNciAccount();
+		nciAccount.setUserId(rs.getString("USER_ID"));
+		nciAccount.setFirstName(rs.getString("FIRST_NAME"));
+		nciAccount.setLastName(rs.getString("LAST_NAME"));
+		nciAccount.setDoc(rs.getString("DOC"));
+		
+    	HpcUser user = new HpcUser();
+    	Calendar created = Calendar.getInstance();
+    	created.setTime(rs.getDate("CREATED"));
+    	user.setCreated(created);
+    	
+    	Calendar lastUpdated = Calendar.getInstance();
+    	lastUpdated.setTime(rs.getDate("LAST_UPDATED"));
+    	user.setLastUpdated(lastUpdated);
+    	
+    	user.setActive(rs.getBoolean("ACTIVE"));
+    	user.setActiveUpdatedBy(rs.getString("ACTIVE_UPDATED_BY"));
+    	
+    	user.setNciAccount(nciAccount);
+        
+        return user;
+	};
+
     // The logger instance.
 	private static final Logger logger = 
 			LoggerFactory.getLogger(HpcUserDAOImpl.class.getName());
@@ -190,40 +211,6 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}		
     }
-	
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-	
-	// HpcUser Table to Object mapper.
-	private class HpcUserRowMapper implements RowMapper<HpcUser>
-	{
-		@Override
-		public HpcUser mapRow(ResultSet rs, int rowNum) throws SQLException 
-		{
-			HpcNciAccount nciAccount = new HpcNciAccount();
-			nciAccount.setUserId(rs.getString("USER_ID"));
-			nciAccount.setFirstName(rs.getString("FIRST_NAME"));
-			nciAccount.setLastName(rs.getString("LAST_NAME"));
-			nciAccount.setDoc(rs.getString("DOC"));
-			
-        	HpcUser user = new HpcUser();
-        	Calendar created = Calendar.getInstance();
-        	created.setTime(rs.getDate("CREATED"));
-        	user.setCreated(created);
-        	
-        	Calendar lastUpdated = Calendar.getInstance();
-        	lastUpdated.setTime(rs.getDate("LAST_UPDATED"));
-        	user.setLastUpdated(lastUpdated);
-        	
-        	user.setActive(rs.getBoolean("ACTIVE"));
-        	user.setActiveUpdatedBy(rs.getString("ACTIVE_UPDATED_BY"));
-        	
-        	user.setNciAccount(nciAccount);
-            
-            return user;
-		}
-	}
 }
 
  

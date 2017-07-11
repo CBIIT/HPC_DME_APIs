@@ -10,21 +10,18 @@
 
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+
 import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 
 /**
  * <p>
@@ -67,7 +64,15 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
 	HpcEncryptor encryptor = null;
 	
 	// Row mapper.
-	private HpcIntegratedSystemAccountRowMapper rowMapper = new HpcIntegratedSystemAccountRowMapper();
+	private RowMapper<HpcIntegratedSystemAccount> rowMapper = (rs, rowNum) ->
+	{
+		HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
+		account.setUsername(rs.getString("USERNAME"));
+		account.setPassword(encryptor.decrypt(rs.getBytes(("PASSWORD"))));
+		account.setIntegratedSystem(HpcIntegratedSystem.fromValue(rs.getString(("SYSTEM"))));
+        
+        return account;
+	};
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -136,26 +141,6 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get a system account: " + e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
-		}
-	}
-	
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-	
-	// HpcUser Table to Object mapper.
-	private class HpcIntegratedSystemAccountRowMapper 
-	              implements RowMapper<HpcIntegratedSystemAccount>
-	{
-		@Override
-		public HpcIntegratedSystemAccount mapRow(ResultSet rs, int rowNum) throws SQLException 
-		{
-			HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
-			account.setUsername(rs.getString("USERNAME"));
-			account.setPassword(encryptor.decrypt(rs.getBytes(("PASSWORD"))));
-			account.setIntegratedSystem(HpcIntegratedSystem.fromValue(rs.getString(("SYSTEM"))));
-            
-            return account;
 		}
 	}
 }

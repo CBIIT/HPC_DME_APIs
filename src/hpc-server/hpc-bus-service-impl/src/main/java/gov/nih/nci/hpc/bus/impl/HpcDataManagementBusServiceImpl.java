@@ -489,8 +489,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                                       metadata.getRegistrarDOC());
     	
     	// Construct and return a DTO.
-    	return toDownloadResponseDTO(downloadResponse.getDataTransferRequestId(),
-    			                     downloadResponse.getDestinationLocation(),
+    	return toDownloadResponseDTO(downloadResponse.getDestinationLocation(),
     			                     downloadResponse.getDestinationFile(),
     			                     true, null); 
     }
@@ -882,7 +881,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				    // Data object download failed. 
 				    logger.error("Failed to download data object in a collection" , e); 
 				    dataObjectDownloadResponses.getDownloadReceipts().add(
-  				        toDownloadResponseDTO(null, downloadRequest.getDestination(), null, false, e.getMessage()).
+  				        toDownloadResponseDTO(downloadRequest.getDestination(), null, false, e.getMessage()).
 				        getDownloadReceipt());
 			}
 		}
@@ -925,22 +924,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     /** 
      * Construct a download response DTO object.
      * 
-     * @param dataTransferRequestId The data transfer request ID.
      * @param destinationLocation The destination file location.
      * @param destinationFile The destination file.
      * @param result The download request result.
      * @param message The error message.
      * @return A download response DTO object
      */
-	private HpcDownloadResponseDTO toDownloadResponseDTO(String dataTransferRequestId,
-			                                             HpcFileLocation destinationLocation,
+	private HpcDownloadResponseDTO toDownloadResponseDTO(HpcFileLocation destinationLocation,
 			                                             File destinationFile,
 			                                             boolean result, String message)
 	{
 		// Construct and return a DTO
 		HpcDownloadResponseDTO downloadResponse = new HpcDownloadResponseDTO();
 		HpcDownloadReceiptDTO downloadReceipt = new HpcDownloadReceiptDTO();
-		downloadReceipt.setDataTransferRequestId(dataTransferRequestId);
 		downloadReceipt.setDestinationFile(destinationFile);
 		downloadReceipt.setDestinationLocation(destinationLocation);
 		downloadReceipt.setResult(result);
