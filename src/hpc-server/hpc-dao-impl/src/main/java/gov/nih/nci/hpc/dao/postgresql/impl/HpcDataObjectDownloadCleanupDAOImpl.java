@@ -10,16 +10,6 @@
 
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
-import gov.nih.nci.hpc.dao.HpcDataObjectDownloadCleanupDAO;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadCleanup;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
-import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
-import gov.nih.nci.hpc.exception.HpcException;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +17,14 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+
+import gov.nih.nci.hpc.dao.HpcDataObjectDownloadCleanupDAO;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadCleanup;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
@@ -72,8 +70,24 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
 	@Autowired
 	private JdbcTemplate jdbcTemplate = null;
 	
-	// Row mapper.
-	private HpcDataObjectDownloadCleanupRowMapper rowMapper = new HpcDataObjectDownloadCleanupRowMapper();
+	// HpcDataObjectDownloadCleanup table to object mapper.
+	private RowMapper<HpcDataObjectDownloadCleanup> rowMapper = (rs, rowNum) -> 
+	{
+		HpcDataObjectDownloadCleanup dataObjectDownloadCleanup = new HpcDataObjectDownloadCleanup();
+		dataObjectDownloadCleanup.setUserId(rs.getString("USER_ID"));
+		dataObjectDownloadCleanup.setDoc(rs.getString("DOC"));
+		dataObjectDownloadCleanup.setPath(rs.getString("PATH"));
+		dataObjectDownloadCleanup.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
+		dataObjectDownloadCleanup.setDataTransferType(
+				  HpcDataTransferType.fromValue(rs.getString(("DATA_TRANSFER_TYPE"))));
+		dataObjectDownloadCleanup.setDownloadFilePath(rs.getString("DOWNLOAD_FILE_PATH"));
+		HpcFileLocation destinationLocation = new HpcFileLocation();
+		destinationLocation.setFileContainerId(rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID"));
+		destinationLocation.setFileId(rs.getString("DESTINATION_LOCATION_FILE_ID"));
+		dataObjectDownloadCleanup.setDestinationLocation(destinationLocation);
+        
+        return dataObjectDownloadCleanup;
+	};
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -142,34 +156,6 @@ public class HpcDataObjectDownloadCleanupDAOImpl implements HpcDataObjectDownloa
 		        throw new HpcException("Failed to get data object download cleanup: " + 
 		                               e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
-		}
-	}
-	
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
-	
-	// HpcUser Table to Object mapper.
-	private class HpcDataObjectDownloadCleanupRowMapper 
-	              implements RowMapper<HpcDataObjectDownloadCleanup>
-	{
-		@Override
-		public HpcDataObjectDownloadCleanup mapRow(ResultSet rs, int rowNum) throws SQLException 
-		{
-			HpcDataObjectDownloadCleanup dataObjectDownloadCleanup = new HpcDataObjectDownloadCleanup();
-			dataObjectDownloadCleanup.setUserId(rs.getString("USER_ID"));
-			dataObjectDownloadCleanup.setDoc(rs.getString("DOC"));
-			dataObjectDownloadCleanup.setPath(rs.getString("PATH"));
-			dataObjectDownloadCleanup.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
-			dataObjectDownloadCleanup.setDataTransferType(
-					  HpcDataTransferType.fromValue(rs.getString(("DATA_TRANSFER_TYPE"))));
-			dataObjectDownloadCleanup.setDownloadFilePath(rs.getString("DOWNLOAD_FILE_PATH"));
-			HpcFileLocation destinationLocation = new HpcFileLocation();
-			destinationLocation.setFileContainerId(rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID"));
-			destinationLocation.setFileId(rs.getString("DESTINATION_LOCATION_FILE_ID"));
-			dataObjectDownloadCleanup.setDestinationLocation(destinationLocation);
-            
-            return dataObjectDownloadCleanup;
 		}
 	}
 }

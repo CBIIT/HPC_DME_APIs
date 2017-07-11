@@ -10,21 +10,6 @@
 
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
-import gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
-import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
-import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryType;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryAttributeMatch;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
-import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
-import gov.nih.nci.hpc.exception.HpcException;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
@@ -40,6 +25,19 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+
+import gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryAttributeMatch;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
@@ -88,7 +86,22 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 	HpcEncryptor encryptor = null;
 	
 	// Row mappers.
-	private HpcUserQueryRowMapper userQueryRowMapper = new HpcUserQueryRowMapper();
+	private RowMapper<HpcNamedCompoundMetadataQuery> userQueryRowMapper = (rs, rowNum) ->
+	{
+		HpcNamedCompoundMetadataQuery namedCompoundQuery = new HpcNamedCompoundMetadataQuery();
+		namedCompoundQuery.setCompoundQuery(fromJSON(encryptor.decrypt(rs.getBytes("QUERY"))));
+		namedCompoundQuery.setName(rs.getString("QUERY_NAME"));
+		namedCompoundQuery.setDetailedResponse(rs.getBoolean("DETAILED_RESPONSE"));
+		namedCompoundQuery.setTotalCount(rs.getBoolean("TOTAL_COUNT"));
+		namedCompoundQuery.setCompoundQueryType(HpcCompoundMetadataQueryType.fromValue(rs.getString("QUERY_TYPE")));
+		Calendar created = Calendar.getInstance();
+		created.setTime(rs.getTimestamp("CREATED"));
+		namedCompoundQuery.setCreated(created);
+		Calendar updated = Calendar.getInstance();
+		updated.setTime(rs.getTimestamp("UPDATED"));
+		namedCompoundQuery.setUpdated(updated);
+		return namedCompoundQuery;
+	};
 	
     // The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -185,28 +198,6 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
-
-	// HpcEvent Row to Object mapper.
-	private class HpcUserQueryRowMapper implements RowMapper<HpcNamedCompoundMetadataQuery>
-	{
-		@Override
-		public HpcNamedCompoundMetadataQuery mapRow(ResultSet rs, int rowNum) throws SQLException 
-		{
-			HpcNamedCompoundMetadataQuery namedCompoundQuery = new HpcNamedCompoundMetadataQuery();
-			namedCompoundQuery.setCompoundQuery(fromJSON(encryptor.decrypt(rs.getBytes("QUERY"))));
-			namedCompoundQuery.setName(rs.getString("QUERY_NAME"));
-			namedCompoundQuery.setDetailedResponse(rs.getBoolean("DETAILED_RESPONSE"));
-			namedCompoundQuery.setTotalCount(rs.getBoolean("TOTAL_COUNT"));
-			namedCompoundQuery.setCompoundQueryType(HpcCompoundMetadataQueryType.fromValue(rs.getString("QUERY_TYPE")));
-			Calendar created = Calendar.getInstance();
-			created.setTime(rs.getTimestamp("CREATED"));
-			namedCompoundQuery.setCreated(created);
-			Calendar updated = Calendar.getInstance();
-			updated.setTime(rs.getTimestamp("UPDATED"));
-			namedCompoundQuery.setUpdated(updated);
-			return namedCompoundQuery;
-		}
-	}
 
 	/** 
      * Convert compound query into a JSON string.

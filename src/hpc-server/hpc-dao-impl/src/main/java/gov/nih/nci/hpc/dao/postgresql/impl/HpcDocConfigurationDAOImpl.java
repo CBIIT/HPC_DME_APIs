@@ -10,7 +10,6 @@
 
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -62,8 +61,34 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
 	@Autowired
 	private JdbcTemplate jdbcTemplate = null;
 	
-	// Row mapper.
-	private HpcDocConfigRowMapper rowMapper = new HpcDocConfigRowMapper();
+	// HpcDocConfiguration Table to Object mapper.
+	private RowMapper<HpcDocConfiguration> rowMapper = (rs, rowNum) -> 
+	{
+		HpcDocConfiguration docConfiguration = new HpcDocConfiguration();
+		docConfiguration.setDoc(rs.getString("DOC"));
+		docConfiguration.setBasePath(rs.getString("BASE_PATH"));
+		docConfiguration.setS3URL(rs.getString("S3_URL"));
+		HpcArchive s3BaseArchiveDestination = new HpcArchive();
+		HpcFileLocation s3ArchiveLocation = new HpcFileLocation();
+		s3ArchiveLocation.setFileContainerId(rs.getString("S3_VAULT"));
+		s3ArchiveLocation.setFileId(rs.getString("S3_OBJECT_ID"));
+		s3BaseArchiveDestination.setFileLocation(s3ArchiveLocation);
+		s3BaseArchiveDestination.setType(HpcArchiveType.fromValue(rs.getString("S3_ARCHIVE_TYPE")));
+		docConfiguration.setS3BaseArchiveDestination(s3BaseArchiveDestination);
+		
+		try {
+		     docConfiguration.setDataHierarchy(getDataHierarchyFromJSONStr(rs.getString("DATA_HIERARCHY")));
+		     docConfiguration.getCollectionMetadataValidationRules().addAll(
+		        getMetadataValidationRulesFromJSONStr(rs.getString("COLLECTION_METADATA_VALIDATION_RULES")));
+		     docConfiguration.getDataObjectMetadataValidationRules().addAll(
+				        getMetadataValidationRulesFromJSONStr(rs.getString("DATA_OBJECT_METADATA_VALIDATION_RULES")));
+		     
+		} catch(HpcException e) {
+			    throw new SQLException(e);
+		}
+
+		return docConfiguration;
+	};
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -103,39 +128,6 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
-	
-	// HpcUser Table to Object mapper.
-	private class HpcDocConfigRowMapper implements RowMapper<HpcDocConfiguration>
-	{
-		@Override
-		public HpcDocConfiguration mapRow(ResultSet rs, int rowNum) throws SQLException 
-		{
-			HpcDocConfiguration docConfiguration = new HpcDocConfiguration();
-			docConfiguration.setDoc(rs.getString("DOC"));
-			docConfiguration.setBasePath(rs.getString("BASE_PATH"));
-			docConfiguration.setS3URL(rs.getString("S3_URL"));
-			HpcArchive s3BaseArchiveDestination = new HpcArchive();
-			HpcFileLocation s3ArchiveLocation = new HpcFileLocation();
-			s3ArchiveLocation.setFileContainerId(rs.getString("S3_VAULT"));
-			s3ArchiveLocation.setFileId(rs.getString("S3_OBJECT_ID"));
-			s3BaseArchiveDestination.setFileLocation(s3ArchiveLocation);
-			s3BaseArchiveDestination.setType(HpcArchiveType.fromValue(rs.getString("S3_ARCHIVE_TYPE")));
-			docConfiguration.setS3BaseArchiveDestination(s3BaseArchiveDestination);
-			
-			try {
-			     docConfiguration.setDataHierarchy(getDataHierarchyFromJSONStr(rs.getString("DATA_HIERARCHY")));
-			     docConfiguration.getCollectionMetadataValidationRules().addAll(
-			        getMetadataValidationRulesFromJSONStr(rs.getString("COLLECTION_METADATA_VALIDATION_RULES")));
-			     docConfiguration.getDataObjectMetadataValidationRules().addAll(
-					        getMetadataValidationRulesFromJSONStr(rs.getString("DATA_OBJECT_METADATA_VALIDATION_RULES")));
-			     
-			} catch(HpcException e) {
-				    throw new SQLException(e);
-			}
-
-			return docConfiguration;
-		}
-	}
 	
     /**
      * Verify connection to DB. Called by Spring as init-method.
