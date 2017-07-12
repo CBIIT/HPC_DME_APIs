@@ -118,7 +118,7 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public String updateCollection(@Valid @ModelAttribute("hpcDatafile") HpcDatafileModel hpcDataModel, @RequestParam("hpcDatafile") MultipartFile hpcDatafile, Model model,
+	public String createDatafile(@Valid @ModelAttribute("hpcDatafile") HpcDatafileModel hpcDataModel, @RequestParam("hpcDatafile") MultipartFile hpcDatafile, Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request, HttpServletResponse response,
 			final RedirectAttributes redirectAttributes) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
@@ -132,14 +132,15 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 
 			HpcDataObjectRegistrationDTO registrationDTO = constructRequest(request, session, hpcDataModel.getPath());
 
-			boolean updated = HpcClientUtil.updateDatafile(authToken, serviceURL, registrationDTO,
+			boolean updated = HpcClientUtil.registerDatafile(authToken, hpcDatafile, serviceURL, registrationDTO,
 					hpcDataModel.getPath(), sslCertPath, sslCertPassword);
 			if (updated) {
 				redirectAttributes.addFlashAttribute("error", "Data file " + hpcDataModel.getPath() + " is created!");
 				session.removeAttribute("selectedUsers");
 			}
 		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("error", "Failed to create data file: " + e.getMessage());
+			model.addAttribute("error", "Failed to create data file: " + e.getMessage());
+			return "addcollection";
 		} finally {
 			model.addAttribute("hpcDatafile", hpcDatafile);
 		}

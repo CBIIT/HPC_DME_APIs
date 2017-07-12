@@ -1,5 +1,6 @@
 package gov.nih.nci.hpc.web.util;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +32,7 @@ import javax.xml.transform.Source;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.http.client.HttpClient;
@@ -50,6 +52,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.integration.http.converter.MultipartAwareFormHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -771,7 +774,7 @@ public class HpcClientUtil {
 		}
 	}
 
-	public static boolean registerDatafile(String token, String hpcDatafileURL, HpcDataObjectRegistrationDTO datafileDTO,
+	public static boolean registerDatafile(String token, MultipartFile hpcDatafile, String hpcDatafileURL, HpcDataObjectRegistrationDTO datafileDTO,
 			String path, String hpcCertPath, String hpcCertPassword) {
 		try {
 			WebClient client = HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath, hpcCertPassword);
@@ -779,11 +782,16 @@ public class HpcClientUtil {
 			List<Attachment> atts = new LinkedList<Attachment>();
 			atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration", "application/json",
 					datafileDTO));
-
+//			InputStream inputStream = new BufferedInputStream(
+//					new FileInputStream(datafileDTO.getSource().getFileId()));
+			ContentDisposition cd2 = new ContentDisposition(
+					"attachment;filename=" + hpcDatafile.getName());
+			atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObject", hpcDatafile.getInputStream(), cd2));
+			
 			client.header("Authorization", "Bearer " + token);
 
 			Response restResponse = client.put(new MultipartBody(atts));
-			if (restResponse.getStatus() == 200) {
+			if (restResponse.getStatus() == 201) {
 				return true;
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
