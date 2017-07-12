@@ -92,8 +92,8 @@
 										for="${error}" th:text="${error}"></label>
 								</div>
 							</div>
-								<form class="form-horizontal" id="collectionForm" th:action="@{/addCollection}"
-									th:object="${hpcDatafile}" method="POST">
+								<form class="form-horizontal" id="dataFileForm" th:action="@{/addDatafile}"
+									th:object="${hpcDatafile}" enctype="multipart/form-data" method="POST">
 								<!--panel-body start-->
 								<div class="panel-body">
 								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
@@ -192,7 +192,7 @@
 	function cancelEdit()
     {
 		document.getElementById("action").value = "cancel";
-		$("#collectionForm").submit();
+		$("#dataFileForm").submit();
     }
 </script>
 
