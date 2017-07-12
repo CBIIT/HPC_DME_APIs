@@ -136,7 +136,9 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 				session.removeAttribute("selectedUsers");
 			}
 		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("error", "Failed to create collection: " + e.getMessage());
+			//redirectAttributes.addFlashAttribute("error", "Failed to create collection: " + e.getMessage());
+			model.addAttribute("error", "Failed to create collection: " + e.getMessage());
+			return "addcollection";
 		}
 		return "redirect:/collection?path=" + hpcCollection.getPath() + "&action=view";
 	}
