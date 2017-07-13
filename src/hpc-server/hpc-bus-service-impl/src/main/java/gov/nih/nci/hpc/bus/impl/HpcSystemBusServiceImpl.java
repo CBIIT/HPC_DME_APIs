@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.bus.aspect.SystemBusServiceImpl;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadCleanup;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -244,27 +244,27 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     }
     
     @Override
-    public void cleanupDataTransferDownloadFiles() throws HpcException
+    public void cleanupDataObjectDownloadTasks() throws HpcException
     {
     	// Use system account to perform this service.
     	securityService.setSystemRequestInvoker();
     	
-    	for(HpcDataObjectDownloadCleanup dataObjectDownloadCleanup :
-    		dataTransferService.getDataObjectDownloadCleanups()) {
+    	for(HpcDataObjectDownloadTask downloadTask :
+    		dataTransferService.getDataObjectDownloadTasks(HpcDataTransferType.GLOBUS)) {
     		// Get the data transfer download status.
     		HpcDataTransferDownloadStatus dataTransferDownloadStatus = 
     		   dataTransferService.getDataTransferDownloadStatus(
-    			                      dataObjectDownloadCleanup.getDataTransferType(), 
-    			                      dataObjectDownloadCleanup.getDataTransferRequestId(),
-    			                      dataObjectDownloadCleanup.getDoc());
+    				                  downloadTask.getDataTransferType(), 
+    				                  downloadTask.getDataTransferRequestId(),
+    				                  downloadTask.getDoc());
     		
     		// Cleanup the file if the transfer is no longer in-progress, and add an event.
     		if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
-    		   dataTransferService.cleanupDataObjectDownloadFile(dataObjectDownloadCleanup);
-    		   addDataTransferDownloadEvent(dataObjectDownloadCleanup.getUserId(), dataObjectDownloadCleanup.getPath(),
-    				                        dataObjectDownloadCleanup.getDataTransferRequestId(),
-    				                        dataTransferDownloadStatus, dataObjectDownloadCleanup.getDestinationLocation(),
-    				                        Calendar.getInstance(), dataObjectDownloadCleanup.getDataTransferType());
+    		   dataTransferService.cleanupDataObjectDownloadTask(downloadTask);
+    		   addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
+    				                        downloadTask.getDataTransferRequestId(),
+    				                        dataTransferDownloadStatus, downloadTask.getDestinationLocation(),
+    				                        Calendar.getInstance(), downloadTask.getDataTransferType());
     		}
     	}
     }
