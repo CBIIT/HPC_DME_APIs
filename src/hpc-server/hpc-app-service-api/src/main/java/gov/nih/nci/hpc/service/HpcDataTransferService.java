@@ -10,18 +10,18 @@
 
 package gov.nih.nci.hpc.service;
 
+import java.io.File;
+import java.util.List;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadCleanup;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.exception.HpcException;
-
-import java.io.File;
-import java.util.List;
 
 /**
  * <p>
@@ -59,6 +59,7 @@ public interface HpcDataTransferService
      * @param destinationLocation The user requested file destination.
      * @param dataTransferType The data transfer type.
      * @param doc The doc (needed to determine the archive connection config).
+     * @param collectionDownload True if this download request is part of a collection download request.
      * @return A data object download response.
      * @throws HpcException on service failure.
      */
@@ -67,7 +68,7 @@ public interface HpcDataTransferService
 			                                     HpcFileLocation archiveLocation, 
 			                                     HpcFileLocation destinationLocation,
 			                                     HpcDataTransferType dataTransferType,
-			                                     String doc) 
+			                                     String doc, boolean collectionDownload) 
 			                                     throws HpcException;
 	
     /** 
@@ -151,21 +152,22 @@ public interface HpcDataTransferService
     		                  throws HpcException;
     
     /**
-     * Get all data object download cleanup entries. 
+     * Get all data object download tasks that are in progress for a given data-transfer type
      *
-     * @return A list of data object download cleanup objects.
+     * @param dataTransferType The data-transfer type to query
+     * @return A list of data object download tasks.
      * @throws HpcException on service failure.
      */
-    public List<HpcDataObjectDownloadCleanup> getDataObjectDownloadCleanups() throws HpcException;
+    public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks(
+    		                                  HpcDataTransferType dataTransferType) throws HpcException;
     
     /**
-     * Cleanup data object download file. 
+     * Cleanup data object download task. Update task info in DB and remove staged file.
      *
-     * @param dataObjectDownloadCleanup The info about the file to cleanup.
+     * @param downloadTask The download task to clean up.
      * @throws HpcException on service failure.
      */
-    public void cleanupDataObjectDownloadFile(
-    		           HpcDataObjectDownloadCleanup dataObjectDownloadCleanup) throws HpcException;
+    public void cleanupDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException;
 }
 
  
