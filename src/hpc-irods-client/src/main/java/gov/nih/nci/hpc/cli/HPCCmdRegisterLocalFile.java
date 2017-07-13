@@ -76,7 +76,8 @@ public class HPCCmdRegisterLocalFile extends HPCCmdClient {
 			createErrorLog();
 
 			localPath = (String) criteria.get("filePath");
-			excludePattern = (String) criteria.get("excludePattern");
+			excludePattern = (String) criteria.get("excludePatternFile");
+			excludePattern = (String) criteria.get("includePatternFile");
 			filePathBaseName = (String) criteria.get("filePathBaseName");
 			destinationBasePath = (String) criteria.get("destinationBasePath");
 			if (cmd == null || cmd.isEmpty() || criteria == null || criteria.isEmpty()) {

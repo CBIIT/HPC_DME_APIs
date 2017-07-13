@@ -81,6 +81,9 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 			Model model, BindingResult bindingResult, HttpSession session,
 			HttpServletRequest request) {
 		try {
+			String path = request.getParameter("path");
+			if(path != null)
+				model.addAttribute("parentPath", path);
 			// User Session validation
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			String userId = (String) session.getAttribute("hpcUserId");
