@@ -93,8 +93,11 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadResponse']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse"/>
 		</jxb:bindings>
-		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadCleanup']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadCleanup"/>
+		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadTask']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadTaskResult']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskResult"/>
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferUploadStatus']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus"/>
