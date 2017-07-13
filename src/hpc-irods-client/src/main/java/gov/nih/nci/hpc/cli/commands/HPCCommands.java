@@ -120,19 +120,22 @@ public class HPCCommands implements CommandMarker {
 		return getGlobusDatafiles.process("registerGlobusPath", criteriaMap, null, null, null);
 	}
 
-	@CliCommand(value = "registerFromFilePath", help = "Get Data files from HPC Archive. Usage: registerFromFilePath --filePath <Souce file path> --excludePattern <Regular expression pattern to exclude files> --filePathBaseName <Source file path Base name> --destinationBasePath <User Base Path>")
+	@CliCommand(value = "registerFromFilePath", help = "Get Data files from HPC Archive. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <User Base Path>")
 	public String registerFilePath(
 			@CliOption(key = {
-					"filePath" }, mandatory = true, help = "Please provide source file exclude regular expression pattern. Usage: registerFromFilePath --filePath <Souce file path> --excludePattern <Regular expression pattern to exclude files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path>") final String filePath,
+					"filePath" }, mandatory = true, help = "Please provide source file path. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path>") final String filePath,
 			@CliOption(key = {
-					"excludePattern" }, mandatory = false, help = "Please provide source file exclude regular expression pattern. Usage: registerFromFilePath --filePath <Souce file path> --excludePattern <Regular expression pattern to exclude files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path>") final String excludePattern,
+					"excludePatternFile" }, mandatory = false, help = "Please provide exclude pattern file. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path>") final String excludePattern,
 			@CliOption(key = {
-					"filePathBaseName" }, mandatory = false, help = "Please provide source file exclude regular expression pattern. Usage: registerFromFilePath --filePath <Souce file path> --excludePattern <Regular expression pattern to exclude files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path>") final String filePathBaseName,
+					"includePatternFile" }, mandatory = false, help = "Please provide include pattern file. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path>") final String includePattern,
 			@CliOption(key = {
-					"destinationBasePath" }, mandatory = false, help = "Please provide source file exclude regular expression pattern. Usage: registerFromFilePath --filePath <Souce file path> --excludePattern <Regular expression pattern to exclude files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path>") final String destinationBasePath) {
+					"filePathBaseName" }, mandatory = false, help = "Please provide file base path name. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path>") final String filePathBaseName,
+			@CliOption(key = {
+					"destinationBasePath" }, mandatory = false, help = "Please provide destination base path. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path>") final String destinationBasePath) {
 		Map<String, String> criteriaMap = new HashMap<String, String>();
 		criteriaMap.put("filePath", filePath);
-		criteriaMap.put("excludePattern", excludePattern);
+		criteriaMap.put("excludePatternFile", excludePattern);
+		criteriaMap.put("includePatternFile", includePattern);
 		criteriaMap.put("filePathBaseName", filePathBaseName);
 		criteriaMap.put("destinationBasePath", destinationBasePath);
 		return getLocalDatafiles.process("registerFromFilePath", criteriaMap, null, null, null);
