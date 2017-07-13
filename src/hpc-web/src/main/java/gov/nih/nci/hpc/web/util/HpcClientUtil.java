@@ -743,14 +743,18 @@ public class HpcClientUtil {
 		}
 	}
 
-	public static boolean updateCollection(String token, String hpcCollectionURL,
+	public static boolean createCollection(String token, String hpcCollectionURL,
 			HpcCollectionRegistrationDTO collectionDTO, String path, String hpcCertPath, String hpcCertPassword) {
 		try {
+			HpcCollectionListDTO collection = getCollection(token, hpcCollectionURL, path, false, hpcCertPath, hpcCertPassword);
+			if(collection != null && collection.getCollectionPaths() != null && collection.getCollectionPaths().size() >0)
+				throw new HpcWebException("Failed to create. Collection already exists: " + path);
+				
 			WebClient client = HpcClientUtil.getWebClient(hpcCollectionURL + path, hpcCertPath, hpcCertPassword);
 			client.header("Authorization", "Bearer " + token);
 
 			Response restResponse = client.invoke("PUT", collectionDTO);
-			if (restResponse.getStatus() == 200 || restResponse.getStatus() == 201) {
+			if (restResponse.getStatus() == 201) {
 				return true;
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
@@ -764,19 +768,54 @@ public class HpcClientUtil {
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				throw new HpcWebException("Failed to create/update collection: " + exception.getMessage());
+				throw new HpcWebException("Failed to create collection: " + exception.getMessage());
 			}
 		} catch (HpcWebException e) {
 			throw e;
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to create/update collection due to: " + e.getMessage());
+			throw new HpcWebException("Failed to create collection due to: " + e.getMessage());
+		}
+	}
+
+	public static boolean updateCollection(String token, String hpcCollectionURL,
+			HpcCollectionRegistrationDTO collectionDTO, String path, String hpcCertPath, String hpcCertPassword) {
+		try {
+			WebClient client = HpcClientUtil.getWebClient(hpcCollectionURL + path, hpcCertPath, hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.invoke("PUT", collectionDTO);
+			if (restResponse.getStatus() == 200) {
+				return true;
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				throw new HpcWebException("Failed to update collection: " + exception.getMessage());
+			}
+		} catch (HpcWebException e) {
+			throw e;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to update collection due to: " + e.getMessage());
 		}
 	}
 
 	public static boolean registerDatafile(String token, MultipartFile hpcDatafile, String hpcDatafileURL, HpcDataObjectRegistrationDTO datafileDTO,
 			String path, String hpcCertPath, String hpcCertPassword) {
 		try {
+			HpcDataObjectListDTO datafile = getDatafiles(token, hpcDatafileURL, path, false, hpcCertPath, hpcCertPassword);
+			if(datafile != null && datafile.getDataObjectPaths() != null && datafile.getDataObjectPaths().size() >0)
+				throw new HpcWebException("Failed to create. Collection already exists: " + path);
+			
 			WebClient client = HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath, hpcCertPassword);
 			client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
 			List<Attachment> atts = new LinkedList<Attachment>();

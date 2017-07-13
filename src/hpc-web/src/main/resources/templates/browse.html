@@ -167,26 +167,16 @@
 										</div>
 										<!-- /.modal-dialog -->
 									</div>								
-									<div class="modal fade" id="createBookmarksTarget" tabindex="-1" role="dialog"
-										aria-labelledby="browsePartialLabel" aria-hidden="true">
-										<div class="modal-dialog">
-											<div class="modal-content"></div>
-											<!-- /.modal-content -->
-										</div>
-										<!-- /.modal-dialog -->
-									</div>								
 								
 									<div class="form-group">
 										<div id="tree1"></div>										
 									</div>
-<!--									
+									
 									<ul id="myMenu" class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-											<li><a href="#Bookmark"><i class="fa fa-star"></i>Bookmark</a></li>
-											<li> <a data-toggle="modal" id="bookmark" class="btn btn-link btn-sm" th:href="@{/bookmark}" data-target="#createBookmarksTarget">Bookmark &nbsp;<i class="fa fa-star" title="Bookmark" aria-hidden="true"></i></a></li>
+											<li><a href="#addCollection">Add Collection</a></li>
  											<li class="divider"></li>
-											<li><a href="#"><i class="icon-remove"></i> Unbookmark</a></li>
+											<li><a href="#addDatafile">Add Datafile</a></li>
 									</ul>	
- -->											
 								</div>
 							</div>
 
@@ -295,22 +285,13 @@ $('#tree1').bind('tree.open', function (e,data) {
 );
 
 $('#tree1').jqTreeContextMenu($('#myMenu'), {
-    "Bookmark": function (node) { 
-//    	alert('Bookmark: ' + node.name); 
-    	 $('#createBookmarksTarget').removeData('bs.modal');
-    	 $('#createBookmarksTarget').modal({remote: '/bookmark?path'+ node.name});
-    	 // $('#createBookmarksTarget').find(".modal-body").load('/bookmark');
-       	  $('#createBookmarksTarget').modal('show');
-//    	$(document).on('show.bs.modal','#createBookmarksTarget', function (e) {
-//    		  alert('hi1');
-//      	    var link = $(e.relatedTarget);
-//      	    alert("link "+link)
-//      	    alert($('#createBookmarksTarget').find(".modal-body"));
-      	    //$(this).find(".modal-body").load(link.attr("/bookmark"));
-//      	  $('#createBookmarksTarget').find(".modal-body").load('/bookmark');
-//       	  $('#createBookmarksTarget').modal('show');
-//    	});
+    "addCollection": function (node) { 
+    	window.location = "/addCollection?path="+node.fullPath;
+    },
+    "addDatafile": function (node) {
+    	window.location = "/addDatafile?path="+node.fullPath;
     }
+
 }); 
 
 /*]]>*/
