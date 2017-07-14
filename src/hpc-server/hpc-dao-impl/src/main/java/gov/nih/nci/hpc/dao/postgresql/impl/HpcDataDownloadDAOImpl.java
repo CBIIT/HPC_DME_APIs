@@ -126,7 +126,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		   dataObjectDownloadTask.setDestinationLocation(destinationLocation);
 		}
     	Calendar created = Calendar.getInstance();
-    	created.setTime(rs.getDate("CREATED"));
+    	created.setTime(rs.getTimestamp("CREATED"));
     	dataObjectDownloadTask.setCreated(created);
 		
         return dataObjectDownloadTask;
@@ -155,11 +155,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		dataObjectDownloadTaskResult.setResult(rs.getBoolean("RESULT"));
 		dataObjectDownloadTaskResult.setMessage(rs.getString("MESSAGE"));
     	Calendar created = Calendar.getInstance();
-    	created.setTime(rs.getDate("CREATED"));
+    	created.setTime(rs.getTimestamp("CREATED"));
     	dataObjectDownloadTaskResult.setCreated(created);
     	
     	Calendar completed = Calendar.getInstance();
-    	created.setTime(rs.getDate("COMPLETED"));
+    	created.setTime(rs.getTimestamp("COMPLETED"));
     	dataObjectDownloadTaskResult.setCreated(completed);
 		
         return dataObjectDownloadTaskResult;
