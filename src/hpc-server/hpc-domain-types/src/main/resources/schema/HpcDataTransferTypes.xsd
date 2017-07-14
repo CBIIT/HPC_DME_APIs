@@ -106,19 +106,22 @@
 			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="doc" type="xsd:string" />
+			<xsd:element name="collectionDownload" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
 	<xsd:complexType name="HpcDataObjectDownloadResponse">
 		<xsd:sequence>
+		    <xsd:element name="downloadTaskId" type="xsd:int" minOccurs="0" />
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
 			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
-	<xsd:complexType name="HpcDataObjectDownloadCleanup">
+	<xsd:complexType name="HpcDataObjectDownloadTask">
 		<xsd:sequence>
+			<xsd:element name="id" type="xsd:int" minOccurs="0" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="doc" type="xsd:string" />
@@ -126,7 +129,24 @@
 			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="downloadFilePath" type="xsd:string" />
 			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="created" type="xsd:dateTime" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:complexType name="HpcDataObjectDownloadTaskResult">
+		<xsd:sequence>
+			<xsd:element name="id" type="xsd:int" />
+			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="doc" type="xsd:string" />
+			<xsd:element name="dataTransferRequestId" type="xsd:string" />
+			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
+			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="result" type="xsd:boolean" />
+			<xsd:element name="message" type="xsd:string" />
+			<xsd:element name="created" type="xsd:dateTime" />
+			<xsd:element name="ccompleted" type="xsd:dateTime" />
+		</xsd:sequence>
+	</xsd:complexType>
+
 </xsd:schema>

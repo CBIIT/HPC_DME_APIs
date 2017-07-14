@@ -458,40 +458,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                                      HpcDownloadRequestDTO downloadRequest)
                                                     throws HpcException
     {
-    	// Input validation.
-    	if(path == null || downloadRequest == null) {
-    	   throw new HpcException("Null path or download request",
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
-        	
-		// Validate the data object exists.
-		if(dataManagementService.getDataObject(path) == null) {
-		   throw new HpcException("Data object doesn't exist: " + path,
-	                              HpcErrorType.INVALID_REQUEST_INPUT);	
-	  	}
-		
-		// Get the System generated metadata.
-		HpcSystemGeneratedMetadata metadata = 
-		   metadataService.getDataObjectSystemGeneratedMetadata(path);
-		
-		// Validate the file is archived.
-		if(!metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
-		   throw new HpcException("Object is not in archived state yet. It is in " +
-				                  metadata.getDataTransferStatus().value() + " state",
-				                  HpcRequestRejectReason.FILE_NOT_ARCHIVED);
-		}
-		
-    	// Download the data object.
-    	HpcDataObjectDownloadResponse downloadResponse = 
-    		   dataTransferService.downloadDataObject(path, metadata.getArchiveLocation(), 
-                                                      downloadRequest.getDestination(),
-                                                      metadata.getDataTransferType(),
-                                                      metadata.getRegistrarDOC());
-    	
-    	// Construct and return a DTO.
-    	return toDownloadResponseDTO(downloadResponse.getDestinationLocation(),
-    			                     downloadResponse.getDestinationFile(),
-    			                     true, null); 
+    	return downloadDataObject(path, downloadRequest, false);
     }
     
     @Override
@@ -852,6 +819,57 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 	}
 	
+    /**
+     * Download Data Object.
+     *
+     * @param path The data object path.
+     * @param downloadRequest The download request DTO.
+     * @param collectionDownload True if this download request is part of a collection update.
+     * @return Download ResponseDTO 
+     * @throws HpcException on service failure.
+     */
+    private HpcDownloadResponseDTO downloadDataObject(String path,
+                                                      HpcDownloadRequestDTO downloadRequest,
+                                                      boolean collectionDownload)
+                                                     throws HpcException
+	{
+    	// Input validation.
+    	if(path == null || downloadRequest == null) {
+    	   throw new HpcException("Null path or download request",
+    		                      HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+
+    	// Validate the data object exists.
+    	if(dataManagementService.getDataObject(path) == null) {
+    	   throw new HpcException("Data object doesn't exist: " + path,
+    		                      HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+
+    	// Get the System generated metadata.
+    	HpcSystemGeneratedMetadata metadata = 
+    			 metadataService.getDataObjectSystemGeneratedMetadata(path);
+
+    	// Validate the file is archived.
+    	if(!metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+    	   throw new HpcException("Object is not in archived state yet. It is in " +
+    		 		              metadata.getDataTransferStatus().value() + " state",
+    				              HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+    	}
+
+    	// Download the data object.
+    	HpcDataObjectDownloadResponse downloadResponse = 
+    		   dataTransferService.downloadDataObject(path, metadata.getArchiveLocation(), 
+    					                              downloadRequest.getDestination(),
+    					                              metadata.getDataTransferType(),
+    					                              metadata.getRegistrarDOC(), 
+    					                              collectionDownload);
+
+    	// Construct and return a DTO.
+    	return toDownloadResponseDTO(downloadResponse.getDestinationLocation(),
+    			                     downloadResponse.getDestinationFile(),
+    			                     downloadResponse.getDownloadTaskId()); 
+	}
+	
     /** 
      * Download a collection tree.
      * 
@@ -875,14 +893,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Download this data object.
 			try {
 			     dataObjectDownloadResponses.getDownloadReceipts().add(
-				    	   downloadDataObject(dataObjectPath, downloadRequest).getDownloadReceipt());
+				    	   downloadDataObject(dataObjectPath, downloadRequest, true).getDownloadReceipt());
 			     
 			} catch(HpcException e) {
 				    // Data object download failed. 
 				    logger.error("Failed to download data object in a collection" , e); 
 				    dataObjectDownloadResponses.getDownloadReceipts().add(
-  				        toDownloadResponseDTO(downloadRequest.getDestination(), null, false, e.getMessage()).
-				        getDownloadReceipt());
+  				        toDownloadResponseDTO(downloadRequest.getDestination(), null, null).getDownloadReceipt());
 			}
 		}
 		
@@ -926,21 +943,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * 
      * @param destinationLocation The destination file location.
      * @param destinationFile The destination file.
-     * @param result The download request result.
-     * @param message The error message.
+     * @param downloadTaskId The data object download task ID.
      * @return A download response DTO object
      */
 	private HpcDownloadResponseDTO toDownloadResponseDTO(HpcFileLocation destinationLocation,
 			                                             File destinationFile,
-			                                             boolean result, String message)
+			                                             Integer downloadTaskId)
 	{
 		// Construct and return a DTO
 		HpcDownloadResponseDTO downloadResponse = new HpcDownloadResponseDTO();
 		HpcDownloadReceiptDTO downloadReceipt = new HpcDownloadReceiptDTO();
 		downloadReceipt.setDestinationFile(destinationFile);
 		downloadReceipt.setDestinationLocation(destinationLocation);
-		downloadReceipt.setResult(result);
-		downloadReceipt.setMessage(message);
+		downloadReceipt.setDownloadTaskId(downloadTaskId);
 		
 		downloadResponse.setDownloadReceipt(downloadReceipt);
 		return downloadResponse;
