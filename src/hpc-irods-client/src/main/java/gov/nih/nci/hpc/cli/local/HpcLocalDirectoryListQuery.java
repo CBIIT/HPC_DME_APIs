@@ -42,12 +42,13 @@ public class HpcLocalDirectoryListQuery {
 	 * @throws HpcException
 	 *             on data transfer system failure.
 	 */
-	public List<HpcPathAttributes> getPathAttributes(String fileLocation, Pattern excludePattern) throws HpcException {
+	public List<HpcPathAttributes> getPathAttributes(String fileLocation, List<String> excludePattern,
+			List<String> includePattern) throws HpcException {
 		List<HpcPathAttributes> pathAttributes = new ArrayList<HpcPathAttributes>();
 
 		// Invoke the Globus directory listing service.
 		try {
-			List<File> dirContent = listDirectory(fileLocation, excludePattern);
+			List<File> dirContent = listDirectory(fileLocation, excludePattern, includePattern);
 			getPathAttributes(pathAttributes, dirContent);
 		} catch (Exception e) {
 			throw new HpcException("[GLOBUS] Failed to get path attributes: " + fileLocation,
@@ -77,17 +78,17 @@ public class HpcLocalDirectoryListQuery {
 		}
 	}
 
-	public static List<File> listDirectory(String directoryName, Pattern excludePattern) {
+	public static List<File> listDirectory(String directoryName, List<String> excludePattern,
+			List<String> includePattern) {
 		File directory = new File(directoryName);
 
 		List<File> resultList = new ArrayList<File>();
 
 		// get all the files from a directory
 		File[] fList = directory.listFiles();
-//		resultList.addAll(Arrays.asList(fList));
+		// resultList.addAll(Arrays.asList(fList));
 		for (File file : fList) {
-			if(isMatch(file.getName(), excludePattern))
-			{
+			if (isExclude(file.getAbsolutePath(), excludePattern, includePattern)) {
 				System.out.println("Excluding file: " + file.getAbsolutePath());
 				continue;
 			}
@@ -95,18 +96,103 @@ public class HpcLocalDirectoryListQuery {
 				resultList.add(file);
 				System.out.println("Including file:" + file.getAbsolutePath());
 			} else if (file.isDirectory()) {
-				resultList.addAll(listDirectory(file.getAbsolutePath(), excludePattern));
+				resultList.addAll(listDirectory(file.getAbsolutePath(), excludePattern, includePattern));
 			}
 		}
 		return resultList;
 	}
-	
-	private static boolean isMatch(String fileName, Pattern excludePattern)
-	{
-		if(excludePattern == null)
+
+	private static boolean isExcludePattern(String fileName, List<Pattern> excludePatterns, List<Pattern> includePatterns) {
+		if ((includePatterns == null || includePatterns.isEmpty())
+				&& (excludePatterns == null || excludePatterns.isEmpty()))
 			return false;
+
+		boolean include = false;
+		if (includePatterns != null && !includePatterns.isEmpty()) {
+			for (Pattern pattern : includePatterns) {
+				Matcher matcher = pattern.matcher(fileName);
+				if (matcher.matches()) {
+					include = true;
+					break;
+				}
+			}
+		} else
+			include = true;
+
+		boolean exclude = false;
+		if (excludePatterns != null && !excludePatterns.isEmpty() && include) {
+
+			for (Pattern pattern : excludePatterns) {
+				Matcher matcher = pattern.matcher(fileName);
+				if (matcher.matches()) {
+					exclude = true;
+					break;
+				}
+			}
+		}
 		
-		  Matcher matcher = excludePattern.matcher(fileName);
-		  return matcher.matches();
+		if(fileName.indexOf(".metadata.json") >0)
+			return true;
+		
+		return exclude;
 	}
+
+	private static boolean isExclude(String fileName, List<String> excludePatterns, List<String> includePatterns) {
+		if ((includePatterns == null || includePatterns.isEmpty())
+				&& (excludePatterns == null || excludePatterns.isEmpty()))
+			return false;
+
+		boolean include = false;
+		if (includePatterns != null && !includePatterns.isEmpty()) {
+			for (String pattern : includePatterns) {
+				if(pattern.startsWith("*") || pattern.startsWith("."))
+				{
+					String matchingExt = pattern.substring(pattern.indexOf("*")+1, pattern.length());
+					if(fileName.endsWith(matchingExt))
+					{
+						include = true;
+						break;
+					}
+						
+				}else
+				{
+					if(fileName.indexOf(pattern) != -1)
+					{
+						include = true;
+						break;
+					}
+				}
+			}
+		} else
+			include = true;
+
+		boolean exclude = false;
+		if (excludePatterns != null && !excludePatterns.isEmpty() && include) {
+			for (String pattern : excludePatterns) {
+				if(pattern.startsWith("*") || pattern.startsWith("."))
+				{
+					String matchingExt = pattern.substring(pattern.indexOf("*")+1, pattern.length());
+					if(fileName.endsWith(matchingExt))
+					{
+						exclude = true;
+						break;
+					}
+						
+				}else
+				{
+					if(fileName.indexOf(pattern) != -1)
+					{
+						exclude = true;
+						break;
+					}
+				}
+			}
+		}
+		
+		if(fileName.indexOf(".metadata.json") >0)
+			return true;
+		
+		return exclude;
+	}
+
 }
