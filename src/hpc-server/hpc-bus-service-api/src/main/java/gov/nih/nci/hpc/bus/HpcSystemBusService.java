@@ -18,7 +18,6 @@ import gov.nih.nci.hpc.exception.HpcException;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public interface HpcSystemBusService 
@@ -39,12 +38,12 @@ public interface HpcSystemBusService
 	public void processTemporaryArchive() throws HpcException;
 	
     /**
-     * Detect all the completed (aync) 2nd hop download requests and delete the files 
+     * Detect all the completed (aync) 2nd hop download tasks and delete the files 
      * in the download space.
      *
      * @throws HpcException on service failure.
      */
-	public void cleanupDataTransferDownloadFiles() throws HpcException;
+	public void cleanupDataObjectDownloadTasks() throws HpcException;
 	
     /**
      * Process all (active) events.

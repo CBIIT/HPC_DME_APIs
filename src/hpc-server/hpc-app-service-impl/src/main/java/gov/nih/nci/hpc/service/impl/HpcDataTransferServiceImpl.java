@@ -11,11 +11,26 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
-import gov.nih.nci.hpc.dao.HpcDataObjectDownloadCleanupDAO;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadCleanup;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
@@ -33,20 +48,6 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -80,7 +81,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	
 	// Data object download cleanup DAO.
 	@Autowired
-	private HpcDataObjectDownloadCleanupDAO dataObjectDownloadCleanupDAO = null;
+	private HpcDataDownloadDAO dataDownloadDAO = null;
 	
 	// Event service
 	@Autowired
@@ -178,7 +179,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
                                                  HpcFileLocation archiveLocation, 
                                                  HpcFileLocation destinationLocation,
                                                  HpcDataTransferType dataTransferType,
-                                                 String doc) 
+                                                 String doc, boolean collectionDownload) 
                                                  throws HpcException
     {
     	HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
@@ -187,6 +188,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	downloadRequest.setDestinationLocation(destinationLocation);
     	downloadRequest.setPath(path);
     	downloadRequest.setDoc(doc);
+    	downloadRequest.setCollectionDownload(collectionDownload);
     	
     	// Create a data object file to download the data if a destination was not provided.
     	if(destinationLocation == null) {
@@ -297,29 +299,29 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     }
 	
 	@Override
-	public List<HpcDataObjectDownloadCleanup> getDataObjectDownloadCleanups() throws HpcException
+	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks(
+                                              HpcDataTransferType dataTransferType) throws HpcException
 	{
-		return dataObjectDownloadCleanupDAO.getAll();
+		return dataDownloadDAO.getDataObjectDownloadTasks(dataTransferType);
 	}
 	
 	@Override
-	public void cleanupDataObjectDownloadFile(
-	                   HpcDataObjectDownloadCleanup dataObjectDownloadCleanup) 
-	                   throws HpcException
+	public void cleanupDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)
+	                                         throws HpcException
 	{
 		// Input validation
-		if(dataObjectDownloadCleanup == null) {
-		   throw new HpcException("Invalid data object download cleanup request", 
+		if(downloadTask == null) {
+		   throw new HpcException("Invalid data object download task", 
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		
 		// Delete the download file.
-		if(!FileUtils.deleteQuietly(new File(dataObjectDownloadCleanup.getDownloadFilePath()))) {
-		   logger.error("Failed to delete file: " + dataObjectDownloadCleanup.getDownloadFilePath());
+		if(!FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()))) {
+		   logger.error("Failed to delete file: " + downloadTask.getDownloadFilePath());
 		}
 		
 		// Cleanup the DB record.
-		dataObjectDownloadCleanupDAO.delete(dataObjectDownloadCleanup.getDataTransferRequestId());
+		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
 	}
 	
     //---------------------------------------------------------------------//
@@ -553,12 +555,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
     	
     	// Download the data object using the appropriate data transfer proxy.
-    	HpcDataObjectDownloadResponse downloadResponse =  
-    	   dataTransferProxies.get(dataTransferType).
-  	    		       downloadDataObject(getAuthenticatedToken(dataTransferType, downloadRequest.getDoc()), 
-  	                                      downloadRequest, secondHopDownload);	
+    	try {
+    	     HpcDataObjectDownloadResponse downloadResponse =  
+    	        dataTransferProxies.get(dataTransferType).
+  	    		            downloadDataObject(getAuthenticatedToken(dataTransferType, downloadRequest.getDoc()), 
+  	                                           downloadRequest, secondHopDownload);	
 
-    	return secondHopDownload == null ? downloadResponse : secondHopDownload.getDownloadResponse();
+    	        return secondHopDownload == null ? downloadResponse : secondHopDownload.getDownloadResponse();
+    	        
+    	} catch(HpcException e) {
+    		    // Cleanup the download task (if needed) and rethrow.
+    		    if(secondHopDownload != null) {
+    		       cleanupDataObjectDownloadTask(secondHopDownload.getDownloadTask());
+    		    }
+    		    
+    		    throw(e);
+    	}
     }
 	
     /**
@@ -664,6 +676,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		// The second hop download request.
     	HpcDataObjectDownloadRequest secondHopDownloadRequest = null;
     	
+    	// A download data object task (keeps track of the async 2-hop download end-to-end.
+    	HpcDataObjectDownloadTask downloadTask = new HpcDataObjectDownloadTask();
+    	
     	// The second hop download's source file.
     	File sourceFile = null;
     	
@@ -697,13 +712,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
  				  	                                         firstHopDownloadRequest.getDoc()),
  			        HpcDataTransferType.GLOBUS,
  			        firstHopDownloadRequest.getPath(),
- 			        firstHopDownloadRequest.getDoc());
+ 			        firstHopDownloadRequest.getDoc(),
+ 			        firstHopDownloadRequest.getCollectionDownload());
 			
 			// Create the source file for the second hop download
 			sourceFile = createFile(
 			             dataTransferProxies.get(HpcDataTransferType.GLOBUS).
 	                         getFilePath(secondHopDownloadRequest.getArchiveLocation().getFileId(), 
 	                        		     false));
+			
+			// Create an persist a download task. This object tracks the download request through the 2-hop async 
+			// download requests.
+			createDownloadTask();
 		}
 		
 		//---------------------------------------------------------------------//
@@ -729,8 +749,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		{
 			HpcDataObjectDownloadResponse downloadResponse = new HpcDataObjectDownloadResponse();
 			downloadResponse.setDestinationLocation(secondHopDownloadRequest.getDestinationLocation());
+			downloadResponse.setDownloadTaskId(downloadTask.getId());
 			return downloadResponse;
 		}
+		
+	    /**
+	     * Return the download task associated with this 2nd hop download.
+	     */
+	    public HpcDataObjectDownloadTask getDownloadTask() 
+	    {
+	    	return downloadTask;
+	    }
 		
 		//---------------------------------------------------------------------//
 	    // HpcDataTransferProgressListener Interface Implementation
@@ -738,29 +767,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		
 		@Override public void transferCompleted()
 		{
-			// This callback method is called when the first hop download completed.
+			// This callback method is called when the first hop (S3) download completed.
 			try {
-				   // Perform 2nd hop async download.
+				   // Perform 2nd hop async download (Globus)
 				   HpcDataObjectDownloadResponse secondHopDownloadResponse = 
 					    	                     downloadDataObject(secondHopDownloadRequest);
 
-				   // Create an entry to cleanup the source file after the 2nd hop async download completes.
-				   saveDataObjectDownloadCleanup(secondHopDownloadResponse.getDataTransferRequestId(), 
-						                         secondHopDownloadRequest.getDataTransferType(),
-						                         sourceFile.getAbsolutePath(), secondHopDownloadRequest.getPath(),
-						                         secondHopDownloadRequest.getDoc(),
-						                         secondHopDownloadRequest.getDestinationLocation());
+				   // Update the download task with the Globus request ID.
+				   updateDownloadTask(secondHopDownloadResponse.getDataTransferRequestId());
 				   
 			} catch(HpcException e) {
-				    logger.error("Failed to submit 2nd hop download request", e);
-			    	try {
-			    		 eventService.addDataTransferDownloadFailedEvent(
-			    				         userId, path, null, secondHopDownloadRequest.getDestinationLocation(),
-			    				         Calendar.getInstance(), e.getMessage());
-			    		 
-			    	} catch(HpcException ex) {
-			    		    logger.error("Failed to add data transfer download failed event", ex);
-			    	}
+				    logger.error("Failed to submit 2nd hop download request, or update download task", e);
+				    transferFailed(e.getMessage());
 			}
 		}
 		
@@ -768,14 +786,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    @Override
 	    public void transferFailed()
 	    {
-	    	try {
-	    		 eventService.addDataTransferDownloadFailedEvent(
-	    				         userId, path, null, secondHopDownloadRequest.getDestinationLocation(),
-	    				         Calendar.getInstance(), "Failed to get data from archive via S3");
-	    		 
-	    	} catch(HpcException e) {
-	    		    logger.error("Failed to add data transfer download failed event", e);
-	    	}
+		    transferFailed("Failed to get data from archive via S3");
 	    }
 	    
 	    //---------------------------------------------------------------------//
@@ -790,12 +801,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	     * @param dataTransferType The data transfer type to create the request
 	     * @param path The data object logical path.
 	     * @param doc The DOC.
+	     * @param collectionDownload True if this download request is part of a collection download request.
 	     * @return Data object download request.
 	     * @throws HpcException If it failed to obtain an authentication token.
 	     */
 	    private HpcDataObjectDownloadRequest toSecondHopDownloadRequest(HpcFileLocation destinationLocation,
 	    		                                                        HpcDataTransferType dataTransferType,
-	    		                                                        String path, String doc)
+	    		                                                        String path, String doc, 
+	    		                                                        boolean collectionDownload)
 	    		                                                       throws HpcException
 	    {
 	    	// Create a source location.
@@ -810,6 +823,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    	downloadRequest.setDataTransferType(dataTransferType);
 	    	downloadRequest.setPath(path);
 	    	downloadRequest.setDoc(doc);
+	    	downloadRequest.setCollectionDownload(collectionDownload);
 	    	
 	    	return downloadRequest;
 	    }
@@ -818,35 +832,67 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	     * Create and store an entry in the DB to cleanup download file after 2nd hop async
 	     * transfer is complete. 
 	     * 
-	     * @param dataTransferRequestId The data transfer request ID.
 	     * @param dataTransferType The data transfer type.
 	     * @param downloadFilePath The download file path to delete after download is complete.
 	     * @param path The data object path.
 	     * @param doc The DOC.
 	     * @param destinationLocation The download destination path.
+	     * @throws HpcException If it failed to persist the task.
 	     */
-	    private void saveDataObjectDownloadCleanup(String dataTransferRequestId, 
-	    		                                   HpcDataTransferType dataTransferType,
-	    		                                   String downloadFilePath, String path,
-	    		                                   String doc,
-	    		                                   HpcFileLocation destinationLocation)
+	    private void createDownloadTask() throws HpcException
 	    {
-	    	HpcDataObjectDownloadCleanup dataObjectDownloadCleanup = new HpcDataObjectDownloadCleanup();
-	    	dataObjectDownloadCleanup.setDataTransferRequestId(dataTransferRequestId);
-	    	dataObjectDownloadCleanup.setDataTransferType(dataTransferType);
-	    	dataObjectDownloadCleanup.setDownloadFilePath(downloadFilePath);
-	    	dataObjectDownloadCleanup.setUserId(userId);
-	    	dataObjectDownloadCleanup.setPath(path);
-	    	dataObjectDownloadCleanup.setDoc(doc);
-	    	dataObjectDownloadCleanup.setDestinationLocation(destinationLocation);
+	    	downloadTask.setDataTransferType(HpcDataTransferType.S_3);
+	    	downloadTask.setDownloadFilePath(sourceFile.getAbsolutePath());
+	    	downloadTask.setUserId(userId);
+	    	downloadTask.setPath(secondHopDownloadRequest.getPath());
+	    	downloadTask.setDoc(secondHopDownloadRequest.getDoc());
+	    	downloadTask.setDestinationLocation(secondHopDownloadRequest.getDestinationLocation());
+	    	downloadTask.setCreated(Calendar.getInstance());
 	    	
-	    	try {
-	    		 dataObjectDownloadCleanupDAO.upsert(dataObjectDownloadCleanup);
+	    	dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+	    }
+	    
+	    /**
+	     * Update the download task after S3 download is done and a successful submit to Globus.
+	     * 
+	     * @param dataTransferRequestId The data transfer request ID (Globus).
+	     * @throws HpcException If it failed to persist the task.
+	     */
+	    private void updateDownloadTask(String dataTransferRequestId) throws HpcException
+	    {
+	    	downloadTask.setDataTransferType(HpcDataTransferType.GLOBUS);
+	    	downloadTask.setDataTransferRequestId(dataTransferRequestId);
+	    	dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+	    }
+	    
+	    /**
+	     * Handle the case when transfer failed. Send a download failed event and cleanup the download task.
+	     * 
+	     * @param message The message to include in the download failed event.
+	     */ 
+   		private void transferFailed(String message) 
+   		{
+   			try {
+	    		 // Record a download failed event if this is a single file download request.
+	    		 if(!secondHopDownloadRequest.getCollectionDownload()) {
+	    		    eventService.addDataTransferDownloadFailedEvent(
+	    				            userId, path, null, 
+	    				            secondHopDownloadRequest.getDestinationLocation(),
+	    				            Calendar.getInstance(), message);
+	    		 }
 	    		 
 	    	} catch(HpcException e) {
-	    		    logger.error("Failed to persist Data Object Download Cleanup record", e);
+	    		    logger.error("Failed to add data transfer download failed event", e);
 	    	}
-	    }
+	    	
+	    	// Cleanup the download task.
+	    	try {
+	    	     cleanupDataObjectDownloadTask(downloadTask);
+	    	     
+	    	} catch(HpcException ex) {
+	    		    logger.error("Failed to cleanup download task", ex);
+	    	}
+   		}
 	}
 }
  
