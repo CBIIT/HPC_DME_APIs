@@ -31,7 +31,7 @@ WITH (
 
 CREATE TABLE public."HPC_DATA_OBJECT_DOWNLOAD_TASK_RESULT"
 (
-  "ID" integer NOT NULL,
+  "ID" integer PRIMARY KEY,
   "USER_ID" text NOT NULL,
   "PATH" text NOT NULL,
   "DOC" text NOT NULL,
