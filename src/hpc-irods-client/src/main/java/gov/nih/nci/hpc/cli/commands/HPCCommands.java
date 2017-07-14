@@ -131,13 +131,17 @@ public class HPCCommands implements CommandMarker {
 			@CliOption(key = {
 					"filePathBaseName" }, mandatory = false, help = "Please provide file base path name. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path>") final String filePathBaseName,
 			@CliOption(key = {
-					"destinationBasePath" }, mandatory = false, help = "Please provide destination base path. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path>") final String destinationBasePath) {
+					"destinationBasePath" }, mandatory = true, help = "Please provide destination base path. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path>") final String destinationBasePath,
+			@CliOption(key = {
+			"test" }, mandatory = false, help = "Test run to see the include and exclude files. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path> --test") final String test
+			) {
 		Map<String, String> criteriaMap = new HashMap<String, String>();
 		criteriaMap.put("filePath", filePath);
 		criteriaMap.put("excludePatternFile", excludePattern);
 		criteriaMap.put("includePatternFile", includePattern);
 		criteriaMap.put("filePathBaseName", filePathBaseName);
 		criteriaMap.put("destinationBasePath", destinationBasePath);
+		criteriaMap.put("test", test);
 		return getLocalDatafiles.process("registerFromFilePath", criteriaMap, null, null, null);
 	}
 

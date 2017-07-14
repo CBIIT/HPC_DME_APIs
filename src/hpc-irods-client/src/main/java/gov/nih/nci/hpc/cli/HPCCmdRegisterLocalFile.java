@@ -70,16 +70,20 @@ public class HPCCmdRegisterLocalFile extends HPCCmdClient {
 		boolean success = true;
 		String localPath = null;
 		String excludePattern = null;
+		String includePattern = null;
 		String filePathBaseName = null;
 		String destinationBasePath = null;
+		boolean testRun = false;
 		try {
 			createErrorLog();
 
 			localPath = (String) criteria.get("filePath");
 			excludePattern = (String) criteria.get("excludePatternFile");
-			excludePattern = (String) criteria.get("includePatternFile");
+			includePattern = (String) criteria.get("includePatternFile");
 			filePathBaseName = (String) criteria.get("filePathBaseName");
 			destinationBasePath = (String) criteria.get("destinationBasePath");
+			if(criteria.get("test") != null && criteria.get("test").equalsIgnoreCase("true"))
+				testRun = true;
 			if (cmd == null || cmd.isEmpty() || criteria == null || criteria.isEmpty()) {
 				System.out.println("Invlaid Command");
 				return false;
@@ -95,8 +99,8 @@ public class HPCCmdRegisterLocalFile extends HPCCmdClient {
 				}
 				HpcLocalDirectoryListGenerator generator = new HpcLocalDirectoryListGenerator(hpcServerURL, authToken,
 						hpcCertPath, hpcCertPassword);
-				success = generator.run(localPath, excludePattern, filePathBaseName, destinationBasePath, logFile,
-						logRecordsFile);
+				success = generator.run(localPath, excludePattern,includePattern, filePathBaseName, destinationBasePath, logFile,
+						logRecordsFile, testRun);
 				logRecordsFile = null;
 			} catch (Exception e) {
 				createErrorLog();
