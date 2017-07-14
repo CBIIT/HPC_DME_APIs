@@ -8,9 +8,11 @@
 package gov.nih.nci.hpc.cli.local;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -69,35 +71,35 @@ public class HpcLocalDirectoryListGenerator {
 		this.hpcServerURL = hpcServerURL;
 	}
 
-	public boolean run(String filePath, String excludePattern, String filePathBaseName, String destinationBasePath,
-			String logFile, String recordFile) {
+	public boolean run(String filePath, String excludePatternFile, String includePatternFile, String filePathBaseName,
+			String destinationBasePath, String logFile, String recordFile, boolean testRun) {
 		this.logFile = logFile;
 		this.recordFile = recordFile;
 		boolean success = true;
 		Pattern pattern = null;
 		HpcLocalDirectoryListQuery impl = new HpcLocalDirectoryListQuery();
 		try {
-			if (excludePattern != null && !excludePattern.isEmpty())
-				pattern = Pattern.compile(excludePattern);
 			// authenticatedToken = impl.authenticate(userId, password);
-			List<HpcPathAttributes> files = impl.getPathAttributes(filePath, pattern);
-			if (files != null) {
+//			List<Pattern> excludePatterns = readPatternsfromFile(excludePatternFile);
+//			List<Pattern> includePatterns = readPatternsfromFile(includePatternFile);
+			List<String> excludePatterns = readPatternStringsfromFile(excludePatternFile);
+			List<String> includePatterns = readPatternStringsfromFile(includePatternFile);
+			List<HpcPathAttributes> files = impl.getPathAttributes(filePath, excludePatterns, includePatterns);
+			if (files != null && !testRun) {
 				for (HpcPathAttributes file : files) {
 					HpcDataObjectRegistrationDTO dataObject = new HpcDataObjectRegistrationDTO();
 					List<HpcMetadataEntry> metadataEntries = null;
-					try
-					{
+					try {
 						metadataEntries = getMetadata(file);
-					}
-					catch(HpcCmdException e)
-					{
-						String message = "Failed to process file: " + file.getAbsolutePath() + " Reaon: " + e.getMessage();
+					} catch (HpcCmdException e) {
+						String message = "Failed to process file: " + file.getAbsolutePath() + " Reaon: "
+								+ e.getMessage();
 						System.out.println(message);
 						writeException(e, message, null);
 						writeRecord(file.getAbsolutePath());
 						continue;
 					}
-					
+
 					dataObject.getMetadataEntries().addAll(metadataEntries);
 					dataObject.setCreateParentCollections(true);
 					List<HpcMetadataEntry> parentCollectionMetadataEntries = new ArrayList<HpcMetadataEntry>();
@@ -133,9 +135,66 @@ public class HpcLocalDirectoryListGenerator {
 		return success;
 	}
 
-	private List<HpcMetadataEntry> getMetadata(HpcPathAttributes file) throws HpcCmdException{
+	private List<Pattern> readPatternsfromFile(String fileName) {
+		if (fileName == null || fileName.isEmpty())
+			return null;
+		BufferedReader reader = null;
+		List<Pattern> patterns = new ArrayList<Pattern>();
+		try {
+			reader = new BufferedReader(new FileReader(fileName));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				Pattern pattern = Pattern.compile(line);
+				patterns.add(pattern);
+			}
+			
+		} catch (IOException e) {
+			throw new HpcCmdException("Failed to read include/exclude pattern file due to: " + e.getMessage());
+		}
+		finally
+		{
+			if(reader != null)
+				try {
+					reader.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}
+		return patterns;
+	}
+
+	private List<String> readPatternStringsfromFile(String fileName) {
+		if (fileName == null || fileName.isEmpty())
+			return null;
+		BufferedReader reader = null;
+		List<String> patterns = new ArrayList<String>();
+		try {
+			reader = new BufferedReader(new FileReader(fileName));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				patterns.add(line);
+			}
+			
+		} catch (IOException e) {
+			throw new HpcCmdException("Failed to read include/exclude pattern file due to: " + e.getMessage());
+		}
+		finally
+		{
+			if(reader != null)
+				try {
+					reader.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}
+		return patterns;
+	}
+
+	private List<HpcMetadataEntry> getMetadata(HpcPathAttributes file) throws HpcCmdException {
 		String fullPath = file.getAbsolutePath();
-		File metadataFile = new File(fullPath + ".json");
+		File metadataFile = new File(fullPath + ".metadata.json");
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
 		if (metadataFile.exists()) {
 			MappingJsonFactory factory = new MappingJsonFactory();
@@ -144,8 +203,9 @@ public class HpcLocalDirectoryListGenerator {
 				parser = factory.createParser(new FileInputStream(metadataFile));
 				HpcMetadataAttributes metadataAttributes = parser.readValueAs(HpcMetadataAttributes.class);
 				metadataEntries = metadataAttributes.getMetadataEntries();
-				//metadataEntries = parser.readValueAs(new TypeReference<List<HpcMetadataEntry>>() {
-				//});
+				// metadataEntries = parser.readValueAs(new
+				// TypeReference<List<HpcMetadataEntry>>() {
+				// });
 			} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
 				throw new HpcCmdException(
 						"Failed to read JSON metadata file: " + file.getAbsolutePath() + " Reason: " + e.getMessage());

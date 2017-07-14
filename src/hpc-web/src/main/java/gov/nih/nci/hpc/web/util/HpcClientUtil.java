@@ -812,9 +812,16 @@ public class HpcClientUtil {
 	public static boolean registerDatafile(String token, MultipartFile hpcDatafile, String hpcDatafileURL, HpcDataObjectRegistrationDTO datafileDTO,
 			String path, String hpcCertPath, String hpcCertPassword) {
 		try {
-			HpcDataObjectListDTO datafile = getDatafiles(token, hpcDatafileURL, path, false, hpcCertPath, hpcCertPassword);
-			if(datafile != null && datafile.getDataObjectPaths() != null && datafile.getDataObjectPaths().size() >0)
-				throw new HpcWebException("Failed to create. Collection already exists: " + path);
+			try
+			{
+				HpcDataObjectListDTO datafile = getDatafiles(token, hpcDatafileURL, path, false, hpcCertPath, hpcCertPassword);
+				if(datafile != null && datafile.getDataObjectPaths() != null && datafile.getDataObjectPaths().size() >0)
+					throw new HpcWebException("Failed to create. Collection already exists: " + path);
+			}
+			catch(HpcWebException e)
+			{
+				//Data file is not there!
+			}
 			
 			WebClient client = HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath, hpcCertPassword);
 			client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
