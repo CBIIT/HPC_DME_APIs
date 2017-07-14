@@ -773,6 +773,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		{
 			// This callback method is called when the first hop (S3) download completed.
 			try {
+				   // Update the download task to reflect starting 2nd hop transfer.
+				   downloadTask.setDataTransferType(secondHopDownloadRequest.getDataTransferType());
+				   
 				   // Perform 2nd hop async download (Globus)
 				   HpcDataObjectDownloadResponse secondHopDownloadResponse = 
 					    	                     downloadDataObject(secondHopDownloadRequest);
@@ -864,7 +867,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	     */
 	    private void updateDownloadTask(String dataTransferRequestId) throws HpcException
 	    {
-	    	downloadTask.setDataTransferType(HpcDataTransferType.GLOBUS);
 	    	downloadTask.setDataTransferRequestId(dataTransferRequestId);
 	    	dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 	    }
