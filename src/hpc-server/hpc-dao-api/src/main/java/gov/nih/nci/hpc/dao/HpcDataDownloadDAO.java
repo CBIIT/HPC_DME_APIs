@@ -10,9 +10,11 @@
 
 package gov.nih.nci.hpc.dao;
 
+import java.util.Calendar;
 import java.util.List;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -28,7 +30,7 @@ public interface HpcDataDownloadDAO
 {    
     /**
      * Store a new data object download task (if dataObjectDownloadTask.getId() is provided NULL), 
-     * or updated an existing task.
+     * or update an existing task.
      * Note: If a new task is inserted, dataObjectDownloadTask.getId() will be updated with the generated ID.
      *
      * @param dataObjectDownloadTask The data object download task to persist.
@@ -36,6 +38,15 @@ public interface HpcDataDownloadDAO
      */
     public void upsertDataObjectDownloadTask(HpcDataObjectDownloadTask dataObjectDownloadTask) 
     		                                throws HpcException;
+    
+    /**
+     * Get a data object download task.
+     *
+     * @param id The data object download task ID.
+     * @return The download task object, or null if not found.
+     * @throws HpcException on database error.
+     */
+    public HpcDataObjectDownloadTask getDataObjectDownloadTask(int id)  throws HpcException;
     
     /**
      * Delete a data object download task.
@@ -54,6 +65,25 @@ public interface HpcDataDownloadDAO
      */
     public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks(HpcDataTransferType dataTransferType) 
     		                                                         throws HpcException;
+    
+    /**
+     * Store a new data object download task result, or updated an existing task result.
+     *
+     * @param dataObjectDownloadTask The data object download task result to persist.
+     * @throws HpcException on database error.
+     */
+    public void upsertDataObjectDownloadResult(HpcDataObjectDownloadTask dataObjectDownloadTask,
+    		                                   boolean result, String message, Calendar completed) 
+    		                                  throws HpcException;
+    
+    /**
+     * Get a data object download task result.
+     *
+     * @param id The data object download task ID.
+     * @return The download task result object, or null if not found.
+     * @throws HpcException on database error.
+     */
+    public HpcDataObjectDownloadTaskResult getDataObjectDownloadTaskResult(int id)  throws HpcException;
 }
 
  

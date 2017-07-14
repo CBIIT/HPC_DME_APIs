@@ -306,7 +306,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	}
 	
 	@Override
-	public void cleanupDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)
+	public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+			                                   boolean result, String message)
 	                                         throws HpcException
 	{
 		// Input validation
@@ -315,13 +316,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		
-		// Delete the download file.
+		// Delete the staged download file.
 		if(!FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()))) {
 		   logger.error("Failed to delete file: " + downloadTask.getDownloadFilePath());
 		}
 		
 		// Cleanup the DB record.
 		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
+		
+		// Create a task result object.
+		dataDownloadDAO.upsertDataObjectDownloadResult(downloadTask, result, message, Calendar.getInstance());
 	}
 	
     //---------------------------------------------------------------------//
@@ -566,7 +570,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	} catch(HpcException e) {
     		    // Cleanup the download task (if needed) and rethrow.
     		    if(secondHopDownload != null) {
-    		       cleanupDataObjectDownloadTask(secondHopDownload.getDownloadTask());
+    		       completeDataObjectDownloadTask(secondHopDownload.getDownloadTask(), false, e.getMessage());
     		    }
     		    
     		    throw(e);
@@ -887,7 +891,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    	
 	    	// Cleanup the download task.
 	    	try {
-	    	     cleanupDataObjectDownloadTask(downloadTask);
+	    	     completeDataObjectDownloadTask(downloadTask, false, message);
 	    	     
 	    	} catch(HpcException ex) {
 	    		    logger.error("Failed to cleanup download task", ex);

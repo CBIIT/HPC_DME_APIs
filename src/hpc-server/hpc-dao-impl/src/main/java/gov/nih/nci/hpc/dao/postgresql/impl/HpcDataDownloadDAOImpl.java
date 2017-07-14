@@ -14,6 +14,8 @@ import java.sql.PreparedStatement;
 import java.util.Calendar;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -24,6 +26,7 @@ import org.springframework.jdbc.support.KeyHolder;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -62,12 +65,35 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
                         "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", " +
                         "\"CREATED\"=excluded.\"CREATED\"";
 	
-	
 	public static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL = 
 		   "delete from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where " + "\"ID\" = ?";
 
+	public static final String GET_DATA_OBJECT_DOWNLOAD_TASK_SQL = 
+		   "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where " + "\"ID\" = ?";
+	
 	public static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL = 
 		   "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where " + "\"DATA_TRANSFER_TYPE\" = ?";
+	
+	public static final String UPSERT_DATA_OBJECT_DOWNLOAD_TASK_RESULT_SQL = 
+		   "insert into public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK_RESULT\" ( " +
+                   "\"ID\", \"USER_ID\", \"PATH\", \"DOC\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", " +
+                   "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"RESULT\", " +
+                   "\"MESSAGE\", \"CREATED\", \"COMPLETED\") " + 
+                   "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+           "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
+                        "\"PATH\"=excluded.\"PATH\", " + 
+                        "\"DOC\"=excluded.\"DOC\", " + 
+                        "\"DATA_TRANSFER_REQUEST_ID\"=excluded.\"DATA_TRANSFER_REQUEST_ID\", " + 
+                        "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\", " +
+                        "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " +
+                        "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", " +
+                        "\"RESULT\"=excluded.\"RESULT\", " +
+                        "\"MESSAGE\"=excluded.\"MESSAGE\", " +
+                        "\"CREATED\"=excluded.\"CREATED\", " +
+                        "\"COMPLETED\"=excluded.\"COMPLETED\"";
+	
+	public static final String GET_DATA_OBJECT_DOWNLOAD_TASK_RESULT_SQL = 
+		   "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK_RESULT\" where " + "\"ID\" = ?";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -78,7 +104,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	private JdbcTemplate jdbcTemplate = null;
 	
 	// HpcDataObjectDownloadCleanup table to object mapper.
-	private RowMapper<HpcDataObjectDownloadTask> rowMapper = (rs, rowNum) -> 
+	private RowMapper<HpcDataObjectDownloadTask> taskRowMapper = (rs, rowNum) -> 
 	{
 		HpcDataObjectDownloadTask dataObjectDownloadTask = new HpcDataObjectDownloadTask();
 		dataObjectDownloadTask.setId(rs.getInt("ID"));
@@ -105,6 +131,42 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		
         return dataObjectDownloadTask;
 	};
+	
+	// HpcDataObjectDownloadCleanup table to object mapper.
+	private RowMapper<HpcDataObjectDownloadTaskResult> taskResultRowMapper = (rs, rowNum) -> 
+	{
+		HpcDataObjectDownloadTaskResult dataObjectDownloadTaskResult = new HpcDataObjectDownloadTaskResult();
+		dataObjectDownloadTaskResult.setId(rs.getInt("ID"));
+		dataObjectDownloadTaskResult.setUserId(rs.getString("USER_ID"));
+		dataObjectDownloadTaskResult.setDoc(rs.getString("DOC"));
+		dataObjectDownloadTaskResult.setPath(rs.getString("PATH"));
+		dataObjectDownloadTaskResult.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
+		dataObjectDownloadTaskResult.setDataTransferType(
+				  HpcDataTransferType.fromValue(rs.getString(("DATA_TRANSFER_TYPE"))));
+		String destinationLocationFileContainerId = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
+		String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
+		if(destinationLocationFileContainerId != null && 
+		   destinationLocationFileId != null) {
+		   HpcFileLocation destinationLocation = new HpcFileLocation();
+		   destinationLocation.setFileContainerId(destinationLocationFileContainerId);
+		   destinationLocation.setFileId(destinationLocationFileId);
+		   dataObjectDownloadTaskResult.setDestinationLocation(destinationLocation);
+		}
+		dataObjectDownloadTaskResult.setResult(rs.getBoolean("RESULT"));
+		dataObjectDownloadTaskResult.setMessage(rs.getString("MESSAGE"));
+    	Calendar created = Calendar.getInstance();
+    	created.setTime(rs.getDate("CREATED"));
+    	dataObjectDownloadTaskResult.setCreated(created);
+    	
+    	Calendar completed = Calendar.getInstance();
+    	created.setTime(rs.getDate("COMPLETED"));
+    	dataObjectDownloadTaskResult.setCreated(completed);
+		
+        return dataObjectDownloadTaskResult;
+	};
+	
+    // The logger instance.
+	private static final Logger logger = LoggerFactory.getLogger(HpcDataDownloadDAOImpl.class.getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -153,6 +215,23 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		}
     }
 	
+	@Override 
+	public HpcDataObjectDownloadTask getDataObjectDownloadTask(int id) throws HpcException
+	{
+		try {
+		     return jdbcTemplate.queryForObject(GET_DATA_OBJECT_DOWNLOAD_TASK_SQL, 
+		    		                            taskRowMapper, id);
+		     
+		} catch(IncorrectResultSizeDataAccessException irse) {
+			    logger.error("Multiple tasks with the same ID found", irse);
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get a data object download task: " + e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+	}
+	
 	@Override
 	public void deleteDataObjectDownloadTask(int id) throws HpcException
 	{
@@ -166,10 +245,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	}
 	
 	@Override 
-	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks(HpcDataTransferType dataTransferType) throws HpcException
+	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks(HpcDataTransferType dataTransferType) 
+			                                                         throws HpcException
 	{
 		try {
-		     return jdbcTemplate.query(GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL, rowMapper, dataTransferType.value());
+		     return jdbcTemplate.query(GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL, 
+		    		                   taskRowMapper, dataTransferType.value());
 		     
 		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
 			    return null;
@@ -177,6 +258,47 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get data object download cleanup: " + 
 		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+	}
+	
+	@Override
+    public void upsertDataObjectDownloadResult(HpcDataObjectDownloadTask dataObjectDownloadTask,
+                                               boolean result, String message, Calendar completed) 
+                                              throws HpcException
+    {
+		try {
+		     jdbcTemplate.update(UPSERT_DATA_OBJECT_DOWNLOAD_TASK_RESULT_SQL,
+		    		             dataObjectDownloadTask.getId(),
+					    		 dataObjectDownloadTask.getUserId(),
+					    		 dataObjectDownloadTask.getPath(),
+					    		 dataObjectDownloadTask.getDoc(),
+					    		 dataObjectDownloadTask.getDataTransferRequestId(),
+					    		 dataObjectDownloadTask.getDataTransferType().value(),
+					    		 dataObjectDownloadTask.getDestinationLocation().getFileContainerId(),
+					    		 dataObjectDownloadTask.getDestinationLocation().getFileId(),
+					    		 result, message,
+					    		 dataObjectDownloadTask.getCreated(), completed);
+		     
+		} catch(DataAccessException e) {
+			    throw new HpcException("Failed to upsert a data object download task: " + e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}		
+    }
+	
+	@Override 
+	public HpcDataObjectDownloadTaskResult getDataObjectDownloadTaskResult(int id) throws HpcException
+	{
+		try {
+		     return jdbcTemplate.queryForObject(GET_DATA_OBJECT_DOWNLOAD_TASK_RESULT_SQL, 
+		    		                            taskResultRowMapper, id);
+		     
+		} catch(IncorrectResultSizeDataAccessException irse) {
+			    logger.error("Multiple tasks results with the same ID found", irse);
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get a data object download task result: " + e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
@@ -197,7 +319,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		                    {
 								PreparedStatement ps =
 								        connection.prepareStatement(INSERT_DATA_OBJECT_DOWNLOAD_TASK_SQL, 
-								 		                            new String[] {"\"ID\""});
+								 		                            new String[] {"ID"});
 								return ps;
 							}, keyHolder);
 		
