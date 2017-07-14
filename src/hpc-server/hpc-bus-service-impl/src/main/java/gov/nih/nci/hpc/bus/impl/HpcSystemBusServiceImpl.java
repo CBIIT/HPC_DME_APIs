@@ -244,27 +244,41 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     }
     
     @Override
-    public void cleanupDataObjectDownloadTasks() throws HpcException
+    public void completeDataObjectDownloadTasks() throws HpcException
     {
     	// Use system account to perform this service.
     	securityService.setSystemRequestInvoker();
     	
+    	// Iterate through all the data object download tasks that are in their 2nd hop (i.e. GLOBUS download
+    	// to user's endpoint is in progress)
     	for(HpcDataObjectDownloadTask downloadTask :
     		dataTransferService.getDataObjectDownloadTasks(HpcDataTransferType.GLOBUS)) {
-    		// Get the data transfer download status.
-    		HpcDataTransferDownloadStatus dataTransferDownloadStatus = 
-    		   dataTransferService.getDataTransferDownloadStatus(
-    				                  downloadTask.getDataTransferType(), 
-    				                  downloadTask.getDataTransferRequestId(),
-    				                  downloadTask.getDoc());
+    		try {
+    		     // Get the data transfer download status.
+    		     HpcDataTransferDownloadStatus dataTransferDownloadStatus = 
+    		     dataTransferService.getDataTransferDownloadStatus(
+    			  	                    downloadTask.getDataTransferType(), 
+    				                    downloadTask.getDataTransferRequestId(),
+    				                    downloadTask.getDoc());
     		
-    		// Cleanup the file if the transfer is no longer in-progress, and add an event.
-    		if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
-    		   dataTransferService.cleanupDataObjectDownloadTask(downloadTask);
-    		   addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
-    				                        downloadTask.getDataTransferRequestId(),
-    				                        dataTransferDownloadStatus, downloadTask.getDestinationLocation(),
-    				                        Calendar.getInstance(), downloadTask.getDataTransferType());
+    		     // Check the status of the data transfer. 
+    		     if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
+    		    	// This download task is no longer in-progress - complete it.
+    		        boolean result = dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.COMPLETED);
+    		        String message = result ? null : 
+    		        	             downloadTask.getDataTransferType() + " transfer failed. Request ID: " +
+    		        	             downloadTask.getDataTransferRequestId();
+    		    	dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message);
+    		    	
+    		    	// Send a download completion event.
+    		        addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
+    				                             downloadTask.getDataTransferRequestId(),
+    				                             dataTransferDownloadStatus, downloadTask.getDestinationLocation(),
+    				                             Calendar.getInstance(), downloadTask.getDataTransferType());
+    		     }
+    		     
+    		} catch(HpcException e) {
+    			    logger.error("Failed to complete download task: " + downloadTask.getId(), e);
     		}
     	}
     }
