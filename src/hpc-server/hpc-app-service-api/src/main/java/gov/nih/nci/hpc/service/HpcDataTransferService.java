@@ -162,12 +162,18 @@ public interface HpcDataTransferService
     		                                  HpcDataTransferType dataTransferType) throws HpcException;
     
     /**
-     * Cleanup data object download task. Update task info in DB and remove staged file.
+     * Complete a data object download task:
+     * 1. Cleanup any files staged in the file system for download.
+     * 2. Update task info in DB with results info
      *
-     * @param downloadTask The download task to clean up.
+     * @param downloadTask The download task to complete.
+     * @param result The result of the task (true is successful, false is failed).
+     * @param message (Optional) If the task failed, a message describing the failure.
      * @throws HpcException on service failure.
      */
-    public void cleanupDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException;
+    public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+    		                                   boolean result, String message) 
+    		                                  throws HpcException;
 }
 
  

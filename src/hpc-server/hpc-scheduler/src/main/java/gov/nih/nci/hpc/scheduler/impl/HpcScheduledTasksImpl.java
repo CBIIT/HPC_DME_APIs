@@ -84,11 +84,11 @@ public class HpcScheduledTasksImpl
      * Cleanup Data Transfer Download Files Task.
      * 
      */    
-    @Scheduled(cron = "${hpc.scheduler.cron.cleanupDataObjectDownloadTasks.delay}")
-    private void cleanupDataObjectDownloadTasksTask()
+    @Scheduled(cron = "${hpc.scheduler.cron.completeDataObjectDownloadTasks.delay}")
+    private void completeDataObjectDownloadTasksTask()
     {
-    	executeTask("cleanupDataObjectDownloadTasks()", 
-    			    systemBusService::cleanupDataObjectDownloadTasks);
+    	executeTask("completeDataObjectDownloadTasks()", 
+    			    systemBusService::completeDataObjectDownloadTasks);
     }
     
     /**
