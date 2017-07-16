@@ -11,11 +11,13 @@
 package gov.nih.nci.hpc.service;
 
 import java.io.File;
+import java.util.Calendar;
 import java.util.List;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -152,7 +154,7 @@ public interface HpcDataTransferService
     		                  throws HpcException;
     
     /**
-     * Get all data object download tasks that are in progress for a given data-transfer type
+     * Get all data object download tasks that are in progress for a given data-transfer type.
      *
      * @param dataTransferType The data-transfer type to query
      * @return A list of data object download tasks.
@@ -162,6 +164,18 @@ public interface HpcDataTransferService
     		                                  HpcDataTransferType dataTransferType) throws HpcException;
     
     /**
+     * Get a data object download task status. 
+     *
+     * @param taskId The download task ID.
+     * @return A download status object, or null if the task can't be found.
+     *         Note: The returned object is associated with a 'task' object if the download 
+     *         is in-progress. If the download completed or failed, the returned object is associated with a 
+     *         'result' object. 
+     * @throws HpcException on service failure.
+     */
+    public HpcDataObjectDownloadTaskStatus getDataObjectDownloadTaskStatus(int taskId) throws HpcException;
+    
+    /**
      * Complete a data object download task:
      * 1. Cleanup any files staged in the file system for download.
      * 2. Update task info in DB with results info
@@ -169,10 +183,11 @@ public interface HpcDataTransferService
      * @param downloadTask The download task to complete.
      * @param result The result of the task (true is successful, false is failed).
      * @param message (Optional) If the task failed, a message describing the failure.
+     * @param completed (Optional) The download task completion timestamp.
      * @throws HpcException on service failure.
      */
     public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
-    		                                   boolean result, String message) 
+    		                                   boolean result, String message, Calendar completed) 
     		                                  throws HpcException;
 }
 
