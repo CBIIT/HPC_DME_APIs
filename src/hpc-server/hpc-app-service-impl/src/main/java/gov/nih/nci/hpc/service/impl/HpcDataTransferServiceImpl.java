@@ -31,6 +31,8 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskResult;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
@@ -306,8 +308,33 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	}
 	
 	@Override
+	public HpcDataObjectDownloadTaskStatus getDataObjectDownloadTaskStatus(int taskId) throws HpcException
+	{
+		HpcDataObjectDownloadTaskStatus taskStatus = new HpcDataObjectDownloadTaskStatus();
+		
+		HpcDataObjectDownloadTaskResult taskResult = dataDownloadDAO.getDataObjectDownloadTaskResult(taskId);
+		if(taskResult != null) {
+		   // Task completed or failed. Return the result.
+		   taskStatus.setInProgress(false);
+		   taskStatus.setResult(taskResult);
+		   return taskStatus;
+		}
+	    
+		HpcDataObjectDownloadTask task = dataDownloadDAO.getDataObjectDownloadTask(taskId);
+		if(task != null) {
+		   // Task still in progress.
+		   taskStatus.setInProgress(true);
+		   taskStatus.setTask(task);
+		   return taskStatus;	
+		}
+		
+		// Task not found.
+		return null;
+	}
+	
+	@Override
 	public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
-			                                   boolean result, String message)
+			                                   boolean result, String message, Calendar completed)
 	                                         throws HpcException
 	{
 		// Input validation
@@ -325,7 +352,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
 		
 		// Create a task result object.
-		dataDownloadDAO.upsertDataObjectDownloadResult(downloadTask, result, message, Calendar.getInstance());
+		dataDownloadDAO.upsertDataObjectDownloadResult(downloadTask, result, message, completed);
 	}
 	
     //---------------------------------------------------------------------//
@@ -570,7 +597,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	} catch(HpcException e) {
     		    // Cleanup the download task (if needed) and rethrow.
     		    if(secondHopDownload != null) {
-    		       completeDataObjectDownloadTask(secondHopDownload.getDownloadTask(), false, e.getMessage());
+    		       completeDataObjectDownloadTask(secondHopDownload.getDownloadTask(), false, e.getMessage(),
+    		    		                          Calendar.getInstance());
     		    }
     		    
     		    throw(e);
@@ -878,13 +906,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	     */ 
    		private void transferFailed(String message) 
    		{
+   			Calendar transferFailedTimestamp = Calendar.getInstance();
    			try {
 	    		 // Record a download failed event if this is a single file download request.
 	    		 if(!secondHopDownloadRequest.getCollectionDownload()) {
 	    		    eventService.addDataTransferDownloadFailedEvent(
 	    				            userId, path, null, 
 	    				            secondHopDownloadRequest.getDestinationLocation(),
-	    				            Calendar.getInstance(), message);
+	    				            transferFailedTimestamp, message);
 	    		 }
 	    		 
 	    	} catch(HpcException e) {
@@ -893,7 +922,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    	
 	    	// Cleanup the download task.
 	    	try {
-	    	     completeDataObjectDownloadTask(downloadTask, false, message);
+	    	     completeDataObjectDownloadTask(downloadTask, false, message, transferFailedTimestamp);
 	    	     
 	    	} catch(HpcException ex) {
 	    		    logger.error("Failed to cleanup download task", ex);
