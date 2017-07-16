@@ -39,7 +39,6 @@ import org.apache.cxf.jaxrs.ext.multipart.Multipart;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 @Path("/")
@@ -187,6 +186,17 @@ public interface HpcDataManagementRestService
 	public Response downloadDataObject(@PathParam("path") String path,
 			                           HpcDownloadRequestDTO downloadRequest,
 			                           @Context MessageContext mc);
+	
+    /**
+     * Get Data object download task status.
+     *
+     * @param taskId The data object download task ID.
+     * @return The REST service response w/ HpcDataObjectDownloadStatusDTO entity.
+     */
+	@GET
+	@Path("/dataObject/download")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getDataObjectDownloadStatus(@QueryParam("taskId") Integer taskId);
 	
     /**
      * Delete a data object.

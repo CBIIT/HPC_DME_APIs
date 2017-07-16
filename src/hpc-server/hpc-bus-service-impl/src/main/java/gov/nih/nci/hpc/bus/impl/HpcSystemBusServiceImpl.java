@@ -268,13 +268,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		        String message = result ? null : 
     		        	             downloadTask.getDataTransferType() + " transfer failed. Request ID: " +
     		        	             downloadTask.getDataTransferRequestId();
-    		    	dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message);
+    		        Calendar completed = Calendar.getInstance();
+    		    	dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed);
     		    	
     		    	// Send a download completion event.
     		        addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
     				                             downloadTask.getDataTransferRequestId(),
     				                             dataTransferDownloadStatus, downloadTask.getDestinationLocation(),
-    				                             Calendar.getInstance(), downloadTask.getDataTransferType());
+    				                             completed, downloadTask.getDataTransferType());
     		     }
     		     
     		} catch(HpcException e) {

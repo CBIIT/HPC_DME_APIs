@@ -106,6 +106,9 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadTaskResult']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskResult"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadTaskStatus']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatus"/>
+		</jxb:bindings>
 		<jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferUploadStatus']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus"/>
 		</jxb:bindings>
