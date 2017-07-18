@@ -100,10 +100,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		   "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK_RESULT\" where " + "\"ID\" = ?";
 	
 	public static final String INSERT_COLLECTION_DOWNLOAD_TASK_SQL = 
-		   "insert into public.\"HPC_COLLECTION_DOWNLOAD_REQUEST\" (\"USER_ID\") values(NULL)";
+		   "insert into public.\"HPC_COLLECTION_DOWNLOAD_TASK\" (\"USER_ID\") values(NULL)";
 	
 	public static final String UPSERT_COLLECTION_DOWNLOAD_TASK_SQL = 
-		   "insert into public.\"HPC_COLLECTION_DOWNLOAD_REQUEST\" ( " +
+		   "insert into public.\"HPC_COLLECTION_DOWNLOAD_TASK\" ( " +
                    "\"ID\", \"USER_ID\", \"PATH\", \"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " + 
 				   "\"DESTINATION_LOCATION_FILE_ID\", \"STATUS\", \"MESSAGE\", \"CREATED\", \"COMPLETED\") " + 
                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
@@ -117,7 +117,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
                         "\"COMPLETED\"=excluded.\"COMPLETED\"";
 	
 	public static final String GET_COLLECTION_DOWNLOAD_TASKS_SQL = 
-		   "select * from public.\"HPC_COLLECTION_DOWNLOAD_REQUEST\" where " + "\"STATUS\" = ?";
+		   "select * from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where " + "\"STATUS\" = ?";
 	
     //---------------------------------------------------------------------//
     // Instance members
