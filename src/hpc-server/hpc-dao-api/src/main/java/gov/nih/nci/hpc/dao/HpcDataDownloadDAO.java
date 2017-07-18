@@ -13,8 +13,8 @@ package gov.nih.nci.hpc.dao;
 import java.util.Calendar;
 import java.util.List;
 
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequest;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequestStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -88,15 +88,15 @@ public interface HpcDataDownloadDAO
     public HpcDataObjectDownloadTaskResult getDataObjectDownloadTaskResult(int id)  throws HpcException;
     
     /**
-     * Store a new collection download request (if collectionDownloadRequest.getId() is provided NULL), 
+     * Store a new collection download task (if collectionDownloadRequest.getId() is provided NULL), 
      * or update an existing request.
      * Note: If a new request is inserted, collectionDownloadRequest.getId() will be updated with the generated ID.
      *
-     * @param collectionDownloadRequest The collection download request to persist.
+     * @param collectionDownloadtask The collection download task to persist.
      * @throws HpcException on database error.
      */
-    public void upsertCollectionDownloadRequest(HpcCollectionDownloadRequest collectionDownloadRequest) 
-    		                                   throws HpcException;
+    public void upsertCollectionDownloadTask(HpcCollectionDownloadTask collectionDownloadtask) 
+    		                                throws HpcException;
     
     /**
      * Get collection download requests. 
@@ -105,9 +105,9 @@ public interface HpcDataDownloadDAO
      * @return A list of collection download requests.
      * @throws HpcException on database error.
      */
-    public List<HpcCollectionDownloadRequest> getCollectionDownloadRequests(
-    		                                     HpcCollectionDownloadRequestStatus status) 
-    		                                     throws HpcException;
+    public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(
+    		                                            HpcCollectionDownloadTaskStatus status) 
+    		                                            throws HpcException;
 }
 
  

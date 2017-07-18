@@ -45,11 +45,11 @@ public interface HpcSystemBusService
 	public void completeDataObjectDownloadTasks() throws HpcException;
 	
     /**
-     * Process collection download requests. 
+     * Process collection download tasks. 
      *
      * @throws HpcException on service failure.
      */
-	public void processCollectionDownloadRequests() throws HpcException;
+	public void processCollectionDownloadTasks() throws HpcException;
 	
     /**
      * Process all (active) events.

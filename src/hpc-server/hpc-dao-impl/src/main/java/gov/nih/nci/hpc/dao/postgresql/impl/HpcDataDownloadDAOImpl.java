@@ -12,7 +12,6 @@ package gov.nih.nci.hpc.dao.postgresql.impl;
 
 import java.sql.PreparedStatement;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -26,8 +25,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequest;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequestStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -100,10 +99,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	public static final String GET_DATA_OBJECT_DOWNLOAD_TASK_RESULT_SQL = 
 		   "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK_RESULT\" where " + "\"ID\" = ?";
 	
-	public static final String INSERT_COLLECTION_DOWNLOAD_REQUEST_SQL = 
+	public static final String INSERT_COLLECTION_DOWNLOAD_TASK_SQL = 
 		   "insert into public.\"HPC_COLLECTION_DOWNLOAD_REQUEST\" (\"USER_ID\") values(NULL)";
 	
-	public static final String UPSERT_COLLECTION_DOWNLOAD_REQUEST_SQL = 
+	public static final String UPSERT_COLLECTION_DOWNLOAD_TASK_SQL = 
 		   "insert into public.\"HPC_COLLECTION_DOWNLOAD_REQUEST\" ( " +
                    "\"ID\", \"USER_ID\", \"PATH\", \"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " + 
 				   "\"DESTINATION_LOCATION_FILE_ID\", \"STATUS\", \"MESSAGE\", \"CREATED\", \"COMPLETED\") " + 
@@ -117,7 +116,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
                         "\"CREATED\"=excluded.\"CREATED\", " +
                         "\"COMPLETED\"=excluded.\"COMPLETED\"";
 	
-	public static final String GET_COLLECTION_DOWNLOAD_REQUESTS_SQL = 
+	public static final String GET_COLLECTION_DOWNLOAD_TASKS_SQL = 
 		   "select * from public.\"HPC_COLLECTION_DOWNLOAD_REQUEST\" where " + "\"STATUS\" = ?";
 	
     //---------------------------------------------------------------------//
@@ -129,7 +128,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	private JdbcTemplate jdbcTemplate = null;
 	
 	// HpcDataObjectDownloadCleanup table to object mapper.
-	private RowMapper<HpcDataObjectDownloadTask> taskRowMapper = (rs, rowNum) -> 
+	private RowMapper<HpcDataObjectDownloadTask> dataObjectDownloadTaskRowMapper = (rs, rowNum) -> 
 	{
 		HpcDataObjectDownloadTask dataObjectDownloadTask = new HpcDataObjectDownloadTask();
 		dataObjectDownloadTask.setId(rs.getInt("ID"));
@@ -159,7 +158,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	};
 	
 	// HpcDataObjectDownloadCleanup table to object mapper.
-	private RowMapper<HpcDataObjectDownloadTaskResult> taskResultRowMapper = (rs, rowNum) -> 
+	private RowMapper<HpcDataObjectDownloadTaskResult> dataObjectDownloadTaskResultRowMapper = (rs, rowNum) -> 
 	{
 		HpcDataObjectDownloadTaskResult dataObjectDownloadTaskResult = new HpcDataObjectDownloadTaskResult();
 		dataObjectDownloadTaskResult.setId(rs.getInt("ID"));
@@ -192,15 +191,15 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	};
 	
 	// HpcDataObjectDownloadCleanup table to object mapper.
-	private RowMapper<HpcCollectionDownloadRequest> requestRowMapper = (rs, rowNum) -> 
+	private RowMapper<HpcCollectionDownloadTask> collectionDownloadTaskRowMapper = (rs, rowNum) -> 
 	{
-		HpcCollectionDownloadRequest collectionDownloadRequest = new HpcCollectionDownloadRequest();
-		collectionDownloadRequest.setId(rs.getInt("ID"));
-		collectionDownloadRequest.setUserId(rs.getString("USER_ID"));
-		collectionDownloadRequest.setPath(rs.getString("PATH"));
-		collectionDownloadRequest.setStatus(
-				  HpcCollectionDownloadRequestStatus.fromValue(rs.getString(("STATUS"))));
-		collectionDownloadRequest.setMessage(rs.getString("MESSAGE"));
+		HpcCollectionDownloadTask collectionDownloadTask = new HpcCollectionDownloadTask();
+		collectionDownloadTask.setId(rs.getInt("ID"));
+		collectionDownloadTask.setUserId(rs.getString("USER_ID"));
+		collectionDownloadTask.setPath(rs.getString("PATH"));
+		collectionDownloadTask.setStatus(
+				  HpcCollectionDownloadTaskStatus.fromValue(rs.getString(("STATUS"))));
+		collectionDownloadTask.setMessage(rs.getString("MESSAGE"));
 		String destinationLocationFileContainerId = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
 		String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
 		if(destinationLocationFileContainerId != null && 
@@ -208,21 +207,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		   HpcFileLocation destinationLocation = new HpcFileLocation();
 		   destinationLocation.setFileContainerId(destinationLocationFileContainerId);
 		   destinationLocation.setFileId(destinationLocationFileId);
-		   collectionDownloadRequest.setDestinationLocation(destinationLocation);
+		   collectionDownloadTask.setDestinationLocation(destinationLocation);
 		}
 		
     	Calendar created = Calendar.getInstance();
     	created.setTime(rs.getTimestamp("CREATED"));
-    	collectionDownloadRequest.setCreated(created);
+    	collectionDownloadTask.setCreated(created);
     	
-    	Date completedDate = rs.getTimestamp("COMPLETED");
-    	if(completedDate != null) {
-    	   Calendar completed = Calendar.getInstance();
-    	   completed.setTime(completedDate);
-    	   collectionDownloadRequest.setCompleted(completed);
-    	}
-    	
-        return collectionDownloadRequest;
+        return collectionDownloadTask;
 	};
 	
     // The logger instance.
@@ -281,7 +273,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	{
 		try {
 		     return jdbcTemplate.queryForObject(GET_DATA_OBJECT_DOWNLOAD_TASK_SQL, 
-		    		                            taskRowMapper, id);
+		    		                            dataObjectDownloadTaskRowMapper, id);
 		     
 		} catch(IncorrectResultSizeDataAccessException irse) {
 			    logger.error("Multiple tasks with the same ID found", irse);
@@ -311,7 +303,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	{
 		try {
 		     return jdbcTemplate.query(GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL, 
-		    		                   taskRowMapper, dataTransferType.value());
+		    		                   dataObjectDownloadTaskRowMapper, dataTransferType.value());
 		     
 		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
 			    return null;
@@ -352,7 +344,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	{
 		try {
 		     return jdbcTemplate.queryForObject(GET_DATA_OBJECT_DOWNLOAD_TASK_RESULT_SQL, 
-		    		                            taskResultRowMapper, id);
+		    		                            dataObjectDownloadTaskResultRowMapper, id);
 		     
 		} catch(IncorrectResultSizeDataAccessException irse) {
 			    logger.error("Multiple tasks results with the same ID found", irse);
@@ -364,24 +356,24 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		}
 	}
 	
-	public void upsertCollectionDownloadRequest(HpcCollectionDownloadRequest collectionDownloadRequest) 
+	public void upsertCollectionDownloadTask(HpcCollectionDownloadTask collectionDownloadTask) 
                                                throws HpcException
     {
 		try {
-			 if(collectionDownloadRequest.getId() == null) {
-				 collectionDownloadRequest.setId(nextCollectionDownloadRequestId());
+			 if(collectionDownloadTask.getId() == null) {
+				 collectionDownloadTask.setId(nextCollectionDownloadTaskId());
 			 }
 			 
-		     jdbcTemplate.update(UPSERT_COLLECTION_DOWNLOAD_REQUEST_SQL,
-		    		             collectionDownloadRequest.getId(),
-					    		 collectionDownloadRequest.getUserId(),
-					    		 collectionDownloadRequest.getPath(),
-					    		 collectionDownloadRequest.getDestinationLocation().getFileContainerId(),
-					    		 collectionDownloadRequest.getDestinationLocation().getFileId(),
-					    		 collectionDownloadRequest.getStatus().value(),
-					    		 collectionDownloadRequest.getMessage(),
-					    		 collectionDownloadRequest.getCreated(),
-					    		 collectionDownloadRequest.getCompleted());
+		     jdbcTemplate.update(UPSERT_COLLECTION_DOWNLOAD_TASK_SQL,
+					    		 collectionDownloadTask.getId(),
+					    		 collectionDownloadTask.getUserId(),
+					    		 collectionDownloadTask.getPath(),
+					    		 collectionDownloadTask.getDestinationLocation().getFileContainerId(),
+					    		 collectionDownloadTask.getDestinationLocation().getFileId(),
+					    		 collectionDownloadTask.getStatus().value(),
+					    		 collectionDownloadTask.getMessage(),
+					    		 collectionDownloadTask.getCreated(),
+					    		 collectionDownloadTask.getCompleted());
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a collection download request: " + e.getMessage(),
@@ -390,13 +382,13 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
     }
 	
 	@Override
-	public List<HpcCollectionDownloadRequest> getCollectionDownloadRequests(
-                   HpcCollectionDownloadRequestStatus status) 
+	public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(
+                   HpcCollectionDownloadTaskStatus status) 
                    throws HpcException
     {
 		try {
-		     return jdbcTemplate.query(GET_COLLECTION_DOWNLOAD_REQUESTS_SQL, 
-		    		                   requestRowMapper, status.value());
+		     return jdbcTemplate.query(GET_COLLECTION_DOWNLOAD_TASKS_SQL, 
+		    		                   collectionDownloadTaskRowMapper, status.value());
 		     
 		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
 			    return null;
@@ -436,13 +428,13 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
      *
      * @return A newly created collection download request id.
      */
-	private int nextCollectionDownloadRequestId() 
+	private int nextCollectionDownloadTaskId() 
 	{
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		jdbcTemplate.update((connection) ->
 		                    {
 								PreparedStatement ps =
-								        connection.prepareStatement(INSERT_COLLECTION_DOWNLOAD_REQUEST_SQL, 
+								        connection.prepareStatement(INSERT_COLLECTION_DOWNLOAD_TASK_SQL, 
 								 		                            new String[] {"ID"});
 								return ps;
 							}, keyHolder);

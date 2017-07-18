@@ -25,8 +25,8 @@ import gov.nih.nci.hpc.bus.aspect.SystemBusServiceImpl;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequest;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequestStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
@@ -298,40 +298,40 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     }
     
     @Override
-    public void processCollectionDownloadRequests() throws HpcException
+    public void processCollectionDownloadTasks() throws HpcException
     {
     	// Use system account to perform this service.
     	securityService.setSystemRequestInvoker();
     	
     	// Iterate through all the collection download requests that were submitted (not processed yet).
-    	for(HpcCollectionDownloadRequest downloadRequest :
-    		dataTransferService.getCollectionDownloadRequests(HpcCollectionDownloadRequestStatus.RECEIVED)) {
+    	for(HpcCollectionDownloadTask downloadTask :
+    		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED)) {
     		try {
     			 // Get the collection to be downloaded.
-        		 HpcCollection collection = dataManagementService.getCollection(downloadRequest.getPath(), true);
+        		 HpcCollection collection = dataManagementService.getCollection(downloadTask.getPath(), true);
         		 if(collection == null) {
         			throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
         		 }
         		 
         		 // Download all files under this collection.
-    			 if(downloadCollection(collection, downloadRequest.getDestinationLocation(), 
-    					               downloadRequest.getUserId()) == 0) {
+    			 if(downloadCollection(collection, downloadTask.getDestinationLocation(), 
+    					               downloadTask.getUserId()) == 0) {
     				// No data objects found under this collection.
     				throw new HpcException("No data objects found under collection",
 				                           HpcErrorType.INVALID_REQUEST_INPUT);
     			 }
     			 
     			 // All files Update the collection download request status
-    			 downloadRequest.setStatus(HpcCollectionDownloadRequestStatus.IN_PROGRESS);
+    			 downloadTask.setStatus(HpcCollectionDownloadTaskStatus.IN_PROGRESS);
     		     
     		} catch(HpcException e) {
-    			    logger.error("Failed to process a collection download: " + downloadRequest.getId(), e);
-    			    downloadRequest.setStatus(HpcCollectionDownloadRequestStatus.FAILED);
-    			    downloadRequest.setMessage(e.getMessage());
+    			    logger.error("Failed to process a collection download: " + downloadTask.getId(), e);
+    			    downloadTask.setStatus(HpcCollectionDownloadTaskStatus.FAILED);
+    			    downloadTask.setMessage(e.getMessage());
     			    
     		} finally {
     			       // Persist the collection download request.
-    			       dataTransferService.updateCollectionDownloadRequest(downloadRequest);
+    			       dataTransferService.updateCollectionDownloadTask(downloadTask);
     		}
     	}
     }
