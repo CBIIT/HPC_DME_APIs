@@ -15,6 +15,8 @@ import java.util.Calendar;
 import java.util.List;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequestStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatus;
@@ -61,7 +63,8 @@ public interface HpcDataTransferService
      * @param destinationLocation The user requested file destination.
      * @param dataTransferType The data transfer type.
      * @param doc The doc (needed to determine the archive connection config).
-     * @param collectionDownload True if this download request is part of a collection download request.
+     * @param userId The user ID submitting the download request.
+     * @param completionEvent If true, an event will be added when async download is complete.
      * @return A data object download response.
      * @throws HpcException on service failure.
      */
@@ -70,7 +73,8 @@ public interface HpcDataTransferService
 			                                     HpcFileLocation archiveLocation, 
 			                                     HpcFileLocation destinationLocation,
 			                                     HpcDataTransferType dataTransferType,
-			                                     String doc, boolean collectionDownload) 
+			                                     String doc, String userId, 
+			                                     boolean completionEvent) 
 			                                     throws HpcException;
 	
     /** 
@@ -189,6 +193,41 @@ public interface HpcDataTransferService
     public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
     		                                   boolean result, String message, Calendar completed) 
     		                                  throws HpcException;
+    
+    /** 
+     * Submit a request to download a collection.
+     * 
+     * @param path The collection path.
+     * @param destinationLocation The user requested destination.
+     * @param userId The user ID submitting the download request.
+     * @param doc the DOC.
+     * @return The submitted collection download request.
+     * @throws HpcException on service failure.
+     */
+	public HpcCollectionDownloadRequest downloadCollection(String path,
+			                                               HpcFileLocation destinationLocation,
+			                                               String userId, String doc)
+			                                              throws HpcException;
+	
+    /** 
+     * Update a collection download request.
+     * 
+     * @param downloadRequest The collection download request to update.
+     * @throws HpcException on service failure.
+     */
+	public void updateCollectionDownloadRequest(HpcCollectionDownloadRequest downloadRequest)
+			                                   throws HpcException;
+	
+    /**
+     * Get collection download requests. 
+     *
+     * @param status Get requests in this status.
+     * @return A list of collection download requests.
+     * @throws HpcException on database error.
+     */
+    public List<HpcCollectionDownloadRequest> getCollectionDownloadRequests(
+    		                                     HpcCollectionDownloadRequestStatus status) 
+    		                                     throws HpcException;
 }
 
  

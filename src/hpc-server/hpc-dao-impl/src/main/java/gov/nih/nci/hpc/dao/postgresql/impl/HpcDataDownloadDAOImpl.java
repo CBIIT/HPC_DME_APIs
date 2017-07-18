@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.dao.postgresql.impl;
 
 import java.sql.PreparedStatement;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -25,6 +26,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequestStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -53,8 +56,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	public static final String UPSERT_DATA_OBJECT_DOWNLOAD_TASK_SQL = 
 		   "insert into public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" ( " +
                    "\"ID\", \"USER_ID\", \"PATH\", \"DOC\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", \"DOWNLOAD_FILE_PATH\"," +
-                   "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"CREATED\") " + 
-                   "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                   "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", " + 
+                   "\"COMPLETION_EVENT\", \"CREATED\") " + 
+                   "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
            "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
                         "\"PATH\"=excluded.\"PATH\", " + 
                         "\"DOC\"=excluded.\"DOC\", " + 
@@ -63,6 +67,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
                         "\"DOWNLOAD_FILE_PATH\"=excluded.\"DOWNLOAD_FILE_PATH\", " +
                         "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " +
                         "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", " +
+                        "\"COMPLETION_EVENT\"=excluded.\"COMPLETION_EVENT\", " +
                         "\"CREATED\"=excluded.\"CREATED\"";
 	
 	public static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL = 
@@ -95,6 +100,26 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	public static final String GET_DATA_OBJECT_DOWNLOAD_TASK_RESULT_SQL = 
 		   "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK_RESULT\" where " + "\"ID\" = ?";
 	
+	public static final String INSERT_COLLECTION_DOWNLOAD_REQUEST_SQL = 
+		   "insert into public.\"HPC_COLLECTION_DOWNLOAD_REQUEST\" (\"USER_ID\") values(NULL)";
+	
+	public static final String UPSERT_COLLECTION_DOWNLOAD_REQUEST_SQL = 
+		   "insert into public.\"HPC_COLLECTION_DOWNLOAD_REQUEST\" ( " +
+                   "\"ID\", \"USER_ID\", \"PATH\", \"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " + 
+				   "\"DESTINATION_LOCATION_FILE_ID\", \"STATUS\", \"MESSAGE\", \"CREATED\", \"COMPLETED\") " + 
+                   "values (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+           "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
+                        "\"PATH\"=excluded.\"PATH\", " + 
+                        "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " +
+                        "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", " +
+                        "\"STATUS\"=excluded.\"STATUS\", " +
+                        "\"MESSAGE\"=excluded.\"MESSAGE\", " +
+                        "\"CREATED\"=excluded.\"CREATED\", " +
+                        "\"COMPLETED\"=excluded.\"COMPLETED\"";
+	
+	public static final String GET_COLLECTION_DOWNLOAD_REQUESTS_SQL = 
+		   "select * from public.\"HPC_COLLECTION_DOWNLOAD_REQUEST\" where " + "\"STATUS\" = ?";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -115,6 +140,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		dataObjectDownloadTask.setDataTransferType(
 				  HpcDataTransferType.fromValue(rs.getString(("DATA_TRANSFER_TYPE"))));
 		dataObjectDownloadTask.setDownloadFilePath(rs.getString("DOWNLOAD_FILE_PATH"));
+		dataObjectDownloadTask.setCompletionEvent(rs.getBoolean("COMPLETION_EVENT"));
 		
 		String destinationLocationFileContainerId = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
 		String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
@@ -165,6 +191,40 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
         return dataObjectDownloadTaskResult;
 	};
 	
+	// HpcDataObjectDownloadCleanup table to object mapper.
+	private RowMapper<HpcCollectionDownloadRequest> requestRowMapper = (rs, rowNum) -> 
+	{
+		HpcCollectionDownloadRequest collectionDownloadRequest = new HpcCollectionDownloadRequest();
+		collectionDownloadRequest.setId(rs.getInt("ID"));
+		collectionDownloadRequest.setUserId(rs.getString("USER_ID"));
+		collectionDownloadRequest.setPath(rs.getString("PATH"));
+		collectionDownloadRequest.setStatus(
+				  HpcCollectionDownloadRequestStatus.fromValue(rs.getString(("STATUS"))));
+		collectionDownloadRequest.setMessage(rs.getString("MESSAGE"));
+		String destinationLocationFileContainerId = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
+		String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
+		if(destinationLocationFileContainerId != null && 
+		   destinationLocationFileId != null) {
+		   HpcFileLocation destinationLocation = new HpcFileLocation();
+		   destinationLocation.setFileContainerId(destinationLocationFileContainerId);
+		   destinationLocation.setFileId(destinationLocationFileId);
+		   collectionDownloadRequest.setDestinationLocation(destinationLocation);
+		}
+		
+    	Calendar created = Calendar.getInstance();
+    	created.setTime(rs.getTimestamp("CREATED"));
+    	collectionDownloadRequest.setCreated(created);
+    	
+    	Date completedDate = rs.getTimestamp("COMPLETED");
+    	if(completedDate != null) {
+    	   Calendar completed = Calendar.getInstance();
+    	   completed.setTime(completedDate);
+    	   collectionDownloadRequest.setCompleted(completed);
+    	}
+    	
+        return collectionDownloadRequest;
+	};
+	
     // The logger instance.
 	private static final Logger logger = LoggerFactory.getLogger(HpcDataDownloadDAOImpl.class.getName());
 	
@@ -207,6 +267,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 					    		 dataObjectDownloadTask.getDownloadFilePath(),
 					    		 dataObjectDownloadTask.getDestinationLocation().getFileContainerId(),
 					    		 dataObjectDownloadTask.getDestinationLocation().getFileId(),
+					    		 dataObjectDownloadTask.getCompletionEvent(),
 					    		 dataObjectDownloadTask.getCreated());
 		     
 		} catch(DataAccessException e) {
@@ -256,7 +317,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 			    return null;
 			    
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get data object download cleanup: " + 
+		        throw new HpcException("Failed to get data object download tasks: " + 
 		                               e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
@@ -303,6 +364,50 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		}
 	}
 	
+	public void upsertCollectionDownloadRequest(HpcCollectionDownloadRequest collectionDownloadRequest) 
+                                               throws HpcException
+    {
+		try {
+			 if(collectionDownloadRequest.getId() == null) {
+				 collectionDownloadRequest.setId(nextCollectionDownloadRequestId());
+			 }
+			 
+		     jdbcTemplate.update(UPSERT_COLLECTION_DOWNLOAD_REQUEST_SQL,
+		    		             collectionDownloadRequest.getId(),
+					    		 collectionDownloadRequest.getUserId(),
+					    		 collectionDownloadRequest.getPath(),
+					    		 collectionDownloadRequest.getDestinationLocation().getFileContainerId(),
+					    		 collectionDownloadRequest.getDestinationLocation().getFileId(),
+					    		 collectionDownloadRequest.getStatus().value(),
+					    		 collectionDownloadRequest.getMessage(),
+					    		 collectionDownloadRequest.getCreated(),
+					    		 collectionDownloadRequest.getCompleted());
+		     
+		} catch(DataAccessException e) {
+			    throw new HpcException("Failed to upsert a collection download request: " + e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+    }
+	
+	@Override
+	public List<HpcCollectionDownloadRequest> getCollectionDownloadRequests(
+                   HpcCollectionDownloadRequestStatus status) 
+                   throws HpcException
+    {
+		try {
+		     return jdbcTemplate.query(GET_COLLECTION_DOWNLOAD_REQUESTS_SQL, 
+		    		                   requestRowMapper, status.value());
+		     
+		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get collection download requests: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+    }
+	
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -319,6 +424,25 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		                    {
 								PreparedStatement ps =
 								        connection.prepareStatement(INSERT_DATA_OBJECT_DOWNLOAD_TASK_SQL, 
+								 		                            new String[] {"ID"});
+								return ps;
+							}, keyHolder);
+		
+		return keyHolder.getKey().intValue();
+	}
+	
+    /**
+     * Insert a blank collection download request and return its id.
+     *
+     * @return A newly created collection download request id.
+     */
+	private int nextCollectionDownloadRequestId() 
+	{
+		KeyHolder keyHolder = new GeneratedKeyHolder();
+		jdbcTemplate.update((connection) ->
+		                    {
+								PreparedStatement ps =
+								        connection.prepareStatement(INSERT_COLLECTION_DOWNLOAD_REQUEST_SQL, 
 								 		                            new String[] {"ID"});
 								return ps;
 							}, keyHolder);

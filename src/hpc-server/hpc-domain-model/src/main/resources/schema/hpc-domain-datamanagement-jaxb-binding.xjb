@@ -141,6 +141,9 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadTaskStatus']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatus"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcCollectionDownloadRequest']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequest"/>
+		</jxb:bindings>
 		<jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferUploadStatus']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus"/>
 		</jxb:bindings>
@@ -152,6 +155,9 @@
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:simpleType[@name='HpcArchiveType']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcCollectionDownloadRequestStatus']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequestStatus"/>
 		</jxb:bindings>
     </jxb:bindings>
     
