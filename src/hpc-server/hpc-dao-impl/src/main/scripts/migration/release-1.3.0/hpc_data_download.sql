@@ -61,7 +61,7 @@ CREATE TABLE public."HPC_COLLECTION_DOWNLOAD_TASK"
   "DESTINATION_LOCATION_FILE_ID" text,
   "STATUS" text,
   "ITEMS" text,
-  "CREATED" timestamp,
+  "CREATED" timestamp
 )
 WITH (
   OIDS=FALSE
