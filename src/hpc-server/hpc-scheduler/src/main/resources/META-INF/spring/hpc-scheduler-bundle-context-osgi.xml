@@ -28,7 +28,7 @@
 		<prop key="hpc.scheduler.cron.updateDataTransferUploadStatus.delay">10 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processTemporaryArchive.delay">20 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
-		<prop key="hpc.scheduler.cron.processCollectionDownloadRequests.delay">50 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.processCollectionDownloadTasks.delay">50 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processevents.delay">40 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.refreshMaterializedViews.delay">0 0/15 * * * ?</prop>
 	</osgix:cm-properties>

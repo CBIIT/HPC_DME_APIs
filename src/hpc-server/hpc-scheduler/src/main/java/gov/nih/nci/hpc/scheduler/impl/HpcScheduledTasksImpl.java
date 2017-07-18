@@ -94,11 +94,11 @@ public class HpcScheduledTasksImpl
      * Process collection download requests.
      * 
      */    
-    @Scheduled(cron = "${hpc.scheduler.cron.processCollectionDownloadRequests.delay}")
-    private void processC()
+    @Scheduled(cron = "${hpc.scheduler.cron.processCollectionDownloadTasks.delay}")
+    private void processCollectionDownloadTasksTask()
     {
     	executeTask("processCollectionDownloadRequests()", 
-    			    systemBusService::processCollectionDownloadRequests);
+    			    systemBusService::processCollectionDownloadTasks);
     }
     
     /**

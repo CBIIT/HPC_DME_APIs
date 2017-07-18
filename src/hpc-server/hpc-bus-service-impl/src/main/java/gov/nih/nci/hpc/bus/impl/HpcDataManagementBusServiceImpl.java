@@ -31,7 +31,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
@@ -261,15 +261,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	HpcSystemGeneratedMetadata metadata = 
     			 metadataService.getCollectionSystemGeneratedMetadata(path);
     	
-    	// Submit a collection download request.
-    	HpcCollectionDownloadRequest collectionDownloadRequest =
+    	// Submit a collection download task.
+    	HpcCollectionDownloadTask collectionDownloadTask =
     	   dataTransferService.downloadCollection(path, downloadRequest.getDestination(), 
     		   	                                  securityService.getRequestInvoker().getNciAccount().getUserId(),
     		   	                                  metadata.getRegistrarDOC());
     	
     	// Create and resturn a DAO with the request receipt.
     	HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
-    	responseDTO.setRequestId(collectionDownloadRequest.getId());
+    	responseDTO.setTaskId(collectionDownloadTask.getId());
     	
     	return responseDTO;
     }
