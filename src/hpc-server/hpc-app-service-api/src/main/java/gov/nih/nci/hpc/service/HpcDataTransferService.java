@@ -15,8 +15,8 @@ import java.util.Calendar;
 import java.util.List;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequest;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequestStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatus;
@@ -201,13 +201,13 @@ public interface HpcDataTransferService
      * @param destinationLocation The user requested destination.
      * @param userId The user ID submitting the download request.
      * @param doc the DOC.
-     * @return The submitted collection download request.
+     * @return The submitted collection download task.
      * @throws HpcException on service failure.
      */
-	public HpcCollectionDownloadRequest downloadCollection(String path,
-			                                               HpcFileLocation destinationLocation,
-			                                               String userId, String doc)
-			                                              throws HpcException;
+	public HpcCollectionDownloadTask downloadCollection(String path,
+			                                            HpcFileLocation destinationLocation,
+			                                            String userId, String doc)
+			                                           throws HpcException;
 	
     /** 
      * Update a collection download request.
@@ -215,19 +215,19 @@ public interface HpcDataTransferService
      * @param downloadRequest The collection download request to update.
      * @throws HpcException on service failure.
      */
-	public void updateCollectionDownloadRequest(HpcCollectionDownloadRequest downloadRequest)
-			                                   throws HpcException;
+	public void updateCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
+			                                throws HpcException;
 	
     /**
-     * Get collection download requests. 
+     * Get collection download tasks. 
      *
-     * @param status Get requests in this status.
-     * @return A list of collection download requests.
+     * @param status Get tasks in this status.
+     * @return A list of collection download tasks.
      * @throws HpcException on database error.
      */
-    public List<HpcCollectionDownloadRequest> getCollectionDownloadRequests(
-    		                                     HpcCollectionDownloadRequestStatus status) 
-    		                                     throws HpcException;
+    public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(
+    		                                            HpcCollectionDownloadTaskStatus status) 
+    		                                            throws HpcException;
 }
 
  
