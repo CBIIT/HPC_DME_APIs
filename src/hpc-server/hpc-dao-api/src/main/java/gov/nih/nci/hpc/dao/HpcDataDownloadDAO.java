@@ -13,6 +13,8 @@ package gov.nih.nci.hpc.dao;
 import java.util.Calendar;
 import java.util.List;
 
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequestStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -84,6 +86,28 @@ public interface HpcDataDownloadDAO
      * @throws HpcException on database error.
      */
     public HpcDataObjectDownloadTaskResult getDataObjectDownloadTaskResult(int id)  throws HpcException;
+    
+    /**
+     * Store a new collection download request (if collectionDownloadRequest.getId() is provided NULL), 
+     * or update an existing request.
+     * Note: If a new request is inserted, collectionDownloadRequest.getId() will be updated with the generated ID.
+     *
+     * @param collectionDownloadRequest The collection download request to persist.
+     * @throws HpcException on database error.
+     */
+    public void upsertCollectionDownloadRequest(HpcCollectionDownloadRequest collectionDownloadRequest) 
+    		                                   throws HpcException;
+    
+    /**
+     * Get collection download requests. 
+     *
+     * @param status Get requests in this status.
+     * @return A list of collection download requests.
+     * @throws HpcException on database error.
+     */
+    public List<HpcCollectionDownloadRequest> getCollectionDownloadRequests(
+    		                                     HpcCollectionDownloadRequestStatus status) 
+    		                                     throws HpcException;
 }
 
  

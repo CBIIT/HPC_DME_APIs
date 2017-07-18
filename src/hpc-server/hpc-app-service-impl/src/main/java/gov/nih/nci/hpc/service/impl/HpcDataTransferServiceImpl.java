@@ -28,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequestStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
@@ -181,7 +183,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
                                                  HpcFileLocation archiveLocation, 
                                                  HpcFileLocation destinationLocation,
                                                  HpcDataTransferType dataTransferType,
-                                                 String doc, boolean collectionDownload) 
+                                                 String doc, String userId, 
+                                                 boolean completionEvent) 
                                                  throws HpcException
     {
     	HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
@@ -190,7 +193,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	downloadRequest.setDestinationLocation(destinationLocation);
     	downloadRequest.setPath(path);
     	downloadRequest.setDoc(doc);
-    	downloadRequest.setCollectionDownload(collectionDownload);
+    	downloadRequest.setUserId(userId);
+    	downloadRequest.setCompletionEvent(completionEvent);
     	
     	// Create a data object file to download the data if a destination was not provided.
     	if(destinationLocation == null) {
@@ -353,6 +357,45 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		
 		// Create a task result object.
 		dataDownloadDAO.upsertDataObjectDownloadResult(downloadTask, result, message, completed);
+	}
+	
+	@Override
+	public HpcCollectionDownloadRequest downloadCollection(String path,
+                                                           HpcFileLocation destinationLocation,
+                                                           String userId, String doc)
+                                                          throws HpcException
+    {
+		// Validate the requested destination location.
+		validateDownloadDestinationFileLocation(HpcDataTransferType.GLOBUS, destinationLocation, 
+				                                false, doc);
+		
+		// Create a new collection download request.
+		HpcCollectionDownloadRequest downloadRequest = new HpcCollectionDownloadRequest();
+		downloadRequest.setCreated(Calendar.getInstance());
+		downloadRequest.setDestinationLocation(destinationLocation);
+		downloadRequest.setPath(path);
+		downloadRequest.setUserId(userId);
+		downloadRequest.setStatus(HpcCollectionDownloadRequestStatus.RECEIVED);
+		
+		// Persist the request.
+		dataDownloadDAO.upsertCollectionDownloadRequest(downloadRequest);
+		
+		return downloadRequest;
+    }
+	
+	@Override
+	public void updateCollectionDownloadRequest(HpcCollectionDownloadRequest downloadRequest)
+                                               throws HpcException
+    {
+		dataDownloadDAO.upsertCollectionDownloadRequest(downloadRequest);
+    }
+	
+	@Override
+	public List<HpcCollectionDownloadRequest> getCollectionDownloadRequests(
+                                                 HpcCollectionDownloadRequestStatus status) 
+                                                 throws HpcException
+	{
+		return dataDownloadDAO.getCollectionDownloadRequests(status);
 	}
 	
     //---------------------------------------------------------------------//
@@ -714,9 +757,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	// The second hop download's source file.
     	File sourceFile = null;
     	
-    	// The invoker user ID.
-    	String userId = null;
-    	
     	// The data object path.
     	String path = null;
     	
@@ -732,7 +772,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	       	   throw new HpcException("Unknown service invoker", 
 			                          HpcErrorType.UNEXPECTED_ERROR);
 	       	}
-	       	userId = invoker.getNciAccount().getUserId();
 	       	path = firstHopDownloadRequest.getPath();
 	       	
 			// Create the 2nd hop download request.
@@ -745,7 +784,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
  			        HpcDataTransferType.GLOBUS,
  			        firstHopDownloadRequest.getPath(),
  			        firstHopDownloadRequest.getDoc(),
- 			        firstHopDownloadRequest.getCollectionDownload());
+ 			        firstHopDownloadRequest.getUserId(),
+ 			        firstHopDownloadRequest.getCompletionEvent());
 			
 			// Create the source file for the second hop download
 			sourceFile = createFile(
@@ -836,14 +876,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	     * @param dataTransferType The data transfer type to create the request
 	     * @param path The data object logical path.
 	     * @param doc The DOC.
-	     * @param collectionDownload True if this download request is part of a collection download request.
+	     * @param userId The user ID submitting the request.
+	     * @param completionEvent If true, an event will be added when async download is complete.
 	     * @return Data object download request.
 	     * @throws HpcException If it failed to obtain an authentication token.
 	     */
 	    private HpcDataObjectDownloadRequest toSecondHopDownloadRequest(HpcFileLocation destinationLocation,
 	    		                                                        HpcDataTransferType dataTransferType,
-	    		                                                        String path, String doc, 
-	    		                                                        boolean collectionDownload)
+	    		                                                        String path, String doc, String userId,
+	    		                                                        boolean completionEvent)
 	    		                                                       throws HpcException
 	    {
 	    	// Create a source location.
@@ -858,7 +899,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    	downloadRequest.setDataTransferType(dataTransferType);
 	    	downloadRequest.setPath(path);
 	    	downloadRequest.setDoc(doc);
-	    	downloadRequest.setCollectionDownload(collectionDownload);
+	    	downloadRequest.setUserId(userId);
+	    	downloadRequest.setCompletionEvent(completionEvent);
 	    	
 	    	return downloadRequest;
 	    }
@@ -878,9 +920,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    {
 	    	downloadTask.setDataTransferType(HpcDataTransferType.S_3);
 	    	downloadTask.setDownloadFilePath(sourceFile.getAbsolutePath());
-	    	downloadTask.setUserId(userId);
+	    	downloadTask.setUserId(secondHopDownloadRequest.getUserId());
 	    	downloadTask.setPath(secondHopDownloadRequest.getPath());
 	    	downloadTask.setDoc(secondHopDownloadRequest.getDoc());
+	    	downloadTask.setCompletionEvent(secondHopDownloadRequest.getCompletionEvent());
 	    	downloadTask.setDestinationLocation(secondHopDownloadRequest.getDestinationLocation());
 	    	downloadTask.setCreated(Calendar.getInstance());
 	    	
@@ -908,10 +951,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
    		{
    			Calendar transferFailedTimestamp = Calendar.getInstance();
    			try {
-	    		 // Record a download failed event if this is a single file download request.
-	    		 if(!secondHopDownloadRequest.getCollectionDownload()) {
+	    		 // Record a download failed event if requested to.
+	    		 if(secondHopDownloadRequest.getCompletionEvent()) {
 	    		    eventService.addDataTransferDownloadFailedEvent(
-	    				            userId, path, null, 
+	    		    		        secondHopDownloadRequest.getUserId(), path, null, 
 	    				            secondHopDownloadRequest.getDestinationLocation(),
 	    				            transferFailedTimestamp, message);
 	    		 }

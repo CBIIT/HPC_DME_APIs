@@ -18,7 +18,6 @@ import gov.nih.nci.hpc.exception.HpcException;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public interface HpcScheduledTask 
