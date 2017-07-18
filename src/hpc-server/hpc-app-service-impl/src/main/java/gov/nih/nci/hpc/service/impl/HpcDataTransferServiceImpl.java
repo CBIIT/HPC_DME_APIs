@@ -28,8 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequest;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadRequestStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
@@ -360,42 +360,42 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	}
 	
 	@Override
-	public HpcCollectionDownloadRequest downloadCollection(String path,
-                                                           HpcFileLocation destinationLocation,
-                                                           String userId, String doc)
-                                                          throws HpcException
+	public HpcCollectionDownloadTask downloadCollection(String path,
+                                                        HpcFileLocation destinationLocation,
+                                                        String userId, String doc)
+                                                       throws HpcException
     {
 		// Validate the requested destination location.
 		validateDownloadDestinationFileLocation(HpcDataTransferType.GLOBUS, destinationLocation, 
 				                                false, doc);
 		
-		// Create a new collection download request.
-		HpcCollectionDownloadRequest downloadRequest = new HpcCollectionDownloadRequest();
-		downloadRequest.setCreated(Calendar.getInstance());
-		downloadRequest.setDestinationLocation(destinationLocation);
-		downloadRequest.setPath(path);
-		downloadRequest.setUserId(userId);
-		downloadRequest.setStatus(HpcCollectionDownloadRequestStatus.RECEIVED);
+		// Create a new collection download task.
+		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
+		downloadTask.setCreated(Calendar.getInstance());
+		downloadTask.setDestinationLocation(destinationLocation);
+		downloadTask.setPath(path);
+		downloadTask.setUserId(userId);
+		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		
 		// Persist the request.
-		dataDownloadDAO.upsertCollectionDownloadRequest(downloadRequest);
+		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
 		
-		return downloadRequest;
+		return downloadTask;
     }
 	
 	@Override
-	public void updateCollectionDownloadRequest(HpcCollectionDownloadRequest downloadRequest)
-                                               throws HpcException
+	public void updateCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
+                                            throws HpcException
     {
-		dataDownloadDAO.upsertCollectionDownloadRequest(downloadRequest);
+		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
     }
 	
 	@Override
-	public List<HpcCollectionDownloadRequest> getCollectionDownloadRequests(
-                                                 HpcCollectionDownloadRequestStatus status) 
-                                                 throws HpcException
+	public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(
+                                              HpcCollectionDownloadTaskStatus status) 
+                                              throws HpcException
 	{
-		return dataDownloadDAO.getCollectionDownloadRequests(status);
+		return dataDownloadDAO.getCollectionDownloadTasks(status);
 	}
 	
     //---------------------------------------------------------------------//
