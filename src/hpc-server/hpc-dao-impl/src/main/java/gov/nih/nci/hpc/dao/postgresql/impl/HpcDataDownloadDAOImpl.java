@@ -197,7 +197,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		collectionDownloadTask.setPath(rs.getString("PATH"));
 		collectionDownloadTask.setStatus(
 				  HpcCollectionDownloadTaskStatus.fromValue(rs.getString(("STATUS"))));
-		collectionDownloadTask.setMessage(rs.getString("MESSAGE"));
 		String destinationLocationFileContainerId = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
 		String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
 		if(destinationLocationFileContainerId != null && 
@@ -390,7 +389,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 			    return null;
 			    
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get collection download requests: " + 
+		        throw new HpcException("Failed to get collection download tasks: " + 
 		                               e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
@@ -420,7 +419,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	}
 	
     /**
-     * Insert a blank collection download request and return its id.
+     * Insert a blank collection download task and return its id.
      *
      * @return A newly created collection download request id.
      */
