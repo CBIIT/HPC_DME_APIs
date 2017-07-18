@@ -105,16 +105,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	public static final String UPSERT_COLLECTION_DOWNLOAD_TASK_SQL = 
 		   "insert into public.\"HPC_COLLECTION_DOWNLOAD_TASK\" ( " +
                    "\"ID\", \"USER_ID\", \"PATH\", \"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " + 
-				   "\"DESTINATION_LOCATION_FILE_ID\", \"STATUS\", \"MESSAGE\", \"CREATED\", \"COMPLETED\") " + 
-                   "values (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+				   "\"DESTINATION_LOCATION_FILE_ID\", \"STATUS\", \"CREATED\") " + 
+                   "values (?, ?, ?, ?, ?, ?, ??) " +
            "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
                         "\"PATH\"=excluded.\"PATH\", " + 
                         "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " +
                         "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", " +
                         "\"STATUS\"=excluded.\"STATUS\", " +
-                        "\"MESSAGE\"=excluded.\"MESSAGE\", " +
-                        "\"CREATED\"=excluded.\"CREATED\", " +
-                        "\"COMPLETED\"=excluded.\"COMPLETED\"";
+                        "\"CREATED\"=excluded.\"CREATED\"";
 	
 	public static final String GET_COLLECTION_DOWNLOAD_TASKS_SQL = 
 		   "select * from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where " + "\"STATUS\" = ?";
@@ -371,9 +369,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 					    		 collectionDownloadTask.getDestinationLocation().getFileContainerId(),
 					    		 collectionDownloadTask.getDestinationLocation().getFileId(),
 					    		 collectionDownloadTask.getStatus().value(),
-					    		 collectionDownloadTask.getMessage(),
-					    		 collectionDownloadTask.getCreated(),
-					    		 collectionDownloadTask.getCompleted());
+					    		 collectionDownloadTask.getCreated());
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a collection download request: " + e.getMessage(),
