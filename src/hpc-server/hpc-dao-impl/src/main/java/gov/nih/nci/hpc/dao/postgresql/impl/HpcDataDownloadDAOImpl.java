@@ -14,6 +14,8 @@ import java.sql.PreparedStatement;
 import java.util.Calendar;
 import java.util.List;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,7 @@ import org.springframework.jdbc.support.KeyHolder;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskResult;
@@ -105,12 +108,13 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	public static final String UPSERT_COLLECTION_DOWNLOAD_TASK_SQL = 
 		   "insert into public.\"HPC_COLLECTION_DOWNLOAD_TASK\" ( " +
                    "\"ID\", \"USER_ID\", \"PATH\", \"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " + 
-				   "\"DESTINATION_LOCATION_FILE_ID\", \"STATUS\", \"CREATED\") " + 
-                   "values (?, ?, ?, ?, ?, ?, ?) " +
+				   "\"DESTINATION_LOCATION_FILE_ID\", \"ITEMS\", \"STATUS\", \"CREATED\") " + 
+                   "values (?, ?, ?, ?, ?, ?, ?, ?) " +
            "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
                         "\"PATH\"=excluded.\"PATH\", " + 
                         "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " +
                         "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", " +
+                        "\"ITEMS\"=excluded.\"ITEMS\", " +
                         "\"STATUS\"=excluded.\"STATUS\", " +
                         "\"CREATED\"=excluded.\"CREATED\"";
 	
@@ -367,6 +371,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 					    		 collectionDownloadTask.getPath(),
 					    		 collectionDownloadTask.getDestinationLocation().getFileContainerId(),
 					    		 collectionDownloadTask.getDestinationLocation().getFileId(),
+					    		 toJSON(collectionDownloadTask.getItems()),
 					    		 collectionDownloadTask.getStatus().value(),
 					    		 collectionDownloadTask.getCreated());
 		     
@@ -435,6 +440,40 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 							}, keyHolder);
 		
 		return keyHolder.getKey().intValue();
+	}
+	
+    /** 
+     * Convert a list of collection download items into a JSON string.
+     * 
+     * @param downloadItems The list of collection download items.
+     * @return A JSON representation of download items.
+     */
+	@SuppressWarnings("unchecked")
+	private String toJSON(List<HpcCollectionDownloadTaskItem> downloadItems)
+	{
+		JSONArray jsonDownloadItems = new JSONArray();
+		for(HpcCollectionDownloadTaskItem downloadItem : downloadItems) {
+			JSONObject jsonDownloadItem = new JSONObject();
+			jsonDownloadItem.put("path", downloadItem.getPath());
+			if(downloadItem.getDataObjectDownloadTaskId() != null) {
+			   jsonDownloadItem.put("dataObjectDownloadTaskId", downloadItem.getDataObjectDownloadTaskId());
+			}
+			if(downloadItem.getMessage() != null) {
+			   jsonDownloadItem.put("message", downloadItem.getMessage());
+			}
+			if(downloadItem.getResult() != null) {
+			   jsonDownloadItem.put("result", downloadItem.getResult());
+			}
+			jsonDownloadItem.put("destinationLocationFileContainerId", downloadItem.getDestinationLocation().getFileContainerId());
+			jsonDownloadItem.put("destinationLocationFileId", downloadItem.getDestinationLocation().getFileId());
+			
+			jsonDownloadItems.add(jsonDownloadItem);
+		}
+		
+		JSONObject jsonObj = new JSONObject();
+		jsonObj.put("items", jsonDownloadItems);
+		
+		return jsonObj.toJSONString();
 	}
 }
 
