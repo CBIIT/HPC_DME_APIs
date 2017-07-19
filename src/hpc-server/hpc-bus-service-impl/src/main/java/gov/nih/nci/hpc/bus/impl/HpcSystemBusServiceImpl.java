@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
@@ -41,6 +43,7 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -314,15 +317,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
         		 }
         		 
         		 // Download all files under this collection.
-    			 if(downloadCollection(collection, downloadTask.getDestinationLocation(), 
-    					               downloadTask.getUserId()) == 0) {
+        		 List<HpcCollectionDownloadTaskItem> downloadItems = 
+        			  downloadCollection(collection, downloadTask.getDestinationLocation(), 
+			                             downloadTask.getUserId());
+        		 
+        		 // Verify data objects found under this collection.
+    			 if(downloadItems.isEmpty()) {
     				// No data objects found under this collection.
     				throw new HpcException("No data objects found under collection",
 				                           HpcErrorType.INVALID_REQUEST_INPUT);
     			 }
     			 
-    			 // All files Update the collection download request status
+    			 // The collection download is now in progress. 
     			 downloadTask.setStatus(HpcCollectionDownloadTaskStatus.IN_PROGRESS);
+    			 downloadTask.getItems().addAll(downloadItems);
     		     
     		} catch(HpcException e) {
     			    logger.error("Failed to process a collection download: " + downloadTask.getId(), e);
@@ -330,7 +338,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			    downloadTask.setMessage(e.getMessage());
     			    
     		} finally {
-    			       // Persist the collection download request.
+    			       // Persist the collection download task.
     			       dataTransferService.updateCollectionDownloadTask(downloadTask);
     		}
     	}
@@ -649,15 +657,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * @param collection The collection to download.
      * @param destinationLocation The download destination location.
      * @param userId The user ID who requested the collection download.
-     * @return The number of data objects found in the collection tree
+     * @return The download task items (each item represent a data-object download under the collection).
      * @throws HpcException on service failure.
      */
-	private int downloadCollection(HpcCollection collection, HpcFileLocation destinationLocation,
-			                       String userId) 
-			                      throws HpcException
+	private List<HpcCollectionDownloadTaskItem> 
+	        downloadCollection(HpcCollection collection, HpcFileLocation destinationLocation, String userId) 
+			                  throws HpcException
 	{
+		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
+		
 		// Iterate through the data objects in the collection and download them.
-		int dataObjectsCount = collection.getDataObjects().size();
 		for(HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
 			// Calculate the destination location for this data object.
 			String dataObjectPath = dataObjectEntry.getPath();
@@ -665,15 +674,29 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 			dataObjectDownloadRequest.setDestination(
 				calculateDownloadDestinationFileLocation(destinationLocation, dataObjectPath));
 			
+			// Instantiate a download item for this data object.
+			HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
+			downloadItem.setPath(dataObjectPath);
+			
 			// Download this data object.
 			try {
-				 //HpcDataObjectDownloadResponseDTO dataObjectDownloadResponse = 
-				 dataManagementBusService.downloadDataObject(dataObjectPath, dataObjectDownloadRequest,
-						                                     userId, false);
+				 HpcDataObjectDownloadResponseDTO dataObjectDownloadResponse = 
+				    dataManagementBusService.downloadDataObject(dataObjectPath, dataObjectDownloadRequest,
+					    	                                    userId, false);
+				 
+				 downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadResponse.getTaskId());
+				 downloadItem.setDestinationLocation(dataObjectDownloadResponse.getDestinationLocation());
 			     
 			} catch(HpcException e) {
 				    // Data object download failed. 
 				    logger.error("Failed to download data object in a collection" , e); 
+				    
+				    downloadItem.setResult(false);
+				    downloadItem.setDestinationLocation(dataObjectDownloadRequest.getDestination());
+				    downloadItem.setMessage(e.getMessage());
+				    
+			} finally {
+				       downloadItems.add(downloadItem);
 			}
 		}
 		
@@ -683,15 +706,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 			HpcCollection subCollection = dataManagementService.getCollection(subCollectionPath, true);
 	    	if(subCollection != null) {
 	    	   // Download this sub-collection. 
-	    		dataObjectsCount +=
-					downloadCollection(subCollection,
-					        calculateDownloadDestinationFileLocation(destinationLocation, 
-						    		                                 subCollectionPath),
-						    userId);
+	    	   downloadItems.addAll(
+				       downloadCollection(subCollection,
+					           calculateDownloadDestinationFileLocation(destinationLocation, 
+						    	                                        subCollectionPath),
+						       userId));
 	    	}
 		}
 		
-		return dataObjectsCount;
+		return downloadItems;
 	}
 	
     /** 
