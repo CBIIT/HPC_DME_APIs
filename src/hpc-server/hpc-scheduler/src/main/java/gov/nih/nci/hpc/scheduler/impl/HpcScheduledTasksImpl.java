@@ -91,7 +91,7 @@ public class HpcScheduledTasksImpl
     }
     
     /**
-     * Process collection download requests.
+     * Process collection download tasks.
      * 
      */    
     @Scheduled(cron = "${hpc.scheduler.cron.processCollectionDownloadTasks.delay}")
@@ -99,6 +99,17 @@ public class HpcScheduledTasksImpl
     {
     	executeTask("processCollectionDownloadRequests()", 
     			    systemBusService::processCollectionDownloadTasks);
+    }
+    
+    /**
+     * Complete collection download tasks.
+     * 
+     */    
+    @Scheduled(cron = "${hpc.scheduler.cron.completeCollectionDownloadTasks.delay}")
+    private void completeCollectionDownloadTasksTask()
+    {
+    	executeTask("completeCollectionDownloadRequests()", 
+    			    systemBusService::completeCollectionDownloadTasks);
     }
     
     /**

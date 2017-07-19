@@ -11,11 +11,15 @@
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
 import java.sql.PreparedStatement;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +29,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
@@ -210,6 +215,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		   destinationLocation.setFileId(destinationLocationFileId);
 		   collectionDownloadTask.setDestinationLocation(destinationLocation);
 		}
+		collectionDownloadTask.getItems().addAll(fromJSON(rs.getString("ITEMS")));
 		
     	Calendar created = Calendar.getInstance();
     	created.setTime(rs.getTimestamp("CREATED"));
@@ -475,6 +481,67 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		
 		return jsonObj.toJSONString();
 	}
+	
+    /** 
+     * Convert JSON string to a list of collection download items
+     * 
+     * @param jsonDownloadItemsStr The download items JSON string.
+     * @return A list of collection download items.
+     */
+	@SuppressWarnings("unchecked")
+	private List<HpcCollectionDownloadTaskItem> fromJSON(String jsonDownloadItemsStr)
+	{
+		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
+		if(StringUtils.isEmpty(jsonDownloadItemsStr)) {
+		   return downloadItems;
+		}
+
+		// Parse the JSON string.
+		JSONObject jsonObj = null;
+		try {
+			 jsonObj = (JSONObject) (new JSONParser().parse(jsonDownloadItemsStr));
+			 
+		} catch(ParseException e) {
+			    return downloadItems;
+		}
+		
+		// Map the download items.
+	    JSONArray jsonDownloadItems = (JSONArray) jsonObj.get("items");
+  	    if(jsonDownloadItems != null) {
+		   Iterator<JSONObject> downloadItemIterator = jsonDownloadItems.iterator();
+	       while(downloadItemIterator.hasNext()) {
+	    	     JSONObject jsonDownloadItem = downloadItemIterator.next();
+	    	     HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
+	    	     downloadItem.setPath(jsonDownloadItem.get("path").toString());
+	    	     
+	    	     Object dataObjectDownloadTaskId = jsonDownloadItem.get("dataObjectDownloadTaskId");
+	    	     if(dataObjectDownloadTaskId != null) {
+	    	    	downloadItem.setDataObjectDownloadTaskId(Integer.valueOf(dataObjectDownloadTaskId.toString()));
+	    	     }
+	    	     
+	    	     Object message = jsonDownloadItem.get("message");
+	    	     if(message != null) {
+	    	    	downloadItem.setMessage(message.toString());
+	    	     }
+	    	     
+	    	     Object result = jsonDownloadItem.get("result");
+	    	     if(result != null) {
+	    	    	downloadItem.setResult(Boolean.valueOf(result.toString()));
+	    	     }
+	    	     
+	    	    HpcFileLocation destinationLocation = new HpcFileLocation();
+	    	    destinationLocation.setFileContainerId(
+	    	    		   jsonDownloadItem.get("destinationLocationFileContainerId").toString());
+	    	    destinationLocation.setFileId(
+	    	    		   jsonDownloadItem.get("destinationLocationFileId").toString());
+	    	    downloadItem.setDestinationLocation(destinationLocation); 
+
+	    	    downloadItems.add(downloadItem);
+	 		}
+  	    }
+	    	     
+	    return downloadItems;     
+	}	
 }
 
  
