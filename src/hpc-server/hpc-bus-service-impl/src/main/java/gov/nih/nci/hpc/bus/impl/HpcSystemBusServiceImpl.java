@@ -30,6 +30,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -341,6 +342,58 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			       // Persist the collection download task.
     			       dataTransferService.updateCollectionDownloadTask(downloadTask);
     		}
+    	}
+    }
+    
+    @Override
+    public void completeCollectionDownloadTasks() throws HpcException
+    {
+    	// Use system account to perform this service.
+    	securityService.setSystemRequestInvoker();
+    	
+    	// Iterate through all the collection download requests that are in progress.
+    	for(HpcCollectionDownloadTask downloadTask :
+    		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.IN_PROGRESS)) {
+    		boolean downloadCompleted = true;
+    		
+    		// Update status of individual download items in this collection download task.
+			for(HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
+				try {
+				     if(downloadItem.getResult() == null) {
+				     	// This download item in progress - check its status.
+				    	HpcDataObjectDownloadTaskStatus downloadItemStatus = 
+				    	   downloadItem.getDataObjectDownloadTaskId() != null ?
+				    	           dataTransferService.getDataObjectDownloadTaskStatus(
+				    			                          downloadItem.getDataObjectDownloadTaskId()) :
+				    			   null;
+				    			                          
+				        if(downloadItemStatus == null) {
+				    	   throw new HpcException("Data object download task status is unknown", 
+				    			                  HpcErrorType.UNEXPECTED_ERROR);
+				    	}
+				        
+				        if(!downloadItemStatus.getInProgress()) {
+				           // This download item is now complete. Update the result.
+				           downloadItem.setResult(downloadItemStatus.getResult().getResult());
+				           downloadItem.setMessage(downloadItemStatus.getResult().getMessage());
+				        } else {
+				        	    // There is at least one download item still in progress.
+				        	    downloadCompleted = false;
+				        }
+				     }
+    		
+				 } catch(HpcException e) {
+					     logger.error("Failed to check collection download item status", e);
+					     downloadItem.setResult(false);
+					     downloadItem.setMessage(e.getMessage());
+				 }
+			}
+			
+			// Update the collection download task.
+			if(downloadCompleted) {
+			   downloadTask.setStatus(HpcCollectionDownloadTaskStatus.COMPLETED);
+			}
+	        dataTransferService.updateCollectionDownloadTask(downloadTask);
     	}
     }
     
