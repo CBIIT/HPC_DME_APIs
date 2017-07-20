@@ -346,7 +346,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 					    		 taskResult.getPath(),
 					    		 taskResult.getDoc(),
 					    		 taskResult.getDataTransferRequestId(),
-					    		 taskResult.getDataTransferType().value(),
+					    		 taskResult.getDataTransferType() != null ? 
+					    		     taskResult.getDataTransferType().value() : null,
 					    		 taskResult.getDestinationLocation().getFileContainerId(),
 					    		 taskResult.getDestinationLocation().getFileId(),
 					    		 taskResult.getResult(),
