@@ -26,6 +26,7 @@ import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
@@ -161,6 +162,20 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 
 		return okResponse(downloadResponse, false);
+    }
+    
+    @Override
+    public Response getCollectionDownloadStatus(Integer taskId)
+    {
+    	HpcCollectionDownloadStatusDTO downloadStatus = null;
+		try {
+			 downloadStatus = dataManagementBusService.getCollectionDownloadStatus(taskId);
+
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+    	return okResponse(downloadStatus, true);
     }
     
     @Override

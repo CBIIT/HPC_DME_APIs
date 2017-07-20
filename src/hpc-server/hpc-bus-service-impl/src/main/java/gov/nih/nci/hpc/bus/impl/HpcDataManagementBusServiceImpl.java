@@ -48,6 +48,7 @@ import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
@@ -273,6 +274,48 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	responseDTO.setTaskId(collectionDownloadTask.getId());
     	
     	return responseDTO;
+    }
+    
+    @Override
+    public HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(Integer taskId) 
+                                                                     throws HpcException
+    {
+    	// Input validation.
+    	if(taskId == null) {
+    	   throw new HpcException("Null data object download task ID",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Get the collection download task status.
+    	HpcDownloadTaskStatus taskStatus = 
+    			   dataTransferService.getDownloadTaskStatus(taskId, HpcDownloadTaskType.COLLECTION);
+    	if(taskStatus == null) {
+    	   return null;
+    	}
+    	
+    	// Map the task status to DTO.
+    	HpcCollectionDownloadStatusDTO downloadStatus = new HpcCollectionDownloadStatusDTO();
+    	downloadStatus.setInProgress(taskStatus.getInProgress());
+    	if(taskStatus.getInProgress()) {
+    	   // Download in progress. Populate the DTO accordingly.
+    	   downloadStatus.setPath(taskStatus.getCollectionDownloadTask().getPath());
+    	   downloadStatus.setCreated(taskStatus.getCollectionDownloadTask().getCreated());
+    	   downloadStatus.setTaskStatus(taskStatus.getCollectionDownloadTask().getStatus());
+    	   downloadStatus.setDestinationLocation(taskStatus.getCollectionDownloadTask().getDestinationLocation());
+    	   downloadStatus.getItems().addAll(taskStatus.getCollectionDownloadTask().getItems());
+    	   
+    	} else {
+    		    // Download completed or failed. Populate the DTO accordingly. 
+    		    downloadStatus.setPath(taskStatus.getResult().getPath());
+     	        downloadStatus.setCreated(taskStatus.getResult().getCreated());
+     	        downloadStatus.setDestinationLocation(taskStatus.getResult().getDestinationLocation());
+     	        downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
+     	        downloadStatus.setMessage(taskStatus.getResult().getMessage());
+     	        downloadStatus.setResult(taskStatus.getResult().getResult());
+     	        downloadStatus.getItems().addAll(taskStatus.getResult().getItems());
+    	}
+    	
+    	return downloadStatus;
     }
     
     @Override
