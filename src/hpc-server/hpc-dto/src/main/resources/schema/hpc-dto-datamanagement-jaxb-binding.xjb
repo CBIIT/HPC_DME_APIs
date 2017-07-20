@@ -96,11 +96,17 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadTask']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask"/>
 		</jxb:bindings>
-		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadTaskResult']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskResult"/>
+		<jxb:bindings node="//xsd:complexType[@name='HpcDownloadTaskResult']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult"/>
 		</jxb:bindings>
-		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadTaskStatus']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatus"/>
+		<jxb:bindings node="//xsd:complexType[@name='HpcDownloadTaskStatus']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcCollectionDownloadTask']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcCollectionDownloadTaskItem']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem"/>
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferUploadStatus']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus"/>
@@ -113,6 +119,12 @@
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:simpleType[@name='HpcArchiveType']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcCollectionDownloadTaskStatus']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcDownloadTaskType']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType"/>
 		</jxb:bindings>
     </jxb:bindings>
 	
