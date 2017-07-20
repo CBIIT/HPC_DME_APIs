@@ -368,7 +368,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	{
 		try {
 		     return jdbcTemplate.queryForObject(GET_DOWNLOAD_TASK_RESULT_SQL, 
-		    		                            downloadTaskResultRowMapper, id, taskType);
+		    		                            downloadTaskResultRowMapper, id, taskType.value());
 		     
 		} catch(IncorrectResultSizeDataAccessException irse) {
 			    logger.error("Multiple tasks results with the same ID / Type found", irse);
