@@ -10,14 +10,14 @@
 
 package gov.nih.nci.hpc.dao;
 
-import java.util.Calendar;
 import java.util.List;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -69,23 +69,24 @@ public interface HpcDataDownloadDAO
     		                                                         throws HpcException;
     
     /**
-     * Store a new data object download task result, or updated an existing task result.
+     * Store a new download task result, or updated an existing task result.
      *
-     * @param dataObjectDownloadTask The data object download task result to persist.
+     * @param downloadTaskResult The download task result to persist.
      * @throws HpcException on database error.
      */
-    public void upsertDataObjectDownloadResult(HpcDataObjectDownloadTask dataObjectDownloadTask,
-    		                                   boolean result, String message, Calendar completed) 
-    		                                  throws HpcException;
+    public void upsertDownloadTaskResult(HpcDownloadTaskResult downloadTaskResult) 
+    		                            throws HpcException;
     
     /**
-     * Get a data object download task result.
+     * Get a download task result.
      *
-     * @param id The data object download task ID.
+     * @param id The download task ID.
+     * @param taskType The download task type (data-object or collection).
      * @return The download task result object, or null if not found.
      * @throws HpcException on database error.
      */
-    public HpcDataObjectDownloadTaskResult getDataObjectDownloadTaskResult(int id)  throws HpcException;
+    public HpcDownloadTaskResult getDownloadTaskResult(int id, HpcDownloadTaskType taskType)  
+    		                                          throws HpcException;
     
     /**
      * Store a new collection download task (if collectionDownloadRequest.getId() is provided NULL), 
@@ -97,6 +98,23 @@ public interface HpcDataDownloadDAO
      */
     public void upsertCollectionDownloadTask(HpcCollectionDownloadTask collectionDownloadtask) 
     		                                throws HpcException;
+    
+    /**
+     * Get a collection download task.
+     *
+     * @param id The collection download task ID.
+     * @return The download task object, or null if not found.
+     * @throws HpcException on database error.
+     */
+    public HpcCollectionDownloadTask getCollectionDownloadTask(int id)  throws HpcException;
+    
+    /**
+     * Delete a collection download task.
+     *
+     * @param id The collection download task ID.
+     * @throws HpcException on database error.
+     */
+    public void deleteCollectionDownloadTask(int id) throws HpcException;
     
     /**
      * Get collection download requests. 
