@@ -273,6 +273,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Create and resturn a DAO with the request receipt.
     	HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
     	responseDTO.setTaskId(collectionDownloadTask.getId());
+    	responseDTO.setDestinationLocation(collectionDownloadTask.getDestinationLocation());
     	
     	return responseDTO;
     }
