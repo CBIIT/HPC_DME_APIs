@@ -393,7 +393,21 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 			
 			// Update the collection download task.
 			if(downloadCompleted) {
-			   completeCollectionDownloadTask(downloadTask, true, null);
+			   // The collection download task finished. Determine if the collection download was successful. 
+			   // It is successful if and only if all items (data objects under the collection) were 
+			   // completed successfully. 
+			   int completedItemsCount = 0;
+			   for(HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
+				   if(downloadItem.getResult()) {
+					  completedItemsCount++;
+				   }
+			   }
+			   
+			   int itemsCount = downloadTask.getItems().size();
+			   boolean result = completedItemsCount == itemsCount;
+			   completeCollectionDownloadTask(downloadTask, result, 
+					                          result ? null : completedItemsCount + " items downloaded successfully out of " + itemsCount);
+			   
 			} else {
 				    dataTransferService.updateCollectionDownloadTask(downloadTask);
 			}
