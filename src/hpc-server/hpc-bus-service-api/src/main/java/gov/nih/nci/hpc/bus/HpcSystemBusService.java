@@ -45,6 +45,21 @@ public interface HpcSystemBusService
 	public void completeDataObjectDownloadTasks() throws HpcException;
 	
     /**
+     * Process collection download tasks that received. i.e. kick off the download of individual data objects
+     * under each requested collection.
+     *
+     * @throws HpcException on service failure.
+     */
+	public void processCollectionDownloadTasks() throws HpcException;
+	
+    /**
+     * Check status of all active collection download tasks and complete these that are no longer in progress.
+     *
+     * @throws HpcException on service failure.
+     */
+	public void completeCollectionDownloadTasks() throws HpcException;
+	
+    /**
      * Process all (active) events.
      *
      * @throws HpcException on service failure.
