@@ -32,6 +32,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -302,7 +303,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   downloadStatus.setCreated(taskStatus.getCollectionDownloadTask().getCreated());
     	   downloadStatus.setTaskStatus(taskStatus.getCollectionDownloadTask().getStatus());
     	   downloadStatus.setDestinationLocation(taskStatus.getCollectionDownloadTask().getDestinationLocation());
-    	   downloadStatus.getItems().addAll(taskStatus.getCollectionDownloadTask().getItems());
+    	   populateDownloadItems(downloadStatus, taskStatus.getCollectionDownloadTask().getItems());
     	   
     	} else {
     		    // Download completed or failed. Populate the DTO accordingly. 
@@ -312,7 +313,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      	        downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
      	        downloadStatus.setMessage(taskStatus.getResult().getMessage());
      	        downloadStatus.setResult(taskStatus.getResult().getResult());
-     	        downloadStatus.getItems().addAll(taskStatus.getResult().getItems());
+     	        populateDownloadItems(downloadStatus, taskStatus.getResult().getItems());
     	}
     	
     	return downloadStatus;
@@ -1195,7 +1196,28 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	return collectionTreeEntry;
     }
     
-
+	/** 
+     * Split the list of download items into completed, failed and in-progress buckets
+     * 
+     * @param downloadStatus The download status to populate the items into.
+     * @param items The collection download items.
+     * @return A data management tree .
+     * @throws HpcException on service failure.
+     */
+    private void populateDownloadItems(HpcCollectionDownloadStatusDTO downloadStatus,
+    		                           List<HpcCollectionDownloadTaskItem> items)
+    {
+    	for(HpcCollectionDownloadTaskItem item : items) {
+    		Boolean result = item.getResult();
+    		if(result == null) {
+    		   downloadStatus.getInProgressItems().add(item);
+    		} else if(result) {
+    			      downloadStatus.getCompletedItems().add(item);
+    		} else {
+    			    downloadStatus.getFailedItems().add(item);
+    		}
+    	}
+    }
 }
 
  
