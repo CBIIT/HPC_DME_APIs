@@ -53,7 +53,7 @@
 	<xsd:simpleType name="HpcCollectionDownloadTaskStatus">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="RECEIVED" />
-			<xsd:enumeration value="IN_PROGRESS" />
+			<xsd:enumeration value="ACTIVE" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
