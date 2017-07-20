@@ -15,13 +15,16 @@ import java.util.Calendar;
 import java.util.List;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -61,7 +64,8 @@ public interface HpcDataTransferService
      * @param destinationLocation The user requested file destination.
      * @param dataTransferType The data transfer type.
      * @param doc The doc (needed to determine the archive connection config).
-     * @param collectionDownload True if this download request is part of a collection download request.
+     * @param userId The user ID submitting the download request.
+     * @param completionEvent If true, an event will be added when async download is complete.
      * @return A data object download response.
      * @throws HpcException on service failure.
      */
@@ -70,7 +74,8 @@ public interface HpcDataTransferService
 			                                     HpcFileLocation archiveLocation, 
 			                                     HpcFileLocation destinationLocation,
 			                                     HpcDataTransferType dataTransferType,
-			                                     String doc, boolean collectionDownload) 
+			                                     String doc, String userId, 
+			                                     boolean completionEvent) 
 			                                     throws HpcException;
 	
     /** 
@@ -164,21 +169,23 @@ public interface HpcDataTransferService
     		                                  HpcDataTransferType dataTransferType) throws HpcException;
     
     /**
-     * Get a data object download task status. 
+     * Get download task status. 
      *
      * @param taskId The download task ID.
+     * @param taskType The download task type (data-object or collection).
      * @return A download status object, or null if the task can't be found.
      *         Note: The returned object is associated with a 'task' object if the download 
      *         is in-progress. If the download completed or failed, the returned object is associated with a 
      *         'result' object. 
      * @throws HpcException on service failure.
      */
-    public HpcDataObjectDownloadTaskStatus getDataObjectDownloadTaskStatus(int taskId) throws HpcException;
+    public HpcDownloadTaskStatus getDownloadTaskStatus(int taskId, HpcDownloadTaskType taskType) 
+    		                                          throws HpcException;
     
     /**
      * Complete a data object download task:
      * 1. Cleanup any files staged in the file system for download.
-     * 2. Update task info in DB with results info
+     * 2. Update task info in DB with results info.
      *
      * @param downloadTask The download task to complete.
      * @param result The result of the task (true is successful, false is failed).
@@ -187,6 +194,55 @@ public interface HpcDataTransferService
      * @throws HpcException on service failure.
      */
     public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+    		                                   boolean result, String message, Calendar completed) 
+    		                                  throws HpcException;
+    
+    /** 
+     * Submit a request to download a collection.
+     * 
+     * @param path The collection path.
+     * @param destinationLocation The user requested destination.
+     * @param userId The user ID submitting the download request.
+     * @param doc the DOC.
+     * @return The submitted collection download task.
+     * @throws HpcException on service failure.
+     */
+	public HpcCollectionDownloadTask downloadCollection(String path,
+			                                            HpcFileLocation destinationLocation,
+			                                            String userId, String doc)
+			                                           throws HpcException;
+	
+    /** 
+     * Update a collection download request.
+     * 
+     * @param downloadRequest The collection download request to update.
+     * @throws HpcException on service failure.
+     */
+	public void updateCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
+			                                throws HpcException;
+	
+    /**
+     * Get collection download tasks. 
+     *
+     * @param status Get tasks in this status.
+     * @return A list of collection download tasks.
+     * @throws HpcException on database error.
+     */
+    public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(
+    		                                            HpcCollectionDownloadTaskStatus status) 
+    		                                            throws HpcException;
+    
+    /**
+     * Complete a collection download task:
+     * 1. Update task info in DB with results info.
+     *
+     * @param downloadTask The download task to complete.
+     * @param result The result of the task (true is successful, false is failed).
+     * @param message (Optional) If the task failed, a message describing the failure.
+     * @param completed (Optional) The download task completion timestamp.
+     * @throws HpcException on service failure.
+     */
+    public void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask,
     		                                   boolean result, String message, Calendar completed) 
     		                                  throws HpcException;
 }
