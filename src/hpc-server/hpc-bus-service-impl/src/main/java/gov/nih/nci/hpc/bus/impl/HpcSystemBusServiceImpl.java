@@ -330,8 +330,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 				                           HpcErrorType.INVALID_REQUEST_INPUT);
     			 }
     			 
-    			 // The collection download is now in progress. 
-    			 downloadTask.setStatus(HpcCollectionDownloadTaskStatus.IN_PROGRESS);
+    			 // 'Activate' the collection download request. 
+    			 downloadTask.setStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
     			 downloadTask.getItems().addAll(downloadItems);
     			 
     			// Persist the collection download task.
@@ -351,9 +351,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	// Use system account to perform this service.
     	securityService.setSystemRequestInvoker();
     	
-    	// Iterate through all the collection download requests that are in progress.
+    	// Iterate through all the active collection download requests.
     	for(HpcCollectionDownloadTask downloadTask :
-    		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.IN_PROGRESS)) {
+    		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.ACTIVE)) {
     		boolean downloadCompleted = true;
     		
     		// Update status of individual download items in this collection download task.

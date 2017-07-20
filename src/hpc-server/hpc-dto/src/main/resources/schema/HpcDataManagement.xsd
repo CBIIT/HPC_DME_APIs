@@ -203,9 +203,27 @@
 		<xsd:complexType>
 			<xsd:sequence>
 			    <xsd:element name="taskId" type="xsd:int" />
+			    <xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
+	
+	<xsd:element name="HpcCollectionDownloadStatusDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="inProgress" type="xsd:boolean" />
+				<xsd:element name="taskStatus" type="hpc-domain-datatransfer:HpcCollectionDownloadTaskStatus" />
+			    <xsd:element name="path" type="xsd:string" />
+				<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="result" type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="items" type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem" 
+			                 minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="message" type="xsd:string" />
+				<xsd:element name="created" type="xsd:dateTime" />
+				<xsd:element name="completed" type="xsd:dateTime" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 	
 	<!--  Data Object Delete Response DTO -->
 	<xsd:element name="HpcDataObjectDeleteResponseDTO">
