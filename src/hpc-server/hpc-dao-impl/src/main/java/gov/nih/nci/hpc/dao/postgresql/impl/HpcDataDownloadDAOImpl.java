@@ -36,8 +36,9 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
@@ -86,12 +87,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	public static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL = 
 		   "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where " + "\"DATA_TRANSFER_TYPE\" = ?";
 	
-	public static final String UPSERT_DATA_OBJECT_DOWNLOAD_TASK_RESULT_SQL = 
-		   "insert into public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK_RESULT\" ( " +
+	public static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL = 
+		   "insert into public.\"HPC_DOWNLOAD_TASK_RESULT\" ( " +
                    "\"ID\", \"USER_ID\", \"PATH\", \"DOC\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", " +
                    "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"RESULT\", " +
-                   "\"MESSAGE\", \"CREATED\", \"COMPLETED\") " + 
-                   "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                   "\"TYPE\", \"MESSAGE\", \"ITEMS\", \"CREATED\", \"COMPLETED\") " + 
+                   "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
            "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
                         "\"PATH\"=excluded.\"PATH\", " + 
                         "\"DOC\"=excluded.\"DOC\", " + 
@@ -100,12 +101,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
                         "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " +
                         "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", " +
                         "\"RESULT\"=excluded.\"RESULT\", " +
+                        "\"TYPE\"=excluded.\"TYPE\", " +
                         "\"MESSAGE\"=excluded.\"MESSAGE\", " +
+                        "\"ITEMS\"=excluded.\"ITEMS\", " +
                         "\"CREATED\"=excluded.\"CREATED\", " +
                         "\"COMPLETED\"=excluded.\"COMPLETED\"";
 	
-	public static final String GET_DATA_OBJECT_DOWNLOAD_TASK_RESULT_SQL = 
-		   "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK_RESULT\" where " + "\"ID\" = ?";
+	public static final String GET_DOWNLOAD_TASK_RESULT_SQL = 
+		   "select * from public.\"HPC_DOWNLOAD_TASK_RESULT\" where " + "\"ID\" = ? and \"TYPE\" = ?";
 	
 	public static final String INSERT_COLLECTION_DOWNLOAD_TASK_SQL = 
 		   "insert into public.\"HPC_COLLECTION_DOWNLOAD_TASK\" (\"USER_ID\") values(NULL)";
@@ -123,6 +126,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
                         "\"STATUS\"=excluded.\"STATUS\", " +
                         "\"CREATED\"=excluded.\"CREATED\"";
 	
+	public static final String GET_COLLECTION_DOWNLOAD_TASK_SQL = 
+		   "select * from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where " + "\"ID\" = ?";
+	
+	public static final String DELETE_COLLECTION_DOWNLOAD_TASK_SQL = 
+		   "delete from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where " + "\"ID\" = ?";
+	
 	public static final String GET_COLLECTION_DOWNLOAD_TASKS_SQL = 
 		   "select * from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where " + "\"STATUS\" = ?";
 	
@@ -134,7 +143,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	@Autowired
 	private JdbcTemplate jdbcTemplate = null;
 	
-	// HpcDataObjectDownloadCleanup table to object mapper.
+	// HpcDataObjectDownloadTask table to object mapper.
 	private RowMapper<HpcDataObjectDownloadTask> dataObjectDownloadTaskRowMapper = (rs, rowNum) -> 
 	{
 		HpcDataObjectDownloadTask dataObjectDownloadTask = new HpcDataObjectDownloadTask();
@@ -164,17 +173,19 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
         return dataObjectDownloadTask;
 	};
 	
-	// HpcDataObjectDownloadCleanup table to object mapper.
-	private RowMapper<HpcDataObjectDownloadTaskResult> dataObjectDownloadTaskResultRowMapper = (rs, rowNum) -> 
+	// HpcDownloadTaskResult table to object mapper.
+	private RowMapper<HpcDownloadTaskResult> downloadTaskResultRowMapper = (rs, rowNum) -> 
 	{
-		HpcDataObjectDownloadTaskResult dataObjectDownloadTaskResult = new HpcDataObjectDownloadTaskResult();
-		dataObjectDownloadTaskResult.setId(rs.getInt("ID"));
-		dataObjectDownloadTaskResult.setUserId(rs.getString("USER_ID"));
-		dataObjectDownloadTaskResult.setDoc(rs.getString("DOC"));
-		dataObjectDownloadTaskResult.setPath(rs.getString("PATH"));
-		dataObjectDownloadTaskResult.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
-		dataObjectDownloadTaskResult.setDataTransferType(
-				  HpcDataTransferType.fromValue(rs.getString(("DATA_TRANSFER_TYPE"))));
+		HpcDownloadTaskResult downloadTaskResult = new HpcDownloadTaskResult();
+		downloadTaskResult.setId(rs.getInt("ID"));
+		downloadTaskResult.setUserId(rs.getString("USER_ID"));
+		downloadTaskResult.setDoc(rs.getString("DOC"));
+		downloadTaskResult.setPath(rs.getString("PATH"));
+		downloadTaskResult.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
+		downloadTaskResult.setDataTransferType(
+				              HpcDataTransferType.fromValue(rs.getString(("DATA_TRANSFER_TYPE"))));
+		downloadTaskResult.setType(
+				              HpcDownloadTaskType.fromValue(rs.getString(("TYPE"))));
 		String destinationLocationFileContainerId = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
 		String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
 		if(destinationLocationFileContainerId != null && 
@@ -182,22 +193,24 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		   HpcFileLocation destinationLocation = new HpcFileLocation();
 		   destinationLocation.setFileContainerId(destinationLocationFileContainerId);
 		   destinationLocation.setFileId(destinationLocationFileId);
-		   dataObjectDownloadTaskResult.setDestinationLocation(destinationLocation);
+		   downloadTaskResult.setDestinationLocation(destinationLocation);
 		}
-		dataObjectDownloadTaskResult.setResult(rs.getBoolean("RESULT"));
-		dataObjectDownloadTaskResult.setMessage(rs.getString("MESSAGE"));
+		downloadTaskResult.setResult(rs.getBoolean("RESULT"));
+		downloadTaskResult.setMessage(rs.getString("MESSAGE"));
+		downloadTaskResult.getItems().addAll(fromJSON(rs.getString("ITEMS")));
+		
     	Calendar created = Calendar.getInstance();
     	created.setTime(rs.getTimestamp("CREATED"));
-    	dataObjectDownloadTaskResult.setCreated(created);
+    	downloadTaskResult.setCreated(created);
     	
     	Calendar completed = Calendar.getInstance();
     	created.setTime(rs.getTimestamp("COMPLETED"));
-    	dataObjectDownloadTaskResult.setCompleted(completed);
+    	downloadTaskResult.setCompleted(completed);
 		
-        return dataObjectDownloadTaskResult;
+        return downloadTaskResult;
 	};
 	
-	// HpcDataObjectDownloadCleanup table to object mapper.
+	// HpcCollectionDownloadTask table to object mapper.
 	private RowMapper<HpcCollectionDownloadTask> collectionDownloadTaskRowMapper = (rs, rowNum) -> 
 	{
 		HpcCollectionDownloadTask collectionDownloadTask = new HpcCollectionDownloadTask();
@@ -323,42 +336,46 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	}
 	
 	@Override
-    public void upsertDataObjectDownloadResult(HpcDataObjectDownloadTask dataObjectDownloadTask,
-                                               boolean result, String message, Calendar completed) 
-                                              throws HpcException
+    public void upsertDownloadTaskResult(HpcDownloadTaskResult taskResult)
+                                        throws HpcException
     {
 		try {
-		     jdbcTemplate.update(UPSERT_DATA_OBJECT_DOWNLOAD_TASK_RESULT_SQL,
-		    		             dataObjectDownloadTask.getId(),
-					    		 dataObjectDownloadTask.getUserId(),
-					    		 dataObjectDownloadTask.getPath(),
-					    		 dataObjectDownloadTask.getDoc(),
-					    		 dataObjectDownloadTask.getDataTransferRequestId(),
-					    		 dataObjectDownloadTask.getDataTransferType().value(),
-					    		 dataObjectDownloadTask.getDestinationLocation().getFileContainerId(),
-					    		 dataObjectDownloadTask.getDestinationLocation().getFileId(),
-					    		 result, message,
-					    		 dataObjectDownloadTask.getCreated(), completed);
+		     jdbcTemplate.update(UPSERT_DOWNLOAD_TASK_RESULT_SQL,
+					    		 taskResult.getId(),
+					    		 taskResult.getUserId(),
+					    		 taskResult.getPath(),
+					    		 taskResult.getDoc(),
+					    		 taskResult.getDataTransferRequestId(),
+					    		 taskResult.getDataTransferType().value(),
+					    		 taskResult.getDestinationLocation().getFileContainerId(),
+					    		 taskResult.getDestinationLocation().getFileId(),
+					    		 taskResult.getResult(),
+					    		 taskResult.getType().value(),
+					    		 taskResult.getMessage(),
+					    		 toJSON(taskResult.getItems()),
+					    		 taskResult.getCreated(),
+					    		 taskResult.getCompleted());
 		     
 		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to upsert a data object download task: " + e.getMessage(),
+			    throw new HpcException("Failed to upsert a download task result: " + e.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
-		}		
+		}	
     }
 	
 	@Override 
-	public HpcDataObjectDownloadTaskResult getDataObjectDownloadTaskResult(int id) throws HpcException
+	public HpcDownloadTaskResult getDownloadTaskResult(int id, HpcDownloadTaskType taskType) 
+			                                          throws HpcException
 	{
 		try {
-		     return jdbcTemplate.queryForObject(GET_DATA_OBJECT_DOWNLOAD_TASK_RESULT_SQL, 
-		    		                            dataObjectDownloadTaskResultRowMapper, id);
+		     return jdbcTemplate.queryForObject(GET_DOWNLOAD_TASK_RESULT_SQL, 
+		    		                            downloadTaskResultRowMapper, id, taskType);
 		     
 		} catch(IncorrectResultSizeDataAccessException irse) {
-			    logger.error("Multiple tasks results with the same ID found", irse);
+			    logger.error("Multiple tasks results with the same ID / Type found", irse);
 			    return null;
 			    
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get a data object download task result: " + e.getMessage(),
+		        throw new HpcException("Failed to get a download task result: " + e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
@@ -386,6 +403,35 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
     }
+	
+	@Override 
+	public HpcCollectionDownloadTask getCollectionDownloadTask(int id) throws HpcException
+	{
+		try {
+		     return jdbcTemplate.queryForObject(GET_COLLECTION_DOWNLOAD_TASK_SQL, 
+		    		                            collectionDownloadTaskRowMapper, id);
+		     
+		} catch(IncorrectResultSizeDataAccessException irse) {
+			    logger.error("Multiple tasks with the same ID found", irse);
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get a collection download task: " + e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+	}
+	
+	@Override
+	public void deleteCollectionDownloadTask(int id) throws HpcException
+	{
+		try {
+		     jdbcTemplate.update(DELETE_COLLECTION_DOWNLOAD_TASK_SQL, id);
+		     
+		} catch(DataAccessException e) {
+			    throw new HpcException("Failed to delete a collection download task: " + e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+	}
 	
 	@Override
 	public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(

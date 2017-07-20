@@ -33,10 +33,11 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -537,7 +538,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     	
     	// Get the data object download task status.
-    	HpcDataObjectDownloadTaskStatus taskStatus = dataTransferService.getDataObjectDownloadTaskStatus(taskId);
+    	HpcDownloadTaskStatus taskStatus = 
+    			   dataTransferService.getDownloadTaskStatus(taskId, HpcDownloadTaskType.DATA_OBJECT);
     	if(taskStatus == null) {
     	   return null;
     	}
@@ -547,11 +549,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	downloadStatus.setInProgress(taskStatus.getInProgress());
     	if(taskStatus.getInProgress()) {
     	   // Download in progress. Populate the DTO accordingly.
-    	   downloadStatus.setPath(taskStatus.getTask().getPath());
-    	   downloadStatus.setCreated(taskStatus.getTask().getCreated());
-    	   downloadStatus.setDataTransferRequestId(taskStatus.getTask().getDataTransferRequestId());
-    	   downloadStatus.setDataTransferType(taskStatus.getTask().getDataTransferType());
-    	   downloadStatus.setDestinationLocation(taskStatus.getTask().getDestinationLocation());
+    	   downloadStatus.setPath(taskStatus.getDataObjectDownloadTask().getPath());
+    	   downloadStatus.setCreated(taskStatus.getDataObjectDownloadTask().getCreated());
+    	   downloadStatus.setDataTransferRequestId(taskStatus.getDataObjectDownloadTask().getDataTransferRequestId());
+    	   downloadStatus.setDataTransferType(taskStatus.getDataObjectDownloadTask().getDataTransferType());
+    	   downloadStatus.setDestinationLocation(taskStatus.getDataObjectDownloadTask().getDestinationLocation());
+    	   
     	} else {
     		    // Download completed or failed. Populate the DTO accordingly. 
     		    downloadStatus.setPath(taskStatus.getResult().getPath());

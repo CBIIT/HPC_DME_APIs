@@ -19,11 +19,12 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -168,21 +169,23 @@ public interface HpcDataTransferService
     		                                  HpcDataTransferType dataTransferType) throws HpcException;
     
     /**
-     * Get a data object download task status. 
+     * Get download task status. 
      *
      * @param taskId The download task ID.
+     * @param taskType The download task type (data-object or collection).
      * @return A download status object, or null if the task can't be found.
      *         Note: The returned object is associated with a 'task' object if the download 
      *         is in-progress. If the download completed or failed, the returned object is associated with a 
      *         'result' object. 
      * @throws HpcException on service failure.
      */
-    public HpcDataObjectDownloadTaskStatus getDataObjectDownloadTaskStatus(int taskId) throws HpcException;
+    public HpcDownloadTaskStatus getDownloadTaskStatus(int taskId, HpcDownloadTaskType taskType) 
+    		                                          throws HpcException;
     
     /**
      * Complete a data object download task:
      * 1. Cleanup any files staged in the file system for download.
-     * 2. Update task info in DB with results info
+     * 2. Update task info in DB with results info.
      *
      * @param downloadTask The download task to complete.
      * @param result The result of the task (true is successful, false is failed).
@@ -228,6 +231,20 @@ public interface HpcDataTransferService
     public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(
     		                                            HpcCollectionDownloadTaskStatus status) 
     		                                            throws HpcException;
+    
+    /**
+     * Complete a collection download task:
+     * 1. Update task info in DB with results info.
+     *
+     * @param downloadTask The download task to complete.
+     * @param result The result of the task (true is successful, false is failed).
+     * @param message (Optional) If the task failed, a message describing the failure.
+     * @param completed (Optional) The download task completion timestamp.
+     * @throws HpcException on service failure.
+     */
+    public void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask,
+    		                                   boolean result, String message, Calendar completed) 
+    		                                  throws HpcException;
 }
 
  
