@@ -33,13 +33,14 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskResult;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -312,11 +313,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	}
 	
 	@Override
-	public HpcDataObjectDownloadTaskStatus getDataObjectDownloadTaskStatus(int taskId) throws HpcException
+	public HpcDownloadTaskStatus getDownloadTaskStatus(int taskId, HpcDownloadTaskType taskType) 
+			                                          throws HpcException
 	{
-		HpcDataObjectDownloadTaskStatus taskStatus = new HpcDataObjectDownloadTaskStatus();
+		if(taskType == null) {
+		   throw new HpcException("Null download task type", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 		
-		HpcDataObjectDownloadTaskResult taskResult = dataDownloadDAO.getDataObjectDownloadTaskResult(taskId);
+		HpcDownloadTaskStatus taskStatus = new HpcDownloadTaskStatus();
+		HpcDownloadTaskResult taskResult = dataDownloadDAO.getDownloadTaskResult(taskId, taskType);
 		if(taskResult != null) {
 		   // Task completed or failed. Return the result.
 		   taskStatus.setInProgress(false);
@@ -324,12 +329,23 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		   return taskStatus;
 		}
 	    
-		HpcDataObjectDownloadTask task = dataDownloadDAO.getDataObjectDownloadTask(taskId);
-		if(task != null) {
-		   // Task still in progress.
-		   taskStatus.setInProgress(true);
-		   taskStatus.setTask(task);
-		   return taskStatus;	
+		// Task still in-progress. Return either the data-object or the collection active download task.
+		taskStatus.setInProgress(true);
+		
+		if(taskType.equals(HpcDownloadTaskType.DATA_OBJECT)) {
+		   HpcDataObjectDownloadTask task = dataDownloadDAO.getDataObjectDownloadTask(taskId);
+		   if(task != null) {
+		      taskStatus.setDataObjectDownloadTask(task);
+		      return taskStatus;	
+		   }
+		}
+		
+		if(taskType.equals(HpcDownloadTaskType.COLLECTION)) {
+		   HpcCollectionDownloadTask task = dataDownloadDAO.getCollectionDownloadTask(taskId);
+		   if(task != null) {
+			  taskStatus.setCollectionDownloadTask(task);
+			  return taskStatus;	
+		   }
 		}
 		
 		// Task not found.
@@ -356,7 +372,20 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
 		
 		// Create a task result object.
-		dataDownloadDAO.upsertDataObjectDownloadResult(downloadTask, result, message, completed);
+		HpcDownloadTaskResult taskResult = new HpcDownloadTaskResult();
+		taskResult.setId(downloadTask.getId());
+	    taskResult.setUserId(downloadTask.getUserId());
+	    taskResult.setPath(downloadTask.getPath());
+	    taskResult.setDoc(downloadTask.getDoc());
+	    taskResult.setDataTransferRequestId(downloadTask.getDataTransferRequestId());
+	    taskResult.setDataTransferType(downloadTask.getDataTransferType());
+	    taskResult.setDestinationLocation(downloadTask.getDestinationLocation());
+	    taskResult.setResult(result);
+	    taskResult.setType(HpcDownloadTaskType.DATA_OBJECT);
+	    taskResult.setMessage(message);
+	    taskResult.setCreated(downloadTask.getCreated());
+	    taskResult.setCompleted(completed);	
+		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
 	}
 	
 	@Override
@@ -396,6 +425,35 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
                                               throws HpcException
 	{
 		return dataDownloadDAO.getCollectionDownloadTasks(status);
+	}
+	
+	@Override
+	public void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask,
+			                                   boolean result, String message, Calendar completed)
+	                                         throws HpcException
+	{
+		// Input validation
+		if(downloadTask == null) {
+		   throw new HpcException("Invalid collection download task", 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		// Cleanup the DB record.
+		dataDownloadDAO.deleteCollectionDownloadTask(downloadTask.getId());
+		
+		// Create a task result object.
+		HpcDownloadTaskResult taskResult = new HpcDownloadTaskResult();
+		taskResult.setId(downloadTask.getId());
+	    taskResult.setUserId(downloadTask.getUserId());
+	    taskResult.setPath(downloadTask.getPath());
+	    taskResult.setDestinationLocation(downloadTask.getDestinationLocation());
+	    taskResult.setResult(result);
+	    taskResult.setType(HpcDownloadTaskType.COLLECTION);
+	    taskResult.setMessage(message);
+	    taskResult.setCreated(downloadTask.getCreated());
+	    taskResult.setCompleted(completed);	
+	    taskResult.getItems().addAll(downloadTask.getItems());
+		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
 	}
 	
     //---------------------------------------------------------------------//

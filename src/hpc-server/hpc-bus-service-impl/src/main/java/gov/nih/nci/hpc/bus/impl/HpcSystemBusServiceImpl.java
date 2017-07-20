@@ -30,11 +30,12 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
@@ -332,16 +333,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			 // The collection download is now in progress. 
     			 downloadTask.setStatus(HpcCollectionDownloadTaskStatus.IN_PROGRESS);
     			 downloadTask.getItems().addAll(downloadItems);
+    			 
+    			// Persist the collection download task.
+			    dataTransferService.updateCollectionDownloadTask(downloadTask);
     		     
     		} catch(HpcException e) {
     			    logger.error("Failed to process a collection download: " + downloadTask.getId(), e);
-    			    downloadTask.setStatus(HpcCollectionDownloadTaskStatus.FAILED);
-    			    downloadTask.setMessage(e.getMessage());
+    			    completeCollectionDownloadTask(downloadTask, false, e.getMessage());
     			    
-    		} finally {
-    			       // Persist the collection download task.
-    			       dataTransferService.updateCollectionDownloadTask(downloadTask);
-    		}
+    		} 
     	}
     }
     
@@ -361,10 +361,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 				try {
 				     if(downloadItem.getResult() == null) {
 				     	// This download item in progress - check its status.
-				    	HpcDataObjectDownloadTaskStatus downloadItemStatus = 
+				    	HpcDownloadTaskStatus downloadItemStatus = 
 				    	   downloadItem.getDataObjectDownloadTaskId() != null ?
-				    	           dataTransferService.getDataObjectDownloadTaskStatus(
-				    			                          downloadItem.getDataObjectDownloadTaskId()) :
+				    	           dataTransferService.getDownloadTaskStatus(
+				    			                          downloadItem.getDataObjectDownloadTaskId(),
+				    			                          HpcDownloadTaskType.DATA_OBJECT) :
 				    			   null;
 				    			                          
 				        if(downloadItemStatus == null) {
@@ -389,11 +390,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 				 }
 			}
 			
+			
 			// Update the collection download task.
 			if(downloadCompleted) {
-			   downloadTask.setStatus(HpcCollectionDownloadTaskStatus.COMPLETED);
+			   completeCollectionDownloadTask(downloadTask, true, null);
+			} else {
+				    dataTransferService.updateCollectionDownloadTask(downloadTask);
 			}
-	        dataTransferService.updateCollectionDownloadTask(downloadTask);
     	}
     }
     
@@ -541,8 +544,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	securityService.setSystemRequestInvoker();
     	
     	List<String> summaryReportByDateUsers = notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT);
-    	if(summaryReportByDateUsers != null && summaryReportByDateUsers.size() > 0)
-    	{
+    	if(summaryReportByDateUsers != null && summaryReportByDateUsers.size() > 0) {
     		HpcReportCriteria criteria = new HpcReportCriteria();
     		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE);
     		Calendar today = Calendar.getInstance();
@@ -787,6 +789,31 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	    		                  collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/')));
 	    return calcDestination;
 	}
+	
+    /**
+     * Complete a collection download task
+     * 1. Update task info in DB with results info.
+     * 2. Send an event.
+     *
+     * @param downloadTask The download task to complete.
+     * @param result The result of the task (true is successful, false is failed).
+     * @param message (Optional) If the task failed, a message describing the failure.
+     * @throws HpcException on service failure.
+     */
+    private void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask,
+    		                                   boolean result, String message) 
+    		                                  throws HpcException
+    {
+    	Calendar completed = Calendar.getInstance();
+    	dataTransferService.completeCollectionDownloadTask(downloadTask, result, message, completed);
+    	//TODO - fix
+    	addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
+                                     "downloadTask.getDataTransferRequestId()",
+                                     HpcDataTransferDownloadStatus.COMPLETED, 
+                                     downloadTask.getDestinationLocation(),
+                                     completed, HpcDataTransferType.GLOBUS);
+    }
 }
+
 
  
