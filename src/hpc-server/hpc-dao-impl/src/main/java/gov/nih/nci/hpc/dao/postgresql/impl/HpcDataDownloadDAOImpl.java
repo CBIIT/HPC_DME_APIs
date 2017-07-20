@@ -182,10 +182,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		downloadTaskResult.setDoc(rs.getString("DOC"));
 		downloadTaskResult.setPath(rs.getString("PATH"));
 		downloadTaskResult.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
-		downloadTaskResult.setDataTransferType(
-				              HpcDataTransferType.fromValue(rs.getString(("DATA_TRANSFER_TYPE"))));
-		downloadTaskResult.setType(
-				              HpcDownloadTaskType.fromValue(rs.getString(("TYPE"))));
+		String dataTransferType = rs.getString("DATA_TRANSFER_TYPE");
+		downloadTaskResult.setDataTransferType(dataTransferType != null ?
+				                               HpcDataTransferType.fromValue(dataTransferType) : null);
 		String destinationLocationFileContainerId = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
 		String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
 		if(destinationLocationFileContainerId != null && 
