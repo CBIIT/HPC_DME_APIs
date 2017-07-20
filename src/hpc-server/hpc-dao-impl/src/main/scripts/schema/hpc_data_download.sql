@@ -51,7 +51,7 @@ CREATE TABLE public."HPC_DOWNLOAD_TASK_RESULT"
 (
   "ID" integer NOT NULL,
   "USER_ID" text NOT NULL,
-  "TYPE" text NOT NULL
+  "TYPE" text NOT NULL,
   "PATH" text NOT NULL,
   "DOC" text NOT NULL,
   "DATA_TRANSFER_REQUEST_ID" text,
