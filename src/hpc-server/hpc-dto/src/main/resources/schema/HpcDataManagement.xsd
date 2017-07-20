@@ -202,7 +202,7 @@
 	<xsd:element name="HpcCollectionDownloadResponseDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-			    <xsd:element name="requestId" type="xsd:int" />
+			    <xsd:element name="taskId" type="xsd:int" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
