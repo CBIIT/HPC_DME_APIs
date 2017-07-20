@@ -103,6 +103,17 @@ public interface HpcDataManagementRestService
 			                           @Context MessageContext mc);
 	
     /**
+     * Get collection download task status.
+     *
+     * @param taskId The collection download task ID.
+     * @return The REST service response w/ HpcCollectionDownloadStatusDTO entity.
+     */
+	@GET
+	@Path("/collection/download")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getCollectionDownloadStatus(@QueryParam("taskId") Integer taskId);
+	
+    /**
      * Set a collection's permissions.
      *
      * @param path The collection path.

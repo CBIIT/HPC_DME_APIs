@@ -14,6 +14,7 @@ import java.io.File;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
@@ -82,6 +83,15 @@ public interface HpcDataManagementBusService
 	public HpcCollectionDownloadResponseDTO downloadCollection(String path, 
 			                                        HpcDownloadRequestDTO downloadRequest)
 			                                        throws HpcException;
+	
+    /**
+     * Get collection download task status.
+     *
+     * @param taskId The collection download task ID.
+     * @return A collection download status DTO. Null if the task could not be found.
+     */
+	public HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(Integer taskId) 
+			                                                         throws HpcException;
 	
     /**
      * Set collection permissions.
