@@ -57,14 +57,18 @@
 		},
 		{
 			"eventType": "DATA_TRANSFER_DOWNLOAD_COMPLETED",
-			"subjectFormat": "HPC Data Transfer Download Request Completed at %1$s",
+			"subjectFormat": "HPC %1$s Download Request Completed at %2$s",
 			"subjectArguments": [
 				{
-					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"payloadEntryAttribute": "DOWNLOAD_TASK_TYPE",
 					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "1"
 				}
 			],
-			"textFormat": "Your download request is completed.\nSource path: %1$s\nTarget path: %2$s",
+			"textFormat": "Your download request is completed.\nSource path: %1$s\nTarget path: %2$s. Task ID: %3$s.",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -72,20 +76,28 @@
 				},
 				{
 					"payloadEntryAttribute": "DESTINATION_LOCATION",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "DOWNLOAD_TASK_ID",
 					"index": "1"
 				}
 			]
 		},
 		{
 			"eventType": "DATA_TRANSFER_DOWNLOAD_FAILED",
-			"subjectFormat": "HPC Data Transfer Download Request Failed at %1$s",
+			"subjectFormat": "HPC %1$s Download Request Failed at %2$s",
 			"subjectArguments": [
 				{
-					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"payloadEntryAttribute": "DOWNLOAD_TASK_TYPE",
 					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "1"
 				}
 			],
-			"textFormat": "Your download request failed.\nSource path: %1$s\nTarget path: %2$s\nReason for failure: %3$s",
+			"textFormat": "Your download request failed.\nSource path: %1$s\nTarget path: %2$s. Task ID: %3$s\nReason for failure: %4$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -96,8 +108,12 @@
 					"index": "1"
 				},
 				{
-					"payloadEntryAttribute": "ERROR_MESSAGE",
+					"payloadEntryAttribute": "DOWNLOAD_TASK_ID",
 					"index": "2"
+				},
+				{
+					"payloadEntryAttribute": "ERROR_MESSAGE",
+					"index": "3"
 				}
 			]
 		},
