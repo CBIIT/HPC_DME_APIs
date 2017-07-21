@@ -1012,7 +1012,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    		 // Record a download failed event if requested to.
 	    		 if(secondHopDownloadRequest.getCompletionEvent()) {
 	    		    eventService.addDataTransferDownloadFailedEvent(
-	    		    		        secondHopDownloadRequest.getUserId(), path, null, 
+	    		    		        secondHopDownloadRequest.getUserId(), path, 
+	    		    		        HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
 	    				            secondHopDownloadRequest.getDestinationLocation(),
 	    				            transferFailedTimestamp, message);
 	    		 }
