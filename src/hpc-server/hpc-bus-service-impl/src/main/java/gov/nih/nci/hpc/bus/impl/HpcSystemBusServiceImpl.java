@@ -290,9 +290,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		    	// Send a download completion event (if requested to).
     		    	if(downloadTask.getCompletionEvent()) {
     		           addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
-    				                                downloadTask.getDataTransferRequestId(),
-    				                                dataTransferDownloadStatus, downloadTask.getDestinationLocation(),
-    				                                completed, downloadTask.getDataTransferType());
+    		        		                        HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
+    		        		                        result, message, downloadTask.getDestinationLocation(),
+    				                                completed);
     		    	}
     		     }
     		     
@@ -685,34 +685,30 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * add data transfer download event.
      * 
      * @param userId The user ID.
-     * @param path The data object path.
-     * @param dataTransferRequestId The data transfer request ID.
-     * @param dataTransferStatus The data transfer download status.
+     * @param path The collection or data objection path.
+     * @param downloadTaskType The download task type.
+     * @param downloadTaskId The download task ID.
+     * @param result The download result.
+     * @param message A failure message.
      * @param destinationLocation The download destination location.
      * @param dataTransferCompleted The download completion time.
-     * @param dataTransferType The type of data transfer used to download (Globus, S3, etc).
      */
-	private void addDataTransferDownloadEvent(String userId, String path, String dataTransferRequestId,
-			                                  HpcDataTransferDownloadStatus dataTransferStatus,
+	private void addDataTransferDownloadEvent(String userId, String path, 
+			                                  HpcDownloadTaskType downloadTaskType,
+                                              Integer downloadTaskId,
+			                                  boolean result, String message,
 			                                  HpcFileLocation destinationLocation, 
-			                                  Calendar dataTransferCompleted,
-			                                  HpcDataTransferType dataTransferType) 
+			                                  Calendar dataTransferCompleted) 
 	{
 		try {
-			 switch(dataTransferStatus) {
-			        case COMPLETED: 
-		                 eventService.addDataTransferDownloadCompletedEvent(userId, path, dataTransferRequestId, 
-		                		                                            destinationLocation, dataTransferCompleted);
-		                 break;
-		                 
-			        case FAILED: 
-		                 eventService.addDataTransferDownloadFailedEvent(userId, path, dataTransferRequestId,
-		                		                                         destinationLocation, dataTransferCompleted,
-		                		                                         dataTransferType.value() + " failure");
-		                 break;
-		                 
-		            default: 
-		                 logger.error("Unexpected data transfer status: " + dataTransferStatus); 
+			 if(result) {
+		        eventService.addDataTransferDownloadCompletedEvent(userId, path, downloadTaskType, 
+		                		                                   downloadTaskId, 
+		                		                                   destinationLocation, dataTransferCompleted);
+			 } else {
+		             eventService.addDataTransferDownloadFailedEvent(userId, path, downloadTaskType, 
+                                                                     downloadTaskId, destinationLocation, 
+                                                                     dataTransferCompleted, message);
 			 }
 
 		} catch(HpcException e) {
@@ -820,12 +816,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     {
     	Calendar completed = Calendar.getInstance();
     	dataTransferService.completeCollectionDownloadTask(downloadTask, result, message, completed);
-    	//TODO - fix
     	addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
-                                     "downloadTask.getDataTransferRequestId()",
-                                     HpcDataTransferDownloadStatus.COMPLETED, 
-                                     downloadTask.getDestinationLocation(),
-                                     completed, HpcDataTransferType.GLOBUS);
+                                     HpcDownloadTaskType.COLLECTION, downloadTask.getId(),
+                                     result, message, downloadTask.getDestinationLocation(),
+                                     completed);
     }
 }
 
