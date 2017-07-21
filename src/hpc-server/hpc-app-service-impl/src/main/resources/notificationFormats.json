@@ -68,7 +68,7 @@
 					"index": "1"
 				}
 			],
-			"textFormat": "Your download request is completed.\nSource path: %1$s\nTarget path: %2$s. Task ID: %3$s.",
+			"textFormat": "Your download request is completed.\nSource path: %1$s\nTarget path: %2$s \nTask ID: %3$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -97,7 +97,7 @@
 					"index": "1"
 				}
 			],
-			"textFormat": "Your download request failed.\nSource path: %1$s\nTarget path: %2$s. Task ID: %3$s\nReason for failure: %4$s",
+			"textFormat": "Your download request failed.\nSource path: %1$s\nTarget path: %2$s \nTask ID: %3$s\nReason for failure: %4$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
