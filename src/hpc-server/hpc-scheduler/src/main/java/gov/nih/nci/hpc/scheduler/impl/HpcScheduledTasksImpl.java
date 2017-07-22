@@ -24,7 +24,6 @@ import org.springframework.scheduling.annotation.Scheduled;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: HpcScheduledTasks.java 932 2016-03-01 02:05:17Z rosenbergea $
  */
 
 public class HpcScheduledTasksImpl 
@@ -81,14 +80,36 @@ public class HpcScheduledTasksImpl
     }
     
     /**
-     * Cleanup Data Transfer Download Files Task.
+     * Complete (and cleanup) Data Transfer Download Files Tasks.
      * 
      */    
-    @Scheduled(cron = "${hpc.scheduler.cron.cleanupDataObjectDownloadTasks.delay}")
-    private void cleanupDataObjectDownloadTasksTask()
+    @Scheduled(cron = "${hpc.scheduler.cron.completeDataObjectDownloadTasks.delay}")
+    private void completeDataObjectDownloadTasksTask()
     {
-    	executeTask("cleanupDataObjectDownloadTasks()", 
-    			    systemBusService::cleanupDataObjectDownloadTasks);
+    	executeTask("completeDataObjectDownloadTasks()", 
+    			    systemBusService::completeDataObjectDownloadTasks);
+    }
+    
+    /**
+     * Process collection download tasks.
+     * 
+     */    
+    @Scheduled(cron = "${hpc.scheduler.cron.processCollectionDownloadTasks.delay}")
+    private void processCollectionDownloadTasksTask()
+    {
+    	executeTask("processCollectionDownloadRequests()", 
+    			    systemBusService::processCollectionDownloadTasks);
+    }
+    
+    /**
+     * Complete collection download tasks.
+     * 
+     */    
+    @Scheduled(cron = "${hpc.scheduler.cron.completeCollectionDownloadTasks.delay}")
+    private void completeCollectionDownloadTasksTask()
+    {
+    	executeTask("completeCollectionDownloadRequests()", 
+    			    systemBusService::completeCollectionDownloadTasks);
     }
     
     /**

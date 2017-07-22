@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
@@ -32,12 +34,11 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadReceiptDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
@@ -152,16 +153,29 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
                                        HpcDownloadRequestDTO downloadRequest,
                                        MessageContext messageContext)
     {
-    	HpcDownloadResponseListDTO downloadResponses = null;
+    	HpcCollectionDownloadResponseDTO downloadResponse = null;
 		try {
-			 downloadResponses = dataManagementBusService.downloadCollection(toAbsolutePath(path), downloadRequest);
+			 downloadResponse = dataManagementBusService.downloadCollection(toAbsolutePath(path), downloadRequest);
 
 		} catch(HpcException e) {
 			    return errorResponse(e);
 		}
 
-		return okResponse(downloadResponses != null && !downloadResponses.getDownloadReceipts().isEmpty() ?
-		                  downloadResponses : null, false);
+		return okResponse(downloadResponse, false);
+    }
+    
+    @Override
+    public Response getCollectionDownloadStatus(Integer taskId)
+    {
+    	HpcCollectionDownloadStatusDTO downloadStatus = null;
+		try {
+			 downloadStatus = dataManagementBusService.getCollectionDownloadStatus(taskId);
+
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+    	return okResponse(downloadStatus, true);
     }
     
     @Override
@@ -254,7 +268,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
                                        HpcDownloadRequestDTO downloadRequest,
                                        MessageContext messageContext)
     {
-    	HpcDownloadResponseDTO downloadResponse = null;
+    	HpcDataObjectDownloadResponseDTO downloadResponse = null;
 		try {
 			 downloadResponse = dataManagementBusService.downloadDataObject(toAbsolutePath(path), downloadRequest);
 
@@ -263,6 +277,20 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		return downloadResponse(downloadResponse, messageContext);
+    }
+    
+    @Override
+    public Response getDataObjectDownloadStatus(Integer taskId)
+    {
+    	HpcDataObjectDownloadStatusDTO downloadStatus = null;
+		try {
+			 downloadStatus = dataManagementBusService.getDataObjectDownloadStatus(taskId);
+
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+    	return okResponse(downloadStatus, true);
     }
     
     @Override
@@ -402,20 +430,19 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
      * @param messageContext The message context.
      * @return an OK response.
      */
-    private Response downloadResponse(HpcDownloadResponseDTO downloadResponse, 
+    private Response downloadResponse(HpcDataObjectDownloadResponseDTO downloadResponse, 
     		                          MessageContext messageContext)
     {
     	if(downloadResponse == null) {
     	   return okResponse(null, false);
     	}
     	
-    	HpcDownloadReceiptDTO downloadReceipt = downloadResponse.getDownloadReceipt();
-		if(downloadReceipt != null && downloadReceipt.getDestinationFile() != null) {
+		if(downloadResponse.getDestinationFile() != null) {
 		   // Put the download file on the message context, so the cleanup interceptor can
 		   // delete it after the file was received by the caller.
 		   messageContext.put(DATA_OBJECT_DOWNLOAD_FILE_MC_ATTRIBUTE, 
-				              downloadReceipt.getDestinationFile());
-		   return okResponse(downloadReceipt.getDestinationFile(), 
+				              downloadResponse.getDestinationFile());
+		   return okResponse(downloadResponse.getDestinationFile(), 
 				             MediaType.APPLICATION_OCTET_STREAM_TYPE);
 		} else {
 			    return okResponse(downloadResponse, false);
