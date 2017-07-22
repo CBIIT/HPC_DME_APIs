@@ -10,23 +10,25 @@
 
 package gov.nih.nci.hpc.bus;
 
+import java.io.File;
+
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.exception.HpcException;
-
-import java.io.File;
 
 /**
  * <p>
@@ -78,9 +80,18 @@ public interface HpcDataManagementBusService
      * @return Download ResponseDTO 
      * @throws HpcException on service failure.
      */
-	public HpcDownloadResponseListDTO downloadCollection(String path, 
-			                                             HpcDownloadRequestDTO downloadRequest)
-			                                            throws HpcException;
+	public HpcCollectionDownloadResponseDTO downloadCollection(String path, 
+			                                        HpcDownloadRequestDTO downloadRequest)
+			                                        throws HpcException;
+	
+    /**
+     * Get collection download task status.
+     *
+     * @param taskId The collection download task ID.
+     * @return A collection download status DTO. Null if the task could not be found.
+     */
+	public HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(Integer taskId) 
+			                                                         throws HpcException;
 	
     /**
      * Set collection permissions.
@@ -142,16 +153,43 @@ public interface HpcDataManagementBusService
     public HpcDataObjectDTO getDataObject(String path) throws HpcException;
     
     /**
-     * Download Data Object.
+     * Download Data Object. In this overloaded method, the request invoker will be notified
+     * (if subscribed) when the download is complete. To specify a different user-id and turn off
+     * notification, use the other overloaded method.
      *
      * @param path The data object path.
      * @param downloadRequest The download request DTO.
      * @return Download ResponseDTO 
      * @throws HpcException on service failure.
      */
-	public HpcDownloadResponseDTO downloadDataObject(String path, 
-			                                         HpcDownloadRequestDTO downloadRequest)
-			                                        throws HpcException;
+	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, 
+			                                                   HpcDownloadRequestDTO downloadRequest)
+			                                                  throws HpcException;
+	
+    /**
+     * Download Data Object. 
+     *
+     * @param path The data object path.
+     * @param downloadRequest The download request DTO.
+     * @param userId The user submitting the request.
+     * @param completionEvent If true, an event will be added when async download is complete.
+     * @return Download ResponseDTO 
+     * @throws HpcException on service failure.
+     */
+    public HpcDataObjectDownloadResponseDTO downloadDataObject(String path,
+                                                               HpcDownloadRequestDTO downloadRequest,
+                                                               String userId,
+                                                               boolean completionEvent)
+                                                              throws HpcException;
+	
+    /**
+     * Get Data object download task status.
+     *
+     * @param taskId The data object download task ID.
+     * @return A data object download status DTO. Null if the task could not be found.
+     */
+	public HpcDataObjectDownloadStatusDTO getDataObjectDownloadStatus(Integer taskId) 
+			                                                         throws HpcException;
 	
     /**
      * Delete Data Object.

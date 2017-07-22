@@ -38,12 +38,26 @@ public interface HpcSystemBusService
 	public void processTemporaryArchive() throws HpcException;
 	
     /**
-     * Detect all the completed (aync) 2nd hop download tasks and delete the files 
-     * in the download space.
+     * Check status of all active data objects download tasks and complete these that are no longer in progress.
      *
      * @throws HpcException on service failure.
      */
-	public void cleanupDataObjectDownloadTasks() throws HpcException;
+	public void completeDataObjectDownloadTasks() throws HpcException;
+	
+    /**
+     * Process collection download tasks that received. i.e. kick off the download of individual data objects
+     * under each requested collection.
+     *
+     * @throws HpcException on service failure.
+     */
+	public void processCollectionDownloadTasks() throws HpcException;
+	
+    /**
+     * Check status of all active collection download tasks and complete these that are no longer in progress.
+     *
+     * @throws HpcException on service failure.
+     */
+	public void completeCollectionDownloadTasks() throws HpcException;
 	
     /**
      * Process all (active) events.

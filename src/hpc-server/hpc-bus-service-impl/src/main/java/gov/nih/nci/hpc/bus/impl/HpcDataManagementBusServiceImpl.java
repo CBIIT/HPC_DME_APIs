@@ -10,52 +10,6 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
-import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
-import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
-import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
-import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
-import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
-import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
-import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
-import gov.nih.nci.hpc.domain.user.HpcNciAccount;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadReceiptDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadResponseListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
-import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.service.HpcDataManagementService;
-import gov.nih.nci.hpc.service.HpcDataTransferService;
-import gov.nih.nci.hpc.service.HpcEventService;
-import gov.nih.nci.hpc.service.HpcMetadataService;
-import gov.nih.nci.hpc.service.HpcSecurityService;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,6 +21,57 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
+
+import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
+import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcDataTransferService;
+import gov.nih.nci.hpc.service.HpcEventService;
+import gov.nih.nci.hpc.service.HpcMetadataService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
 
 /**
  * <p>
@@ -233,9 +238,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcDownloadResponseListDTO downloadCollection(String path,
-                                                         HpcDownloadRequestDTO downloadRequest)
-                                                        throws HpcException
+    public HpcCollectionDownloadResponseDTO downloadCollection(String path,
+                                                               HpcDownloadRequestDTO downloadRequest)
+                                                               throws HpcException
     {
     	// Input validation.
     	if(path == null || downloadRequest == null) {
@@ -254,16 +259,65 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   throw new HpcException("Collection doesn't exist: " + path,
 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
       	}
-    	    	
-    	// Download all data objects in the collection tree.
-    	HpcDownloadResponseListDTO downloadResponseList =  
-    	   downloadDataObjects(collection, downloadRequest.getDestination());
-    	if(downloadResponseList.getDownloadReceipts().isEmpty()) {
-    	   throw new HpcException("Collection doesn't contain any data object: " + path,
-                                  HpcErrorType.INVALID_REQUEST_INPUT);	
+
+    	// Get the System generated metadata.
+    	HpcSystemGeneratedMetadata metadata = 
+    			 metadataService.getCollectionSystemGeneratedMetadata(path);
+    	
+    	// Submit a collection download task.
+    	HpcCollectionDownloadTask collectionDownloadTask =
+    	   dataTransferService.downloadCollection(path, downloadRequest.getDestination(), 
+    		   	                                  securityService.getRequestInvoker().getNciAccount().getUserId(),
+    		   	                                  metadata.getRegistrarDOC());
+    	
+    	// Create and resturn a DAO with the request receipt.
+    	HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
+    	responseDTO.setTaskId(collectionDownloadTask.getId());
+    	responseDTO.setDestinationLocation(collectionDownloadTask.getDestinationLocation());
+    	
+    	return responseDTO;
+    }
+    
+    @Override
+    public HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(Integer taskId) 
+                                                                     throws HpcException
+    {
+    	// Input validation.
+    	if(taskId == null) {
+    	   throw new HpcException("Null data object download task ID",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	return downloadResponseList;
+    	// Get the collection download task status.
+    	HpcDownloadTaskStatus taskStatus = 
+    			   dataTransferService.getDownloadTaskStatus(taskId, HpcDownloadTaskType.COLLECTION);
+    	if(taskStatus == null) {
+    	   return null;
+    	}
+    	
+    	// Map the task status to DTO.
+    	HpcCollectionDownloadStatusDTO downloadStatus = new HpcCollectionDownloadStatusDTO();
+    	downloadStatus.setInProgress(taskStatus.getInProgress());
+    	if(taskStatus.getInProgress()) {
+    	   // Download in progress. Populate the DTO accordingly.
+    	   downloadStatus.setPath(taskStatus.getCollectionDownloadTask().getPath());
+    	   downloadStatus.setCreated(taskStatus.getCollectionDownloadTask().getCreated());
+    	   downloadStatus.setTaskStatus(taskStatus.getCollectionDownloadTask().getStatus());
+    	   downloadStatus.setDestinationLocation(taskStatus.getCollectionDownloadTask().getDestinationLocation());
+    	   populateDownloadItems(downloadStatus, taskStatus.getCollectionDownloadTask().getItems());
+    	   
+    	} else {
+    		    // Download completed or failed. Populate the DTO accordingly. 
+    		    downloadStatus.setPath(taskStatus.getResult().getPath());
+     	        downloadStatus.setCreated(taskStatus.getResult().getCreated());
+     	        downloadStatus.setDestinationLocation(taskStatus.getResult().getDestinationLocation());
+     	        downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
+     	        downloadStatus.setMessage(taskStatus.getResult().getMessage());
+     	        downloadStatus.setResult(taskStatus.getResult().getResult());
+     	        populateDownloadItems(downloadStatus, taskStatus.getResult().getItems());
+    	}
+    	
+    	return downloadStatus;
     }
     
     @Override
@@ -454,11 +508,111 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcDownloadResponseDTO downloadDataObject(String path,
-                                                     HpcDownloadRequestDTO downloadRequest)
-                                                    throws HpcException
+    public HpcDataObjectDownloadResponseDTO downloadDataObject(String path,
+                                                               HpcDownloadRequestDTO downloadRequest)
+                                                              throws HpcException
     {
-    	return downloadDataObject(path, downloadRequest, false);
+    	return downloadDataObject(path, downloadRequest, 
+    			                  securityService.getRequestInvoker().getNciAccount().getUserId(), 
+    			                  true);
+    }
+    
+    /**
+     * Download Data Object.
+     *
+     * @param path The data object path.
+     * @param downloadRequest The download request DTO.
+     * @param completionEvent If true, an event will be added when async download is complete.
+     * @param userId The user submitting the request.
+     * @return Download ResponseDTO 
+     * @throws HpcException on service failure.
+     */
+	@Override
+    public HpcDataObjectDownloadResponseDTO downloadDataObject(String path,
+                                                               HpcDownloadRequestDTO downloadRequest,
+                                                               String userId,
+                                                               boolean completionEvent)
+                                                              throws HpcException
+	{
+    	// Input validation.
+    	if(path == null || downloadRequest == null) {
+    	   throw new HpcException("Null path or download request",
+    		                      HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+
+    	// Validate the data object exists.
+    	if(dataManagementService.getDataObject(path) == null) {
+    	   throw new HpcException("Data object doesn't exist: " + path,
+    		                      HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+
+    	// Get the System generated metadata.
+    	HpcSystemGeneratedMetadata metadata = 
+    			 metadataService.getDataObjectSystemGeneratedMetadata(path);
+
+    	// Validate the file is archived.
+    	if(!metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+    	   throw new HpcException("Object is not in archived state yet. It is in " +
+    		 		              metadata.getDataTransferStatus().value() + " state",
+    				              HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+    	}
+
+    	// Download the data object.
+    	HpcDataObjectDownloadResponse downloadResponse = 
+    		   dataTransferService.downloadDataObject(path, metadata.getArchiveLocation(), 
+    					                              downloadRequest.getDestination(),
+    					                              metadata.getDataTransferType(),
+    					                              metadata.getRegistrarDOC(), 
+    					                              userId,
+    					                              completionEvent);
+
+    	// Construct and return a DTO.
+    	return toDownloadResponseDTO(downloadResponse.getDestinationLocation(),
+    			                     downloadResponse.getDestinationFile(),
+    			                     downloadResponse.getDownloadTaskId()); 
+	}
+    
+    @Override
+    public HpcDataObjectDownloadStatusDTO getDataObjectDownloadStatus(Integer taskId) 
+                                                                     throws HpcException
+    {
+    	// Input validation.
+    	if(taskId == null) {
+    	   throw new HpcException("Null data object download task ID",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Get the data object download task status.
+    	HpcDownloadTaskStatus taskStatus = 
+    			   dataTransferService.getDownloadTaskStatus(taskId, HpcDownloadTaskType.DATA_OBJECT);
+    	if(taskStatus == null) {
+    	   return null;
+    	}
+    	
+    	// Map the task status to DTO.
+    	HpcDataObjectDownloadStatusDTO downloadStatus = new HpcDataObjectDownloadStatusDTO();
+    	downloadStatus.setInProgress(taskStatus.getInProgress());
+    	if(taskStatus.getInProgress()) {
+    	   // Download in progress. Populate the DTO accordingly.
+    	   downloadStatus.setPath(taskStatus.getDataObjectDownloadTask().getPath());
+    	   downloadStatus.setCreated(taskStatus.getDataObjectDownloadTask().getCreated());
+    	   downloadStatus.setDataTransferRequestId(taskStatus.getDataObjectDownloadTask().getDataTransferRequestId());
+    	   downloadStatus.setDataTransferType(taskStatus.getDataObjectDownloadTask().getDataTransferType());
+    	   downloadStatus.setDestinationLocation(taskStatus.getDataObjectDownloadTask().getDestinationLocation());
+    	   
+    	} else {
+    		    // Download completed or failed. Populate the DTO accordingly. 
+    		    downloadStatus.setPath(taskStatus.getResult().getPath());
+     	        downloadStatus.setCreated(taskStatus.getResult().getCreated());
+     	        downloadStatus.setDataTransferRequestId(taskStatus.getResult().getDataTransferRequestId());
+     	        downloadStatus.setDataTransferType(taskStatus.getResult().getDataTransferType());
+     	        downloadStatus.setDestinationLocation(taskStatus.getResult().getDestinationLocation());
+     	        downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
+     	        downloadStatus.setMessage(taskStatus.getResult().getMessage());
+     	        downloadStatus.setResult(taskStatus.getResult().getResult());
+    	}
+    	
+    	return downloadStatus;
     }
     
     @Override
@@ -818,146 +972,26 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			    logger.error("Failed to add collection update event", e);
 		}
 	}
-	
-    /**
-     * Download Data Object.
-     *
-     * @param path The data object path.
-     * @param downloadRequest The download request DTO.
-     * @param collectionDownload True if this download request is part of a collection update.
-     * @return Download ResponseDTO 
-     * @throws HpcException on service failure.
-     */
-    private HpcDownloadResponseDTO downloadDataObject(String path,
-                                                      HpcDownloadRequestDTO downloadRequest,
-                                                      boolean collectionDownload)
-                                                     throws HpcException
-	{
-    	// Input validation.
-    	if(path == null || downloadRequest == null) {
-    	   throw new HpcException("Null path or download request",
-    		                      HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
-
-    	// Validate the data object exists.
-    	if(dataManagementService.getDataObject(path) == null) {
-    	   throw new HpcException("Data object doesn't exist: " + path,
-    		                      HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
-
-    	// Get the System generated metadata.
-    	HpcSystemGeneratedMetadata metadata = 
-    			 metadataService.getDataObjectSystemGeneratedMetadata(path);
-
-    	// Validate the file is archived.
-    	if(!metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
-    	   throw new HpcException("Object is not in archived state yet. It is in " +
-    		 		              metadata.getDataTransferStatus().value() + " state",
-    				              HpcRequestRejectReason.FILE_NOT_ARCHIVED);
-    	}
-
-    	// Download the data object.
-    	HpcDataObjectDownloadResponse downloadResponse = 
-    		   dataTransferService.downloadDataObject(path, metadata.getArchiveLocation(), 
-    					                              downloadRequest.getDestination(),
-    					                              metadata.getDataTransferType(),
-    					                              metadata.getRegistrarDOC(), 
-    					                              collectionDownload);
-
-    	// Construct and return a DTO.
-    	return toDownloadResponseDTO(downloadResponse.getDestinationLocation(),
-    			                     downloadResponse.getDestinationFile(),
-    			                     downloadResponse.getDownloadTaskId()); 
-	}
-	
-    /** 
-     * Download a collection tree.
-     * 
-     * @param collection The collection to download.
-     * @param destinationLocation The download destination location.
-     * @return A list of files.
-     * @throws HpcException on service failure.
-     */
-	private HpcDownloadResponseListDTO downloadDataObjects(HpcCollection collection, 
-			                                               HpcFileLocation destinationLocation) 
-			                                              throws HpcException
-	{
-		// Iterate through the data objects in the collection and download them.
-		HpcDownloadResponseListDTO dataObjectDownloadResponses = new HpcDownloadResponseListDTO();
-		for(HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
-			// Calculate the destination location for this data object.
-			String dataObjectPath = dataObjectEntry.getPath();
-			HpcDownloadRequestDTO downloadRequest = new HpcDownloadRequestDTO();
-			downloadRequest.setDestination(calculateDownloadDestinationFileLocation(destinationLocation, dataObjectPath));
-			
-			// Download this data object.
-			try {
-			     dataObjectDownloadResponses.getDownloadReceipts().add(
-				    	   downloadDataObject(dataObjectPath, downloadRequest, true).getDownloadReceipt());
-			     
-			} catch(HpcException e) {
-				    // Data object download failed. 
-				    logger.error("Failed to download data object in a collection" , e); 
-				    dataObjectDownloadResponses.getDownloadReceipts().add(
-  				        toDownloadResponseDTO(downloadRequest.getDestination(), null, null).getDownloadReceipt());
-			}
-		}
-		
-		// Iterate through the sub-collections and download them.
-		for(HpcCollectionListingEntry subCollectionEntry : collection.getSubCollections()) {
-			String subCollectionPath = subCollectionEntry.getPath();
-			HpcCollection subCollection = dataManagementService.getCollection(subCollectionPath, true);
-	    	if(subCollection != null) {
-	    	   // Download this sub-collection. 
-			   dataObjectDownloadResponses.getDownloadReceipts().addAll(
-				   downloadDataObjects(subCollection,
-							           calculateDownloadDestinationFileLocation(destinationLocation, 
-							        		                                    subCollectionPath)).
-							          getDownloadReceipts());
-	    	}
-		}
-		
-		return dataObjectDownloadResponses;
-	}
-	
-    /** 
-     * Calculate a download destination path for a collection entry under a collection.
-     * 
-     * @param collectionDestination The collection destination location.
-     * @param collectionListingEntryPath The entry path under the collection to calculate the destination location for.
-     * @return A calculated destination location.
-     */
-	
-	private HpcFileLocation calculateDownloadDestinationFileLocation(HpcFileLocation collectionDestination,
-			                                                         String collectionListingEntryPath)
-	{
-		HpcFileLocation calcDestination = new HpcFileLocation();
-	    calcDestination.setFileContainerId(collectionDestination.getFileContainerId());
-	    calcDestination.setFileId(collectionDestination.getFileId() + 
-	    		                  collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/')));
-	    return calcDestination;
-	}
 
     /** 
      * Construct a download response DTO object.
      * 
      * @param destinationLocation The destination file location.
      * @param destinationFile The destination file.
-     * @param downloadTaskId The data object download task ID.
+     * @param taskId The data object download task ID.
      * @return A download response DTO object
      */
-	private HpcDownloadResponseDTO toDownloadResponseDTO(HpcFileLocation destinationLocation,
-			                                             File destinationFile,
-			                                             Integer downloadTaskId)
+	private HpcDataObjectDownloadResponseDTO toDownloadResponseDTO(
+			                                           HpcFileLocation destinationLocation,
+			                                           File destinationFile,
+			                                           Integer taskId)
 	{
 		// Construct and return a DTO
-		HpcDownloadResponseDTO downloadResponse = new HpcDownloadResponseDTO();
-		HpcDownloadReceiptDTO downloadReceipt = new HpcDownloadReceiptDTO();
-		downloadReceipt.setDestinationFile(destinationFile);
-		downloadReceipt.setDestinationLocation(destinationLocation);
-		downloadReceipt.setDownloadTaskId(downloadTaskId);
+		HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
+		downloadResponse.setDestinationFile(destinationFile);
+		downloadResponse.setDestinationLocation(destinationLocation);
+		downloadResponse.setTaskId(taskId);
 		
-		downloadResponse.setDownloadReceipt(downloadReceipt);
 		return downloadResponse;
 	}
 	
@@ -1163,7 +1197,28 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	return collectionTreeEntry;
     }
     
-
+	/** 
+     * Split the list of download items into completed, failed and in-progress buckets
+     * 
+     * @param downloadStatus The download status to populate the items into.
+     * @param items The collection download items.
+     * @return A data management tree .
+     * @throws HpcException on service failure.
+     */
+    private void populateDownloadItems(HpcCollectionDownloadStatusDTO downloadStatus,
+    		                           List<HpcCollectionDownloadTaskItem> items)
+    {
+    	for(HpcCollectionDownloadTaskItem item : items) {
+    		Boolean result = item.getResult();
+    		if(result == null) {
+    		   downloadStatus.getInProgressItems().add(item);
+    		} else if(result) {
+    			      downloadStatus.getCompletedItems().add(item);
+    		} else {
+    			    downloadStatus.getFailedItems().add(item);
+    		}
+    	}
+    }
 }
 
  

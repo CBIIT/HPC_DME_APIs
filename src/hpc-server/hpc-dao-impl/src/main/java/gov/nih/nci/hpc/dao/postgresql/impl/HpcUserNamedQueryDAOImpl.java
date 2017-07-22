@@ -25,6 +25,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -269,7 +270,7 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 	private HpcCompoundMetadataQuery fromJSON(String jsonCompoundMetadataQueryStr)
 	{
 		HpcCompoundMetadataQuery compoundMetadataQuery = new HpcCompoundMetadataQuery();
-		if(jsonCompoundMetadataQueryStr == null || jsonCompoundMetadataQueryStr.isEmpty()) {
+		if(StringUtils.isEmpty(jsonCompoundMetadataQueryStr)) {
 		   return compoundMetadataQuery;
 		}
 
