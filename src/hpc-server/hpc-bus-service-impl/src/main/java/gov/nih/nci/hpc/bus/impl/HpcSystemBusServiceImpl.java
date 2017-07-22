@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -19,15 +20,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.bus.aspect.SystemBusServiceImpl;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
@@ -35,6 +45,8 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -77,6 +89,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	// Data Management Application Service Instance.
 	@Autowired
     private HpcDataManagementService dataManagementService = null;
+	
+	// Data Management Bus Service Instance.
+	@Autowired
+    private HpcDataManagementBusService dataManagementBusService = null;
 	
 	// Notification Application Service Instance.
 	@Autowired
@@ -244,28 +260,157 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     }
     
     @Override
-    public void cleanupDataObjectDownloadTasks() throws HpcException
+    public void completeDataObjectDownloadTasks() throws HpcException
     {
     	// Use system account to perform this service.
     	securityService.setSystemRequestInvoker();
     	
+    	// Iterate through all the data object download tasks that are in their 2nd hop (i.e. GLOBUS download
+    	// to user's endpoint is in progress)
     	for(HpcDataObjectDownloadTask downloadTask :
     		dataTransferService.getDataObjectDownloadTasks(HpcDataTransferType.GLOBUS)) {
-    		// Get the data transfer download status.
-    		HpcDataTransferDownloadStatus dataTransferDownloadStatus = 
-    		   dataTransferService.getDataTransferDownloadStatus(
-    				                  downloadTask.getDataTransferType(), 
-    				                  downloadTask.getDataTransferRequestId(),
-    				                  downloadTask.getDoc());
+    		try {
+    		     // Get the data transfer download status.
+    		     HpcDataTransferDownloadStatus dataTransferDownloadStatus = 
+    		     dataTransferService.getDataTransferDownloadStatus(
+    			  	                    downloadTask.getDataTransferType(), 
+    				                    downloadTask.getDataTransferRequestId(),
+    				                    downloadTask.getDoc());
     		
-    		// Cleanup the file if the transfer is no longer in-progress, and add an event.
-    		if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
-    		   dataTransferService.cleanupDataObjectDownloadTask(downloadTask);
-    		   addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
-    				                        downloadTask.getDataTransferRequestId(),
-    				                        dataTransferDownloadStatus, downloadTask.getDestinationLocation(),
-    				                        Calendar.getInstance(), downloadTask.getDataTransferType());
+    		     // Check the status of the data transfer. 
+    		     if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
+    		    	// This download task is no longer in-progress - complete it.
+    		        boolean result = dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.COMPLETED);
+    		        String message = result ? null : 
+    		        	             downloadTask.getDataTransferType() + " transfer failed. Request ID: " +
+    		        	             downloadTask.getDataTransferRequestId();
+    		        Calendar completed = Calendar.getInstance();
+    		    	dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed);
+    		    	
+    		    	// Send a download completion event (if requested to).
+    		    	if(downloadTask.getCompletionEvent()) {
+    		           addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
+    		        		                        HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
+    		        		                        result, message, downloadTask.getDestinationLocation(),
+    				                                completed);
+    		    	}
+    		     }
+    		     
+    		} catch(HpcException e) {
+    			    logger.error("Failed to complete download task: " + downloadTask.getId(), e);
     		}
+    	}
+    }
+    
+    @Override
+    public void processCollectionDownloadTasks() throws HpcException
+    {
+    	// Use system account to perform this service.
+    	securityService.setSystemRequestInvoker();
+    	
+    	// Iterate through all the collection download requests that were submitted (not processed yet).
+    	for(HpcCollectionDownloadTask downloadTask :
+    		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED)) {
+    		try {
+    			 // Get the collection to be downloaded.
+        		 HpcCollection collection = dataManagementService.getCollection(downloadTask.getPath(), true);
+        		 if(collection == null) {
+        			throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
+        		 }
+        		 
+        		 // Download all files under this collection.
+        		 List<HpcCollectionDownloadTaskItem> downloadItems = 
+        			  downloadCollection(collection, downloadTask.getDestinationLocation(), 
+			                             downloadTask.getUserId());
+        		 
+        		 // Verify data objects found under this collection.
+    			 if(downloadItems.isEmpty()) {
+    				// No data objects found under this collection.
+    				throw new HpcException("No data objects found under collection",
+				                           HpcErrorType.INVALID_REQUEST_INPUT);
+    			 }
+    			 
+    			 // 'Activate' the collection download request. 
+    			 downloadTask.setStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
+    			 downloadTask.getItems().addAll(downloadItems);
+    			 
+    			// Persist the collection download task.
+			    dataTransferService.updateCollectionDownloadTask(downloadTask);
+    		     
+    		} catch(HpcException e) {
+    			    logger.error("Failed to process a collection download: " + downloadTask.getId(), e);
+    			    completeCollectionDownloadTask(downloadTask, false, e.getMessage());
+    			    
+    		} 
+    	}
+    }
+    
+    @Override
+    public void completeCollectionDownloadTasks() throws HpcException
+    {
+    	// Use system account to perform this service.
+    	securityService.setSystemRequestInvoker();
+    	
+    	// Iterate through all the active collection download requests.
+    	for(HpcCollectionDownloadTask downloadTask :
+    		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.ACTIVE)) {
+    		boolean downloadCompleted = true;
+    		
+    		// Update status of individual download items in this collection download task.
+			for(HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
+				try {
+				     if(downloadItem.getResult() == null) {
+				     	// This download item in progress - check its status.
+				    	HpcDownloadTaskStatus downloadItemStatus = 
+				    	   downloadItem.getDataObjectDownloadTaskId() != null ?
+				    	           dataTransferService.getDownloadTaskStatus(
+				    			                          downloadItem.getDataObjectDownloadTaskId(),
+				    			                          HpcDownloadTaskType.DATA_OBJECT) :
+				    			   null;
+				    			                          
+				        if(downloadItemStatus == null) {
+				    	   throw new HpcException("Data object download task status is unknown", 
+				    			                  HpcErrorType.UNEXPECTED_ERROR);
+				    	}
+				        
+				        if(!downloadItemStatus.getInProgress()) {
+				           // This download item is now complete. Update the result.
+				           downloadItem.setResult(downloadItemStatus.getResult().getResult());
+				           downloadItem.setMessage(downloadItemStatus.getResult().getMessage());
+				        } else {
+				        	    // There is at least one download item still in progress.
+				        	    downloadCompleted = false;
+				        }
+				     }
+    		
+				 } catch(HpcException e) {
+					     logger.error("Failed to check collection download item status", e);
+					     downloadItem.setResult(false);
+					     downloadItem.setMessage(e.getMessage());
+				 }
+			}
+			
+			
+			// Update the collection download task.
+			if(downloadCompleted) {
+			   // The collection download task finished. Determine if the collection download was successful. 
+			   // It is successful if and only if all items (data objects under the collection) were 
+			   // completed successfully. 
+			   int completedItemsCount = 0;
+			   for(HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
+				   if(downloadItem.getResult()) {
+					  completedItemsCount++;
+				   }
+			   }
+			   
+			   int itemsCount = downloadTask.getItems().size();
+			   boolean result = completedItemsCount == itemsCount;
+			   completeCollectionDownloadTask(downloadTask, result, 
+					                          result ? null : completedItemsCount + " items downloaded successfully out of " + itemsCount);
+			   
+			} else {
+				    dataTransferService.updateCollectionDownloadTask(downloadTask);
+			}
     	}
     }
     
@@ -413,8 +558,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	securityService.setSystemRequestInvoker();
     	
     	List<String> summaryReportByDateUsers = notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT);
-    	if(summaryReportByDateUsers != null && summaryReportByDateUsers.size() > 0)
-    	{
+    	if(summaryReportByDateUsers != null && summaryReportByDateUsers.size() > 0) {
     		HpcReportCriteria criteria = new HpcReportCriteria();
     		criteria.setType(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE);
     		Calendar today = Calendar.getInstance();
@@ -541,40 +685,143 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * add data transfer download event.
      * 
      * @param userId The user ID.
-     * @param path The data object path.
-     * @param dataTransferRequestId The data transfer request ID.
-     * @param dataTransferStatus The data transfer download status.
+     * @param path The collection or data objection path.
+     * @param downloadTaskType The download task type.
+     * @param downloadTaskId The download task ID.
+     * @param result The download result.
+     * @param message A failure message.
      * @param destinationLocation The download destination location.
      * @param dataTransferCompleted The download completion time.
-     * @param dataTransferType The type of data transfer used to download (Globus, S3, etc).
      */
-	private void addDataTransferDownloadEvent(String userId, String path, String dataTransferRequestId,
-			                                  HpcDataTransferDownloadStatus dataTransferStatus,
+	private void addDataTransferDownloadEvent(String userId, String path, 
+			                                  HpcDownloadTaskType downloadTaskType,
+                                              Integer downloadTaskId,
+			                                  boolean result, String message,
 			                                  HpcFileLocation destinationLocation, 
-			                                  Calendar dataTransferCompleted,
-			                                  HpcDataTransferType dataTransferType) 
+			                                  Calendar dataTransferCompleted) 
 	{
 		try {
-			 switch(dataTransferStatus) {
-			        case COMPLETED: 
-		                 eventService.addDataTransferDownloadCompletedEvent(userId, path, dataTransferRequestId, 
-		                		                                            destinationLocation, dataTransferCompleted);
-		                 break;
-		                 
-			        case FAILED: 
-		                 eventService.addDataTransferDownloadFailedEvent(userId, path, dataTransferRequestId,
-		                		                                         destinationLocation, dataTransferCompleted,
-		                		                                         dataTransferType.value() + " failure");
-		                 break;
-		                 
-		            default: 
-		                 logger.error("Unexpected data transfer status: " + dataTransferStatus); 
+			 if(result) {
+		        eventService.addDataTransferDownloadCompletedEvent(userId, path, downloadTaskType, 
+		                		                                   downloadTaskId, 
+		                		                                   destinationLocation, dataTransferCompleted);
+			 } else {
+		             eventService.addDataTransferDownloadFailedEvent(userId, path, downloadTaskType, 
+                                                                     downloadTaskId, destinationLocation, 
+                                                                     dataTransferCompleted, message);
 			 }
 
 		} catch(HpcException e) {
 			    logger.error("Failed to add a data transfer download event", e);
 		}
 	}
+	
+    /** 
+     * Download a collection. Traverse the collection tree and submit download request to all files in the tree. 
+     * 
+     * @param collection The collection to download.
+     * @param destinationLocation The download destination location.
+     * @param userId The user ID who requested the collection download.
+     * @return The download task items (each item represent a data-object download under the collection).
+     * @throws HpcException on service failure.
+     */
+	private List<HpcCollectionDownloadTaskItem> 
+	        downloadCollection(HpcCollection collection, HpcFileLocation destinationLocation, String userId) 
+			                  throws HpcException
+	{
+		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
+		
+		// Iterate through the data objects in the collection and download them.
+		for(HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
+			// Calculate the destination location for this data object.
+			String dataObjectPath = dataObjectEntry.getPath();
+			HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
+			dataObjectDownloadRequest.setDestination(
+				calculateDownloadDestinationFileLocation(destinationLocation, dataObjectPath));
+			
+			// Instantiate a download item for this data object.
+			HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
+			downloadItem.setPath(dataObjectPath);
+			
+			// Download this data object.
+			try {
+				 HpcDataObjectDownloadResponseDTO dataObjectDownloadResponse = 
+				    dataManagementBusService.downloadDataObject(dataObjectPath, dataObjectDownloadRequest,
+					    	                                    userId, false);
+				 
+				 downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadResponse.getTaskId());
+				 downloadItem.setDestinationLocation(dataObjectDownloadResponse.getDestinationLocation());
+			     
+			} catch(HpcException e) {
+				    // Data object download failed. 
+				    logger.error("Failed to download data object in a collection" , e); 
+				    
+				    downloadItem.setResult(false);
+				    downloadItem.setDestinationLocation(dataObjectDownloadRequest.getDestination());
+				    downloadItem.setMessage(e.getMessage());
+				    
+			} finally {
+				       downloadItems.add(downloadItem);
+			}
+		}
+		
+		// Iterate through the sub-collections and download them.
+		for(HpcCollectionListingEntry subCollectionEntry : collection.getSubCollections()) {
+			String subCollectionPath = subCollectionEntry.getPath();
+			HpcCollection subCollection = dataManagementService.getCollection(subCollectionPath, true);
+	    	if(subCollection != null) {
+	    	   // Download this sub-collection. 
+	    	   downloadItems.addAll(
+				       downloadCollection(subCollection,
+					           calculateDownloadDestinationFileLocation(destinationLocation, 
+						    	                                        subCollectionPath),
+						       userId));
+	    	}
+		}
+		
+		return downloadItems;
+	}
+	
+    /** 
+     * Calculate a download destination path for a collection entry under a collection.
+     * 
+     * @param collectionDestination The collection destination location.
+     * @param collectionListingEntryPath The entry path under the collection to calculate the destination location for.
+     * @return A calculated destination location.
+     */
+	
+	private HpcFileLocation calculateDownloadDestinationFileLocation(HpcFileLocation collectionDestination,
+			                                                         String collectionListingEntryPath)
+	{
+		HpcFileLocation calcDestination = new HpcFileLocation();
+	    calcDestination.setFileContainerId(collectionDestination.getFileContainerId());
+	    calcDestination.setFileId(collectionDestination.getFileId() + 
+	    		                  collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/')));
+	    return calcDestination;
+	}
+	
+    /**
+     * Complete a collection download task
+     * 1. Update task info in DB with results info.
+     * 2. Send an event.
+     *
+     * @param downloadTask The download task to complete.
+     * @param result The result of the task (true is successful, false is failed).
+     * @param message (Optional) If the task failed, a message describing the failure.
+     * @throws HpcException on service failure.
+     */
+    private void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask,
+    		                                   boolean result, String message) 
+    		                                  throws HpcException
+    {
+    	Calendar completed = Calendar.getInstance();
+    	dataTransferService.completeCollectionDownloadTask(downloadTask, result, message, completed);
+    	addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
+                                     HpcDownloadTaskType.COLLECTION, downloadTask.getId(),
+                                     result, message, downloadTask.getDestinationLocation(),
+                                     completed);
+    }
 }
+
 
  

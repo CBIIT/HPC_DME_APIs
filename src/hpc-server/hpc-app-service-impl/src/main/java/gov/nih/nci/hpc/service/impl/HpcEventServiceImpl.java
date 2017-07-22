@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.service.impl;
 import gov.nih.nci.hpc.dao.HpcEventDAO;
 import gov.nih.nci.hpc.dao.HpcNotificationDAO;
 import gov.nih.nci.hpc.dao.HpcReportsDAO;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
@@ -45,7 +46,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: HpcNotificationServiceImpl.java 1368 2016-07-30 15:00:37Z rosenbergea $
  */
 
 public class HpcEventServiceImpl implements HpcEventService
@@ -55,7 +55,8 @@ public class HpcEventServiceImpl implements HpcEventService
     //---------------------------------------------------------------------//
 	
     // Event payload entries attributes.
-	public static final String DATA_TRANSFER_REQUEST_ID_PAYLOAD_ATTRIBUTE = "DATA_TRANSFER_REQUEST_ID";
+	public static final String DOWNLOAD_TASK_ID_PAYLOAD_ATTRIBUTE = "DOWNLOAD_TASK_ID";
+	public static final String DOWNLOAD_TASK_TYPE_PAYLOAD_ATTRIBUTE = "DOWNLOAD_TASK_TYPE";
 	public static final String DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE = "DATA_OBJECT_PATH";
 	public static final String CHECKSUM_PAYLOAD_ATTRIBUTE = "CHECKSUM";
 	public static final String COLLECTION_PATH_PAYLOAD_ATTRIBUTE = "COLLECTION_PATH";
@@ -164,23 +165,26 @@ public class HpcEventServiceImpl implements HpcEventService
     }
     
     @Override
-    public void addDataTransferDownloadCompletedEvent(
-    		       String userId, String path, String dataTransferRequestId, HpcFileLocation destinationLocation, 
-                   Calendar dataTransferCompleted) throws HpcException
+    public void addDataTransferDownloadCompletedEvent(String userId, String path, 
+    		                                          HpcDownloadTaskType downloadTaskType,
+                                                      Integer downloadTaskId, HpcFileLocation destinationLocation, 
+                                                      Calendar dataTransferCompleted) throws HpcException
     {
-    	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_DOWNLOAD_COMPLETED, dataTransferRequestId, 
-    			             path, null, dataTransferCompleted, null, destinationLocation, null);
+    	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_DOWNLOAD_COMPLETED, downloadTaskType,
+                             downloadTaskId, path, null, dataTransferCompleted, null, destinationLocation, null);
     }
     
     @Override
-    public void addDataTransferDownloadFailedEvent(String userId, String path, String dataTransferRequestId,
+    public void addDataTransferDownloadFailedEvent(String userId, String path, 
+    		                                       HpcDownloadTaskType downloadTaskType,
+                                                   Integer downloadTaskId,
                                                    HpcFileLocation destinationLocation, 
                                                    Calendar dataTransferCompleted, String errorMessage) 
                                                   throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_DOWNLOAD_FAILED,
-    			             dataTransferRequestId, path, null, dataTransferCompleted, null, destinationLocation, 
-    			             errorMessage);
+    			             downloadTaskType, downloadTaskId, path, null, dataTransferCompleted, null, 
+    			             destinationLocation, errorMessage);
     }
     
     @Override
@@ -188,7 +192,7 @@ public class HpcEventServiceImpl implements HpcEventService
     		                                                throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE,
-                             null, path, null, null, null, null, null);
+                             null, null, path, null, null, null, null, null);
     }
     
     @Override
@@ -196,7 +200,7 @@ public class HpcEventServiceImpl implements HpcEventService
     		                                       HpcFileLocation sourceLocation, Calendar dataTransferCompleted) 
     		                                      throws HpcException
     {
-    	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_ARCHIVED, null, path, checksum, 
+    	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_ARCHIVED, null, null, path, checksum, 
     			             dataTransferCompleted, sourceLocation, null, null);
     }
     
@@ -206,7 +210,7 @@ public class HpcEventServiceImpl implements HpcEventService
     		                                    throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_FAILED,
-                             null, path, null, dataTransferCompleted, sourceLocation, null, errorMessage);
+                             null, null, path, null, dataTransferCompleted, sourceLocation, null, errorMessage);
     }
     
     @Override
@@ -335,7 +339,8 @@ public class HpcEventServiceImpl implements HpcEventService
      * 
      * @param userId The user ID.
      * @param eventType The event type.
-     * @param dataTransferRequestId (Optional) The data transfer request ID.
+     * @param downloadTaskType (Optional) The download task type.
+     * @param downloadTaskId (Optional) The download task ID.
      * @param path (Optional) The data object path.
      * @param checksum (Optional) The data checksum.
      * @param dataTransferCompleted (Optional) The time the data upload completed.
@@ -344,7 +349,9 @@ public class HpcEventServiceImpl implements HpcEventService
      * @param errorMessage (Optional) An error message.
      * @throws HpcException on service failure.
      */
-    private void addDataTransferEvent(String userId, HpcEventType eventType, String dataTransferRequestId, 
+    private void addDataTransferEvent(String userId, HpcEventType eventType, 
+    		                          HpcDownloadTaskType downloadTaskType,
+                                      Integer downloadTaskId,
     		                          String path, String checksum, Calendar dataTransferCompleted,
     		                          HpcFileLocation sourceLocation, HpcFileLocation destinationLocation,
     		                          String errorMessage) 
@@ -360,9 +367,14 @@ public class HpcEventServiceImpl implements HpcEventService
 		HpcEvent event = new HpcEvent();
 		event.getUserIds().add(userId);
 		event.setType(eventType);
-		if(dataTransferRequestId != null) {
-		   event.getPayloadEntries().add(toPayloadEntry(DATA_TRANSFER_REQUEST_ID_PAYLOAD_ATTRIBUTE, 
-			                                            dataTransferRequestId));
+		if(downloadTaskId != null) {
+		   event.getPayloadEntries().add(toPayloadEntry(DOWNLOAD_TASK_ID_PAYLOAD_ATTRIBUTE, 
+				                                        downloadTaskId.toString()));
+		}
+		if(downloadTaskType != null) {
+		   event.getPayloadEntries().add(toPayloadEntry(DOWNLOAD_TASK_TYPE_PAYLOAD_ATTRIBUTE, 
+				                                        downloadTaskType.equals(HpcDownloadTaskType.COLLECTION) ? 
+				                                        	    "Collection" : "File"));
 		}
 		if(path != null) {
 		   event.getPayloadEntries().add(toPayloadEntry(DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE, 

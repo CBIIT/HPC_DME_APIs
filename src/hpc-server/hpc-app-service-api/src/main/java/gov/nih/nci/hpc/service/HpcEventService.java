@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.service;
 
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
@@ -24,7 +25,6 @@ import java.util.List;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public interface HpcEventService 
@@ -58,12 +58,15 @@ public interface HpcEventService
      *
      * @param userId The user ID.
      * @param path The data object path.
-     * @param dataTransferRequestId The data transfer request ID.
+     * @param downloadTaskType The download task type.
+     * @param downloadTaskId The download task ID.
      * @param destinationLocation The data transfer destination location.
      * @param dataTransferCompleted The time the data download completed.
      * @throws HpcException on service failure.
      */
-    public void addDataTransferDownloadCompletedEvent(String userId, String path, String dataTransferRequestId,
+    public void addDataTransferDownloadCompletedEvent(String userId, String path, 
+    		                                          HpcDownloadTaskType downloadTaskType,
+    		                                          Integer downloadTaskId,
     		                                          HpcFileLocation destinationLocation, 
     		                                          Calendar dataTransferCompleted) 
     		                                         throws HpcException;
@@ -73,13 +76,16 @@ public interface HpcEventService
      *
      * @param userId The user ID.
      * @param path The data object path.
-     * @param dataTransferRequestId The data transfer request ID.
+     * @param downloadTaskType The download task type.
+     * @param downloadTaskId The download task ID.
      * @param destinationLocation The data transfer destination location.
      * @param dataTransferCompleted The time the data download failed.
      * @param errorMessage The download failed error message.
      * @throws HpcException on service failure.
      */
-    public void addDataTransferDownloadFailedEvent(String userId, String path, String dataTransferRequestId,
+    public void addDataTransferDownloadFailedEvent(String userId, String path, 
+    		                                       HpcDownloadTaskType downloadTaskType,
+                                                   Integer downloadTaskId,
                                                    HpcFileLocation destinationLocation, 
                                                    Calendar dataTransferCompleted, String errorMessage) 
     		                                      throws HpcException;
