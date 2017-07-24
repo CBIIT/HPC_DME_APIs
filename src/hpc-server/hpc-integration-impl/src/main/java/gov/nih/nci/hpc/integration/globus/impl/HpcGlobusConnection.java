@@ -20,6 +20,8 @@ import org.globusonline.transfer.Authenticator;
 import org.globusonline.transfer.GoauthAuthenticator;
 import org.globusonline.transfer.JSONTransferAPIClient;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -38,6 +40,10 @@ public class HpcGlobusConnection
 	// Globus connection attributes.
 	private String nexusAPIURL = null;
 	private String globusURL = null;
+	
+    // The logger instance.
+	private final Logger logger = 
+			             LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -75,7 +81,7 @@ public class HpcGlobusConnection
      *
      * @param dataTransferAccount A data transfer account to authenticate.
      * @return An authenticated JSONTransferAPIClient object, or null if authentication failed.
-     * @throws HpcException if authentication failed..
+     * @throws HpcException if authentication failed.
      */
     public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount)
 			                  throws HpcException
@@ -96,6 +102,7 @@ public class HpcGlobusConnection
 			 return transferClient;
 		
 		} catch(InvalidCredentialsException ice) {
+			    logger.error("Invalid Globus credentials: " + dataTransferAccount.getUsername(), ice);
 		        return null;
 		    
 		} catch(Exception e) {
