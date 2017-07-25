@@ -388,20 +388,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 			        	    break;
 			        	    
 			           default:
+			        	    message = "[GLOBUS] Failed to activate endpoint: " + endpointName;
 			        	  	break;
 			    }
 			    
 			    if(message != null) {
 	               throw new HpcException(message, HpcErrorType.DATA_TRANSFER_ERROR, integratedSystem, error);
 	               
-			    } else {
-			    	    // We see intermittent failures (500) with this service. A ticket was raised
-			    	    // with Globus support. For now we just ignore and assume the endpoint is active.
-			    	    // If the endpoint is truly inactive, the downloadload request will fail with a proper message,
-			    	    // so the user is notified but not at the time a download request is submitted but later.
-			    	    logger.error("Failed to autoactivate endpoint: " + endpointName, error);
-			    	    
-			    }
+			    } 
 	            
 		} catch(Exception e) {
 		        throw new HpcException("[GLOBUS] Failed to activate endpoint: " + endpointName, 
