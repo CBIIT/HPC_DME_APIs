@@ -482,12 +482,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     		invoker.getDataTransferAuthenticatedTokens()) {
     		if(authenticatedToken.getDataTransferType().equals(dataTransferType) &&
     	       authenticatedToken.getDoc().equals(doc)) {
-    		   logger.error("ERAN DT: found " + dataTransferType + " for " + doc);
     	       return authenticatedToken.getDataTransferAuthenticatedToken();
     		}
     	}
-    	
-    	logger.error("ERAN DT: not found " + dataTransferType + " for " + doc);
     	
     	// No authenticated token found for this request. Create one.
     	HpcIntegratedSystemAccount dataTransferSystemAccount = systemAccountLocator.getSystemAccount(dataTransferType);
