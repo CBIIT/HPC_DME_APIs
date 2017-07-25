@@ -372,7 +372,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
              
 		} catch(APIError error) {
 			    HpcIntegratedSystem integratedSystem = error.statusCode >= 500 ? HpcIntegratedSystem.GLOBUS : null;
-			    String message = null;
+			    String message = "";
 			    switch(error.statusCode) {
 			           case 404:
 			                message = "[GLOBUS] Endpoint doesn't exist. Make sure the endpoint name is correct " +
@@ -392,10 +392,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 			        	  	break;
 			    }
 			    
-			    if(message != null) {
-	               throw new HpcException(message, HpcErrorType.DATA_TRANSFER_ERROR, integratedSystem, error);
-	               
-			    } 
+	            throw new HpcException(message, HpcErrorType.DATA_TRANSFER_ERROR, integratedSystem, error);
 	            
 		} catch(Exception e) {
 		        throw new HpcException("[GLOBUS] Failed to activate endpoint: " + endpointName, 
