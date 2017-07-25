@@ -481,7 +481,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	for(HpcDataTransferAuthenticatedToken authenticatedToken : 
     		invoker.getDataTransferAuthenticatedTokens()) {
     		if(authenticatedToken.getDataTransferType().equals(dataTransferType) &&
-    	       authenticatedToken.getDataTransferAuthenticatedToken().equals(doc)) {
+    	       authenticatedToken.getDoc().equals(doc)) {
     		   logger.error("ERAN DT: found " + dataTransferType + " for " + doc);
     	       return authenticatedToken.getDataTransferAuthenticatedToken();
     		}
