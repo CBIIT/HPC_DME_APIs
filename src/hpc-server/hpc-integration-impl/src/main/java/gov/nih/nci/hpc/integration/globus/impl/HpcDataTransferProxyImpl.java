@@ -363,23 +363,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     }
 
 	private void autoActivate(String endpointName, JSONTransferAPIClient client)
-                             throws HpcException 
+                             //throws HpcException 
 	{
 		try {
              String resource = BaseTransferAPIClient.endpointPath(endpointName)
                                + "/autoactivate?if_expires_in=100";
              client.postResult(resource, null, null);
              
-		} catch(APIError error) {
-			    HpcIntegratedSystem integratedSystem = error.statusCode >= 500 ? HpcIntegratedSystem.GLOBUS : null;
-	            throw new HpcException("[GLOBUS] Endpoint doesn't exist or inactive. Make sure the endpoint name " +
-	                                   "is correct and active: " + endpointName, 
-	        		                   HpcErrorType.DATA_TRANSFER_ERROR, integratedSystem, error);
+		//} catch(APIError error) {
+			//    HpcIntegratedSystem integratedSystem = error.statusCode >= 500 ? HpcIntegratedSystem.GLOBUS : null;
+	          //  throw new HpcException("[GLOBUS] Endpoint doesn't exist or inactive. Make sure the endpoint name " +
+	            //                       "is correct and active: " + endpointName, 
+	        		//                   HpcErrorType.DATA_TRANSFER_ERROR, integratedSystem, error);
 	            
 		} catch(Exception e) {
-		        throw new HpcException("[GLOBUS] Endpoint doesn't exist or inactive. Make sure the endpoint name " +
-		                               "is correct and active: " + endpointName, 
-		        		               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
+			logger.error("Endpoint auto-activation failed: " + endpointName, e);
+		        //throw new HpcException("[GLOBUS] Endpoint doesn't exist or inactive. Make sure the endpoint name " +
+		          //                     "is correct and active: " + endpointName, 
+		        	//	               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
 		}
     }
 	
