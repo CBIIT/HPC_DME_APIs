@@ -363,24 +363,49 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     }
 
 	private void autoActivate(String endpointName, JSONTransferAPIClient client)
-                             //throws HpcException 
+                             throws HpcException 
 	{
 		try {
              String resource = BaseTransferAPIClient.endpointPath(endpointName)
                                + "/autoactivate?if_expires_in=100";
              client.postResult(resource, null, null);
              
-		//} catch(APIError error) {
-			//    HpcIntegratedSystem integratedSystem = error.statusCode >= 500 ? HpcIntegratedSystem.GLOBUS : null;
-	          //  throw new HpcException("[GLOBUS] Endpoint doesn't exist or inactive. Make sure the endpoint name " +
-	            //                       "is correct and active: " + endpointName, 
-	        		//                   HpcErrorType.DATA_TRANSFER_ERROR, integratedSystem, error);
+		} catch(APIError error) {
+			    HpcIntegratedSystem integratedSystem = error.statusCode >= 500 ? HpcIntegratedSystem.GLOBUS : null;
+			    String message = null;
+			    switch(error.statusCode) {
+			           case 404:
+			                message = "[GLOBUS] Endpoint doesn't exist. Make sure the endpoint name is correct " +
+			                          "and active: " + endpointName;
+			                break;
+			                
+			           case 403:
+			        	    message = "[GLOBUS] Endpoint permission denied: " + endpointName;
+			        	    break;
+			        	    
+			           case 503:
+			        	    message = "[GLOBUS] Service is down for maintenance";
+			        	    break;
+			        	    
+			           default:
+			        	  	break;
+			    }
+			    
+			    if(message != null) {
+	               throw new HpcException(message, HpcErrorType.DATA_TRANSFER_ERROR, integratedSystem, error);
+	               
+			    } else {
+			    	    // We see intermittent failures (500) with this service. A ticket was raised
+			    	    // with Globus support. For now we just ignore and assume the endpoint is active.
+			    	    // If the endpoint is truly inactive, the downloadload request will fail with a proper message,
+			    	    // so the user is notified but not at the time a download request is submitted but later.
+			    	    logger.error("Failed to autoactivate endpoint: " + endpointName, error);
+			    	    
+			    }
 	            
 		} catch(Exception e) {
-			logger.error("Endpoint auto-activation failed: " + endpointName, e);
-		        //throw new HpcException("[GLOBUS] Endpoint doesn't exist or inactive. Make sure the endpoint name " +
-		          //                     "is correct and active: " + endpointName, 
-		        	//	               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
+		        throw new HpcException("[GLOBUS] Failed to activate endpoint: " + endpointName, 
+		        	                   HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
 		}
     }
 	
