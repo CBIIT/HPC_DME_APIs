@@ -29,6 +29,7 @@
 		<postgresql.version>9.3-1102-jdbc41</postgresql.version>
 		<slf4j.version>1.7.22</slf4j.version>
 		<spring.version>3.2.17.RELEASE</spring.version>
+		<spring.retry.version>1.2.1.RELEASE</spring.retry.version>
 		<amazon-aws.version>1.11.125</amazon-aws.version>
 		<jackson.version>2.8.5</jackson.version>
 		<jargon.version>4.1.10.0-RELEASE</jargon.version>
@@ -242,6 +243,11 @@
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-test</artifactId>
 				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+			    <groupId>org.springframework.retry</groupId>
+			    <artifactId>spring-retry</artifactId>
+			    <version>${spring.retry.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.amazonaws</groupId>
