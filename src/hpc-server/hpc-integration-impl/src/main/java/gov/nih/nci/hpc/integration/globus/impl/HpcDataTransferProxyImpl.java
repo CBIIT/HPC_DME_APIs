@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.retry.support.RetryTemplate;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
@@ -81,6 +82,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	@Autowired
 	@Qualifier("hpcGlobusDownloadSource")
 	HpcArchive baseDownloadSource = null;
+	
+	@Autowired
+	RetryTemplate retryTemplate = null;
     
 	// The Logger instance.
 	private final Logger logger = 
@@ -365,40 +369,45 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	private void autoActivate(String endpointName, JSONTransferAPIClient client)
                              throws HpcException 
 	{
-		try {
-             String resource = BaseTransferAPIClient.endpointPath(endpointName)
-                               + "/autoactivate?if_expires_in=100";
-             client.postResult(resource, null, null);
-             
-		} catch(APIError error) {
-			    HpcIntegratedSystem integratedSystem = error.statusCode >= 500 ? HpcIntegratedSystem.GLOBUS : null;
-			    String message = "";
-			    switch(error.statusCode) {
-			           case 404:
-			                message = "[GLOBUS] Endpoint doesn't exist. Make sure the endpoint name is correct " +
-			                          "and active: " + endpointName;
-			                break;
-			                
-			           case 403:
-			        	    message = "[GLOBUS] Endpoint permission denied: " + endpointName;
-			        	    break;
-			        	    
-			           case 503:
-			        	    message = "[GLOBUS] Service is down for maintenance";
-			        	    break;
-			        	    
-			           default:
-			        	    message = "[GLOBUS] Failed to activate endpoint: " + endpointName;
-			        	  	break;
-			    }
-			    
-	            throw new HpcException(message, HpcErrorType.DATA_TRANSFER_ERROR, integratedSystem, error);
-	            
-		} catch(Exception e) {
-		        throw new HpcException("[GLOBUS] Failed to activate endpoint: " + endpointName, 
-		        	                   HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
-		}
-    }
+		retryTemplate.execute(arg0 -> 
+		{
+			try {
+	             String resource = BaseTransferAPIClient.endpointPath(endpointName)
+	                               + "/autoactivate?if_expires_in=100";
+	             client.postResult(resource, null, null);
+	             
+			} catch(APIError error) {
+				    HpcIntegratedSystem integratedSystem = error.statusCode >= 500 ? 
+				    		                               HpcIntegratedSystem.GLOBUS : null;
+				    String message = "";
+				    switch(error.statusCode) {
+				           case 404:
+				                message = "[GLOBUS] Endpoint doesn't exist. Make sure the endpoint name " + 
+				                          "is correct and active: " + endpointName;
+				                break;
+				                
+				           case 403:
+				        	    message = "[GLOBUS] Endpoint permission denied: " + endpointName;
+				        	    break;
+				        	    
+				           case 503:
+				        	    message = "[GLOBUS] Service is down for maintenance";
+				        	    break;
+				        	    
+				           default:
+				        	    message = "[GLOBUS] Failed to activate endpoint: " + endpointName;
+				        	  	break;
+				    }
+				    
+		            throw new HpcException(message, HpcErrorType.DATA_TRANSFER_ERROR, integratedSystem, error);
+		            
+			} catch(Exception e) {
+			        throw new HpcException("[GLOBUS] Failed to activate endpoint: " + endpointName, 
+			        	                   HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
+			}
+		    return null;
+		});
+	}
 	
     /**
      * Get a data transfer report.
