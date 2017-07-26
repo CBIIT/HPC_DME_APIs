@@ -293,7 +293,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     //---------------------------------------------------------------------//  
     
     /**
-     * Submit a data transfer request
+     * Submit a data transfer request.
      *
      * @param client Client API instance.
      * @param source The source endpoint.
@@ -309,40 +309,43 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		autoActivate(source.getFileContainerId(), client);
 		autoActivate(destination.getFileContainerId(), client); 
 		
-		// Submit transfer request,
-		try {
-			 JSONTransferAPIClient.Result r;
-			 r = client.getResult("/transfer/submission_id");
-			 String submissionId = r.document.getString("value");
-			 JSONObject transfer = new JSONObject();
-			 transfer.put("DATA_TYPE", "transfer");
-			 transfer.put("submission_id", submissionId);
-			 transfer.put("verify_checksum", true);
-			 transfer.put("delete_destination_extra", false);
-			 transfer.put("preserve_timestamp", false);
-			 transfer.put("encrypt_data", false);
+		// Submit transfer request.
+		return retryTemplate.execute(arg0 -> 
+		{
+			try {
+				 JSONTransferAPIClient.Result r;
+				 r = client.getResult("/transfer/submission_id");
+				 String submissionId = r.document.getString("value");
+				 JSONObject transfer = new JSONObject();
+				 transfer.put("DATA_TYPE", "transfer");
+				 transfer.put("submission_id", submissionId);
+				 transfer.put("verify_checksum", true);
+				 transfer.put("delete_destination_extra", false);
+				 transfer.put("preserve_timestamp", false);
+				 transfer.put("encrypt_data", false);
+				
+				 JSONObject item = setJSONItem(source, destination, client);
+				 transfer.append("DATA", item);
+				
+				 r = client.postResult("/transfer", transfer, null);
+				 String taskId = r.document.getString("task_id");
+				 logger.debug("Transfer task id :"+ taskId );
+				
+				 return taskId;
 			
-			 JSONObject item = setJSONItem(source, destination, client);
-			 transfer.append("DATA", item);
-			
-			 r = client.postResult("/transfer", transfer, null);
-			 String taskId = r.document.getString("task_id");
-			 logger.debug("Transfer task id :"+ taskId );
-			
-			 return taskId;
-		
-		} catch(APIError error) {
-		        throw new HpcException("[GLOBUS] Failed to transfer: " + error.message +
-		    	     	               ". Source: " + source + 
-	                                   ". Destination: " + destination, 
-                                       HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS,
-                                       error);
-		        
-		} catch(Exception e) {
-		        throw new HpcException("[GLOBUS] Failed to transfer. Source: " + source +
-		        		               ". Destination: " + destination, 
-		                               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
-		}
+			} catch(APIError error) {
+			        throw new HpcException("[GLOBUS] Failed to transfer: " + error.message +
+			    	     	               ". Source: " + source + 
+		                                   ". Destination: " + destination, 
+	                                       HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS,
+	                                       error);
+			        
+			} catch(Exception e) {
+			        throw new HpcException("[GLOBUS] Failed to transfer. Source: " + source +
+			        		               ". Destination: " + destination, 
+			                               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
+			}
+		});
 	}
     
 	private JSONObject setJSONItem(HpcFileLocation source, HpcFileLocation destination, 
@@ -375,6 +378,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	             String resource = BaseTransferAPIClient.endpointPath(endpointName)
 	                               + "/autoactivate?if_expires_in=100";
 	             client.postResult(resource, null, null);
+	             return null;
 	             
 			} catch(APIError error) {
 				    HpcIntegratedSystem integratedSystem = error.statusCode >= 500 ? 
@@ -405,7 +409,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 			        throw new HpcException("[GLOBUS] Failed to activate endpoint: " + endpointName, 
 			        	                   HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
 			}
-		    return null;
 		});
 	}
 	
