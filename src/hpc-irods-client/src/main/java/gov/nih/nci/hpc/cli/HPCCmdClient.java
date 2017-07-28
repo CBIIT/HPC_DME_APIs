@@ -8,6 +8,7 @@
 package gov.nih.nci.hpc.cli;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
+import gov.nih.nci.hpc.exception.HpcException;
 
 @Component
 public abstract class HPCCmdClient {
@@ -35,6 +37,7 @@ public abstract class HPCCmdClient {
 	protected String loginFile = null;
 	protected String globusLoginFile = null;
 	protected String logFile = null;
+	protected String tokenFile = null;
 	protected String logRecordsFile = null;
 	protected boolean headerAdded = false;
 
@@ -52,9 +55,23 @@ public abstract class HPCCmdClient {
 		hpcCertPassword = configProperties.getProperty("hpc.ssl.keystore.password");
 		logDir = configProperties.getProperty("hpc.error-log.dir");
 		loginFile = configProperties.getProperty("hpc.login.credentials");
-		globusLoginFile = configProperties.getProperty("hpc.globus.login.credentials");
+		tokenFile = configProperties.getProperty("hpc.login.token");
+		globusLoginFile = configProperties.getProperty("hpc.globus.login.token");
 		hpcCollectionService = configProperties.getProperty("hpc.collection.service");
-
+		
+		String basePath = System.getProperty("HPC_DM_UTILS");
+		if(basePath == null)
+		{
+			System.out.println("System Property HPC_DM_UTILS is missing");
+			System.exit(1);
+		}
+		if(tokenFile != null)
+			tokenFile = basePath + File.separator + tokenFile;
+		if(loginFile != null)
+			loginFile = basePath + File.separator + loginFile;
+		globusLoginFile = basePath + File.separator + globusLoginFile;
+		hpcCertPath = basePath + File.separator + hpcCertPath;
+		
 		initializeLog();
 	}
 
@@ -66,7 +83,8 @@ public abstract class HPCCmdClient {
 		try {
 			String userId = null;
 			String password = null;
-			if (loginFile == null) {
+			String authToken = null;
+			if (loginFile == null && tokenFile == null) {
 				jline.console.ConsoleReader reader = new jline.console.ConsoleReader();
 				reader.setExpandEvents(false);
 				System.out.println("Enter NCI Login UserId:");
@@ -74,7 +92,15 @@ public abstract class HPCCmdClient {
 
 				System.out.println("Enter NCI Login password:");
 				password = reader.readLine(new Character('*'));
-			} else {
+			} else if ( tokenFile != null){
+				bufferedReader = new BufferedReader(new FileReader(tokenFile));
+				String line = bufferedReader.readLine();
+				if (line.isEmpty())
+					return "Invalid Login token in " + tokenFile;
+				else {
+					authToken = line;
+				}
+			} else if ( loginFile != null){
 				bufferedReader = new BufferedReader(new FileReader(loginFile));
 				String line = bufferedReader.readLine();
 				if (line.indexOf(":") == -1)
@@ -84,12 +110,20 @@ public abstract class HPCCmdClient {
 					password = line.substring(line.indexOf(":") + 1);
 				}
 			}
-			boolean success = processCmd(cmd, criteria, outputFile, format, detail, userId, password);
+			try
+			{
+			boolean success = processCmd(cmd, criteria, outputFile, format, detail, userId, password, authToken);
 
 			if (success)
 				return "Cmd process Successful";
 			else
 				return "Cmd process is not Successful. Please error log for details.";
+			}
+			catch(HpcException e)
+			{
+				addErrorToLog("Faile to process: " +e.getMessage(), cmd);
+				return "Cmd process is not Successful. Please error log for details.";
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 			return "Failed to run command";
@@ -107,7 +141,7 @@ public abstract class HPCCmdClient {
 	}
 
 	protected abstract boolean processCmd(String cmd, Map<String, String> criteria, String outputFile, String format,
-			String detail, String userId, String password);
+			String detail, String userId, String password, String authToken) throws HpcException;
 
 	protected void postProcess() {
 		try {
