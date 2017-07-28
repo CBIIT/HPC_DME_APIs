@@ -60,6 +60,10 @@ public class HpcGlobusDirectoryListQuery {
 		return globusConnection.authenticate(userName, password);
 	}
 
+	public Object authenticateWithToken(String userName, String token) throws HpcException {
+		return globusConnection.authenticate2(userName, token);
+	}
+
 	public List<HpcPathAttributes> getPathAttributes(Object authenticatedToken, HpcFileLocation fileLocation)
 			throws HpcException {
 		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
