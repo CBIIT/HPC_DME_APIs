@@ -295,7 +295,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		    		                            dataObjectDownloadTaskRowMapper, id);
 		     
 		} catch(IncorrectResultSizeDataAccessException irse) {
-			    logger.error("Multiple tasks with the same ID found", irse);
 			    return null;
 			    
 		} catch(DataAccessException e) {
@@ -371,7 +370,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		    		                            downloadTaskResultRowMapper, id, taskType.value());
 		     
 		} catch(IncorrectResultSizeDataAccessException irse) {
-			    logger.error("Multiple tasks results with the same ID / Type found", irse);
 			    return null;
 			    
 		} catch(DataAccessException e) {
@@ -412,7 +410,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		    		                            collectionDownloadTaskRowMapper, id);
 		     
 		} catch(IncorrectResultSizeDataAccessException irse) {
-			    logger.error("Multiple tasks with the same ID found", irse);
 			    return null;
 			    
 		} catch(DataAccessException e) {
