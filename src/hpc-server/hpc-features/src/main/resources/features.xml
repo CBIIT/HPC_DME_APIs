@@ -9,7 +9,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  -->
 <features name="HPC-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.0.0">
 
@@ -54,6 +53,7 @@
 		<!--  Dependent Bundles -->
 		<bundle>wrap:mvn:com.googlecode.json-simple/json-simple/${google-json-simple.version}</bundle>
 		<bundle>mvn:commons-io/commons-io/${commons-io.version}</bundle>
+		<bundle>wrap:mvn:org.springframework.retry/spring-retry/${spring.retry.version}</bundle>
 		
 		<!-- Current version of JJWT 0.6 has a defect in the bundle manifest which requires
 		     Android jar. This is being fixed in 0.7. Remove the Android bundle when upgrading 
