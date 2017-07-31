@@ -100,7 +100,7 @@ public class HPCCmdCollection extends HPCCmdClient {
 	}
 
 	protected boolean processCmd(String cmd, Map<String, String> criteria, String outputFile, String format,
-			String detail, String userId, String password) {
+			String detail, String userId, String password, String authToken) {
 		boolean success = true;
 
 		try {
@@ -112,7 +112,8 @@ public class HPCCmdCollection extends HPCCmdClient {
 			}
 
 			try {
-				String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath,
+				if(authToken == null)
+					authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath,
 						hpcCertPassword);
 
 				Response restResponse = null;
@@ -295,6 +296,7 @@ public class HPCCmdCollection extends HPCCmdClient {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
 			try {
 				collection.setCreatedAt(dateFormat.format(dto.getCollection().getCreatedAt().getTime()));
+//				collection.setModifiedAt(dateFormat.format(dto.getCollection().getModifiedAt().getTime()));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
