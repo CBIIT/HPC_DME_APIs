@@ -66,7 +66,7 @@ public class HPCCmdRegisterLocalFile extends HPCCmdClient {
 	}
 
 	protected boolean processCmd(String cmd, Map<String, String> criteria, String outputFile, String format,
-			String detail, String userId, String password) {
+			String detail, String userId, String password, String authToken) {
 		boolean success = true;
 		String localPath = null;
 		String excludePattern = null;
@@ -89,7 +89,8 @@ public class HPCCmdRegisterLocalFile extends HPCCmdClient {
 				return false;
 			}
 			try {
-				String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath,
+				if(authToken == null)
+					authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath,
 						hpcCertPassword);
 				
 				if(authToken == null)
@@ -99,8 +100,7 @@ public class HPCCmdRegisterLocalFile extends HPCCmdClient {
 				}
 				HpcLocalDirectoryListGenerator generator = new HpcLocalDirectoryListGenerator(hpcServerURL, authToken,
 						hpcCertPath, hpcCertPassword);
-				success = generator.run(localPath, excludePattern,includePattern, filePathBaseName, destinationBasePath, logFile,
-						logRecordsFile, testRun);
+				success = generator.run(localPath, excludePattern, includePattern, filePathBaseName, destinationBasePath, logFile, logRecordsFile, testRun);
 				logRecordsFile = null;
 			} catch (Exception e) {
 				createErrorLog();

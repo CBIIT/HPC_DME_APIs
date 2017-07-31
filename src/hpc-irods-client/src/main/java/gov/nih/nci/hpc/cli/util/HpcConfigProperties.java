@@ -7,6 +7,9 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli.util;
 
+import java.io.File;
+import java.util.Map;
+
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.configuration.CompositeConfiguration;
@@ -25,11 +28,16 @@ public class HpcConfigProperties {
 	@PostConstruct
 	private void init() {
 		try {
+			Map<String, String> env = System.getenv();
+			String basePath=env.get("HPC_DM_UTILS");
 			String properties = HPC_PROPS;
 			String filePath = System.getProperty("hpc.client.properties");
 			if (filePath != null)
 				properties = filePath;
-
+			
+			//properties = basePath + File.separator + properties;
+			
+			System.out.println("Reading properties from "+properties);
 			configuration = new CompositeConfiguration();
 			// configuration.addConfiguration(pConfig);
 			configuration.addConfiguration(new PropertiesConfiguration(properties));
