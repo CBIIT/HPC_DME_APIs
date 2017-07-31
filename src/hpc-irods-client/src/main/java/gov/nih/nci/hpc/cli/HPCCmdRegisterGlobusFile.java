@@ -7,7 +7,10 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -19,6 +22,9 @@ import org.springframework.stereotype.Component;
 
 import gov.nih.nci.hpc.cli.globus.HpcGlobusDirectoryListGenerator;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
+import gov.nih.nci.hpc.cli.util.HpcLogWriter;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.exception.HpcException;
 
 @Component
 public class HPCCmdRegisterGlobusFile extends HPCCmdClient {
@@ -53,26 +59,96 @@ public class HPCCmdRegisterGlobusFile extends HPCCmdClient {
 	}
 
 	protected boolean processCmd(String cmd, Map<String, String> criteria, String outputFile, String format,
-			String detail, String userId, String password) {
+			String detail, String userId, String password, String authToken) throws HpcException{
 		boolean success = true;
 		String globusUserId = null;
 		String globusPassword = null;
+		String globusToken = null;
 		String globusEndpoint = null;
 		String globusPath = null;
 		String basePath = null;
-		try {
-			jline.console.ConsoleReader reader = new jline.console.ConsoleReader();
-			reader.setExpandEvents(false);
-			System.out.println("Enter Globus UserId:");
-			globusUserId = reader.readLine();
-
-			System.out.println("Enter Globus password:");
-			globusPassword = reader.readLine(new Character('*'));
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
+		if(globusLoginFile != null)
+		{
+			BufferedReader bufferedReader = null;
+			try {
+				bufferedReader = new BufferedReader(new FileReader(globusLoginFile));
+				String line = bufferedReader.readLine();
+				if (line.isEmpty())
+					throw new HpcException("Invalid Globus Login credentials in " + globusLoginFile, HpcErrorType.INVALID_REQUEST_INPUT);
+				else {
+					if (line.indexOf(":") == -1)
+						throw new HpcException("Invalid Globus Login credentials in " + globusLoginFile, HpcErrorType.INVALID_REQUEST_INPUT);
+					else {
+						globusUserId = line.substring(0, line.indexOf(":"));
+						globusToken = line.substring(line.indexOf(":") + 1);
+					}
+				}
+			} catch (FileNotFoundException e) {
+				createErrorLog();
+				String message = "Failed to process Globus login credentials file: " + e.getMessage();
+				try {
+					addErrorToLog(message, cmd);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				StringWriter sw = new StringWriter();
+				e.printStackTrace(new PrintWriter(sw));
+				String exceptionAsString = sw.toString();
+				try {
+					addErrorToLog(message, exceptionAsString);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				return false;
+			} catch (IOException e) {
+				createErrorLog();
+				String message = "Failed to process Globus login credentials file: " + e.getMessage();
+				try {
+					addErrorToLog(message, cmd);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				StringWriter sw = new StringWriter();
+				e.printStackTrace(new PrintWriter(sw));
+				String exceptionAsString = sw.toString();
+				try {
+					addErrorToLog(message, exceptionAsString);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				return false;
+			}
+			finally
+			{
+				if(bufferedReader != null)
+					try {
+						bufferedReader.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			}
+			
 		}
-
+		if(globusLoginFile == null)
+		{
+			try {
+				jline.console.ConsoleReader reader = new jline.console.ConsoleReader();
+				reader.setExpandEvents(false);
+				System.out.println("Enter Globus UserId:");
+				globusUserId = reader.readLine();
+	
+				System.out.println("Enter Globus password:");
+				globusPassword = reader.readLine(new Character('*'));
+			} catch (IOException e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
 		try {
 			createErrorLog();
 
@@ -84,12 +160,13 @@ public class HPCCmdRegisterGlobusFile extends HPCCmdClient {
 				return false;
 			}
 			try {
-				String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath,
+				if(authToken == null)
+					authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath,
 						hpcCertPassword);
 				HpcGlobusDirectoryListGenerator generator = new HpcGlobusDirectoryListGenerator(hpcServerURL, authToken,
 						hpcCertPath, hpcCertPassword);
 				success = generator.run(globusNexusURL, globusURL, globusEndpoint, globusPath, globusUserId,
-						globusPassword, basePath, logFile, logRecordsFile);
+						globusPassword, globusToken, basePath, logFile, logRecordsFile);
 				logRecordsFile = null;
 			} catch (Exception e) {
 				createErrorLog();
