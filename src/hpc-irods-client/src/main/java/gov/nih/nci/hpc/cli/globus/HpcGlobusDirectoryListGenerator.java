@@ -65,17 +65,20 @@ public class HpcGlobusDirectoryListGenerator {
 	}
 
 	public boolean run(String nexusURL, String globusURL, String globusEndpoint, String globusPath, String userId,
-			String password, String basePath, String logFile, String recordFile) {
+			String password, String globusToken, String basePath, String logFile, String recordFile) {
 		this.logFile = logFile;
 		boolean success = true;
 		HpcFileLocation fileLocation = new HpcFileLocation();
 		fileLocation.setFileId(globusPath);
 		fileLocation.setFileContainerId(globusEndpoint);
 		HpcGlobusDirectoryListQuery impl = new HpcGlobusDirectoryListQuery(nexusURL, globusURL);
-		Object authenticatedToken;
+		Object authenticatedToken = null;
 		try {
-
-			authenticatedToken = impl.authenticate(userId, password);
+			if(globusToken != null)
+				authenticatedToken = impl.authenticateWithToken(userId, globusToken);
+			else
+				authenticatedToken = impl.authenticate(userId, password);
+			
 			List<HpcPathAttributes> files = impl.getPathAttributes(authenticatedToken, fileLocation);
 			if (files != null) {
 				for (HpcPathAttributes file : files) {

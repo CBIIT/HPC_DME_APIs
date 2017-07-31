@@ -115,6 +115,8 @@ public class HpcLocalDirectoryListGenerator {
 					try {
 						processRecord(dataObject, destinationBasePath, getObjectPath(filePathBaseName, file.getPath()));
 					} catch (RecordProcessingException e) {
+						String message = "Failed to process cmd due to: " + e.getMessage();
+						writeException(e, message, null);
 						success = false;
 					}
 				}
