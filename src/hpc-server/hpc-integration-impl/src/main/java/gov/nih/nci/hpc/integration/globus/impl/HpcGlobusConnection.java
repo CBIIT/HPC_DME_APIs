@@ -99,6 +99,8 @@ public class HpcGlobusConnection
 			 JSONTransferAPIClient transferClient = 
 			     new JSONTransferAPIClient(dataTransferAccount.getUsername());
 			 transferClient.setAuthenticator(authenticator);
+			 //transferClient.setAuthenticator(c -> c.setRequestProperty("Authorization", 
+		 //"Bearer AQBZhP_tAAAAAAAFjagxJPrXh6KSpqciVHW293t_y3H5zfGBPwvRVA5P35tRfAjI8eGxnH8kPztjtSuBw2Db"));
 			 return transferClient;
 		
 		} catch(InvalidCredentialsException ice) {
