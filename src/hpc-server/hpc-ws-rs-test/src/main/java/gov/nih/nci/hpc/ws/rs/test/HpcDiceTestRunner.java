@@ -69,15 +69,21 @@ public class HpcDiceTestRunner
     
     public static void main(String [] args)
 	{
-    	if(args.length != 3) {
-    	   System.err.println("Usage: mvn exec:java -Dexec.arg\"<dice-test-scripts-home-dir> <reports-dir> <email-address>\"");
-    	   System.exit(1);
+    	// Default test config.
+    	String testScriptBaseDir = "/opt/HPC_Data_Management/src/hpc-server/hpc-ws-rs-test/src/test/dice";
+    	String testReportBaseDir = "/opt/apache-tomcat-8.5.16/webapps/dice";
+    	String reportEmailAddress = "HPC_DME_Admin@nih.gov";
+    	
+    	if(args.length == 3 ) {
+    	   testScriptBaseDir = args[0];
+           testReportBaseDir = args[1];
+           reportEmailAddress = args[2];
     	}
     	
-    	// Keep the scripts base directory.
-    	String testScriptBaseDir = args[0];
-    	String testReportBaseDir = args[1];
-    	String reportEmailAddress = args[2];
+    	if(args.length != 3 && args.length > 0) {
+    	   System.err.println("Usage: mvn exec:java -Dexec.arg=\"<dice-test-scripts-home-dir> <reports-dir> <email-address>\"");
+  	       System.exit(1);
+    	}
     	
     	// Create a report file.
     	Date runDate = Calendar.getInstance().getTime();
