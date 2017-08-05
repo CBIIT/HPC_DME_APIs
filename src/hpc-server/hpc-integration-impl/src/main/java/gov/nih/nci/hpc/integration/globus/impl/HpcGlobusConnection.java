@@ -99,9 +99,9 @@ public class HpcGlobusConnection
     			                                   globusURL, 
                                                    dataTransferAccount.getUsername(), 
                                                    dataTransferAccount.getPassword());
-    	
+    	TokenResponse response = null; 
     	try {
-    	      TokenResponse response =
+    	      response =
     	          new RefreshTokenRequest(new NetHttpTransport(), new JacksonFactory(), new GenericUrl(
     	              "https://auth.globus.org/v2/oauth2/token"), "AQEAAAAAAAWNqC4mbxMJY0FSSPm356YTO70Q13vwyKh-wzxfLI2GRjDCDIsbr3UelFZeTLfFUhYeiZI2Z69W")
     	              .setClientAuthentication(
@@ -122,6 +122,7 @@ public class HpcGlobusConnection
     	    } catch(IOException ioe) {
     	    	    logger.error("ERAN - " + ioe.getMessage());
     	    }
+    	final String token = response.getAccessToken();
 		try {
 			 //JSONObject accessTokenJSON = authClient.getClientOnlyAccessToken();
 			 //String accessToken = accessTokenJSON.getString("access_token");
@@ -131,8 +132,7 @@ public class HpcGlobusConnection
 			 JSONTransferAPIClient transferClient = 
 			     new JSONTransferAPIClient(dataTransferAccount.getUsername());
 			 //transferClient.setAuthenticator(authenticator);
-			 transferClient.setAuthenticator(c -> c.setRequestProperty("Authorization", 
-		 "Bearer AQBZiHNwAAAAAAAFjag9IlyD3nwu7yWcJm4ngCSDDayl_VNqFBax3I4dTazJ7zibdVQ_sH0i5KE_EZzdsoFW"));
+			 transferClient.setAuthenticator(c -> c.setRequestProperty("Authorization", token));
 			 return transferClient;
 		
 		//} catch(InvalidCredentialsException ice) {
