@@ -40,6 +40,13 @@
 		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-aop/${spring.version}_1</bundle>
 	</feature>
 	
+	<!-- Google OAuth Client -->
+	<feature name="hpc-google-oauth-client" version="${google-oauth-client.version}">
+		<bundle>wrap:mvn:com.google.http-client/google-http-client/${google-oauth-client.version}</bundle>
+		<bundle>wrap:mvn:com.google.http-client/google-http-client-jackson/${google-oauth-client.version}</bundle>
+		<bundle>wrap:mvn:com.google.oauth-client/google-oauth-client/${google-oauth-client.version}</bundle>
+	</feature>
+	
 	<!-- HPC Server Core -->
 	<feature name="hpc-server-core" version="${project.version}">
 	
@@ -49,6 +56,7 @@
 		<feature version="${amazon-aws.version}">hpc-amazon-aws-sdk</feature>
 		<feature version="${jargon.version}">hpc-jargon-sdk</feature>
 		<feature version="${spring.version}">hpc-aop</feature>
+		<feature version="${google-oauth-client.version}">hpc-google-oauth-client</feature>
 		
 		<!--  Dependent Bundles -->
 		<bundle>wrap:mvn:com.googlecode.json-simple/json-simple/${google-json-simple.version}</bundle>

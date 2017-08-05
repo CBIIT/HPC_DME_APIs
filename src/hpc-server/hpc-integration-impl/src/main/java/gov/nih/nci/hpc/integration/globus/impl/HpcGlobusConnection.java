@@ -10,18 +10,27 @@
 
 package gov.nih.nci.hpc.integration.globus.impl;
 
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
-import gov.nih.nci.hpc.exception.HpcException;
+import java.io.IOException;
 
 import org.globusonline.nexus.GoauthClient;
 import org.globusonline.nexus.exception.InvalidCredentialsException;
 import org.globusonline.transfer.Authenticator;
 import org.globusonline.transfer.GoauthAuthenticator;
 import org.globusonline.transfer.JSONTransferAPIClient;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.api.client.auth.oauth2.RefreshTokenRequest;
+import com.google.api.client.auth.oauth2.TokenResponse;
+import com.google.api.client.auth.oauth2.TokenResponseException;
+import com.google.api.client.http.BasicAuthentication;
+import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.jackson.JacksonFactory;
+
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
@@ -90,22 +99,45 @@ public class HpcGlobusConnection
     			                                   globusURL, 
                                                    dataTransferAccount.getUsername(), 
                                                    dataTransferAccount.getPassword());
+    	
+    	try {
+    	      TokenResponse response =
+    	          new RefreshTokenRequest(new NetHttpTransport(), new JacksonFactory(), new GenericUrl(
+    	              "https://auth.globus.org/v2/oauth2/token"), "AQEAAAAAAAWNqC4mbxMJY0FSSPm356YTO70Q13vwyKh-wzxfLI2GRjDCDIsbr3UelFZeTLfFUhYeiZI2Z69W")
+    	              .setClientAuthentication(
+    	                  new BasicAuthentication("025ff462-07e1-483b-8dbb-1fc26c7eb17e", "Os6M69M+vuaxLvl4XnhMeoqIBu2a84e8d5P7upo7aUw=")).execute();
+    	      logger.error("ERAN - Access token: " + response.getAccessToken());
+    	    } catch (TokenResponseException e) {
+    	      if (e.getDetails() != null) {
+    	        logger.error("ERAN - Error: " + e.getDetails().getError());
+    	        if (e.getDetails().getErrorDescription() != null) {
+    	          logger.error("ERAN - " + e.getDetails().getErrorDescription());
+    	        }
+    	        if (e.getDetails().getErrorUri() != null) {
+    	          logger.error("ERAN - " + e.getDetails().getErrorUri());
+    	        }
+    	      } else {
+    	        logger.error("ERAN -" + e.getMessage());
+    	      }
+    	    } catch(IOException ioe) {
+    	    	    logger.error("ERAN - " + ioe.getMessage());
+    	    }
 		try {
-			 JSONObject accessTokenJSON = authClient.getClientOnlyAccessToken();
-			 String accessToken = accessTokenJSON.getString("access_token");
-			 authClient.validateAccessToken(accessToken);        
+			 //JSONObject accessTokenJSON = authClient.getClientOnlyAccessToken();
+			 //String accessToken = accessTokenJSON.getString("access_token");
+			 //authClient.validateAccessToken(accessToken);        
 			
-			 Authenticator authenticator = new GoauthAuthenticator(accessToken);
+			 //Authenticator authenticator = new GoauthAuthenticator(accessToken);
 			 JSONTransferAPIClient transferClient = 
 			     new JSONTransferAPIClient(dataTransferAccount.getUsername());
-			 transferClient.setAuthenticator(authenticator);
-			 //transferClient.setAuthenticator(c -> c.setRequestProperty("Authorization", 
-		 //"Bearer AQBZhP_tAAAAAAAFjagxJPrXh6KSpqciVHW293t_y3H5zfGBPwvRVA5P35tRfAjI8eGxnH8kPztjtSuBw2Db"));
+			 //transferClient.setAuthenticator(authenticator);
+			 transferClient.setAuthenticator(c -> c.setRequestProperty("Authorization", 
+		 "Bearer AQBZiHNwAAAAAAAFjag9IlyD3nwu7yWcJm4ngCSDDayl_VNqFBax3I4dTazJ7zibdVQ_sH0i5KE_EZzdsoFW"));
 			 return transferClient;
 		
-		} catch(InvalidCredentialsException ice) {
-			    logger.error("Invalid Globus credentials: " + dataTransferAccount.getUsername(), ice);
-		        return null;
+		//} catch(InvalidCredentialsException ice) {
+			//    logger.error("Invalid Globus credentials: " + dataTransferAccount.getUsername(), ice);
+		      //  return null;
 		    
 		} catch(Exception e) {
     	        throw new HpcException("[GLOBUS] Failed to authenticate account: " +
