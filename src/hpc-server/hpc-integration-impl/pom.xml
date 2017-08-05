@@ -44,7 +44,10 @@
 							gov.nih.nci.hpc.integration.ldap.impl,
 							gov.nih.nci.hpc.integration.irods.impl
 						</Private-Package>
-						<Import-Package>*</Import-Package>
+						<Import-Package>
+							org.codehaus.jackson,
+							*
+						</Import-Package>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -115,6 +118,10 @@
 		<dependency>
     		<groupId>com.google.http-client</groupId>
     		<artifactId>google-http-client-jackson</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
 		</dependency>
 	</dependencies>
 </project>
