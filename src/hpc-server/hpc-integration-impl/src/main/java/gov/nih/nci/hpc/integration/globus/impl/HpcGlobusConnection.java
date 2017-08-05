@@ -99,7 +99,7 @@ public class HpcGlobusConnection
     			                                   globusURL, 
                                                    dataTransferAccount.getUsername(), 
                                                    dataTransferAccount.getPassword());
-    	TokenResponse response = null; 
+    	TokenResponse response = null;
     	try {
     	      response =
     	          new RefreshTokenRequest(new NetHttpTransport(), new JacksonFactory(), new GenericUrl(
@@ -122,7 +122,6 @@ public class HpcGlobusConnection
     	    } catch(IOException ioe) {
     	    	    logger.error("ERAN - " + ioe.getMessage());
     	    }
-    	final String token = response.getAccessToken();
 		try {
 			 //JSONObject accessTokenJSON = authClient.getClientOnlyAccessToken();
 			 //String accessToken = accessTokenJSON.getString("access_token");
@@ -132,7 +131,8 @@ public class HpcGlobusConnection
 			 JSONTransferAPIClient transferClient = 
 			     new JSONTransferAPIClient(dataTransferAccount.getUsername());
 			 //transferClient.setAuthenticator(authenticator);
-			 transferClient.setAuthenticator(c -> c.setRequestProperty("Authorization", token));
+			 final String token = "Bearer " + response.getAccessToken();
+			 transferClient.setAuthenticator(urlConnection -> urlConnection.setRequestProperty("Authorization", token)); 
 			 return transferClient;
 		
 		//} catch(InvalidCredentialsException ice) {
