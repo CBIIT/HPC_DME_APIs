@@ -45,7 +45,6 @@
 							gov.nih.nci.hpc.integration.irods.impl
 						</Private-Package>
 						<Import-Package>
-							org.codehaus.jackson,
 							*
 						</Import-Package>
 					</instructions>
@@ -118,10 +117,6 @@
 		<dependency>
     		<groupId>com.google.http-client</groupId>
     		<artifactId>google-http-client-jackson</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
 		</dependency>
 	</dependencies>
 </project>
