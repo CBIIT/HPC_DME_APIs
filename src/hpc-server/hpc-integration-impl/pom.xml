@@ -78,11 +78,6 @@
 			<version>1.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.globusonline</groupId>
-			<artifactId>java_nexus_client</artifactId>
-			<version>0.0.2</version>
-		</dependency>
-		<dependency>
 			<groupId>org.irods.jargon</groupId>
 			<artifactId>jargon-core</artifactId>
 		</dependency>
