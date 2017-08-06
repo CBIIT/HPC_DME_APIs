@@ -14,6 +14,7 @@ import org.globusonline.transfer.JSONTransferAPIClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.api.client.auth.oauth2.ClientCredentialsTokenRequest;
 import com.google.api.client.auth.oauth2.RefreshTokenRequest;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.http.BasicAuthentication;
@@ -97,8 +98,16 @@ public class HpcGlobusConnection
                 "AQEAAAAAAAWNqC4mbxMJY0FSSPm356YTO70Q13vwyKh-wzxfLI2GRjDCDIsbr3UelFZeTLfFUhYeiZI2Z69W");
     	tokenRequest.setClientAuthentication(authentication);
     	
+    	ClientCredentialsTokenRequest tokenRequest1 =
+    	          new ClientCredentialsTokenRequest(new NetHttpTransport(), new JacksonFactory(),
+    	                                            new GenericUrl(globusAuthUrl));
+    	tokenRequest1.setClientAuthentication(authentication);
+    	
     	try {
     		 TokenResponse tokenResponse = tokenRequest.execute();
+    		 
+    		 TokenResponse tokenResponse1 = tokenRequest1.execute();
+    		 logger.error("ERAN CC tok:" + tokenResponse1.getAccessToken());
     		 
 			 JSONTransferAPIClient transferClient =  new JSONTransferAPIClient(dataTransferAccount.getUsername());
 			 final String token = "Bearer " + tokenResponse.getAccessToken();
