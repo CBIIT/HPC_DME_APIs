@@ -92,7 +92,7 @@ public class HpcGlobusConnection
 			                  throws HpcException
     {
     	BasicAuthentication authentication = 
-    		                new BasicAuthentication(dataTransferAccount.getUsername(), 
+    		                new BasicAuthentication("025ff462-07e1-483b-8dbb-1fc26c7eb17e", //dataTransferAccount.getUsername(), 
     		                                        dataTransferAccount.getPassword());
     	RefreshTokenRequest tokenRequest = 
     			            new RefreshTokenRequest(new NetHttpTransport(), new JacksonFactory(), 
