@@ -120,8 +120,8 @@ public class HpcGlobusConnection
 			 return transferClient;
 			
 		} catch(Exception e) {
-    	        throw new HpcException("[GLOBUS] Failed to authenticate account: " +
-    	        		               dataTransferAccount.getUsername(),
+    	        throw new HpcException("[GLOBUS] Failed to authenticate account [" +
+    	        		               dataTransferAccount.getUsername() + "]: " + e.getMessage(),
     	    		                   HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 	} 
