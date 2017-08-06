@@ -10,6 +10,8 @@
 
 package gov.nih.nci.hpc.integration.globus.impl;
 
+import java.util.Arrays;
+
 import org.globusonline.transfer.JSONTransferAPIClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,9 +104,11 @@ public class HpcGlobusConnection
     	          new ClientCredentialsTokenRequest(new NetHttpTransport(), new JacksonFactory(),
     	                                            new GenericUrl(globusAuthUrl));
     	tokenRequest1.setClientAuthentication(authentication);
+    	tokenRequest1.setScopes(Arrays.asList("urn:globus:auth:scope:transfer.api.globus.org:all"));
     	
     	try {
     		 TokenResponse tokenResponse = tokenRequest.execute();
+    		 logger.error("ERAN RT tok:" + tokenResponse.getAccessToken());
     		 
     		 TokenResponse tokenResponse1 = tokenRequest1.execute();
     		 logger.error("ERAN CC tok:" + tokenResponse1.getAccessToken());
