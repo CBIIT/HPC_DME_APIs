@@ -482,13 +482,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     		invoker.getDataTransferAuthenticatedTokens()) {
     		if(authenticatedToken.getDataTransferType().equals(dataTransferType) &&
     	       authenticatedToken.getDoc().equals(doc)) {
-    		   logger.error("ERAN: " + dataTransferType + ":" + doc + " token found");
     	       return authenticatedToken.getDataTransferAuthenticatedToken();
-    		} else {
-    			    logger.error("ERAN: not matched token: " + authenticatedToken.getDataTransferType() + ":" + authenticatedToken.getDoc());
-    		}
+    		} 
     	}
-    	logger.error("ERAN: " + dataTransferType + ":" + doc + " token not found");
+
     	// No authenticated token found for this request. Create one.
     	HpcIntegratedSystemAccount dataTransferSystemAccount = systemAccountLocator.getSystemAccount(dataTransferType);
     	if(dataTransferSystemAccount == null) {
@@ -510,8 +507,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	authenticatedToken.setDataTransferType(dataTransferType);
     	authenticatedToken.setDoc(doc);
     	invoker.getDataTransferAuthenticatedTokens().add(authenticatedToken);
-    	
-    	logger.error("ERAN: added token : " + authenticatedToken.getDataTransferType() + ":" + authenticatedToken.getDoc());
     	
     	return token;
     }
