@@ -92,7 +92,7 @@ public class HpcGlobusConnection
 			                  throws HpcException
     {
     	BasicAuthentication authentication = 
-    		                new BasicAuthentication("025ff462-07e1-483b-8dbb-1fc26c7eb17e", //dataTransferAccount.getUsername(), 
+    		                new BasicAuthentication(dataTransferAccount.getUsername(), 
     		                                        dataTransferAccount.getPassword());
     	RefreshTokenRequest tokenRequest = 
     			            new RefreshTokenRequest(new NetHttpTransport(), new JacksonFactory(), 
@@ -113,8 +113,8 @@ public class HpcGlobusConnection
     		 TokenResponse tokenResponse = tokenRequest.execute();
     		 logger.error("ERAN RT tok:" + tokenResponse.getAccessToken());
     		 
-    		 //TokenResponse tokenResponse1 = tokenRequest1.execute();
-    		 //logger.error("ERAN CC tok:" + tokenResponse1.getAccessToken());
+    		 TokenResponse tokenResponse1 = tokenRequest1.execute();
+    		 logger.error("ERAN CC tok:" + tokenResponse1.getAccessToken());
     		 
 			 JSONTransferAPIClient transferClient =  new JSONTransferAPIClient(dataTransferAccount.getUsername());
 			 final String token = "Bearer " + tokenResponse.getAccessToken();
