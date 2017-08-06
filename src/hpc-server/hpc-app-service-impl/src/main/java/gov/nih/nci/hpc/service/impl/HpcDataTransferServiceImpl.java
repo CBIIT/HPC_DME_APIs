@@ -484,6 +484,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	       authenticatedToken.getDoc().equals(doc)) {
     		   logger.error("ERAN: " + dataTransferType + ":" + doc + " token found");
     	       return authenticatedToken.getDataTransferAuthenticatedToken();
+    		} else {
+    			    logger.error("ERAN: not matched token: " + authenticatedToken.getDataTransferType() + ":" + authenticatedToken.getDoc());
     		}
     	}
     	logger.error("ERAN: " + dataTransferType + ":" + doc + " token not found");
@@ -508,6 +510,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	authenticatedToken.setDataTransferType(dataTransferType);
     	authenticatedToken.setDoc(doc);
     	invoker.getDataTransferAuthenticatedTokens().add(authenticatedToken);
+    	
+    	logger.error("ERAN: added token : " + authenticatedToken.getDataTransferType() + ":" + authenticatedToken.getDoc());
     	
     	return token;
     }
