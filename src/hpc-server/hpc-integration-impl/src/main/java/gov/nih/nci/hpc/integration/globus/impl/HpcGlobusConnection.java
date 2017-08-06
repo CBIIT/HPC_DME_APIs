@@ -107,11 +107,14 @@ public class HpcGlobusConnection
     	tokenRequest1.setScopes(Arrays.asList("urn:globus:auth:scope:transfer.api.globus.org:all"));
     	
     	try {
+    		 logger.error("ERAN: Globus uid: " + dataTransferAccount.getUsername());
+    		 logger.error("ERAN: Globus pwd: " + dataTransferAccount.getPassword());
+    		 
     		 TokenResponse tokenResponse = tokenRequest.execute();
     		 logger.error("ERAN RT tok:" + tokenResponse.getAccessToken());
     		 
-    		 TokenResponse tokenResponse1 = tokenRequest1.execute();
-    		 logger.error("ERAN CC tok:" + tokenResponse1.getAccessToken());
+    		 //TokenResponse tokenResponse1 = tokenRequest1.execute();
+    		 //logger.error("ERAN CC tok:" + tokenResponse1.getAccessToken());
     		 
 			 JSONTransferAPIClient transferClient =  new JSONTransferAPIClient(dataTransferAccount.getUsername());
 			 final String token = "Bearer " + tokenResponse.getAccessToken();
