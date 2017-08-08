@@ -8,7 +8,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  -->
  
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -45,7 +44,9 @@
 							gov.nih.nci.hpc.integration.ldap.impl,
 							gov.nih.nci.hpc.integration.irods.impl
 						</Private-Package>
-						<Import-Package>*</Import-Package>
+						<Import-Package>
+							*
+						</Import-Package>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -77,11 +78,6 @@
 			<version>1.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.globusonline</groupId>
-			<artifactId>java_nexus_client</artifactId>
-			<version>0.0.2</version>
-		</dependency>
-		<dependency>
 			<groupId>org.irods.jargon</groupId>
 			<artifactId>jargon-core</artifactId>
 		</dependency>
@@ -108,6 +104,14 @@
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.oauth-client</groupId>
+			<artifactId>google-oauth-client</artifactId>
+		</dependency>
+		<dependency>
+    		<groupId>com.google.http-client</groupId>
+    		<artifactId>google-http-client-jackson</artifactId>
 		</dependency>
 	</dependencies>
 </project>
