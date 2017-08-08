@@ -1,7 +1,17 @@
 #HPC DME Server URL
+#Production server settings
+#hpc.server.url=https://hpcdmeapi.nci.nih.gov:8080
+#hpc.ssl.keystore.path=hpc-client/keystore/keystore-prod.jks
+#hpc.ssl.keystore.password=***REMOVED***
+
+#UAT server settings
 hpc.server.url=https://fr-s-hpcdm-uat-p.ncifcrf.gov:7738/hpc-server
+hpc.ssl.keystore.path=hpc-client/keystore/keystore-uat.jks
+hpc.ssl.keystore.password=***REMOVED***
+
 hpc.user=konkapv
 
+#Globus settings
 #default globus endpoint to be used in registration and download
 hpc.globus.user=
 hpc.default.globus.endpoint=
@@ -21,9 +31,5 @@ globus.url=www.globusonline.org
 hpc.login.token=tokens/hpcdme-auth.txt
 #Globus Login token file location
 hpc.globus.login.token=tokens/globus-auth.txt
-# Keystore file location
-hpc.ssl.keystore.path=hpc-client/keystore/keystore-uat.jks
-# Keystore file password
-hpc.ssl.keystore.password=***REMOVED***
 # JAR version
-hpc.jar.version=hpc-cli-1.1.0.jar
+hpc.jar.version=hpc-cli-1.3.0.jar

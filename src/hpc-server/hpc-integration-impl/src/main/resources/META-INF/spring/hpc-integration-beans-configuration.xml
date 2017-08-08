@@ -63,8 +63,8 @@
 	
 	<!--  Globus Connection  -->
 	<bean id="hpcGlobusConnection" class="gov.nih.nci.hpc.integration.globus.impl.HpcGlobusConnection">
-		<constructor-arg value="${hpc.integration.globus.nexusAPIURL}" index="0" />
-		<constructor-arg value="${hpc.integration.globus.globusURL}" index="1" />
+		<constructor-arg value="${hpc.integration.globus.globusAuthUrl}" index="0" />
+		<constructor-arg value="${hpc.integration.globus.globusAuthScope}" index="1" />
 	</bean>
 	
 	<!-- Globus Data Transfer Proxy -->
