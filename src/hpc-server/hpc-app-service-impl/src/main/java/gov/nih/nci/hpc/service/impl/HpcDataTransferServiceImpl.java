@@ -483,9 +483,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     		if(authenticatedToken.getDataTransferType().equals(dataTransferType) &&
     	       authenticatedToken.getDoc().equals(doc)) {
     	       return authenticatedToken.getDataTransferAuthenticatedToken();
-    		}
+    		} 
     	}
-    	
+
     	// No authenticated token found for this request. Create one.
     	HpcIntegratedSystemAccount dataTransferSystemAccount = systemAccountLocator.getSystemAccount(dataTransferType);
     	if(dataTransferSystemAccount == null) {
