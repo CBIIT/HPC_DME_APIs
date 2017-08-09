@@ -26,13 +26,56 @@ RESPONSE_MSG=download-response-message.json.tmp
 download_async "dataObject/$OBJECT_PATH"
 
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
-echo $HTTP_CODE
+echo "download_async_code $HTTP_CODE"
 
 #Do not check the file is the code is not 200
 if [ $HTTP_CODE != 200 ] 
 then
-    exit
+    echo "Unable to submit download request" >&2
+    exit 1
 fi
+
+#Make sure a task ID is returned
+taskId=$(get_json_unquotted_value $RESPONSE_MSG taskId)
+if [[ -z "$taskId" ]] 
+then
+  echo "Can not find taskID in $RESPONSE_MSG" >&2;
+  exit 1
+fi
+
+
+#Get the status of the download request and verify it is true
+get_download_status "$taskId" dataObject
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+echo "get_status_code $HTTP_CODE"
+
+#Do not check the file is the code is not 200
+if [ $HTTP_CODE != 200 ] 
+then
+    echo "Unable to get download status" >&2
+    exit 1
+fi
+
+#Verify that the download is marked complete on the download status
+RESPONSE_HEADER=get-download-status-response-header.tmp
+RESPONSE_MSG=get-download-status-response-message.json.tmp
+status=$(get_json_unquotted_value $RESPONSE_MSG inProgress)
+echo "in_progress:$status"
+mv $RESPONSE_HEADER first-get-status-header.tmp
+mv $RESPONSE_MSG first-get-status-message.tmp
+
+
+
 
 GLOBUS_PATH=$(get_json_value input.json.tmp fileId)
 verify_globus_file  $GLOBUS_PATH
+
+
+#Sleep 30s and verify the status is updated
+sleep 30
+get_download_status "$taskId" dataObject
+#Verify that the download is marked complete on the download status
+RESPONSE_HEADER=get-download-status-response-header.tmp
+RESPONSE_MSG=get-download-status-response-message.json.tmp
+status=$(get_json_unquotted_value $RESPONSE_MSG inProgress)
+echo "in_progress:$status"
