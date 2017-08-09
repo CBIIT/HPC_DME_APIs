@@ -25,20 +25,24 @@ http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
      Edit the configuration file:  ./utils/test-configuration:
         1- Edit your NCI "username"
         2- Edit the "base-folder" for your test DOC
-        3- Edit your "globus-user" that is linked to your NCI account.
-        4- Edit the "globus-shared-endpoint-uid" as mentioned in step II
+        3- Edit the "globus-shared-endpoint-uid" as mentioned in step II
 
 
   II- Globus configuraton:
-      1- Create a globus shared endpoint (e.g., HPC _DM_TEST) and share it with the service account. 
-         Review the user guide document to get the service account. 
+      1- Create a globus shared endpoint (e.g., HPC_DM_TEST) and share it with the service account. 
+         Review the user guide document to get the name of the service account. 
       2- Add a test.txt empty file to this Globus endpoint:
         "endpoint": "HPC_DM_TEST",
         "path": "/test.txt"
       3- Add a download empty folder to your shared Globus endpoint
         "endpoint": "HPC_DM_TEST",
         "path": "/download/"
- 
+      4- Edigt your test-configuration file with the shared endpoint UUID.
+      5- Install the globus Command Line Client: 
+         https://docs.globus.org/cli/installation/
+         Then login with your account:
+         globus login
+         
 
   III- Server configuration:
         Edit the  ./utils/server to add the server name and port number for the
@@ -52,10 +56,9 @@ http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
             export HPC_DM_TEST=/path/to/this/README.txt/
        
   V- Token generation 
-        Before you can run the test, you need to generate an HPC DM API token and a globus token.
-        To generate these two tokens, run:
+        Before you can run the test, you need to generate an HPC DM API token.
+        Run:
         $HPC_DM_TEST/utils/generate-token.sh
-        $HPC_DM_TEST/utils/generate-globus-token.sh
 
   VI- To run test-hpc-client units tests, please follow the setup steps shown in ./test-hpc-client/README.txt 
 
