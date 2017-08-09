@@ -88,18 +88,18 @@ public class HpcGlobusConnection
     	BasicAuthentication authentication = 
     		                new BasicAuthentication(dataTransferAccount.getUsername(), 
     		                                        dataTransferAccount.getPassword());
-    	RefreshTokenRequest tokenRequest = 
+/*    	RefreshTokenRequest tokenRequest = 
     		                new RefreshTokenRequest(new NetHttpTransport(), new JacksonFactory(), 
                                                     new GenericUrl(globusAuthUrl), 
                 "AQEAAAAAAAWNqC4mbxMJY0FSSPm356YTO70Q13vwyKh-wzxfLI2GRjDCDIsbr3UelFZeTLfFUhYeiZI2Z69W");
-    	tokenRequest.setClientAuthentication(authentication);
+    	tokenRequest.setClientAuthentication(authentication);*/
     	
     	// Instantiate a client credentials token request.
-/*    	ClientCredentialsTokenRequest tokenRequest =
+    	ClientCredentialsTokenRequest tokenRequest =
     	          new ClientCredentialsTokenRequest(new NetHttpTransport(), new JacksonFactory(),
     	                                            new GenericUrl(globusAuthUrl));
     	tokenRequest.setClientAuthentication(authentication);
-    	tokenRequest.setScopes(Arrays.asList(globusAuthScope));*/
+    	tokenRequest.setScopes(Arrays.asList(globusAuthScope));
     	
     	try {
     		 // Obtain a Globus access token.
