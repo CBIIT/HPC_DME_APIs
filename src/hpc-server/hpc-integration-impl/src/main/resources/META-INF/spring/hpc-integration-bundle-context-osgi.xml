@@ -32,12 +32,12 @@
 	      <prop key="hpc.integration.globus.globusAuthUrl">https://auth.globus.org/v2/oauth2/token</prop>
 	      <prop key="hpc.integration.globus.globusAuthScope">urn:globus:auth:scope:transfer.api.globus.org:all</prop>
 	      
-	      <prop key="hpc.integration.globus.archive.endpoint">nihfnlcr#gridftp1</prop>
+	      <prop key="hpc.integration.globus.archive.endpoint">3b6f5b7e-7d6f-11e7-8d49-22000b9923ef</prop>
 		  <prop key="hpc.integration.globus.archive.path">/mnt/IRODsTest/FNL_SF_Archive</prop>
 		  <prop key="hpc.integration.globus.archive.directory">/mnt/IRODsTest/FNL_SF_Archive</prop>
 		  <prop key="hpc.integration.globus.archive.type">TEMPORARY_ARCHIVE</prop>
 		  
-		  <prop key="hpc.integration.globus.download.endpoint">nihfnlcr#gridftp1</prop>
+		  <prop key="hpc.integration.globus.download.endpoint">3b6f5b7e-7d6f-11e7-8d49-22000b9923ef</prop>
 		  <prop key="hpc.integration.globus.download.path">/mnt/IRODsTest/FNL_SF_Share</prop>
 		  <prop key="hpc.integration.globus.download.directory">/mnt/IRODsTest/FNL_SF_Share</prop>
 		  
