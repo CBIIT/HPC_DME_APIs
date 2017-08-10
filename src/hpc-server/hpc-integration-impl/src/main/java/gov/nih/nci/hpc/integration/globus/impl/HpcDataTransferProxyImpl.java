@@ -426,20 +426,23 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     {
 		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 
-		try {
-			 JSONObject jsonReport = client.getResult("/task/" +  dataTransferRequestId).document;
+		return retryTemplate.execute(arg0 -> 
+		{
+			try {
+				 JSONObject jsonReport = client.getResult("/task/" +  dataTransferRequestId).document;
+				
+				 HpcGlobusDataTransferReport report = new HpcGlobusDataTransferReport();
+				 report.setStatus(jsonReport.getString("status"));
+			     report.setNiceStatus(jsonReport.getString("nice_status"));
+				 report.setBytesTransferred(jsonReport.getLong("bytes_transferred"));
+				 
+				 return report;
 			
-			 HpcGlobusDataTransferReport report = new HpcGlobusDataTransferReport();
-			 report.setStatus(jsonReport.getString("status"));
-		     report.setNiceStatus(jsonReport.getString("nice_status"));
-			 report.setBytesTransferred(jsonReport.getLong("bytes_transferred"));
-			 
-			 return report;
-		
-		} catch(Exception e) {
-		        throw new HpcException("[GLOBUS] Failed to get task report for task: " + dataTransferRequestId, 
-		                               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
-		} 
+			} catch(Exception e) {
+			        throw new HpcException("[GLOBUS] Failed to get task report for task: " + dataTransferRequestId, 
+			                               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
+			}
+		});
     }
     
     /**
@@ -472,6 +475,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         	 
         	
         } catch(APIError error) {
+        	logger.error("ERAN 1");
         	    if(error.statusCode == 502) {
         	       if(error.code.equals(NOT_DIRECTORY_GLOBUS_CODE)) {
         	          // Path exists as a single file
@@ -479,16 +483,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         	          pathAttributes.setIsFile(true);
         	          pathAttributes.setSize(getSize ? getFileSize(fileLocation, client) : -1);
         	       } else {
-        	    	       throw new HpcException("Invalid file location: " + fileLocation,
-        	    	    		                  HpcErrorType.INVALID_REQUEST_INPUT);
+        	    	       throw new HpcException("Invalid file location:" + fileLocation,
+        	    	    		                  HpcErrorType.INVALID_REQUEST_INPUT, error);
         	       }
         	    } else if(error.statusCode == 403) {
          	              // Permission denied.
          	              pathAttributes.setExists(true);
          	              pathAttributes.setIsAccessible(false);
-         	    } // else path was not found. 
+         	    } 
+        	    // else path was not found. 
         	    
         } catch(Exception e) {
+        	logger.error("ERAN 2");
 	            throw new HpcException("[GLOBUS] Failed to get path attributes: " + fileLocation, 
        		                           HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
         }
@@ -598,25 +604,21 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
      * @param dirLocation The directory endpoint/path.
      * @param client Globus client API instance.
      * @return The file size in bytes.
-     * @throws APIError on Globus failure.
+     * @throws Exception 
      * @throws HpcException on service failure.
      */
     private Result listDirectoryContent(HpcFileLocation dirLocation, 
     		                            JSONTransferAPIClient client)
-    		                           throws APIError, HpcException
+    		                           throws Exception
     {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("path", dirLocation.getFileId());
-	    try {
-		     String resource = BaseTransferAPIClient.endpointPath(dirLocation.getFileContainerId()) + "/ls";
-		     return client.getResult(resource, params);
 		
-	    } catch(APIError apiError) {
-	    	    throw apiError;
-	    } catch(Exception e) {
-		        throw new HpcException("[GLOBUS] Failed to invoke list directory content service: " + 
-	                                   dirLocation, 
-		                               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
-		}
+		return retryTemplate.execute(arg0 -> 
+		{
+			String resource = BaseTransferAPIClient.endpointPath(dirLocation.getFileContainerId()) + "/ls";
+		 	return client.getResult(resource, params);
+				
+		});
     }
 }
