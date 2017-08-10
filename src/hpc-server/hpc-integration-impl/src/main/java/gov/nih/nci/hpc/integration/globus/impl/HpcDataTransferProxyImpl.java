@@ -479,8 +479,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         	          pathAttributes.setIsFile(true);
         	          pathAttributes.setSize(getSize ? getFileSize(fileLocation, client) : -1);
         	       } else {
-        	    	       throw new HpcException("Invalid file location: " + fileLocation,
-        	    	    		                  HpcErrorType.INVALID_REQUEST_INPUT);
+        	    	       logger.error("ERAN: " + error.code);
+        	    	       logger.error("ERAN: " + error.statusMessage);
+        	    	       logger.error("ERAN: " + error.statusCode);
+        	    	       throw new HpcException("Invalid file location:" + fileLocation,
+        	    	    		                  HpcErrorType.INVALID_REQUEST_INPUT, error);
         	       }
         	    } else if(error.statusCode == 403) {
          	              // Permission denied.
