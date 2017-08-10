@@ -15,7 +15,6 @@ import java.util.Arrays;
 import org.globusonline.transfer.JSONTransferAPIClient;
 
 import com.google.api.client.auth.oauth2.ClientCredentialsTokenRequest;
-import com.google.api.client.auth.oauth2.RefreshTokenRequest;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.http.BasicAuthentication;
 import com.google.api.client.http.GenericUrl;
@@ -88,11 +87,6 @@ public class HpcGlobusConnection
     	BasicAuthentication authentication = 
     		                new BasicAuthentication(dataTransferAccount.getUsername(), 
     		                                        dataTransferAccount.getPassword());
-    	/*RefreshTokenRequest tokenRequest = 
-    		                new RefreshTokenRequest(new NetHttpTransport(), new JacksonFactory(), 
-                                                    new GenericUrl(globusAuthUrl), 
-                "AQEAAAAAAAWNqAbuZQyflW-XAxy0JQeZNKB4282EI07ZTEgA_Hwzj6z4BvsYwv1OWyGotPFhOmcBOFZawh3I");
-    	tokenRequest.setClientAuthentication(authentication);*/
     	
     	// Instantiate a client credentials token request.
     	ClientCredentialsTokenRequest tokenRequest =
