@@ -10,11 +10,11 @@
 
 package gov.nih.nci.hpc.integration.globus.impl;
 
-import org.globusonline.transfer.JSONTransferAPIClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Arrays;
 
-import com.google.api.client.auth.oauth2.RefreshTokenRequest;
+import org.globusonline.transfer.JSONTransferAPIClient;
+
+import com.google.api.client.auth.oauth2.ClientCredentialsTokenRequest;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.http.BasicAuthentication;
 import com.google.api.client.http.GenericUrl;
@@ -41,11 +41,7 @@ public class HpcGlobusConnection
 	
 	// Globus connection attributes.
 	private String globusAuthUrl = null;
-	private String globusURL = null;
-	
-    // The logger instance.
-	private final Logger logger = 
-			             LoggerFactory.getLogger(this.getClass().getName());
+	private String globusAuthScope = null;
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -55,12 +51,12 @@ public class HpcGlobusConnection
      * Constructor for Spring Dependency Injection.
      * 
      * @param globusAuthUrl The Globus auth/token URL.
-     * @param globusURL The Globus Online endpoint URL.
+     * @param globusAuthScope The Globus authentication scope.
      */
-    private HpcGlobusConnection(String globusAuthUrl, String globusURL)
+    private HpcGlobusConnection(String globusAuthUrl, String globusAuthScope)
     {
         this.globusAuthUrl = globusAuthUrl;
-        this.globusURL = globusURL;
+        this.globusAuthScope = globusAuthScope;
     }
     
 	/**
@@ -91,15 +87,19 @@ public class HpcGlobusConnection
     	BasicAuthentication authentication = 
     		                new BasicAuthentication(dataTransferAccount.getUsername(), 
     		                                        dataTransferAccount.getPassword());
-    	RefreshTokenRequest tokenRequest = 
-    			            new RefreshTokenRequest(new NetHttpTransport(), new JacksonFactory(), 
-                                                    new GenericUrl(globusAuthUrl), 
-                "AQEAAAAAAAWNqC4mbxMJY0FSSPm356YTO70Q13vwyKh-wzxfLI2GRjDCDIsbr3UelFZeTLfFUhYeiZI2Z69W");
+    	
+    	// Instantiate a client credentials token request.
+    	ClientCredentialsTokenRequest tokenRequest =
+    	          new ClientCredentialsTokenRequest(new NetHttpTransport(), new JacksonFactory(),
+    	                                            new GenericUrl(globusAuthUrl));
     	tokenRequest.setClientAuthentication(authentication);
+    	tokenRequest.setScopes(Arrays.asList(globusAuthScope));
     	
     	try {
+    		 // Obtain a Globus access token.
     		 TokenResponse tokenResponse = tokenRequest.execute();
     		 
+    		 // Instantiate a transfer client w/ token authorization.
 			 JSONTransferAPIClient transferClient =  new JSONTransferAPIClient(dataTransferAccount.getUsername());
 			 final String token = "Bearer " + tokenResponse.getAccessToken();
 			 transferClient.setAuthenticator(
@@ -107,8 +107,8 @@ public class HpcGlobusConnection
 			 return transferClient;
 			
 		} catch(Exception e) {
-    	        throw new HpcException("[GLOBUS] Failed to authenticate account: " +
-    	        		               dataTransferAccount.getUsername(),
+    	        throw new HpcException("[GLOBUS] Failed to authenticate account [" +
+    	        		               dataTransferAccount.getUsername() + "]: " + e.getMessage(),
     	    		                   HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 	} 
