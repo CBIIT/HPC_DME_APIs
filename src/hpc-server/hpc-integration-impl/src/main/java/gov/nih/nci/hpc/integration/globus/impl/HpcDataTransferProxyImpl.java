@@ -489,7 +489,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
          	              // Permission denied.
          	              pathAttributes.setExists(true);
          	              pathAttributes.setIsAccessible(false);
-         	    } // else path was not found. 
+         	    } else if(error.statusCode == 404) {
+   	                      // Endpoint not found.
+         	    	      throw new HpcException("Endpoint not found:" + fileLocation.getFileContainerId(),
+  		                                         HpcErrorType.INVALID_REQUEST_INPUT, error);
+         	    } else if(error.statusCode == 400) {
+	                      // Endpoint not active.
+   	    	              throw new HpcException("Endpoint not active:" + fileLocation.getFileContainerId(),
+	                                             HpcErrorType.INVALID_REQUEST_INPUT, error);
+         	    }
+        	    // else path was not found. 
         	    
         } catch(Exception e) {
 	            throw new HpcException("[GLOBUS] Failed to get path attributes: " + fileLocation, 
