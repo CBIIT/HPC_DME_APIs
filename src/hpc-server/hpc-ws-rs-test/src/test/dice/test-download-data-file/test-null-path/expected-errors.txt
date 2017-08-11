@@ -1,3 +1,2 @@
 500
 DATA_TRANSFER_ERROR
-[GLOBUS] Endpoint doesn't exist or inactive. Make sure the endpoint name is correct and active
