@@ -36,7 +36,7 @@ echo $HTTP_CODE
 
 taskId=$(get_json_unquotted_value $RESPONSE_MSG taskId)
 
-sleep 60
+sleep 100 
 get_download_status "$taskId" collection
 RESPONSE_HEADER=get-download-status-response-header.tmp
 RESPONSE_MSG=get-download-status-response-message.json.tmp
