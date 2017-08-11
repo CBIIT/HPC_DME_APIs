@@ -49,7 +49,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
     // Constants
     //---------------------------------------------------------------------//    
 	
-	// USAGE_SUMMARY.
+	////////////////////////// USAGE_SUMMARY.
 	private static final String SUM_OF_DATA_SQL =
 	"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, " + 
 	"max(to_number(a.meta_attr_value, '9999999999999999999')) maxSize, "+
@@ -76,7 +76,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		"inner join r_data_main c on b.object_id=c.data_id " + 
 		"where a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ?";
 
-	// USAGE_SUMMARY_DATE_RANGE.
+	/////////////////////////////// USAGE_SUMMARY_DATE_RANGE.
 	private static final String SUM_OF_DATA_BY_DATE_SQL =
 		"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, " + 
 		"max(to_number(a.meta_attr_value, '9999999999999999999')) maxSize, "+
@@ -109,7 +109,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			"inner join r_data_main c on b.object_id=c.data_id " + 
 			"where a.meta_attr_name = 'source_file_size' and CAST(a.create_ts as double precision) BETWEEN ? AND ? and to_number(meta_attr_value, '9999999999999999999') BETWEEN ? AND ?";
 
-	// USAGE_SUMMARY_BY_DOC.
+	/////////////////////////// USAGE_SUMMARY_BY_DOC.
 	private static final String SUM_OF_DATA_BY_DOC_SQL = 
 			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, max(to_number(a.meta_attr_value, '9999999999999999999')) maxSize, avg(to_number(a.meta_attr_value, '9999999999999999999')) avgSize FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name = 'source_file_size' and a.meta_id = b.meta_id and b.object_id=c.data_id and b.object_id in " +
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c  where a.meta_attr_name='registered_by_doc' and b.object_id=c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id = c.data_id)";
@@ -155,98 +155,178 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			"inner join public.r_data_main c on b.object_id = c.data_id "+
 			"where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=?)";
 	
-	// USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE.
+	/////////////////////////////////// USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE.
 	private static final String SUM_OF_DATA_BY_DOC_DATE_SQL = 
 			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, max(to_number(a.meta_attr_value, '9999999999999999999')) maxSize, avg(to_number(a.meta_attr_value, '9999999999999999999')) avgSize FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name = 'source_file_size' and b.meta_id = a.meta_id and c.data_id = b.object_id and b.object_id in " +
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by_doc' and b.object_id=c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id = c.data_id " +
 			") and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
 
-	private static final String LARGEST_FILE_BY_DOC_DATE_SQL = 
-			"SELECT max(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name = 'source_file_size' and a.meta_id = b.meta_id and b.object_id in " +
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
-
-	private static final String AVERAGE_FILE_BY_DOC_DATE_SQL = 
-			"SELECT avg(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name = 'source_file_size' and a.meta_id = b.meta_id and b.object_id in " +
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by_doc' and b.object_id=c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id = c.data_id " +
-			") and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
-
 	private static final String TOTAL_NUM_OF_USERS_BY_DOC_DATE_SQL = 
 			"SELECT count(*) totalUsers FROM public.\"HPC_USER\" where \"DOC\"=? and \"CREATED\" BETWEEN ?  AND ?";
-
 	
-	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_DOC_DATE_SQL = 
-			"SELECT count(distinct c.data_id) totalObjs FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where c.data_id = b.object_id and a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id and CAST(c.create_ts as double precision) BETWEEN ? AND ? "; 
+//	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_DOC_DATE_SQL = 
+//			"SELECT count(distinct c.data_id) totalObjs FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where c.data_id = b.object_id and a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id and CAST(c.create_ts as double precision) BETWEEN ? AND ? "; 
+	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_DOC_DATE_SQL =
+			"SELECT count(distinct a.data_id) totalObjs FROM public.r_data_main a " +
+			"inner join public.r_objt_metamap b on a.data_id=b.object_id "+
+			"inner join public.r_meta_main c on b.meta_id=c.meta_id "+
+			"where c.meta_attr_name='registered_by_doc' and c.meta_attr_value=? and CAST(c.create_ts as double precision) BETWEEN ? AND ? ";
 
+//	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_DOC_DATE_SQL = 
+//			"select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_meta_main a, r_coll_main b, r_objt_metamap c where b.coll_id=c.object_id and c.meta_id=a.meta_id and a.meta_attr_name='collection_type' and b.coll_id in"+
+//			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c where c.coll_id=b.object_id and a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id and CAST(b.create_ts as double precision) BETWEEN ? AND ? ) "+
+//			"group by a.meta_attr_value";
 	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_DOC_DATE_SQL = 
-			"select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_meta_main a, r_coll_main b, r_objt_metamap c where b.coll_id=c.object_id and c.meta_id=a.meta_id and a.meta_attr_name='collection_type' and b.coll_id in"+
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c where c.coll_id=b.object_id and a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id and CAST(b.create_ts as double precision) BETWEEN ? AND ? ) "+
+			"select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_meta_main a "+
+			"inner join r_objt_metamap b on a.meta_id=b.meta_id "+
+			"inner join r_coll_main c on b.object_id=c.coll_id "+
+			"where a.meta_attr_name='collection_type' and c.coll_id in "+
+			"(select distinct b.object_id from public.r_meta_main a "+
+			"inner join public.r_objt_metamap b on a.meta_id=b.meta_id "+
+			"inner join r_coll_main c on b.object_id=c.coll_id "+
+			"where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=?) and CAST(c.create_ts as double precision) BETWEEN ? AND ? "+ 
 			"group by a.meta_attr_value";
 
+//	private static final String TOTAL_NUM_OF_META_ATTRS_BY_DOC_DATE_SQL = 
+//			"SELECT count(a.meta_id) totalAttrs FROM public.r_meta_main a, public.r_objt_metamap b  where a.meta_id = b.meta_id and b.object_id in "+
+//			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c, public.r_coll_main d where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id and (c.data_id = b.object_id or d.coll_id = b.object_id)) and CAST(b.create_ts as double precision) BETWEEN ? AND ? ";
 	private static final String TOTAL_NUM_OF_META_ATTRS_BY_DOC_DATE_SQL = 
-			"SELECT count(a.meta_id) totalAttrs FROM public.r_meta_main a, public.r_objt_metamap b  where a.meta_id = b.meta_id and b.object_id in "+
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c, public.r_coll_main d where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? and a.meta_id=b.meta_id and (c.data_id = b.object_id or d.coll_id = b.object_id)) and CAST(b.create_ts as double precision) BETWEEN ? AND ? ";
+	"SELECT count(a.meta_id) totalAttrs FROM public.r_meta_main a inner join public.r_objt_metamap b  on a.meta_id = b.meta_id where b.object_id in "+ 
+			"(select distinct b.object_id from public.r_meta_main a "+
+			"inner join public.r_objt_metamap b on  a.meta_id=b.meta_id "+
+			"inner join public.r_data_main c on b.object_id = c.data_id "+
+			"where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=? "+
+			"union "+
+			"select distinct b.object_id from public.r_meta_main a " +
+			"inner join public.r_objt_metamap b on  a.meta_id=b.meta_id " +
+			"inner join public.r_coll_main d on b.object_id = d.coll_id " +
+			"where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=?) and CAST(b.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String FILE_SIZE_RANGE_BY_DOC_DATE_SQL = 
-			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c  where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and c.data_id = b.object_id and b.object_id in " +
-					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c  where a.meta_attr_name='registered_by_doc' and b.object_id = c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
+			"SELECT count(*) FROM public.r_meta_main a "+
+			"inner join public.r_objt_metamap b on a.meta_id = b.meta_id  "+
+			"inner join public.r_data_main c on b.object_id = c.data_id  "+
+			"where a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ?  and b.object_id in "+ 
+			"(select distinct b.object_id from public.r_meta_main a "+
+			"inner join public.r_objt_metamap b on  a.meta_id=b.meta_id "+
+			"inner join public.r_data_main c on b.object_id = c.data_id "+
+			"where a.meta_attr_name='registered_by_doc' and a.meta_attr_value=?) and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
+//	private static final String FILE_SIZE_RANGE_BY_DOC_DATE_SQL = 
+//			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c  where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and c.data_id = b.object_id and b.object_id in " +
+//					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c  where a.meta_attr_name='registered_by_doc' and b.object_id = c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
 	
-	// USAGE_SUMMARY_BY_USER. 
+	////////////////////////////////////// USAGE_SUMMARY_BY_USER. 
 	private static final String SUM_OF_DATA_BY_USER_SQL =
 			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, max(to_number(a.meta_attr_value, '9999999999999999999')) maxSize, avg(to_number(a.meta_attr_value, '9999999999999999999')) avgSize FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name = 'source_file_size' and a.meta_id = b.meta_id and b.object_id=c.data_id and b.object_id in " +
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c  where a.meta_attr_name='registered_by' and b.object_id=c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id = c.data_id)";
 
-	private static final String LARGEST_FILE_BY_USER_SQL = 
-			"SELECT max(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name = 'source_file_size' and a.meta_id = b.meta_id and b.object_id = c.data_id and b.object_id in " +
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id)";
+//	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_USER_SQL = 
+//			"SELECT count(distinct c.data_id) totalObjs FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where c.data_id = b.object_id and a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id"; 
+	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_USER_SQL =
+			"SELECT count(distinct a.data_id) totalObjs FROM public.r_data_main a " +
+			"inner join public.r_objt_metamap b on a.data_id=b.object_id "+
+			"inner join public.r_meta_main c on b.meta_id=c.meta_id "+
+			"where c.meta_attr_name='registered_by' and c.meta_attr_value=?";
 
-	private static final String AVERAGE_FILE_BY_USER_SQL = 
-			"SELECT avg(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name = 'source_file_size' and a.meta_id=b.meta_id and b.object_id=c.data_id and b.object_id in " +
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b,  public.r_data_main c where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id=c.data_id)";
-
-	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_USER_SQL = 
-			"SELECT count(distinct c.data_id) totalObjs FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where c.data_id = b.object_id and a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id"; 
-
+//	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_USER_SQL = 
+//			"select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_meta_main a, r_coll_main b, r_objt_metamap c where b.coll_id=c.object_id and c.meta_id=a.meta_id and a.meta_attr_name='collection_type' and b.coll_id in"+
+//			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c where c.coll_id=b.object_id and a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id) "+
+//			"group by a.meta_attr_value";
 	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_USER_SQL = 
-			"select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_meta_main a, r_coll_main b, r_objt_metamap c where b.coll_id=c.object_id and c.meta_id=a.meta_id and a.meta_attr_name='collection_type' and b.coll_id in"+
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c where c.coll_id=b.object_id and a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id) "+
+			"select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_meta_main a "+
+			"inner join r_objt_metamap b on a.meta_id=b.meta_id "+
+			"inner join r_coll_main c on b.object_id=c.coll_id "+
+			"where a.meta_attr_name='collection_type' and c.coll_id in "+
+			"(select distinct b.object_id from public.r_meta_main a "+
+			"inner join public.r_objt_metamap b on a.meta_id=b.meta_id "+
+			"inner join r_coll_main c on b.object_id=c.coll_id "+
+			"where a.meta_attr_name='registered_by' and a.meta_attr_value=?) "+ 
 			"group by a.meta_attr_value";
 
+//	private static final String TOTAL_NUM_OF_META_ATTRS_BY_USER_SQL = 
+//			"SELECT count(a.meta_id) totalAttrs FROM public.r_meta_main a, public.r_objt_metamap b  where a.meta_id = b.meta_id and b.object_id in "+
+//			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c, public.r_coll_main d where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id  and (c.data_id = b.object_id or d.coll_id = b.object_id)) ";
 	private static final String TOTAL_NUM_OF_META_ATTRS_BY_USER_SQL = 
-			"SELECT count(a.meta_id) totalAttrs FROM public.r_meta_main a, public.r_objt_metamap b  where a.meta_id = b.meta_id and b.object_id in "+
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c, public.r_coll_main d where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id  and (c.data_id = b.object_id or d.coll_id = b.object_id)) ";
+	"SELECT count(a.meta_id) totalAttrs FROM public.r_meta_main a inner join public.r_objt_metamap b  on a.meta_id = b.meta_id where b.object_id in "+ 
+			"(select distinct b.object_id from public.r_meta_main a "+
+			"inner join public.r_objt_metamap b on  a.meta_id=b.meta_id "+
+			"inner join public.r_data_main c on b.object_id = c.data_id "+
+			"where a.meta_attr_name='registered_by' and a.meta_attr_value=? "+
+			"union "+
+			"select distinct b.object_id from public.r_meta_main a " +
+			"inner join public.r_objt_metamap b on  a.meta_id=b.meta_id " +
+			"inner join public.r_coll_main d on b.object_id = d.coll_id " +
+			"where a.meta_attr_name='registered_by' and a.meta_attr_value=?)";
 
+//	private static final String FILE_SIZE_RANGE_BY_USER_SQL = 
+//			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and b.object_id in " +
+//					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by' and b.object_id = c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id)";
 	private static final String FILE_SIZE_RANGE_BY_USER_SQL = 
-			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and b.object_id in " +
-					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by' and b.object_id = c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id)";
+			"SELECT count(*) FROM public.r_meta_main a "+
+			"inner join public.r_objt_metamap b on a.meta_id = b.meta_id  "+
+			"inner join public.r_data_main c on b.object_id = c.data_id  "+
+			"where a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ?  and b.object_id in "+ 
+			"(select distinct b.object_id from public.r_meta_main a "+
+			"inner join public.r_objt_metamap b on  a.meta_id=b.meta_id "+
+			"inner join public.r_data_main c on b.object_id = c.data_id "+
+			"where a.meta_attr_name='registered_by' and a.meta_attr_value=?)";
 	
-	// USAGE_SUMMARY_BY_USER_BY_DATE_RANGE.
+	//////////////////////////////////// USAGE_SUMMARY_BY_USER_BY_DATE_RANGE.
 	private static final String SUM_OF_DATA_BY_USER_DATE_SQL =
 			"SELECT sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, max(to_number(a.meta_attr_value, '9999999999999999999')) maxSize, avg(to_number(a.meta_attr_value, '9999999999999999999')) avgSize FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name = 'source_file_size' and a.meta_id = b.meta_id and b.object_id=c.data_id and b.object_id in " +
 			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c  where a.meta_attr_name='registered_by' and b.object_id=c.data_id and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id = c.data_id) and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
 
-	private static final String LARGEST_FILE_BY_USER_DATE_SQL = 
-			"SELECT max(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name = 'source_file_size' and a.meta_id = b.meta_id and b.object_id = c.data_id and b.object_id in " +
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
+//	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_USER_DATE_SQL = 
+//			"SELECT count(distinct c.data_id) totalObjs FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where c.data_id = b.object_id and a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id and CAST(c.create_ts as double precision) BETWEEN ? AND ? "; 
+	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_USER_DATE_SQL =
+			"SELECT count(distinct a.data_id) totalObjs FROM public.r_data_main a " +
+			"inner join public.r_objt_metamap b on a.data_id=b.object_id "+
+			"inner join public.r_meta_main c on b.meta_id=c.meta_id "+
+			"where c.meta_attr_name='registered_by' and c.meta_attr_value=? and CAST(c.create_ts as double precision) BETWEEN ? AND ? ";
 
-	private static final String AVERAGE_FILE_BY_USER_DATE_SQL = 
-			"SELECT avg(to_number(a.meta_attr_value, '9999999999999999999')) totalSize FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name = 'source_file_size' and a.meta_id=b.meta_id and b.object_id=c.data_id and b.object_id  in " +
-			"(select b.object_id from public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id and b.object_id=c.data_id) and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
-
-	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_USER_DATE_SQL = 
-			"SELECT count(distinct c.data_id) totalObjs FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where c.data_id = b.object_id and a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id and CAST(c.create_ts as double precision) BETWEEN ? AND ? "; 
-
+//	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_USER_DATE_SQL = 
+//			"select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_meta_main a, r_coll_main b, r_objt_metamap c where b.coll_id=c.object_id and c.meta_id=a.meta_id and a.meta_attr_name='collection_type' and b.coll_id in"+
+//			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c where c.coll_id=b.object_id and a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(b.create_ts as double precision) BETWEEN ? AND ? "+
+//			"group by a.meta_attr_value";
 	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_USER_DATE_SQL = 
-			"select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_meta_main a, r_coll_main b, r_objt_metamap c where b.coll_id=c.object_id and c.meta_id=a.meta_id and a.meta_attr_name='collection_type' and b.coll_id in"+
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c where c.coll_id=b.object_id and a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id) and CAST(b.create_ts as double precision) BETWEEN ? AND ? "+
+			"select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_meta_main a "+
+			"inner join r_objt_metamap b on a.meta_id=b.meta_id "+
+			"inner join r_coll_main c on b.object_id=c.coll_id "+
+			"where a.meta_attr_name='collection_type' and c.coll_id in "+
+			"(select distinct b.object_id from public.r_meta_main a "+
+			"inner join public.r_objt_metamap b on a.meta_id=b.meta_id "+
+			"inner join r_coll_main c on b.object_id=c.coll_id "+
+			"where a.meta_attr_name='registered_by' and a.meta_attr_value=?) and CAST(c.create_ts as double precision) BETWEEN ? AND ? "+ 
 			"group by a.meta_attr_value";
 
+//	private static final String TOTAL_NUM_OF_META_ATTRS_BY_USER_DATE_SQL = 
+//			"SELECT count(a.meta_id) totalAttrs FROM public.r_meta_main a, public.r_objt_metamap b  where a.meta_id = b.meta_id and b.object_id in "+
+//			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c, public.r_coll_main d  where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id  and (c.data_id = b.object_id or d.coll_id = b.object_id)) and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 	private static final String TOTAL_NUM_OF_META_ATTRS_BY_USER_DATE_SQL = 
-			"SELECT count(a.meta_id) totalAttrs FROM public.r_meta_main a, public.r_objt_metamap b  where a.meta_id = b.meta_id and b.object_id in "+
-			"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c, public.r_coll_main d  where a.meta_attr_name='registered_by' and a.meta_attr_value=? and a.meta_id=b.meta_id  and (c.data_id = b.object_id or d.coll_id = b.object_id)) and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
+	"SELECT count(a.meta_id) totalAttrs FROM public.r_meta_main a inner join public.r_objt_metamap b  on a.meta_id = b.meta_id where b.object_id in "+ 
+			"(select distinct b.object_id from public.r_meta_main a "+
+			"inner join public.r_objt_metamap b on  a.meta_id=b.meta_id "+
+			"inner join public.r_data_main c on b.object_id = c.data_id "+
+			"where a.meta_attr_name='registered_by' and a.meta_attr_value=? "+
+			"union "+
+			"select distinct b.object_id from public.r_meta_main a " +
+			"inner join public.r_objt_metamap b on  a.meta_id=b.meta_id " +
+			"inner join public.r_coll_main d on b.object_id = d.coll_id " +
+			"where a.meta_attr_name='registered_by' and a.meta_attr_value=?) and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String FILE_SIZE_RANGE_BY_USER_DATE_SQL = 
-			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and c.data_id = b.object_id and b.object_id in " +
-					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by' and a.meta_attr_value=? and b.object_id = c.data_id and a.meta_id=b.meta_id ) and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
+			"SELECT count(*) FROM public.r_meta_main a "+
+			"inner join public.r_objt_metamap b on a.meta_id = b.meta_id  "+
+			"inner join public.r_data_main c on b.object_id = c.data_id  "+
+			"where a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ?  and b.object_id in "+ 
+			"(select distinct b.object_id from public.r_meta_main a "+
+			"inner join public.r_objt_metamap b on  a.meta_id=b.meta_id "+
+			"inner join public.r_data_main c on b.object_id = c.data_id "+
+			"where a.meta_attr_name='registered_by' and a.meta_attr_value=?) and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
+
+//	private static final String FILE_SIZE_RANGE_BY_USER_DATE_SQL = 
+//			"SELECT count(*) FROM public.r_meta_main a, public.r_objt_metamap b, public.r_data_main c where a.meta_id = b.meta_id and a.meta_attr_name = 'source_file_size' and to_number(a.meta_attr_value, '9999999999999999999') BETWEEN ? AND ? and c.data_id = b.object_id and b.object_id in " +
+//					"(select distinct b.object_id from public.r_meta_main a, public.r_objt_metamap b, r_data_main c where a.meta_attr_name='registered_by' and a.meta_attr_value=? and b.object_id = c.data_id and a.meta_id=b.meta_id ) and CAST(c.create_ts as double precision) BETWEEN ? AND ?";
 	
 	private static final String USERS_SQL = "select \"USER_ID\" from public.\"HPC_USER\"";
 	
@@ -324,11 +404,20 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 		if(totals != null)
 		{
 			Iterator values = totals.values().iterator();
-			Double totalSize = new Double(values.next().toString());
+			Double totalSize = 0d;
+			Double maxSize = 0d;
+			Double avgSize = 0d;
+			Object value1 = values.next();
+			Object value2 = values.next();
+			Object value3 = values.next();
+			if(value1 != null)
+			totalSize = new Double(value1.toString());
 			returnVal[0] = humanReadableByteCount(totalSize, false);
-			Double maxSize = new Double(values.next().toString());
+			if(value2 != null)
+				maxSize = new Double(value2.toString());
 			returnVal[1] = humanReadableByteCount(maxSize, false);
-			Double avgSize = new Double(values.next().toString());
+			if(value3 != null)
+				avgSize = new Double(value3.toString());
 			returnVal[2] = humanReadableByteCount(avgSize, false);
 			
 		}
@@ -438,12 +527,33 @@ public class HpcReportsDAOImpl implements HpcReportsDAO
 			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_DOC_SQL, newDoc, Long.class);
 		}
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
-			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_DOC_DATE_SQL, docDateArgs, Long.class);
+		{
+			Object[] newdocDateArgs = new Object[4];
+			newdocDateArgs[0] = docDateArgs[0];
+			newdocDateArgs[1] = docDateArgs[0];
+			newdocDateArgs[2] = docDateArgs[1];
+			newdocDateArgs[3] = docDateArgs[2];
+
+			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_DOC_DATE_SQL, newdocDateArgs, Long.class);
+		}
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER))
-			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_USER_SQL, userArg, Long.class);
+		{
+			String[] newUser = new String[2];
+			newUser[0] = userArg[0];
+			newUser[1] = userArg[0];
+
+			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_USER_SQL, newUser, Long.class);
+		}
 		else if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE))
-			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_USER_DATE_SQL, userDateArgs, Long.class);
-		
+		{
+			Object[] newuserDateArgs = new Object[4];
+			newuserDateArgs[0] = userDateArgs[0];
+			newuserDateArgs[1] = userDateArgs[0];
+			newuserDateArgs[2] = userDateArgs[1];
+			newuserDateArgs[3] = userDateArgs[2];
+
+			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_USER_DATE_SQL, newuserDateArgs, Long.class);
+		}
 		if(metaAttrCount != null)
 			return metaAttrCount.toString();
 		else return "0";
