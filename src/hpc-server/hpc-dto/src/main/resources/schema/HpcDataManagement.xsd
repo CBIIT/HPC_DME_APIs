@@ -173,10 +173,21 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
+	<xsd:element name="HpcDataObjectsDownloadRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="dataObjectPaths" type="xsd:string" 
+			                 minOccurs="0" maxOccurs="unbounded" />
+			    <xsd:element name="destination"
+				             type="hpc-domain-datatransfer:HpcFileLocation" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
 	<xsd:element name="HpcDataObjectDownloadResponseDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-			    <xsd:element name="taskId" type="xsd:int" minOccurs="0" />
+			    <xsd:element name="taskId" type="xsd:string" />
 				<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
 			</xsd:sequence>
@@ -202,7 +213,7 @@
 	<xsd:element name="HpcCollectionDownloadResponseDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-			    <xsd:element name="taskId" type="xsd:int" />
+			    <xsd:element name="taskId" type="xsd:string" />
 			    <xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			</xsd:sequence>
 		</xsd:complexType>

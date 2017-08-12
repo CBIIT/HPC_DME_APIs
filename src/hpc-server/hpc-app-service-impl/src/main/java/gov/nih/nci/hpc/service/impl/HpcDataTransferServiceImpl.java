@@ -313,7 +313,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	}
 	
 	@Override
-	public HpcDownloadTaskStatus getDownloadTaskStatus(int taskId, HpcDownloadTaskType taskType) 
+	public HpcDownloadTaskStatus getDownloadTaskStatus(String taskId, HpcDownloadTaskType taskType) 
 			                                          throws HpcException
 	{
 		if(taskType == null) {
@@ -404,6 +404,32 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		downloadTask.setDestinationLocation(destinationLocation);
 		downloadTask.setPath(path);
 		downloadTask.setUserId(userId);
+		downloadTask.setType(HpcDownloadTaskType.COLLECTION);
+		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
+		
+		// Persist the request.
+		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
+		
+		return downloadTask;
+    }
+	
+	@Override
+	public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPath,
+                                                         HpcFileLocation destinationLocation,
+                                                         String userId, String doc)
+                                                        throws HpcException
+    {
+		// Validate the requested destination location.
+		validateDownloadDestinationFileLocation(HpcDataTransferType.GLOBUS, destinationLocation, 
+				                                false, doc);
+		
+		// Create a new collection download task.
+		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
+		downloadTask.setCreated(Calendar.getInstance());
+		downloadTask.setDestinationLocation(destinationLocation);
+		downloadTask.getDataObjectPaths().addAll(dataObjectPath);
+		downloadTask.setUserId(userId);
+		downloadTask.setType(HpcDownloadTaskType.DATA_OBJECT_LIST);
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		
 		// Persist the request.

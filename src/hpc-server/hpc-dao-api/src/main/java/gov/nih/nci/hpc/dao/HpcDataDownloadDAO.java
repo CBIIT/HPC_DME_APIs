@@ -48,7 +48,7 @@ public interface HpcDataDownloadDAO
      * @return The download task object, or null if not found.
      * @throws HpcException on database error.
      */
-    public HpcDataObjectDownloadTask getDataObjectDownloadTask(int id)  throws HpcException;
+    public HpcDataObjectDownloadTask getDataObjectDownloadTask(String id)  throws HpcException;
     
     /**
      * Delete a data object download task.
@@ -56,7 +56,7 @@ public interface HpcDataDownloadDAO
      * @param id The data object download task ID.
      * @throws HpcException on database error.
      */
-    public void deleteDataObjectDownloadTask(int id) throws HpcException;
+    public void deleteDataObjectDownloadTask(String id) throws HpcException;
     
     /**
      * Get data object download tasks. 
@@ -85,7 +85,7 @@ public interface HpcDataDownloadDAO
      * @return The download task result object, or null if not found.
      * @throws HpcException on database error.
      */
-    public HpcDownloadTaskResult getDownloadTaskResult(int id, HpcDownloadTaskType taskType)  
+    public HpcDownloadTaskResult getDownloadTaskResult(String id, HpcDownloadTaskType taskType)  
     		                                          throws HpcException;
     
     /**
@@ -106,7 +106,7 @@ public interface HpcDataDownloadDAO
      * @return The download task object, or null if not found.
      * @throws HpcException on database error.
      */
-    public HpcCollectionDownloadTask getCollectionDownloadTask(int id)  throws HpcException;
+    public HpcCollectionDownloadTask getCollectionDownloadTask(String id)  throws HpcException;
     
     /**
      * Delete a collection download task.
@@ -114,7 +114,7 @@ public interface HpcDataDownloadDAO
      * @param id The collection download task ID.
      * @throws HpcException on database error.
      */
-    public void deleteCollectionDownloadTask(int id) throws HpcException;
+    public void deleteCollectionDownloadTask(String id) throws HpcException;
     
     /**
      * Get collection download requests. 
