@@ -108,7 +108,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		   "insert into public.\"HPC_COLLECTION_DOWNLOAD_TASK\" ( " +
                    "\"ID\", \"USER_ID\", \"PATH\", \"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " + 
 				   "\"DESTINATION_LOCATION_FILE_ID\", \"ITEMS\", \"STATUS\", \"TYPE\", " + 
-                   "\"DATA_OBJECT_PATH\", \"CREATED\") " + 
+                   "\"DATA_OBJECT_PATHS\", \"CREATED\") " + 
                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
            "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
                         "\"PATH\"=excluded.\"PATH\", " + 
@@ -117,7 +117,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
                         "\"ITEMS\"=excluded.\"ITEMS\", " +
                         "\"STATUS\"=excluded.\"STATUS\", " +
                         "\"TYPE\"=excluded.\"TYPE\", " +
-                        "\"DATA_OBJECT_PATH\"=excluded.\"DATA_OBJECT_PATH\", " +
+                        "\"DATA_OBJECT_PATHS\"=excluded.\"DATA_OBJECT_PATHS\", " +
                         "\"CREATED\"=excluded.\"CREATED\"";
 	
 	public static final String GET_COLLECTION_DOWNLOAD_TASK_SQL = 
