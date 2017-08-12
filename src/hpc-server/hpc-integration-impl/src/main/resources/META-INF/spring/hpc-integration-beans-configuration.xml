@@ -29,7 +29,8 @@
         <constructor-arg index="0" value="${hpc.integration.globus.retry.maxAttempts}" />
         <constructor-arg index="1">
             <map>
-                <entry key="gov.nih.nci.hpc.exception.HpcException" value="true" />
+                <entry key="java.lang.RuntimeException" value="true" />
+                <entry key="java.lang.Exception" value="true" />
             </map>
         </constructor-arg>
     </bean>
