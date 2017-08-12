@@ -472,10 +472,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         	 pathAttributes.setExists(true);
         	 pathAttributes.setIsDirectory(true);
         	 pathAttributes.setSize(getSize ? getDirectorySize(dirContent, client) : -1);
-        	 
         	
         } catch(APIError error) {
-        	logger.error("ERAN 1");
         	    if(error.statusCode == 502) {
         	       if(error.code.equals(NOT_DIRECTORY_GLOBUS_CODE)) {
         	          // Path exists as a single file
@@ -494,7 +492,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         	    // else path was not found. 
         	    
         } catch(Exception e) {
-        	logger.error("ERAN 2");
 	            throw new HpcException("[GLOBUS] Failed to get path attributes: " + fileLocation, 
        		                           HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
         }
@@ -618,7 +615,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		{
 			String resource = BaseTransferAPIClient.endpointPath(dirLocation.getFileContainerId()) + "/ls";
 		 	return client.getResult(resource, params);
-				
 		});
     }
 }
