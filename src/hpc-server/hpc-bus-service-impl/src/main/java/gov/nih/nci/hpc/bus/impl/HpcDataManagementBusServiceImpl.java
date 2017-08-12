@@ -60,6 +60,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
@@ -253,9 +254,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      			                  HpcErrorType.INVALID_REQUEST_INPUT);	
      	}
     	
-    	// Get the collection.
-    	HpcCollection collection = dataManagementService.getCollection(path, true);
-    	if(collection == null) {
+    	// Validate collection exists.
+    	if(dataManagementService.getCollection(path, true) == null) {
     	   throw new HpcException("Collection doesn't exist: " + path,
 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
       	}
@@ -279,7 +279,65 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(Integer taskId) 
+	public HpcCollectionDownloadResponseDTO downloadDataObjects(
+			                                        HpcDataObjectsDownloadRequestDTO downloadRequest)
+                                                    throws HpcException
+    {
+    	// Input validation.
+    	if(downloadRequest == null) {
+    	   throw new HpcException("Null download request",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	if(downloadRequest.getDataObjectPaths().isEmpty()) {
+      	   throw new HpcException("No data object paths",
+      			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+      	}
+    	
+    	if(downloadRequest.getDestination() == null) {
+     	   throw new HpcException("Null destination in download request",
+     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+     	}
+    	
+    	// Validate all data object paths requested exist and from the same DOC.
+    	String doc = null;
+    	for(String path : downloadRequest.getDataObjectPaths()) {
+    	    if(dataManagementService.getDataObject(path) == null) {
+    	       throw new HpcException("Data object doesn't exist: " + path,
+	                                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	    }
+    	    
+    	    // Get the System generated metadata.
+        	HpcSystemGeneratedMetadata metadata = 
+        			 metadataService.getDataObjectSystemGeneratedMetadata(path);
+        	if(doc == null) {
+        	   doc = metadata.getRegistrarDOC();
+        	} else {
+        		    if(!doc.equals(metadata.getRegistrarDOC())) {
+        		    	throw new HpcException("Download files from different DOC not allowed: " + 
+        		                               doc + "," + metadata.getRegistrarDOC(),
+                                HpcErrorType.INVALID_REQUEST_INPUT);	
+        		    }
+        	}
+      	}
+
+    	// Submit a data objects download task.
+    	HpcCollectionDownloadTask collectionDownloadTask =
+    	   dataTransferService.downloadDataObjects(downloadRequest.getDataObjectPaths(), 
+    			                                   downloadRequest.getDestination(), 
+    		   	                                   securityService.getRequestInvoker().getNciAccount().getUserId(),
+    		   	                                   doc);
+    	
+    	// Create and return a DAO with the request receipt.
+    	HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
+    	responseDTO.setTaskId(collectionDownloadTask.getId());
+    	responseDTO.setDestinationLocation(collectionDownloadTask.getDestinationLocation());
+    	
+    	return responseDTO;
+    }
+    
+    @Override
+    public HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(String taskId) 
                                                                      throws HpcException
     {
     	// Input validation.
@@ -573,7 +631,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
     
     @Override
-    public HpcDataObjectDownloadStatusDTO getDataObjectDownloadStatus(Integer taskId) 
+    public HpcDataObjectDownloadStatusDTO getDataObjectDownloadStatus(String taskId) 
                                                                      throws HpcException
     {
     	// Input validation.
@@ -984,7 +1042,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	private HpcDataObjectDownloadResponseDTO toDownloadResponseDTO(
 			                                           HpcFileLocation destinationLocation,
 			                                           File destinationFile,
-			                                           Integer taskId)
+			                                           String taskId)
 	{
 		// Construct and return a DTO
 		HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
