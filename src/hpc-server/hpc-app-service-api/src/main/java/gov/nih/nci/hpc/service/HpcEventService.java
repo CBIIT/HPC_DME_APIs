@@ -66,7 +66,7 @@ public interface HpcEventService
      */
     public void addDataTransferDownloadCompletedEvent(String userId, String path, 
     		                                          HpcDownloadTaskType downloadTaskType,
-    		                                          Integer downloadTaskId,
+    		                                          String downloadTaskId,
     		                                          HpcFileLocation destinationLocation, 
     		                                          Calendar dataTransferCompleted) 
     		                                         throws HpcException;
@@ -85,7 +85,7 @@ public interface HpcEventService
      */
     public void addDataTransferDownloadFailedEvent(String userId, String path, 
     		                                       HpcDownloadTaskType downloadTaskType,
-                                                   Integer downloadTaskId,
+                                                   String downloadTaskId,
                                                    HpcFileLocation destinationLocation, 
                                                    Calendar dataTransferCompleted, String errorMessage) 
     		                                      throws HpcException;

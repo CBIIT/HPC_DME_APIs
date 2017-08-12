@@ -695,7 +695,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      */
 	private void addDataTransferDownloadEvent(String userId, String path, 
 			                                  HpcDownloadTaskType downloadTaskType,
-                                              Integer downloadTaskId,
+                                              String downloadTaskId,
 			                                  boolean result, String message,
 			                                  HpcFileLocation destinationLocation, 
 			                                  Calendar dataTransferCompleted) 

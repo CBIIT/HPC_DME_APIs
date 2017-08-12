@@ -38,6 +38,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
@@ -165,7 +166,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getCollectionDownloadStatus(Integer taskId)
+    public Response getCollectionDownloadStatus(String taskId)
     {
     	HpcCollectionDownloadStatusDTO downloadStatus = null;
 		try {
@@ -280,7 +281,21 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getDataObjectDownloadStatus(Integer taskId)
+	public Response downloadDataObjects(HpcDataObjectsDownloadRequestDTO downloadRequest)
+    {
+    	HpcCollectionDownloadResponseDTO downloadResponse = null;
+		try {
+			 downloadResponse = dataManagementBusService.downloadDataObjects(downloadRequest);
+
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+
+		return okResponse(downloadResponse, false);
+    }
+    
+    @Override
+    public Response getDataObjectDownloadStatus(String taskId)
     {
     	HpcDataObjectDownloadStatusDTO downloadStatus = null;
 		try {
