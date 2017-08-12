@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
@@ -230,9 +231,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
     	collectionDownloadTask.setCreated(created);
     	
 		// Extract the data objects paths.
-    	Object obj = rs.getArray("DATA_OBJECT_PATHS").getArray();
-    	if(obj != null) {
-		   String[] dataObjectPaths = (String[]) obj;
+    	Array sqlArray = rs.getArray("DATA_OBJECT_PATHS");
+    	if(sqlArray != null) {
+		   String[] dataObjectPaths = (String[]) sqlArray.getArray();
 		   int dataObjectPathsSize = dataObjectPaths.length;
 		   for(int i = 0; i < dataObjectPathsSize; i++) {
 			   collectionDownloadTask.getDataObjectPaths().add(dataObjectPaths[i]);
