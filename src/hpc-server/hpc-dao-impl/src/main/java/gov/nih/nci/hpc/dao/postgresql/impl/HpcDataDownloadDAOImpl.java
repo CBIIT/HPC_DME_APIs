@@ -230,8 +230,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
     	collectionDownloadTask.setCreated(created);
     	
 		// Extract the data objects paths.
-		String[] dataObjectPaths = (String[]) rs.getArray("DATA_OBJECT_PATHS").getArray();
-		if(dataObjectPaths != null) {
+    	Object obj = rs.getArray("DATA_OBJECT_PATHS").getArray();
+    	if(obj != null) {
+		   String[] dataObjectPaths = (String[]) obj;
 		   int dataObjectPathsSize = dataObjectPaths.length;
 		   for(int i = 0; i < dataObjectPathsSize; i++) {
 			   collectionDownloadTask.getDataObjectPaths().add(dataObjectPaths[i]);
