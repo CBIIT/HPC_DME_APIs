@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
 import java.sql.Array;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
@@ -390,6 +391,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 				collectionDownloadTask.setId(UUID.randomUUID().toString());
 			 }
 			 
+			 Array sqlArray = null;
+			 if(!collectionDownloadTask.getDataObjectPaths().isEmpty()) {
+			    sqlArray = jdbcTemplate.getDataSource().getConnection().createArrayOf(
+			    		       "text", collectionDownloadTask.getDataObjectPaths().toArray());
+			 }
+			 
 		     jdbcTemplate.update(UPSERT_COLLECTION_DOWNLOAD_TASK_SQL,
 					    		 collectionDownloadTask.getId(),
 					    		 collectionDownloadTask.getUserId(),
@@ -399,14 +406,16 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 					    		 toJSON(collectionDownloadTask.getItems()),
 					    		 collectionDownloadTask.getStatus().value(),
 					    		 collectionDownloadTask.getType().value(),
-					    		 collectionDownloadTask.getDataObjectPaths().isEmpty() ? null :
-					    			                    collectionDownloadTask.getDataObjectPaths().toArray(),
+					    		 sqlArray,
 					    		 collectionDownloadTask.getCreated());
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a collection download request: " + e.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
-		}
+		} catch(SQLException se) {
+		        throw new HpcException("Failed to upsert a collection download request: " + se.getMessage(),
+		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, se);
+}
     }
 	
 	@Override 
