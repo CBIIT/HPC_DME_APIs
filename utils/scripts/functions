@@ -504,7 +504,7 @@ function dm_register_directory {
          ;;
     
        Linux)
-        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
+        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -Djavax.net.debug=all -jar $jar_path  --cmdfile $command_file
          ;;
     
        CYGWIN*|MINGW32*|MSYS*)
