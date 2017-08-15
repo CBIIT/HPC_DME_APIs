@@ -25,6 +25,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
@@ -93,9 +94,9 @@ public interface HpcDataManagementBusService
      * @return Download Response DTO.
      * @throws HpcException on service failure.
      */
-	public HpcCollectionDownloadResponseDTO downloadDataObjects(
-			                                        HpcDataObjectsDownloadRequestDTO downloadRequest)
-			                                        throws HpcException;
+	public HpcDataObjectsDownloadResponseDTO downloadDataObjects(
+			                                         HpcDataObjectsDownloadRequestDTO downloadRequest)
+			                                         throws HpcException;
 	
     /**
      * Get collection download task status.
@@ -105,6 +106,15 @@ public interface HpcDataManagementBusService
      */
 	public HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(String taskId) 
 			                                                         throws HpcException;
+	
+    /**
+     * Get data objects download task status.
+     *
+     * @param taskId The download task ID.
+     * @return A collection download status DTO. Null if the task could not be found.
+     */
+	public HpcCollectionDownloadStatusDTO getDataObjectsDownloadStatus(String taskId) 
+			                                                           throws HpcException;
 	
     /**
      * Set collection permissions.

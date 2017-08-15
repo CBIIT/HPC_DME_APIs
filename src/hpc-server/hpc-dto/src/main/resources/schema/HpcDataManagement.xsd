@@ -173,17 +173,6 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
-	<xsd:element name="HpcDataObjectsDownloadRequestDTO">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="dataObjectPaths" type="xsd:string" 
-			                 minOccurs="0" maxOccurs="unbounded" />
-			    <xsd:element name="destination"
-				             type="hpc-domain-datatransfer:HpcFileLocation" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>	
-	
 	<xsd:element name="HpcDataObjectDownloadResponseDTO">
 		<xsd:complexType>
 			<xsd:sequence>
@@ -225,6 +214,8 @@
 				<xsd:element name="inProgress" type="xsd:boolean" />
 				<xsd:element name="taskStatus" type="hpc-domain-datatransfer:HpcCollectionDownloadTaskStatus" />
 			    <xsd:element name="path" type="xsd:string" />
+			    <xsd:element name="dataObjectPaths" type="xsd:string" 
+			                 minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="result" type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="completedItems" type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem" 
@@ -239,6 +230,26 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
+	
+	<xsd:element name="HpcDataObjectsDownloadRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="dataObjectPaths" type="xsd:string" 
+			                 minOccurs="0" maxOccurs="unbounded" />
+			    <xsd:element name="destination"
+				             type="hpc-domain-datatransfer:HpcFileLocation" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
+	<xsd:element name="HpcDataObjectsDownloadResponseDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+			    <xsd:element name="taskId" type="xsd:string" />
+			    <xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
 	
 	<!--  Data Object Delete Response DTO -->
 	<xsd:element name="HpcDataObjectDeleteResponseDTO">
