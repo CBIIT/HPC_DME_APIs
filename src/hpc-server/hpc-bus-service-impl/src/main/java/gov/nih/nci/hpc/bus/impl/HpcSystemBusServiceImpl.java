@@ -312,19 +312,27 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	for(HpcCollectionDownloadTask downloadTask :
     		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED)) {
     		try {
-    			 // Get the collection to be downloaded.
-        		 HpcCollection collection = dataManagementService.getCollection(downloadTask.getPath(), true);
-        		 if(collection == null) {
-        			throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
-        		 }
+    			 List<HpcCollectionDownloadTaskItem> downloadItems = null;
+    			 
+    			 if(downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
+    			    // Get the collection to be downloaded.
+        		    HpcCollection collection = dataManagementService.getCollection(downloadTask.getPath(), true);
+        		    if(collection == null) {
+        			   throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
+        		    }
         		 
-        		 // Download all files under this collection.
-        		 List<HpcCollectionDownloadTaskItem> downloadItems = 
-        			  downloadCollection(collection, downloadTask.getDestinationLocation(), 
-			                             downloadTask.getUserId());
-        		 
+        		    // Download all files under this collection.
+        		    downloadItems = downloadCollection(collection, downloadTask.getDestinationLocation(), 
+			                                           downloadTask.getUserId());
+        		    
+    			 } else if(downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
+    				       downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(), 
+    				    		                               downloadTask.getDestinationLocation(), 
+                                                               downloadTask.getUserId());
+    			 }
+    			 
         		 // Verify data objects found under this collection.
-    			 if(downloadItems.isEmpty()) {
+    			 if(downloadItems == null || downloadItems.isEmpty()) {
     				// No data objects found under this collection.
     				throw new HpcException("No data objects found under collection",
 				                           HpcErrorType.INVALID_REQUEST_INPUT);
@@ -733,36 +741,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		
 		// Iterate through the data objects in the collection and download them.
 		for(HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
-			// Calculate the destination location for this data object.
-			String dataObjectPath = dataObjectEntry.getPath();
-			HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
-			dataObjectDownloadRequest.setDestination(
-				calculateDownloadDestinationFileLocation(destinationLocation, dataObjectPath));
-			
-			// Instantiate a download item for this data object.
-			HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
-			downloadItem.setPath(dataObjectPath);
-			
-			// Download this data object.
-			try {
-				 HpcDataObjectDownloadResponseDTO dataObjectDownloadResponse = 
-				    dataManagementBusService.downloadDataObject(dataObjectPath, dataObjectDownloadRequest,
-					    	                                    userId, false);
-				 
-				 downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadResponse.getTaskId());
-				 downloadItem.setDestinationLocation(dataObjectDownloadResponse.getDestinationLocation());
-			     
-			} catch(HpcException e) {
-				    // Data object download failed. 
-				    logger.error("Failed to download data object in a collection" , e); 
-				    
-				    downloadItem.setResult(false);
-				    downloadItem.setDestinationLocation(dataObjectDownloadRequest.getDestination());
-				    downloadItem.setMessage(e.getMessage());
-				    
-			} finally {
-				       downloadItems.add(downloadItem);
-			}
+			downloadItems.add(downloadDataObject(dataObjectEntry.getPath(), destinationLocation, userId));
 		}
 		
 		// Iterate through the sub-collections and download them.
@@ -780,6 +759,73 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		}
 		
 		return downloadItems;
+	}
+	
+    /** 
+     * Download a list of data objects.
+     * 
+     * @param dataObjectPaths The list of data object path to download.
+     * @param destinationLocation The download destination location.
+     * @param userId The user ID who requested the collection download.
+     * @return The download task items (each item represent a data-object download from the requested list).
+     * @throws HpcException on service failure.
+     */
+	private List<HpcCollectionDownloadTaskItem> 
+	        downloadDataObjects(List<String> dataObjectPaths, 
+	        		            HpcFileLocation destinationLocation, String userId) 
+			                   throws HpcException
+	{
+		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
+		
+		// Iterate through the data objects in the collection and download them.
+		for(String dataObjectPath : dataObjectPaths) {
+			downloadItems.add(downloadDataObject(dataObjectPath, destinationLocation, userId));
+		}
+		
+		return downloadItems;
+	}
+	
+    /** 
+     * Download a data object.
+     * 
+     * @param path The data object path.
+     * @param destinationLocation The download destination location.
+     * @param userId The user ID who requested the collection download.
+     * @return The download task item.
+     * @throws HpcException on service failure.
+     */
+	private HpcCollectionDownloadTaskItem downloadDataObject(String path, 
+			                                                 HpcFileLocation destinationLocation, 
+			                                                 String userId) 
+	{
+		HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
+		dataObjectDownloadRequest.setDestination(
+			calculateDownloadDestinationFileLocation(destinationLocation, path));
+		
+		// Instantiate a download item for this data object.
+		HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
+		downloadItem.setPath(path);
+		
+		// Download this data object.
+		try {
+			 HpcDataObjectDownloadResponseDTO dataObjectDownloadResponse = 
+			    dataManagementBusService.downloadDataObject(path, dataObjectDownloadRequest,
+				    	                                    userId, false);
+			 
+			 downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadResponse.getTaskId());
+			 downloadItem.setDestinationLocation(dataObjectDownloadResponse.getDestinationLocation());
+		     
+		} catch(HpcException e) {
+			    // Data object download failed. 
+			    logger.error("Failed to download data object in a collection" , e); 
+			    
+			    downloadItem.setResult(false);
+			    downloadItem.setDestinationLocation(dataObjectDownloadRequest.getDestination());
+			    downloadItem.setMessage(e.getMessage());
+			    
+		} 
+		
+		return downloadItem;
 	}
 	
     /** 
