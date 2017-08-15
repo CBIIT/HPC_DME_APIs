@@ -99,8 +99,7 @@ public interface HpcDataManagementRestService
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response downloadCollection(@PathParam("path") String path,
-			                           HpcDownloadRequestDTO downloadRequest,
-			                           @Context MessageContext mc);
+			                           HpcDownloadRequestDTO downloadRequest);
 	
     /**
      * Get collection download task status.
@@ -198,19 +197,6 @@ public interface HpcDataManagementRestService
 			                           HpcDownloadRequestDTO downloadRequest,
 			                           @Context MessageContext mc);
 	
-	/**
-     * Download data objects.
-     *
-     * @param downloadRequest The download request.
-     * @param mc The message context.
-     * @return The REST service response w/ HpcCollectionDownloadResponseDTO entity.
-     */
-	@POST
-	@Path("/dataObject/download")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response downloadDataObjects(HpcDataObjectsDownloadRequestDTO downloadRequest);
-	
     /**
      * Get Data object download task status.
      *
@@ -269,6 +255,30 @@ public interface HpcDataManagementRestService
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getDataObjectPermissionForUser(@PathParam("path") String path, 
 													@PathParam("userId") String userId);
+	
+	/**
+     * Download a list of data objects.
+     *
+     * @param downloadRequest The download request.
+     * @param mc The message context.
+     * @return The REST service response w/ HpcDataObjectsDownloadResponseDTO entity.
+     */
+	@POST
+	@Path("/download")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response downloadDataObjects(HpcDataObjectsDownloadRequestDTO downloadRequest);
+	
+    /**
+     * Get data objects download task status.
+     *
+     * @param taskId The download task ID.
+     * @return The REST service response w/ HpcCollectionDownloadStatusDTO entity.
+     */
+	@GET
+	@Path("/download")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getDataObjectsDownloadStatus(@QueryParam("taskId") String taskId);
 	
     /**
      * Get data management model (metadata validation rules and hierarchy definition) configured for a DOC.
