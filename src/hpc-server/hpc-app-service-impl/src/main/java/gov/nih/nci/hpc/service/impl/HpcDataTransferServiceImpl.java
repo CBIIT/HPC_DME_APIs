@@ -475,7 +475,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    taskResult.setPath(downloadTask.getPath());
 	    taskResult.setDestinationLocation(downloadTask.getDestinationLocation());
 	    taskResult.setResult(result);
-	    taskResult.setType(HpcDownloadTaskType.COLLECTION);
+	    taskResult.setType(downloadTask.getType());
 	    taskResult.setMessage(message);
 	    taskResult.setCreated(downloadTask.getCreated());
 	    taskResult.setCompleted(completed);	
