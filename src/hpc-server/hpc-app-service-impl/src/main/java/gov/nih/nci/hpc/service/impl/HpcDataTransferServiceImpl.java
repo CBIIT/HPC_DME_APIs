@@ -340,7 +340,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		   }
 		}
 		
-		if(taskType.equals(HpcDownloadTaskType.COLLECTION)) {
+		if(taskType.equals(HpcDownloadTaskType.COLLECTION) || 
+		   taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
 		   HpcCollectionDownloadTask task = dataDownloadDAO.getCollectionDownloadTask(taskId);
 		   if(task != null) {
 			  taskStatus.setCollectionDownloadTask(task);
