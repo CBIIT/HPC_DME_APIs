@@ -372,9 +372,17 @@ public class HpcEventServiceImpl implements HpcEventService
 				                                        downloadTaskId));
 		}
 		if(downloadTaskType != null) {
+		   String downloadTypeStr = "";
+		   if(downloadTaskType.equals(HpcDownloadTaskType.COLLECTION)) {
+			  downloadTypeStr = "Collection";
+		   } else if(downloadTaskType.equals(HpcDownloadTaskType.DATA_OBJECT)) {
+			         downloadTypeStr = "File";
+		   } else if(downloadTaskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
+		             downloadTypeStr = "Files";
+		   }
+		   
 		   event.getPayloadEntries().add(toPayloadEntry(DOWNLOAD_TASK_TYPE_PAYLOAD_ATTRIBUTE, 
-				                                        downloadTaskType.equals(HpcDownloadTaskType.COLLECTION) ? 
-				                                        	    "Collection" : "File"));
+				                                        downloadTypeStr));
 		}
 		if(path != null) {
 		   event.getPayloadEntries().add(toPayloadEntry(DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE, 
