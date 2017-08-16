@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -862,7 +863,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     {
     	Calendar completed = Calendar.getInstance();
     	dataTransferService.completeCollectionDownloadTask(downloadTask, result, message, completed);
-    	addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
+    	
+    	// Set the payload with either the collection path or the list of data object paths.
+        String path = "";
+        if(downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
+           path = downloadTask.getPath();
+        } else if(downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
+        	      path = StringUtils.join(downloadTask.getDataObjectPaths(), ", ");
+        }
+        
+    	addDataTransferDownloadEvent(downloadTask.getUserId(), path,
     			                     downloadTask.getType(), downloadTask.getId(),
                                      result, message, downloadTask.getDestinationLocation(),
                                      completed);
