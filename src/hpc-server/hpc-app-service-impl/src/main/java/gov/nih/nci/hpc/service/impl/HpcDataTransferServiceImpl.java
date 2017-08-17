@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
+import gov.nih.nci.hpc.dao.HpcDataTransferQueueDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -84,9 +85,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	@Autowired
 	private HpcSystemAccountLocator systemAccountLocator = null;
 	
-	// Data object download cleanup DAO.
+	// Data object download DAO.
 	@Autowired
 	private HpcDataDownloadDAO dataDownloadDAO = null;
+	
+	// Globus Transfer Queue DAO.
+	@Autowired
+	private HpcDataTransferQueueDAO dataTransferUploadDAO = null;
 	
 	// Event service
 	@Autowired
@@ -669,6 +674,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	// Validate source location exists and accessible.
     	validateUploadSourceFileLocation(dataTransferType, uploadRequest.getSourceLocation(), 
     			                         uploadRequest.getDoc());
+    	
+    	dataTransferUploadDAO.upsertUploadQueue(uploadRequest);
     	
     	// Upload the data object using the appropriate data transfer proxy.
     	String doc = uploadRequest.getDoc();
