@@ -36,7 +36,7 @@ public class HpcDataTransferQueueDAOImpl implements HpcDataTransferQueueDAO
     
     // SQL Queries.
 	public static final String UPSERT_UPLOAD_QUEUE_SQL = 
-		   "insert into public.\"HPC_GLOBUS_UPLOAD_QUEUE\" ( " +
+		   "insert into public.\"HPC_DATA_TRANSFER_UPLOAD_QUEUE\" ( " +
                    "\"PATH\", \"CALLER_OBJECT_ID\", \"USER_ID\", \"SOURCE_LOCATION_FILE_CONTAINER_ID\", " +
 				   "\"SOURCE_LOCATION_FILE_CONTAINER_ID\", \"DOC\") " + 
                    "values (?, ?, ?, ?, ?, ?) " +
