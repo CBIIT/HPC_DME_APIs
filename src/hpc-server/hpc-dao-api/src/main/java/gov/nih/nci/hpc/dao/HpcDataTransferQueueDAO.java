@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.dao;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -27,9 +28,11 @@ public interface HpcDataTransferQueueDAO
      * Store a new data object upload request.
      *
      * @param uploadRequest The data object upload request to persist.
+     * @param dataTransferType The data transfer type to queue the transfer request for.
      * @throws HpcException on database error.
      */
-    public void upsertUploadQueue(HpcDataObjectUploadRequest uploadRequest) throws HpcException;
+    public void upsertUploadQueue(HpcDataObjectUploadRequest uploadRequest,
+    		                      HpcDataTransferType dataTransferType) throws HpcException;
 }
 
  

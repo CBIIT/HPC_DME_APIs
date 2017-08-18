@@ -19,6 +19,7 @@
 
 	<xsd:simpleType name="HpcDataTransferUploadStatus">
 		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="RECEIVED" />
 			<xsd:enumeration value="IN_PROGRESS_TO_TEMPORARY_ARCHIVE" />
 			<xsd:enumeration value="IN_TEMPORARY_ARCHIVE" />
 			<xsd:enumeration value="IN_PROGRESS_TO_ARCHIVE" />
