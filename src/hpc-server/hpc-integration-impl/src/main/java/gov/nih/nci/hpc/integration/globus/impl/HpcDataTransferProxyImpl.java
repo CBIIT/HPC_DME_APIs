@@ -124,7 +124,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     @Override
     public boolean acceptsTransferRequests(Object authenticatedToken) throws HpcException
     {
-    	return false;
+    	return true;
     }
     
     @Override
