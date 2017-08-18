@@ -38,12 +38,12 @@ public class HpcDataTransferQueueDAOImpl implements HpcDataTransferQueueDAO
 	public static final String UPSERT_UPLOAD_QUEUE_SQL = 
 		   "insert into public.\"HPC_DATA_TRANSFER_UPLOAD_QUEUE\" ( " +
                    "\"PATH\", \"CALLER_OBJECT_ID\", \"USER_ID\", \"SOURCE_LOCATION_FILE_CONTAINER_ID\", " +
-				   "\"SOURCE_LOCATION_FILE_CONTAINER_ID\", \"DOC\") " + 
+				   "\"SOURCE_LOCATION_FILE_ID\", \"DOC\") " + 
                    "values (?, ?, ?, ?, ?, ?) " +
            "on conflict(\"PATH\") do update set \"CALLER_OBJECT_ID\"=excluded.\"CALLER_OBJECT_ID\", " + 
                         "\"USER_ID\"=excluded.\"USER_ID\", " + 
                         "\"SOURCE_LOCATION_FILE_CONTAINER_ID\"=excluded.\"SOURCE_LOCATION_FILE_CONTAINER_ID\", " + 
-                        "\"SOURCE_LOCATION_FILE_CONTAINER_ID\"=excluded.\"SOURCE_LOCATION_FILE_CONTAINER_ID\", " + 
+                        "\"SOURCE_LOCATION_FILE_ID\"=excluded.\"SOURCE_LOCATION_FILE_ID\", " + 
                         "\"DOC\"=excluded.\"DOC\"";
 	
     //---------------------------------------------------------------------//
