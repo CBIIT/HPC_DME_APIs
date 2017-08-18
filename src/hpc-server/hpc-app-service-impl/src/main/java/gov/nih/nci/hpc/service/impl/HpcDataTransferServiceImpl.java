@@ -91,7 +91,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	
 	// Globus Transfer Queue DAO.
 	@Autowired
-	private HpcDataTransferQueueDAO dataTransferUploadDAO = null;
+	private HpcDataTransferQueueDAO dataTransferQueueDAO = null;
 	
 	// Event service
 	@Autowired
@@ -672,15 +672,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
     	
     	// Validate source location exists and accessible.
-    	validateUploadSourceFileLocation(dataTransferType, uploadRequest.getSourceLocation(), 
-    			                         uploadRequest.getDoc());
-    	
-    	dataTransferUploadDAO.upsertUploadQueue(uploadRequest);
-    	
-    	// Upload the data object using the appropriate data transfer proxy.
     	String doc = uploadRequest.getDoc();
+    	validateUploadSourceFileLocation(dataTransferType, uploadRequest.getSourceLocation(), doc);
+    	
+    	// Check that the data transfer system can accept transfer requests.
+    	Object authenticatedToken = getAuthenticatedToken(dataTransferType, doc);
+    	if(!dataTransferProxies.get(dataTransferType).acceptsTransferRequests(authenticatedToken)) {
+    	   // The data transfer system is busy. Queue the request.
+    	   dataTransferQueueDAO.upsertUploadQueue(uploadRequest, dataTransferType);
+    	   HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
+       	   uploadResponse.setDataTransferType(dataTransferType);
+       	   uploadResponse.setDataTransferStarted(Calendar.getInstance());
+       	   uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.RECEIVED);
+       	   return uploadResponse;
+    	}
+    	
+    	// Upload the data object using the appropriate data transfer system proxy.
   	    return dataTransferProxies.get(dataTransferType).
-  	    		   uploadDataObject(getAuthenticatedToken(dataTransferType, doc), 
+  	    		   uploadDataObject(authenticatedToken, 
   	    		                    uploadRequest, 
   	    		                    generateMetadata(uploadRequest.getPath(),
   	    		                    		         uploadRequest.getUserId()),
