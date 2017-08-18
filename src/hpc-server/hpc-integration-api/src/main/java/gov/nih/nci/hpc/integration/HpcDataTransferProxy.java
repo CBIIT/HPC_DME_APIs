@@ -34,7 +34,6 @@ import gov.nih.nci.hpc.exception.HpcException;
  * </p>
  *
  * @author <a href="mailto:Mahidhar.Narra@nih.gov">Mahidhar Narra</a>
- * @version $Id$ 
  */
 
 public interface HpcDataTransferProxy 
@@ -51,6 +50,18 @@ public interface HpcDataTransferProxy
     public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount,
     		                   String url) 
     		                  throws HpcException;
+    
+    /**
+     * Check if upload/download requests are accepted at the moment. 
+     *
+     * @param authenticatedToken An authenticated token.
+     * @return True if upload/download requests are accepted, or false if the data-transfer system is too busy.
+     * @throws HpcException on data transfer system failure.
+     */
+    default public boolean acceptsTransferRequests(Object authenticatedToken) throws HpcException
+    {
+    	return true;
+    }
     
     /**
      * Upload a data object file.
@@ -97,7 +108,7 @@ public interface HpcDataTransferProxy
     {
     	throw new HpcException("deleteDataObject() not supported",
                                 HpcErrorType.UNEXPECTED_ERROR);
-                                        }
+    }
     
     /**
      * Get a data transfer upload request status.
