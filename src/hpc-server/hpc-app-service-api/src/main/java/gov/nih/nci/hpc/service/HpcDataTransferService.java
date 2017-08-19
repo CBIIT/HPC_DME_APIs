@@ -53,8 +53,7 @@ public interface HpcDataTransferService
 	public HpcDataObjectUploadResponse uploadDataObject(HpcFileLocation sourceLocation, 
                                                         File sourceFile, 
                                                         String path, String userId,
-                                                        String callerObjectId, String doc,
-                                                        boolean checkQ)
+                                                        String callerObjectId, String doc)
                                                        throws HpcException;
     
     /** 
