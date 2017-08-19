@@ -33,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcAuthenticationInterceptor 
@@ -44,11 +43,11 @@ public class HpcAuthenticationInterceptor
     //---------------------------------------------------------------------//   
 	
 	// HTTP header attributes.
-	private static String AUTHORIZATION_HEADER = "Authorization";
+	private static final String AUTHORIZATION_HEADER = "Authorization";
 	
 	// Authorization Types
-	private static String BASIC_AUTHORIZATION = "Basic";
-	private static String TOKEN_AUTHORIZATION = "Bearer";
+	private static final String BASIC_AUTHORIZATION = "Basic";
+	private static final String TOKEN_AUTHORIZATION = "Bearer";
 	
     //---------------------------------------------------------------------//
     // Instance members

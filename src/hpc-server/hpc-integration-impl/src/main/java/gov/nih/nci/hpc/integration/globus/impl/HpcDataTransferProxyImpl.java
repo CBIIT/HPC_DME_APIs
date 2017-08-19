@@ -76,15 +76,19 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	// The Globus archive destination. Used to upload data objects.
 	@Autowired
 	@Qualifier("hpcGlobusArchiveDestination")
-	HpcArchive baseArchiveDestination = null;
+	private HpcArchive baseArchiveDestination = null;
 	
 	// The Globus download source. Used to download data objects.
 	@Autowired
 	@Qualifier("hpcGlobusDownloadSource")
-	HpcArchive baseDownloadSource = null;
+	private HpcArchive baseDownloadSource = null;
 	
+	// Retry template. Used to automatically retry Globus service calls.
 	@Autowired
-	RetryTemplate retryTemplate = null;
+	private RetryTemplate retryTemplate = null;
+	
+	// The Globus active tasks queue size. 
+	private int globusQueueSize = 0; 
     
 	// The Logger instance.
 	private final Logger logger = 
@@ -97,10 +101,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     /**
      * Constructor for Spring Dependency Injection.
      * 
+     * @param globusQueueSize The Globus active tasks queue size.
+     * 
      */
-	private HpcDataTransferProxyImpl()
+	private HpcDataTransferProxyImpl(int globusQueueSize)
     {
+		this.globusQueueSize = globusQueueSize;
     }
+	
+    /**
+     * Default Constructor is disabled.
+     * 
+     * @throws HpcException Constructor is disabled.
+     */
+    private HpcDataTransferProxyImpl() throws HpcException
+    {
+    	throw new HpcException("Default Constructor Disabled", 
+    			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    }   
     
     //---------------------------------------------------------------------//
     // Methods
@@ -124,7 +142,21 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     @Override
     public boolean acceptsTransferRequests(Object authenticatedToken) throws HpcException
     {
-    	return true;
+    	return false;
+/*		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
+
+		return retryTemplate.execute(arg0 -> 
+		{
+			try {
+				 JSONObject jsonTasksLists = client.getResult("/task_list?filter=status:ACTIVE,INACTIVE").document;
+				 logger.error("ERAN size of queue: " + jsonTasksLists.getInt("total"));
+				 return jsonTasksLists.getInt("total") < globusQueueSize;
+			
+			} catch(Exception e) {
+			        throw new HpcException("[GLOBUS] Failed to determine active tasks count", 
+			                               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
+			}
+		});*/
     }
     
     @Override

@@ -57,16 +57,27 @@ public class HpcScheduledTasksImpl
     //---------------------------------------------------------------------//
     
     /**
-     * Update Data Transfer Status Task.
+     * Update the data transfer upload status of all data objects that the transfer is 'in progress'.
      * 
      */    
-    @Scheduled(cron = "${hpc.scheduler.cron.updateDataTransferUploadStatus.delay}")
-    private void updateDataTransferUploadStatusTask()
+    @Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadReceived.delay}")
+    private void processDataTranferUploadReceivedTask()
     {
-    	executeTask("updateDataTransferUploadStatusTask()", 
-    			    systemBusService::updateDataTransferUploadStatus);
+    	executeTask("processDataTranferUploadReceivedTask()", 
+    			    systemBusService::processDataTranferUploadReceived);
     }
     
+    /**
+     * Update the data transfer upload status of all data objects that the transfer is 'in progress'.
+     * 
+     */    
+    @Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadInProgress.delay}")
+    private void processDataTranferUploadInProgressTask()
+    {
+    	executeTask("processDataTranferUploadInProgressTask()", 
+    			    systemBusService::processDataTranferUploadInProgress);
+    }
+
     /**
      * Process data objects in temporary archive task. This tasks transfers data from the temporary
      * archive to the (permanent) archive and complete data object registration.
