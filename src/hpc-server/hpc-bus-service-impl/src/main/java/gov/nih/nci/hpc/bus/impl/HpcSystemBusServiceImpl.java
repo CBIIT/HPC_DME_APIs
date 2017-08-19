@@ -155,7 +155,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  		        		                                null, path, 
  		        		                                systemGeneratedMetadata.getRegistrarId(),
  		        		                                systemGeneratedMetadata.getCallerObjectId(), 
- 		        		                                systemGeneratedMetadata.getRegistrarDOC(), false);
+ 		        		                                systemGeneratedMetadata.getRegistrarDOC());
  		        
  			    // Generate system metadata and attach to the data object.
  			    metadataService.updateDataObjectSystemGeneratedMetadata(
@@ -272,7 +272,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  		        	dataTransferService.uploadDataObject(null, file, path, 
  		        			                             systemGeneratedMetadata.getRegistrarId(),
  		        			                             systemGeneratedMetadata.getCallerObjectId(),
- 		        			                             systemGeneratedMetadata.getRegistrarDOC(), true);
+ 		        			                             systemGeneratedMetadata.getRegistrarDOC());
  		     
  		         // Delete the file.
  		         if(!FileUtils.deleteQuietly(file)) {

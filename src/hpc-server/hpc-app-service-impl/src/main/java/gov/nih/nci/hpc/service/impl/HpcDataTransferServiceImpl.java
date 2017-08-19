@@ -152,8 +152,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	public HpcDataObjectUploadResponse uploadDataObject(HpcFileLocation sourceLocation, 
 			                                            File sourceFile, 
 			                                            String path, String userId,
-			                                            String callerObjectId, String doc,
-			                                            boolean checkQ)
+			                                            String callerObjectId, String doc)
 	                                                   throws HpcException
 	{
     	// Validate one and only one data source is provided.
@@ -176,7 +175,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	uploadRequest.setDoc(doc);
     	
 		// Upload the data object file.
-	    return uploadDataObject(uploadRequest, checkQ);	
+	    return uploadDataObject(uploadRequest);	
 	}
     
     @Override
@@ -644,7 +643,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * @return A data object upload response.
      * @throws HpcException on service failure.
      */
-    private HpcDataObjectUploadResponse uploadDataObject(HpcDataObjectUploadRequest uploadRequest, boolean checkQ) 
+    private HpcDataObjectUploadResponse uploadDataObject(HpcDataObjectUploadRequest uploadRequest) 
                                                         throws HpcException
     {
     	// Input validation.
@@ -673,7 +672,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	
     	// Check that the data transfer system can accept transfer requests.
     	Object authenticatedToken = getAuthenticatedToken(dataTransferType, doc);
-    	if(checkQ && !dataTransferProxies.get(dataTransferType).acceptsTransferRequests(authenticatedToken)) {
+    	if(!dataTransferProxies.get(dataTransferType).acceptsTransferRequests(authenticatedToken)) {
     	   // The data transfer system is busy. Queue the request (upload status set to 'RECEIVED'),
     	   // and the upload will be performed later by a scheduled task.
     	   HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
