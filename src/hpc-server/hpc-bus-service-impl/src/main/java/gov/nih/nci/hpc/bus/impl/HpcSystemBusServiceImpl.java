@@ -132,20 +132,65 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     //---------------------------------------------------------------------//  
     
     @Override
-    public void updateDataTransferUploadStatus() throws HpcException
+    public void processDataTranferUploadReceived() throws HpcException
     {
     	// Use system account to perform this service.
         // TODO: Make this AOP. 
     	securityService.setSystemRequestInvoker();
     	
     	// Iterate through the data objects that their data transfer is in-progress.
-    	List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataObjectsInProgress();
-    	logger.info(dataObjectsInProgress.size() + " Data Objects In Progress: " + dataObjectsInProgress);
+    	List<HpcDataObject> dataObjectsReceived = dataManagementService.getDataObjectsUploadReceived();
+    	logger.info(dataObjectsReceived.size() + " Data Objects Upload Received: " + dataObjectsReceived);
+    	for(HpcDataObject dataObject : dataObjectsReceived) {
+    		String path = dataObject.getAbsolutePath();
+    		logger.info("Processing data object upload queued: " + path);
+    		try {
+    		     // Get the system metadata.
+    			 HpcSystemGeneratedMetadata systemGeneratedMetadata = 
+    			    metadataService.getDataObjectSystemGeneratedMetadata(path);
+    			 
+ 				// Transfer the data file.
+ 		        HpcDataObjectUploadResponse uploadResponse = 
+ 		           dataTransferService.uploadDataObject(systemGeneratedMetadata.getSourceLocation(), 
+ 		        		                                null, path, 
+ 		        		                                systemGeneratedMetadata.getRegistrarId(),
+ 		        		                                systemGeneratedMetadata.getCallerObjectId(), 
+ 		        		                                systemGeneratedMetadata.getRegistrarDOC(), false);
+ 		        
+ 			    // Generate system metadata and attach to the data object.
+ 			    metadataService.updateDataObjectSystemGeneratedMetadata(
+ 			        		                    path, uploadResponse.getArchiveLocation(),
+ 			    			                    uploadResponse.getDataTransferRequestId(), 
+ 			    			                    uploadResponse.getChecksum(), 
+ 			    			                    uploadResponse.getDataTransferStatus(),
+ 			    			                    uploadResponse.getDataTransferType(),
+ 			    			                    uploadResponse.getDataTransferCompleted()); 
+    		     
+    		} catch(HpcException e) {
+    			    logger.error("Failed to process queued data transfer upload :" + path, e);
+    			    
+    			    // If timeout occurred, move the status to unknown.
+    			    setTransferUploadStatusToUnknown(dataObject, true);
+    		}
+    	}
+    	
+    }
+    
+    @Override
+    public void processDataTranferUploadInProgress() throws HpcException
+    {
+    	// Use system account to perform this service.
+        // TODO: Make this AOP. 
+    	securityService.setSystemRequestInvoker();
+    	
+    	// Iterate through the data objects that their data transfer is in-progress.
+    	List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataObjectsUploadInProgress();
+    	logger.info(dataObjectsInProgress.size() + " Data Objects Upload In Progress: " + dataObjectsInProgress);
     	for(HpcDataObject dataObject : dataObjectsInProgress) {
     		String path = dataObject.getAbsolutePath();
-    		logger.info("Update Data Transfer Status for: " + path);
+    		logger.info("Processing data object upload in-progress: " + path);
     		try {
-    		     // Get current data transfer Request Info.
+    		     // Get the system metadata.
     			 HpcSystemGeneratedMetadata systemGeneratedMetadata = 
     			    metadataService.getDataObjectSystemGeneratedMetadata(path);
     			 
@@ -204,8 +249,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	securityService.setSystemRequestInvoker();
     	
     	// Iterate through the data objects that their data is in temporary archive.
-    	List<HpcDataObject> dataObjectsInTemporaryArchive = dataManagementService.getDataObjectsInTemporaryArchive();
-    	logger.info(dataObjectsInTemporaryArchive.size() + " Data Objects In Temporary Archive: " + 
+    	List<HpcDataObject> dataObjectsInTemporaryArchive = 
+    			            dataManagementService.getDataObjectsUploadInTemporaryArchive();
+    	logger.info(dataObjectsInTemporaryArchive.size() + " Data Objects Upload In Temporary Archive: " + 
     	            dataObjectsInTemporaryArchive);
     	for(HpcDataObject dataObject : dataObjectsInTemporaryArchive) {
     		String path = dataObject.getAbsolutePath();
@@ -226,7 +272,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  		        	dataTransferService.uploadDataObject(null, file, path, 
  		        			                             systemGeneratedMetadata.getRegistrarId(),
  		        			                             systemGeneratedMetadata.getCallerObjectId(),
- 		        			                             systemGeneratedMetadata.getRegistrarDOC());
+ 		        			                             systemGeneratedMetadata.getRegistrarDOC(), true);
  		     
  		         // Delete the file.
  		         if(!FileUtils.deleteQuietly(file)) {

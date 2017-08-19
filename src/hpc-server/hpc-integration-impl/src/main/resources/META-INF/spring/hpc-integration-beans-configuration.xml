@@ -70,8 +70,10 @@
 	
 	<!-- Globus Data Transfer Proxy -->
 	<bean id="hpcGlobusDataTransferProxy" 
-	      class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl" />
-	      
+	      class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl" >
+	      <constructor-arg value="${hpc.integration.globus.queueSize}" index="0" />
+	</bean>
+	
 	<!--  S3 Connection  -->
 	<bean id="hpcS3Connection" class="gov.nih.nci.hpc.integration.s3.impl.HpcS3Connection" />
 	

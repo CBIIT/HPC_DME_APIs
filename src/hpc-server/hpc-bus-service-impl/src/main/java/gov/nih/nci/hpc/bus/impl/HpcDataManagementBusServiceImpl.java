@@ -466,7 +466,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		        HpcDataObjectUploadResponse uploadResponse = 
 		           dataTransferService.uploadDataObject(source, dataObjectFile, path, 
 		        	                                    invokerNciAccount.getUserId(),
-		        	                                    dataObjectRegistration.getCallerObjectId(), doc);
+		        	                                    dataObjectRegistration.getCallerObjectId(), doc, true);
 		        
 			    // Generate system metadata and attach to the data object.
 			    metadataService.addSystemGeneratedMetadataToDataObject(
