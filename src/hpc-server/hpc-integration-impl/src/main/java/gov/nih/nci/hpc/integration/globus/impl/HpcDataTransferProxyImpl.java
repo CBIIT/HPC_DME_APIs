@@ -142,21 +142,21 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     @Override
     public boolean acceptsTransferRequests(Object authenticatedToken) throws HpcException
     {
-    	return false;
-/*		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
+		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 
 		return retryTemplate.execute(arg0 -> 
 		{
 			try {
 				 JSONObject jsonTasksLists = client.getResult("/task_list?filter=status:ACTIVE,INACTIVE").document;
 				 logger.error("ERAN size of queue: " + jsonTasksLists.getInt("total"));
+				 logger.error("ERAN queue limit: " +  globusQueueSize);
 				 return jsonTasksLists.getInt("total") < globusQueueSize;
 			
 			} catch(Exception e) {
 			        throw new HpcException("[GLOBUS] Failed to determine active tasks count", 
 			                               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
 			}
-		});*/
+		});
     }
     
     @Override
