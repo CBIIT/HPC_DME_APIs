@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
-import gov.nih.nci.hpc.dao.HpcDataTransferQueueDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -88,10 +87,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	// Data object download DAO.
 	@Autowired
 	private HpcDataDownloadDAO dataDownloadDAO = null;
-	
-	// Globus Transfer Queue DAO.
-	@Autowired
-	private HpcDataTransferQueueDAO dataTransferQueueDAO = null;
 	
 	// Event service
 	@Autowired
@@ -157,7 +152,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	public HpcDataObjectUploadResponse uploadDataObject(HpcFileLocation sourceLocation, 
 			                                            File sourceFile, 
 			                                            String path, String userId,
-			                                            String callerObjectId, String doc)
+			                                            String callerObjectId, String doc,
+			                                            boolean checkQ)
 	                                                   throws HpcException
 	{
     	// Validate one and only one data source is provided.
@@ -180,7 +176,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	uploadRequest.setDoc(doc);
     	
 		// Upload the data object file.
-	    return uploadDataObject(uploadRequest);	
+	    return uploadDataObject(uploadRequest, checkQ);	
 	}
     
     @Override
@@ -648,7 +644,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * @return A data object upload response.
      * @throws HpcException on service failure.
      */
-    private HpcDataObjectUploadResponse uploadDataObject(HpcDataObjectUploadRequest uploadRequest) 
+    private HpcDataObjectUploadResponse uploadDataObject(HpcDataObjectUploadRequest uploadRequest, boolean checkQ) 
                                                         throws HpcException
     {
     	// Input validation.
@@ -677,9 +673,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	
     	// Check that the data transfer system can accept transfer requests.
     	Object authenticatedToken = getAuthenticatedToken(dataTransferType, doc);
-    	if(!dataTransferProxies.get(dataTransferType).acceptsTransferRequests(authenticatedToken)) {
-    	   // The data transfer system is busy. Queue the request.
-    	   dataTransferQueueDAO.upsertUploadQueue(uploadRequest, dataTransferType);
+    	if(checkQ && !dataTransferProxies.get(dataTransferType).acceptsTransferRequests(authenticatedToken)) {
+    	   // The data transfer system is busy. Queue the request (upload status set to 'RECEIVED'),
+    	   // and the upload will be performed later by a scheduled task.
     	   HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
        	   uploadResponse.setDataTransferType(dataTransferType);
        	   uploadResponse.setDataTransferStarted(Calendar.getInstance());
