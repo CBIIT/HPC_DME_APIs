@@ -34,6 +34,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
@@ -59,29 +60,34 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
     // SQL Queries.
 	public static final String UPSERT_DATA_OBJECT_DOWNLOAD_TASK_SQL = 
 		   "insert into public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" ( " +
-                   "\"ID\", \"USER_ID\", \"PATH\", \"DOC\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", \"DOWNLOAD_FILE_PATH\"," +
+                   "\"ID\", \"USER_ID\", \"PATH\", \"DOC\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", " + 
+				   "\"DATA_TRANSFER_STATUS\", \"DOWNLOAD_FILE_PATH\"," +
+				   "\"ARCHIVE_LOCATION_FILE_CONTAINER_ID\", \"ARCHIVE_LOCATION_FILE_ID\", " + 
                    "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", " + 
                    "\"COMPLETION_EVENT\", \"CREATED\") " + 
-                   "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                   "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
            "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
                         "\"PATH\"=excluded.\"PATH\", " + 
                         "\"DOC\"=excluded.\"DOC\", " + 
                         "\"DATA_TRANSFER_REQUEST_ID\"=excluded.\"DATA_TRANSFER_REQUEST_ID\", " + 
                         "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\", " +
+                        "\"DATA_TRANSFER_STATUS\"=excluded.\"DATA_TRANSFER_STATUS\", " +
                         "\"DOWNLOAD_FILE_PATH\"=excluded.\"DOWNLOAD_FILE_PATH\", " +
+                        "\"ARCHIVE_LOCATION_FILE_CONTAINER_ID\"=excluded.\"ARCHIVE_LOCATION_FILE_CONTAINER_ID\", " +
+                        "\"ARCHIVE_LOCATION_FILE_ID\"=excluded.\"ARCHIVE_LOCATION_FILE_ID\", " +
                         "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " +
                         "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", " +
                         "\"COMPLETION_EVENT\"=excluded.\"COMPLETION_EVENT\", " +
                         "\"CREATED\"=excluded.\"CREATED\"";
 	
 	public static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL = 
-		   "delete from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where " + "\"ID\" = ?";
+		   "delete from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"ID\" = ?";
 
 	public static final String GET_DATA_OBJECT_DOWNLOAD_TASK_SQL = 
-		   "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where " + "\"ID\" = ?";
+		   "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"ID\" = ?";
 	
 	public static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL = 
-		   "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where " + "\"DATA_TRANSFER_TYPE\" = ?";
+		   "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"DATA_TRANSFER_TYPE\" = ?";
 	
 	public static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL = 
 		   "insert into public.\"HPC_DOWNLOAD_TASK_RESULT\" ( " +
@@ -104,7 +110,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
                         "\"COMPLETED\"=excluded.\"COMPLETED\"";
 	
 	public static final String GET_DOWNLOAD_TASK_RESULT_SQL = 
-		   "select * from public.\"HPC_DOWNLOAD_TASK_RESULT\" where " + "\"ID\" = ? and \"TYPE\" = ?";
+		   "select * from public.\"HPC_DOWNLOAD_TASK_RESULT\" where \"ID\" = ? and \"TYPE\" = ?";
 	
 	public static final String UPSERT_COLLECTION_DOWNLOAD_TASK_SQL = 
 		   "insert into public.\"HPC_COLLECTION_DOWNLOAD_TASK\" ( " +
@@ -123,13 +129,13 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
                         "\"CREATED\"=excluded.\"CREATED\"";
 	
 	public static final String GET_COLLECTION_DOWNLOAD_TASK_SQL = 
-		   "select * from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where " + "\"ID\" = ?";
+		   "select * from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"ID\" = ?";
 	
 	public static final String DELETE_COLLECTION_DOWNLOAD_TASK_SQL = 
-		   "delete from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where " + "\"ID\" = ?";
+		   "delete from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"ID\" = ?";
 	
 	public static final String GET_COLLECTION_DOWNLOAD_TASKS_SQL = 
-		   "select * from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where " + "\"STATUS\" = ?";
+		   "select * from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"STATUS\" = ?";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -150,8 +156,20 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		dataObjectDownloadTask.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
 		dataObjectDownloadTask.setDataTransferType(
 				  HpcDataTransferType.fromValue(rs.getString(("DATA_TRANSFER_TYPE"))));
+		dataObjectDownloadTask.setDataTransferStatus(
+				  HpcDataTransferDownloadStatus.fromValue(rs.getString(("DATA_TRANSFER_STATUS"))));
 		dataObjectDownloadTask.setDownloadFilePath(rs.getString("DOWNLOAD_FILE_PATH"));
 		dataObjectDownloadTask.setCompletionEvent(rs.getBoolean("COMPLETION_EVENT"));
+		
+		String archiveLocationFileContainerId = rs.getString("ARCHIVE_LOCATION_FILE_CONTAINER_ID");
+		String archiveLocationFileId = rs.getString("ARCHIVE_LOCATION_FILE_ID");
+		if(archiveLocationFileContainerId != null && 
+		   archiveLocationFileId != null) {
+		   HpcFileLocation archiveLocation = new HpcFileLocation();
+		   archiveLocation.setFileContainerId(archiveLocationFileContainerId);
+		   archiveLocation.setFileId(archiveLocationFileId);
+		   dataObjectDownloadTask.setArchiveLocation(archiveLocation);
+		}
 		
 		String destinationLocationFileContainerId = rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
 		String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
@@ -162,6 +180,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		   destinationLocation.setFileId(destinationLocationFileId);
 		   dataObjectDownloadTask.setDestinationLocation(destinationLocation);
 		}
+		
     	Calendar created = Calendar.getInstance();
     	created.setTime(rs.getTimestamp("CREATED"));
     	dataObjectDownloadTask.setCreated(created);
@@ -280,7 +299,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 					    		 dataObjectDownloadTask.getDoc(),
 					    		 dataObjectDownloadTask.getDataTransferRequestId(),
 					    		 dataObjectDownloadTask.getDataTransferType().value(),
+					    		 dataObjectDownloadTask.getDataTransferStatus().value(),
 					    		 dataObjectDownloadTask.getDownloadFilePath(),
+					    		 dataObjectDownloadTask.getArchiveLocation().getFileContainerId(),
+					    		 dataObjectDownloadTask.getArchiveLocation().getFileId(),
 					    		 dataObjectDownloadTask.getDestinationLocation().getFileContainerId(),
 					    		 dataObjectDownloadTask.getDestinationLocation().getFileId(),
 					    		 dataObjectDownloadTask.getCompletionEvent(),

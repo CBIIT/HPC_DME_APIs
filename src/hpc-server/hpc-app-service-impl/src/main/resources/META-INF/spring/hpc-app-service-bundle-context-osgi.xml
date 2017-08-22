@@ -71,8 +71,6 @@
 	                interface="gov.nih.nci.hpc.dao.HpcSystemAccountDAO" />
 	<osgi:reference id="hpcDataDownloadDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcDataDownloadDAO" />
-	<osgi:reference id="hpcDataTransferQueueDAO" 
-	                interface="gov.nih.nci.hpc.dao.HpcDataTransferQueueDAO" />
 	<osgi:reference id="hpcDataObjectDeletionDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcDataObjectDeletionDAO" />
 	<osgi:reference id="hpcNotificationDAO" 

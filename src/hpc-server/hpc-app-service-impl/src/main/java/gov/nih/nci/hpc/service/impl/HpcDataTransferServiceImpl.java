@@ -390,6 +390,32 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	}
 	
 	@Override
+    public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) 
+                                              throws HpcException
+    {
+    	// Check if Globus accepts transfer requests at this time.
+	    if(dataTransferProxies.get(downloadTask.getDataTransferType()).acceptsTransferRequests(
+	       getAuthenticatedToken(downloadTask.getDataTransferType(), downloadTask.getDoc()))) {
+		      // Globus accepts requests - submit the 2nd hop async download (to Globus).
+	    	  HpcDataObjectDownloadRequest secondHopDownloadRequest = new HpcDataObjectDownloadRequest();
+	    	  secondHopDownloadRequest.setArchiveLocation(downloadTask.getArchiveLocation());
+	    	  secondHopDownloadRequest.setCompletionEvent(downloadTask.getCompletionEvent());
+	    	  secondHopDownloadRequest.setDataTransferType(downloadTask.getDataTransferType());
+	    	  secondHopDownloadRequest.setDestinationLocation(downloadTask.getDestinationLocation());
+	    	  secondHopDownloadRequest.setDoc(downloadTask.getDoc());
+	    	  secondHopDownloadRequest.setPath(downloadTask.getPath());
+	    	  secondHopDownloadRequest.setUserId(downloadTask.getUserId());
+	    	  
+		      downloadTask.setDataTransferRequestId(
+		    		          downloadDataObject(secondHopDownloadRequest).getDataTransferRequestId());
+	    	  
+	    	  // Persist the download task.
+		      downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
+			  dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+	    }
+    }
+	
+	@Override
 	public HpcCollectionDownloadTask downloadCollection(String path,
                                                         HpcFileLocation destinationLocation,
                                                         String userId, String doc)
@@ -937,16 +963,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		{
 			// This callback method is called when the first hop (S3) download completed.
 			try {
-				   // Update the download task to reflect starting 2nd hop transfer.
+				   // Update the download task to reflect 1st hop transfer completed.
 				   downloadTask.setDataTransferType(secondHopDownloadRequest.getDataTransferType());
 				   
-				   // Perform 2nd hop async download (Globus)
-				   HpcDataObjectDownloadResponse secondHopDownloadResponse = 
-					    	                     downloadDataObject(secondHopDownloadRequest);
-
-				   // Update the download task with the Globus request ID.
-				   updateDownloadTask(secondHopDownloadResponse.getDataTransferRequestId());
-				   
+				   // Check if Globus accepts transfer requests at this time.
+			       if(dataTransferProxies.get(downloadTask.getDataTransferType()).acceptsTransferRequests(
+			    		  getAuthenticatedToken(downloadTask.getDataTransferType(), downloadTask.getDoc()))) {
+				      // Globus accepts requests - submit the 2nd hop async download (to Globus).
+				      downloadTask.setDataTransferRequestId(
+				    		          downloadDataObject(secondHopDownloadRequest).getDataTransferRequestId());
+				      
+			       } else {
+			    	       // Globus doesn't accept transfer requests at this time. Queue the 2nd hop transfer.
+			    	       downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+			       }
+			       
+			       // Persist the download task.
+				   dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+				      
 			} catch(HpcException e) {
 				    logger.error("Failed to submit 2nd hop download request, or update download task", e);
 				    transferFailed(e.getMessage());
@@ -1015,26 +1049,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    private void createDownloadTask() throws HpcException
 	    {
 	    	downloadTask.setDataTransferType(HpcDataTransferType.S_3);
+	    	downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
 	    	downloadTask.setDownloadFilePath(sourceFile.getAbsolutePath());
 	    	downloadTask.setUserId(secondHopDownloadRequest.getUserId());
 	    	downloadTask.setPath(secondHopDownloadRequest.getPath());
 	    	downloadTask.setDoc(secondHopDownloadRequest.getDoc());
 	    	downloadTask.setCompletionEvent(secondHopDownloadRequest.getCompletionEvent());
+	    	downloadTask.setArchiveLocation(secondHopDownloadRequest.getArchiveLocation());
 	    	downloadTask.setDestinationLocation(secondHopDownloadRequest.getDestinationLocation());
 	    	downloadTask.setCreated(Calendar.getInstance());
 	    	
-	    	dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
-	    }
-	    
-	    /**
-	     * Update the download task after S3 download is done and a successful submit to Globus.
-	     * 
-	     * @param dataTransferRequestId The data transfer request ID (Globus).
-	     * @throws HpcException If it failed to persist the task.
-	     */
-	    private void updateDownloadTask(String dataTransferRequestId) throws HpcException
-	    {
-	    	downloadTask.setDataTransferRequestId(dataTransferRequestId);
 	    	dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 	    }
 	    

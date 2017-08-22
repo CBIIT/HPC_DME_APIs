@@ -148,8 +148,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		{
 			try {
 				 JSONObject jsonTasksLists = client.getResult("/task_list?filter=status:ACTIVE,INACTIVE").document;
-				 logger.error("ERAN size of queue: " + jsonTasksLists.getInt("total"));
-				 logger.error("ERAN queue limit: " +  globusQueueSize);
 				 return jsonTasksLists.getInt("total") < globusQueueSize;
 			
 			} catch(Exception e) {
