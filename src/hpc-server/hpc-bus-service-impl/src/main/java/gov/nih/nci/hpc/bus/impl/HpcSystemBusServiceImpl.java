@@ -313,34 +313,23 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	securityService.setSystemRequestInvoker();
     	
     	// Iterate through all the data object download tasks that are in their 2nd hop (i.e. GLOBUS download
-    	// to user's endpoint is in progress)
+    	// to user's endpoint is in progress).
     	for(HpcDataObjectDownloadTask downloadTask :
     		dataTransferService.getDataObjectDownloadTasks(HpcDataTransferType.GLOBUS)) {
     		try {
-    		     // Get the data transfer download status.
-    		     HpcDataTransferDownloadStatus dataTransferDownloadStatus = 
-    		     dataTransferService.getDataTransferDownloadStatus(
-    			  	                    downloadTask.getDataTransferType(), 
-    				                    downloadTask.getDataTransferRequestId(),
-    				                    downloadTask.getDoc());
-    		
-    		     // Check the status of the data transfer. 
-    		     if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
-    		    	// This download task is no longer in-progress - complete it.
-    		        boolean result = dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.COMPLETED);
-    		        String message = result ? null : 
-    		        	             downloadTask.getDataTransferType() + " transfer failed. Request ID: " +
-    		        	             downloadTask.getDataTransferRequestId();
-    		        Calendar completed = Calendar.getInstance();
-    		    	dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed);
-    		    	
-    		    	// Send a download completion event (if requested to).
-    		    	if(downloadTask.getCompletionEvent()) {
-    		           addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
-    		        		                        HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
-    		        		                        result, message, downloadTask.getDestinationLocation(),
-    				                                completed);
-    		    	}
+    		     switch(downloadTask.getDataTransferStatus()) {
+    		            case RECEIVED:
+    		    	         dataTransferService.continueDataObjectDownloadTask(downloadTask);
+    		    	         break;
+    		    	   
+    		            case IN_PROGRESS:
+    			             completeDataObjectDownloadTaskInProgress(downloadTask);
+    			             break;
+    			        
+    			        default:
+    				            throw new HpcException("Unexpected data transfer download status [" + 
+    			                                       downloadTask.getDataTransferStatus() + "] for task: " +
+    			                                       downloadTask.getId(), HpcErrorType.UNEXPECTED_ERROR);
     		     }
     		     
     		} catch(HpcException e) {
@@ -894,7 +883,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	}
 	
     /**
-     * Complete a collection download task
+     * Complete a collection download task.
      * 1. Update task info in DB with results info.
      * 2. Send an event.
      *
@@ -922,6 +911,45 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			                     downloadTask.getType(), downloadTask.getId(),
                                      result, message, downloadTask.getDestinationLocation(),
                                      completed);
+    }
+    
+    /**
+     * Complete a data object download task that is in-progress (Globus transfer is in-progress).
+     * 1. Check the status of Globus transfer.
+     * 2. If completed (succeeded ot failed), record the result.
+     *
+     * @param downloadTask The download task to complete.
+     * @throws HpcException on service failure.
+     */
+    private void completeDataObjectDownloadTaskInProgress(HpcDataObjectDownloadTask downloadTask) 
+                                                         throws HpcException
+    {
+    
+	    // Get the data transfer download status.
+	    HpcDataTransferDownloadStatus dataTransferDownloadStatus = 
+	    dataTransferService.getDataTransferDownloadStatus(
+		  	                    downloadTask.getDataTransferType(), 
+			                    downloadTask.getDataTransferRequestId(),
+			                    downloadTask.getDoc());
+	
+	    // Check the status of the data transfer. 
+	    if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
+	   	   // This download task is no longer in-progress - complete it.
+	       boolean result = dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.COMPLETED);
+	       String message = result ? null : 
+	       	                downloadTask.getDataTransferType() + " transfer failed. Request ID: " +
+	       	                downloadTask.getDataTransferRequestId();
+	       Calendar completed = Calendar.getInstance();
+	   	   dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed);
+	   	
+	   	   // Send a download completion event (if requested to).
+	   	   if(downloadTask.getCompletionEvent()) {
+	          addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
+	       		                           HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
+	       		                           result, message, downloadTask.getDestinationLocation(),
+			                               completed);
+	   	   }
+	    }
     }
 }
 
