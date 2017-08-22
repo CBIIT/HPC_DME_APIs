@@ -967,16 +967,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 				   downloadTask.setDataTransferType(secondHopDownloadRequest.getDataTransferType());
 				   
 				   // Check if Globus accepts transfer requests at this time.
-			      // if(dataTransferProxies.get(downloadTask.getDataTransferType()).acceptsTransferRequests(
-			    	//	  getAuthenticatedToken(downloadTask.getDataTransferType(), downloadTask.getDoc()))) {
+			       if(dataTransferProxies.get(downloadTask.getDataTransferType()).acceptsTransferRequests(
+			    	      getAuthenticatedToken(downloadTask.getDataTransferType(), downloadTask.getDoc()))) {
 				      // Globus accepts requests - submit the 2nd hop async download (to Globus).
-				      //downloadTask.setDataTransferRequestId(
-				    	//	          downloadDataObject(secondHopDownloadRequest).getDataTransferRequestId());
+				      downloadTask.setDataTransferRequestId(
+				    		          downloadDataObject(secondHopDownloadRequest).getDataTransferRequestId());
 				      
-			       //} else {
+			       } else {
 			    	       // Globus doesn't accept transfer requests at this time. Queue the 2nd hop transfer.
 			    	       downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
-			       //}
+			       }
 			       
 			       // Persist the download task.
 				   dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
