@@ -404,13 +404,21 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 					criteria.setAttribute(attrName);
 				criteria.setValue(attrValue);
 				criteria.setOperator(HpcMetadataQueryOperator.fromValue(operator));
-				if (level != null && !level.equals("-1")) {
+				if (level != null) {
 					HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
-					if (level.equals("Data file") || level.equals("DataObject"))
+					if(level.equals("ANY"))
+					{
 						levelFilter.setLevel(1);
+						levelFilter.setOperator(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL);
+					}
 					else
-						levelFilter.setLabel(level);
-					levelFilter.setOperator(HpcMetadataQueryOperator.EQUAL);
+					{
+						if (level.equals("Data file") || level.equals("DataObject"))
+							levelFilter.setLevel(1);
+						else
+							levelFilter.setLabel(level);
+						levelFilter.setOperator(HpcMetadataQueryOperator.EQUAL);
+					}
 					criteria.setLevelFilter(levelFilter);
 				}
 				queries.put(rowId, criteria);
