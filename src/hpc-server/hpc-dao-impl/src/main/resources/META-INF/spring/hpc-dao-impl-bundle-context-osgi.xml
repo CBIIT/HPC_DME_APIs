@@ -38,7 +38,6 @@
 	<osgi:service ref="hpcUserDAO" interface="gov.nih.nci.hpc.dao.HpcUserDAO" />
 	<osgi:service ref="hpcSystemAccountDAO" interface="gov.nih.nci.hpc.dao.HpcSystemAccountDAO" />
 	<osgi:service ref="hpcDataDownloadDAO" interface="gov.nih.nci.hpc.dao.HpcDataDownloadDAO" />
-	<osgi:service ref="hpcDataTransferQueueDAO" interface="gov.nih.nci.hpc.dao.HpcDataTransferQueueDAO" />
 	<osgi:service ref="hpcDataObjectDeletionDAO" interface="gov.nih.nci.hpc.dao.HpcDataObjectDeletionDAO" />
 	<osgi:service ref="hpcNotificationDAO" interface="gov.nih.nci.hpc.dao.HpcNotificationDAO" />
 	<osgi:service ref="hpcEventDAO" interface="gov.nih.nci.hpc.dao.HpcEventDAO" />
