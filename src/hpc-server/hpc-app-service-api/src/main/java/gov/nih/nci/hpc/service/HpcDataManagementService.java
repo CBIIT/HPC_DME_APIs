@@ -202,12 +202,20 @@ public interface HpcDataManagementService
     public HpcDataObject getDataObject(String path) throws HpcException;
     
     /**
+     * Get data objects that have their data transfer received (i.e. queued).
+     *
+     * @return A list of data objects.
+     * @throws HpcException on service failure.
+     */
+    public List<HpcDataObject> getDataObjectsUploadReceived() throws HpcException;
+    
+    /**
      * Get data objects that have their data transfer in-progress.
      *
      * @return A list of data objects.
      * @throws HpcException on service failure.
      */
-    public List<HpcDataObject> getDataObjectsInProgress() throws HpcException;
+    public List<HpcDataObject> getDataObjectsUploadInProgress() throws HpcException;
     
     /**
      * Get data objects that have their data stored in temporary archive.
@@ -215,7 +223,7 @@ public interface HpcDataManagementService
      * @return A list of data objects.
      * @throws HpcException on service failure.
      */
-    public List<HpcDataObject> getDataObjectsInTemporaryArchive() throws HpcException;
+    public List<HpcDataObject> getDataObjectsUploadInTemporaryArchive() throws HpcException;
     
     /**
      * Close connection to Data Management system for the current service call.

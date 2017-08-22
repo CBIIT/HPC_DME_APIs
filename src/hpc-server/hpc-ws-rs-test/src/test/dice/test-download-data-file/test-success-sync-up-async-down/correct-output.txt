@@ -1,1 +1,4 @@
-200
+download_async_code 200
+get_status_code 200
+in_progress:true
+in_progress:false

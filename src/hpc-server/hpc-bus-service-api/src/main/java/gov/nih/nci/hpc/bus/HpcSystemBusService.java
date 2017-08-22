@@ -21,13 +21,21 @@ import gov.nih.nci.hpc.exception.HpcException;
  */
 
 public interface HpcSystemBusService 
-{         
+{       
+    /**
+     * Submit a data transfer requests for the the upload requests that are queued (because
+     * the data-transfer system was busy).
+     *
+     * @throws HpcException on service failure.
+     */
+	public void processDataTranferUploadReceived() throws HpcException;
+	
     /**
      * Update the data transfer upload status of all data objects that the transfer is 'in progress'.
      *
-     * @throws HpcException on service failure..
+     * @throws HpcException on service failure.
      */
-	public void updateDataTransferUploadStatus() throws HpcException;
+	public void processDataTranferUploadInProgress() throws HpcException;
 	
     /**
      * Transfer data objects currently in temporary archive to the (permanent) archive, 
