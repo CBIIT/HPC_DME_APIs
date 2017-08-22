@@ -159,9 +159,9 @@ public interface HpcDataTransferService
     		                  throws HpcException;
     
     /**
-     * Get all data object download tasks that are in progress for a given data-transfer type.
+     * Get all data object download tasks for a given data-transfer type.
      *
-     * @param dataTransferType The data-transfer type to query
+     * @param dataTransferType The data-transfer type to query.
      * @return A list of data object download tasks.
      * @throws HpcException on service failure.
      */
@@ -179,7 +179,7 @@ public interface HpcDataTransferService
      *         'result' object. 
      * @throws HpcException on service failure.
      */
-    public HpcDownloadTaskStatus getDownloadTaskStatus(int taskId, HpcDownloadTaskType taskType) 
+    public HpcDownloadTaskStatus getDownloadTaskStatus(String taskId, HpcDownloadTaskType taskType) 
     		                                          throws HpcException;
     
     /**
@@ -197,6 +197,16 @@ public interface HpcDataTransferService
     		                                   boolean result, String message, Calendar completed) 
     		                                  throws HpcException;
     
+    /**
+     * Continue a data object download task that was queued. 
+     * Note: If Globus is still busy, the download task will remain queued.
+     * 
+     * @param downloadTask The download task to submit to Globus.
+     * @throws HpcException on service failure.
+     */
+    public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) 
+                                              throws HpcException;
+    
     /** 
      * Submit a request to download a collection.
      * 
@@ -211,6 +221,21 @@ public interface HpcDataTransferService
 			                                            HpcFileLocation destinationLocation,
 			                                            String userId, String doc)
 			                                           throws HpcException;
+	
+    /** 
+     * Submit a request to download data objects.
+     * 
+     * @param dataObjectPaths The list of data objects to download.
+     * @param destinationLocation The user requested destination.
+     * @param userId The user ID submitting the download request.
+     * @param doc the DOC.
+     * @return The submitted request download task.
+     * @throws HpcException on service failure.
+     */
+	public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPaths,
+			                                             HpcFileLocation destinationLocation,
+			                                             String userId, String doc)
+			                                            throws HpcException;
 	
     /** 
      * Update a collection download request.

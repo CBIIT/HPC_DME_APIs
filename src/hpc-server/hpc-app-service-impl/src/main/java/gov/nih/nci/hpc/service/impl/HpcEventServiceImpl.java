@@ -167,7 +167,7 @@ public class HpcEventServiceImpl implements HpcEventService
     @Override
     public void addDataTransferDownloadCompletedEvent(String userId, String path, 
     		                                          HpcDownloadTaskType downloadTaskType,
-                                                      Integer downloadTaskId, HpcFileLocation destinationLocation, 
+                                                      String downloadTaskId, HpcFileLocation destinationLocation, 
                                                       Calendar dataTransferCompleted) throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_DOWNLOAD_COMPLETED, downloadTaskType,
@@ -177,7 +177,7 @@ public class HpcEventServiceImpl implements HpcEventService
     @Override
     public void addDataTransferDownloadFailedEvent(String userId, String path, 
     		                                       HpcDownloadTaskType downloadTaskType,
-                                                   Integer downloadTaskId,
+                                                   String downloadTaskId,
                                                    HpcFileLocation destinationLocation, 
                                                    Calendar dataTransferCompleted, String errorMessage) 
                                                   throws HpcException
@@ -351,7 +351,7 @@ public class HpcEventServiceImpl implements HpcEventService
      */
     private void addDataTransferEvent(String userId, HpcEventType eventType, 
     		                          HpcDownloadTaskType downloadTaskType,
-                                      Integer downloadTaskId,
+                                      String downloadTaskId,
     		                          String path, String checksum, Calendar dataTransferCompleted,
     		                          HpcFileLocation sourceLocation, HpcFileLocation destinationLocation,
     		                          String errorMessage) 
@@ -369,12 +369,20 @@ public class HpcEventServiceImpl implements HpcEventService
 		event.setType(eventType);
 		if(downloadTaskId != null) {
 		   event.getPayloadEntries().add(toPayloadEntry(DOWNLOAD_TASK_ID_PAYLOAD_ATTRIBUTE, 
-				                                        downloadTaskId.toString()));
+				                                        downloadTaskId));
 		}
 		if(downloadTaskType != null) {
+		   String downloadTypeStr = "";
+		   if(downloadTaskType.equals(HpcDownloadTaskType.COLLECTION)) {
+			  downloadTypeStr = "Collection";
+		   } else if(downloadTaskType.equals(HpcDownloadTaskType.DATA_OBJECT)) {
+			         downloadTypeStr = "File";
+		   } else if(downloadTaskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
+		             downloadTypeStr = "Files";
+		   }
+		   
 		   event.getPayloadEntries().add(toPayloadEntry(DOWNLOAD_TASK_TYPE_PAYLOAD_ATTRIBUTE, 
-				                                        downloadTaskType.equals(HpcDownloadTaskType.COLLECTION) ? 
-				                                        	    "Collection" : "File"));
+				                                        downloadTypeStr));
 		}
 		if(path != null) {
 		   event.getPayloadEntries().add(toPayloadEntry(DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE, 
