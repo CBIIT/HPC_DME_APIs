@@ -20,6 +20,7 @@ verify_registration  dataObject-registration-response-header.tmp
 
 async_sleep
 
+
 OBJECT_PATH=`cat registered-dataobject-path.tmp`
 
 #Make sure the dataObject is archived
@@ -36,6 +37,9 @@ then
     exit
 fi
 
+
+../utils/download-async
+exit
 
 RESPONSE_HEADER=download-response-header.tmp 
 RESPONSE_MSG=download-response-message.json.tmp

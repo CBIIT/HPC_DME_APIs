@@ -76,15 +76,19 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	// The Globus archive destination. Used to upload data objects.
 	@Autowired
 	@Qualifier("hpcGlobusArchiveDestination")
-	HpcArchive baseArchiveDestination = null;
+	private HpcArchive baseArchiveDestination = null;
 	
 	// The Globus download source. Used to download data objects.
 	@Autowired
 	@Qualifier("hpcGlobusDownloadSource")
-	HpcArchive baseDownloadSource = null;
+	private HpcArchive baseDownloadSource = null;
 	
+	// Retry template. Used to automatically retry Globus service calls.
 	@Autowired
-	RetryTemplate retryTemplate = null;
+	private RetryTemplate retryTemplate = null;
+	
+	// The Globus active tasks queue size. 
+	private int globusQueueSize = 0; 
     
 	// The Logger instance.
 	private final Logger logger = 
@@ -97,10 +101,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     /**
      * Constructor for Spring Dependency Injection.
      * 
+     * @param globusQueueSize The Globus active tasks queue size.
+     * 
      */
-	private HpcDataTransferProxyImpl()
+	private HpcDataTransferProxyImpl(int globusQueueSize)
     {
+		this.globusQueueSize = globusQueueSize;
     }
+	
+    /**
+     * Default Constructor is disabled.
+     * 
+     * @throws HpcException Constructor is disabled.
+     */
+    private HpcDataTransferProxyImpl() throws HpcException
+    {
+    	throw new HpcException("Default Constructor Disabled", 
+    			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    }   
     
     //---------------------------------------------------------------------//
     // Methods
@@ -119,6 +137,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	//       The Globus connection URL is configured via Spring. In the future, this may be 
     	//       a new requirement, so the 'url' parameter passed in will be used instead.
     	return globusConnection.authenticate(dataTransferAccount);
+    }
+    
+    @Override
+    public boolean acceptsTransferRequests(Object authenticatedToken) throws HpcException
+    {
+		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
+
+		return retryTemplate.execute(arg0 -> 
+		{
+			try {
+				 JSONObject jsonTasksLists = client.getResult("/task_list?filter=status:ACTIVE,INACTIVE").document;
+				 return jsonTasksLists.getInt("total") < globusQueueSize;
+			
+			} catch(Exception e) {
+			        throw new HpcException("[GLOBUS] Failed to determine active tasks count", 
+			                               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
+			}
+		});
     }
     
     @Override
@@ -150,7 +186,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	
 
     	// Submit a request to Globus to transfer the data.
-    	Calendar dataTransferStarted = Calendar.getInstance();
     	String requestId = transferData(client,
     			                        uploadRequest.getSourceLocation(),
     			                        archiveDestinationLocation);
@@ -160,7 +195,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	uploadResponse.setArchiveLocation(archiveDestinationLocation);
     	uploadResponse.setDataTransferRequestId(requestId);
     	uploadResponse.setDataTransferType(HpcDataTransferType.GLOBUS);
-    	uploadResponse.setDataTransferStarted(dataTransferStarted);
+    	uploadResponse.setDataTransferStarted(Calendar.getInstance());
     	uploadResponse.setDataTransferCompleted(null);
     	if(baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
     	   uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE);
@@ -472,10 +507,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         	 pathAttributes.setExists(true);
         	 pathAttributes.setIsDirectory(true);
         	 pathAttributes.setSize(getSize ? getDirectorySize(dirContent, client) : -1);
-        	 
         	
         } catch(APIError error) {
-        	logger.error("ERAN 1");
         	    if(error.statusCode == 502) {
         	       if(error.code.equals(NOT_DIRECTORY_GLOBUS_CODE)) {
         	          // Path exists as a single file
@@ -494,7 +527,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         	    // else path was not found. 
         	    
         } catch(Exception e) {
-        	logger.error("ERAN 2");
 	            throw new HpcException("[GLOBUS] Failed to get path attributes: " + fileLocation, 
        		                           HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
         }
@@ -618,7 +650,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		{
 			String resource = BaseTransferAPIClient.endpointPath(dirLocation.getFileContainerId()) + "/ls";
 		 	return client.getResult(resource, params);
-				
 		});
     }
 }

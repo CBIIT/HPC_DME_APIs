@@ -9,6 +9,17 @@
 #
 # Common functions used by the unit tests
 
+
+#prints a message to stderr and exits
+#Input: <error_message>
+function fail_and_exit {
+
+  error_message=${1:-No error message passed}
+  echo "$error_message" >&2
+  exit 1
+
+}
+
 #Return the HTTP code in the response excluding 100
 #Inputs: <response-header-file>
 function get_http_code {
@@ -57,6 +68,25 @@ function get_json_value {
     INPUT=`get_file_value "$INPUT"`
     echo "$INPUT" | grep "$ATTRIBUTE" | sed "s/.*${ATTRIBUTE}\"[ 	]*:[ 	]*\"\([^\"]*\)\".*/\1/"
 }
+
+#Return a single unquotted value for a given attribute in a json file 
+#Inputs: json-file-name(or input string)  attribute-name 
+function get_json_unquotted_value {
+
+    if [ -z "$1" ] || [ -z "$2" ]
+    then
+        echo "ERROR: using get_json_value"
+        echo "USAGE: get_json_value <input-string-or-file> <attribute>"
+        exit
+    fi
+    INPUT="$1"
+    ATTRIBUTE="$2"
+    INPUT=`get_file_value "$INPUT"`
+    echo "$INPUT" | grep "$ATTRIBUTE" | sed "s/.*${ATTRIBUTE}\"[ 	]*:[ 	]*\([^,]*\),.*/\1/"
+}
+
+
+
 
 
 #Return the array value for a given attribute in a json file 
@@ -493,6 +523,9 @@ function verify_globus_file {
         exit
     fi
 
+    #This verifies that globus CLI is present
+    which globus > /dev/null || fail_and_exit "ERROR:No globus CLI, READ $HPC_DM_TEST/README.txt" 
+
     #If endpoint is not passed, use the default endpoint
     if [ "$#" -eq 1 ] 
     then
@@ -503,24 +536,16 @@ function verify_globus_file {
         ENDPOINT_ID="$2"
     fi
 
-    GLOBUS_CREDENTIALS=$HPC_DM_TEST/utils/globus-config
-
-    #Verify the existance of the credentials file
-    if [ ! -e  "$GLOBUS_CREDENTIALS" ]
-    then 
-        echo "ERROR: Can not find $GLOBUS_CREDENTIALS"
-        exit
-    fi
-
     #List the files in the path
     PARENT_DIR=$(dirname "$FILE_PATH") 
 
     #Sleep a bit for Globus to be updated
-    sleep 10  
-    curl --config $GLOBUS_CREDENTIALS  "https://transfer.api.globusonline.org/v0.10/operation/endpoint/$ENDPOINT_ID/ls?path=$PARENT_DIR" -s > directory-list.tmp
+    sleep 60  
+
+    globus ls "$ENDPOINT_ID:$PARENT_DIR" > directory-list.tmp
 
     FILE_NAME=$(basename $FILE_PATH)
-    EXISTS=$(grep  "\"$FILE_NAME\"" directory-list.tmp)
+    EXISTS=$(grep  "$FILE_NAME" directory-list.tmp)
     if [ -z "$EXISTS" ]
     then
         echo "ERROR: Can not find the file $FILE_PATH in the Globus endpoint $ENDPOINT_ID"
@@ -1121,6 +1146,43 @@ function download_async {
     check_connection $RESPONSE_HEADER
 
 }
+
+
+#Get the status of asynchronousl download request 
+#Input: <taskId>  a numerical id for the download receipt
+#Input: <type> dataObject or collection
+function get_download_status {
+
+    usage="USAGE: get_download_status <taskId> <type>"
+    if [ -z "$1" ]  || [ -z "$2" ]
+    then
+        echo "ERROR: using get_download_status"
+        echo "Received: $*" >&2
+        echo "$usage"  >&2
+        exit 1
+    fi
+
+    RESPONSE_HEADER=get-download-status-response-header.tmp
+    RESPONSE_MSG=get-download-status-response-message.json.tmp
+
+    taskId="$1"
+    request_type="$2"
+    
+    #Verify that taskId is a numerical value
+    re='^[0-9]+$'
+    if ! [[ "$taskId" =~ $re ]] ; then
+        echo "ERROR: taskId $taskId is not a number" >&2; 
+        exit 1
+    fi
+
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+
+    
+    curl -G -X GET ${SERVER}/$request_type/download?taskId="$taskId"  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    check_connection $RESPONSE_HEADER
+}
+
+
 
 
 #Subscribe to all the notifications mentioned in the $HPC_DM_TEST/utils/templates/notifications-template.json

@@ -84,7 +84,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	@Autowired
 	private HpcSystemAccountLocator systemAccountLocator = null;
 	
-	// Data object download cleanup DAO.
+	// Data object download DAO.
 	@Autowired
 	private HpcDataDownloadDAO dataDownloadDAO = null;
 	
@@ -313,7 +313,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	}
 	
 	@Override
-	public HpcDownloadTaskStatus getDownloadTaskStatus(int taskId, HpcDownloadTaskType taskType) 
+	public HpcDownloadTaskStatus getDownloadTaskStatus(String taskId, HpcDownloadTaskType taskType) 
 			                                          throws HpcException
 	{
 		if(taskType == null) {
@@ -340,7 +340,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		   }
 		}
 		
-		if(taskType.equals(HpcDownloadTaskType.COLLECTION)) {
+		if(taskType.equals(HpcDownloadTaskType.COLLECTION) || 
+		   taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
 		   HpcCollectionDownloadTask task = dataDownloadDAO.getCollectionDownloadTask(taskId);
 		   if(task != null) {
 			  taskStatus.setCollectionDownloadTask(task);
@@ -389,6 +390,32 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	}
 	
 	@Override
+    public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) 
+                                              throws HpcException
+    {
+    	// Check if Globus accepts transfer requests at this time.
+	    if(dataTransferProxies.get(downloadTask.getDataTransferType()).acceptsTransferRequests(
+	       getAuthenticatedToken(downloadTask.getDataTransferType(), downloadTask.getDoc()))) {
+		      // Globus accepts requests - submit the 2nd hop async download (to Globus).
+	    	  HpcDataObjectDownloadRequest secondHopDownloadRequest = new HpcDataObjectDownloadRequest();
+	    	  secondHopDownloadRequest.setArchiveLocation(downloadTask.getArchiveLocation());
+	    	  secondHopDownloadRequest.setCompletionEvent(downloadTask.getCompletionEvent());
+	    	  secondHopDownloadRequest.setDataTransferType(downloadTask.getDataTransferType());
+	    	  secondHopDownloadRequest.setDestinationLocation(downloadTask.getDestinationLocation());
+	    	  secondHopDownloadRequest.setDoc(downloadTask.getDoc());
+	    	  secondHopDownloadRequest.setPath(downloadTask.getPath());
+	    	  secondHopDownloadRequest.setUserId(downloadTask.getUserId());
+	    	  
+		      downloadTask.setDataTransferRequestId(
+		    		          downloadDataObject(secondHopDownloadRequest).getDataTransferRequestId());
+	    	  
+	    	  // Persist the download task.
+		      downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
+			  dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+	    }
+    }
+	
+	@Override
 	public HpcCollectionDownloadTask downloadCollection(String path,
                                                         HpcFileLocation destinationLocation,
                                                         String userId, String doc)
@@ -404,6 +431,32 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		downloadTask.setDestinationLocation(destinationLocation);
 		downloadTask.setPath(path);
 		downloadTask.setUserId(userId);
+		downloadTask.setType(HpcDownloadTaskType.COLLECTION);
+		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
+		
+		// Persist the request.
+		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
+		
+		return downloadTask;
+    }
+	
+	@Override
+	public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPath,
+                                                         HpcFileLocation destinationLocation,
+                                                         String userId, String doc)
+                                                        throws HpcException
+    {
+		// Validate the requested destination location.
+		validateDownloadDestinationFileLocation(HpcDataTransferType.GLOBUS, destinationLocation, 
+				                                false, doc);
+		
+		// Create a new collection download task.
+		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
+		downloadTask.setCreated(Calendar.getInstance());
+		downloadTask.setDestinationLocation(destinationLocation);
+		downloadTask.getDataObjectPaths().addAll(dataObjectPath);
+		downloadTask.setUserId(userId);
+		downloadTask.setType(HpcDownloadTaskType.DATA_OBJECT_LIST);
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		
 		// Persist the request.
@@ -448,7 +501,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    taskResult.setPath(downloadTask.getPath());
 	    taskResult.setDestinationLocation(downloadTask.getDestinationLocation());
 	    taskResult.setResult(result);
-	    taskResult.setType(HpcDownloadTaskType.COLLECTION);
+	    taskResult.setType(downloadTask.getType());
 	    taskResult.setMessage(message);
 	    taskResult.setCreated(downloadTask.getCreated());
 	    taskResult.setCompleted(completed);	
@@ -640,13 +693,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
     	
     	// Validate source location exists and accessible.
-    	validateUploadSourceFileLocation(dataTransferType, uploadRequest.getSourceLocation(), 
-    			                         uploadRequest.getDoc());
-    	
-    	// Upload the data object using the appropriate data transfer proxy.
     	String doc = uploadRequest.getDoc();
+    	validateUploadSourceFileLocation(dataTransferType, uploadRequest.getSourceLocation(), doc);
+    	
+    	// Check that the data transfer system can accept transfer requests.
+    	Object authenticatedToken = getAuthenticatedToken(dataTransferType, doc);
+    	if(!dataTransferProxies.get(dataTransferType).acceptsTransferRequests(authenticatedToken)) {
+    	   // The data transfer system is busy. Queue the request (upload status set to 'RECEIVED'),
+    	   // and the upload will be performed later by a scheduled task.
+    	   HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
+       	   uploadResponse.setDataTransferType(dataTransferType);
+       	   uploadResponse.setDataTransferStarted(Calendar.getInstance());
+       	   uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.RECEIVED);
+       	   return uploadResponse;
+    	}
+    	
+    	// Upload the data object using the appropriate data transfer system proxy.
   	    return dataTransferProxies.get(dataTransferType).
-  	    		   uploadDataObject(getAuthenticatedToken(dataTransferType, doc), 
+  	    		   uploadDataObject(authenticatedToken, 
   	    		                    uploadRequest, 
   	    		                    generateMetadata(uploadRequest.getPath(),
   	    		                    		         uploadRequest.getUserId()),
@@ -899,16 +963,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		{
 			// This callback method is called when the first hop (S3) download completed.
 			try {
-				   // Update the download task to reflect starting 2nd hop transfer.
+				   // Update the download task to reflect 1st hop transfer completed.
 				   downloadTask.setDataTransferType(secondHopDownloadRequest.getDataTransferType());
 				   
-				   // Perform 2nd hop async download (Globus)
-				   HpcDataObjectDownloadResponse secondHopDownloadResponse = 
-					    	                     downloadDataObject(secondHopDownloadRequest);
-
-				   // Update the download task with the Globus request ID.
-				   updateDownloadTask(secondHopDownloadResponse.getDataTransferRequestId());
-				   
+				   // Check if Globus accepts transfer requests at this time.
+			       if(dataTransferProxies.get(downloadTask.getDataTransferType()).acceptsTransferRequests(
+			    	      getAuthenticatedToken(downloadTask.getDataTransferType(), downloadTask.getDoc()))) {
+				      // Globus accepts requests - submit the 2nd hop async download (to Globus).
+				      downloadTask.setDataTransferRequestId(
+				    		          downloadDataObject(secondHopDownloadRequest).getDataTransferRequestId());
+				      
+			       } else {
+			    	       // Globus doesn't accept transfer requests at this time. Queue the 2nd hop transfer.
+			    	       downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+			       }
+			       
+			       // Persist the download task.
+				   dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+				      
 			} catch(HpcException e) {
 				    logger.error("Failed to submit 2nd hop download request, or update download task", e);
 				    transferFailed(e.getMessage());
@@ -977,26 +1049,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    private void createDownloadTask() throws HpcException
 	    {
 	    	downloadTask.setDataTransferType(HpcDataTransferType.S_3);
+	    	downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
 	    	downloadTask.setDownloadFilePath(sourceFile.getAbsolutePath());
 	    	downloadTask.setUserId(secondHopDownloadRequest.getUserId());
 	    	downloadTask.setPath(secondHopDownloadRequest.getPath());
 	    	downloadTask.setDoc(secondHopDownloadRequest.getDoc());
 	    	downloadTask.setCompletionEvent(secondHopDownloadRequest.getCompletionEvent());
+	    	downloadTask.setArchiveLocation(secondHopDownloadRequest.getArchiveLocation());
 	    	downloadTask.setDestinationLocation(secondHopDownloadRequest.getDestinationLocation());
 	    	downloadTask.setCreated(Calendar.getInstance());
 	    	
-	    	dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
-	    }
-	    
-	    /**
-	     * Update the download task after S3 download is done and a successful submit to Globus.
-	     * 
-	     * @param dataTransferRequestId The data transfer request ID (Globus).
-	     * @throws HpcException If it failed to persist the task.
-	     */
-	    private void updateDownloadTask(String dataTransferRequestId) throws HpcException
-	    {
-	    	downloadTask.setDataTransferRequestId(dataTransferRequestId);
 	    	dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 	    }
 	    
